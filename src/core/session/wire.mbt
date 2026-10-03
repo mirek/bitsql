@@ -103,7 +103,16 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
   let base = match c.origin {
     // identity columns are not updateable: 0x10 without 0x08 (captured:
     // dml/merge-delete-insert-defaults)
-    BaseColumn(identity~) => if identity { 0x10 } else { 0x08 }
+    // rowversion columns are not updateable either (captured: msduck
+    // gaps-rowversion_identity flags 0)
+    BaseColumn(identity~) =>
+      if identity {
+        0x10
+      } else if c.ty is RowVersion {
+        0
+      } else {
+        0x08
+      }
     Computed | TableComputed => 0x20
     SetOperation | Aggregate => 0
   }

@@ -379,8 +379,30 @@ fn Session::exec_string(self : Session, parts : Array[@ast.Expr]) -> Unit raise 
 ///|
 /// EXEC proc statement inside a batch.
 fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
-  guard e.target is ExecProc(name) else {
-    raise @types.not_supported("EXEC (@sql)")
+  let name = match e.target {
+    ExecProc(name) => name
+    // EXEC @var: the variable holds the procedure name
+    ExecVar(v) => {
+      let text = match self.frame().vars.get(v.to_lower()) {
+        Some(info) =>
+          match self.frame().values[info.slot] {
+            String(s) => s
+            _ => ""
+          }
+        None => ""
+      }
+      let missing = @types.sql_error(
+        2812,
+        "Could not find stored procedure '\{text}'.",
+      )
+      let parsed = @parse.parse_statement("EXEC " + text) catch {
+        _ => raise missing
+      }
+      match parsed.kind {
+        Exec({ target: ExecProc(n), .. }) => n
+        _ => raise missing
+      }
+    }
   }
   if name.parts.length() >= 2 &&
     name.parts[name.parts.length() - 2].name.to_lower() == "emulator" &&
@@ -423,6 +445,9 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     return
   }
   let proc = self.find_proc(name)
+  if !self.check_proc_args(name.base(), proc.def.params, e.args) {
+    return
+  }
   let named : Map[String, Arg] = Map([])
   let positional = []
   for a in e.args {
@@ -435,18 +460,32 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   }
   let saved_rpc = self.rpc
   let trancount_before = self.rt.trancount
-  let (status, outs) = self.run_with_params(
-    proc.def.params,
-    named,
-    positional,
-    () => {
+  // SET options a procedure changes revert when it returns
+  let saved_set = (
+    self.nocount,
+    self.xact_abort,
+    self.rt.option_bits,
+    self.isolation,
+    self.rt.datefirst,
+  )
+  let restore_set = () => {
+    self.nocount = saved_set.0
+    self.xact_abort = saved_set.1
+    self.rt.option_bits = saved_set.2
+    self.isolation = saved_set.3
+    self.rt.datefirst = saved_set.4
+  }
+  let (status, outs) = {
+    errdefer restore_set()
+    self.run_with_params(proc.def.params, named, positional, () => {
       self.exec_list(proc.def.body) catch {
         AbortBatch => return false
         e => raise e
       }
       true
-    },
-  )
+    })
+  }
+  restore_set()
   self.rpc = saved_rpc
   self.write_back_outputs(e, outs)
   if self.rt.trancount != trancount_before {
@@ -496,4 +535,112 @@ fn Session::write_back_outputs(
       }
     }
   }
+}
+
+///|
+/// EXEC argument checks (captured: msduck gaps-procedures). Compile-time
+/// errors (119, 179, 8144) end the batch; the others fail the EXEC with
+/// ERROR + DONEPROC (error) and return false.
+fn Session::check_proc_args(
+  self : Session,
+  proc : String,
+  params : Array[@ast.Param],
+  args : Array[@ast.ExecArg],
+) -> Bool raise {
+  let mut named_seen = false
+  let mut positional = 0
+  for i, a in args {
+    match a.name {
+      Some(_) => named_seen = true
+      None => {
+        if named_seen {
+          raise @types.sql_error(
+            119,
+            "Must pass parameter number \{i + 1} and subsequent parameters as '@name = value'. After the form '@name = value' has been used, all subsequent parameters must be passed in the form '@name = value'.",
+            severity=15,
+          )
+        }
+        positional += 1
+      }
+    }
+    if a.output &&
+      a.value.kind
+      is (IntLit(_)
+      | DecimalLit(_)
+      | FloatLit(_)
+      | MoneyLit(_)
+      | StrLit(_, ..)
+      | BinaryLit(_)
+      | Null) {
+      raise @types.sql_error(
+        179,
+        "Cannot use the OUTPUT option when passing a constant to a stored procedure.",
+        severity=15,
+      )
+    }
+  }
+  if positional > params.length() {
+    raise @types.sql_error(
+      8144,
+      "Procedure or function \{proc} has too many arguments specified.",
+      state=2,
+    )
+  }
+  let fail = (e : @types.SqlError) => {
+    self.message(e, 1)
+    self.stmt_error = e.number()
+    if self.rt.nest_level > 0 {
+      self.out.push(InProcDone(cmd=224, count=None, error=true))
+    } else {
+      self.out.push(ProcDone(cmd=224, count=None, error=true))
+    }
+    false
+  }
+  let supplied = Array::make(params.length(), false)
+  for i, a in args {
+    let k = match a.name {
+      None => i
+      Some(n) =>
+        match params.search_by(p => p.name.to_lower() == n.to_lower()) {
+          Some(k) => k
+          None =>
+            return fail(
+              @types.sql_error(
+                8145,
+                "\{n} is not a parameter for procedure \{proc}.",
+              ),
+            )
+        }
+    }
+    if supplied[k] {
+      return fail(
+        @types.sql_error(
+          8143,
+          "Parameter '\{params[k].name}' was supplied multiple times.",
+        ),
+      )
+    }
+    supplied[k] = true
+    if a.output && !params[k].output {
+      return fail(
+        @types.sql_error(
+          8162,
+          "The formal parameter \"\{params[k].name}\" was not declared as an OUTPUT parameter, but the actual parameter passed in requested output.",
+          state=2,
+        ),
+      )
+    }
+  }
+  for k, p in params {
+    if !supplied[k] && p.default_ is None {
+      return fail(
+        @types.sql_error(
+          201,
+          "Procedure or function '\{proc}' expects parameter '\{p.name}', which was not supplied.",
+          state=4,
+        ),
+      )
+    }
+  }
+  true
 }
