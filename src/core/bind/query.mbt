@@ -78,7 +78,7 @@ fn requalify(cols : Array[ColumnRef], q : String) -> Array[ColumnRef] {
 /// flags 1, a literal 0).
 fn derived_origin(o : @ir.Origin) -> @ir.Origin {
   match o {
-    Computed => SetOperation
+    Computed | TableComputed => SetOperation
     other => other
   }
 }
@@ -189,7 +189,7 @@ fn bind_table_ref(
           // unlike derived tables, computed view columns keep fComputed
           // (captured: catalog/view-select)
           let cols = derived_columns(bq, a, a.to_lower(), names).mapi((i, c) => {
-            if bq.columns[i].origin is Computed {
+            if bq.columns[i].origin is (Computed | TableComputed) {
               { ..c, origin: Computed, }
             } else {
               c
@@ -1198,8 +1198,17 @@ fn bind_select_query(
   // a hidden sort key (ORDER ordinal 0) clears fComputed on every computed
   // column: literal 32 -> 0, nullable expression 33 -> 1 (captured:
   // query/order-hidden-key, docs/reference/result-metadata.md)
+  // ...except a reference to a table's computed column, which keeps 33
+  // (captured: traps/order-by-hidden-key-flags)
   let result = if order.contains(0) {
-    result.map(c => { ..c, origin: derived_origin(c.origin), })
+    result.mapi((i, c) => {
+      match (i < exprs.length() && exprs[i].kind is Col(_), c.origin) {
+        (true, TableComputed) => c
+        // a view's computed column reads as a base column (33 -> 9)
+        (true, Computed) => { ..c, origin: BaseColumn(identity=false), }
+        _ => { ..c, origin: derived_origin(c.origin), }
+      }
+    })
   } else {
     result
   }

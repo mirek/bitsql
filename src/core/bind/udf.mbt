@@ -140,7 +140,7 @@ fn bind_user_tvf(
       // like views, computed columns keep fComputed (captured: a * 2 is
       // flags 33 through the function)
       let cols = derived_columns(bq, name.base(), q, []).mapi((i, c) => {
-        if bq.columns[i].origin is Computed {
+        if bq.columns[i].origin is (Computed | TableComputed) {
           { ..c, origin: Computed, }
         } else {
           c

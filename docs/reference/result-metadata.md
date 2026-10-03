@@ -26,7 +26,10 @@ A constant CASE that folds to a column keeps that column's base flags
 A hidden ORDER BY key (ORDER token ordinal 0: the key is not an output alias,
 position or select-list expression) clears 0x20 on every computed column of
 that SELECT: literals report 0, nullable expressions 1; base columns keep
-8/9 (`query/order-hidden-key`). An ORDER BY key that calls a user function is
+8/9 (`query/order-hidden-key`). A plain reference to a table's computed
+column keeps 33, while a view's (or catalog view's) computed column reads as
+a base column, 33 → 9 (`traps/order-by-hidden-key-flags`; bind tracks this as
+`Origin::TableComputed`). An ORDER BY key that calls a user function is
 never matched to an identical select item, so it is always hidden
 (`udf/scalar-basics`).
 

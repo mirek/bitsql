@@ -133,7 +133,7 @@ fn table_columns(t : @store.Table) -> Array[@bind.ColumnRef] {
     ty: c.ty,
     nullable: c.nullable,
     origin: if c.computed is Some(_) {
-      Computed
+      TableComputed
     } else {
       BaseColumn(identity=c.identity is Some(_))
     },

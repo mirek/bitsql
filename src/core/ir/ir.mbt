@@ -5,6 +5,9 @@
 pub(all) enum Origin {
   BaseColumn(identity~ : Bool)
   Computed
+  /// A table's computed column (flags as Computed; keeps 0x20 under a
+  /// hidden ORDER BY key, unlike view-computed columns).
+  TableComputed
   SetOperation
   Aggregate
 } derive(Debug, Eq)
