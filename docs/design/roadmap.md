@@ -83,6 +83,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [ ] Scope stack, variables, temp tables, table variables
 - [~] Procs (session-level registry): RPC by name and EXEC in batches, params with defaults, OUTPUT, return status. Missing: store modules/sys visibility (catalog agent), nested scope rules for temp tables
 - [x] Dynamic SQL (`sp_executesql` via RPC and in batches, `EXEC(@sql)`), DONEINPROC/DONEPROC framing, return status = last @@ERROR
+- [~] Prepared statements: sp_prepare / sp_execute / sp_prepexec / sp_unprepare (8179) work with tedious prepare/execute. Missing: metadata emitted at prepare time (msduck: COLMETADATA + ORDER without rows) — unverified
 - [~] TRY/CATCH with captured completion tokens, THROW/rethrow, RAISERROR (formatting, SETERROR, 2787), @@ERROR per statement, statement-level rollback, XACT_ABORT (doom in TRY, rollback outside), 3930 on writes/COMMIT when doomed, 3998 at request end, savepoints (SAVE/ROLLBACK TRAN name), 266 after EXEC; temp tables roll back, table variables don't. Missing: verification against gaps-transactions captures
 - [x] Cursors: STATIC snapshot, FAST_FORWARD/default read from a snapshot with an Emulator error if base tables change while open; LOCAL/GLOBAL; FETCH NEXT/PRIOR/FIRST/LAST/ABSOLUTE/RELATIVE; @@FETCH_STATUS, @@CURSOR_ROWS; captured CurCmd codes. DYNAMIC/KEYSET/FOR UPDATE raise Emulator errors
 - [ ] Triggers (AFTER, INSTEAD OF)

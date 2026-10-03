@@ -147,6 +147,96 @@ pub fn Session::run_rpc(
         )
       }
       "sp_reset_connection" => Some((0, []))
+      "sp_prepare" | "sp_prepexec" => {
+        // @handle int OUTPUT, @params nvarchar, @stmt nvarchar[, values...]
+        let decls = match wire.get(1) {
+          Some((_, { value: String(d), .. })) => d
+          _ => ""
+        }
+        guard wire.get(2) is Some((_, { value: String(sql), .. })) else {
+          raise @types.sql_error(
+            214, "Procedure expects parameter '@statement' of type 'ntext/nchar/nvarchar'.",
+          )
+        }
+        let handle = self.next_handle
+        self.next_handle += 1
+        self.prepared[handle] = (decls, sql)
+        let handle_name = match wire.get(0) {
+          Some((p, _)) => p.name
+          None => "@handle"
+        }
+        let result = if call.proc.canonical_name() == "sp_prepexec" {
+          for i in 3..<wire.length() {
+            let (p, a) = wire[i]
+            if p.name != "" {
+              named[p.name.to_lower()] = a
+            } else {
+              positional.push(a)
+            }
+          }
+          self.text = sql
+          let params = parse_param_decls(decls)
+          self.run_with_params(params, named, positional, () => {
+            self.run_text(sql)
+          })
+        } else {
+          (0, [])
+        }
+        // handle first, as SQL Server sends it before RETURNSTATUS
+        self.out.push(
+          ReturnValue(
+            ordinal=0,
+            name=handle_name,
+            type_info=IntN(4),
+            value=Int(handle.to_int64()),
+          ),
+        )
+        Some(result)
+      }
+      "sp_execute" => {
+        let handle = match wire.get(0) {
+          Some((_, a)) => a.value.as_int64().unwrap_or(0L).to_int()
+          None => 0
+        }
+        guard self.prepared.get(handle) is Some((decls, sql)) else {
+          raise @types.sql_error(
+            8179,
+            "Could not find prepared statement with handle \{handle}.",
+            state=4,
+          )
+        }
+        for i in 1..<wire.length() {
+          let (p, a) = wire[i]
+          if p.name != "" {
+            named[p.name.to_lower()] = a
+          } else {
+            positional.push(a)
+          }
+        }
+        self.text = sql
+        let params = parse_param_decls(decls)
+        Some(
+          self.run_with_params(params, named, positional, () => {
+            self.run_text(sql)
+          }),
+        )
+      }
+      "sp_unprepare" => {
+        let handle = match wire.get(0) {
+          Some((_, a)) => a.value.as_int64().unwrap_or(0L).to_int()
+          None => 0
+        }
+        if self.prepared.contains(handle) {
+          self.prepared.remove(handle)
+        } else {
+          raise @types.sql_error(
+            8179,
+            "Could not find prepared statement with handle \{handle}.",
+            state=4,
+          )
+        }
+        Some((0, []))
+      }
       _ => {
         let name = match call.proc {
           Name(n) => n

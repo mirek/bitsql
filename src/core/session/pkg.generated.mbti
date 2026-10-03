@@ -65,6 +65,8 @@ pub struct Session {
   mut tvars : @store.Db
   mut text : String
   mut identity_insert : Int?
+  prepared : Map[Int, (String, String)]
+  mut next_handle : Int
   // private fields
 }
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self

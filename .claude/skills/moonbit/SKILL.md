@@ -161,3 +161,6 @@ scripts/check.sh                 # everything CI runs; must be green to push
 - 2026-10-03: `moon fmt` adds trailing commas to one-line record literals and
   re-wraps long calls. Scripted text edits against formatted code must match
   that (or replace whole blocks between stable markers).
+- 2026-10-03 (shell, not MoonBit): never `pkill -f '<pattern>'` with a
+  pattern that also appears in the running shell's own command line; it
+  kills the shell (exit 144). Keep the server PID (`cmd & HP=$!; kill $HP`).

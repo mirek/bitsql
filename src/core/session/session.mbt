@@ -164,6 +164,9 @@ pub struct Session {
   mut identity_insert : Int?
   /// GLOBAL cursors (session lifetime).
   priv cursors : Map[String, CursorState]
+  /// sp_prepare handles: (parameter declarations, statement text).
+  prepared : Map[Int, (String, String)]
+  mut next_handle : Int
 }
 
 ///|
@@ -191,6 +194,8 @@ pub fn Session::new(
     text: "",
     identity_insert: None,
     cursors: Map([]),
+    prepared: Map([]),
+    next_handle: 1,
   }
 }
 
