@@ -114,6 +114,7 @@ pub fn Session::run_rpc(
   let snap = self.snapshot_request()
   self.parked = false
   self.waiting = None
+  self.wait_ms = None
   self.out.clear()
   self.rpc = true
   self.frames.clear()
@@ -291,6 +292,7 @@ pub fn Session::run_rpc(
     return []
   }
   self.fail_next_wait = None
+  self.applock_waited = false
   match result {
     Some((status, outs)) => {
       self.out.push(ReturnStatus(status))
@@ -357,7 +359,12 @@ fn Session::exec_string(self : Session, parts : Array[@ast.Expr]) -> Unit raise 
   }
   let (status, _) = self.exec_dynamic(sb.to_string(), [], Map([]), [])
   ignore(status)
-  self.out.push(ProcDone(cmd=224, count=None, error=false))
+  // EXEC (string) has no RETURNSTATUS; nested, it ends like a nested EXEC
+  if self.rt.nest_level > 0 {
+    self.out.push(InProcDone(cmd=224, count=None, error=false))
+  } else {
+    self.out.push(ProcDone(cmd=224, count=None, error=false))
+  }
 }
 
 ///|
@@ -397,8 +404,7 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     }
     let (status, outs) = self.exec_dynamic(sql, params, named, positional)
     self.write_back_outputs(e, outs)
-    self.out.push(ReturnStatus(status))
-    self.out.push(ProcDone(cmd=224, count=None, error=false))
+    self.proc_done(status)
     return
   }
   if self.exec_system_proc(name, e.args, e.return_var) {
@@ -435,8 +441,7 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   self.rpc = saved_rpc
   self.write_back_outputs(e, outs)
   if self.rt.trancount != trancount_before {
-    self.out.push(ReturnStatus(status))
-    self.out.push(ProcDone(cmd=224, count=None, error=false))
+    self.proc_done(status)
     raise @types.sql_error(
       266,
       "Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = \{trancount_before}, current count = \{self.rt.trancount}.",
@@ -456,8 +461,7 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
       }
     None => ()
   }
-  self.out.push(ReturnStatus(status))
-  self.out.push(ProcDone(cmd=224, count=None, error=false))
+  self.proc_done(status)
 }
 
 ///|

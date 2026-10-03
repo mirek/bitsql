@@ -34,6 +34,23 @@ fn bind_call_catalog(
         ),
       )
     }
+    // captured: APPLOCK_MODE nvarchar(32) nullable, APPLOCK_TEST int NOT NULL
+    "APPLOCK_MODE" => {
+      arity(name, args, 3)
+      return Some(
+        mk(
+          Call(Named(name), args.map(a => bind_expr(env, a))),
+          NVarChar(Some(32), @types.default_collation),
+          true,
+        ),
+      )
+    }
+    "APPLOCK_TEST" => {
+      arity(name, args, 4)
+      return Some(
+        mk(Call(Named(name), args.map(a => bind_expr(env, a))), Int, false),
+      )
+    }
     "TRIGGER_NESTLEVEL" => {
       arity_range(name, args, 0, 3)
       return Some(

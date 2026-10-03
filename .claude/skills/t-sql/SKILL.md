@@ -20,6 +20,15 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (application locks, corpus `applock/`): sp_getapplock returns
+  0 (granted), 1 (granted after waiting), -1 (timeout; no message), -999 with
+  INFO 15625 "Option 'x' not recognized for '@LockMode' parameter." or 15626
+  (Transaction owner without a transaction). Requests are counted: two
+  acquisitions need two releases. sp_releaseapplock of a lock not held:
+  ERROR 1223 and -999. APPLOCK_MODE returns 'NoLock' when not held and
+  raises 3918 for the Transaction owner outside a transaction; APPLOCK_TEST
+  is 1 for the session's own lock. Both procedures are T-SQL, so their
+  statements show up as DONEINPROC tokens.
 - 2026-10-03 (sequences, corpus `sequence/`): NEXT VALUE FOR has the
   sequence's type and flags 0; an unqualified default start is the type's
   minimum (bigint: -9223372036854775808). CREATE/ALTER SEQUENCE send no DONE

@@ -1,28 +1,40 @@
 ///|
-/// The three lock modes bitsql models (design: storage-concurrency.md).
-/// Intent locks, pages, escalation and Range* modes are deliberately absent.
+/// Lock modes bitsql models (design: storage-concurrency.md): S/U/X on keys
+/// and tables, plus IS/IX for application locks (sp_getapplock
+/// IntentShared/IntentExclusive). Pages, escalation and Range* modes are
+/// deliberately absent.
 pub(all) enum LockMode {
+  IS
+  IX
   S
   U
   X
 } derive(Debug, Eq)
 
 ///|
-/// SQL Server compatibility for S/U/X: S-S, S-U and U-S are compatible.
+/// SQL Server's compatibility matrix restricted to IS/IX/S/U/X.
 pub fn compatible(a : LockMode, b : LockMode) -> Bool {
   match (a, b) {
+    (X, _) | (_, X) => false
+    (IS, _) | (_, IS) => true
+    (IX, IX) => true
+    (IX, _) | (_, IX) => false
     (S, S) | (S, U) | (U, S) => true
     _ => false
   }
 }
 
 ///|
-/// Stronger of two modes held by one session on one resource.
+/// Stronger of two modes held by one session on one resource (S + IX would
+/// be SIX; bitsql uses X).
 pub fn LockMode::max(self : LockMode, other : LockMode) -> LockMode {
   match (self, other) {
     (X, _) | (_, X) => X
+    (IX, S) | (S, IX) | (IX, U) | (U, IX) => X
     (U, _) | (_, U) => U
-    _ => S
+    (S, _) | (_, S) => S
+    (IX, _) | (_, IX) => IX
+    _ => IS
   }
 }
 
@@ -30,6 +42,9 @@ pub fn LockMode::max(self : LockMode, other : LockMode) -> LockMode {
 pub(all) enum Duration {
   Statement
   Transaction
+  /// Held until released explicitly or the session ends (session-owned
+  /// application locks).
+  Session
 } derive(Debug, Eq)
 
 ///|

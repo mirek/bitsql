@@ -164,7 +164,6 @@ fn Session::exec_emulator_proc(
       }
     _ => self.server.snapshots.remove(name)
   }
-  self.out.push(ReturnStatus(0))
-  self.out.push(ProcDone(cmd=224, count=None, error=false))
+  self.proc_done(0)
   true
 }

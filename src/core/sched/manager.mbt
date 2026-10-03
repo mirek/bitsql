@@ -105,10 +105,10 @@ fn[K] LockManager::grant(
   // Upgrade in place when the same session already holds this exact resource.
   for i, g in self.grants {
     if g.session == session && g.resource.same(resource, self.cmp) {
-      let d = if g.duration == Transaction || duration == Transaction {
-        Duration::Transaction
-      } else {
-        Statement
+      let d : Duration = match (g.duration, duration) {
+        (Session, _) | (_, Session) => Session
+        (Transaction, _) | (_, Transaction) => Transaction
+        _ => Statement
       }
       self.grants[i] = { ..g, mode: g.mode.max(mode), duration: d, }
       return
@@ -263,15 +263,54 @@ fn[K] LockManager::wake(self : LockManager[K]) -> Array[(Int, Int)] {
 }
 
 ///|
-/// Releases every lock and pending request of `session` (commit, rollback,
-/// deadlock victim, disconnect).
+/// Releases the locks and pending requests of `session` at transaction end
+/// (commit, rollback, deadlock victim). Session-duration locks stay.
 pub fn[K] LockManager::release_all(
+  self : LockManager[K],
+  session : Int,
+) -> Array[(Int, Int)] {
+  self.grants.retain(g => g.session != session || g.duration == Session)
+  self.waiters.retain(w => w.session != session)
+  self.wake()
+}
+
+///|
+/// Releases everything `session` holds or waits for (disconnect).
+pub fn[K] LockManager::release_session(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
   self.grants.retain(g => g.session != session)
   self.waiters.retain(w => w.session != session)
   self.wake()
+}
+
+///|
+/// Releases one granted resource of `session` (sp_releaseapplock).
+pub fn[K] LockManager::release_resource(
+  self : LockManager[K],
+  session : Int,
+  resource : Resource[K],
+) -> Array[(Int, Int)] {
+  self.grants.retain(g => {
+    !(g.session == session && g.resource.same(resource, self.cmp))
+  })
+  self.wake()
+}
+
+///|
+/// True when `session` could be granted `mode` on `resource` now
+/// (APPLOCK_TEST).
+pub fn[K] LockManager::can_grant(
+  self : LockManager[K],
+  session : Int,
+  resource : Resource[K],
+  mode : LockMode,
+) -> Bool {
+  self.conflicts_with_grants(session, resource, mode).is_empty() &&
+  self
+  .conflicts_with_waiters_before(self.waiters.length(), session, resource, mode)
+  .is_empty()
 }
 
 ///|

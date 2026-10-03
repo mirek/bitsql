@@ -114,3 +114,12 @@ and lock timeouts (1222) are followed by INFO 3621 "The statement has been
 terminated." (class 0) before the statement's DONE with the error bit, outside
 TRY (captured: catalog/filtered-unique, locking/same-key-insert-waits,
 locking/lock-timeout). 547 raised by ALTER TABLE ... CHECK is not.
+
+## Nested EXEC
+
+`EXEC proc` at the top level of a batch or RPC ends with RETURNSTATUS and
+DONEPROC 224. Inside a procedure, trigger or sp_executesql text it ends with
+DONEINPROC 224 only, without RETURNSTATUS (captured: proc/nested-exec-tokens,
+applock/rpc-prisma). System procedures written in T-SQL (sp_getapplock,
+sp_releaseapplock) also emit the DONEINPROC tokens of their own statements:
+see `session/applock.mbt` for the captured sequences.

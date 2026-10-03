@@ -22,6 +22,10 @@ fn Session::catalog_fn(
     Some(v) => return Some(v)
     None => ()
   }
+  match self.applock_fn(name, args) {
+    Some(v) => return Some(v)
+    None => ()
+  }
   if name == "NEXT VALUE FOR" {
     return Some(self.sequence_next(text(0).unwrap_or("")))
   }

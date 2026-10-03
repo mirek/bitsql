@@ -321,6 +321,10 @@ fn Session::exec_system_proc(
   return_var : String?,
 ) -> Bool raise {
   match name.base().to_lower() {
+    "sp_getapplock" | "sp_releaseapplock" as p => {
+      self.exec_applock_proc(p, args, return_var)
+      true
+    }
     "sp_rename" => {
       let vals = args.map(a => self.eval(a.value).0)
       let text = (k : Int) => {
@@ -367,8 +371,7 @@ fn Session::exec_system_proc(
           }
         None => ()
       }
-      self.out.push(ReturnStatus(status))
-      self.out.push(ProcDone(cmd=224, count=None, error=false))
+      self.proc_done(status)
       true
     }
     _ => false

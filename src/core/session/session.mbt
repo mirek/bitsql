@@ -212,6 +212,13 @@ pub struct Session {
   mut isolation : String
   /// SET LOCK_TIMEOUT in milliseconds (-1: wait forever).
   mut lock_timeout : Int
+  /// Application locks held (sp_getapplock), by owner and resource.
+  priv applocks : Map[String, AppLock]
+  /// The parked request waited in sp_getapplock (its re-run returns 1).
+  mut applock_waited : Bool
+  /// Timeout of the current lock wait when it is not SET LOCK_TIMEOUT
+  /// (sp_getapplock @LockTimeout).
+  mut wait_ms : Int?
   /// INSERT BULK target awaiting its BulkLoad message.
   priv mut bulk : BulkTarget?
   /// Running triggers, innermost last.
@@ -270,6 +277,9 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    applocks: Map([]),
+    applock_waited: false,
+    wait_ms: None,
     bulk: None,
     lock_timeout: -1,
     isolation: "READ COMMITTED",
@@ -337,6 +347,19 @@ fn Session::done(
 }
 
 ///|
+/// End of an EXEC'd procedure: RETURNSTATUS + DONEPROC at the top level; a
+/// nested call (inside a procedure, trigger or sp_executesql text) ends with
+/// DONEINPROC 224 only (captured: proc/nested-exec-tokens).
+fn Session::proc_done(self : Session, status : Int) -> Unit {
+  if self.rt.nest_level > 0 {
+    self.out.push(InProcDone(cmd=224, count=None, error=false))
+  } else {
+    self.out.push(ReturnStatus(status))
+    self.out.push(ProcDone(cmd=224, count=None, error=false))
+  }
+}
+
+///|
 fn Session::message(self : Session, e : @types.SqlError, line : Int) -> Unit {
   self.out.push(
     Message({
@@ -374,6 +397,7 @@ pub fn Session::run_batch(
   let snap = self.snapshot_request()
   self.parked = false
   self.waiting = None
+  self.wait_ms = None
   self.out.clear()
   self.text = text
   self.rpc = false
@@ -389,6 +413,7 @@ pub fn Session::run_batch(
     }
   }
   self.fail_next_wait = None
+  self.applock_waited = false
   self.end_of_request()
   if self.schema_ddl &&
     !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {

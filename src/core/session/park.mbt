@@ -98,6 +98,16 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
 /// Releases this session's locks (transaction end) and records woken
 /// sessions for the engine.
 fn Session::release_locks(self : Session) -> Unit {
+  // transaction-owned application locks end with the transaction
+  let gone = []
+  for k, _ in self.applocks {
+    if k.has_prefix("t:") {
+      gone.push(k)
+    }
+  }
+  for k in gone {
+    self.applocks.remove(k)
+  }
   self.server.wake_all(self.server.locks.release_all(self.rt.spid))
 }
 
@@ -129,7 +139,8 @@ pub fn Session::cancel_wait(self : Session) -> Unit {
 pub fn Session::close(self : Session) -> Unit {
   self.cancel_wait()
   self.tx = None
-  self.release_locks()
+  self.applocks.clear()
+  self.server.wake_all(self.server.locks.release_session(self.rt.spid))
 }
 
 ///|
@@ -141,10 +152,11 @@ pub fn Session::is_parked(self : Session) -> Bool {
 /// Milliseconds the engine should wait before failing the parked request
 /// with 1222 (SET LOCK_TIMEOUT), if any.
 pub fn Session::wait_timeout(self : Session) -> Int? {
-  if self.parked && self.lock_timeout > 0 {
-    Some(self.lock_timeout)
-  } else {
-    None
+  guard self.parked else { return None }
+  match self.wait_ms {
+    Some(ms) if ms > 0 => Some(ms)
+    Some(_) => None
+    None => if self.lock_timeout > 0 { Some(self.lock_timeout) } else { None }
   }
 }
 

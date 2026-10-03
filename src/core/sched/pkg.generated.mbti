@@ -20,6 +20,7 @@ pub(all) enum Bound[K] {
 pub(all) enum Duration {
   Statement
   Transaction
+  Session
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Interval[K] {
@@ -35,14 +36,19 @@ pub struct LockManager[K] {
   cost : (Int) -> Int64
   // private fields
 }
+pub fn[K] LockManager::can_grant(Self[K], Int, Resource[K], LockMode) -> Bool
 pub fn[K] LockManager::cancel(Self[K], Int) -> Array[(Int, Int)]
 pub fn[K] LockManager::held(Self[K], Int) -> Int
 pub fn[K] LockManager::new((K, K) -> Int, cost? : (Int) -> Int64) -> Self[K]
 pub fn[K] LockManager::release_all(Self[K], Int) -> Array[(Int, Int)]
+pub fn[K] LockManager::release_resource(Self[K], Int, Resource[K]) -> Array[(Int, Int)]
+pub fn[K] LockManager::release_session(Self[K], Int) -> Array[(Int, Int)]
 pub fn[K] LockManager::release_statement(Self[K], Int) -> Array[(Int, Int)]
 pub fn[K] LockManager::request(Self[K], Int, Resource[K], LockMode, Duration) -> Outcome
 
 pub(all) enum LockMode {
+  IS
+  IX
   S
   U
   X
