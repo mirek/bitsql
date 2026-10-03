@@ -170,3 +170,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   user-controlled sizes or indexes to them unclamped (REPLICATE/SPACE/
   RAISERROR width crashed this way). Clamp, use `get()`, or raise a SqlError.
   The harness reports such crashes as `client error: ECONNRESET`.
+- 2026-10-03: a type alias cannot be `priv` (`priv type X = Map[..]` warns
+  0027 deprecated visibility); write `type X = Map[..]`. `Ref::new` is
+  deprecated; a closure may assign a captured `let mut` directly. A struct
+  field of closure type may raise: `(A) -> B? raise @types.SqlError`.

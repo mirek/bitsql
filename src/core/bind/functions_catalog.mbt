@@ -26,7 +26,14 @@ fn bind_call_catalog(
     "IDENT_CURRENT" | "IDENT_SEED" | "IDENT_INCR" => (1, 1, ident)
     "OBJECT_DEFINITION" => (1, 1, NVarChar(None, @types.default_collation))
     "HAS_PERMS_BY_NAME" => (3, 5, Int)
-    _ => return None
+    _ =>
+      // schema-qualified calls name user-defined functions, which are
+      // registered (CREATE FUNCTION) but not executed yet
+      if call.name.parts.length() > 1 {
+        raise @types.not_supported("calling user-defined functions")
+      } else {
+        return None
+      }
   }
   if lo == hi {
     arity(name, args, lo)
