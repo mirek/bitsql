@@ -18,6 +18,7 @@ npm run capture -- traps/x.sql     # oracle → traps/x.expected.json (never ove
 npm run diff -- smoke traps        # emulator vs expectations, ranked failure list
 npm run diff -- --target oracle smoke   # re-verify expectations (determinism check)
 npm test                           # client tests + smoke/allowlist corpus on the emulator
+npm run allowlist:sync             # after a full `npm run diff`: allowlist every newly passing case
 npm run oracle:stop                # remove the container
 npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
 ```
