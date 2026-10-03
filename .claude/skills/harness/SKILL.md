@@ -182,6 +182,44 @@ case is re-run on the local oracle and kept only if reproduced exactly;
 `corpus/msduck/_import.json` lists counts and rejections. Each file keeps
 `source: "msduck/reference/<file>"`.
 
+## msduck layout import (gaps-* and other sequential captures)
+
+```bash
+npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --oracles 5 --stop-oracles   # all adapters
+npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --only savepoint,gaps-merge --oracles 5
+npm run import:msduck-layouts -- --only gaps-keys --dry-run --report /tmp/r.json      # verify, write nothing
+npm run import:msduck-layouts -- --list                                                # adapters
+```
+
+- Regenerates `corpus/msduck-gaps/` (`gaps-*.json`) and `corpus/msduck-runs/`
+  (everything else not in the clean layout). `--only` rewrites just those
+  files and merges their stats into `_import.json` (per file: entries,
+  cases, imported, `skipped` reasons, `rejected` reasons, rejected ids with
+  the first msduck/oracle difference).
+- Adapters live in `src/msduck-layouts/*.mjs`, one function per msduck file
+  (`(doc, ctx) => Run[]`, shape in `project.mjs`). They read the matching
+  `msduck/scripts/capture-<file>.mjs` semantics: connection, request kind
+  (batch / `rpc` / `proc` with typed params), what was recorded.
+- **Sequential runs** (one connection, state carries over): every entry
+  becomes its own case `<file>#NNN-<slug>`; all earlier entries of the run
+  replay as uncompared setup. The setup is stored once per file in the
+  cases.json `runs` table and referenced as `{run, prefix}`
+  (`corpus.mjs expandSteps`); the case hash covers the expanded steps.
+  Runs marked `independent` have no prefix.
+- Unrepresentable entries (transaction-manager requests, prepared handles,
+  second connections, reconnects, session reset, attention, bulk load, TVPs)
+  are skipped by reason, and the rest of their run with them (its state
+  would differ) unless marked `stateless`.
+- Verification: each case runs on the oracle; msduck's recorded result is
+  compared with a *projection* of the harness capture (only what msduck
+  recorded, in its shape); if equal the case runs a second time and the full
+  harness capture must reproduce (determinism). The stored expectation is the
+  oracle's full harness capture (`toExpected`), not msduck's partial one.
+  Login/request timeouts are retried, never counted as rejections.
+- `--oracles N` spreads verification over dedicated containers
+  `bitsql-oracle-import-1..N` on 47340+ (CREATE DATABASE serializes inside one
+  server; one oracle does ~2 cases/s). `--stop-oracles` removes them.
+
 ## Findings
 
 - 2026-10-03: Local oracle is 17.0.5005.3; 1153 of 1158 importable msduck

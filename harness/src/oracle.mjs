@@ -49,12 +49,12 @@ function externalConfig(env = process.env) {
   return tediousConfig({ host, port: Number(port), user: env.BITSQL_ORACLE_USER ?? 'sa', password: env.BITSQL_ORACLE_PASSWORD, tls: true })
 }
 
-async function waitReady(config, timeout = 180000, log = () => {}) {
+async function waitReady(config, timeout = 180000, log = () => {}, name = containerName) {
   const deadline = Date.now() + timeout
   let last
   while (true) {
-    const info = await inspect(containerName)
-    if (!info?.State?.Running) throw new Error(`oracle container ${containerName} is not running${last ? `: ${last.message}` : ''}`)
+    const info = await inspect(name)
+    if (!info?.State?.Running) throw new Error(`oracle container ${name} is not running${last ? `: ${last.message}` : ''}`)
     try { await close(await connect({ ...config, options: { ...config.options, connectTimeout: 3000 } })); return }
     catch (error) {
       last = error
@@ -66,32 +66,35 @@ async function waitReady(config, timeout = 180000, log = () => {}) {
 }
 
 // Ensures the oracle is running and returns { config, image, name }.
-export async function startOracle({ log = () => {} } = {}) {
+// `name`/`port` select an additional oracle container (must start with
+// bitsql-oracle), e.g. for sharded bulk verification.
+export async function startOracle({ log = () => {}, name = containerName, port: wantedPort } = {}) {
+  if (!name.startsWith('bitsql-oracle')) throw new Error('oracle container names must start with bitsql-oracle')
   const external = externalConfig()
-  if (external) return { config: external, image: 'external', name: process.env.BITSQL_ORACLE_ADDR }
-  let info = await inspect(containerName)
+  if (external && name === containerName) return { config: external, image: 'external', name: process.env.BITSQL_ORACLE_ADDR }
+  let info = await inspect(name)
   if (info && !info.State.Running) {
-    log(`removing stopped ${containerName}\n`)
-    await docker(['rm', '--force', containerName])
+    log(`removing stopped ${name}\n`)
+    await docker(['rm', '--force', name])
     info = null
   }
   if (!info) {
-    const port = oraclePort()
+    const port = wantedPort ?? oraclePort()
     const password = `Bitsql!9${randomBytes(16).toString('hex')}`
-    log(`starting ${containerName} on 127.0.0.1:${port} (${oracleImage})\n`)
-    await docker(['run', '--detach', '--name', containerName, '--hostname', 'bitsql-oracle',
+    log(`starting ${name} on 127.0.0.1:${port} (${oracleImage})\n`)
+    await docker(['run', '--detach', '--name', name, '--hostname', 'bitsql-oracle',
       '--label', 'bitsql.oracle=1',
       '--env', 'ACCEPT_EULA=Y', '--env', 'MSSQL_PID=Developer', '--env', 'TZ=UTC',
       '--env', 'MSSQL_COLLATION=SQL_Latin1_General_CP1_CI_AS', '--env', 'MSSQL_MEMORY_LIMIT_MB=2048',
       '--env', 'MSSQL_SA_PASSWORD', '--publish', `127.0.0.1:${port}:1433`, oracleImage], { MSSQL_SA_PASSWORD: password })
-    info = await inspect(containerName)
+    info = await inspect(name)
   }
   const port = portOf(info)
   const password = passwordOf(info)
-  if (!Number.isInteger(port) || !password) throw new Error(`cannot read port/password of ${containerName}; run npm run oracle:stop`)
+  if (!Number.isInteger(port) || !password) throw new Error(`cannot read port/password of ${name}; run npm run oracle:stop`)
   const config = tediousConfig({ host: '127.0.0.1', port, password, tls: true })
-  await waitReady(config, 180000, log)
-  return { config, image: info.Config.Image, name: containerName }
+  await waitReady(config, 180000, log, name)
+  return { config, image: info.Config.Image, name: name }
 }
 
 export async function stopOracle({ log = () => {} } = {}) {

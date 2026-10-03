@@ -1,6 +1,6 @@
 // npm run import:msduck-layouts -- [--from <msduck checkout>] [--only a,b] [--no-verify]
 //                                   [--no-recheck] [--concurrency N] [--list]
-//                                   [--dry-run [--report out.json]]
+//                                   [--dry-run [--report out.json]] [--oracles N [--stop-oracles]]
 // --dry-run verifies but writes nothing under corpus/ (per-file stats and
 // rejection details go to stdout and --report).
 //
@@ -33,9 +33,10 @@ import { firstMismatch, slug } from './msduck-layouts/project.mjs'
 import { adapters } from './msduck-layouts/index.mjs'
 
 useUtcTimeZone()
-const { flags } = parseArgs(process.argv.slice(2), { booleans: ['no-verify', 'no-recheck', 'list', 'dry-run'] })
+const { flags } = parseArgs(process.argv.slice(2), { booleans: ['no-verify', 'no-recheck', 'list', 'dry-run', 'stop-oracles'] })
 const from = resolve(flags.from ?? process.env.MSDUCK_DIR ?? join(process.env.TMPDIR || tmpdir(), 'msduck'))
 const referenceDir = join(from, 'reference')
+if (flags.list) { console.log(Object.keys(adapters).sort().join('\n')); process.exit(0) }
 if (!await exists(referenceDir)) {
   console.error(`no ${referenceDir}; git clone --depth 1 https://github.com/mirek/msduck.git "$TMPDIR/msduck" or pass --from`)
   process.exit(2)
@@ -44,7 +45,6 @@ const only = flags.only ? new Set(String(flags.only).split(',').map(s => s.trim(
 const outDirFor = base => join(corpusDir, base.startsWith('gaps-') ? 'msduck-gaps' : 'msduck-runs')
 const scriptText = async name => readFile(join(from, 'scripts', name), 'utf8')
 
-if (flags.list) { console.log(Object.keys(adapters).sort().join('\n')); process.exit(0) }
 
 // 1. Adapt every selected file into cases.
 const files = []
@@ -95,14 +95,37 @@ console.error(`${files.length} file(s), ${all.length} case(s) to verify`)
 // 2. Verify on the oracle (msduck projection, then determinism).
 const reject = (f, c, reason) => { c.rejected = reason; f.stats.rejected[reason] = (f.stats.rejected[reason] ?? 0) + 1 }
 const kindOfPath = path => path.replace(/\/\d+(?=\/|$)/g, '/*')
+// --oracles N spreads the cases over N dedicated containers
+// bitsql-oracle-import-<k> on 127.0.0.1:4734<k-1> instead of the shared
+// bitsql-oracle (CREATE DATABASE serializes inside one server, so one oracle
+// caps throughput); --stop-oracles removes them afterwards.
 let target = { server: null }
 if (!flags['no-verify'] && all.length) {
-  target = await oracleTarget({ log: text => process.stderr.write(text) })
-  console.error(`verifying against SQL Server ${target.server.version}`)
+  const log = text => process.stderr.write(text)
+  const count = Math.max(1, Number(flags.oracles ?? 1))
+  const targets = flags.oracles
+    ? await Promise.all(Array.from({ length: count }, (_, i) => oracleTarget({ log, name: `bitsql-oracle-import-${i + 1}`, port: 47340 + i })))
+    : [await oracleTarget({ log })]
+  target = targets[0]
+  for (const t of targets) if (t.server.version !== target.server.version) throw new Error(`oracle versions differ: ${t.server.version} vs ${target.server.version}`)
+  console.error(`verifying against SQL Server ${target.server.version} on ${targets.length} oracle(s)`)
   let n = 0
-  await pool(all, Number(flags.concurrency ?? 6), async ({ f, c }) => {
+  // Infrastructure failures (busy shared host: login/request timeouts) are
+  // retried, never counted as rejections.
+  const flaky = r => Boolean(r.connectError || r.transportError || r.isolationError) ||
+    [...(r.steps ?? []), r.reuse].some(s => s?.errors?.some(e => e.client && /timeout|failed to connect|cancel|ECONN|socket/i.test(e.message ?? '')))
+  const run = async (oracle, testCase) => {
+    let result
+    for (let attempt = 0; attempt < 4; attempt++) {
+      result = await runCase(oracle, testCase)
+      if (!flaky(result)) return result
+      await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+    }
+    return result
+  }
+  const verifyOne = async (oracle, { f, c }) => {
     const testCase = { id: `${f.base}#${c.c.name}`, steps: c.expanded }
-    const actual = await runCase(target, testCase)
+    const actual = await run(oracle, testCase)
     const outcome = toExpected(testCase, actual)
     if (outcome.error) reject(f, c, `oracle run failed: ${outcome.error.slice(0, 60)}`)
     else {
@@ -114,13 +137,22 @@ if (!flags['no-verify'] && all.length) {
       if (!c.rejected) {
         c.expected = outcome.expected
         if (!flags['no-recheck']) {
-          const again = compareCase(await runCase(target, testCase), c.expected)
+          const again = compareCase(await run(oracle, testCase), c.expected)
           if (again) reject(f, c, `nondeterministic ${again.kind}`)
         }
       }
     }
     if (++n % 50 === 0) console.error(`  ${n}/${all.length}`)
-  })
+  }
+  // Longest cases first so a long prefix does not finish last alone.
+  const ordered = [...all].sort((a, b) => b.c.expanded.length - a.c.expanded.length)
+  const shards = targets.map(() => [])
+  ordered.forEach((item, i) => shards[i % targets.length].push(item))
+  await Promise.all(targets.map((oracle, k) => pool(shards[k], Number(flags.concurrency ?? 6), item => verifyOne(oracle, item))))
+  if (flags['stop-oracles']) {
+    const { execFile } = await import('node:child_process')
+    for (let k = 1; k <= count && flags.oracles; k++) await new Promise(r => execFile('docker', ['rm', '--force', `bitsql-oracle-import-${k}`], () => r()))
+  }
 }
 
 // 3. Write the corpus files and per-directory stats.
