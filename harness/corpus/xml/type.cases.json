@@ -278,6 +278,17 @@
     {
       "name": "070-select-cast-n-a-x-a-as-xml-value-nvarchar-5-as-v",
       "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a>x</a>' AS xml).value('.', 'nvarchar(5)') AS v"}]
+    },
+    {
+      "name": "071-exec-sp-columns-xc",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE dbo.xc (d xml NULL, e xml NOT NULL)","compare":false},
+        {"kind":"batch","sql":"EXEC sp_columns 'xc'"}
+      ]
+    },
+    {
+      "name": "072-declare-x-xml-null-declare-y-xml-set-y-null-select-x-as-x-y-",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = NULL; DECLARE @y xml; SET @y = NULL; SELECT @x AS x, @y AS y"}]
     }
   ]
 }

@@ -291,6 +291,8 @@ family('type', [
   `SELECT CAST(N'<?xml version="1.0" encoding="utf-8"?><a/>' AS xml) AS x`,
   `SELECT CAST(N'<a xml:space="preserve"> <b> </b> </a>' AS xml) AS x`,
   `SELECT CAST(N'<a>x</a>' AS xml).value('.', 'nvarchar(5)') AS v`,
+  { steps: [{ kind: 'setup', sql: 'CREATE TABLE dbo.xc (d xml NULL, e xml NOT NULL)' }, { kind: 'batch', sql: "EXEC sp_columns 'xc'" }] },
+  `DECLARE @x xml = NULL; DECLARE @y xml; SET @y = NULL; SELECT @x AS x, @y AS y`,
 ])
 
 // ------------------------------------------------ methods
