@@ -51,6 +51,7 @@ pub struct Server {
   idents : Map[Int, Int64]
   mut dbts : Int64
   locks : @sched.LockManager[LockKey]
+  mut seq_guid : Int64
   live : Map[Int, Session]
   priorities : Map[Int, Int]
   woken : Array[Int]

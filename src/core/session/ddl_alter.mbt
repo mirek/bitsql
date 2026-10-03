@@ -773,6 +773,17 @@ fn Session::exec_create_index(
     }
   }
   let columns = ci.columns.map(c => (col(c.name), c.desc))
+  // key columns computed in float/real must be persisted (captured:
+  // traps/computed-persisted-index)
+  for c in columns {
+    let tc = t.columns[c.0]
+    if tc.computed is Some(_) && !tc.persisted && tc.ty is (Float | Real) {
+      raise @types.sql_error(
+        2799,
+        "Cannot create index or statistics '\{ci.name.name}' on table '\{t.name}' because the computed column '\{tc.name}' is imprecise and not persisted. Consider removing column from index or statistics key or marking computed column persisted.",
+      )
+    }
+  }
   let included = ci.included.map(col)
   let clustered = ci.clustered.unwrap_or(false)
   if clustered && t.indexes.iter().any(ix => ix.clustered) {

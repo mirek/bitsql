@@ -258,12 +258,16 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.rt.rowcount = 1
       self.done(193, count=Some(1L))
     }
-    SetOption(names, value) =>
+    SetOption(names, value) => {
+      // captured: SET resets @@ROWCOUNT (traps/rowcount-reset)
+      self.rt.rowcount = 0
       match self.set_options(names, value, s.span.line) {
         Some(cmd) => self.done(cmd)
         None => self.schema_ddl = true // no DONE (batch-final DONE if alone)
       }
+    }
     SetIsolation(level) => {
+      self.rt.rowcount = 0
       self.isolation = level.to_upper()
       // captured: CurCmd 249 (corpus set/each)
       self.done(249)
@@ -293,6 +297,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.lock_expr_reads(cond)
       let b = @bind.bind_expr(self.env(), cond)
       let v = @exec.eval(self.ctx(), b)
+      // captured: IF resets @@ROWCOUNT (traps/rowcount-reset)
+      self.rt.rowcount = 0
       self.done(192)
       if @exec.is_true(v) {
         self.exec_block(then_)
@@ -356,6 +362,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     TryCatch(body, handler) => self.exec_try(body, handler)
     BeginTran(..) => {
+      self.rt.rowcount = 0 // captured: traps/rowcount-reset
       self.begin_tx()
       self.rt.trancount += 1
       self.rt.xact_state = if self.rt.xact_state == -1 { -1 } else { 1 }
@@ -365,6 +372,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.done(212)
     }
     Commit(..) => {
+      self.rt.rowcount = 0 // captured: traps/rowcount-reset
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           3902, "The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.",
@@ -386,6 +394,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.done(213)
     }
     Rollback(name~) => {
+      self.rt.rowcount = 0 // captured: traps/rowcount-reset
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           3903, "The ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION.",
@@ -422,6 +431,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.done(210)
     }
     Save(name~) => {
+      self.rt.rowcount = 0 // captured: traps/rowcount-reset
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           628, "Cannot issue SAVE TRANSACTION when there is no active transaction.",

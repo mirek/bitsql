@@ -151,6 +151,9 @@ fn Session::eval_text(
   row : Array[@types.Value],
   ty : @types.SqlType,
 ) -> @types.Value raise {
+  if is_newsequentialid(text) {
+    return self.server.next_sequential_guid()
+  }
   let e = @parse.parse_expr(text)
   let env = self.column_env(target)
   let b = @bind.bind_expr(env, e)

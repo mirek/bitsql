@@ -439,7 +439,12 @@ fn to_decimal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
   }
   let r = d.rescale(s)
   if r.digits() > p {
-    raise overflow_from(from, to)
+    // captured: numeric → numeric is state 8 (traps/decimal-overflow)
+    raise overflow_from(
+      from,
+      to,
+      state=if from.family() == FDecimal { 8 } else { 1 },
+    )
   }
   Decimal(r)
 }

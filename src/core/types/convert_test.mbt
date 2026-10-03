@@ -185,7 +185,7 @@ test "decimal conversions: rounding vs truncation" {
   assert_eq(d("2.344", Decimal(5, 3), Decimal(5, 2)), "ok 2.34")
   assert_eq(
     d("9.995", Decimal(5, 3), Decimal(3, 2)),
-    "8115/1 Arithmetic overflow error converting numeric to data type numeric.",
+    "8115/8 Arithmetic overflow error converting numeric to data type numeric.",
   )
   assert_eq(
     d("1", Decimal(1, 0), Decimal(38, 37)),

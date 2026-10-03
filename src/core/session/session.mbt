@@ -26,6 +26,8 @@ pub struct Server {
   locks : @sched.LockManager[LockKey]
   /// Sequence generators by "database:object id" (not transactional).
   priv seqs : Map[String, SeqState]
+  /// NEWSEQUENTIALID() counter.
+  mut seq_guid : Int64
   /// Sessions by spid (sys.dm_exec_sessions / requests / connections).
   live : Map[Int, Session]
   /// SET DEADLOCK_PRIORITY by spid (absent: 0, NORMAL).
@@ -69,6 +71,7 @@ pub fn Server::new() -> Server {
     seqs: Map([]),
     priorities,
     live: Map([]),
+    seq_guid: 0L,
     woken: [],
     victims: [],
     udfs: Map([]),
@@ -592,4 +595,32 @@ fn Server::set_priority(self : Server, spid : Int, p : Int) -> Unit {
 /// Work budget per request (host `--max-request-work`).
 pub fn Session::set_work_limit(self : Session, limit : Int64) -> Unit {
   self.rt.work_limit = limit
+}
+
+///|
+/// `DEFAULT NEWSEQUENTIALID()`: each value sorts after the previous one in
+/// uniqueidentifier order, whose most significant bytes are 10..15.
+fn Server::next_sequential_guid(self : Server) -> @types.Value {
+  self.seq_guid += 1L
+  let c = self.seq_guid
+  Guid(
+    Bytes::makei(16, i => {
+      if i >= 10 {
+        ((c >> ((15 - i) * 8)) & 0xFFL).to_byte()
+      } else {
+        // fixed node part (deterministic, like the rest of the emulator)
+        (0x5A + i).to_byte()
+      }
+    }),
+  )
+}
+
+///|
+fn is_newsequentialid(text : String) -> Bool {
+  let mut s = text.to_lower()
+  s = s.replace_all(old=" ", new="")
+  while s.has_prefix("(") && s.has_suffix(")") && s != "()" {
+    s = s.unsafe_substring(start=1, end=s.length() - 1)
+  }
+  s == "newsequentialid()" || s == "newsequentialid("
 }
