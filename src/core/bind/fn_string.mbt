@@ -472,9 +472,10 @@ fn concat_type(
   }
   let cap = if unicode { 4000 } else { 8000 }
   let n = if max || total > cap { None } else { Some(@cmp.maximum(1, total)) }
+  let coll = label_collation(env, all)
   if unicode {
-    NVarChar(n, env.collation)
+    NVarChar(n, coll)
   } else {
-    VarChar(n, env.collation)
+    VarChar(n, coll)
   }
 }

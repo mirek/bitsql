@@ -429,7 +429,9 @@ fn bind_variant_fn(
   let r = match name {
     "SQL_VARIANT_PROPERTY" => {
       arity_n(name, args, 2)
-      let v = coerce(bind_expr(env, args[0]), Variant)
+      let x = bind_expr(env, args[0])
+      variant_collation_check(env, x)
+      let v = coerce(x, Variant)
       named(name, [v, text_arg(1, varchar)], Variant)
     }
     "SERVERPROPERTY" | "CONNECTIONPROPERTY" | "SESSIONPROPERTY" => {

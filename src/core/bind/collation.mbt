@@ -176,6 +176,8 @@ fn coercibility_in(e : @ir.Expr, col : ColumnCoercibility) -> Coercibility {
       }
     Call(f, args) => {
       let label = match f {
+        // captured: "CHOOSE operator", "concat operator"
+        Named("CHOOSE") => "CHOOSE"
         Named(n) => n.to_lower()
         _ => "function"
       }
@@ -400,5 +402,40 @@ fn cmp_op_name(op : @ir.CmpOp) -> String {
     Le => "less than or equal to"
     Gt => "greater than"
     Ge => "greater than or equal to"
+  }
+}
+
+///|
+/// The collation label of a function result over string arguments (CONCAT):
+/// the combined explicit/implicit collation, else the database default
+/// (captured: msduck collation-functions #006, #040).
+fn label_collation(env : Env, args : Array[@ir.Expr]) -> @types.Collation {
+  let mut c = Default
+  for a in args {
+    if is_string(a.ty) {
+      c = combine(c, coercibility(env, a), "concat") catch {
+        _ => return env.collation
+      }
+    }
+  }
+  match c {
+    Explicit(x) | Implicit(x) => x
+    _ => env.collation
+  }
+}
+
+///|
+/// 456 when a value with no collation (two implicit collations met) is
+/// converted to sql_variant (captured: msduck collation-functions #038,
+/// #046, #050, #052).
+fn variant_collation_check(
+  env : Env,
+  e : @ir.Expr,
+) -> Unit raise @types.SqlError {
+  if coercibility(env, e) is NoCollation(x, y, op) {
+    raise @types.sql_error(
+      456,
+      "Implicit conversion of \{e.ty.base_name()} value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"\{x.name}\" and \"\{y.name}\" in \{op} operator.",
+    )
   }
 }
