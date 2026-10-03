@@ -323,10 +323,27 @@ pub fn Decimal::from_double_exact(d : Double) -> Decimal {
       scale: k,
     }
   }
+  let r = r.normalize()
   if negative {
     r.neg()
   } else {
     r
+  }
+}
+
+///|
+/// Drop trailing fraction zeros (lowest scale with the same value).
+pub fn Decimal::normalize(self : Decimal) -> Decimal {
+  if self.coef.is_zero() {
+    return { coef: self.coef, scale: 0, }
+  }
+  let ten = @bigint.BigInt::from_int(10)
+  for c = self.coef, s = self.scale {
+    if s > 0 && (c % ten).is_zero() {
+      continue c / ten, s - 1
+    } else {
+      break { coef: c, scale: s, }
+    }
   }
 }
 
