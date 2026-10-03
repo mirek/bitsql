@@ -30,6 +30,21 @@ mention the correction here.
   B_VARCHAR name) + ROW tokens with RPC-style values + DONE, no ALL_HEADERS;
   the answer is DONE CurCmd 240 with the row count (errors: ERROR, INFO 3621,
   DONE 240 error).
+- 2026-10-03 (SSVARIANT, raw ROW dumps from SQL Server 17.0.5005; tests in
+  src/core/tds/variant_test.mbt): COLMETADATA is `62` + u32 max length 8009
+  (not 8016, which is sys.columns' max_length; the inherited "max 8009 bytes"
+  note is right). A value is u32 total length (0 = NULL), base type byte,
+  property byte count, properties, data. Base types use the fixed TYPE_INFO
+  tokens (int 0x38, bit 0x32, money 0x3C, datetime 0x3D, smalldatetime 0x3A,
+  float 0x3E, real 0x3B, guid 0x24 without a length byte). Properties:
+  decimal/numeric precision+scale with data = sign + **always 16 magnitude
+  bytes** (17 bytes, unlike ROW's minimal groups); time/datetime2/
+  datetimeoffset scale; binary u16 max length; character types the 5-byte
+  collation *then* the u16 max length in bytes (nchar(5) → 10). tedious
+  20.3.3 reads max length before collation (so it decodes varchar with a
+  garbled code page; identical for SQL Server and bitsql) and cannot send
+  sql_variant parameters (`writeTypeInfo` throws "not implemented"). A NULL
+  variant in an NBCROW saves 4 bytes.
 
 - 2026-10-03: tedious 20.3.3 completes login against bitsql with the
   msduck login order (ENVCHANGE db, INFO 5701, ENVCHANGE collation, ENVCHANGE

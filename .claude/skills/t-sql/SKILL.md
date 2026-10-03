@@ -41,6 +41,45 @@ mention the correction here.
   raises 3918 for the Transaction owner outside a transaction; APPLOCK_TEST
   is 1 for the session's own lock. Both procedures are T-SQL, so their
   statements show up as DONEINPROC tokens.
+- 2026-10-03 (sql_variant, corpus `variant/`, `properties/`; rules in
+  docs/reference/sql-variant.md): a variant keeps its full base type
+  (varchar(3) for 'abc'); nothing converts implicitly *out* of a variant (257
+  state 3, also PRINT, ISNULL(5, v), `v + 1`), max types/timestamp cannot go
+  *in* (CAST 529, assignment 206). CAST out of a variant whose base type
+  forbids the target is 529 **state 3** naming the base type, even under
+  TRY_CAST, at run time unless the operand is constant. Comparison ranks
+  families (date/time > float/real > exact numerics > strings > binary >
+  guid), then converts within a family; strings compare collation LCID,
+  version, flags, sort id first. Operators: numeric operand 257, others 402
+  ("The data types sql_variant and NULL are incompatible in the add
+  operator."), `%` always 402, bitwise 402 or 8117, unary 8117, LIKE 8116.
+  Built-ins: 8116 or 257 per function and argument (table in
+  bind/fn_variant.mbt). SUM/AVG/STDEV/VAR(P) of a variant are 8117 named after
+  the function (bitsql used "stdev" for all four before). RAISERROR with a
+  variant argument is 2748, a compile-time error for the whole batch, like
+  PRINT of a variant (257).
+- 2026-10-03: a multi-row `VALUES` list unifies each column's type over its
+  rows before the target conversion (`VALUES (1), ('abc')` is 245 with DONE
+  CurCmd 253; an int with a date is 206 per row). An untyped NULL row takes no
+  part. Simple parameterization (INSERT/UPDATE of a permanent table, batch
+  level, no variables/function calls/subqueries) types string and binary
+  literals varchar(8000)/nvarchar(4000)/varbinary(8000) while number literals
+  keep their types; only observable through sql_variant base types.
+- 2026-10-03: DATALENGTH of a decimal is the storage size of its coefficient
+  magnitude (5/9/13/17 bytes for < 2^32/2^64/2^96), not of its digits
+  (12345678901234567890 as decimal(38,0) is 9; bitsql counted 13 before).
+  FOR JSON prints money with 4 decimals (3.0000) and real with 8 significant
+  digits (1.5000000e+000); bitsql printed 3.00 and 16 digits before.
+- 2026-10-03 (properties): SERVERPROPERTY/DATABASEPROPERTYEX/
+  CONNECTIONPROPERTY/SESSIONPROPERTY return sql_variant (flags 33), names
+  case-insensitive but untrimmed, unknown → NULL, wrong arity 174. The oracle
+  container is Developer edition: Edition 'Enterprise Developer Edition
+  (64-bit)', EngineEdition 3, ProductVersion 17.0.5005.3 (CU9). DATABASEPROPERTYEX
+  differs between user and system databases only in Recovery and
+  IsFulltextEnabled; 'IsReadCommittedSnapshotOn' is not one of its properties
+  (NULL). A sequence's ALTER ... RESTART warns 11729 from the values left
+  *before* the restart.
+
 - 2026-10-03 (sequences, corpus `sequence/`): NEXT VALUE FOR has the
   sequence's type and flags 0; an unqualified default start is the type's
   minimum (bigint: -9223372036854775808). CREATE/ALTER SEQUENCE send no DONE

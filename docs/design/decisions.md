@@ -179,3 +179,33 @@ cancels the request. Each request therefore has a deterministic work budget
 Emulator error 50108, which TRY cannot catch. Deterministic counts keep
 replays identical; a wall-clock limit would not.
 
+## 2026-10-03: sql_variant values carry their base type; host-tied properties
+
+`Value::Variant(base value, base type)` keeps the full declared base type
+(varchar(3), decimal(10,2), nchar(10)) because SQL_VARIANT_PROPERTY, the
+TDS encoding and comparisons depend on it; NULL stays `Value::Null`. Every
+consumer of a variant goes through `@types` (cast, compare, assign,
+sql_variant_property); the binder rejects variant operands of built-ins and
+operators with SQL Server's errors before any implicit conversion could
+happen (bind/fn_variant.mbt), and unknown built-ins raise 50100 rather than
+converting.
+
+Assignment conversions (INSERT/UPDATE columns, SET/SELECT/FETCH into
+variables, parameters, PRINT) now go through `@types.assign`, which applies
+the implicit-conversion rules sql_variant needs (257 out of a variant, 206 for
+max types into one). Other types keep the previous explicit-conversion
+behaviour (bitsql still raises 529 where SQL Server raises 206 for e.g.
+`DECLARE @d date = 1`).
+
+SERVERPROPERTY reports the oracle image's values (Developer edition,
+EngineEdition 3) so clients branch like they do against the container.
+Host-tied values (MachineName, ServerName, ComputerNamePhysicalNetBIOS) come
+from `Config::server_name`, now passed to every session (also @@SERVERNAME);
+ProcessID is the constant 1. CONNECTIONPROPERTY's address/port properties
+raise 50100: the pure core does not know socket addresses, and inventing them
+would be a silent approximation.
+
+Simple parameterization is emulated only where it is observable (literal
+lengths of values stored into sql_variant columns of permanent tables); the
+qualifying statement shapes are the captured ones (session/simple_params.mbt).
+
