@@ -106,7 +106,8 @@ upper case; sql_variant as its base type; xml values inline.
   nvarchar; `+` 402 (8117 for xml + xml); SQL_VARIANT_PROPERTY 206.
   DATALENGTH (SQL Server's internal binary size) is an emulator error.
 - sys.columns/sys.types: system_type_id 241, max_length -1;
-  INFORMATION_SCHEMA lengths -1.
+  INFORMATION_SCHEMA lengths -1; sp_columns DATA_TYPE -10, TYPE_NAME xml,
+  PRECISION 1073741823, LENGTH 2147483646, SS_DATA_TYPE 0.
 - These type errors are compile time: a batch `DECLARE ...; SELECT <error>`
   fails before the DECLARE runs (`precheck_xml` binds table-free
   statements of the batch up front).
