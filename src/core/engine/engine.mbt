@@ -223,6 +223,8 @@ fn Engine::on_message(
         login.user_name,
         login.host_name,
         login.app_name,
+        library=login.library_name,
+        now~,
       )
       self.send(conn, self.login_response(db, conn.packet_size), out)
     }

@@ -349,3 +349,30 @@ fn[K] LockManager::holds(
   .iter()
   .any(g => g.session == session && g.resource.same(resource, self.cmp))
 }
+
+///|
+/// A pending request's mode and the sessions it waits for
+/// (sys.dm_exec_requests blocking_session_id / wait_type).
+pub fn[K] LockManager::waiting_on(
+  self : LockManager[K],
+  request : Int,
+) -> (LockMode, Array[Int])? {
+  for i, w in self.waiters {
+    if w.id == request {
+      let blockers = self.conflicts_with_grants(w.session, w.resource, w.mode)
+      for
+        s in self.conflicts_with_waiters_before(
+          i,
+          w.session,
+          w.resource,
+          w.mode,
+        ) {
+        if !blockers.contains(s) {
+          blockers.push(s)
+        }
+      }
+      return Some((w.mode, blockers))
+    }
+  }
+  None
+}

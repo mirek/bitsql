@@ -45,6 +45,7 @@ pub fn[K] LockManager::release_resource(Self[K], Int, Resource[K]) -> Array[(Int
 pub fn[K] LockManager::release_session(Self[K], Int) -> Array[(Int, Int)]
 pub fn[K] LockManager::release_statement(Self[K], Int) -> Array[(Int, Int)]
 pub fn[K] LockManager::request(Self[K], Int, Resource[K], LockMode, Duration) -> Outcome
+pub fn[K] LockManager::waiting_on(Self[K], Int) -> (LockMode, Array[Int])?
 
 pub(all) enum LockMode {
   IS

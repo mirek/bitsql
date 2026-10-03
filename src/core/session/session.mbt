@@ -26,6 +26,8 @@ pub struct Server {
   locks : @sched.LockManager[LockKey]
   /// Sequence generators by "database:object id" (not transactional).
   priv seqs : Map[String, SeqState]
+  /// Sessions by spid (sys.dm_exec_sessions / requests / connections).
+  live : Map[Int, Session]
   /// SET DEADLOCK_PRIORITY by spid (absent: 0, NORMAL).
   priorities : Map[Int, Int]
   /// Sessions woken by lock releases (spid), to be re-run by the engine.
@@ -66,6 +68,7 @@ pub fn Server::new() -> Server {
     locks: new_lock_manager(priorities),
     seqs: Map([]),
     priorities,
+    live: Map([]),
     woken: [],
     victims: [],
     udfs: Map([]),
@@ -229,6 +232,9 @@ pub struct Session {
   priv session_context : Map[String, (@types.Value, Bool)]
   /// SET CONTEXT_INFO (always 128 bytes once set).
   mut context_info : Bytes?
+  /// LOGIN7 client library (client_interface_name) and login time.
+  mut library : String
+  mut login_time : Int64
   /// LOGIN7 login, host and application names.
   mut login : String
   mut host_name : String
@@ -283,7 +289,7 @@ pub fn Session::new(
   server_name? : String = "bitsql",
   build? : (Int, Int, Int) = (17, 0, 5005),
 ) -> Session {
-  {
+  let session : Session = {
     server,
     rt: @exec.Runtime::new(
       database~,
@@ -310,6 +316,8 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    library: "",
+    login_time: 0L,
     session_context: Map([]),
     error_override: None,
     context_info: None,
@@ -337,6 +345,8 @@ pub fn Session::new(
     uncatchable: false,
     session_flags: Map([]),
   }
+  server.live[spid] = session
+  session
 }
 
 ///|
@@ -559,7 +569,11 @@ pub fn Session::set_login(
   login : String,
   host_name : String,
   app_name : String,
+  library? : String = "",
+  now? : Int64 = 0L,
 ) -> Unit {
+  self.library = library
+  self.login_time = now
   self.login = login
   self.host_name = host_name
   self.app_name = app_name

@@ -51,6 +51,7 @@ pub struct Server {
   idents : Map[Int, Int64]
   mut dbts : Int64
   locks : @sched.LockManager[LockKey]
+  live : Map[Int, Session]
   priorities : Map[Int, Int]
   woken : Array[Int]
   victims : Array[Int]
@@ -85,6 +86,8 @@ pub struct Session {
   mut in_waitfor : Bool
   mut error_override : Int?
   mut context_info : Bytes?
+  mut library : String
+  mut login_time : Int64
   mut login : String
   mut host_name : String
   mut app_name : String
@@ -113,7 +116,7 @@ pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
 pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
-pub fn Session::set_login(Self, String, String, String) -> Unit
+pub fn Session::set_login(Self, String, String, String, library? : String, now? : Int64) -> Unit
 pub fn Session::set_work_limit(Self, Int64) -> Unit
 pub fn Session::time_out(Self) -> Unit
 pub fn Session::wait_timeout(Self) -> Int?

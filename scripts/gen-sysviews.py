@@ -50,8 +50,18 @@ def sql_type(c):
         return 'Int'
     if t == 'BigInt' or (t == 'IntN' and n == 8):
         return 'BigInt'
-    if t == 'DateTime':
+    if t == 'DateTime' or (t == 'DateTimeN' and n == 8):
         return 'DateTime'
+    if t == 'SmallDateTime' or (t == 'DateTimeN' and n == 4):
+        return 'SmallDateTime'
+    if t == 'Float' or (t == 'FloatN' and n == 8):
+        return 'Float'
+    if t == 'Real' or (t == 'FloatN' and n == 4):
+        return 'Real'
+    if t == 'Binary':
+        return f'Binary({n})'
+    if t == 'NChar':
+        return f'NChar({n // 2}, {co})'
     if t == 'UniqueIdentifier':
         return 'UniqueIdentifier'
     if t == 'NVarChar':

@@ -146,6 +146,7 @@ pub fn Session::close(self : Session) -> Unit {
   self.tx = None
   self.applocks.clear()
   self.server.wake_all(self.server.locks.release_session(self.rt.spid))
+  self.server.live.remove(self.rt.spid)
 }
 
 ///|
