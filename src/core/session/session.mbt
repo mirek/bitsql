@@ -53,11 +53,13 @@ priv struct Frame {
   values : Array[@types.Value]
   /// Table variables: lowercased name → id in the session's temp database.
   tables : Map[String, Int]
+  /// LOCAL cursors of this scope.
+  cursors : Map[String, CursorState]
 }
 
 ///|
 fn Frame::new() -> Frame {
-  { vars: Map([]), values: [], tables: Map([]), }
+  { vars: Map([]), values: [], tables: Map([]), cursors: Map([]), }
 }
 
 ///|
@@ -106,6 +108,8 @@ pub struct Session {
   mut text : String
   /// SET IDENTITY_INSERT target table id.
   mut identity_insert : Int?
+  /// GLOBAL cursors (session lifetime).
+  priv cursors : Map[String, CursorState]
 }
 
 ///|
@@ -131,6 +135,7 @@ pub fn Session::new(
     tx: None,
     text: "",
     identity_insert: None,
+    cursors: Map([]),
   }
 }
 

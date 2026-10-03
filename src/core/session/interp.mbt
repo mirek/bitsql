@@ -342,6 +342,11 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     Exec(e) => self.exec_proc_stmt(e)
     ExecString(parts) => self.exec_string(parts)
+    DeclareCursor(c) => self.exec_declare_cursor(c)
+    OpenCursor(name, global~) => self.exec_open_cursor(name, global)
+    Fetch(f) => self.exec_fetch(f)
+    CloseCursor(name, global~) => self.exec_close_cursor(name, global)
+    Deallocate(name, global~) => self.exec_deallocate(name, global)
     _ => raise @types.not_supported(stmt_name(s))
   }
 }

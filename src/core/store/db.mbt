@@ -344,3 +344,15 @@ pub fn Db::truncate(self : Db, id : Int) -> Db {
     }),
   }
 }
+
+///|
+/// True when `id`'s rows are physically the same in both databases (no
+/// write happened in between). Used to detect modifications under open
+/// cursors.
+pub fn Db::same_table_data(self : Db, other : Db, id : Int) -> Bool {
+  match (self.data.get(id), other.data.get(id)) {
+    (Some(a), Some(b)) => physical_equal(a, b)
+    (None, None) => true
+    _ => false
+  }
+}

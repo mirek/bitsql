@@ -92,6 +92,7 @@ pub(all) enum Global {
   MaxPrecision
   DbTs
   ProcId
+  CursorRows
 } derive(Debug, Eq)
 
 ///|

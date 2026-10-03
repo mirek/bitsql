@@ -320,6 +320,7 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
     "@@TEXTSIZE" => int_(TextSize)
     "@@MAX_PRECISION" => mk(Global(MaxPrecision), TinyInt, false)
     "@@PROCID" => int_(ProcId)
+    "@@CURSOR_ROWS" => int_(CursorRows)
     "@@VERSION" =>
       mk(Global(Version), NVarChar(Some(300), @types.default_collation), false)
     "@@SERVERNAME" =>

@@ -37,6 +37,11 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | enter CATCH | 350 | no |
 | normal exit of a CATCH handler | 351 | no |
 | DONEPROC at end of RPC | 224 (0xE0) | no |
+| DECLARE CURSOR, FETCH (INTO) | 193 | no |
+| OPEN cursor | 32 | no |
+| CLOSE cursor | 43 | no |
+| DEALLOCATE cursor | 44 | no |
+| EXEC proc / dynamic SQL in a batch | DONEPROC 224, statements inside DONEINPROC | no |
 
 `DECLARE` without an initializer and `BEGIN … END` grouping emit nothing.
 Codes not listed here (COMMIT, CREATE PROC/FUNCTION/TRIGGER, MERGE, …) must be

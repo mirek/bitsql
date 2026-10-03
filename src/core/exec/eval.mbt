@@ -203,6 +203,7 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     MaxPrecision => TinyInt(38)
     DbTs => Binary(Bytes::make(8, b'\x00'))
     ProcId => Int(0)
+    CursorRows => Int(rt.cursor_rows)
   }
 }
 

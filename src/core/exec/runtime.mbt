@@ -20,6 +20,7 @@ pub(all) struct Runtime {
   mut identity : @types.Value
   mut scope_identity : @types.Value
   mut fetch_status : Int
+  mut cursor_rows : Int
   mut nest_level : Int
   mut catch_error : ErrorInfo?
   mut now : Int64 // 100 ns ticks since 0001-01-01 UTC
@@ -47,6 +48,7 @@ pub fn Runtime::new(
     identity: Null,
     scope_identity: Null,
     fetch_status: -1,
+    cursor_rows: 0,
     nest_level: 0,
     catch_error: None,
     now,

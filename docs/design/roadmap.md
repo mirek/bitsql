@@ -81,10 +81,10 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 ## Phase 5: procedural
 
 - [ ] Scope stack, variables, temp tables, table variables
-- [ ] Procs, EXEC, return status, output params
-- [ ] Dynamic SQL (`sp_executesql`, `EXEC(@sql)`)
-- [ ] TRY/CATCH, THROW, RAISERROR, error classes, XACT_ABORT, XACT_STATE
-- [ ] Cursors (STATIC, FAST_FORWARD, LOCAL)
+- [~] Procs (session-level registry): RPC by name and EXEC in batches, params with defaults, OUTPUT, return status. Missing: store modules/sys visibility (catalog agent), nested scope rules for temp tables
+- [x] Dynamic SQL (`sp_executesql` via RPC and in batches, `EXEC(@sql)`), DONEINPROC/DONEPROC framing, return status = last @@ERROR
+- [~] TRY/CATCH with captured completion tokens, THROW/rethrow, RAISERROR (formatting, SETERROR, 2787), @@ERROR per statement, statement-level rollback. Missing: doomed transactions (XACT_STATE -1, 3998), XACT_ABORT effects verified, 266 trancount mismatch
+- [x] Cursors: STATIC snapshot, FAST_FORWARD/default read from a snapshot with an Emulator error if base tables change while open; LOCAL/GLOBAL; FETCH NEXT/PRIOR/FIRST/LAST/ABSOLUTE/RELATIVE; @@FETCH_STATUS, @@CURSOR_ROWS; captured CurCmd codes. DYNAMIC/KEYSET/FOR UPDATE raise Emulator errors
 - [ ] Triggers (AFTER, INSTEAD OF)
 - [~] JSON: `core/json` implements JSON_VALUE, JSON_QUERY, ISJSON (types, depth 13606), OPENJSON default schema, path parsing (lax/strict, keys, quoted keys, indexes), passing all msduck boundary captures. Missing: OPENJSON WITH schema, wildcards/advanced accessors, JSON_MODIFY, FOR JSON, binder wiring
 - Gate: all non-concurrency tests on the emulator.
