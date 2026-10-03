@@ -92,6 +92,13 @@ fn Session::bind_output(
           }
         }
         ExprItem(e, alias_~) => {
+          if @bind.has_aggregate(e) {
+            raise @types.sql_error(
+              158,
+              "An aggregate may not appear in the OUTPUT clause.",
+              severity=15,
+            )
+          }
           if ast_has_subquery(e) {
             raise @types.sql_error(
               10705,

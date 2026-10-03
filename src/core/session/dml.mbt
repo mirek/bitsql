@@ -597,6 +597,13 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             "The column \"\{c.name}\" cannot be modified because it is either a computed column or is the result of a UNION operator.",
           )
         }
+        if @bind.has_aggregate(s.value) {
+          raise @types.sql_error(
+            157,
+            "An aggregate may not appear in the set list of an UPDATE statement.",
+            severity=15,
+          )
+        }
         let rhs = if s.value.kind is Default {
           None
         } else {
