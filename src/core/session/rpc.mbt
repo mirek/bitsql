@@ -86,6 +86,8 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
     outer: [],
     source: (scope, id) => self.source(scope, id),
     ext: (name, args) => self.catalog_fn(name, args),
+    user_fn: (id, args) => self.call_scalar_udf(id, args),
+    user_table: (id, args) => self.call_table_udf(id, args),
   }
 }
 
@@ -400,6 +402,9 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     return
   }
   if self.exec_system_proc(name, e.args, e.return_var) {
+    return
+  }
+  if self.exec_scalar_function(name, e) {
     return
   }
   let proc = self.find_proc(name)

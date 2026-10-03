@@ -171,9 +171,15 @@ fn bind_table_ref(
       // views: bound like a derived table, without the caller's scope
       match (env.catalog.view)(name) {
         Some((vq, names)) => {
+          if env.nest >= max_module_nesting {
+            raise @types.not_supported(
+              "views or inline functions nested more than 32 levels",
+            )
+          }
           let venv = {
             ..Env::new(Map([]), collation=env.collation, catalog=env.catalog),
             ids: env.ids,
+            nest: env.nest + 1,
           }
           let bq = bind_query_inner(venv, vq)
           let a = match alias_ {
@@ -450,8 +456,14 @@ fn bind_table_function(
     nullable,
     origin: SetOperation,
   }
-  if name.parts.length() > 1 && fname != "OPENJSON" && fname != "STRING_SPLIT" {
-    raise @types.not_supported("table-valued function \{object_text(name)}")
+  if fname != "OPENJSON" && fname != "STRING_SPLIT" {
+    match bind_user_tvf(env, name, args, alias_, columns) {
+      Some(r) => return r
+      None =>
+        if name.parts.length() > 1 {
+          raise err(208, "Invalid object name '\{object_text(name)}'.")
+        }
+    }
   }
   let (plan, cols) : (@ir.Plan, Array[ColumnRef]) = match fname {
     "OPENJSON" => {
@@ -1264,9 +1276,15 @@ fn order_key(
   }
   let key = bind_clause(full, inner, rewritten, OrderBy, grouped)
   let text = expr_key(original)
+  // a key calling a user function is never matched to a select item
+  // (captured: udf/scalar-basics, ORDER 0)
+  let user_call = any_expr(original, x => {
+    x.kind is Call({ name, .. }) && name.parts.length() > 1
+  })
   for i, item in items {
     match item.kind {
-      ExprItem(e, ..) if expr_key(e) == text => return (exprs[i], i + 1)
+      ExprItem(e, ..) if !user_call && expr_key(e) == text =>
+        return (exprs[i], i + 1)
       _ => ()
     }
   }

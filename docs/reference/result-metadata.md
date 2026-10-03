@@ -26,7 +26,17 @@ A constant CASE that folds to a column keeps that column's base flags
 A hidden ORDER BY key (ORDER token ordinal 0: the key is not an output alias,
 position or select-list expression) clears 0x20 on every computed column of
 that SELECT: literals report 0, nullable expressions 1; base columns keep
-8/9 (`query/order-hidden-key`).
+8/9 (`query/order-hidden-key`). An ORDER BY key that calls a user function is
+never matched to an identical select item, so it is always hidden
+(`udf/scalar-basics`).
+
+User functions (`udf/*`): a scalar UDF call is a computed column with the
+declared RETURNS type, always nullable (33), also with
+constant arguments. Inline table-valued function columns follow views: base
+columns keep 8/9, computed ones (and parameter references) 33.
+Multi-statement table-valued function columns report the declared return
+table like a table variable (NOT NULL 8, nullable 9). OUTER APPLY makes the
+right side nullable.
 
 ## Types of literals
 

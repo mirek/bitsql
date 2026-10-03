@@ -43,6 +43,7 @@ pub(all) struct Catalog {
   table : (@ast.ObjectName) -> TableBinding? raise @types.SqlError
   table_var : (String) -> TableBinding?
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
+  function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
 }
 pub fn Catalog::empty() -> Self
 
@@ -70,6 +71,7 @@ pub(all) struct Env {
   ctes : Array[CteDef]
   maxrecursion : Int
   ids : @ref.Ref[Int]
+  nest : Int
 }
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
@@ -86,6 +88,24 @@ pub(all) enum TypeContext {
   Declaration
   Conversion
 } derive(Eq, @debug.Debug)
+
+pub(all) struct UserFunction {
+  id : Int
+  params : Array[UserParam]
+  kind : UserFunctionKind
+}
+
+pub(all) enum UserFunctionKind {
+  Scalar(@types.SqlType)
+  Inline(@ast.Query)
+  MultiStatement(Array[ColumnRef])
+}
+
+pub(all) struct UserParam {
+  name : String
+  ty : @types.SqlType
+  default_ : @ast.Expr?
+}
 
 pub(all) struct VarInfo {
   slot : Int

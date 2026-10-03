@@ -99,6 +99,30 @@ pub(all) struct Ctx {
   /// Session-provided functions that need the database (catalog/metadata
   /// functions). Returns None for names it does not implement.
   ext : (String, Array[@types.Value]) -> @types.Value?
+  /// Scalar user-defined function call (object id, converted arguments):
+  /// the session runs the body in a frame of its own.
+  user_fn : (Int, Array[@types.Value]) -> @types.Value raise @types.SqlError
+  /// Multi-statement table-valued function call: the rows of its return
+  /// table after the body ran.
+  user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
+}
+
+///|
+/// `user_fn` / `user_table` for contexts without a session (constant
+/// folding, tests): user functions are never constant.
+pub fn no_user_fn(
+  _id : Int,
+  _args : Array[@types.Value],
+) -> @types.Value raise @types.SqlError {
+  raise @types.not_supported("user-defined functions outside a session")
+}
+
+///|
+pub fn no_user_table(
+  _id : Int,
+  _args : Array[@types.Value],
+) -> Array[Array[@types.Value]] raise @types.SqlError {
+  raise @types.not_supported("user-defined functions outside a session")
 }
 
 ///|

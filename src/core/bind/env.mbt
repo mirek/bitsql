@@ -35,11 +35,47 @@ pub(all) struct Catalog {
   /// Resolves a view to its query and declared column names (bound like a
   /// derived table, in an environment of its own).
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
+  /// Resolves a user-defined function (scalar, inline or multi-statement
+  /// table-valued) by name; unqualified names resolve in dbo.
+  function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
+}
+
+///|
+/// A user-defined function as the binder sees it (session/udf.mbt builds it
+/// from the stored CREATE FUNCTION).
+pub(all) struct UserFunction {
+  id : Int
+  params : Array[UserParam]
+  kind : UserFunctionKind
+}
+
+///|
+/// A function parameter: lowercased-insensitive name (with '@'), declared
+/// type and the `= default` expression, used only for a DEFAULT argument.
+pub(all) struct UserParam {
+  name : String
+  ty : @types.SqlType
+  default_ : @ast.Expr?
+}
+
+///|
+pub(all) enum UserFunctionKind {
+  /// RETURNS type.
+  Scalar(@types.SqlType)
+  /// RETURNS TABLE AS RETURN query.
+  Inline(@ast.Query)
+  /// RETURNS @t TABLE (...): the declared columns.
+  MultiStatement(Array[ColumnRef])
 }
 
 ///|
 pub fn Catalog::empty() -> Catalog {
-  { table: _ => None, table_var: _ => None, view: _ => None, }
+  {
+    table: _ => None,
+    table_var: _ => None,
+    view: _ => None,
+    function: _ => None,
+  }
 }
 
 ///|
@@ -60,6 +96,9 @@ pub(all) struct Env {
   maxrecursion : Int
   /// Counter for plan-local ids (recursive CTE work tables).
   ids : Ref[Int]
+  /// Views and inline table-valued functions being expanded (nesting
+  /// guard: an ALTERed module can reference itself).
+  nest : Int
 }
 
 ///|
@@ -89,6 +128,7 @@ pub fn Env::new(
     ctes: [],
     maxrecursion: 100,
     ids: Ref(0),
+    nest: 0,
   }
 }
 

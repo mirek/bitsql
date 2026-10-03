@@ -47,6 +47,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     return
   }
+  let line = udf_error_line(e, line)
   // statement-level rollback: discard the failed statement's writes
   self.temp = snap_temp
   self.tvars = snap_tvars
@@ -136,6 +137,7 @@ fn aborts_batch(
   n == 245 ||
   n == 8114 ||
   n == 529 ||
+  n == 217 ||
   (n >= 50100 && n <= 50199)
 }
 

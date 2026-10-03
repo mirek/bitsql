@@ -237,6 +237,7 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
         of_bool(Some(all))
       }
     }
+    UserFn(id, args) => (ctx.user_fn)(id, args.map(a => eval(ctx, a)))
   }
 }
 
