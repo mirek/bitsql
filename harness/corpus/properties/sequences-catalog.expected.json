@@ -1,0 +1,347 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "2ee1761a819e94c3",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"principal_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"start_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"increment","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"minimum_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"maximum_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_cycling","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_cached","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cache_size","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"system_type_id","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"user_type_id","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"precision","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"scale","type":"IntN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_ms_shipped","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cbt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [
+            ["s1","SO","SEQUENCE_OBJECT",null,7,2,0,11,false,true,2,56,56,10,0,7,false,null,false,"int","int"],
+            [
+              "s2",
+              "SO",
+              "SEQUENCE_OBJECT",
+              null,
+              "-9223372036854775808",
+              "1",
+              "-9223372036854775808",
+              "9223372036854775807",
+              false,
+              true,
+              null,
+              127,
+              127,
+              19,
+              0,
+              "-9223372036854775808",
+              false,
+              null,
+              false,
+              "bigint",
+              "bigint"
+            ],
+            ["s3","SO","SEQUENCE_OBJECT",null,10,-1,-99999,99999,false,false,null,106,106,5,0,10,false,null,false,"decimal","decimal"],
+            ["s4","SO","SEQUENCE_OBJECT",null,0,1,0,255,true,true,null,48,48,3,0,0,false,null,false,"tinyint","tinyint"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":4,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":193}],
+      "stream": [
+        {"name":"COLMETADATA","columns":21},
+        {"name":"ORDER","columns":[1]},
+        {"name":"NBCROW","count":4},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"a","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[[7]]},
+        {"columns":[{"name":"b","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[[9]]},
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["s1",9,false,9]]
+        },
+        {"columns":[{"name":"c","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[[11]]},
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["s1",11,true,11]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 5
+    },
+    {
+      "sets": [{"columns":[{"name":"d","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11728,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The sequence object 's1' has reached its minimum or maximum value. Restart the sequence object to allow new values to be generated."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":11728},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["s1",11,true,11]]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["s1",7,false,null]]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_cached","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cache_size","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["s2",true,5]]
+        },
+        {"columns":[{"name":"e","type":"DecimalN","length":17,"precision":5,"scale":0,"flags":0,"collation":null}],"rows":[[10]]},
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_exhausted","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_used_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["s3",10,false,10]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [
+        {
+          "number": 11729,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 2,
+          "message": "The sequence object 's1' cache size is greater than the number of available values."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"INFO","number":11729},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 5
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

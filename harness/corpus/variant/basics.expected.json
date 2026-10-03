@@ -1,0 +1,375 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "8a482bc32ea7f08f",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"bit_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"tiny","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"small","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"int_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"big","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dec5","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dec38","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"num","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"money_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"smallmoney_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"float_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"real_","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[true,200,-2,7,"-3",1.5,12345678901234567000,-1.5,1.25,1.5,-2.5,1.5]]
+        },
+        {
+          "columns": [
+            {"name":"vc","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"ch","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"nvc","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"nch","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"nvc4000","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"vc_cs","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"vb","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"bin","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"guid","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [
+            [
+              "xy",
+              "ab  ",
+              "abc",
+              "ab   ",
+              "abc",
+              "ab",
+              {"kind":"binary","value":"0102"},
+              {"kind":"binary","value":"010000"},
+              "6F9619FF-8B86-D011-B42D-00C04FC964FF"
+            ]
+          ]
+        },
+        {
+          "columns": [
+            {"name":"d","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"t2","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dt27","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dto2","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"sdt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "dt27_text",
+              "type": "NVarChar",
+              "length": 80,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "dto2_text",
+              "type": "NVarChar",
+              "length": 80,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [
+            [
+              {"kind":"date","value":"2024-01-02T00:00:00.000Z"},
+              {"kind":"date","value":"1970-01-01T03:04:05.120Z","nanosecondsDelta":0},
+              {"kind":"date","value":"2024-01-02T03:04:05.123Z","nanosecondsDelta":0.0004567},
+              {"kind":"date","value":"2024-01-02T01:34:05.120Z","nanosecondsDelta":0},
+              {"kind":"date","value":"2024-01-02T03:04:05.123Z"},
+              {"kind":"date","value":"2024-01-02T03:04:00.000Z"},
+              "2024-01-02 03:04:05.1234567",
+              "2024-01-02T01:34:05.12Z"
+            ]
+          ]
+        },
+        {
+          "columns": [
+            {"name":"n1","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"one","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"n2","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[null,1,null]]
+        },
+        {
+          "columns": [
+            {"name":"dl_int","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_nvc","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_num","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_null","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_dec38","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_plain_dec38","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_dec38_small","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_dt22","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"dl_empty","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[4,6,5,null,9,9,5,6,0]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":12},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":9},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":8},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":9},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 5
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"v","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[1,1],[2,"two"],[3,3.5],[4,null],[5,{"kind":"date","value":"2024-05-06T00:00:00.000Z"}]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1,"int"],[2,"nvarchar"],[3,"numeric"],[4,null],[5,"date"]]
+        },
+        {
+          "columns": [
+            {"name":"v","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["9","bigint"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":5,"more":true},
+        {"kind":"done","rowCount":5,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":198},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":5,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":5,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":198},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 17
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"unset","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}],
+          "rows": [[null]]
+        },
+        {
+          "columns": [
+            {"name":"a","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["abc","nvarchar"]]
+        },
+        {
+          "columns": [
+            {"name":"b","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"p","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1.5,"numeric",2]]
+        },
+        {"columns":[{"name":"c","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[7]]},
+        {
+          "columns": [
+            {"name":"w","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1,"int"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 9
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"v","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"bt","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[42,"int"]]
+        }
+      ],
+      "done": [
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 2
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}
