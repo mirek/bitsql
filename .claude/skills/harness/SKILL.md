@@ -258,3 +258,27 @@ Start the host with `--database NAME` so the app's database exists at login
   dumps SQL Server's time zone behaviour for `scripts/gen-timezones.py`
   (docs/reference/at-time-zone.md). Cases reading the clock
   (sys.time_zone_info) compare only clock-independent facts.
+- 2026-10-03: msduck capture layouts (import-msduck-layouts): 154 non-clean
+  files, 14377 entries → 12829 kept cases (4495 gaps, 8334 others); only ~60
+  genuine msduck/oracle mismatches. Lessons: (1) msduck's capture scripts,
+  not the fixtures, hold part of the SQL (applock batches, gaps-functions,
+  identifiers, json_string setup, missing RPC params) — adapters evaluate the
+  script's literal sections with `node:vm`. (2) Fixtures name the database in
+  many ways: `msduck_audit_<hex>`, `<fresh-database>`, `<database>`, `<db>`,
+  `msduck_audit_<database>`, fixed names (`gaps_constraints`,
+  `msduck_catalog_reference`), or `master` (unicode-storage,
+  windows-1252-best-fit, aggregate-warning-boundaries ran in master) — all
+  map to `{db}`. (3) Recorded fields bitsql cannot observe (`procName`,
+  `serverName`, column `userType`/`udtInfo`, DONE_INXACT status, raw
+  COLMETADATA hex, the raw row count of an uncounted DONE, which SQL Server
+  sends as 1 under NOCOUNT) are dropped from the projection, not rejected.
+  (4) -0 floats survive only where msduck kept `bits`. (5) Server-version
+  probes differ (msduck 17.0.4065.4 / some on 16.0.4236.2) and are skipped.
+  (6) Cost: a run of n entries costs n²/2 replayed steps; adapters mark runs
+  `independent` or replay only state-changing earlier entries. One oracle
+  verifies ~2 cases/s (CREATE DATABASE serializes); `--oracles 5` did the
+  full import (2 runs per case) in ~50 min on a busy host.
+- 2026-10-03: Under heavy shared-host load the oracle drops logins (15 s
+  connect timeout) and requests (30 s); the layout importer retries those
+  and never counts them as rejections. Port 47345 is used by another
+  agent's `bitsql-oracle-tz`; extra import oracles use 47340–47344.
