@@ -16,9 +16,15 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     raise @types.not_supported("MERGE with a CTE")
   }
   let target = self.dml_target(m.target)
-  if self.has_enabled_trigger(target) {
-    raise @types.not_supported("MERGE on a table with triggers")
+  let has_insert = m.whens.iter().any(w => w.action is MergeInsert(..))
+  let has_update = m.whens.iter().any(w => w.action is MergeUpdate(_))
+  let has_delete = m.whens.iter().any(w => w.action is MergeDelete)
+  if (has_insert && !self.instead_of_trigger(target, OnInsert).is_empty()) ||
+    (has_update && !self.instead_of_trigger(target, OnUpdate).is_empty()) ||
+    (has_delete && !self.instead_of_trigger(target, OnDelete).is_empty()) {
+    raise @types.not_supported("MERGE on a table with INSTEAD OF triggers")
   }
+  let pre = self.db_of(target.scope)
   if target.scope != 3 {
     self.check_writable()
   }
@@ -362,6 +368,55 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     }
   }
   self.write(target.scope, db)
+  // AFTER triggers fire per action clause present, even for zero rows, in
+  // the order INSERT, UPDATE, DELETE (captured: triggers/merge-after)
+  if has_insert {
+    let rows = final_ops.filter_map(o => {
+      match o {
+        MInsert(new, _) => Some(new)
+        _ => None
+      }
+    })
+    self.fire_after(
+      target,
+      OnInsert,
+      [],
+      rows,
+      Array::makei(t.columns.length(), i => i),
+      pre,
+    )
+  }
+  if has_update {
+    let olds = []
+    let news = []
+    for o in final_ops {
+      if o is MUpdate(_, old, new, _) {
+        olds.push(old)
+        news.push(new)
+      }
+    }
+    let updated = []
+    for w in m.whens {
+      guard w.action is MergeUpdate(sets) else { continue }
+      for s in sets {
+        guard s.target is SetColumn(parts) else { continue }
+        match t.column_index(parts[parts.length() - 1].name) {
+          Some(i) => if !updated.contains(i) { updated.push(i) }
+          None => ()
+        }
+      }
+    }
+    self.fire_after(target, OnUpdate, olds, news, updated, pre)
+  }
+  if has_delete {
+    let rows = final_ops.filter_map(o => {
+      match o {
+        MDelete(_, old, _) => Some(old)
+        _ => None
+      }
+    })
+    self.fire_after(target, OnDelete, rows, [], [], pre)
+  }
   let count = final_ops.length().to_int64()
   self.rt.rowcount = count
   self.done(279, count=Some(count), result_set=sent)
