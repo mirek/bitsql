@@ -433,7 +433,11 @@ mention the correction here.
   `tablesample`): PERCENTILE_CONT interpolates at rn = 1 + p(n-1) as
   (c-rn)v[f] + (rn-f)v[c] in double (float, flags 1), PERCENTILE_DISC
   returns the first value with i/n >= p in the key's type (NOT NULL for a NOT
-  NULL key); errors 8726/8727/10751-10754/10758/402/5308/5309. SQL Server has
+  NULL key); errors 8726/8727/10751-10754/10758/402/5308/5309. The
+  percentile may be any column-free expression (variables, RAND(),
+  `(SELECT .5)`), evaluated once per call even over no rows (msduck-runs
+  percentile-* captures, 2026-10-03 import: 580 of 664 pass, the rest are
+  literal/float-text edge cases). SQL Server has
   no RANGE offsets: 4194 is faithful; frame offsets are unsigned int literals
   (102 otherwise), 4193 states 1/4/5, 10752 state 3 (ranking, NTILE,
   PERCENT_RANK, CUME_DIST) or 1 (LAG/LEAD/percentiles), 10756 for PARTITION

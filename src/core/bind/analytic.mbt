@@ -127,18 +127,39 @@ fn bind_percentile(
   if call.args.length() != 1 {
     raise err(174, "The \{name} function requires 1 argument(s).", severity=15)
   }
-  let p = bind_expr(env, call.args[0])
-  if !(is_constant(p) || p.kind is Var(_)) {
+  // captured (msduck percentile-runtime-fraction): any expression without
+  // column references is accepted (@p + 0, ABS(@p), (SELECT .5), RAND()...)
+  // ... but column references, also inside a subquery with a FROM clause,
+  // are 8726, and NEXT VALUE FOR is 11720
+  if any_expr(call.args[0], x => x.kind is NextValueFor(_), subqueries=false) {
+    raise err(
+      11720,
+      "NEXT VALUE FOR function is not allowed in the TOP, OVER, OUTPUT, ON, WHERE, GROUP BY, HAVING, or ORDER BY clauses.",
+      severity=15,
+    )
+  }
+  if any_expr(call.args[0], x => {
+      match x.kind {
+        Column(_) => true
+        Subquery(q) => query_reads_tables(q)
+        _ => false
+      }
+    }) {
     raise err(8726, "Input parameter of \{name} function must be a constant.")
   }
+  let p = bind_expr(env, call.args[0])
   check_aggregate_order(env, call.within_group, constants=true)
   let o = call.within_group[0]
   let key = bind_expr(env, o.expr)
   let cont = name == "PERCENTILE_CONT"
-  if cont && !(key.ty.family() is (FInteger | FDecimal | FMoney | FFloat)) {
+  // bit is accepted (msduck percentile-order-type); max types print as
+  // varchar(max) in the message
+  if cont &&
+    !(key.ty.family() is (FInteger | FDecimal | FMoney | FFloat) ||
+    key.ty is Bit) {
     raise err(
       402,
-      "The data types \{p.ty.base_name()} and \{key.ty.base_name()} are incompatible in the percentile_cont operator.",
+      "The data types \{p.ty.message_name()} and \{key.ty.clash_name()} are incompatible in the percentile_cont operator.",
     )
   }
   {
@@ -173,6 +194,9 @@ fn check_string_agg_separator(
     raise nested_aggregate_error()
   }
   let null_lit = sep.kind is Lit(Null) && sep.ty is Int
+  // a constant NULL (CAST(NULL AS nvarchar(10))) counts as a literal
+  // (msduck string-agg#006)
+  let null_const = is_constant(sep) && try_fold(sep) is Some(Null)
   match sep.ty {
     Char(_, _) | VarChar(_, _) => ()
     NChar(_, _) | NVarChar(_, _) =>
@@ -195,9 +219,14 @@ fn check_string_agg_separator(
     }
     go(e)
   }
-  if !(literal(sep_ast) || sep_ast.kind is Var(_)) {
+  if !(literal(sep_ast) || sep_ast.kind is Var(_) || null_const) {
     raise err(
       8733, "Separator parameter for STRING_AGG must be a string literal or variable.",
+    )
+  }
+  if sep.ty is (VarChar(None, _) | NVarChar(None, _)) {
+    raise err(
+      8734, "Separator parameter for STRING_AGG cannot be large object type such as VARCHAR(MAX) or NVARCHAR(MAX).",
     )
   }
 }
@@ -492,4 +521,17 @@ fn fixed6(x : Double) -> String {
   let frac = (n % 1000000L).to_string()
   let pad = "000000".view(end_offset=6 - frac.length()).to_owned()
   (if neg { "-" } else { "" }) + int_part.to_string() + "." + pad + frac
+}
+
+///|
+/// True when a query (or any part of a set operation) has a FROM clause.
+fn query_reads_tables(q : @ast.Query) -> Bool {
+  fn body(b : @ast.QueryBody) -> Bool {
+    match b {
+      Select(s) => !s.from.is_empty()
+      SetOperation(_, a, c) => body(a) || body(c)
+      Nested(n) => query_reads_tables(n)
+    }
+  }
+  body(q.body)
 }

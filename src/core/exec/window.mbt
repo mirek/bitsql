@@ -23,6 +23,14 @@ fn window_values(
   call : @ir.WindowCall,
 ) -> Array[@types.Value] raise @types.SqlError {
   let result = Array::make(rows.length(), @types.Value::Null)
+  // the percentile is evaluated once per call, also for no rows (captured:
+  // RAND() in it advances the generator once, msduck
+  // percentile-runtime-fraction rand-advancement)
+  let fraction = if call.func is (PercentileCont | PercentileDisc) {
+    eval(ctx, call.args[0])
+  } else {
+    Null
+  }
   // partitions in order of first appearance, as lists of row indexes
   let parts : Array[(Array[@types.Value], Array[Int])] = []
   for i, r in rows {
@@ -63,7 +71,7 @@ fn window_values(
     }
     let part_rows = idx.map(i => rows[i])
     if call.func is (PercentileCont | PercentileDisc) {
-      let v = percentile_value(ctx.with_row(part_rows[0]), call, keys)
+      let v = percentile_value(call, fraction, keys)
       for i in idx {
         result[i] = v
       }

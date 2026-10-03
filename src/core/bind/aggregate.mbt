@@ -52,8 +52,9 @@ fn agg_result_type(
       }
     (StringAgg, Some(t)) =>
       match t {
-        // captured: 8116 (variant/functions.sql)
-        Variant => raise bad_arg_type(t, 1, "string_agg")
+        // captured: 8116 (variant/functions.sql, msduck string-agg#022)
+        Variant | Binary(_) | VarBinary(_) | RowVersion =>
+          raise bad_arg_type(t, 1, "string_agg")
         VarChar(None, _) | NVarChar(None, _) => t
         NChar(_, c) | NVarChar(_, c) => NVarChar(Some(4000), c)
         Char(_, c) | VarChar(_, c) => VarChar(Some(8000), c)

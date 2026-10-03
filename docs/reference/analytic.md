@@ -59,11 +59,16 @@ executor implement them (`bind/pivot.mbt`, `bind/analytic.mbt`,
 - Window functions only: `f(p) WITHIN GROUP (ORDER BY key) OVER ([PARTITION
   BY ...])`. No OVER is 10753 state 3; no WITHIN GROUP 10754; ORDER BY in OVER
   10758; a frame 10752 state 1; more than one key 10751; two arguments 174.
-- `p` must be constant (literal, constant expression, string, variable);
-  a column is 8726. NULL or outside [0, 1] is 8727 at run time, after the
-  column metadata.
-- CONT: float, flags 1; the key must be numeric (402 "The data types numeric
-  and datetime are incompatible in the percentile_cont operator."). With n
+- `p` may be any expression without column references (literals, strings,
+  variables, `@p + 0`, `ABS(@p)`, `(SELECT .5)`, `RAND()`); a column, also
+  inside a subquery with a FROM clause, is 8726, NEXT VALUE FOR 11720 (class
+  15). It is evaluated once per call, also over no rows (RAND() advances
+  once; msduck-runs/percentile-runtime-fraction). NULL or outside [0, 1] is
+  8727 at run time, after the column metadata. Tiny negative floats
+  (-1e-308, -5e-324) are accepted by SQL Server; bitsql raises 8727 (open).
+- CONT: float, flags 1; the key must be numeric or bit (402 "The data types
+  numeric and datetime are incompatible in the percentile_cont operator.",
+  max types print as `varchar(max)`; msduck-runs/percentile-order-type). With n
   non-NULL values sorted by the key, rn = 1 + p(n-1), f = floor(rn), c =
   ceil(rn): v[f] if f = c, else (c - rn)·v[f] + (rn - f)·v[c] in double
   (reproduces 1.7999999999999998 for {1.5, 2.5} at 0.3 and
@@ -90,8 +95,11 @@ executor implement them (`bind/pivot.mbt`, `bind/analytic.mbt`,
 ## STRING_AGG (analytic/string-agg-checks)
 
 - Separator: a string literal (also `'a' + 'b'`), NULL or a variable;
-  `CAST(',' AS varchar(1))` or a column is 8733, a subquery 130, a
-  non-string 8116; an nvarchar separator with a char/varchar value is 8116.
+  `CAST(',' AS varchar(1))` or a column is 8733 (a constant NULL such as `CAST(NULL AS nvarchar(10))`
+  is accepted), a subquery 130, a non-string 8116, a max-typed separator
+  8734 (a compile error of the whole batch; bitsql reports it per
+  statement); an nvarchar separator with a char/varchar value is 8116.
+  Binary values are 8116 for argument 1 (msduck-runs/string-agg).
 - `STRING_AGG(DISTINCT ..)` is 102 near ','. OVER is 4113 state 4. WITHIN
   GROUP: an integer literal key is 5308, a subquery 130, `CAST(1 AS int)`
   is allowed. ROLLUP/CUBE is 8710.

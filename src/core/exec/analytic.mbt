@@ -45,11 +45,11 @@ fn approx_count_distinct(
 /// PERCENTILE_CONT / PERCENTILE_DISC over one partition: `keys` are the
 /// partition's WITHIN GROUP key values already sorted by that key.
 fn percentile_value(
-  ctx : Ctx,
   call : @ir.WindowCall,
+  fraction : @types.Value,
   keys : Array[Array[@types.Value]],
 ) -> @types.Value raise @types.SqlError {
-  let p = match eval(ctx, call.args[0]) {
+  let p = match fraction {
     Null => None
     v =>
       match @types.cast(v, call.args[0].ty, Float) {
