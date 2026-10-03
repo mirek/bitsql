@@ -465,6 +465,12 @@ fn bind_column(
       }
       return mk(kind, c.ty, c.nullable)
     }
+    // A qualifier naming a table of this scope binds here even when the
+    // column is missing: 207, and outer tables of the same name are hidden
+    // (captured: output/scoping).
+    if qualifier != "" && s.columns.iter().any(c => c.qualifier == qualifier) {
+      raise err(207, "Invalid column name '\{parts[parts.length() - 1].name}'.")
+    }
     scope = s.outer
     depth += 1
   }

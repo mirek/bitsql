@@ -209,3 +209,16 @@ Simple parameterization is emulated only where it is observable (literal
 lengths of values stored into sql_variant columns of permanent tables); the
 qualifying statement shapes are the captured ones (session/simple_params.mbt).
 
+## 2026-10-03: DML through views, CTEs and derived tables as a leaf projection
+
+A view, CTE or derived DML target is not rewritten at the AST level. The
+session (`session/dml_view.mbt`) binds the target query's FROM with
+`bind_dml_source`, so the occurrence of the one modified base table carries
+row ids, and wraps it in `Project(Filter(..., WHERE), view columns ++
+underlying row)`. That `DmlLeaf` replaces the target occurrence in the
+statement's own FROM (`bind_dml_source(view=...)`), so nested views compose
+recursively. SET/INSERT columns map to base columns through `base_of`;
+OUTPUT images and WITH CHECK OPTION predicates are recomputed from the new
+base image with the stored `refresh` steps. Shapes outside "SELECT ... FROM
+... WHERE" (TOP, UNION, nested WITH) and views with INSTEAD OF triggers stay
+50100.

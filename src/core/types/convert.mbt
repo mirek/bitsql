@@ -333,15 +333,33 @@ fn to_integer(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
     Decimal(d) => {
       let n = d.trunc_to_bigint()
       if n.compare_int64(lo) < 0 || n.compare_int64(hi) > 0 {
-        raise overflow_from(from, to)
+        // captured: 8115 state 2 "converting expression" for every integer
+        // target (output/conversion-overflow)
+        raise overflow_expression(to)
       }
       int_value(to, n.to_int64())
     }
     Money(_) => {
       // money → integer rounds (msduck docs/integer-conversion.md)
-      let n = v.as_decimal().unwrap().rescale(0).coef()
+      let m = v.as_decimal().unwrap_or(Decimal::from_int64(0L))
+      let n = m.rescale(0).coef()
       if n.compare_int64(lo) < 0 || n.compare_int64(hi) > 0 {
-        raise overflow_expression(to, state=1)
+        // captured (output/conversion-overflow): int 237/1, smallint 237/2,
+        // tinyint 232/11 with the value
+        raise match to {
+          TinyInt =>
+            sql_error(
+              232,
+              "Arithmetic overflow error for type tinyint, value = \{m.rescale(6).to_string()}.",
+              state=11,
+            )
+          _ =>
+            sql_error(
+              237,
+              "There is insufficient result space to convert a money value to \{to.message_name()}.",
+              state=if to is SmallInt { 2 } else { 1 },
+            )
+        }
       }
       int_value(to, n.to_int64())
     }
@@ -390,13 +408,17 @@ fn to_integer(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
       match v.as_int64() {
         Some(n) => {
           if n < lo || n > hi {
-            raise match to {
-              TinyInt | SmallInt =>
+            // captured (output/conversion-overflow): bigint sources give
+            // 8115/2; int → smallint/tinyint 220/1, smallint → tinyint 220/2
+            raise match (from, to) {
+              (BigInt, _) => overflow_expression(to)
+              (_, TinyInt | SmallInt) =>
                 sql_error(
                   220,
                   "Arithmetic overflow error for data type \{to.message_name()}, value = \{n}.",
+                  state=if from is SmallInt { 2 } else { 1 },
                 )
-              _ => overflow_expression(to, state=1)
+              _ => overflow_expression(to)
             }
           }
           int_value(to, n)

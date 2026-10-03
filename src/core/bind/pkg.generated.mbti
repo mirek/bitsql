@@ -12,7 +12,7 @@ import {
 // Values
 pub fn bind_assignment_select(Env, @ast.Query) -> (BoundQuery, Array[(Int, @types.SqlType)]) raise @types.SqlError
 
-pub fn bind_dml_source(Env, Array[@ast.TableRef], TableBinding, Array[String]) -> (@ir.Plan, Array[ColumnRef], Int, Int) raise @types.SqlError
+pub fn bind_dml_source(Env, Array[@ast.TableRef], TableBinding, Array[String], view? : DmlLeaf?) -> DmlSource raise @types.SqlError
 
 pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
 
@@ -63,6 +63,23 @@ pub(all) struct CteDef {
   work : (Int, Array[ColumnRef])?
 }
 
+pub(all) struct DmlLeaf {
+  plan : @ir.Plan
+  columns : Array[ColumnRef]
+  visible : Int
+  base : Int
+  rowid : Int
+}
+
+pub(all) struct DmlSource {
+  plan : @ir.Plan
+  columns : Array[ColumnRef]
+  leaf_start : Int
+  leaf_width : Int
+  base : Int
+  rowid : Int
+}
+
 pub(all) struct Env {
   vars : Map[String, VarInfo]
   columns : Array[ColumnRef]
@@ -77,8 +94,10 @@ pub(all) struct Env {
   literal_params : Bool
   deferred : Array[@types.SqlError]
 }
+pub fn Env::find_cte(Self, @ast.ObjectName) -> CteDef?
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog, deferred? : Array[@types.SqlError]) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
+pub fn Env::with_ctes(Self, Array[@ast.Cte]) -> Self
 
 pub(all) struct TableBinding {
   scope : Int

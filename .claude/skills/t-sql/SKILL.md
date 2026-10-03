@@ -32,6 +32,42 @@ mention the correction here.
   above 50000 gives 18054 and @@ERROR = the id. Severity > 18 without WITH
   LOG is 2754. RETURN with a value outside a procedure (also sp_executesql
   text) is compile error 178. `-@x` as an argument is 102 near '@x'.
+- 2026-10-03 (OUTPUT clause, corpus `output/`, msduck `output-*`): the
+  COLMETADATA of an OUTPUT without INTO is sent before the statement runs, so
+  a run-time error (also in WHERE, SET, CHECK, a duplicate key or the OUTPUT
+  expression itself) follows an empty or partial result set. UPDATE/DELETE/
+  MERGE stream: rows processed before the failing row are sent; INSERT first
+  evaluates its whole source (VALUES/SELECT errors send no rows), then
+  streams per row. A duplicate key from `UPDATE SET id=10` over ids 10,20,30
+  sends row 10 first; `SET id=30` sends nothing (keys applied one row at a
+  time, though `id=id+10` succeeds). Scoping in UPDATE/DELETE OUTPUT: the
+  target's alias or name is not visible (4104, `t.*` is 107 class 15), other
+  FROM sources are, but only qualified (unqualified names are always 207);
+  `s.*` expands; sources aliased `inserted`/`deleted` are shadowed by the
+  pseudo-tables; `deleted.x` in INSERT is 4104. A qualifier naming a table
+  without that column is 207, not 4104, also in subqueries, where an inner
+  alias hides an outer one of the same name. An unaliased UPDATE/DELETE
+  target binds to an unaliased FROM occurrence of its table, else to its
+  only aliased occurrence; two aliased occurrences are 8154 "The table 'r' is
+  ambiguous.". Numeric/decimal and bigint sources overflowing an integer type
+  are 8115 state 2 "converting expression" (also CAST(2147483648 AS int));
+  int → smallint/tinyint 220 state 1, smallint → tinyint 220 state 2; money
+  → int 237/1, → smallint 237/2, → tinyint 232/11. Correction: bitsql used
+  "converting numeric to data type int" state 1, which SQL Server never
+  produced in captures.
+- 2026-10-03 (updatable views/CTEs, corpus `views/`, `output/updatable-cte`):
+  INSERT/UPDATE/DELETE through a view, CTE or derived table modify the one
+  base table whose columns are written; the view WHERE restricts UPDATE/
+  DELETE; INSERT fills the other base columns with defaults. Setting a
+  derived column is 4406 (derived tables: 4421 "Derived table 'x' is not
+  updatable because a column of the derived table is derived or
+  constant."), checked before 4403 (aggregates, DISTINCT, GROUP BY; also for
+  DELETE/INSERT); columns of two base tables (or DELETE through a join, or
+  INSERT without a column list over a join) are 4405. OUTPUT images have
+  the view's columns; `inserted.y` of an unmodified base table is 404 (also
+  via `inserted.*`). WITH CHECK OPTION violations are 550 state 1 + 3621,
+  per row, and a view over a CHECK OPTION view inherits the check. TOP in a
+  CTE target is allowed by SQL Server (bitsql: 50100).
 - 2026-10-03 (application locks, corpus `applock/`): sp_getapplock returns
   0 (granted), 1 (granted after waiting), -1 (timeout; no message), -999 with
   INFO 15625 "Option 'x' not recognized for '@LockMode' parameter." or 15626

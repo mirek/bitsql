@@ -31,6 +31,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   let snap_db = self.server.get_db(self.rt.database)
   let snap_database = self.rt.database
+  let out_mark = self.out.length()
   let failure = try {
     self.exec_stmt(s)
     // a deferred binder error no later error reported (bound outside
@@ -110,13 +111,23 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     raise Caught(e, line)
   }
-  // DML constraint violations end with 3621 "The statement has been
-  // terminated." (captured: catalog/filtered-unique, locking/same-key-insert-waits)
-  if self.cur_cmd >= 195 &&
-    self.cur_cmd <= 197 &&
-    [2627, 2601, 515, 547, 2628, 8152].contains(e.number()) &&
-    self.trailing.is_empty() {
+  // A DML statement failing at run time ends with 3621 "The statement has
+  // been terminated." unless the error ends the batch (captured:
+  // catalog/filtered-unique, output/dml-error-completion). A batch-ending
+  // error completes with 253 unless an OUTPUT result set had started.
+  let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) || self.cur_cmd == 279
+  let ends_batch = aborts_batch(
+    e,
+    self.cur_cmd,
+    self.throwing,
+    self.xact_abort && !raiserror,
+  )
+  if dml && !ends_batch && self.trailing.is_empty() {
     ignore(self.terminated(e))
+  }
+  let mark = @cmp.minimum(out_mark, self.out.length())
+  if dml && ends_batch && !self.out[mark:].iter().any(x => x is ResultSet(_)) {
+    self.cur_cmd = 253
   }
   self.flush_pending(line)
   for d in self.deferred {
