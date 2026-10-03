@@ -349,7 +349,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let (a, plan, coll) = compare_with_subquery(env, o, x, q)
       bit_expr(Quantified(o, a, plan, all=quant is All, collation=coll), true)
     }
-    Parse(_, _, ..) => raise @types.not_supported("PARSE / TRY_PARSE")
+    Parse(x, tn, culture~, try_~) => bind_parse(env, x, tn, culture, try_)
     AtTimeZone(x, z) => bind_at_time_zone(env, x, z)
     NextValueFor(name) =>
       match (env.catalog.sequence)(name) {

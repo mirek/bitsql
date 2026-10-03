@@ -21,6 +21,12 @@ fn call_more(
   if call_json2(name, v, args) is Some(r) {
     return r
   }
+  if name == "DATE_BUCKET" {
+    return date_bucket(v, args, e)
+  }
+  if name == "PARSE" {
+    return parse_call(v, args, e)
+  }
   if name == "AT TIME ZONE" {
     return at_time_zone(v, args, e)
   }

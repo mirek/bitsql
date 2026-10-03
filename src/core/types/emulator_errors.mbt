@@ -58,6 +58,20 @@ pub const EMU_TABLESAMPLE : Int = 50150
 pub const EMU_APPROX_COUNT_DISTINCT : Int = 50151
 
 ///|
+/// DATE_BUCKET with a width SQL Server computes with 32-bit month
+/// arithmetic overflow (year/quarter widths beyond int32 months).
+pub const EMU_DATE_BUCKET_WIDTH : Int = 50170
+
+///|
+/// PARSE / TRY_PARSE with a culture other than en-US or the invariant one.
+pub const EMU_PARSE_CULTURE : Int = 50171
+
+///|
+/// PARSE / TRY_PARSE of a date/time string outside the modelled .NET
+/// formats (time-only text, zone designators, uncommon shapes).
+pub const EMU_PARSE_FORMAT : Int = 50172
+
+///|
 /// An internal invariant was violated (e.g. the binder handed the evaluator
 /// operands of incompatible families). Always a bitsql bug.
 pub const EMU_INTERNAL : Int = 50199
@@ -77,6 +91,9 @@ pub let emulator_error_table : Array[(Int, String)] = [
   (EMU_WORK_BUDGET, "request work budget exceeded"),
   (EMU_TABLESAMPLE, "TABLESAMPLE page sampling"),
   (EMU_APPROX_COUNT_DISTINCT, "APPROX_COUNT_DISTINCT estimate"),
+  (EMU_DATE_BUCKET_WIDTH, "DATE_BUCKET width overflowing int32 months"),
+  (EMU_PARSE_CULTURE, "PARSE culture not supported"),
+  (EMU_PARSE_FORMAT, "PARSE date/time format not supported"),
   (EMU_INTERNAL, "internal invariant violated"),
 ]
 

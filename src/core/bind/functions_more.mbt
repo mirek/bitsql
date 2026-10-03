@@ -14,6 +14,9 @@ fn bind_call_more(
   if bind_string_fn(env, name, call) is Some(e) {
     return Some(e)
   }
+  if bind_date_bucket(env, name, call) is Some(e) {
+    return Some(e)
+  }
   if bind_math_fn(env, name, call) is Some(e) {
     return Some(e)
   }
