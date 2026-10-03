@@ -397,7 +397,47 @@ fn run_aggregate(
       out.push(row)
     }
   }
-  out
+  if plain {
+    return out
+  }
+  // grouping sets: key order with each subtotal after its detail rows
+  // (captured ROLLUP order of a stream aggregate; CUBE / GROUPING SETS
+  // orders are plan-dependent and unverified)
+  let n = keys.length()
+  let gid_at = n + aggs.length()
+  let active = (r : Row, i : Int) => {
+    match r[gid_at] {
+      BigInt(g) => ((g >> (n - 1 - i)) & 1L) == 0L
+      _ => true
+    }
+  }
+  let mut failure : @types.SqlError? = None
+  let sorted = out.copy()
+  sorted.sort_by((a, b) => {
+    for i in 0..<n {
+      match (active(a, i), active(b, i)) {
+        (true, false) => return -1
+        (false, true) => return 1
+        (false, false) => continue
+        (true, true) => {
+          let c = compare_for_sort(a[i], b[i], collations[i]) catch {
+            e => {
+              failure = Some(e)
+              0
+            }
+          }
+          if c != 0 {
+            return c
+          }
+        }
+      }
+    }
+    0
+  })
+  if failure is Some(e) {
+    raise e
+  }
+  sorted
 }
 
 ///|

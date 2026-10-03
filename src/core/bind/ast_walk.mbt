@@ -127,7 +127,9 @@ fn is_window(e : @ast.Expr) -> Bool {
 }
 
 ///|
-fn has_aggregate(e : @ast.Expr) -> Bool {
+/// True when `e` contains an aggregate call outside subqueries (DML
+/// contexts use it for 157/158).
+pub fn has_aggregate(e : @ast.Expr) -> Bool {
   any_expr(e, is_aggregate)
 }
 

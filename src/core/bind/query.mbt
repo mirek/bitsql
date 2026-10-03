@@ -1257,9 +1257,29 @@ fn order_key(
 fn bind_query_inner(
   env : Env,
   q : @ast.Query,
+  top_level? : Bool = false,
 ) -> BoundQuery raise @types.SqlError {
   if q.for_clause is Some(_) {
     raise @types.not_supported("FOR JSON / FOR XML in a subquery")
+  }
+  let has_top = match q.body {
+    Select({ top: Some(_), .. }) => true
+    _ => false
+  }
+  if !top_level && !q.order_by.is_empty() && !has_top && q.offset is None {
+    raise err(
+      1033,
+      "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified.",
+      severity=15,
+    )
+  }
+  if has_top && (q.offset is Some(_) || q.fetch is Some(_)) {
+    raise err(
+      10741,
+      "A TOP can not be used in the same query or sub-query as a OFFSET.",
+      state=2,
+      severity=15,
+    )
   }
   let env = with_ctes(env, q.ctes)
   match q.body {
@@ -1506,11 +1526,24 @@ pub fn bind_query(
 ) -> BoundQuery raise @types.SqlError {
   let env = { ..env, maxrecursion: max_recursion(q.options, env.maxrecursion), }
   match q.for_clause {
-    None => bind_query_inner(env, q)
+    None => bind_query_inner(env, q, top_level=true)
     Some(ForJson(mode~, root~, include_null_values~, without_array_wrapper~)) => {
-      let bq = bind_query_inner(env, { ..q, for_clause: None, })
-      if mode is JsonAuto && bq.columns.iter().any(c => c.name.contains(".")) {
-        raise @types.not_supported("FOR JSON AUTO with dotted column names")
+      let bq = bind_query_inner(env, { ..q, for_clause: None, }, top_level=true)
+      if mode is JsonAuto {
+        // AUTO nests the rows of joined tables; only one source is supported
+        let single = match q.body {
+          Select(
+            {
+              from: []
+              | [{ kind: Table(_, ..) | TableVar(_, ..) | Derived(_, ..), .. }],
+              ..
+            }
+          ) => true
+          _ => false
+        }
+        if !single || bq.columns.iter().any(c => c.name.contains(".")) {
+          raise @types.not_supported("FOR JSON AUTO over joins or dotted names")
+        }
       }
       for c in bq.columns {
         if c.name == "" {
@@ -1559,6 +1592,14 @@ pub fn bind_assignment_select(
   }
   let env = { ..env, maxrecursion: max_recursion(q.options, env.maxrecursion), }
   let targets : Array[(Int, @types.SqlType)] = []
+  if s.top is Some(_) && (q.offset is Some(_) || q.fetch is Some(_)) {
+    raise err(
+      10741,
+      "A TOP can not be used in the same query or sub-query as a OFFSET.",
+      state=2,
+      severity=15,
+    )
+  }
   let bq = bind_select_query(
     env,
     s,

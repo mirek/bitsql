@@ -52,7 +52,13 @@ fn string_like(t : @types.SqlType, env : Env) -> @types.SqlType {
 fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError {
   let name = call.name.base().to_upper()
   if call.over is Some(_) {
-    raise @types.not_supported("window functions (OVER)")
+    // windowed calls are extracted by the query binder (SELECT list and
+    // ORDER BY); anywhere else is 4108 (captured: msduck output-typed-stages)
+    raise err(
+      4108,
+      "Windowed functions can only appear in the SELECT or ORDER BY clauses.",
+      severity=15,
+    )
   }
   let args = call.args
   let bound = () => args.map(a => bind_expr(env, a))

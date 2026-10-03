@@ -175,7 +175,9 @@ fn bind_window_call(
           fr.start is (Preceding(_) | Following(_)) ||
           fr.end is Some(Preceding(_) | Following(_))
         ) {
-        raise @types.not_supported("RANGE window frames with offsets")
+        raise err(
+          4194, "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters.",
+        )
       }
       Some(@ir.WindowFrame::{
         rows: fr.unit is Rows,
@@ -254,8 +256,21 @@ fn bind_window_call(
     }
     _ =>
       match agg_fn(name) {
-        Some(StringAgg) | None =>
-          raise @types.not_supported("window function \{name}")
+        Some(StringAgg) => raise @types.not_supported("window function \{name}")
+        None =>
+          if [
+              "PERCENTILE_CONT", "PERCENTILE_DISC", "CHECKSUM_AGG", "APPROX_COUNT_DISTINCT",
+            ].contains(name) {
+            raise @types.not_supported("window function \{name}")
+          } else {
+            // captured: msduck error-function-metadata#005
+            raise err(
+              4113,
+              "The function '\{name}' is not a valid windowing function, and cannot be used with the OVER clause.",
+              state=6,
+              severity=15,
+            )
+          }
         Some(f) => {
           if call.distinct {
             raise @types.not_supported("DISTINCT in windowed aggregates")
