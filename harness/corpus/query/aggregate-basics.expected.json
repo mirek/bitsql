@@ -1,0 +1,455 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "2b26c7170afa1bb4",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"cb","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"cn","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"cbn","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[4,"4",3,"3"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"ROW","count":1},{"name":"INFO","number":8153},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"s_int","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_big","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_small","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_tiny","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_dec","type":"DecimalN","length":17,"precision":38,"scale":3,"flags":1,"collation":null},
+            {"name":"s_float","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_real","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s_money","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[7,"700",7,7,7.875,8,8,7.75]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":8},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"a_int","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_big","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_small","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_tiny","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_dec","type":"DecimalN","length":17,"precision":38,"scale":6,"flags":1,"collation":null},
+            {"name":"a_float","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_real","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a_money","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[2,"233",2,2,2.625,2.6666666666666665,2.6666666666666665,2.5833]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":8},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"mi","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"ma","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "minv",
+              "type": "VarChar",
+              "length": 7,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "maxv",
+              "type": "VarChar",
+              "length": 7,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "minw",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "maxw",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"mindt","type":"DateTime2","length":null,"precision":null,"scale":3,"flags":1,"collation":null},
+            {"name":"maxd","type":"DecimalN","length":17,"precision":9,"scale":3,"flags":1,"collation":null}
+          ],
+          "rows": [[1,4,"a","c","x","z",{"kind":"date","value":"2024-01-01T00:00:00.000Z","nanosecondsDelta":0},4.125]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":8},{"name":"ROW","count":1},{"name":"INFO","number":8153},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"mi","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"ma","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"cn","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[0,null,null,null,null,0]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":6},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[80]]},
+        {
+          "columns": [{"name":"after_warning","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+          "rows": [[1]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"INFO","number":8153},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"cdg","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"sdg","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"adn","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"cdv","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[2,3,26,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"ROW","count":1},{"name":"INFO","number":8153},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"expr1","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"expr2","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"spread","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"castavg","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[4,160,30,2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"ROW","count":1},{"name":"INFO","number":8153},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"s1","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"c1","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "mx",
+              "type": "VarChar",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"snull","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[1,1,"x",null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 8153,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"ROW","count":1},{"name":"INFO","number":8153},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8117,"state":1,"class":16,"lineNumber":1,"message":"Operand data type bit is invalid for sum operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8117},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8117,"state":1,"class":16,"lineNumber":1,"message":"Operand data type varchar is invalid for sum operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8117},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8117,"state":1,"class":16,"lineNumber":1,"message":"Operand data type bit is invalid for min operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8117},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 147,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "An aggregate may not appear in the WHERE clause unless it is in a subquery contained in a HAVING clause or a select list, and the column being aggregated is an outer reference."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":147},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8120,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Column 'ag.id' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8120},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 130,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "Cannot perform an aggregate function on an expression containing an aggregate or a subquery."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":130},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[]},
+        {
+          "columns": [{"name":"after_overflow","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+          "rows": [[2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [{"number":8115,"state":2,"class":16,"lineNumber":1,"message":"Arithmetic overflow error converting expression to data type int."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":8115},
+        {"name":"DONE","status":3,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}
