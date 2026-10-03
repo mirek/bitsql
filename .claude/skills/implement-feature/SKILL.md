@@ -43,6 +43,9 @@ Faithfulness beats coverage: a false green is worse than an explicit
 | sockets, timers | `src/host` (should almost never change) |
 
 The executor never branches on dialect. Metadata never depends on row values.
+Never let user input drive an aborting operation (huge `repeat`, unchecked
+indexing, `unwrap`): an abort kills the server for every session (moonbit
+skill gotchas).
 
 ## 4. Unsupported or partial?
 

@@ -164,3 +164,9 @@ scripts/check.sh                 # everything CI runs; must be green to push
 - 2026-10-03 (shell, not MoonBit): never `pkill -f '<pattern>'` with a
   pattern that also appears in the running shell's own command line; it
   kills the shell (exit 144). Keep the server PID (`cmd & HP=$!; kill $HP`).
+- 2026-10-03: **an abort is a server outage.** `String::repeat` with a huge
+  count, out-of-bounds `arr[i]`, `Bytes::make(huge)`, `unwrap()` on None and
+  similar abort the whole process, killing every session. Never pass
+  user-controlled sizes or indexes to them unclamped (REPLICATE/SPACE/
+  RAISERROR width crashed this way). Clamp, use `get()`, or raise a SqlError.
+  The harness reports such crashes as `client error: ECONNRESET`.

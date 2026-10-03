@@ -248,12 +248,38 @@ fn call(
       if any_null {
         return Null
       }
-      let n = int_arg(v[1]).unwrap_or(0L).to_int()
-      if n < 0 {
+      let n = int_arg(v[1]).unwrap_or(0L)
+      if n < 0L {
         return Null
       }
       match v[0] {
-        String(s) => String(s.repeat(n))
+        String(s) => {
+          if s.length() == 0 || n == 0L {
+            return String("")
+          }
+          // Non-max results are truncated to the type's length (8000 bytes;
+          // captured: msduck replicate DATALENGTH 8000). Never build huge
+          // strings: String::repeat aborts the process on overflow.
+          let cap = match e.ty {
+            VarChar(Some(k), _) | NVarChar(Some(k), _) => k
+            _ => 64 * 1024 * 1024
+          }
+          let wanted = n * s.length().to_int64()
+          if wanted > cap.to_int64() &&
+            e.ty is (VarChar(None, _) | NVarChar(None, _)) {
+            raise @types.not_supported("REPLICATE results over 64M characters")
+          }
+          let times = ((cap + s.length() - 1) / s.length()).to_int64()
+          let k = (if n < times { n } else { times }).to_int()
+          let r = s.repeat(k)
+          String(
+            if r.length() > cap {
+              r.unsafe_substring(start=0, end=cap)
+            } else {
+              r
+            },
+          )
+        }
         _ => raise @types.not_supported("REPLICATE on non-strings")
       }
     }
@@ -296,11 +322,12 @@ fn call(
       if any_null {
         return Null
       }
-      let n = int_arg(v[0]).unwrap_or(0L).to_int()
-      if n < 0 {
+      let n = int_arg(v[0]).unwrap_or(0L)
+      if n < 0L {
         Null
       } else {
-        String(" ".repeat(n))
+        // SPACE returns varchar(8000) at most: never allocate more
+        String(" ".repeat((if n > 8000L { 8000L } else { n }).to_int()))
       }
     }
     Nchar | Char => {

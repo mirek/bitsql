@@ -116,7 +116,7 @@ pub fn format_raiserror(
         let x = v.as_int64().unwrap_or(0L)
         let digits = x.abs().to_string()
         let digits = if precision > digits.length() {
-          "0".repeat(precision - digits.length()) + digits
+          "0".repeat(@cmp.minimum(precision, 4096) - digits.length()) + digits
         } else {
           digits
         }
@@ -159,7 +159,9 @@ pub fn format_raiserror(
         }
       (_, Some(v)) => debug_text(v)
     }
-    let pad = width - body.length()
+    // RAISERROR messages are limited to 2047 characters; clamp padding so a
+    // huge width never allocates (String::repeat aborts on overflow).
+    let pad = @cmp.minimum(width, 4096) - body.length()
     if pad > 0 {
       if left {
         out.write_string(body)
