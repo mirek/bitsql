@@ -222,10 +222,10 @@ export default {
   'temporal-parts': gridAdapter(),
   // Exhaustive grids (58-98 MB each, concat-family capture with COLMETADATA
   // descriptors and a reuse probe): heavy sampling.
-  'float-default-grid': gridAdapter(500_000),
-  'temporal-guid-format': gridAdapter(500_000),
-  'translate-ascii-matching': gridAdapter(500_000),
-  'translate-character-matching': gridAdapter(500_000),
+  'float-default-grid': gridAdapter(250_000),
+  'temporal-guid-format': gridAdapter(250_000),
+  'translate-ascii-matching': gridAdapter(250_000),
+  'translate-character-matching': gridAdapter(250_000),
 
   // Sequential: @@DBTS advances with every rowversion write.
   rowversion: doc => [{ id: 'run', entries: records(doc).map(e => entryOf(e)) }],

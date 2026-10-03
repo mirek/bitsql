@@ -1,0 +1,21 @@
+{
+  "source": "msduck/reference/distribution-reference.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"001-ties-and-nulls-ascending","description":"ties and nulls ascending","steps":[{"kind":"batch","sql":"SELECT id,PERCENT_RANK() OVER (PARTITION BY g ORDER BY n) AS p,CUME_DIST() OVER (PARTITION BY g ORDER BY n) AS c FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n) ORDER BY id"}]},
+    {"name":"002-ties-and-nulls-descending","description":"ties and nulls descending","steps":[{"kind":"batch","sql":"SELECT id,PERCENT_RANK() OVER (PARTITION BY g ORDER BY n DESC) AS p,CUME_DIST() OVER (PARTITION BY g ORDER BY n DESC) AS c FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n) ORDER BY id"}]},
+    {"name":"003-all-null","description":"all null","steps":[{"kind":"batch","sql":"SELECT id,PERCENT_RANK() OVER (ORDER BY n) AS p,CUME_DIST() OVER (ORDER BY n) AS c FROM (VALUES (1,NULL),(2,NULL)) s(id,n) ORDER BY id"}]},
+    {"name":"004-singleton","description":"singleton","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK() OVER (ORDER BY n) AS p,CUME_DIST() OVER (ORDER BY n) AS c FROM (VALUES (7)) s(n)"}]},
+    {"name":"005-empty","description":"empty","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK() OVER (ORDER BY n) AS p,CUME_DIST() OVER (ORDER BY n) AS c FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n) WHERE 1=0"}]},
+    {"name":"006-named-window","description":"named window","steps":[{"kind":"batch","sql":"SELECT id,PERCENT_RANK() OVER w AS p,CUME_DIST() OVER w AS c FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n) WINDOW w AS (ORDER BY n) ORDER BY id"}]},
+    {"name":"007-missing-order-percent-rank","description":"missing order percent rank","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK() OVER (PARTITION BY g) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"008-missing-order-cume-dist","description":"missing order cume dist","steps":[{"kind":"batch","sql":"SELECT CUME_DIST() OVER (PARTITION BY g) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"009-missing-over-percent-rank","description":"missing over percent rank","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK() FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"010-missing-over-cume-dist","description":"missing over cume dist","steps":[{"kind":"batch","sql":"SELECT CUME_DIST() FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"011-frame-percent-rank","description":"frame percent rank","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK() OVER (ORDER BY n ROWS UNBOUNDED PRECEDING) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"012-frame-cume-dist","description":"frame cume dist","steps":[{"kind":"batch","sql":"SELECT CUME_DIST() OVER (ORDER BY n ROWS UNBOUNDED PRECEDING) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"013-argument-percent-rank","description":"argument percent rank","steps":[{"kind":"batch","sql":"SELECT PERCENT_RANK(1) OVER (ORDER BY n) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"014-argument-cume-dist","description":"argument cume dist","steps":[{"kind":"batch","sql":"SELECT CUME_DIST(1) OVER (ORDER BY n) FROM (VALUES (1,1,NULL),(2,1,10),(3,1,10),(4,1,20),(5,1,30),(6,2,7)) s(id,g,n)"}]},
+    {"name":"015-session-reusable","description":"session reusable","steps":[{"kind":"batch","sql":"SELECT 1 AS reusable"}]}
+  ]
+}

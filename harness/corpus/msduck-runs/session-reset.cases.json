@@ -1,0 +1,12 @@
+{
+  "source": "msduck/reference/session-reset.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#reset_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists"},{"kind":"batch","sql":"SET DATEFIRST 3; SET NOCOUNT ON; CREATE TABLE #reset_probe (n INT); INSERT #reset_probe VALUES (7)"}]
+  },
+  "cases": [
+    {"name":"000-initial-state","description":"initial state","steps":[{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#reset_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists"}]},
+    {"name":"001-settings-and-temp-setup","description":"settings and temp setup","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"SET DATEFIRST 3; SET NOCOUNT ON; CREATE TABLE #reset_probe (n INT); INSERT #reset_probe VALUES (7)"}]},
+    {"name":"002-before-settings-reset","description":"before settings reset","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#reset_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists; SELECT n FROM #reset_probe"}]}
+  ]
+}

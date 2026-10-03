@@ -1,0 +1,28 @@
+{
+  "source": "msduck/reference/identity-insert-name-errors.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"CREATE TABLE dbo.plain(v INT)"},{"kind":"batch","sql":"CREATE TABLE dbo.ident(id INT IDENTITY(1,1))"},{"kind":"batch","sql":"CREATE SCHEMA other"},{"kind":"batch","sql":"CREATE TABLE other.plain(v INT)"},{"kind":"batch","sql":"SET IDENTITY_INSERT plain ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT missing ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.plain ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.missing ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [plain] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [missing] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [dbo].[plain] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [dbo].[missing] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[PLAIN] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[MISSING] ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT other.plain ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT other.missing ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT ident ON"},{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[IDENT] OFF"}]
+  },
+  "cases": [
+    {"name":"001-create-dbo-plain","description":"create dbo plain","steps":[{"kind":"batch","sql":"CREATE TABLE dbo.plain(v INT)"}]},
+    {"name":"002-create-dbo-identity","description":"create dbo identity","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE dbo.ident(id INT IDENTITY(1,1))"}]},
+    {"name":"003-create-other-schema","description":"create other schema","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"CREATE SCHEMA other"}]},
+    {"name":"004-create-other-plain","description":"create other plain","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"CREATE TABLE other.plain(v INT)"}]},
+    {"name":"005-unqualified-plain-on","description":"unqualified plain ON","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT plain ON"}]},
+    {"name":"006-unqualified-missing-on","description":"unqualified missing ON","run":"run","prefix":5,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT missing ON"}]},
+    {"name":"007-qualified-plain-on","description":"qualified plain ON","run":"run","prefix":6,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.plain ON"}]},
+    {"name":"008-qualified-missing-on","description":"qualified missing ON","run":"run","prefix":7,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.missing ON"}]},
+    {"name":"009-bracketed-plain-on","description":"bracketed plain ON","run":"run","prefix":8,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [plain] ON"}]},
+    {"name":"010-bracketed-missing-on","description":"bracketed missing ON","run":"run","prefix":9,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [missing] ON"}]},
+    {"name":"011-bracketed-qualified-plain-on","description":"bracketed qualified plain ON","run":"run","prefix":10,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [dbo].[plain] ON"}]},
+    {"name":"012-bracketed-qualified-missing-on","description":"bracketed qualified missing ON","run":"run","prefix":11,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [dbo].[missing] ON"}]},
+    {"name":"013-case-varied-plain-on","description":"case-varied plain ON","run":"run","prefix":12,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[PLAIN] ON"}]},
+    {"name":"014-case-varied-missing-on","description":"case-varied missing ON","run":"run","prefix":13,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[MISSING] ON"}]},
+    {"name":"015-other-schema-plain-on","description":"other schema plain ON","run":"run","prefix":14,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT other.plain ON"}]},
+    {"name":"016-other-schema-missing-on","description":"other schema missing ON","run":"run","prefix":15,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT other.missing ON"}]},
+    {"name":"017-unqualified-identity-on","description":"unqualified identity ON","run":"run","prefix":16,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT ident ON"}]},
+    {"name":"018-bracketed-identity-off","description":"bracketed identity OFF","run":"run","prefix":17,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT [DbO].[IDENT] OFF"}]},
+    {"name":"019-session-reusable","description":"session reusable","run":"run","prefix":18,"steps":[{"kind":"batch","sql":"SELECT 1 AS reusable"}]}
+  ]
+}

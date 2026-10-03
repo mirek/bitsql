@@ -1,0 +1,300 @@
+{
+  "source": "https://github.com/mirek/msduck reference/*.json (sequential and other layouts; src/import-msduck-layouts.mjs)",
+  "verified": true,
+  "files": {
+    "gaps-applock": {
+      "entries": 131,
+      "cases": 100,
+      "imported": 100,
+      "skipped": {"multi-connection (blocking, waits, deadlocks)":1,"after an unrepresentable step (multi-connection (blocking, waits, deadlocks))":30},
+      "rejected": {},
+      "bytes": 490958,
+      "rejectedCases": []
+    },
+    "gaps-backup": {
+      "entries": 40,
+      "cases": 5,
+      "imported": 5,
+      "skipped": {"server-level state (backup files, databases, msdb)":35},
+      "rejected": {},
+      "bytes": 5832,
+      "rejectedCases": []
+    },
+    "gaps-bulk": {
+      "entries": 140,
+      "cases": 20,
+      "imported": 20,
+      "skipped": {"bulk load (BulkLoadBCP)":14,"after an unrepresentable step (bulk load (BulkLoadBCP))":106},
+      "rejected": {},
+      "bytes": 17224,
+      "rejectedCases": []
+    },
+    "gaps-catalog": {
+      "entries": 192,
+      "cases": 188,
+      "imported": 187,
+      "skipped": {"server version probe":4},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":1},
+      "bytes": 452801,
+      "rejectedCases": [
+        {
+          "id": "031-catalog-database-files",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/1/4",
+          "actual": "bitsql_case_e697f05d8efc_log",
+          "expected": "{db}_log"
+        }
+      ]
+    },
+    "gaps-computed": {
+      "entries": 79,
+      "cases": 79,
+      "imported": 76,
+      "skipped": {},
+      "rejected": {"msduck mismatch /result/sets/*/rows/*/*":3},
+      "bytes": 74400,
+      "rejectedCases": [
+        {
+          "id": "047-session-defaults-10",
+          "reason": "msduck mismatch /result/sets/*/rows/*/*",
+          "path": "/result/sets/0/rows/0/4",
+          "actual": "linux",
+          "expected": "computed-host"
+        },
+        {
+          "id": "048-session-defaults-11",
+          "reason": "msduck mismatch /result/sets/*/rows/*/*",
+          "path": "/result/sets/0/rows/0/1",
+          "actual": "linux",
+          "expected": "computed-host"
+        },
+        {
+          "id": "078-session-default-alter-7",
+          "reason": "msduck mismatch /result/sets/*/rows/*/*",
+          "path": "/result/sets/0/rows/1/2",
+          "actual": "linux",
+          "expected": "computed-host"
+        }
+      ]
+    },
+    "gaps-constraints": {
+      "entries": 237,
+      "cases": 237,
+      "imported": 236,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/message":1},
+      "bytes": 272230,
+      "rejectedCases": [
+        {
+          "id": "083-definition-errors-35",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__k__2792E7E83FCCFA0A'. Cannot insert duplicate key in object 'dbo.k'. The duplicate key value is (1, 1).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__k__2792E7E8A5EA992D'. Cannot insert duplicate key in object 'dbo.k'. The duplicate key value is (1, 1)."
+        }
+      ]
+    },
+    "gaps-conversion": {
+      "entries": 1326,
+      "cases": 1326,
+      "imported": 1320,
+      "skipped": {},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":6},
+      "bytes": 1543816,
+      "rejectedCases": [
+        {
+          "id": "1263-serverproperty-edition",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "Enterprise Developer Edition (64-bit)",
+          "expected": "Developer Edition (64-bit)"
+        },
+        {
+          "id": "1279-serverproperty-productmajorversion",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "17",
+          "expected": "16"
+        },
+        {
+          "id": "1281-serverproperty-productbuild",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "5005",
+          "expected": "4236"
+        },
+        {
+          "id": "1282-serverproperty-productupdatelevel",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "CU9",
+          "expected": "CU23"
+        },
+        {
+          "id": "1289-serverproperty-converted",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "Enterprise Developer Edition (64-bit)",
+          "expected": "Developer Edition (64-bit)"
+        },
+        {
+          "id": "1314-databasepropertyex-version",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 998,
+          "expected": 957
+        }
+      ]
+    },
+    "gaps-functions": {
+      "entries": 170,
+      "cases": 170,
+      "imported": 169,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/state":1},
+      "bytes": 156418,
+      "rejectedCases": [{"id":"099-definition-statements-21","reason":"msduck mismatch /errors/*/state","path":"/errors/0/state","actual":4,"expected":1}]
+    },
+    "gaps-identifiers": {
+      "entries": 1178,
+      "cases": 1178,
+      "imported": 1177,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/message":1},
+      "bytes": 1015409,
+      "rejectedCases": [
+        {
+          "id": "1174-diagnostics-primary-key",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__items__3213E83F94BF1CF0'. Cannot insert duplicate key in object 'dbo.items'. The duplicate key value is (1).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__items__3213E83FFB5BFFC6'. Cannot insert duplicate key in object 'dbo.items'. The duplicate key value is (1)."
+        }
+      ]
+    },
+    "gaps-json_string": {"entries":79,"cases":79,"imported":79,"skipped":{},"rejected":{},"bytes":149187,"rejectedCases":[]},
+    "gaps-keys": {
+      "entries": 185,
+      "cases": 185,
+      "imported": 177,
+      "skipped": {},
+      "rejected": {"nondeterministic sets/*/rows/*/*":4,"nondeterministic errors/*/message":4},
+      "bytes": 160016,
+      "rejectedCases": [
+        {"id":"053-column-level-list-12","reason":"nondeterministic sets/*/rows/*/*"},
+        {"id":"056-unique-single-null-3","reason":"nondeterministic errors/*/message"},
+        {"id":"058-unique-single-null-5","reason":"nondeterministic errors/*/message"},
+        {"id":"059-unique-single-null-6","reason":"nondeterministic errors/*/message"},
+        {"id":"112-clustered-conflicts-2","reason":"nondeterministic errors/*/message"},
+        {"id":"119-clustered-conflicts-9","reason":"nondeterministic sets/*/rows/*/*"},
+        {"id":"138-message-values-6","reason":"nondeterministic sets/*/rows/*/*"},
+        {"id":"140-message-values-8","reason":"nondeterministic sets/*/rows/*/*"}
+      ]
+    },
+    "gaps-merge": {"entries":42,"cases":41,"imported":41,"skipped":{"server version probe":1},"rejected":{},"bytes":55711,"rejectedCases":[]},
+    "gaps-outer_dml": {"entries":46,"cases":46,"imported":46,"skipped":{},"rejected":{},"bytes":116173,"rejectedCases":[]},
+    "gaps-procedures": {
+      "entries": 145,
+      "cases": 141,
+      "imported": 141,
+      "skipped": {"server version probe":1,"fixed database (the case database replaces it)":2,"names the fixed capture database":1},
+      "rejected": {},
+      "bytes": 268822,
+      "rejectedCases": []
+    },
+    "gaps-rowversion_identity": {"entries":193,"cases":193,"imported":193,"skipped":{},"rejected":{},"bytes":185604,"rejectedCases":[]},
+    "gaps-rpc-procedures": {
+      "entries": 115,
+      "cases": 111,
+      "imported": 111,
+      "skipped": {"server version probe":1,"fixed database (the case database replaces it)":2,"names the fixed capture database":1},
+      "rejected": {},
+      "bytes": 178501,
+      "rejectedCases": []
+    },
+    "gaps-temp_tables": {
+      "entries": 48,
+      "cases": 41,
+      "imported": 38,
+      "skipped": {"other connection (multi-session probe)":7},
+      "rejected": {"msduck mismatch /sets/*/rows/length":1,"nondeterministic errors/*/message":2},
+      "bytes": 66990,
+      "rejectedCases": [
+        {"id":"007-temp-duplicate-key","reason":"nondeterministic errors/*/message"},
+        {"id":"008-temp-check-constraint","reason":"nondeterministic errors/*/message"},
+        {
+          "id": "030-global-sees-other-session-write",
+          "reason": "msduck mismatch /sets/*/rows/length",
+          "path": "/sets/0/rows/length",
+          "actual": 1,
+          "expected": 2
+        }
+      ]
+    },
+    "gaps-transactions": {
+      "entries": 123,
+      "cases": 94,
+      "imported": 92,
+      "skipped": {
+        "multi-connection (snapshot section)": 107,
+        "server version probe": 1,
+        "transaction manager request": 1,
+        "after an unrepresentable step (transaction manager request)": 27
+      },
+      "rejected": {"nondeterministic info/length":2},
+      "bytes": 95805,
+      "rejectedCases": [
+        {"id":"025-read-committed-snapshot-setup","reason":"nondeterministic info/length"},
+        {"id":"027-read-committed-snapshot-teardown","reason":"nondeterministic info/length"}
+      ]
+    },
+    "gaps-triggers": {
+      "entries": 174,
+      "cases": 174,
+      "imported": 173,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/message":1},
+      "bytes": 249286,
+      "rejectedCases": [
+        {
+          "id": "040-throw-and-runtime-errors-in-triggers-14",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__t5__3213E83FD280BDC4'. Cannot insert duplicate key in object 'dbo.t5'. The duplicate key value is (1).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__t5__3213E83FEAAEEF28'. Cannot insert duplicate key in object 'dbo.t5'. The duplicate key value is (1)."
+        }
+      ]
+    },
+    "gaps-unicode-predicates": {"entries":123,"cases":114,"imported":114,"skipped":{},"rejected":{},"bytes":130323,"rejectedCases":[]}
+  },
+  "totals": {
+    "entries": 4766,
+    "cases": 4522,
+    "imported": 4495,
+    "bytes": 5685506,
+    "skipped": {
+      "multi-connection (snapshot section)": 107,
+      "after an unrepresentable step (bulk load (BulkLoadBCP))": 106,
+      "server-level state (backup files, databases, msdb)": 35,
+      "after an unrepresentable step (multi-connection (blocking, waits, deadlocks))": 30,
+      "after an unrepresentable step (transaction manager request)": 27,
+      "bulk load (BulkLoadBCP)": 14,
+      "server version probe": 8,
+      "other connection (multi-session probe)": 7,
+      "fixed database (the case database replaces it)": 4,
+      "names the fixed capture database": 2,
+      "multi-connection (blocking, waits, deadlocks)": 1,
+      "transaction manager request": 1
+    },
+    "rejected": {
+      "msduck mismatch /sets/*/rows/*/*": 7,
+      "nondeterministic errors/*/message": 6,
+      "nondeterministic sets/*/rows/*/*": 4,
+      "msduck mismatch /result/sets/*/rows/*/*": 3,
+      "msduck mismatch /errors/*/message": 3,
+      "nondeterministic info/length": 2,
+      "msduck mismatch /errors/*/state": 1,
+      "msduck mismatch /sets/*/rows/length": 1
+    }
+  }
+}

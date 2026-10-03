@@ -21,7 +21,8 @@
 //
 // 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
 //      { "source": "...", "cases": [{ "name", "steps": [{kind, sql, params?, compare?}] }] }
-//    Expected output: sibling `name.expected.json` = { server, cases: { <name>: expected } }.
+//    Expected output: sibling `name.expected.json` = { server, cases: { <name>: expected } },
+//    optionally with `defaultReuse` (the reuse capture of cases that omit `reuse`).
 //    Optional `runs: { <id>: [steps] }`: a case `{ name, run, prefix, steps }`
 //    replays the first `prefix` steps of that run (compare:false) before its
 //    own steps (msduck sequential captures; see expandSteps).
@@ -172,7 +173,11 @@ export async function readExpected(testCase) {
     expectedCache.set(testCase.expectedFile, doc)
   }
   if (!doc) return null
-  return testCase.key === null ? doc : doc.cases?.[testCase.key] ?? null
+  if (testCase.key === null) return doc
+  const expected = doc.cases?.[testCase.key] ?? null
+  // Generated files store the common reuse-probe capture once (`defaultReuse`).
+  if (expected && expected.reuse === undefined && doc.defaultReuse) return { ...expected, reuse: doc.defaultReuse }
+  return expected
 }
 
 export async function exists(path) {

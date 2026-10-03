@@ -1,0 +1,11 @@
+{
+  "source": "msduck/reference/gaps-backup.json",
+  "image": "mcr.microsoft.com/mssql/server@sha256:0ec7739e1c5ec2f57861facbe1f2b74f1d3e147c7c97edf91eeea920c5944d9c",
+  "cases": [
+    {"name":"011-restore-missing-file","description":"restore missing file","steps":[{"kind":"batch","sql":"RESTORE DATABASE foo_x FROM DISK=N'/tmp/nope.bak'"}]},
+    {"name":"012-headeronly-missing-file","description":"headeronly missing file","steps":[{"kind":"batch","sql":"RESTORE HEADERONLY FROM DISK=N'/tmp/nope.bak'"}]},
+    {"name":"014-backup-unknown-database","description":"backup unknown database","steps":[{"kind":"batch","sql":"BACKUP DATABASE nosuch TO DISK=N'/tmp/x.bak'"}]},
+    {"name":"029-backup-unknown-option","description":"backup unknown option","steps":[{"kind":"batch","sql":"BACKUP DATABASE foo TO DISK=N'/tmp/x.bak' WITH BOGUS"}]},
+    {"name":"038-msdb-identity","description":"msdb identity","steps":[{"kind":"batch","sql":"SELECT DB_ID('msdb') AS id, DB_NAME(4) AS name"}]}
+  ]
+}

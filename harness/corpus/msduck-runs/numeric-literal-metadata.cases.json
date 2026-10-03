@@ -1,0 +1,26 @@
+{
+  "source": "msduck/reference/numeric-literal-metadata.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"001-original-descriptor-gap","description":"original descriptor gap","steps":[{"kind":"batch","sql":"SELECT 2147483648 AS whole,0.00 AS fraction,00012.3400 AS leading_zeros,2147483649/2 AS quotient"}]},
+    {"name":"002-large-integer-literal","description":"large integer literal","steps":[{"kind":"batch","sql":"SELECT 2147483649 AS value,CONVERT(VARCHAR(100),2147483649) AS rendered"}]},
+    {"name":"003-decimal-point-literal","description":"decimal point literal","steps":[{"kind":"batch","sql":"SELECT 00012.3400 AS value,CONVERT(VARCHAR(100),00012.3400) AS rendered"}]},
+    {"name":"004-integer-literal-division","description":"integer literal division","steps":[{"kind":"batch","sql":"SELECT 2147483649/2 AS value,CONVERT(VARCHAR(100),2147483649/2) AS rendered"}]},
+    {"name":"005-integer-literal-division-by-three","description":"integer literal division by three","steps":[{"kind":"batch","sql":"SELECT 2147483649/3 AS value,CONVERT(VARCHAR(100),2147483649/3) AS rendered"}]},
+    {"name":"006-integer-literal-over-decimal-literal","description":"integer literal over decimal literal","steps":[{"kind":"batch","sql":"SELECT 2147483649/2.0 AS value,CONVERT(VARCHAR(100),2147483649/2.0) AS rendered"}]},
+    {"name":"007-decimal-literal-over-integer-literal","description":"decimal literal over integer literal","steps":[{"kind":"batch","sql":"SELECT 1.0/2 AS value,CONVERT(VARCHAR(100),1.0/2) AS rendered"}]},
+    {"name":"008-integer-literal-over-large-literal","description":"integer literal over large literal","steps":[{"kind":"batch","sql":"SELECT 2/2147483649 AS value,CONVERT(VARCHAR(100),2/2147483649) AS rendered"}]},
+    {"name":"009-negative-integer-literal-division","description":"negative integer literal division","steps":[{"kind":"batch","sql":"SELECT -2147483649/2 AS value,CONVERT(VARCHAR(100),-2147483649/2) AS rendered"}]},
+    {"name":"010-explicit-decimal-literal","description":"explicit decimal literal","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS DECIMAL(10,0)) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS DECIMAL(10,0))) AS rendered"}]},
+    {"name":"011-explicit-numeric-literal","description":"explicit numeric literal","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS NUMERIC(10,0)) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS NUMERIC(10,0))) AS rendered"}]},
+    {"name":"012-explicit-decimal-over-int","description":"explicit decimal over int","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS DECIMAL(10,0))/CAST(2 AS INT) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS DECIMAL(10,0))/CAST(2 AS INT)) AS rendered"}]},
+    {"name":"013-explicit-numeric-over-int","description":"explicit numeric over int","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS NUMERIC(10,0))/CAST(2 AS INT) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS NUMERIC(10,0))/CAST(2 AS INT)) AS rendered"}]},
+    {"name":"014-explicit-decimal-over-decimal","description":"explicit decimal over decimal","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS DECIMAL(10,0))/CAST(2 AS DECIMAL(10,0)) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS DECIMAL(10,0))/CAST(2 AS DECIMAL(10,0))) AS rendered"}]},
+    {"name":"015-explicit-numeric-over-numeric","description":"explicit numeric over numeric","steps":[{"kind":"batch","sql":"SELECT CAST(2147483649 AS NUMERIC(10,0))/CAST(2 AS NUMERIC(10,0)) AS value,CONVERT(VARCHAR(100),CAST(2147483649 AS NUMERIC(10,0))/CAST(2 AS NUMERIC(10,0))) AS rendered"}]},
+    {"name":"016-small-integer-division","description":"small integer division","steps":[{"kind":"batch","sql":"SELECT 2147483647/2 AS value,CONVERT(VARCHAR(100),2147483647/2) AS rendered"}]},
+    {"name":"017-empty-literal-quotient-metadata","description":"empty literal quotient metadata","steps":[{"kind":"batch","sql":"SELECT 2147483649/2 AS value,CONVERT(VARCHAR(100),2147483649/2) AS rendered WHERE 1=0"}]},
+    {"name":"018-derived-literal-quotient-metadata","description":"derived literal quotient metadata","steps":[{"kind":"batch","sql":"WITH q AS (SELECT 2147483649/2 AS value) SELECT value FROM q"}]},
+    {"name":"019-invalid-numeric-text-conversion","description":"invalid numeric text conversion","steps":[{"kind":"batch","sql":"SELECT CAST('not-a-number' AS NUMERIC(10,0)) AS value"}]},
+    {"name":"020-recovery-after-conversion-error","description":"recovery after conversion error","steps":[{"kind":"batch","sql":"SELECT 1 AS reusable"}]}
+  ]
+}

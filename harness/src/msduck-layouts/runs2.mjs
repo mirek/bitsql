@@ -167,7 +167,8 @@ export default {
   'numeric-arithmetic-context': batchesAdapter,
   'numeric-literal-metadata': batchesAdapter,
   'percentile-character-fraction': modeRpc,
-  'percentile-numeric-rounding': plain,
+  // Same SQL as -v2 (a later recapture); importing both would duplicate 212 cases.
+  'percentile-numeric-rounding': (doc, { skip }) => { skip('superseded by percentile-numeric-rounding-v2 (same SQL)', doc.runs[0].length); return [] },
   'percentile-numeric-rounding-v2': plain,
   'percentile-order-type': modeRpc,
   'percentile-reference': modeRpc,

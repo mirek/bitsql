@@ -156,6 +156,18 @@ if (!flags['no-verify'] && all.length) {
 }
 
 // 3. Write the corpus files and per-directory stats.
+// Generated files are large: one line per case (and per run) keeps them
+// diffable per case without the pretty-printer's indentation.
+function compactJson(doc) {
+  const lines = Object.entries(doc).filter(([, v]) => v !== undefined).map(([k, v]) => {
+    if ((k === 'cases' || k === 'runs') && v && typeof v === 'object') {
+      const items = Array.isArray(v) ? v.map(x => `    ${JSON.stringify(x)}`) : Object.entries(v).map(([n, x]) => `    ${JSON.stringify(n)}: ${JSON.stringify(x)}`)
+      return `  ${JSON.stringify(k)}: ${Array.isArray(v) ? '[' : '{'}\n${items.join(',\n')}\n  ${Array.isArray(v) ? ']' : '}'}`
+    }
+    return `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`
+  })
+  return `{\n${lines.join(',\n')}\n}\n`
+}
 const rejectedOf = f => f.cases.filter(c => c.rejected).map(c => ({ id: c.c.name, reason: c.rejected, ...(c.mismatch ? { path: c.mismatch.path, actual: c.mismatch.actual, expected: c.mismatch.expected } : {}) }))
 if (flags['dry-run']) {
   for (const f of files) f.stats.imported = f.cases.filter(c => !c.rejected && (c.expected || flags['no-verify'])).length
@@ -183,12 +195,20 @@ for (const [dir, list] of flags['dry-run'] ? [] : byDir) {
       for (const { c } of kept) if (c.run) usedPrefix[c.run] = Math.max(usedPrefix[c.run] ?? 0, c.prefix)
       const runs = Object.fromEntries(Object.entries(usedPrefix).map(([id, n]) => [id, f.runs[id].slice(0, n)]))
       const casesDoc = { source: f.source, image: f.image, ...(Object.keys(runs).length ? { runs } : {}), cases: kept.map(k => k.c) }
-      const a = formatJson(casesDoc) + '\n'
+      const a = compactJson(casesDoc)
       await writeFile(join(dir, `${f.base}.cases.json`), a)
       bytes += Buffer.byteLength(a)
       if (!flags['no-verify']) {
-        const expectedDoc = { source: f.source, server: target.server, msduck: { image: f.image, version: typeof f.version === 'string' ? f.version : undefined }, cases: Object.fromEntries(kept.map(k => [k.c.name, k.expected])) }
-        const b = formatJson(expectedDoc) + '\n'
+        // The reuse probe capture is nearly always identical: store it once.
+        const counts = new Map()
+        for (const k of kept) { const r = JSON.stringify(k.expected.reuse); counts.set(r, (counts.get(r) ?? 0) + 1) }
+        const common = [...counts].sort((x, y) => y[1] - x[1])[0][0]
+        const cases = Object.fromEntries(kept.map(k => {
+          const { reuse, ...rest } = k.expected
+          return [k.c.name, JSON.stringify(reuse) === common ? rest : k.expected]
+        }))
+        const expectedDoc = { source: f.source, server: target.server, msduck: { image: f.image, version: typeof f.version === 'string' ? f.version : undefined }, defaultReuse: JSON.parse(common), cases }
+        const b = compactJson(expectedDoc)
         await writeFile(join(dir, `${f.base}.expected.json`), b)
         bytes += Buffer.byteLength(b)
       }
