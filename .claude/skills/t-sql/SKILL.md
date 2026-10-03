@@ -20,7 +20,13 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
-- _(none yet)_
+- 2026-10-03: JSON functions are *streaming*: JSON_VALUE/JSON_QUERY validate
+  only up to the selected value (`{"a":1,"b":x}` with `$.a` returns `1`), but a
+  missing path validates the whole document and reports 13609 instead of NULL.
+  A root scalar document is 13609 even for `$`. 13609/13607 messages read
+  "Unexpected character 'c' is found at position N." (0-based UTF-16 index,
+  `'.'` at end of input). Implemented in `src/core/json`; evidence: msduck
+  `reference/json-extraction-boundaries.json` → `src/core/json/captured_test.mbt`.
 
 
 # T-SQL Language Reference

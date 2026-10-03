@@ -68,7 +68,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [ ] TRY/CATCH, THROW, RAISERROR, error classes, XACT_ABORT, XACT_STATE
 - [ ] Cursors (STATIC, FAST_FORWARD, LOCAL)
 - [ ] Triggers (AFTER, INSTEAD OF)
-- [ ] JSON: OPENJSON, JSON_VALUE, JSON_QUERY, ISJSON, FOR JSON
+- [~] JSON: `core/json` implements JSON_VALUE, JSON_QUERY, ISJSON (types, depth 13606), OPENJSON default schema, path parsing (lax/strict, keys, quoted keys, indexes), passing all msduck boundary captures. Missing: OPENJSON WITH schema, wildcards/advanced accessors, JSON_MODIFY, FOR JSON, binder wiring
 - Gate: all non-concurrency tests on the emulator.
 
 ## Phase 6: concurrency

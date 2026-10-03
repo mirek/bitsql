@@ -1,0 +1,75 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/json"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const CONTAINER_MESSAGE : String = "Object or array cannot be found in the specified JSON path."
+
+pub const DEPTH_MESSAGE : String = "JSON text/path that has more than 128 nesting levels cannot be parsed."
+
+pub const MAX_DEPTH : Int = 128
+
+pub const MISSING_MESSAGE : String = "Property cannot be found on the specified JSON path."
+
+pub const SCALAR_MESSAGE : String = "Scalar value cannot be found in the specified JSON path."
+
+pub const TRUNCATED_MESSAGE : String = "String value in the specified JSON path would be truncated."
+
+pub fn isjson(String, ty? : IsJsonType) -> Int raise JsonError
+
+pub fn json_query(String, path? : String) -> String? raise JsonError
+
+pub fn json_value(String, String) -> String? raise JsonError
+
+pub fn openjson(String, path? : String) -> Array[OpenJsonRow] raise JsonError
+
+pub fn parse_path(String, state? : Int) -> Path raise JsonError
+
+// Errors
+pub(all) suberror JsonError {
+  JsonError(Int, Int, String)
+} derive(Eq, @debug.Debug)
+pub fn JsonError::message(Self) -> String
+pub fn JsonError::number(Self) -> Int
+
+// Types and methods
+pub(all) enum IsJsonType {
+  Default
+  Value
+  Array
+  Object
+  Scalar
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Kind {
+  Null
+  String
+  Number
+  Boolean
+  Array
+  Object
+} derive(Eq, @debug.Debug)
+pub fn Kind::code(Self) -> Int
+
+pub(all) struct OpenJsonRow {
+  key : String
+  value : String?
+  ty : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Path {
+  strict : Bool
+  steps : Array[Step]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Step {
+  Key(String)
+  Index(Int)
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
