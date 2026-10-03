@@ -6,6 +6,7 @@ import {
   "mirek/bitsql/core/exec",
   "mirek/bitsql/core/ir",
   "mirek/bitsql/core/reply",
+  "mirek/bitsql/core/sched",
   "mirek/bitsql/core/store",
   "mirek/bitsql/core/tds",
   "mirek/bitsql/core/types",
@@ -17,6 +18,8 @@ pub fn collation_bytes(@types.Collation) -> Bytes
 pub fn column_flags(@ir.ResultColumn) -> Int
 
 pub fn format_raiserror(String, Array[@types.Value]) -> String raise @types.SqlError
+
+pub fn new_lock_manager() -> @sched.LockManager[LockKey]
 
 pub fn param_type(@tds.TypeInfo) -> @types.SqlType
 
@@ -31,6 +34,11 @@ pub fn wire_value(@types.Value) -> @tds.WireValue
 // Errors
 
 // Types and methods
+pub(all) struct LockKey {
+  values : Array[@types.Value]
+  colls : Array[@types.Collation?]
+}
+
 pub(all) struct Proc {
   name : String
   def : @ast.CreateProcedure
@@ -44,12 +52,17 @@ pub struct Server {
   mut next_object_id : Int
   idents : Map[Int, Int64]
   mut dbts : Int64
+  locks : @sched.LockManager[LockKey]
+  woken : Array[Int]
+  victims : Array[Int]
   // private fields
 }
 pub fn Server::create_database(Self, String) -> Unit
 pub fn Server::database_name(Self, String) -> String
 pub fn Server::has_database(Self, String) -> Bool
 pub fn Server::new() -> Self
+pub fn Server::take_victims(Self) -> Array[Int]
+pub fn Server::take_woken(Self) -> Array[Int]
 
 pub struct Session {
   server : Server
@@ -65,10 +78,17 @@ pub struct Session {
   mut tvars : @store.Db
   mut text : String
   mut identity_insert : Int?
+  mut waiting : Int?
+  mut fail_next_wait : Int?
+  mut parked : Bool
   prepared : Map[Int, (String, String)]
   mut next_handle : Int
   // private fields
 }
+pub fn Session::cancel_wait(Self) -> Unit
+pub fn Session::close(Self) -> Unit
+pub fn Session::is_parked(Self) -> Bool
+pub fn Session::make_victim(Self) -> Unit
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]

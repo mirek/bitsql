@@ -123,6 +123,7 @@ fn Session::exec_query(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
+  self.lock_hinted_reads(q)
   let bound = @bind.bind_query(self.env(), q)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))

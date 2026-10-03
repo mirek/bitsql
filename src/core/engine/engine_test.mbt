@@ -176,3 +176,123 @@ test "event log round trip and truncation tolerance" {
   let (_, partial) = @engine.decode_event_log(log[0:log.length() - 3])
   assert_eq(partial.length(), 4)
 }
+
+///|
+fn connect(e : @engine.Engine, id : Int) -> Unit {
+  ignore(e.handle(ev(Connected(id))))
+  let pre = @tds.from_hex(
+    "00 00 10 00 06 01 00 16 00 01 04 00 17 00 01 FF 0c 00 00 00 00 00 02 00",
+  )
+  ignore(e.handle(ev(Received(id, @tds.frame(Prelogin, pre)))))
+  ignore(
+    e.handle(
+      ev(Received(id, @tds.frame(Login7, login7_payload("sa", "x", "master")))),
+    ),
+  )
+}
+
+///|
+fn batch(e : @engine.Engine, id : Int, sql : String) -> Array[@engine.Output] {
+  let w = @tds.Writer::new()
+  w.bytes(
+    @tds.from_hex(
+      "16 00 00 00 12 00 00 00 02 00 00 00 00 00 00 00 00 00 01 00 00 00",
+    ),
+  )
+  w.ucs2(sql)
+  e.handle(ev(Received(id, @tds.frame(SqlBatch, w.to_bytes()))))
+}
+
+///|
+/// Connections that received a response in these outputs.
+fn responded(outs : Array[@engine.Output]) -> Array[Int] {
+  let ids = []
+  for o in outs {
+    if o is Send(id, _) && !ids.contains(id) {
+      ids.push(id)
+    }
+  }
+  ids
+}
+
+///|
+/// ERROR numbers sent to `conn`.
+fn errors_to(outs : Array[@engine.Output], conn : Int) -> Array[Int] raise {
+  let nums = []
+  for m in sent(outs.filter(o => o is Send(id, _) && id == conn)) {
+    let r = @tds.Reader::new(m.payload)
+    // scan for ERROR tokens (0xAA): len16, number int32
+    let p = m.payload
+    let mut i = 0
+    while i + 7 < p.length() {
+      if p[i] == b'\xAA' {
+        let n = p[i + 3].to_int() |
+          (p[i + 4].to_int() << 8) |
+          (p[i + 5].to_int() << 16)
+        if n == 1205 || n == 2627 || n == 1222 {
+          nums.push(n)
+        }
+      }
+      i += 1
+    }
+    ignore(r)
+  }
+  nums
+}
+
+///|
+test "a writer waits for another transaction's lock and resumes on COMMIT" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(
+    batch(
+      e, 1, "CREATE TABLE t (id int PRIMARY KEY, v int); INSERT t VALUES (1, 1)",
+    ),
+  )
+  assert_eq(
+    responded(batch(e, 1, "BEGIN TRAN; UPDATE t SET v = 2 WHERE id = 1")),
+    [1],
+  )
+  // conn 2 blocks: no response yet
+  assert_eq(responded(batch(e, 2, "UPDATE t SET v = v + 10 WHERE id = 1")), [])
+  // COMMIT releases the lock: both connections get responses now
+  assert_eq(responded(batch(e, 1, "COMMIT")), [1, 2])
+  let out = batch(e, 1, "SELECT v FROM t")
+  let rows = sent(out)
+  // v = 2 + 10 (the waiting UPDATE ran after the commit)
+  assert_true(@tds.hex(rows[0].payload).contains("d1 04 0c 00 00 00"))
+}
+
+///|
+test "upsert pattern with UPDLOCK, HOLDLOCK serializes; same-key insert waits then 2627" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(batch(e, 1, "CREATE TABLE k (id int PRIMARY KEY, v int)"))
+  assert_eq(responded(batch(e, 1, "BEGIN TRAN; INSERT k VALUES (5, 1)")), [1])
+  // the same key from another session waits for the uncommitted insert
+  assert_eq(responded(batch(e, 2, "INSERT k VALUES (5, 2)")), [])
+  let outs = batch(e, 1, "COMMIT")
+  assert_eq(responded(outs), [1, 2])
+  assert_eq(errors_to(outs, 2), [2627])
+}
+
+///|
+test "deadlock: one session gets 1205, the other proceeds" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(
+    batch(
+      e, 1, "CREATE TABLE a (id int PRIMARY KEY, v int); CREATE TABLE b (id int PRIMARY KEY, v int); INSERT a VALUES (1, 0); INSERT b VALUES (1, 0)",
+    ),
+  )
+  ignore(batch(e, 1, "BEGIN TRAN; UPDATE a SET v = 1 WHERE id = 1"))
+  ignore(batch(e, 2, "BEGIN TRAN; UPDATE b SET v = 2 WHERE id = 1"))
+  assert_eq(responded(batch(e, 1, "UPDATE b SET v = 1 WHERE id = 1")), []) // waits for 2
+  let outs = batch(e, 2, "UPDATE a SET v = 2 WHERE id = 1") // closes the cycle
+  // session 2 (the requester, equal cost) is the victim; session 1 resumes
+  assert_eq(errors_to(outs, 2), [1205])
+  assert_true(responded(outs).contains(1))
+}

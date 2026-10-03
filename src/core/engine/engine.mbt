@@ -20,6 +20,17 @@ struct Engine {
   conns : Map[Int, Conn]
   server : @session.Server
   sessions : Map[Int, @session.Session]
+  /// Requests waiting for locks, by connection id (decisions.md: request
+  /// restart). Re-run when their session is woken.
+  parked : Map[Int, Parked]
+}
+
+///|
+priv enum Parked {
+  ParkedBatch(String)
+  /// Remaining RPC calls (the parked one first) and the response bytes of
+  /// the calls before it.
+  ParkedRpc(Array[@tds.RpcCall], Bytes)
 }
 
 ///|
@@ -28,7 +39,7 @@ pub fn Engine::new(config : Config, seed : Int64) -> Engine {
   for name in config.databases {
     server.create_database(name)
   }
-  { config, seed, conns: Map([]), server, sessions: Map([]), }
+  { config, seed, conns: Map([]), server, sessions: Map([]), parked: Map([]), }
 }
 
 ///|
@@ -43,8 +54,16 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
         packet_size: @tds.DEFAULT_PACKET_SIZE,
       }
     Closed(id) => {
+      match self.sessions.get(id) {
+        Some(s) => s.close()
+        None => ()
+      }
+      self.parked.remove(id)
       self.conns.remove(id)
       self.sessions.remove(id)
+      self.drain(event.now, out) catch {
+        e => out.push(Log("drain after close: \{e}"))
+      }
     }
     Received(id, bytes) =>
       match self.conns.get(id) {
@@ -54,6 +73,7 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
             for msg in conn.reassembler.push(bytes) {
               self.on_message(conn, msg, event.now, out)
             }
+            self.drain(event.now, out)
           } catch {
             e => {
               out.push(Log("connection \{id}: protocol error: \{e}"))
@@ -176,8 +196,7 @@ fn Engine::on_message(
         return
       }
       let batch = @tds.decode_sql_batch(msg.payload)
-      let items = self.sessions[conn.id].run_batch(batch.text, now)
-      self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
+      self.run_batch(conn, batch.text, now, out)
     }
     (LoggedIn, Rpc) => {
       if (msg.status & @tds.STATUS_IGNORE) != 0 {
@@ -185,16 +204,15 @@ fn Engine::on_message(
         return
       }
       let req = @tds.decode_rpc(msg.payload)
-      let w = @tds.Writer::new()
-      for call in req.calls {
-        let items = self.sessions[conn.id].run_rpc(call, now)
-        w.bytes(@reply.render(Rpc, items, self.config.server_name))
-      }
-      self.send(conn, w.to_bytes(), out)
+      self.run_rpc(conn, req.calls, b"", now, out)
     }
     (LoggedIn, Attention) => {
-      // Execution is synchronous today, so the request already finished:
-      // acknowledge as a separate message (tedious skill: never fold it).
+      // A parked request is abandoned; otherwise execution already
+      // finished. Acknowledge as a separate message (tedious skill).
+      if self.parked.contains(conn.id) {
+        self.parked.remove(conn.id)
+        self.sessions[conn.id].cancel_wait()
+      }
       let w = @tds.Writer::new()
       @tds.write_done(w, Done, @tds.DONE_ATTN, 0, 0)
       self.send(conn, w.to_bytes(), out)
@@ -265,4 +283,79 @@ fn Engine::login_response(
 /// Seed for all engine randomness (NEWID, RAND); fixed per run for replay.
 pub fn Engine::seed(self : Engine) -> Int64 {
   self.seed
+}
+
+///|
+fn Engine::run_batch(
+  self : Engine,
+  conn : Conn,
+  text : String,
+  now : Int64,
+  out : Array[Output],
+) -> Unit raise {
+  let session = self.sessions[conn.id]
+  let items = session.run_batch(text, now)
+  if session.is_parked() {
+    self.parked[conn.id] = ParkedBatch(text)
+    return
+  }
+  self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
+}
+
+///|
+fn Engine::run_rpc(
+  self : Engine,
+  conn : Conn,
+  calls : Array[@tds.RpcCall],
+  done_bytes : Bytes,
+  now : Int64,
+  out : Array[Output],
+) -> Unit raise {
+  let session = self.sessions[conn.id]
+  let w = @tds.Writer::new()
+  w.bytes(done_bytes)
+  for i, call in calls {
+    let items = session.run_rpc(call, now)
+    if session.is_parked() {
+      self.parked[conn.id] = ParkedRpc(calls[i:].to_owned(), w.to_bytes())
+      return
+    }
+    w.bytes(@reply.render(Rpc, items, self.config.server_name))
+  }
+  self.send(conn, w.to_bytes(), out)
+}
+
+///|
+/// Re-runs parked requests of sessions woken by lock releases, and of
+/// parked deadlock victims (which fail with 1205 at the same statement),
+/// until nothing changes. Their responses go out in this same handle call.
+fn Engine::drain(self : Engine, now : Int64, out : Array[Output]) -> Unit raise {
+  let mut rounds = 0
+  while rounds < 10000 {
+    rounds += 1
+    let victims = self.server.take_victims()
+    let woken = self.server.take_woken()
+    if victims.is_empty() && woken.is_empty() {
+      break
+    }
+    for v in victims {
+      let id = v - 50
+      if self.parked.contains(id) {
+        self.sessions[id].make_victim()
+      }
+    }
+    for spid in victims + woken {
+      let id = spid - 50
+      match (self.parked.get(id), self.conns.get(id)) {
+        (Some(p), Some(conn)) => {
+          self.parked.remove(id)
+          match p {
+            ParkedBatch(text) => self.run_batch(conn, text, now, out)
+            ParkedRpc(calls, done) => self.run_rpc(conn, calls, done, now, out)
+          }
+        }
+        _ => ()
+      }
+    }
+  }
 }

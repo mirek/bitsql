@@ -478,7 +478,13 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       }
     }
     self.check_row(target, db, row, "INSERT")
-    db = insert_checked(target, db, self.server.rowid(), row)
+    let rowid = self.server.rowid()
+    if target.scope == 0 {
+      // X on the new key: waits for another transaction's uncommitted
+      // insert of the same key, or a range lock covering it
+      self.acquire(row_resource(t, rowid, row), X, Transaction)
+    }
+    db = insert_checked(target, db, rowid, row)
     inserted_rows.push(row)
   }
   self.write(target.scope, db)
@@ -574,6 +580,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   let t = target.table
   let (rows, env, cols) = self.dml_rows(target, u.from, u.where_, u.top)
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   // bind SET clauses against the full source row
   let sets = []
   for s in u.sets {
@@ -790,6 +797,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     self.check_writable()
   }
   let (rows, _, cols) = self.dml_rows(target, d.from, d.where_, d.top)
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   let extra = if d.from.is_empty() { [] } else { cols }
   let outputs = self.bind_output(d.output, target, true, false, extra)
   self.cur_cmd = 196

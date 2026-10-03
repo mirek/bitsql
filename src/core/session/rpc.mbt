@@ -109,6 +109,9 @@ pub fn Session::run_rpc(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  let snap = self.snapshot_request()
+  self.parked = false
+  self.waiting = None
   self.out.clear()
   self.rpc = true
   self.frames.clear()
@@ -275,8 +278,17 @@ pub fn Session::run_rpc(
       self.out.push(StatementDone(cmd=253, count=None, error=true))
       None
     }
+    Park => {
+      self.parked = true
+      None
+    }
     _ => None
   }
+  if self.parked {
+    self.restore_request(snap)
+    return []
+  }
+  self.fail_next_wait = None
   match result {
     Some((status, outs)) => {
       self.out.push(ReturnStatus(status))

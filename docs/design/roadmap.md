@@ -95,9 +95,9 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 ## Phase 6: concurrency
 
 - [~] Transactions over persistent roots (BEGIN/COMMIT/ROLLBACK, ENVCHANGE 8/9/10, statement-level rollback); concurrent writers raise 50107 until the lock manager is wired
-- [~] Interval lock manager (`core/sched`: S/U/X, key intervals, whole-table fallback, FIFO + conversion priority, statement/transaction durations) done; LockSpec from hints/isolation not wired yet
-- [~] Wait-for graph + cycle detection + cheapest-victim choice in `core/sched`; engine parking/1205 not wired yet. Victim tie-break (requester) unverified against SQL Server
-- [ ] Deterministic mode + replay
+- [~] Lock manager wired (decisions.md: request restart): X on modified/inserted keys, UPDLOCK/HOLDLOCK/SERIALIZABLE/XLOCK reads lock the PK point or whole table, statement vs transaction durations, release on commit/rollback/statement end; parked requests re-run in the same handle call. Missing: SERIALIZABLE isolation level, LOCK_TIMEOUT (1222), FK S-locks, range intervals beyond PK points
+- [x] Deadlocks: wait-for cycle detection, victim gets 1205 (requester or parked session re-run), transaction rolled back. Victim choice/1205 state unverified against captures
+- [x] Deterministic mode + replay (event log; scheduling is deterministic by construction)
 - [x] `emulator.snapshot` / `emulator.restore` (all databases, identity counters, @@DBTS, procs; O(1) via immutable Db values)
 - Gate: the MSSQL CI job is removed; nightly cross-check remains.
 

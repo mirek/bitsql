@@ -34,6 +34,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     @types.SqlError(..) as e => Some(e)
     other => raise other
   }
+  // statement-duration locks (and all locks in autocommit) end here
+  self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
   guard failure is Some(e) else {
     // a successful statement sets @@ERROR to 0, or to 50000 for
     // RAISERROR ... WITH SETERROR (stmt_error)

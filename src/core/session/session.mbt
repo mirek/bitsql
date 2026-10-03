@@ -22,6 +22,12 @@ pub struct Server {
   mut dbts : Int64
   /// emulator.snapshot / emulator.restore states.
   priv snapshots : Map[String, ServerSnapshot]
+  /// Key-range lock manager shared by all sessions (session id = spid).
+  locks : @sched.LockManager[LockKey]
+  /// Sessions woken by lock releases (spid), to be re-run by the engine.
+  woken : Array[Int]
+  /// Parked sessions chosen as deadlock victims.
+  victims : Array[Int]
 }
 
 ///|
@@ -50,7 +56,35 @@ pub fn Server::new() -> Server {
     idents: Map([]),
     dbts: 2000L,
     snapshots: Map([]),
+    locks: new_lock_manager(),
+    woken: [],
+    victims: [],
   }
+}
+
+///|
+fn Server::wake_all(self : Server, pairs : Array[(Int, Int)]) -> Unit {
+  for p in pairs {
+    if !self.woken.contains(p.0) {
+      self.woken.push(p.0)
+    }
+  }
+}
+
+///|
+/// Sessions woken since the last call (engine re-runs their requests).
+pub fn Server::take_woken(self : Server) -> Array[Int] {
+  let w = self.woken.copy()
+  self.woken.clear()
+  w
+}
+
+///|
+/// Parked sessions chosen as deadlock victims since the last call.
+pub fn Server::take_victims(self : Server) -> Array[Int] {
+  let v = self.victims.copy()
+  self.victims.clear()
+  v
 }
 
 ///|
@@ -164,6 +198,13 @@ pub struct Session {
   mut identity_insert : Int?
   /// GLOBAL cursors (session lifetime).
   priv cursors : Map[String, CursorState]
+  /// Lock request this session waits for (when its request is parked).
+  mut waiting : Int?
+  /// Re-run of a deadlock victim / timed-out request: the next wait fails
+  /// with this error number (1205 or 1222) instead of parking.
+  mut fail_next_wait : Int?
+  /// True when the last request parked (no response yet).
+  mut parked : Bool
   /// sp_prepare handles: (parameter declarations, statement text).
   prepared : Map[Int, (String, String)]
   mut next_handle : Int
@@ -195,6 +236,9 @@ pub fn Session::new(
     identity_insert: None,
     cursors: Map([]),
     prepared: Map([]),
+    waiting: None,
+    fail_next_wait: None,
+    parked: false,
     next_handle: 1,
   }
 }
@@ -277,12 +321,23 @@ pub fn Session::run_batch(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  let snap = self.snapshot_request()
+  self.parked = false
+  self.waiting = None
   self.out.clear()
   self.text = text
   self.rpc = false
   self.frames.clear()
   self.frames.push(Frame::new())
-  self.run_text(text) |> ignore
+  try self.run_text(text) |> ignore catch {
+    _ => {
+      // a lock wait: discard this attempt; the engine re-runs it later
+      self.restore_request(snap)
+      self.parked = true
+      return []
+    }
+  }
+  self.fail_next_wait = None
   self.end_of_request()
   self.frames.clear()
   let items = self.out.copy()
@@ -293,7 +348,7 @@ pub fn Session::run_batch(
 ///|
 /// Parses and executes batch text in the current frame. Returns false when an
 /// uncaught error ended it.
-fn Session::run_text(self : Session, text : String) -> Bool {
+fn Session::run_text(self : Session, text : String) -> Bool raise Park {
   let stmts = @parse.parse_batch(text) catch {
     e => {
       self.out.push(
@@ -327,6 +382,7 @@ fn Session::run_text(self : Session, text : String) -> Bool {
     AbortBatch => false
     Return(_) => true
     Break | Continue => true
+    Park => raise Park
     _ => false
   } noraise {
     _ => true

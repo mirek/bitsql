@@ -147,6 +147,16 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     }
     None => ops
   }
+  // lock the target rows MERGE changes
+  let locked = []
+  for o in ops {
+    match o {
+      MUpdate(rowid, old, _, _) | MDelete(rowid, old, _) =>
+        locked.push((rowid, old))
+      MInsert(_, _) => ()
+    }
+  }
+  self.lock_rows(target, locked)
   // build new images
   let deleted_rows : Set[Int64] = Set([])
   for o in ops {
@@ -325,8 +335,13 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   for o in final_ops {
     match o {
       MUpdate(rowid, _, new, _) => db = insert_checked(target, db, rowid, new)
-      MInsert(new, _) =>
-        db = insert_checked(target, db, self.server.rowid(), new)
+      MInsert(new, _) => {
+        let rowid = self.server.rowid()
+        if target.scope == 0 {
+          self.acquire(row_resource(t, rowid, new), X, Transaction)
+        }
+        db = insert_checked(target, db, rowid, new)
+      }
       MDelete(_, _, _) => ()
     }
   }

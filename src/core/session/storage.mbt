@@ -72,6 +72,7 @@ fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
     }
     None => ()
   }
+  self.release_locks()
 }
 
 ///|
@@ -81,6 +82,7 @@ fn Session::rollback_tx(self : Session) -> Unit {
     None => ()
   }
   self.tx = None
+  self.release_locks()
 }
 
 ///|
