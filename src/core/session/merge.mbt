@@ -61,17 +61,37 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let matched_target : Set[Int64] = Set([])
   let update_targets : Map[Int64, Int] = Map([])
   self.cur_cmd = 279
-  for s in source_rows {
-    let mut any = false
-    for tr in target_rows {
-      let (rowid, trow) = tr
-      let row = trow + s
-      if !@exec.is_true(@exec.eval(self.ctx().with_row(row), on)) {
-        continue
+  // Match every (target, source) pair first; actions are then produced in
+  // target order, then inserts in source order (captured: dml/merge-upsert
+  // OUTPUT order UPDATE, DELETE, INSERT).
+  let source_matched = Array::make(source_rows.length(), false)
+  let matches : Array[Array[Int]] = target_rows.map(_ => [])
+  for ti, tr in target_rows {
+    for si, s in source_rows {
+      if @exec.is_true(@exec.eval(self.ctx().with_row(tr.1 + s), on)) {
+        matches[ti].push(si)
+        source_matched[si] = true
       }
-      any = true
-      matched_target.add(rowid)
-      match pick(x => x is Matched, row) {
+    }
+  }
+  for ti, tr in target_rows {
+    let (rowid, trow) = tr
+    if matches[ti].is_empty() {
+      match pick(x => x is NotMatchedBySource, trow + null_source) {
+        Some(w) =>
+          match w.action {
+            MergeUpdate(_) => ops.push(MUpdate(rowid, trow, [], null_source))
+            MergeDelete => ops.push(MDelete(rowid, trow, null_source))
+            MergeInsert(..) => ()
+          }
+        None => ()
+      }
+      continue
+    }
+    matched_target.add(rowid)
+    for si in matches[ti] {
+      let s = source_rows[si]
+      match pick(x => x is Matched, trow + s) {
         Some(w) =>
           match w.action {
             MergeUpdate(_) => {
@@ -84,26 +104,13 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
         None => ()
       }
     }
-    if !any {
+  }
+  for si, s in source_rows {
+    if !source_matched[si] {
       match pick(x => x is NotMatchedByTarget, null_target + s) {
         Some(w) => if w.action is MergeInsert(..) { ops.push(MInsert([], s)) }
         None => ()
       }
-    }
-  }
-  for tr in target_rows {
-    let (rowid, trow) = tr
-    if matched_target.contains(rowid) {
-      continue
-    }
-    match pick(x => x is NotMatchedBySource, trow + null_source) {
-      Some(w) =>
-        match w.action {
-          MergeUpdate(_) => ops.push(MUpdate(rowid, trow, [], null_source))
-          MergeDelete => ops.push(MDelete(rowid, trow, null_source))
-          MergeInsert(..) => ()
-        }
-      None => ()
     }
   }
   // repeated matches with an UPDATE
