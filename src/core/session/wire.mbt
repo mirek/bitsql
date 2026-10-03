@@ -93,6 +93,8 @@ pub fn type_info(t : @types.SqlType, nullable : Bool) -> @tds.TypeInfo {
     DateTimeOffset(s) => DateTimeOffset(s)
     UniqueIdentifier => Guid
     RowVersion => BigBinary(8)
+    // captured: COLMETADATA max length 8009
+    Variant => Variant(8009)
   }
 }
 
@@ -166,6 +168,8 @@ pub fn wire_value(v : @types.Value) -> @tds.WireValue {
     DateTime(d, u) => DateTime(d, u)
     SmallDateTime(d, m) => DateTime(d, m * 60 * 300)
     Guid(b) => Guid(b)
+    // base type in its non-nullable TYPE_INFO form (Int4, not IntN)
+    Variant(inner, base) => Variant(type_info(base, false), wire_value(inner))
   }
 }
 
@@ -200,6 +204,7 @@ pub fn param_type(ti : @tds.TypeInfo) -> @types.SqlType {
     NChar(n, _) => NChar(n / 2, c)
     BigVarBinary(n) => VarBinary(if n == @tds.MAX_LEN { None } else { Some(n) })
     BigBinary(n) => Binary(n)
+    Variant(_) => Variant
   }
 }
 
@@ -234,5 +239,32 @@ pub fn param_value(ty : @types.SqlType, w : @tds.WireValue) -> @types.Value {
     (_, Float(d)) => Float(d)
     (_, Money(m)) => Money(m)
     (_, Decimal(_, _)) => Null
+    // base collation is checked by `check_variant_params` (rpc.mbt)
+    (_, Variant(base, inner)) => {
+      let t = param_type(base)
+      Variant(param_value(t, inner), t)
+    }
+  }
+}
+
+///|
+/// sql_variant RPC parameters (tedious cannot send them; other clients can)
+/// carry their base type's collation, which bitsql does not map back from
+/// TDS bytes: only the default collation is accepted.
+fn check_variant_params(params : Array[@tds.RpcParam]) -> Unit raise {
+  for p in params {
+    match p.value {
+      Variant(
+        BigVarChar(_, c)
+        | BigChar(_, c)
+        | NVarChar(_, c)
+        | NChar(_, c),
+        _
+      ) if c != @tds.default_collation =>
+        raise @types.not_supported(
+          "a sql_variant parameter with a non-default collation",
+        )
+      _ => ()
+    }
   }
 }

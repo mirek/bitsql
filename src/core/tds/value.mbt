@@ -16,6 +16,9 @@ pub(all) enum WireValue {
   DateTime2(Int, Int64) // days, ticks
   DateTimeOffset(Int, Int64, Int) // UTC days, UTC ticks, offset minutes
   DateTime(Int, Int) // legacy: days since 1900-01-01, 1/300 s ticks
+  /// sql_variant: base TYPE_INFO (fixed-length form, e.g. Int4, DecimalN,
+  /// BigVarChar with its declared length and collation) and base value
+  Variant(TypeInfo, WireValue)
 } derive(Debug, Eq)
 
 ///|
@@ -229,6 +232,8 @@ pub fn write_value(
       w.u16le(b.length())
       w.bytes(b)
     }
+    (Variant(_), Null) => w.u32le(0)
+    (Variant(_), Variant(base, inner)) => write_variant(w, base, inner)
     _ =>
       raise Malformed(
         "value \{@debug.to_string(v)} does not fit \{@debug.to_string(ti)}",
@@ -396,6 +401,7 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
         DateTimeOffset(d, t, off)
       }
     }
+    Variant(_) => read_variant(r)
     BigVarChar(_, _)
     | BigChar(_, _)
     | NVarChar(_, _)

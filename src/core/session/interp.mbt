@@ -204,8 +204,18 @@ fn Session::assign(
       { kind: Arith(aop, current, rhs), ty, nullable: true, }
     }
   }
+  // compile-time in SQL Server: the error's DONE has CurCmd 253 (captured)
+  let failed = try @types.check_assign(value_expr.ty, info.ty) catch {
+    e => Some(e)
+  } noraise {
+    _ => None
+  }
+  if failed is Some(e) {
+    self.cur_cmd = 253
+    raise e
+  }
   let v = @exec.eval(self.ctx(), value_expr)
-  self.frame().values[info.slot] = @types.cast(v, value_expr.ty, info.ty)
+  self.frame().values[info.slot] = @types.assign(v, value_expr.ty, info.ty)
 }
 
 ///|
@@ -268,7 +278,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       } else {
         VarChar(Some(8000), @types.default_collation)
       }
-      let text = match @types.cast(v, ty, limit) {
+      // captured: PRINT of a sql_variant is 257 (no implicit conversion)
+      let text = match @types.assign(v, ty, limit) {
         String(t) if t != "" => t
         _ => " "
       }

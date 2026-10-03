@@ -12,6 +12,7 @@
 /// converted). Order from `.claude/skills/t-sql/data-types.md` §1.
 pub fn precedence(t : SqlType) -> Int {
   match t {
+    Variant => 27
     DateTimeOffset(_) => 26
     DateTime2(_) => 25
     DateTime => 24
@@ -82,6 +83,10 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
     return true
   }
   match (ff, tf) {
+    // sql_variant: anything it can hold converts to it implicitly; it
+    // converts to nothing else implicitly (captured 257)
+    (_, FVariant) => variant_can_hold(from)
+    (FVariant, _) => false
     (FString, FBinary) => false
     (FString, _) => true
     (f, t) if is_numeric_family(f) && is_numeric_family(t) => true
@@ -105,6 +110,8 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     return true
   }
   match (from.family(), to.family()) {
+    // out of a variant: checked against the base type at run time
+    (FVariant, _) => true
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
     (FBinary, FDateTime) => is_legacy_datetime(to)
@@ -125,6 +132,10 @@ pub fn explicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
 ///|
 /// Error 257: implicit conversion not allowed (assignment contexts).
 pub fn implicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
+  // captured: a max type or timestamp assigned to sql_variant is 206
+  if to is Variant && !(from is Variant) {
+    return type_clash_error(from, to)
+  }
   sql_error(
     257,
     "Implicit conversion from data type \{from.clash_name()} to \{to.clash_name()} is not allowed. Use the CONVERT function to run this query.",
@@ -302,6 +313,9 @@ pub fn arith_result_type(
   a : SqlType,
   b : SqlType,
 ) -> SqlType raise SqlError {
+  if a is Variant || b is Variant {
+    raise variant_arith_error(op, a, b)
+  }
   let fa = a.family()
   let fb = b.family()
   // String + string is concatenation; other operators on two strings are

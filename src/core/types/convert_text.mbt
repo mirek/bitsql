@@ -212,6 +212,7 @@ pub fn render(v : Value, from : SqlType, style : Int?) -> String raise SqlError 
     | DateTimeOffset(_, _)
     | DateTime(_, _)
     | SmallDateTime(_, _) => render_temporal(v, from, style)
+    Variant(_, _) => raise internal("render of a sql_variant")
   }
 }
 

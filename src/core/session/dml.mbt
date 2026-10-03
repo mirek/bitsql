@@ -130,7 +130,7 @@ fn Session::to_column(
       )
     _ => ()
   }
-  @types.cast(v, from, col.ty)
+  @types.assign(v, from, col.ty)
 }
 
 ///|
@@ -343,7 +343,21 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     }
   }
   // source rows with their types
-  let env = self.env()
+  let env = match ins.source {
+    InsertValues(rows) => {
+      let all = []
+      for r in rows {
+        all.append(r)
+      }
+      self.simple_params_env(self.env(), target, all)
+    }
+    InsertQuery(q) =>
+      match simple_select_exprs(q) {
+        Some(xs) => self.simple_params_env(self.env(), target, xs)
+        None => self.env()
+      }
+    _ => self.env()
+  }
   let (source, types) : (Array[Array[@types.Value]], Array[@types.SqlType]) = match
     ins.source {
     InsertValues(rows) => {
@@ -377,6 +391,15 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
               "There are more columns in the INSERT statement than values specified in the VALUES clause. The number of values in the VALUES clause must match the number of columns specified in the INSERT statement.",
               severity=15,
             )
+          }
+        }
+      }
+      let bound = unify_values_rows(bound)
+      // assignment type rules are compile-time (DONE cmd 253, captured)
+      if bound.length() > 0 {
+        for j, e in bound[0] {
+          if j < cols.length() && e is Some(b) {
+            @types.check_assign(b.ty, t.columns[cols[j]].ty)
           }
         }
       }
@@ -423,6 +446,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           severity=15,
         )
       }
+      for j, c in bq.columns {
+        @types.check_assign(c.ty, t.columns[cols[j]].ty)
+      }
       self.cur_cmd = 195
       (@exec.run(self.ctx(), bq.plan), bq.columns.map(c => c.ty))
     }
@@ -435,6 +461,14 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let default_marks = match ins.source {
     InsertValues(rows) => rows.map(r => r.map(e => e.kind is Default))
     _ => []
+  }
+  // assignment type rules before any row (captured: 206/257 for
+  // sql_variant columns are compile-time errors)
+  for j, ci in cols {
+    if j < types.length() &&
+      !default_marks.iter().all(m => j < m.length() && m[j]) {
+      @types.check_assign(types[j], t.columns[ci].ty)
+    }
   }
   let mut db = self.db_of(target.scope)
   let pre = db
@@ -609,6 +643,18 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   let t = target.table
   let (rows, env, cols) = self.dml_rows(target, u.from, u.where_, u.top)
+  let env = if u.from.is_empty() && u.top is None {
+    let xs = []
+    for s in u.sets {
+      xs.push(s.value)
+    }
+    if u.where_ is Some(w) {
+      xs.push(w)
+    }
+    self.simple_params_env(env, target, xs)
+  } else {
+    env
+  }
   // bind SET clauses against the full source row
   let sets = []
   for s in u.sets {
@@ -643,6 +689,9 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
           None
         } else {
           Some(@bind.bind_expr(env, s.value))
+        }
+        if rhs is Some(b) && s.op is Assign {
+          @types.check_assign(b.ty, c.ty)
         }
         sets.push((ci, s.op, rhs))
       }
@@ -981,4 +1030,44 @@ fn check_column_suffix(t : @store.Table, expr : String) -> String {
       }
     _ => ""
   }
+}
+
+///|
+/// Multi-row VALUES: each column has the common type of its rows (DEFAULT
+/// entries excluded) and every row converts to it before the target
+/// column conversion, as in SQL Server (captured: a mixed int/date column
+/// of VALUES fails with 206; base types of sql_variant columns show the
+/// unified type, variant/insert-values.sql).
+fn unify_values_rows(
+  rows : Array[Array[@ir.Expr?]],
+) -> Array[Array[@ir.Expr?]] raise {
+  if rows.length() < 2 {
+    return rows
+  }
+  let width = rows[0].length()
+  let out = rows.map(r => r.copy())
+  for j in 0..<width {
+    let tys = []
+    for r in rows {
+      // an untyped NULL literal takes no part (like UNION branches)
+      if r[j] is Some(e) && !(e.kind is Lit(Null) && e.ty is Int) {
+        tys.push(e.ty)
+      }
+    }
+    if tys.length() < 2 {
+      continue
+    }
+    let t = @bind.unify_types(tys)
+    for r in out {
+      if r[j] is Some(e) {
+        // a literal that cannot convert fails while compiling (captured:
+        // VALUES (1), ('abc') is 245 with DONE cmd 253)
+        if e.kind is Lit(v) && e.ty != t {
+          ignore(@types.cast(v, e.ty, t))
+        }
+        r[j] = Some(@bind.coerce(e, t))
+      }
+    }
+  }
+  out
 }

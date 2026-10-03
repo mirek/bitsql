@@ -41,13 +41,13 @@ fn Session::run_with_params(
       None => positional.get(i)
     }
     match arg {
-      Some(a) => frame.values[slot] = @types.cast(a.value, a.ty, ty)
+      Some(a) => frame.values[slot] = @types.assign(a.value, a.ty, ty)
       None =>
         match p.default_ {
           Some(d) => {
             let b = @bind.bind_expr(@bind.Env::new(Map([])), d)
             let v = @exec.eval(self.ctx_with(frame), b)
-            frame.values[slot] = @types.cast(v, b.ty, ty)
+            frame.values[slot] = @types.assign(v, b.ty, ty)
           }
           None => ()
         }
@@ -133,6 +133,7 @@ pub fn Session::run_rpc(
     (p, Arg::{ value: param_value(ty, p.value), ty, output: p.by_ref, })
   })
   let result = try {
+    check_variant_params(call.params)
     match call.proc.canonical_name() {
       "sp_executesql" => {
         guard wire.get(0) is Some((_, { value: String(sql), .. })) else {
@@ -489,7 +490,7 @@ fn Session::write_back_outputs(
       if o.0.to_lower() == pname {
         match self.frame().vars.get(vname.to_lower()) {
           Some(info) =>
-            self.frame().values[info.slot] = @types.cast(o.2, o.1, info.ty)
+            self.frame().values[info.slot] = @types.assign(o.2, o.1, info.ty)
           None => ()
         }
       }

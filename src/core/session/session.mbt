@@ -267,6 +267,9 @@ pub struct Session {
   /// The statement's error is a compile-time one TRY cannot catch
   /// (captured: 4902, 1779/1750).
   mut uncatchable : Bool
+  /// SET options SESSIONPROPERTY reports that bitsql lets change without
+  /// an emulator error (ARITHABORT): upper-cased name → ON.
+  session_flags : Map[String, Bool]
 }
 
 ///|
@@ -275,10 +278,19 @@ pub fn Session::new(
   spid~ : Int,
   database~ : String,
   seed~ : Int64,
+  server_name? : String = "bitsql",
+  build? : (Int, Int, Int) = (17, 0, 5005),
 ) -> Session {
   {
     server,
-    rt: @exec.Runtime::new(database~, spid~, now=0L, seed~),
+    rt: @exec.Runtime::new(
+      database~,
+      spid~,
+      now=0L,
+      seed~,
+      server_name~,
+      build~,
+    ),
     nocount: false,
     xact_abort: false,
     frames: [],
@@ -320,6 +332,7 @@ pub fn Session::new(
     schema_ddl: false,
     ddl_cmd: 0,
     uncatchable: false,
+    session_flags: Map([]),
   }
 }
 
@@ -341,7 +354,12 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     row: [],
     outer: [],
     source: (scope, id) => self.source(scope, id),
-    ext: (name, args) => self.catalog_fn(name, args),
+    ext: (name, args) => {
+      match self.property_fn(name, args) {
+        Some(v) => Some(v)
+        None => self.catalog_fn(name, args)
+      }
+    },
     user_fn: (id, args) => self.call_scalar_udf(id, args),
     user_table: (id, args) => self.call_table_udf(id, args),
     seek: (scope, id, key) => self.seek(scope, id, key),

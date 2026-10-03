@@ -98,7 +98,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     FloatLit(t) => float_literal(t)
     MoneyLit(t) => money_literal(t)
     StrLit(s, national~) => string_literal(env, s, national)
-    BinaryLit(t) => binary_literal(t)
+    BinaryLit(t) => binary_literal(t, params=env.literal_params)
     Var(name) =>
       match env.vars.get(var_name_key(name)) {
         Some(v) => mk(Var(v.slot), v.ty, true)
@@ -115,6 +115,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     Paren(inner) => bind_expr(env, inner)
     Unary(op, inner) => {
       let a = bind_expr(env, inner)
+      variant_unary_check(op, a)
       match op {
         Neg => {
           // captured: msduck try-binding-error (-bit is a compile error)
@@ -139,6 +140,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     Binary(op, l, r) => {
       let a = bind_expr(env, l)
       let b = bind_expr(env, r)
+      variant_operator_check(op, a, b)
       // an untyped NULL next to a string concatenates as varchar(1)
       // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
       // varchar(3); msduck character-concat #022)
@@ -238,6 +240,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         Some(e) => Some(bind_expr(env, e))
         None => None
       }
+      variant_like_check(a, p, esc)
       bit_expr(
         Like(
           a,
@@ -382,6 +385,7 @@ fn conversion(
   if !@types.can_convert_explicitly(a.ty, t) {
     raise @types.explicit_conversion_error(a.ty, t)
   }
+  variant_constant_cast_check(a, t)
   // Captured: CAST/CONVERT results are always nullable (flags 33).
   { kind: Cast({ ..a, }, try_~, style~), ty: t, nullable: true, }
 }

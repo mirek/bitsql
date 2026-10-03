@@ -203,7 +203,7 @@ fn Session::exec_fetch(self : Session, f : @ast.Fetch) -> Unit raise {
   for i, name in f.into {
     match self.frame().vars.get(name.to_lower()) {
       Some(info) =>
-        self.frame().values[info.slot] = @types.cast(
+        self.frame().values[info.slot] = @types.assign(
           row[i],
           c.columns[i].ty,
           info.ty,

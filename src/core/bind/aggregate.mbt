@@ -52,6 +52,8 @@ fn agg_result_type(
       }
     (StringAgg, Some(t)) =>
       match t {
+        // captured: 8116 (variant/functions.sql)
+        Variant => raise bad_arg_type(t, 1, "string_agg")
         VarChar(None, _) | NVarChar(None, _) => t
         NChar(_, c) | NVarChar(_, c) => NVarChar(Some(4000), c)
         Char(_, c) | VarChar(_, c) => VarChar(Some(8000), c)
@@ -60,7 +62,18 @@ fn agg_result_type(
     (Stdev | StdevP | Var | VarP, Some(t)) =>
       match t.family() {
         FInteger | FDecimal | FMoney | FFloat => Float
-        _ => raise invalid_operand(t, "stdev")
+        // captured: the operator is named after the function
+        // (variant/functions.sql: "... invalid for varp operator.")
+        _ =>
+          raise invalid_operand(
+            t,
+            match f {
+              StdevP => "stdevp"
+              Var => "var"
+              VarP => "varp"
+              _ => "stdev"
+            },
+          )
       }
     _ => raise @types.not_supported("aggregate shape")
   }
@@ -117,7 +130,12 @@ fn bind_agg_call(
     (None, None)
   } else if f is StringAgg {
     arity(name, call.args, 2)
-    (Some(bind_expr(env, call.args[0])), Some(bind_expr(env, call.args[1])))
+    let x = bind_expr(env, call.args[0])
+    let sep = bind_expr(env, call.args[1])
+    if sep.ty is Variant && !(x.ty is Variant) {
+      raise bad_arg_type(sep.ty, 2, "string_agg")
+    }
+    (Some(x), Some(sep))
   } else {
     arity(name, call.args, 1)
     (Some(bind_expr(env, call.args[0])), None)

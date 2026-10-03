@@ -47,6 +47,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     )
   }
   let args = call.args
+  variant_guard(env, name, args)
   let bound = () => args.map(a => bind_expr(env, a))
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
@@ -202,6 +203,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     _ =>
       match bind_call_more(env, name, call) {
         Some(e) => e
+        None if bind_variant_fn(env, name, call) is Some(e) => e
         None =>
           match bind_call_catalog(env, name, call) {
             Some(e) => e

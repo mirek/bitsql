@@ -154,6 +154,8 @@ fn string_len(t : @types.SqlType) -> Int? {
     | DateTime
     | SmallDateTime
     | UniqueIdentifier => Some(40)
+    // variant arguments are rejected before (fn_variant.mbt guard)
+    Variant => None
   }
 }
 

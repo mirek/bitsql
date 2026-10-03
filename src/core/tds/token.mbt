@@ -321,6 +321,7 @@ fn null_size(ti : TypeInfo) -> Int {
     | NChar(_, _)
     | BigVarBinary(_)
     | BigBinary(_) => 2
+    Variant(_) => 4
     _ => 1
   }
 }

@@ -77,10 +77,15 @@ fn json_scalar(
   ty : @types.SqlType,
 ) -> String raise @types.SqlError {
   match v {
+    // formatted as its base type (captured: variant/for-json.sql)
+    Variant(inner, base) => json_scalar(inner, base)
     Bit(b) => if b { "true" } else { "false" }
-    TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_) | Decimal(_) | Money(_) =>
+    TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_) | Decimal(_) =>
       @types.render(v, ty, None)
-    Float(_) => @types.render(v, ty, Some(2))
+    // captured (variant/for-json.sql): money with 4 decimals, real with 8
+    // significant digits, float with 16
+    Money(_) => @types.render(v, ty, Some(2))
+    Float(_) => @types.render(v, ty, Some(if ty is Real { 1 } else { 2 }))
     Binary(b) => {
       let buf = StringBuilder()
       json_escape(base64(b), buf)

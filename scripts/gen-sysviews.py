@@ -16,8 +16,10 @@ import os
 from datetime import datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DESC = os.path.join(ROOT, 'harness/corpus/catalog/view-descriptors.expected.json')
-SQL = os.path.join(ROOT, 'harness/corpus/catalog/view-descriptors.sql')
+# Descriptor captures, in view_defs order (view ids are indexes: append new
+# files at the end).
+DESCRIPTORS = ['view-descriptors', 'view-descriptors-variant']
+CORPUS = os.path.join(ROOT, 'harness/corpus/catalog')
 SEED = os.path.join(ROOT, 'scripts/sysviews-seed.json')
 OUT = os.path.join(ROOT, 'src/core/session/sysviews_data.mbt')
 
@@ -61,7 +63,7 @@ def sql_type(c):
     if t == 'VarBinary':
         return f'VarBinary(Some({n}))'
     if t == 'Variant':
-        return None
+        return 'Variant'
     raise SystemExit(f'unknown type {c}')
 
 
@@ -97,8 +99,11 @@ def value(v, ty):
 
 
 def main():
-    views = [l.split()[3] for l in open(SQL) if l.startswith('SELECT')]
-    desc = json.load(open(DESC))['steps'][0]['sets']
+    views = []
+    desc = []
+    for name in DESCRIPTORS:
+        views += [l.split()[3] for l in open(os.path.join(CORPUS, name + '.sql')) if l.startswith('SELECT')]
+        desc += json.load(open(os.path.join(CORPUS, name + '.expected.json')))['steps'][0]['sets']
     seed = json.load(open(SEED))
     out = []
     w = out.append
@@ -120,10 +125,7 @@ def main():
             ty = sql_type(c)
             nullable = 'true' if c['flags'] & 1 else 'false'
             computed = 'true' if c['flags'] & 0x20 else 'false'
-            if ty is None:
-                cols.append(f'vc({mbt_str(c["name"])}, Bit, {nullable}, {computed}, variant=true)')
-            else:
-                cols.append(f'vc({mbt_str(c["name"])}, {ty}, {nullable}, {computed})')
+            cols.append(f'vc({mbt_str(c["name"])}, {ty}, {nullable}, {computed})')
             tys[c['name']] = ty
         types_by_view[v] = tys
         w(f'  {{ schema: {mbt_str(schema)}, name: {mbt_str(name)}, columns: [')
@@ -143,7 +145,7 @@ def main():
             for n, v in zip(names, r):
                 if cols is not None and n not in cols:
                     continue
-                ty = tys[n] or 'Bit'
+                ty = tys[n]
                 vals.append(value(v, ty))
             rows.append('[' + ', '.join(vals) + ']')
         return names, rows

@@ -24,5 +24,8 @@ fn call_more(
   if call_misc(name, v, args, e) is Some(r) {
     return r
   }
+  if call_variant(ctx, name, v) is Some(r) {
+    return r
+  }
   raise @types.not_supported("function \{name}")
 }
