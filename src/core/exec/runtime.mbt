@@ -25,7 +25,7 @@ pub(all) struct Runtime {
   mut catch_error : ErrorInfo?
   mut now : Int64 // 100 ns ticks since 0001-01-01 UTC
   mut rng : UInt64
-  database : String
+  mut database : String
   spid : Int
   server_name : String
   version : String

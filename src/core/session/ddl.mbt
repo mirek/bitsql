@@ -438,6 +438,7 @@ fn Session::exec_drop(
   names : Array[@ast.ObjectName],
 ) -> Unit raise {
   match kind {
+    DropDatabase => self.exec_drop_database(if_exists, names)
     DropTable => {
       for n in names {
         match self.find_table(n) {

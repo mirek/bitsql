@@ -210,6 +210,7 @@ pub(all) enum DropKind {
   DropSchema
   DropType
   DropSequence
+  DropDatabase
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Exec {
@@ -643,6 +644,7 @@ pub(all) enum StmtKind {
   CloseCursor(Ident, global~ : Bool)
   Deallocate(Ident, global~ : Bool)
   Use(Ident)
+  CreateDatabase(Ident, collate~ : Ident?)
 } derive(Eq, @debug.Debug)
 
 pub(all) struct TableBody {

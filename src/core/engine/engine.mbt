@@ -24,13 +24,11 @@ struct Engine {
 
 ///|
 pub fn Engine::new(config : Config, seed : Int64) -> Engine {
-  {
-    config,
-    seed,
-    conns: Map([]),
-    server: @session.Server::new(),
-    sessions: Map([]),
+  let server = @session.Server::new()
+  for name in config.databases {
+    server.create_database(name)
   }
+  { config, seed, conns: Map([]), server, sessions: Map([]), }
 }
 
 ///|
@@ -127,11 +125,47 @@ fn Engine::on_message(
       } else {
         login.database
       }
+      if !self.server.has_database(db) {
+        if self.config.auto_create_databases {
+          self.server.create_database(db)
+        } else {
+          // Captured (msduck login-database-error): 4060 + 18456 +
+          // DONE_ERROR, then the server closes the connection.
+          let w = @tds.Writer::new()
+          @tds.write_message(
+            w,
+            is_error=true,
+            number=4060,
+            state=1,
+            class=11,
+            message="Cannot open database \"\{db}\" requested by the login. The login failed.",
+            server=self.config.server_name,
+            procedure="",
+            line=1,
+          )
+          @tds.write_message(
+            w,
+            is_error=true,
+            number=18456,
+            state=1,
+            class=14,
+            message="Login failed for user '\{login.user_name.to_lower()}'.",
+            server=self.config.server_name,
+            procedure="",
+            line=1,
+          )
+          @tds.write_done(w, Done, @tds.DONE_ERROR, 0, 0)
+          self.send(conn, w.to_bytes(), out)
+          out.push(Close(conn.id))
+          self.conns.remove(conn.id)
+          return
+        }
+      }
       conn.phase = LoggedIn
       self.sessions[conn.id] = @session.Session::new(
         self.server,
         spid=50 + conn.id,
-        database=db,
+        database=self.server.database_name(db),
         seed=self.seed + conn.id.to_int64(),
       )
       self.send(conn, self.login_response(db, conn.packet_size), out)

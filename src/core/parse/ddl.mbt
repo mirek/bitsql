@@ -598,6 +598,7 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     "SCHEMA" => DropSchema
     "TYPE" => DropType
     "SEQUENCE" => DropSequence
+    "DATABASE" => DropDatabase
     _ => raise self.error()
   }
   self.pos += 1

@@ -1026,6 +1026,47 @@ fn Parser::create_or_alter(
         definition,
       })
     }
+    "DATABASE" if mode is Create => {
+      self.pos += 1
+      let name = self.ident()
+      let mut collate = None
+      // skip ON/LOG ON/WITH/CONTAINMENT clauses up to the statement end
+      let mut depth = 0
+      while !(self.peek().kind is Eof) {
+        if depth == 0 && self.is_punct(";") {
+          break
+        }
+        if depth == 0 && self.is_kw("COLLATE") {
+          self.pos += 1
+          collate = Some(self.any_ident())
+          continue
+        }
+        if self.is_punct("(") {
+          depth += 1
+        } else if self.is_punct(")") {
+          depth -= 1
+        } else if depth == 0 &&
+          (
+            self.is_kw("USE") ||
+            self.is_kw("CREATE") ||
+            self.is_kw("ALTER") ||
+            self.is_kw("DROP") ||
+            self.is_kw("SELECT") ||
+            self.is_kw("INSERT") ||
+            self.is_kw("IF") ||
+            self.is_kw("EXEC") ||
+            self.is_kw("EXECUTE") ||
+            self.is_kw("DECLARE") ||
+            self.is_kw("SET") ||
+            self.is_kw("PRINT") ||
+            self.is_kw("BEGIN")
+          ) {
+          break
+        }
+        self.pos += 1
+      }
+      CreateDatabase(name, collate~)
+    }
     "SCHEMA" if mode is Create => {
       must_be_first("CREATE SCHEMA")
       self.pos += 1

@@ -38,9 +38,20 @@ pub(all) struct Config {
   /// (SQL Server 2025, 17.0.5005; see harness skill).
   version : (Int, Int, Int)
   default_database : String
+  /// Databases created at startup (host `--database NAME`).
+  databases : Array[String]
+  /// Create a database on first login instead of failing with 4060
+  /// (host `--auto-create-databases`). Off by default: faithful.
+  auto_create_databases : Bool
 } derive(Debug)
 
 ///|
 pub fn Config::default() -> Config {
-  { server_name: "bitsql", version: (17, 0, 5005), default_database: "master", }
+  {
+    server_name: "bitsql",
+    version: (17, 0, 5005),
+    default_database: "master",
+    databases: [],
+    auto_create_databases: false,
+  }
 }

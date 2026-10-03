@@ -731,6 +731,7 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
           DropSchema => "schema"
           DropType => "type"
           DropSequence => "sequence"
+          DropDatabase => "database"
         }),
       )
       if if_exists {
@@ -955,5 +956,6 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.close()
     }
     Use(db) => self.s("(use " + ident_text(db) + ")")
+    CreateDatabase(db, ..) => self.s("(create-database " + ident_text(db) + ")")
   }
 }

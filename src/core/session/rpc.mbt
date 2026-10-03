@@ -262,6 +262,11 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   guard e.target is ExecProc(name) else {
     raise @types.not_supported("EXEC (@sql)")
   }
+  if name.parts.length() >= 2 &&
+    name.parts[name.parts.length() - 2].name.to_lower() == "emulator" &&
+    self.exec_emulator_proc(name.base(), e.args) {
+    return
+  }
   if name.base().to_lower() == "sp_executesql" {
     let values = e.args.map(a => {
       let (v, ty) = self.eval(a.value)

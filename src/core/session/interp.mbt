@@ -25,7 +25,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     Some(tx) => Some(tx.view)
     None => None
   }
-  let snap_db = self.server.db
+  let snap_db = self.server.get_db(self.rt.database)
+  let snap_database = self.rt.database
   let failure = try {
     self.exec_stmt(s)
     None
@@ -46,7 +47,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.tvars = snap_tvars
   match (snap_tx, self.tx, snap_view) {
     (Some(_), Some(tx), Some(v)) => tx.view = v
-    (None, None, _) => self.server.db = snap_db
+    (None, None, _) => self.server.set_db(snap_database, snap_db)
     _ => ()
   }
   self.rt.error = e.number()
@@ -364,6 +365,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Update(u) => self.exec_update(u)
     Delete(d) => self.exec_delete(d)
     Merge(m) => self.exec_merge(m)
+    CreateDatabase(name, ..) => self.exec_create_database(name)
+    Use(name) => self.exec_use(name)
     Truncate(name) => self.exec_truncate(name)
     SetIdentityInsert(name, on) =>
       match self.find_table(name) {

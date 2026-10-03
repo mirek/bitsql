@@ -177,3 +177,11 @@ case is re-run on the local oracle and kept only if reproduced exactly;
   emulator run of the whole corpus takes ~2.5 s.
 - 2026-10-03: mssql's default pool validation runs `SELECT 1;` via RPC on every
   acquire; tests use `validateConnection: 'socket'` (see tedious skill).
+
+## Emulator test isolation (for app test suites)
+
+`EXEC emulator.snapshot 'name'` captures every database (plus identity
+counters, @@DBTS and procedures). `EXEC emulator.restore 'name'` restores it
+in O(1). Use it after seeding instead of re-running migrations per test.
+Start the host with `--database NAME` so the app's database exists at login
+(SQL Server rejects logins to unknown databases with 4060/18456).

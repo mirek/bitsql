@@ -38,12 +38,17 @@ pub(all) struct Proc {
 
 pub struct Server {
   procs : Map[String, Proc]
-  mut db : @store.Db
+  dbs : Map[String, @store.Db]
+  db_names : Map[String, String]
   mut next_rowid : Int64
   mut next_object_id : Int
   idents : Map[Int, Int64]
   mut dbts : Int64
+  // private fields
 }
+pub fn Server::create_database(Self, String) -> Unit
+pub fn Server::database_name(Self, String) -> String
+pub fn Server::has_database(Self, String) -> Bool
 pub fn Server::new() -> Self
 
 pub struct Session {

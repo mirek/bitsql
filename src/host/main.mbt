@@ -2,9 +2,13 @@
 /// Thin native host: moves bytes between sockets and the pure engine and
 /// fires timers. Knows nothing about SQL or TDS.
 ///
-/// Usage: host [--listen HOST:PORT] [--record FILE]
-///   --listen  default 127.0.0.1:47333; port 0 picks a free port
-///   --record  append every engine event to FILE for `replay`
+/// Usage: host [--listen HOST:PORT] [--record FILE] [--database NAME]...
+///             [--auto-create-databases]
+///   --listen    default 127.0.0.1:47333; port 0 picks a free port
+///   --record    append every engine event to FILE for `replay`
+///   --database  create database NAME at startup (repeatable)
+///   --auto-create-databases  logins to unknown databases create them
+///               instead of failing with 4060 (not SQL Server behavior)
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
@@ -22,7 +26,18 @@ async fn main {
   let port = server.addr.port()
   let host = listen.split(":").next().unwrap_or("127.0.0.1").to_owned()
   @stdio.stderr.write("listening on \{host}:\{port}\n")
-  let engine = @engine.Engine::new(@engine.Config::default(), seed)
+  let databases = []
+  for i in 0..<args.length() {
+    if args[i] == "--database" && i + 1 < args.length() {
+      databases.push(args[i + 1])
+    }
+  }
+  let config : @engine.Config = {
+    ..@engine.Config::default(),
+    databases,
+    auto_create_databases: args.contains("--auto-create-databases"),
+  }
+  let engine = @engine.Engine::new(config, seed)
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)
   let conns : Map[Int, @socket.Tcp] = Map([])
   @async.with_task_group(group => {

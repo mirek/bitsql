@@ -9,8 +9,10 @@ pub(all) struct Proc {
 /// State shared by every session of one engine (the "server").
 pub struct Server {
   procs : Map[String, Proc] // key: lowercased schema-less name
-  /// Last committed database state.
-  mut db : @store.Db
+  /// Committed state of every database (lowercased name → Db).
+  dbs : Map[String, @store.Db]
+  /// Display names as created.
+  db_names : Map[String, String]
   /// Row ids and object ids are never reused or rolled back.
   mut next_rowid : Int64
   mut next_object_id : Int
@@ -18,18 +20,69 @@ pub struct Server {
   idents : Map[Int, Int64]
   /// Database-wide rowversion counter (@@DBTS).
   mut dbts : Int64
+  /// emulator.snapshot / emulator.restore states.
+  priv snapshots : Map[String, ServerSnapshot]
+}
+
+///|
+priv struct ServerSnapshot {
+  dbs : Map[String, @store.Db]
+  db_names : Map[String, String]
+  idents : Map[Int, Int64]
+  dbts : Int64
+  procs : Map[String, Proc]
 }
 
 ///|
 pub fn Server::new() -> Server {
+  let dbs = Map([])
+  let names = Map([])
+  for n in ["master", "tempdb", "model", "msdb"] {
+    dbs[n] = @store.Db::empty()
+    names[n] = n
+  }
   {
     procs: Map([]),
-    db: @store.Db::empty(),
+    dbs,
+    db_names: names,
     next_rowid: 1L,
     next_object_id: 245575913,
     idents: Map([]),
     dbts: 2000L,
+    snapshots: Map([]),
   }
+}
+
+///|
+pub fn Server::has_database(self : Server, name : String) -> Bool {
+  self.dbs.contains(name.to_lower())
+}
+
+///|
+pub fn Server::create_database(self : Server, name : String) -> Unit {
+  if !self.has_database(name) {
+    self.dbs[name.to_lower()] = @store.Db::empty()
+    self.db_names[name.to_lower()] = name
+  }
+}
+
+///|
+/// Canonical spelling of a database name (as created).
+pub fn Server::database_name(self : Server, name : String) -> String {
+  self.db_names.get(name.to_lower()).unwrap_or(name)
+}
+
+///|
+fn Server::get_db(self : Server, name : String) -> @store.Db {
+  match self.dbs.get(name.to_lower()) {
+    Some(db) => db
+    None => @store.Db::empty()
+  }
+}
+
+///|
+fn Server::set_db(self : Server, name : String, db : @store.Db) -> Unit {
+  self.dbs[name.to_lower()] = db
 }
 
 ///|

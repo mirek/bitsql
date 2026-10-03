@@ -23,6 +23,8 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | CREATE/ALTER VIEW | 207 | no |
 | DROP VIEW | 208 | no |
 | TRUNCATE TABLE | 234 | no |
+| CREATE DATABASE | 203 | no |
+| DROP DATABASE | 204 | no |
 | CREATE/DROP SCHEMA | 253 (RPC: no DONEINPROC at all) | no |
 | BREAK / CONTINUE | 202 | no |
 | ROLLBACK | 210 | no |

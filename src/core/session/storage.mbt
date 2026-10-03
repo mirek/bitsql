@@ -3,6 +3,7 @@
 /// view including its own writes, the temp database at BEGIN (temp tables
 /// roll back; table variables do not) and named savepoints.
 priv struct Tx {
+  database : String
   base : @store.Db
   mut view : @store.Db
   temp_at_begin : @store.Db
@@ -18,8 +19,8 @@ fn Session::db_of(self : Session, scope : Int) -> @store.Db {
     3 => self.tvars
     _ =>
       match self.tx {
-        Some(tx) => tx.view
-        None => self.server.db
+        Some(tx) if tx.database == self.rt.database.to_lower() => tx.view
+        _ => self.server.get_db(self.rt.database)
       }
   }
 }
@@ -32,8 +33,8 @@ fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
     3 => self.tvars = db
     _ =>
       match self.tx {
-        Some(tx) => tx.view = db
-        None => self.server.db = db
+        Some(tx) if tx.database == self.rt.database.to_lower() => tx.view = db
+        _ => self.server.set_db(self.rt.database, db)
       }
   }
 }
@@ -42,9 +43,11 @@ fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
 /// Begins an explicit transaction (outermost BEGIN TRAN).
 fn Session::begin_tx(self : Session) -> Unit {
   if self.tx is None {
+    let db = self.server.get_db(self.rt.database)
     self.tx = Some({
-      base: self.server.db,
-      view: self.server.db,
+      database: self.rt.database.to_lower(),
+      base: db,
+      view: db,
       temp_at_begin: self.temp,
       savepoints: Map([]),
     })
@@ -57,14 +60,14 @@ fn Session::begin_tx(self : Session) -> Unit {
 fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
   match self.tx {
     Some(tx) => {
-      if !physical_equal(tx.base, self.server.db) &&
-        !physical_equal(tx.base, tx.view) {
+      let current = self.server.get_db(tx.database)
+      if !physical_equal(tx.base, current) && !physical_equal(tx.base, tx.view) {
         self.tx = None
         raise @types.emulator_error(
           50107, "Emulator: concurrent transactions writing the same database are not supported yet",
         )
       }
-      self.server.db = tx.view
+      self.server.set_db(tx.database, tx.view)
       self.tx = None
     }
     None => ()

@@ -307,7 +307,7 @@ test "drops" {
   inspect(
     sx("DROP DATABASE x"),
     content=(
-      #|Msg 156, Level 15, State 1, Line 1: Incorrect syntax near the keyword 'DATABASE'.
+      #|(drop-database x)
     ),
   )
 }

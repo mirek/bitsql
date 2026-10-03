@@ -70,6 +70,9 @@ pub(all) enum StmtKind {
   CloseCursor(Ident, global~ : Bool)
   Deallocate(Ident, global~ : Bool)
   Use(Ident)
+  /// `CREATE DATABASE name [COLLATE c] [...]`; file/option clauses are
+  /// accepted and ignored (memory-only engine).
+  CreateDatabase(Ident, collate~ : Ident?)
 } derive(Eq, Debug)
 
 ///|
@@ -82,6 +85,7 @@ pub(all) enum DropKind {
   DropSchema
   DropType
   DropSequence
+  DropDatabase
 } derive(Eq, Debug)
 
 ///|

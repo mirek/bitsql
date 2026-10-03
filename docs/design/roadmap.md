@@ -95,8 +95,12 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [~] Interval lock manager (`core/sched`: S/U/X, key intervals, whole-table fallback, FIFO + conversion priority, statement/transaction durations) done; LockSpec from hints/isolation not wired yet
 - [~] Wait-for graph + cycle detection + cheapest-victim choice in `core/sched`; engine parking/1205 not wired yet. Victim tie-break (requester) unverified against SQL Server
 - [ ] Deterministic mode + replay
-- [ ] `emulator.snapshot` / `emulator.restore`
+- [x] `emulator.snapshot` / `emulator.restore` (all databases, identity counters, @@DBTS, procs; O(1) via immutable Db values)
 - Gate: the MSSQL CI job is removed; nightly cross-check remains.
+
+## Databases
+
+- [x] Multiple databases: CREATE/DROP DATABASE (203/204, 1801, 3701), USE (911), login to unknown database → 4060 + 18456 (msduck capture); host `--database NAME`, `--auto-create-databases`
 
 ## Phase 7: packaging
 
