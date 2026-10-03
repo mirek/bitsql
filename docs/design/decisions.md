@@ -50,6 +50,7 @@ Instead:
 
 Effect: `NeedLock` is per statement, not per row. Deadlock detection and lock
 fidelity are unchanged. (execution.md updated.)
+
 ## 2026-10-03: parser packages
 
 - **`core/ast`, `core/lex`, `core/parse` instead of one `core/ast`.** The binder

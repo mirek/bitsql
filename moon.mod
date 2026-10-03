@@ -15,11 +15,6 @@ preferred_target = "native"
 
 source = "src"
 
-// implicit_impl_as_method fires on every `derive` of a pub type; we never call
-// derived trait methods as plain methods, so the migration warning is noise.
-
-warnings = "-implicit_impl_as_method"
-
 import {
   "moonbitlang/async@0.22.4",
 }
