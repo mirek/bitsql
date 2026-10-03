@@ -118,6 +118,7 @@ fn leaf_qualifier(r : @ast.TableRef) -> String? {
     Derived(_, alias_~, ..) | TableFunc(_, _, alias_~, ..) =>
       alias_.map(a => a.name.to_lower())
     Values(_, alias_~, ..) => Some(alias_.name.to_lower())
+    Pivot(_, _, alias_~) => Some(alias_.name.to_lower())
     Join(_, _, _, ..) => None
   }
 }

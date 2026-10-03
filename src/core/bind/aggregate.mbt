@@ -75,6 +75,13 @@ fn agg_result_type(
             },
           )
       }
+    // captured: int only (bigint, smallint, tinyint are 8117 too)
+    (ChecksumAgg, Some(t)) =>
+      match t {
+        Int => Int
+        _ => raise invalid_operand(t, "checksum_agg")
+      }
+    (ApproxCountDistinct, Some(_)) => BigInt
     _ => raise @types.not_supported("aggregate shape")
   }
 }
@@ -93,6 +100,8 @@ fn agg_fn(name : String) -> @ir.AggFn? {
     "STDEVP" => Some(StdevP)
     "VAR" => Some(Var)
     "VARP" => Some(VarP)
+    "CHECKSUM_AGG" => Some(ChecksumAgg)
+    "APPROX_COUNT_DISTINCT" => Some(ApproxCountDistinct)
     _ => None
   }
 }
@@ -126,6 +135,13 @@ fn bind_agg_call(
   if !call.within_group.is_empty() && !(f is StringAgg) {
     raise @types.not_supported("WITHIN GROUP for \{name}")
   }
+  if f is ApproxCountDistinct && call.distinct {
+    raise err(
+      16200,
+      "The statement failed because 'APPROX_COUNT_DISTINCT' does not support DISTINCT <column-name> parameters. Consider using 'APPROX_COUNT_DISTINCT' without DISTINCT, or COUNT or COUNT_BIG with DISTINCT.",
+      severity=15,
+    )
+  }
   let (arg, separator) = if call.star {
     (None, None)
   } else if f is StringAgg {
@@ -135,6 +151,8 @@ fn bind_agg_call(
     if sep.ty is Variant && !(x.ty is Variant) {
       raise bad_arg_type(sep.ty, 2, "string_agg")
     }
+    check_string_agg_separator(x, call.args[1], sep)
+    check_aggregate_order(env, call.within_group, constants=false)
     (Some(x), Some(sep))
   } else {
     arity(name, call.args, 1)
@@ -193,15 +211,7 @@ fn bind_window_call(
   let frame = match over.frame {
     None => None
     Some(fr) => {
-      if !(fr.unit is Rows) &&
-        (
-          fr.start is (Preceding(_) | Following(_)) ||
-          fr.end is Some(Preceding(_) | Following(_))
-        ) {
-        raise err(
-          4194, "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters.",
-        )
-      }
+      check_frame(name, over, fr)
       Some(@ir.WindowFrame::{
         rows: fr.unit is Rows,
         start: bind_frame_bound(env, fr.start),
@@ -222,6 +232,8 @@ fn bind_window_call(
     ty,
   }
   match name {
+    "PERCENTILE_CONT" | "PERCENTILE_DISC" =>
+      bind_percentile(env, name, call, partition)
     "ROW_NUMBER" | "RANK" | "DENSE_RANK" => {
       arity(name, call.args, 0)
       needs_order()
@@ -279,21 +291,22 @@ fn bind_window_call(
     }
     _ =>
       match agg_fn(name) {
-        Some(StringAgg) => raise @types.not_supported("window function \{name}")
+        // captured: analytic/string-agg-checks, approx-checksum-agg
+        Some(StringAgg | ApproxCountDistinct) =>
+          raise err(
+            4113,
+            "The function '\{name}' is not a valid windowing function, and cannot be used with the OVER clause.",
+            state=if name == "STRING_AGG" { 4 } else { 5 },
+            severity=15,
+          )
         None =>
-          if [
-              "PERCENTILE_CONT", "PERCENTILE_DISC", "CHECKSUM_AGG", "APPROX_COUNT_DISTINCT",
-            ].contains(name) {
-            raise @types.not_supported("window function \{name}")
-          } else {
-            // captured: msduck error-function-metadata#005
-            raise err(
-              4113,
-              "The function '\{name}' is not a valid windowing function, and cannot be used with the OVER clause.",
-              state=6,
-              severity=15,
-            )
-          }
+          // captured: msduck error-function-metadata#005
+          raise err(
+            4113,
+            "The function '\{name}' is not a valid windowing function, and cannot be used with the OVER clause.",
+            state=6,
+            severity=15,
+          )
         Some(f) => {
           if call.distinct {
             raise @types.not_supported("DISTINCT in windowed aggregates")
@@ -305,9 +318,6 @@ fn bind_window_call(
             [bind_expr(env, call.args[0])]
           }
           let ty = agg_result_type(f, args.get(0).map(a => a.ty), env)
-          if frame is Some(_) && order.is_empty() {
-            raise @types.not_supported("window frame without ORDER BY")
-          }
           mk_call(Agg(f, distinct=false), args, ty)
         }
       }

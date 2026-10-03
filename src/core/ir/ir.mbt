@@ -232,6 +232,17 @@ pub(all) enum Plan {
     include_nulls~ : Bool,
     without_array_wrapper~ : Bool
   )
+  /// Runs the input without raising warning 8153 for NULLs its aggregates
+  /// eliminate (PIVOT's aggregates; captured: analytic/pivot).
+  NoNullWarning(Plan)
+  /// UNPIVOT: per input row and per `columns` entry (in order) whose value
+  /// is not NULL, one row `keep` values ++ [value, names[i]].
+  Unpivot(
+    Plan,
+    keep~ : Array[Int],
+    columns~ : Array[Int],
+    names~ : Array[String]
+  )
 } derive(Debug)
 
 ///|
@@ -258,6 +269,10 @@ pub(all) enum AggFn {
   Grouping(Int)
   /// GROUPING_ID(keys...)
   GroupingId(Array[Int])
+  /// CHECKSUM_AGG: XOR of the int values.
+  ChecksumAgg
+  /// APPROX_COUNT_DISTINCT (bigint; exact for small cardinalities).
+  ApproxCountDistinct
 } derive(Debug, Eq)
 
 ///|
@@ -285,6 +300,10 @@ pub(all) enum WinFn {
   PercentRank
   CumeDist
   Agg(AggFn, distinct~ : Bool)
+  /// PERCENTILE_CONT / PERCENTILE_DISC: args = [percentile]; the WITHIN
+  /// GROUP key is the call's `order`, which then does not order the window.
+  PercentileCont
+  PercentileDisc
 } derive(Debug, Eq)
 
 ///|
@@ -322,6 +341,8 @@ pub(all) enum TableFn {
   OpenJsonWith(Array[OpenJsonColumn])
   /// STRING_SPLIT; args: string, separator; `ordinal` adds the column.
   StringSplit(ordinal~ : Bool)
+  /// GENERATE_SERIES; args: start, stop, step (all of the `value` type).
+  GenerateSeries(@types.SqlType)
 } derive(Debug)
 
 ///|

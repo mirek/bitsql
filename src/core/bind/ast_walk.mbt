@@ -103,7 +103,7 @@ fn any_expr(
 ///|
 let aggregate_names : Array[String] = [
   "COUNT", "COUNT_BIG", "SUM", "AVG", "MIN", "MAX", "STRING_AGG", "STDEV", "STDEVP",
-  "VAR", "VARP", "GROUPING", "GROUPING_ID",
+  "VAR", "VARP", "GROUPING", "GROUPING_ID", "CHECKSUM_AGG", "APPROX_COUNT_DISTINCT",
 ]
 
 ///|

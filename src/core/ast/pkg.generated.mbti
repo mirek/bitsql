@@ -494,6 +494,11 @@ pub(all) enum PermissionAction {
   Revoke
 } derive(Eq, @debug.Debug)
 
+pub(all) enum PivotClause {
+  Pivot(agg~ : ObjectName, value~ : Array[Ident], column~ : Array[Ident], values~ : Array[Ident])
+  Unpivot(value~ : Ident, name~ : Ident, columns~ : Array[Array[Ident]])
+} derive(Eq, @debug.Debug)
+
 pub(all) enum Quantifier {
   All
   Any
@@ -690,6 +695,7 @@ pub(all) enum TableRefKind {
   Values(Array[Array[Expr]], alias_~ : Ident, columns~ : Array[Ident])
   TableFunc(ObjectName, Array[Expr], openjson_with~ : Array[OpenJsonColumn]?, alias_~ : Ident?, columns~ : Array[Ident])
   Join(JoinKind, TableRef, TableRef, on~ : Expr?, hint~ : String?)
+  Pivot(TableRef, PivotClause, alias_~ : Ident)
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Top {

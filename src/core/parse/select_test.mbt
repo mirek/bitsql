@@ -464,9 +464,9 @@ test "select errors" {
     ),
   )
   inspect(
-    sx("SELECT * FROM t PIVOT (SUM(v) FOR k IN (a)) p"),
+    sx("SELECT * FROM t PIVOT (COUNT(*) FOR k IN (a)) p"),
     content=(
-      #|Msg 156, Level 15, State 1, Line 1: Incorrect syntax near the keyword 'PIVOT'.
+      #|Msg 102, Level 15, State 1, Line 1: Incorrect syntax near '*'.
     ),
   )
   inspect(

@@ -734,6 +734,29 @@ fn W::table_ref(self : W, t : TableRef) -> Unit {
       self.alias_cols(alias_, columns)
       self.close()
     }
+    Pivot(src, clause, alias_~) => {
+      let parts = (ps : Array[Ident]) => ps.map(ident_text).join(".")
+      match clause {
+        Pivot(agg~, value~, column~, values~) => {
+          self.open("pivot")
+          self.sp()
+          self.table_ref(src)
+          self.s(" (" + agg.to_sexp() + " " + parts(value) + ")")
+          self.atom(parts(column))
+          self.s(" (in " + values.map(ident_text).join(" ") + ")")
+        }
+        Unpivot(value~, name~, columns~) => {
+          self.open("unpivot")
+          self.sp()
+          self.table_ref(src)
+          self.atom(ident_text(value))
+          self.atom(ident_text(name))
+          self.s(" (in " + columns.map(parts).join(" ") + ")")
+        }
+      }
+      self.alias_cols(Some(alias_), [])
+      self.close()
+    }
     Join(kind, l, r, on~, hint~) => {
       self.open(
         match kind {

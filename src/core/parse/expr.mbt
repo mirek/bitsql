@@ -566,6 +566,10 @@ fn Parser::call(
       self.pos += 1
     }
     args.push(self.call_arg())
+    // captured: STRING_AGG(DISTINCT x, ',') is 102 near ','
+    if distinct && self.is_punct(",") && eq_upper_name(name, "STRING_AGG") {
+      raise self.error()
+    }
     while self.eat_punct(",") {
       args.push(self.call_arg())
     }
@@ -645,6 +649,11 @@ fn Parser::over(self : Parser) -> @ast.Over raise @ast.SyntaxError {
     []
   }
   let frame : @ast.Frame? = if self.is_kw("ROWS") || self.is_kw("RANGE") {
+    // captured: a frame with neither PARTITION BY nor ORDER BY is a syntax
+    // error at ROWS/RANGE (with PARTITION BY only it is 10756)
+    if partition_by.is_empty() && order_by.is_empty() {
+      raise self.error()
+    }
     let unit : @ast.FrameUnit = if self.eat_kw("ROWS") {
       Rows
     } else {
@@ -652,12 +661,12 @@ fn Parser::over(self : Parser) -> @ast.Over raise @ast.SyntaxError {
       Range
     }
     if self.eat_kw("BETWEEN") {
-      let s = self.frame_bound()
+      let s = self.frame_bound(start=true)
       self.expect_kw("AND")
-      let e = self.frame_bound()
+      let e = self.frame_bound(start=false)
       Some({ unit, start: s, end: Some(e), })
     } else {
-      Some({ unit, start: self.frame_bound(), end: None, })
+      Some({ unit, start: self.frame_bound(start=true), end: None, })
     }
   } else {
     None
@@ -667,11 +676,22 @@ fn Parser::over(self : Parser) -> @ast.Over raise @ast.SyntaxError {
 }
 
 ///|
-fn Parser::frame_bound(self : Parser) -> @ast.FrameBound raise @ast.SyntaxError {
+fn Parser::frame_bound(
+  self : Parser,
+  start~ : Bool,
+) -> @ast.FrameBound raise @ast.SyntaxError {
   if self.eat_kw("UNBOUNDED") {
+    // a frame cannot start at UNBOUNDED FOLLOWING nor end at UNBOUNDED
+    // PRECEDING (captured: 102 near the keyword)
+    if !start && self.is_kw("PRECEDING") {
+      raise self.error()
+    }
     if self.eat_kw("PRECEDING") {
       UnboundedPreceding
     } else {
+      if start {
+        raise self.error()
+      }
       self.expect_kw("FOLLOWING")
       UnboundedFollowing
     }
@@ -679,7 +699,20 @@ fn Parser::frame_bound(self : Parser) -> @ast.FrameBound raise @ast.SyntaxError 
     self.expect_kw("ROW")
     CurrentRow
   } else {
-    let e = self.scalar()
+    // offsets are unsigned integer literals up to 2147483647; variables,
+    // parentheses, signs and expressions are syntax errors (captured:
+    // analytic/window-frames)
+    let t = self.peek()
+    let ok = t.kind is IntNum &&
+      (
+        t.text.length() < 10 ||
+        (t.text.length() == 10 && t.text <= "2147483647")
+      )
+    if !ok {
+      raise self.error()
+    }
+    self.pos += 1
+    let e = mk(IntLit(t.text), t.span)
     if self.eat_kw("PRECEDING") {
       Preceding(e)
     } else {

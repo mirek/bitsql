@@ -17,5 +17,6 @@ fn bind_call_more(
   if bind_math_fn(env, name, call) is Some(e) {
     return Some(e)
   }
+  bind_analytic_fn(name, call)
   bind_misc_fn(env, name, call)
 }

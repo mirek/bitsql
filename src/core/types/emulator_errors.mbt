@@ -48,6 +48,16 @@ pub const EMU_CONCURRENT_CONFLICT : Int = 50107
 pub const EMU_WORK_BUDGET : Int = 50108
 
 ///|
+/// TABLESAMPLE with a size other than 0 or 100 PERCENT: SQL Server samples
+/// whole pages, nondeterministically (captured: analytic/tablesample).
+pub const EMU_TABLESAMPLE : Int = 50150
+
+///|
+/// APPROX_COUNT_DISTINCT over more distinct values than the range where
+/// SQL Server's HyperLogLog estimate was captured to be exact (30).
+pub const EMU_APPROX_COUNT_DISTINCT : Int = 50151
+
+///|
 /// An internal invariant was violated (e.g. the binder handed the evaluator
 /// operands of incompatible families). Always a bitsql bug.
 pub const EMU_INTERNAL : Int = 50199
@@ -65,6 +75,8 @@ pub let emulator_error_table : Array[(Int, String)] = [
   (EMU_OPERATOR_NOT_SUPPORTED, "operator on these types not supported"),
   (EMU_CONCURRENT_CONFLICT, "unprotected concurrent change at commit"),
   (EMU_WORK_BUDGET, "request work budget exceeded"),
+  (EMU_TABLESAMPLE, "TABLESAMPLE page sampling"),
+  (EMU_APPROX_COUNT_DISTINCT, "APPROX_COUNT_DISTINCT estimate"),
   (EMU_INTERNAL, "internal invariant violated"),
 ]
 

@@ -164,8 +164,12 @@ fn bind_table_ref(
 ) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError {
   match r.kind {
     Table(name, alias_~, hints~) => {
-      ignore(hints)
+      let sample = tablesample_hint(hints)
+      let not_local = () => {
+        err(494, "The TABLESAMPLE clause can only be used with local tables.")
+      }
       match find_cte(env, name) {
+        Some(_) if sample is Some(_) => raise not_local()
         Some(cte) => {
           let q = match alias_ {
             Some(a) => a.name.to_lower()
@@ -177,6 +181,7 @@ fn bind_table_ref(
       }
       // views: bound like a derived table, without the caller's scope
       match (env.catalog.view)(name) {
+        Some(_) if sample is Some(_) => raise not_local()
         Some((vq, names)) => {
           if env.nest >= max_module_nesting {
             raise @types.not_supported(
@@ -212,7 +217,16 @@ fn bind_table_ref(
             Some(a) => a.name.to_lower()
             None => t.name.to_lower()
           }
-          (Scan(scope=t.scope, id=t.id, rowid=false), requalify(t.columns, q))
+          let empty = match sample {
+            Some(h) => bind_tablesample(h, name.base())
+            None => false
+          }
+          let scan : @ir.Plan = if empty {
+            Values([])
+          } else {
+            Scan(scope=t.scope, id=t.id, rowid=false)
+          }
+          (scan, requalify(t.columns, q))
         }
         None => raise err(208, "Invalid object name '\{object_text(name)}'.")
       }
@@ -353,6 +367,7 @@ fn bind_table_ref(
     }
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
       bind_table_function(env, name, args, openjson_with, alias_, columns)
+    Pivot(src, clause, alias_~) => bind_pivot(env, src, clause, alias_)
   }
 }
 
@@ -486,6 +501,9 @@ fn bind_table_function(
     ty,
     nullable,
     origin: SetOperation,
+  }
+  if fname == "GENERATE_SERIES" {
+    return bind_generate_series(env, name, args, columns, q)
   }
   if fname != "OPENJSON" && fname != "STRING_SPLIT" {
     match bind_user_tvf(env, name, args, alias_, columns) {
@@ -864,7 +882,9 @@ fn Grouping::rewrite(
           _ => self.ordering = Some(text)
         }
       }
-      bind_agg_call(self.inner, call)
+      let a = bind_agg_call(self.inner, call)
+      check_grouping_sets_agg(a, !self.sets.is_empty())
+      a
     }
     let i = self.aggs.length()
     self.aggs.push(agg)
@@ -1046,7 +1066,9 @@ fn bind_select_query(
         qualifier: "",
         name: "\u{1}w\{i}",
         ty: w.ty,
-        nullable: true,
+        // captured: PERCENTILE_DISC over a NOT NULL key is NOT NULL
+        // (analytic/percentile)
+        nullable: !(w.func is PercentileDisc) || w.order[0].expr.nullable,
         origin: Aggregate,
       })
     }

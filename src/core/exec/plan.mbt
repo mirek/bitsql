@@ -236,6 +236,17 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     WorkTable(id) => ctx.rt.work.get(id).unwrap_or([])
     TableFunc(f, args) => run_table_fn(ctx, f, args)
     WithParams(args, inner) => run(params_ctx(ctx, args), inner)
+    NoNullWarning(inner) => {
+      let saved = ctx.rt.null_eliminated
+      let rows = run(ctx, inner)
+      ctx.rt.null_eliminated = saved
+      rows
+    }
+    Unpivot(input, keep~, columns~, names~) => {
+      let out = []
+      run_unpivot(ctx, input, keep, columns, names, r => out.push(r))
+      out
+    }
     UserTable(id, args) => (ctx.user_table)(id, args.map(a => eval(ctx, a)))
     ForJson(input, columns, root~, include_nulls~, without_array_wrapper~) => {
       let rows = run(ctx, input)
@@ -397,6 +408,8 @@ pub fn stream(
       }
     TableFunc(f, args) => stream_table_fn(ctx, f, args, emit)
     WithParams(args, inner) => stream(params_ctx(ctx, args), inner, emit)
+    Unpivot(input, keep~, columns~, names~) =>
+      run_unpivot(ctx, input, keep, columns, names, emit)
     Apply(left, right, outer~, right_width~) =>
       stream(ctx, left, l => {
         let rs = run(ctx.push_outer(l), right)

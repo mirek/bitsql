@@ -117,6 +117,16 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     GlobalVar(name) => bind_global(name)
     Column(parts) => bind_column(env, parts)
     Paren(inner) => bind_expr(env, inner)
+    // captured: -2147483648 and -(2147483648) are int, not numeric(10,0)
+    // (analytic/generate-series, approx-checksum-agg VALUES rows)
+    Unary(
+      Neg,
+      {
+        kind: IntLit("2147483648")
+        | Paren({ kind: IntLit("2147483648"), .. }),
+        ..
+      }
+    ) => mk(Lit(Int(-2147483648)), Int, false)
     Unary(op, inner) => {
       let a = bind_expr(env, inner)
       variant_unary_check(op, a)

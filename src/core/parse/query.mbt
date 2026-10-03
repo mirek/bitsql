@@ -675,7 +675,7 @@ fn Parser::join_tail(
   self : Parser,
   left : @ast.TableRef,
 ) -> @ast.TableRef raise @ast.SyntaxError {
-  let mut left = left
+  let mut left = self.pivot_tail(left)
   while self.join_kind() is Some((kind, hint)) {
     let right = self.table_primary()
     match kind {
@@ -702,6 +702,7 @@ fn Parser::join_tail(
         }
       }
     }
+    left = self.pivot_tail(left)
   }
   left
 }
@@ -857,7 +858,7 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     }
   }
   let alias_ = self.table_alias()
-  let hints = self.table_hints()
+  let hints = self.tablesample() + self.table_hints()
   { kind: Table(name, alias_~, hints~), span: self.span_from(start), }
 }
 

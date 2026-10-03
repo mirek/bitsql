@@ -35,6 +35,8 @@ pub(all) enum AggFn {
   VarP
   Grouping(Int)
   GroupingId(Array[Int])
+  ChecksumAgg
+  ApproxCountDistinct
 } derive(Eq, @debug.Debug)
 
 pub(all) enum BitOp {
@@ -219,6 +221,8 @@ pub(all) enum Plan {
   WithParams(Array[Expr], Plan)
   UserTable(Int, Array[Expr])
   ForJson(Plan, Array[ResultColumn], root~ : String?, include_nulls~ : Bool, without_array_wrapper~ : Bool)
+  NoNullWarning(Plan)
+  Unpivot(Plan, keep~ : Array[Int], columns~ : Array[Int], names~ : Array[String])
 } derive(@debug.Debug)
 
 pub(all) struct ResultColumn {
@@ -244,6 +248,7 @@ pub(all) enum TableFn {
   OpenJsonDefault
   OpenJsonWith(Array[OpenJsonColumn])
   StringSplit(ordinal~ : Bool)
+  GenerateSeries(@types.SqlType)
 } derive(@debug.Debug)
 
 pub(all) enum WinFn {
@@ -258,6 +263,8 @@ pub(all) enum WinFn {
   PercentRank
   CumeDist
   Agg(AggFn, distinct~ : Bool)
+  PercentileCont
+  PercentileDisc
 } derive(Eq, @debug.Debug)
 
 pub(all) struct WindowCall {

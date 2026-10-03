@@ -249,13 +249,32 @@ pub fn eval_aggregate(
         None => ""
       }
       let buf = StringBuilder()
+      // non-LOB results are limited to 8000 bytes (captured: 9829 state 0,
+      // analytic/string-agg-checks)
+      let limit = match call.ty {
+        VarChar(Some(_), _) => 8000
+        NVarChar(Some(_), _) => 4000
+        _ => -1
+      }
+      let mut len = 0
       for i, x in ordered {
         if i > 0 {
           buf.write_string(sep)
+          len += sep.length()
         }
         match @types.cast(x.0, arg.ty, call.ty) {
-          String(t) => buf.write_string(t)
+          String(t) => {
+            buf.write_string(t)
+            len += t.length()
+          }
           _ => ()
+        }
+        if limit >= 0 && len > limit {
+          raise @types.sql_error(
+            9829,
+            "STRING_AGG aggregation result exceeded the limit of 8000 bytes. Use LOB types to avoid result truncation.",
+            state=if limit == 8000 { 0 } else { 1 },
+          )
         }
       }
       String(buf.to_string())
@@ -275,6 +294,8 @@ pub fn eval_aggregate(
     }
     // computed by the Aggregate plan from the grouping set
     Grouping(_) | GroupingId(_) => Null
+    ChecksumAgg => checksum_agg(agg_inputs(ctx, call, rows))
+    ApproxCountDistinct => approx_count_distinct(ctx, call, rows)
   }
 }
 

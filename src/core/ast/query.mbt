@@ -170,4 +170,20 @@ pub(all) enum TableRefKind {
   )
   /// `hint` is a join hint (LOOP/HASH/MERGE/REMOTE) if written.
   Join(JoinKind, TableRef, TableRef, on~ : Expr?, hint~ : String?)
+  /// `source PIVOT (...) alias` / `source UNPIVOT (...) alias`.
+  Pivot(TableRef, PivotClause, alias_~ : Ident)
+} derive(Eq, Debug)
+
+///|
+/// The parenthesised part of PIVOT / UNPIVOT. PIVOT's aggregate argument
+/// and FOR column are (possibly qualified) column names; its IN list holds
+/// identifiers that become the value column names.
+pub(all) enum PivotClause {
+  Pivot(
+    agg~ : ObjectName,
+    value~ : Array[Ident],
+    column~ : Array[Ident],
+    values~ : Array[Ident]
+  )
+  Unpivot(value~ : Ident, name~ : Ident, columns~ : Array[Array[Ident]])
 } derive(Eq, Debug)

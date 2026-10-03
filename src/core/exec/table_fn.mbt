@@ -113,5 +113,90 @@ fn stream_table_fn(
         }
       }
     }
+    GenerateSeries(ty) => generate_series(ctx, ty, args, emit)
+  }
+}
+
+///|
+/// GENERATE_SERIES(start, stop [, step]): the binder converts every
+/// argument to the `value` type; without a step it is 1 or -1 toward stop.
+/// A step of the wrong sign gives no rows, any NULL argument none either,
+/// and a zero step is error 4199 (captured: analytic/generate-series).
+fn generate_series(
+  ctx : Ctx,
+  ty : @types.SqlType,
+  args : Array[@ir.Expr],
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  let vals = args.map(a => eval(ctx, a))
+  let zero_step = () => {
+    @types.sql_error(
+      4199,
+      "Argument value 0 is invalid for argument 3 of generate_series function.",
+      state=2,
+    )
+  }
+  match ty {
+    Decimal(_, sc) | Numeric(_, sc) => {
+      let dec = (v : @types.Value) => {
+        match v {
+          Decimal(d) => Some(d.rescale(sc))
+          _ => None
+        }
+      }
+      guard dec(vals[0]) is Some(start) && dec(vals[1]) is Some(stop) else {
+        return
+      }
+      let step = if vals.length() > 2 {
+        match dec(vals[2]) {
+          Some(st) => st
+          None => return
+        }
+      } else if start.compare(stop) <= 0 {
+        @types.Decimal::from_int64(1L).rescale(sc)
+      } else {
+        @types.Decimal::from_int64(-1L).rescale(sc)
+      }
+      if step.is_zero() {
+        raise zero_step()
+      }
+      let mut cur = start
+      while (step.sign() > 0 && cur.compare(stop) <= 0) ||
+            (step.sign() < 0 && cur.compare(stop) >= 0) {
+        ctx.rt.charge(1L)
+        emit([Decimal(cur)])
+        cur = cur.add(step).rescale(sc)
+      }
+    }
+    _ => {
+      guard vals[0].as_int64() is Some(start) &&
+        vals[1].as_int64() is Some(stop) else {
+        return
+      }
+      let step = if vals.length() > 2 {
+        match vals[2].as_int64() {
+          Some(st) => st
+          None => return
+        }
+      } else if start <= stop {
+        1L
+      } else {
+        -1L
+      }
+      if step == 0L {
+        raise zero_step()
+      }
+      let mut cur = start
+      while (step > 0L && cur <= stop) || (step < 0L && cur >= stop) {
+        ctx.rt.charge(1L)
+        emit([@types.int_value(ty, cur)])
+        let next = cur + step
+        // stop before the Int64 sum wraps (bigint at its limits)
+        if (step > 0L && next < cur) || (step < 0L && next > cur) {
+          break
+        }
+        cur = next
+      }
+    }
   }
 }

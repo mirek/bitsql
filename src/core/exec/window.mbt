@@ -62,6 +62,13 @@ fn window_values(
       }
     }
     let part_rows = idx.map(i => rows[i])
+    if call.func is (PercentileCont | PercentileDisc) {
+      let v = percentile_value(ctx.with_row(part_rows[0]), call, keys)
+      for i in idx {
+        result[i] = v
+      }
+      continue
+    }
     let mut dense = 0
     for j in 0..<n {
       if peer_start[j] == j {
@@ -81,6 +88,7 @@ fn window_values(
             },
           )
         CumeDist => Float(peer_end[j].to_double() / n.to_double())
+        PercentileCont | PercentileDisc => Null
         Ntile => {
           let buckets = match eval(row_ctx, call.args[0]).as_int64() {
             Some(b) if b > 0L => b.to_int()
