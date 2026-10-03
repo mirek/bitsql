@@ -216,9 +216,28 @@ fn call_misc(
     "GREATEST" | "LEAST" => {
       let mut best : @types.Value = Null
       let coll = e.ty.collation()
-      for x in v {
+      for i, x in v {
         if x is Null {
           continue
+        }
+        // a max argument longer than the 8000-byte result (bound as
+        // varchar(8000) / nvarchar(4000) / varbinary(8000)); any argument,
+        // not only the winner (captured probe)
+        if args[i].ty
+          is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None)) {
+          let fits = match (x, e.ty) {
+            (String(s), VarChar(Some(n), _) | NVarChar(Some(n), _)) =>
+              s.length() <= n
+            (Binary(b), VarBinary(Some(n))) => b.length() <= n
+            _ => true
+          }
+          if !fits {
+            raise @types.sql_error(
+              8152,
+              "String or binary data would be truncated.",
+              state=10,
+            )
+          }
         }
         if best is Null {
           best = x

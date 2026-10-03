@@ -247,7 +247,8 @@ fn bind_string_fn(
         )
       }
       let bs = args.map(a => bind_expr(env, a))
-      named("CONCAT", bs, concat_type(env, bs, None), nullable=false)
+      let ty = concat_type(env, bs, None)
+      named("CONCAT", unicode_binary_args(bs, ty), ty, nullable=false)
     }
     "CONCAT_WS" => {
       if args.length() < 3 || args.length() > 254 {
@@ -260,12 +261,8 @@ fn bind_string_fn(
       let bs = args.map(a => bind_expr(env, a))
       let (bs, _) = collate_args(env, "concat_ws", bs)
       let values = bs[1:].to_owned()
-      named(
-        "CONCAT_WS",
-        bs,
-        concat_type(env, values, Some(bs[0])),
-        nullable=false,
-      )
+      let ty = concat_type(env, values, Some(bs[0]))
+      named("CONCAT_WS", unicode_binary_args(bs, ty), ty, nullable=false)
     }
     "NCHAR" => {
       arity_n(name, args, 1)
@@ -393,13 +390,21 @@ fn bind_string_fn(
       }
       let s = string_arg_type(bs[0], env)
       // captured: any Unicode argument makes the result nvarchar
-      let s = if !s.is_unicode() && bs.iter().any(x => x.ty.is_unicode()) {
+      let to_unicode = !s.is_unicode() && bs.iter().any(x => x.ty.is_unicode())
+      let s = if to_unicode {
         @types.SqlType::NVarChar(
           string_len(s),
           s.collation().unwrap_or(env.collation),
         )
       } else {
         s
+      }
+      // a binary source reads as UTF-16LE (captured: TRANSLATE(CAST(0x4142
+      // AS binary(10)), N'A', N'Z') is N'䉁' + 4 NULs)
+      let bs = if to_unicode {
+        [unicode_binary_args([bs[0]], s)[0], bs[1], bs[2]]
+      } else {
+        bs
       }
       let ty = if is_max_string(s) { s } else { sized_like(s, Some(8000)) }
       // whether the mapping strings are only known at run time (a variable,
@@ -471,6 +476,31 @@ fn bind_string_fn(
 }
 
 ///|
+/// With a Unicode CONCAT result, binary arguments convert to nvarchar by
+/// reinterpreting their bytes as UTF-16LE (captured: CONCAT(0x414243,
+/// N'') is N'䉁C'), not through the code page.
+fn unicode_binary_args(
+  bs : Array[@ir.Expr],
+  ty : @types.SqlType,
+) -> Array[@ir.Expr] {
+  if !ty.is_unicode() {
+    return bs
+  }
+  bs.map(x => {
+    if x.ty.family() is FBinary && !is_null_lit(x) {
+      let n = string_len(x.ty).map(n => @cmp.maximum(1, (n + 1) / 2))
+      {
+        kind: Cast(x, try_=false, style=None),
+        ty: NVarChar(n, ty.collation().unwrap_or(@types.default_collation)),
+        nullable: x.nullable,
+      }
+    } else {
+      x
+    }
+  })
+}
+
+///|
 /// CONCAT / CONCAT_WS result type: Unicode if any argument is; lengths add
 /// up (a bare NULL counts 0, captured), separators once between values;
 /// max beyond 8000 bytes; at least 1.
@@ -489,6 +519,10 @@ fn concat_type(
   let len0 = (x : @ir.Expr) => {
     if is_null_lit(x) {
       Some(0)
+    } else if unicode && x.ty.family() is FBinary {
+      // binary reads as UTF-16LE: ceil(bytes / 2) characters (captured:
+      // CONCAT_WS(N'', binary(3), N'') is nvarchar(4))
+      string_len(x.ty).map(n => (n + 1) / 2)
     } else {
       string_len(x.ty)
     }

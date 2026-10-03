@@ -47,6 +47,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     )
   }
   let args = call.args
+  concat_guard(env, name, args)
   variant_guard(env, name, args)
   xml_guard(env, name, args)
   lob_guard(env, name, args)

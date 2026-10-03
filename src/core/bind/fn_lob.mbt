@@ -61,6 +61,43 @@ fn lob_accepting(name : String) -> Bool {
 }
 
 ///|
+/// CONCAT / CONCAT_WS: the arguments convert to nvarchar when one of them
+/// (the separator included) is a Unicode character type, else to varchar;
+/// xml and sql_variant do not make it Unicode. The first argument in
+/// order that cannot convert raises: xml / sql_variant 257, image 206
+/// (captured: msduck concat-legacy-family, e.g. CONCAT_WS('', xml, text)
+/// is "xml to varchar", CONCAT_WS('', image, xml) is the image 206).
+fn concat_guard(
+  env : Env,
+  name : String,
+  args : Array[@ast.Expr],
+) -> Unit raise @types.SqlError {
+  if !(name is ("CONCAT" | "CONCAT_WS")) {
+    return
+  }
+  let tys : Array[@types.SqlType] = []
+  for a in args {
+    let t = bind_expr(env, a).ty catch { _ => return }
+    tys.push(t)
+  }
+  if !tys.iter().any(t => t is (Xml | Variant | Image)) {
+    return
+  }
+  let target : @types.SqlType = if tys.iter().any(t => t.is_unicode()) {
+    NVarChar(Some(1), @types.default_collation)
+  } else {
+    VarChar(Some(1), @types.default_collation)
+  }
+  for t in tys {
+    match t {
+      Xml | Variant => raise @types.implicit_conversion_error(t, target)
+      Image => raise @types.type_clash_error(Image, target)
+      _ => ()
+    }
+  }
+}
+
+///|
 /// Raises SQL Server's error for a text/ntext/image argument the function
 /// does not take. Arguments are bound only for the functions listed above
 /// (others may take identifiers, e.g. DATEADD's datepart).

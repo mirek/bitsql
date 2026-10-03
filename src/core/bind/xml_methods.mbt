@@ -357,6 +357,9 @@ fn xml_guard(
           "DATALENGTH of xml (SQL Server's internal binary size)",
           number=@types.EMU_XML_NOT_SUPPORTED,
         )
+      // captured: GREATEST(xml, xml) is 8116 state 4 (like text/ntext)
+      "GREATEST" | "LEAST" =>
+        raise bad_arg_type(ty, i + 1, name.to_lower(), state=4)
       _ => raise bad_arg_type(ty, i + 1, name.to_lower())
     }
   }

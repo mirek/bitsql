@@ -458,8 +458,10 @@ fn conversion(
   try_ : Bool,
   style : Int?,
 ) -> @ir.Expr raise @types.SqlError {
-  // a bare NULL converts to any type (CAST(NULL AS date))
-  if a.kind is Lit(Null) && !(t is Int) {
+  // a bare NULL converts to any type (CAST(NULL AS date)); a typed NULL
+  // keeps its type's rules (captured: CONVERT(varchar(max), CAST(NULL AS
+  // image)) is 529, msduck concat-text-conversion#148)
+  if a.kind is Lit(Null) && a.ty is Int && !(t is Int) {
     return { kind: Lit(Null), ty: t, nullable: true, }
   }
   if !@types.can_convert_explicitly(a.ty, t) {

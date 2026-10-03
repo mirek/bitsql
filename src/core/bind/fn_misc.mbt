@@ -11,10 +11,20 @@ fn safe_conversion(from : @types.SqlType, to : @types.SqlType) -> Bool {
   if from == to {
     return true
   }
-  match (from.family(), to.family()) {
-    (FString, FString) => true
-    (FInteger, FInteger) => @types.precedence(from) <= @types.precedence(to)
-    _ => false
+  match (from, to) {
+    // decimal widening that keeps every digit (captured: GREATEST(1.5,
+    // 2.25) and GREATEST(1.5, 22.5) are NOT NULL, GREATEST(1, 2.5) is not)
+    (Decimal(p, s) | Numeric(p, s), Decimal(q, t) | Numeric(q, t)) =>
+      s <= t && p - s <= q - t
+    _ =>
+      match (from.family(), to.family()) {
+        (FString, FString) => true
+        (FInteger, FInteger) => @types.precedence(from) <= @types.precedence(to)
+        // captured: GREATEST(1e0, 2) is float NOT NULL, GREATEST(1e0, 2.5)
+        // nullable
+        (FInteger, FFloat) => to is Float
+        _ => false
+      }
   }
 }
 
@@ -58,16 +68,35 @@ fn bind_misc_fn(
       }
       let x = bs()
       let t = unify_args(x)
+      // decimal or numeric: the first decimal/numeric argument's spelling
+      // (captured: GREATEST(2.5, CAST(1 AS decimal(3,1))) is numeric(3,1),
+      // GREATEST(CAST(1 AS decimal(4,1)), CAST(2 AS numeric(4,1))) decimal)
+      let t : @types.SqlType = match t {
+        Decimal(p, s) | Numeric(p, s) =>
+          match x.search_by(v => v.ty is (Decimal(_, _) | Numeric(_, _))) {
+            Some(i) if x[i].ty is Numeric(_, _) => Numeric(p, s)
+            _ => Decimal(p, s)
+          }
+        _ => t
+      }
       // an explicit COLLATE on any argument sets the result collation
       // (captured: GREATEST(N'a', 'b' COLLATE Latin1_General_CS_AS) has the
-      // case-sensitive flag)
-      let t = match resolve_collation(env, name.to_lower(), x) {
+      // case-sensitive flag; conflicts name "GREATEST/LEAST")
+      let t = match resolve_collation(env, "GREATEST/LEAST", x) {
         Some(c) => with_collation(t, c)
         None => t
       }
       let nullable = x.iter().any(v => v.nullable || !safe_conversion(v.ty, t))
       let conv = x.map(v => if is_null_lit(v) { v } else { coerce(v, t) })
-      named(name, conv, t, nullable~)
+      // max types report 8000 bytes; a longer argument is 8152 state 10 at
+      // run time (captured: msduck greatest-least #049, #095)
+      let rt : @types.SqlType = match t {
+        VarChar(None, c) => VarChar(Some(8000), c)
+        NVarChar(None, c) => NVarChar(Some(4000), c)
+        VarBinary(None) => VarBinary(Some(8000))
+        _ => t
+      }
+      named(name, conv, rt, nullable~)
     }
     "ISNUMERIC" => {
       arity_n(name, args, 1)
