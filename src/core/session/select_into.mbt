@@ -11,6 +11,7 @@ fn Session::exec_select_into(
   into : @ast.ObjectName,
   line : Int,
 ) -> Unit raise {
+  self.lock_reads(q)
   let bound = @bind.bind_query(self.env(), {
     ..q,
     body: Select({ ..sel, into: None, }),
@@ -104,6 +105,7 @@ fn Session::exec_assignment_select(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
+  self.lock_reads(q)
   let (bound, targets) = @bind.bind_assignment_select(self.env(), q)
   self.cur_cmd = 193
   let ctx = self.ctx()
@@ -128,7 +130,7 @@ fn Session::exec_query(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
-  self.lock_hinted_reads(q)
+  self.lock_reads(q)
   let bound = @bind.bind_query(self.env(), q)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))

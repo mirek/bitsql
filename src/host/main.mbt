@@ -40,6 +40,9 @@ async fn main {
   let engine = @engine.Engine::new(config, seed)
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)
   let conns : Map[Int, @socket.Tcp] = Map([])
+  // pending timers: id → generation (a re-set or cancel invalidates it)
+  let timers : Map[Int, Int] = Map([])
+  let mut timer_gen = 0
   @async.with_task_group(group => {
     group.spawn_bg(() => {
       while true {
@@ -71,7 +74,20 @@ async fn main {
                 None => ()
               }
             Log(msg) => @stdio.stderr.write("\{msg}\n")
-            SetTimer(_, _) | CancelTimer(_) | Yield => ()
+            SetTimer(id, ms) => {
+              timer_gen += 1
+              let gen = timer_gen
+              timers[id] = gen
+              group.spawn_bg(() => {
+                @async.sleep(ms)
+                if timers.get(id) == Some(gen) {
+                  timers.remove(id)
+                  queue.put(TimerFired(id))
+                }
+              })
+            }
+            CancelTimer(id) => timers.remove(id)
+            Yield => ()
           }
         }
       }

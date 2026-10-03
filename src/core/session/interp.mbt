@@ -20,6 +20,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.uncatchable = false
   self.throwing = false
   self.stmt_error = 0
+  self.refresh_tx()
   let snap_temp = self.temp
   let snap_tvars = self.tvars
   let snap_tx = self.tx
@@ -90,10 +91,26 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
         result_set=self.cur_cmd == 193,
       )
     }
+    if e.number() == 1205 {
+      self.abort_transaction()
+    }
     raise Caught(e, line)
+  }
+  // DML constraint violations end with 3621 "The statement has been
+  // terminated." (captured: catalog/filtered-unique, locking/same-key-insert-waits)
+  if self.cur_cmd >= 195 &&
+    self.cur_cmd <= 197 &&
+    [2627, 2601, 515, 547, 2628, 8152].contains(e.number()) &&
+    self.trailing.is_empty() {
+    ignore(self.terminated(e))
   }
   self.flush_pending(line)
   self.message(e, line)
+  // a deadlock victim's transaction is rolled back after the error
+  // (captured order: ERROR, ENVCHANGE; locking/deadlock-two-tables)
+  if e.number() == 1205 {
+    self.abort_transaction()
+  }
   self.flush_trailing(line)
   // an uncaught THROW completes with 253, not 246 (captured: msduck
   // nocount-completions)
@@ -227,12 +244,35 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         match n.to_upper() {
           "NOCOUNT" => self.nocount = on
           "XACT_ABORT" => self.xact_abort = on
+          "LOCK_TIMEOUT" =>
+            match value {
+              ValueExpr(e) => {
+                let (v, ty) = self.eval(e)
+                self.lock_timeout = match @types.cast(v, ty, Int) {
+                  Int(n) => n
+                  _ => -1
+                }
+              }
+              _ => ()
+            }
           _ => ()
         }
       }
-      self.done(if value is Off { 186 } else { 185 })
+      // captured: SET LOCK_TIMEOUT completes with 249 (locking/lock-timeout)
+      self.done(
+        if names.iter().any(n => n.to_upper() == "LOCK_TIMEOUT") {
+          249
+        } else if value is Off {
+          186
+        } else {
+          185
+        },
+      )
     }
-    SetIsolation(_) => self.done(185)
+    SetIsolation(level) => {
+      self.isolation = level.to_upper()
+      self.done(185)
+    }
     Print(e) => {
       self.cur_cmd = 247
       let (v, ty) = self.eval(e)
@@ -248,6 +288,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     RaisError(args, options~) => self.exec_raiserror(args, options, s.span.line)
     Throw(args) => self.exec_throw(args)
     If(cond, then_, else_) => {
+      self.lock_expr_reads(cond)
       let b = @bind.bind_expr(self.env(), cond)
       let v = @exec.eval(self.ctx(), b)
       self.done(192)
@@ -258,6 +299,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       }
     }
     While(cond, body) => {
+      self.lock_expr_reads(cond)
       let b = @bind.bind_expr(self.env(), cond)
       while true {
         let v = @exec.eval(self.ctx(), b)

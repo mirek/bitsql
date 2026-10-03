@@ -40,6 +40,7 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | RETURN (bare) | 219 | no |
 | RETURN <expr> (in a procedure) | 193 | yes, 1 |
 | SET option (NOCOUNT on/off: 185/186) | 185/186 | no |
+| SET LOCK_TIMEOUT n | 249 | no |
 | RAISERROR / THROW (caught) | 246 | no |
 | PRINT | 247 | no |
 | IF / WHILE condition evaluation | 192 (0xC0) | no |
@@ -105,3 +106,11 @@ restored after the trigger, @@IDENTITY is not. A trigger that ends the
 transaction (ROLLBACK) finishes, then the batch ends with 3609 (line of the
 firing statement) and DONE 253 + error; rolling back the implicit autocommit
 transaction sends no ENVCHANGE.
+
+## Statement-terminating errors followed by 3621
+
+DML constraint violations (2627, 2601, 515, 2628, and assumed for 547/8152)
+and lock timeouts (1222) are followed by INFO 3621 "The statement has been
+terminated." (class 0) before the statement's DONE with the error bit, outside
+TRY (captured: catalog/filtered-unique, locking/same-key-insert-waits,
+locking/lock-timeout). 547 raised by ALTER TABLE ... CHECK is not.

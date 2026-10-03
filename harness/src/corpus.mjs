@@ -7,6 +7,13 @@
 //      -- @step proc dbo.p     tedious callProcedure (RPC by procedure name)
 //      -- @param @a int = 1    parameter for the current rpc/proc step;
 //      -- @param @o int output   value is a JSON literal; `output` marks OUTPUT
+//    Multi-connection cases (locking, deadlocks): any step may take
+//    `conn=N` (connection N, opened on first use; default 1) and `async`
+//    (send it and continue without waiting for the response; the runner
+//    pauses briefly so the server starts executing it). `-- @step await
+//    conn=N` waits for connection N's pending async step; its result is
+//    recorded at the async step's position. Pending steps are also awaited
+//    before the connection's next step and at the end of the case.
 //    Expected output: sibling `name.expected.json` (captured, never hand-written).
 //
 // 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
@@ -27,13 +34,30 @@ export function parseSqlCase(text) {
   // The leading comment block is the case description; it is never sent.
   const body = lines.findIndex(l => !(l.trim() === '' || (/^\s*--/.test(l) && !/^\s*--\s*@/.test(l))))
   lines = body < 0 ? [] : lines.slice(body)
-  const open = (kind, arg) => {
-    current = { kind: kind === 'setup' ? 'batch' : kind, sql: '', params: [], compare: kind !== 'setup', lines: [] }
+  const open = (kind, rest) => {
+    const words = rest.split(/\s+/).filter(Boolean)
+    let arg = ''
+    const extra = {}
+    for (const w of words) {
+      const conn = /^conn=(\d+)$/i.exec(w)
+      if (conn) extra.conn = Number(conn[1])
+      else if (/^async$/i.test(w)) extra.async = true
+      else if (!arg) arg = w
+      else throw new Error(`bad @step argument: ${w}`)
+    }
+    if (kind === 'await') {
+      if (!extra.conn) throw new Error('@step await needs conn=N')
+      steps.push({ kind: 'await', sql: '', compare: false, conn: extra.conn })
+      current = null
+      return
+    }
+    current = { kind: kind === 'setup' ? 'batch' : kind, sql: '', params: [], compare: kind !== 'setup', lines: [], ...extra }
     if (kind === 'proc') { if (!arg) throw new Error('@step proc needs a procedure name'); current.sql = arg }
+    else if (arg) throw new Error(`bad @step argument: ${arg}`)
     steps.push(current)
   }
   for (const line of lines) {
-    const step = /^\s*--\s*@step\s+(batch|setup|rpc|proc)\b\s*(\S*)\s*$/i.exec(line)
+    const step = /^\s*--\s*@step\s+(batch|setup|rpc|proc|await)\b(.*)$/i.exec(line)
     if (step) { open(step[1].toLowerCase(), step[2]); continue }
     if (/^\s*--\s*@step\b/i.test(line)) throw new Error(`bad directive: ${line}`)
     const param = /^\s*--\s*@param\s+@?([A-Za-z_][\w]*)\s+([a-z_0-9]+(?:\s*\([^)]*\))?)\s*(?:=\s*(.*?))?\s*(\boutput\b)?\s*$/i.exec(line)
@@ -44,10 +68,11 @@ export function parseSqlCase(text) {
       continue
     }
     if (/^\s*--\s*@param\b/i.test(line)) throw new Error(`bad directive: ${line}`)
-    if (!current) { if (line.trim() === '') continue; open('batch') }
+    if (!current) { if (line.trim() === '') continue; open('batch', '') }
     current.lines.push(line)
   }
   for (const step of steps) {
+    if (step.kind === 'await') continue
     const body = step.lines
     while (body.length && body[0].trim() === '') body.shift()
     while (body.length && body.at(-1).trim() === '') body.pop()

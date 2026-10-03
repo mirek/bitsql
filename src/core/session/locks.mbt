@@ -71,12 +71,24 @@ fn Session::acquire(
         }
         None => ()
       }
+      if self.lock_timeout == 0 {
+        self.server.wake_all(self.server.locks.cancel(request))
+        raise self.wait_failure(1222)
+      }
       self.waiting = Some(request)
       raise Park
     }
     Deadlock(victim~, request~) =>
       if victim == me {
         raise self.wait_failure(1205)
+      } else if self.fail_next_wait is Some(n) {
+        // already chosen as the victim of this cycle: fail now
+        self.fail_next_wait = None
+        match request {
+          Some(r) => self.server.wake_all(self.server.locks.cancel(r))
+          None => ()
+        }
+        raise self.wait_failure(n)
       } else {
         // another (parked) session is the victim: it re-runs its request
         // and fails with 1205 at its waiting statement; we wait.
@@ -91,15 +103,18 @@ fn Session::acquire(
 }
 
 ///|
-/// 1205 (deadlock victim: the transaction is rolled back) or 1222 (lock
-/// timeout).
+/// 1205 (deadlock victim: the transaction is rolled back and the batch
+/// ends) or 1222 (lock timeout: the statement fails).
 fn Session::wait_failure(self : Session, n : Int) -> @types.SqlError {
   if n == 1205 {
-    self.abort_transaction()
+    // exec_one rolls the transaction back after reporting the error
     self.throwing = true // ends the batch
     deadlock_error(self.rt.spid)
   } else {
-    @types.sql_error(1222, "Lock request time out period exceeded.", state=51)
+    // statement-level; followed by 3621 (captured: locking/lock-timeout)
+    self.terminated(
+      @types.sql_error(1222, "Lock request time out period exceeded.", state=51),
+    )
   }
 }
 
@@ -239,39 +254,99 @@ fn mentions_column(e : @ast.Expr) -> Bool {
 }
 
 ///|
-/// Locks for reads with UPDLOCK / HOLDLOCK / SERIALIZABLE / XLOCK hints in a
-/// SELECT's FROM clause (simple shapes: the WHERE pins the primary key, or
-/// the whole table is locked — conservative).
-fn Session::lock_hinted_reads(self : Session, q : @ast.Query) -> Unit raise {
-  guard q.body is Select(sel) else { return }
-  fn visit(r : @ast.TableRef) -> Unit raise {
-    match r.kind {
-      Table(name, alias_~, hints~) =>
-        match (hint_lock(hints), self.find_table(name)) {
-          (Some((mode, _)), Some((0, t))) => {
-            let a = match alias_ {
-              Some(x) => x.name.to_lower()
-              None => t.name.to_lower()
+/// Read lock for a table reference: (mode, duration), or None (NOLOCK,
+/// READ UNCOMMITTED, SNAPSHOT). Unhinted reads take S for the statement under
+/// READ COMMITTED and for the transaction under REPEATABLE READ/SERIALIZABLE.
+fn Session::read_lock(
+  self : Session,
+  hints : Array[@ast.TableHint],
+) -> (@sched.LockMode, @sched.Duration)? {
+  let names = hints.map(h => h.name.to_upper())
+  match hint_lock(hints) {
+    Some((mode, _)) => return Some((mode, Transaction))
+    None => ()
+  }
+  if names.contains("NOLOCK") || names.contains("READUNCOMMITTED") {
+    return None
+  }
+  match self.isolation {
+    "READ UNCOMMITTED" | "SNAPSHOT" => None
+    "REPEATABLE READ" | "SERIALIZABLE" => Some((S, Transaction))
+    _ => Some((S, Statement))
+  }
+}
+
+///|
+/// Takes the locks a query's reads need (database tables in FROM clauses,
+/// including subqueries in WHERE): the primary-key point when the WHERE pins
+/// the key by equality, otherwise the whole table (a scan).
+fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
+  fn body(b : @ast.QueryBody) -> Unit raise {
+    match b {
+      Select(sel) => {
+        fn visit(r : @ast.TableRef) -> Unit raise {
+          match r.kind {
+            Table(name, alias_~, hints~) =>
+              match (self.read_lock(hints), self.find_table(name)) {
+                (Some((mode, duration)), Some((0, t))) => {
+                  let a = match alias_ {
+                    Some(x) => x.name.to_lower()
+                    None => t.name.to_lower()
+                  }
+                  let res : @sched.Resource[LockKey] = match
+                    self.pk_point(t, a, sel.where_) {
+                    Some((i, key)) =>
+                      KeyRange(table=t.id, index=i, @sched.Interval::point(key))
+                    None => WholeTable(t.id)
+                  }
+                  self.acquire(res, mode, duration)
+                }
+                _ => ()
+              }
+            Join(_, l, rr, on~, ..) => {
+              visit(l)
+              visit(rr)
+              match on {
+                Some(e) => self.lock_expr_reads(e)
+                None => ()
+              }
             }
-            let res : @sched.Resource[LockKey] = match
-              self.pk_point(t, a, sel.where_) {
-              Some((i, key)) =>
-                KeyRange(table=t.id, index=i, @sched.Interval::point(key))
-              None => WholeTable(t.id)
-            }
-            self.acquire(res, mode, Transaction)
+            Derived(q, ..) => self.lock_reads(q)
+            _ => ()
           }
-          _ => ()
         }
-      Join(_, l, rr, ..) => {
-        visit(l)
-        visit(rr)
+
+        for r in sel.from {
+          visit(r)
+        }
+        match sel.where_ {
+          Some(w) => self.lock_expr_reads(w)
+          None => ()
+        }
       }
-      _ => ()
+      SetOperation(_, l, r) => {
+        body(l)
+        body(r)
+      }
+      Nested(q) => self.lock_reads(q)
     }
   }
 
-  for r in sel.from {
-    visit(r)
+  body(q.body)
+}
+
+///|
+/// Read locks of the subqueries inside an expression.
+fn Session::lock_expr_reads(self : Session, e : @ast.Expr) -> Unit raise {
+  let queries = []
+  walk_expr(e, x => {
+    match x.kind {
+      Subquery(q) | Exists(q) => queries.push(q)
+      InQuery(_, q, ..) => queries.push(q)
+      _ => ()
+    }
+  })
+  for q in queries {
+    self.lock_reads(q)
   }
 }

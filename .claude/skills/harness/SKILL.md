@@ -95,8 +95,16 @@ SELECT @out = n FROM t WHERE id = @id
   `int`, `bigint`, `bit`, `decimal(p,s)`, `nvarchar(n|max)`, `varbinary(n)`,
   `datetime2(n)`, `datetimeoffset(n)`, `uniqueidentifier`, … (`src/types.mjs`).
 - Error line numbers count from the first line of the step body.
-- All steps share one connection; after the last step a reuse probe runs
+- Steps run on connection 1; after the last step a reuse probe runs there
   (`SELECT @@TRANCOUNT, XACT_STATE(); SELECT 1`) and is compared too.
+- Multi-connection cases (locking, deadlocks; corpus `locking/`): `-- @step
+  batch conn=2` runs on connection 2 (opened on first use). `async` sends the
+  step and continues after 500 ms without waiting (it may block on a lock);
+  `-- @step await conn=2` waits for it, and its result is recorded at the
+  async step's position. Pending steps are also awaited before that
+  connection's next step and at the end. "Process ID n" in messages is
+  normalized to `{spid}`. SQL Server's deadlock monitor takes up to ~5 s, so
+  deadlock captures are slow.
 - Follow msduck capture conventions: never read the clock, name constraints
   explicitly, express counters relative to a baseline (see
   `traps/rowversion-modification-time.sql`), unique statement text for

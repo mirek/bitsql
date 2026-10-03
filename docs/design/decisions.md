@@ -121,3 +121,18 @@ Lock resources (design: storage-concurrency.md):
 - Reads with `UPDLOCK`/`HOLDLOCK`/`SERIALIZABLE`/`XLOCK` hints lock the point
   key when the WHERE clause fixes the primary key with equalities, otherwise
   the whole table. Plain reads under RCSI take no locks.
+
+## 2026-10-03: commits rebase instead of failing (50107)
+
+Concurrent transactions on one database used to raise 50107 at COMMIT
+whenever another session had committed in between. Now `Db::rebase(base,
+view, onto)` re-applies the transaction's changes, diffed per object and per
+row against its base, onto the newest committed state. Key locks guarantee
+that two writers never change the same row, so the merge is exact; a
+conflicting change no lock prevented (DDL vs DML on the same table, DDL on the
+same object) still raises 50107. The same rebase runs at the start of each
+statement under lock-based isolation levels, so READ COMMITTED transactions see
+other sessions' commits as SQL Server does. SNAPSHOT keeps its start state.
+The row diff is O(changed tables' rows); a write log would make it
+O(changes) if this ever shows up in profiles.
+

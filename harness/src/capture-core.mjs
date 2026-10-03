@@ -137,6 +137,15 @@ export function replaceDatabaseName(value, name) {
   return value
 }
 
+// Session ids differ between servers: "Process ID 57" (1205 deadlock
+// messages) becomes "Process ID {spid}".
+export function normalizeSpids(value) {
+  if (typeof value === 'string') return value.replace(/\bProcess ID \d+/g, 'Process ID {spid}')
+  if (Array.isArray(value)) return value.map(normalizeSpids)
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, normalizeSpids(v)]))
+  return value
+}
+
 // JSON-pointer diff (msduck). Returns every differing leaf.
 export function differences(actual, expected, path = '') {
   if (Object.is(actual, expected)) return []

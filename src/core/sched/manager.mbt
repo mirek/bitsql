@@ -147,12 +147,24 @@ pub fn[K] LockManager::request(
   match self.find_cycle(session) {
     None => Waiting(request=id)
     Some(cycle) => {
+      // Cheapest session; ties go to the session that has waited longest,
+      // not the requester that closed the cycle (captured:
+      // locking/deadlock-two-tables).
+      let waited_since = (s : Int) => {
+        let mut at = self.waiters.length()
+        for i, w in self.waiters {
+          if w.session == s {
+            at = i
+            break
+          }
+        }
+        at
+      }
       let mut victim = cycle[0]
       for s in cycle {
         let c = (self.cost)(s)
         let vc = (self.cost)(victim)
-        // Ties go to the requester, which closed the cycle.
-        if c < vc || (c == vc && s == session) {
+        if c < vc || (c == vc && waited_since(s) < waited_since(victim)) {
           victim = s
         }
       }

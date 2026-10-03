@@ -600,7 +600,6 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   let t = target.table
   let (rows, env, cols) = self.dml_rows(target, u.from, u.where_, u.top)
-  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   // bind SET clauses against the full source row
   let sets = []
   for s in u.sets {
@@ -645,6 +644,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   let extra = if u.from.is_empty() { [] } else { cols }
   let outputs = self.bind_output(u.output, target, true, true, extra)
   self.cur_cmd = 197
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   let mut db = self.db_of(target.scope)
   let pre = db
   let instead = self.instead_of_trigger(target, OnUpdate)
@@ -844,10 +844,10 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     self.check_writable()
   }
   let (rows, _, cols) = self.dml_rows(target, d.from, d.where_, d.top)
-  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   let extra = if d.from.is_empty() { [] } else { cols }
   let outputs = self.bind_output(d.output, target, true, false, extra)
   self.cur_cmd = 196
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
   let mut db = self.db_of(target.scope)
   let pre = db
   let instead = self.instead_of_trigger(target, OnDelete)

@@ -9,7 +9,7 @@
 //             (default when the harness spawns the emulator itself).
 // Database names inside strings become `{db}` so both modes compare equal.
 import { randomBytes } from 'node:crypto'
-import { capture, canonical, replaceDatabaseName } from './capture-core.mjs'
+import { capture, canonical, normalizeSpids, replaceDatabaseName } from './capture-core.mjs'
 import { caseHash } from './corpus.mjs'
 import { connect, close, withDatabase } from './client.mjs'
 import { startOracle } from './oracle.mjs'
@@ -48,15 +48,44 @@ export async function emulatorTarget({ isolation, log } = {}) {
   }
 }
 
+// Time an async step gets to reach the server and start (and block) before
+// the next step is sent.
+const ASYNC_SETTLE_MS = 500
+
 async function runSteps(config, steps) {
   const result = { steps: [] }
-  let connection
-  try { connection = await connect(config) }
+  const connections = new Map()
+  const pending = new Map() // conn → { index, promise }
+  const conn = async id => {
+    if (!connections.has(id)) connections.set(id, await connect(config))
+    return connections.get(id)
+  }
+  const settle = async id => {
+    const p = pending.get(id)
+    if (!p) return
+    pending.delete(id)
+    result.steps[p.index] = await p.promise
+  }
+  try { await conn(1) }
   catch (error) { return { connectError: error.message } }
   try {
-    for (const step of steps) result.steps.push(await capture(connection, step))
-    result.reuse = await capture(connection, { kind: 'batch', sql: REUSE_PROBE })
-  } finally { await close(connection) }
+    for (const step of steps) {
+      const id = step.conn ?? 1
+      const index = result.steps.length
+      if (step.kind === 'await') { result.steps.push(null); await settle(id); continue }
+      await settle(id)
+      const connection = await conn(id)
+      if (step.async) {
+        result.steps.push(null)
+        pending.set(id, { index, promise: capture(connection, step) })
+        await new Promise(resolve => setTimeout(resolve, ASYNC_SETTLE_MS))
+      } else {
+        result.steps.push(await capture(connection, step))
+      }
+    }
+    for (const id of [...pending.keys()]) await settle(id)
+    result.reuse = await capture(await conn(1), { kind: 'batch', sql: REUSE_PROBE })
+  } finally { for (const c of connections.values()) await close(c) }
   return result
 }
 
@@ -74,7 +103,7 @@ export async function runCase(target, testCase) {
       config = withDatabase(config, database)
     }
     const raw = await runSteps(config, testCase.steps)
-    const result = replaceDatabaseName(canonical(raw), database)
+    const result = normalizeSpids(replaceDatabaseName(canonical(raw), database))
     return { case: caseHash(testCase.steps), ...result }
   } catch (error) {
     return { case: caseHash(testCase.steps), transportError: error.message }

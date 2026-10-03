@@ -292,7 +292,48 @@ test "deadlock: one session gets 1205, the other proceeds" {
   ignore(batch(e, 2, "BEGIN TRAN; UPDATE b SET v = 2 WHERE id = 1"))
   assert_eq(responded(batch(e, 1, "UPDATE b SET v = 1 WHERE id = 1")), []) // waits for 2
   let outs = batch(e, 2, "UPDATE a SET v = 2 WHERE id = 1") // closes the cycle
-  // session 2 (the requester, equal cost) is the victim; session 1 resumes
-  assert_eq(errors_to(outs, 2), [1205])
-  assert_true(responded(outs).contains(1))
+  // session 1 (waiting longest, equal cost) is the victim: its parked
+  // request re-runs and fails with 1205; session 2 proceeds
+  assert_eq(errors_to(outs, 1), [1205])
+  assert_eq(errors_to(outs, 2), [])
+  assert_eq(responded(outs), [1, 2])
+}
+
+///|
+test "SET LOCK_TIMEOUT 0 fails a conflicting request at once with 1222" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(
+    batch(
+      e, 1, "CREATE TABLE t (id int PRIMARY KEY, v int); INSERT t VALUES (1, 1)",
+    ),
+  )
+  ignore(batch(e, 1, "BEGIN TRAN; UPDATE t SET v = 2 WHERE id = 1"))
+  let outs = batch(e, 2, "SET LOCK_TIMEOUT 0; UPDATE t SET v = 3 WHERE id = 1")
+  assert_eq(responded(outs), [2])
+  assert_eq(errors_to(outs, 2), [1222])
+}
+
+///|
+test "SET LOCK_TIMEOUT n arms a timer; TimerFired fails the parked request with 1222" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(
+    batch(
+      e, 1, "CREATE TABLE t (id int PRIMARY KEY, v int); INSERT t VALUES (1, 1)",
+    ),
+  )
+  ignore(batch(e, 1, "BEGIN TRAN; UPDATE t SET v = 2 WHERE id = 1"))
+  let outs = batch(
+    e, 2, "SET LOCK_TIMEOUT 500; UPDATE t SET v = 3 WHERE id = 1",
+  )
+  assert_eq(responded(outs), [])
+  assert_true(outs.contains(SetTimer(2, 500)))
+  let fired = e.handle(ev(TimerFired(2)))
+  assert_eq(responded(fired), [2])
+  assert_eq(errors_to(fired, 2), [1222])
+  // the lock holder is unaffected
+  assert_eq(responded(batch(e, 1, "COMMIT")), [1])
 }

@@ -69,19 +69,43 @@ fn Session::begin_tx(self : Session) -> Unit {
 }
 
 ///|
-/// Commits the outermost transaction. Concurrent commits that would require
-/// merging are not supported yet (phase 6: lock manager + write log).
+/// READ COMMITTED and stronger lock-based levels see other sessions' commits
+/// at each statement: the transaction's changes are re-applied onto the
+/// newest committed state (SNAPSHOT keeps its start state).
+fn Session::refresh_tx(self : Session) -> Unit {
+  guard self.tx is Some(tx) && self.isolation != "SNAPSHOT" else { return }
+  let current = self.server.get_db(tx.database)
+  if physical_equal(tx.base, current) {
+    return
+  }
+  guard tx.view.rebase(tx.base, current) is Some(view) else { return }
+  let savepoints = Map([])
+  for k, sp in tx.savepoints {
+    match sp.0.rebase(tx.base, current) {
+      Some(v) => savepoints[k] = (v, sp.1)
+      None => return
+    }
+  }
+  self.tx = Some({ ..tx, base: current, view, savepoints, })
+}
+
+///|
+/// Commits the outermost transaction: its changes are re-applied onto the
+/// newest committed state (Db::rebase; locks keep writers apart).
 fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
   match self.tx {
     Some(tx) => {
       let current = self.server.get_db(tx.database)
-      if !physical_equal(tx.base, current) && !physical_equal(tx.base, tx.view) {
-        self.tx = None
-        raise @types.emulator_error(
-          50107, "Emulator: concurrent transactions writing the same database are not supported yet",
-        )
+      match tx.view.rebase(tx.base, current) {
+        Some(db) => self.server.set_db(tx.database, db)
+        None => {
+          self.tx = None
+          self.release_locks()
+          raise @types.emulator_error(
+            50107, "Emulator: a concurrent transaction changed the same rows or objects without a lock conflict (not supported)",
+          )
+        }
       }
-      self.server.set_db(tx.database, tx.view)
       self.tx = None
     }
     None => ()

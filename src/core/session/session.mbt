@@ -202,6 +202,10 @@ pub struct Session {
   /// The transaction is the implicit one of an autocommit statement whose
   /// triggers run (no ENVCHANGE when it ends).
   mut implicit_tx : Bool
+  /// SET TRANSACTION ISOLATION LEVEL (upper-cased).
+  mut isolation : String
+  /// SET LOCK_TIMEOUT in milliseconds (-1: wait forever).
+  mut lock_timeout : Int
   /// Running triggers, innermost last.
   priv triggers : Array[TriggerCtx]
   /// Lock request this session waits for (when its request is parked).
@@ -258,6 +262,8 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    lock_timeout: -1,
+    isolation: "READ COMMITTED",
     implicit_tx: false,
     waiting: None,
     fail_next_wait: None,

@@ -136,3 +136,26 @@ pub fn Session::close(self : Session) -> Unit {
 pub fn Session::is_parked(self : Session) -> Bool {
   self.parked
 }
+
+///|
+/// Milliseconds the engine should wait before failing the parked request
+/// with 1222 (SET LOCK_TIMEOUT), if any.
+pub fn Session::wait_timeout(self : Session) -> Int? {
+  if self.parked && self.lock_timeout > 0 {
+    Some(self.lock_timeout)
+  } else {
+    None
+  }
+}
+
+///|
+/// The lock timeout expired: abandon the wait; the re-run fails with 1222
+/// at the same statement.
+pub fn Session::time_out(self : Session) -> Unit {
+  match self.waiting {
+    Some(r) => self.server.wake_all(self.server.locks.cancel(r))
+    None => ()
+  }
+  self.waiting = None
+  self.fail_next_wait = Some(1222)
+}

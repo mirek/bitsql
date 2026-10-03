@@ -82,7 +82,18 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
             }
           }
       }
-    TimerFired(_) | Resume => ()
+    TimerFired(id) =>
+      // lock timeout of a parked request: it re-runs and fails with 1222
+      if self.parked.contains(id) {
+        self.sessions[id].time_out()
+        try {
+          self.rerun(id, event.now, out)
+          self.drain(event.now, out)
+        } catch {
+          e => out.push(Log("lock timeout re-run: \{e}"))
+        }
+      }
+    Resume => ()
   }
   out
 }
@@ -297,6 +308,7 @@ fn Engine::run_batch(
   let items = session.run_batch(text, now)
   if session.is_parked() {
     self.parked[conn.id] = ParkedBatch(text)
+    self.arm_timeout(conn.id, out)
     return
   }
   self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
@@ -318,6 +330,7 @@ fn Engine::run_rpc(
     let items = session.run_rpc(call, now)
     if session.is_parked() {
       self.parked[conn.id] = ParkedRpc(calls[i:].to_owned(), w.to_bytes())
+      self.arm_timeout(conn.id, out)
       return
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
@@ -347,15 +360,41 @@ fn Engine::drain(self : Engine, now : Int64, out : Array[Output]) -> Unit raise 
     for spid in victims + woken {
       let id = spid - 50
       match (self.parked.get(id), self.conns.get(id)) {
-        (Some(p), Some(conn)) => {
-          self.parked.remove(id)
-          match p {
-            ParkedBatch(text) => self.run_batch(conn, text, now, out)
-            ParkedRpc(calls, done) => self.run_rpc(conn, calls, done, now, out)
-          }
+        (Some(_), Some(_)) => {
+          out.push(CancelTimer(id))
+          self.rerun(id, now, out)
         }
         _ => ()
       }
     }
+  }
+}
+
+///|
+/// SET LOCK_TIMEOUT > 0: the host fires TimerFired(connection id).
+fn Engine::arm_timeout(self : Engine, id : Int, out : Array[Output]) -> Unit {
+  match self.sessions[id].wait_timeout() {
+    Some(ms) => out.push(SetTimer(id, ms))
+    None => ()
+  }
+}
+
+///|
+/// Re-runs a connection's parked request from the start.
+fn Engine::rerun(
+  self : Engine,
+  id : Int,
+  now : Int64,
+  out : Array[Output],
+) -> Unit raise {
+  match (self.parked.get(id), self.conns.get(id)) {
+    (Some(p), Some(conn)) => {
+      self.parked.remove(id)
+      match p {
+        ParkedBatch(text) => self.run_batch(conn, text, now, out)
+        ParkedRpc(calls, done) => self.run_rpc(conn, calls, done, now, out)
+      }
+    }
+    _ => ()
   }
 }

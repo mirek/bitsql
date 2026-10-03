@@ -79,6 +79,8 @@ pub struct Session {
   mut text : String
   mut identity_insert : Int?
   mut implicit_tx : Bool
+  mut isolation : String
+  mut lock_timeout : Int
   mut waiting : Int?
   mut fail_next_wait : Int?
   mut parked : Bool
@@ -98,6 +100,8 @@ pub fn Session::make_victim(Self) -> Unit
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
+pub fn Session::time_out(Self) -> Unit
+pub fn Session::wait_timeout(Self) -> Int?
 
 // Type aliases
 
