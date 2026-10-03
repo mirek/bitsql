@@ -97,7 +97,11 @@ test "prelogin, login and batch flow" {
   let r3 = sent(
     e.handle(ev(Received(1, @tds.frame(SqlBatch, batch.to_bytes())))),
   )
-  assert_eq(@tds.hex(r3[0].payload), "fd 00 00 00 00 00 00 00 00 00 00 00 00")
+  // each SET completes with its own DONE (cmd 185), the last one final
+  assert_eq(
+    @tds.hex(r3[0].payload),
+    "fd 01 00 b9 00 00 00 00 00 00 00 00 00 fd 00 00 b9 00 00 00 00 00 00 00 00 00",
+  )
 }
 
 ///|
@@ -121,7 +125,7 @@ test "garbage closes the connection" {
 
 ///|
 test "render: batch error and rpc framing" {
-  let err : @engine.SqlMessage = {
+  let err : @reply.SqlMessage = {
     number: 50100,
     state: 1,
     class: 16,
@@ -129,12 +133,12 @@ test "render: batch error and rpc framing" {
     procedure: "",
     line: 1,
   }
-  let b = @engine.render(Batch, [Message(err)], "s")
+  let b = @reply.render(Batch, [Message(err)], "s")
   assert_true(@tds.hex(b).has_suffix("fd 02 00 00 00 00 00 00 00 00 00 00 00"))
   let cols : Array[@tds.Column] = [
     { name: "a", type_info: Int4, flags: 0, user_type: 0, },
   ]
-  let rpc = @engine.render(
+  let rpc = @reply.render(
     Rpc,
     [
       ResultSet(cols),

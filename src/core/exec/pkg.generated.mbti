@@ -1,0 +1,62 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/exec"
+
+import {
+  "mirek/bitsql/core/ir",
+  "mirek/bitsql/core/types",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn eval(Ctx, @ir.Expr) -> @types.Value raise @types.SqlError
+
+pub fn is_true(@types.Value) -> Bool
+
+pub fn like_match(String, String, Int?, Bool) -> Bool
+
+pub fn run(Ctx, @ir.Plan) -> Array[Array[@types.Value]] raise @types.SqlError
+
+// Errors
+
+// Types and methods
+pub(all) struct Ctx {
+  rt : Runtime
+  vars : Array[@types.Value]
+  row : Array[@types.Value]
+  outer : Array[Array[@types.Value]]
+}
+pub fn Ctx::with_row(Self, Array[@types.Value]) -> Self
+
+pub(all) struct ErrorInfo {
+  number : Int
+  severity : Int
+  state : Int
+  message : String
+  line : Int
+  procedure : String?
+} derive(@debug.Debug)
+
+pub(all) struct Runtime {
+  mut rowcount : Int64
+  mut error : Int
+  mut trancount : Int
+  mut xact_state : Int
+  mut identity : @types.Value
+  mut scope_identity : @types.Value
+  mut fetch_status : Int
+  mut nest_level : Int
+  mut catch_error : ErrorInfo?
+  mut now : Int64
+  mut rng : UInt64
+  database : String
+  spid : Int
+  server_name : String
+  version : String
+}
+pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String) -> Self
+pub fn Runtime::next_random(Self) -> UInt64
+
+// Type aliases
+pub type Row = Array[@types.Value]
+
+// Traits

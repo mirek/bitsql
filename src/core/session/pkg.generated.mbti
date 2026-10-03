@@ -1,0 +1,60 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/session"
+
+import {
+  "mirek/bitsql/core/ast",
+  "mirek/bitsql/core/exec",
+  "mirek/bitsql/core/ir",
+  "mirek/bitsql/core/reply",
+  "mirek/bitsql/core/tds",
+  "mirek/bitsql/core/types",
+}
+
+// Values
+pub fn collation_bytes(@types.Collation) -> Bytes
+
+pub fn column_flags(@ir.ResultColumn) -> Int
+
+pub fn format_raiserror(String, Array[@types.Value]) -> String
+
+pub fn param_type(@tds.TypeInfo) -> @types.SqlType
+
+pub fn param_value(@types.SqlType, @tds.WireValue) -> @types.Value
+
+pub fn tds_column(@ir.ResultColumn) -> @tds.Column
+
+pub fn type_info(@types.SqlType, Bool) -> @tds.TypeInfo
+
+pub fn wire_value(@types.Value) -> @tds.WireValue
+
+// Errors
+
+// Types and methods
+pub(all) struct Proc {
+  name : String
+  def : @ast.CreateProcedure
+}
+
+pub struct Server {
+  procs : Map[String, Proc]
+}
+pub fn Server::new() -> Self
+
+pub struct Session {
+  server : Server
+  rt : @exec.Runtime
+  mut nocount : Bool
+  mut xact_abort : Bool
+  mut rpc : Bool
+  mut try_depth : Int
+  mut cur_cmd : Int
+  mut throwing : Bool
+  // private fields
+}
+pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
+pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
+pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
+
+// Type aliases
+
+// Traits

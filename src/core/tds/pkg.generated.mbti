@@ -87,6 +87,8 @@ pub fn from_hex(String) -> Bytes
 
 pub fn hex(BytesView) -> String
 
+pub fn nbcrow_is_smaller(ArrayView[Column], ArrayView[WireValue]) -> Bool
+
 pub fn negotiate_encryption_without_tls(Int?) -> Int?
 
 pub fn read_all_headers(Reader) -> Headers raise TdsError
@@ -106,6 +108,8 @@ pub fn write_envchange(Writer, EnvChange) -> Unit
 pub fn write_loginack(Writer, tds_version~ : Int64, prog_name~ : String, version~ : (Int, Int, Int, Int)) -> Unit
 
 pub fn write_message(Writer, is_error~ : Bool, number~ : Int, state~ : Int, class~ : Int, message~ : String, server~ : String, procedure~ : String, line~ : Int) -> Unit
+
+pub fn write_nbcrow(Writer, ArrayView[Column], ArrayView[WireValue]) -> Unit raise TdsError
 
 pub fn write_order(Writer, ArrayView[Int]) -> Unit
 

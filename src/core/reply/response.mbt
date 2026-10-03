@@ -66,7 +66,12 @@ pub fn render(
         @tds.write_colmetadata(w, c)
       }
       Order(ordinals) => @tds.write_order(w, ordinals)
-      Row(values) => @tds.write_row(w, cols, values)
+      Row(values) =>
+        if @tds.nbcrow_is_smaller(cols, values) {
+          @tds.write_nbcrow(w, cols, values)
+        } else {
+          @tds.write_row(w, cols, values)
+        }
       Message(m) => {
         if m.class > 10 {
           pending_error = true

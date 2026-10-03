@@ -1,0 +1,60 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/bind"
+
+import {
+  "mirek/bitsql/core/ast",
+  "mirek/bitsql/core/ir",
+  "mirek/bitsql/core/types",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
+
+pub fn bind_query(Env, @ast.Query) -> BoundQuery raise @types.SqlError
+
+pub fn coerce(@ir.Expr, @types.SqlType) -> @ir.Expr raise @types.SqlError
+
+pub fn resolve_type(@ast.TypeName, TypeContext, @types.Collation) -> @types.SqlType raise @types.SqlError
+
+pub fn unify_types(Array[@types.SqlType]) -> @types.SqlType raise @types.SqlError
+
+// Errors
+
+// Types and methods
+pub(all) struct BoundQuery {
+  plan : @ir.Plan
+  columns : Array[@ir.ResultColumn]
+  order : Array[Int]
+} derive(@debug.Debug)
+
+pub(all) struct ColumnRef {
+  qualifier : String
+  name : String
+  ty : @types.SqlType
+  nullable : Bool
+  origin : @ir.Origin
+} derive(@debug.Debug)
+
+pub(all) struct Env {
+  vars : Map[String, VarInfo]
+  columns : Array[ColumnRef]
+  outer : Env?
+  collation : @types.Collation
+}
+pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation) -> Self
+pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
+
+pub(all) enum TypeContext {
+  Declaration
+  Conversion
+} derive(Eq, @debug.Debug)
+
+pub(all) struct VarInfo {
+  slot : Int
+  ty : @types.SqlType
+} derive(@debug.Debug)
+
+// Type aliases
+
+// Traits

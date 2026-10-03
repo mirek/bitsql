@@ -11,29 +11,6 @@ priv struct Conn {
   reassembler : @tds.Reassembler
   mut phase : Phase
   mut packet_size : Int
-  mut database : String
-}
-
-///|
-/// What the engine asks an executor to run.
-pub(all) enum Request {
-  SqlBatch(String)
-  Rpc(@tds.RpcCall)
-} derive(Debug)
-
-///|
-/// Per-connection context passed to the executor.
-pub(all) struct SessionInfo {
-  conn_id : Int
-  database : String
-  now : Int64
-} derive(Debug)
-
-///|
-/// Pluggable executor: until the real session/executor lands this is a stub
-/// (see stub.mbt). Executors return items; they never touch tokens.
-pub(all) struct Executor {
-  run : (SessionInfo, Request) -> Array[Item]
 }
 
 ///|
@@ -41,16 +18,19 @@ struct Engine {
   config : Config
   seed : Int64
   conns : Map[Int, Conn]
-  executor : Executor
+  server : @session.Server
+  sessions : Map[Int, @session.Session]
 }
 
 ///|
-pub fn Engine::new(
-  config : Config,
-  seed : Int64,
-  executor? : Executor = stub_executor(),
-) -> Engine {
-  { config, seed, conns: Map([]), executor, }
+pub fn Engine::new(config : Config, seed : Int64) -> Engine {
+  {
+    config,
+    seed,
+    conns: Map([]),
+    server: @session.Server::new(),
+    sessions: Map([]),
+  }
 }
 
 ///|
@@ -63,9 +43,11 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
         reassembler: @tds.Reassembler::new(),
         phase: AwaitPrelogin,
         packet_size: @tds.DEFAULT_PACKET_SIZE,
-        database: self.config.default_database,
       }
-    Closed(id) => self.conns.remove(id)
+    Closed(id) => {
+      self.conns.remove(id)
+      self.sessions.remove(id)
+    }
     Received(id, bytes) =>
       match self.conns.get(id) {
         None => out.push(Log("data for unknown connection \{id}"))
@@ -145,8 +127,13 @@ fn Engine::on_message(
       } else {
         login.database
       }
-      conn.database = db
       conn.phase = LoggedIn
+      self.sessions[conn.id] = @session.Session::new(
+        self.server,
+        spid=50 + conn.id,
+        database=db,
+        seed=self.seed + conn.id.to_int64(),
+      )
       self.send(conn, self.login_response(db, conn.packet_size), out)
     }
     (LoggedIn, SqlBatch) => {
@@ -155,11 +142,8 @@ fn Engine::on_message(
         return
       }
       let batch = @tds.decode_sql_batch(msg.payload)
-      let items = (self.executor.run)(
-        { conn_id: conn.id, database: conn.database, now, },
-        SqlBatch(batch.text),
-      )
-      self.send(conn, render(Batch, items, self.config.server_name), out)
+      let items = self.sessions[conn.id].run_batch(batch.text, now)
+      self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
     }
     (LoggedIn, Rpc) => {
       if (msg.status & @tds.STATUS_IGNORE) != 0 {
@@ -169,11 +153,8 @@ fn Engine::on_message(
       let req = @tds.decode_rpc(msg.payload)
       let w = @tds.Writer::new()
       for call in req.calls {
-        let items = (self.executor.run)(
-          { conn_id: conn.id, database: conn.database, now, },
-          Rpc(call),
-        )
-        w.bytes(render(Rpc, items, self.config.server_name))
+        let items = self.sessions[conn.id].run_rpc(call, now)
+        w.bytes(@reply.render(Rpc, items, self.config.server_name))
       }
       self.send(conn, w.to_bytes(), out)
     }

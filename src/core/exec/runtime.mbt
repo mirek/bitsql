@@ -1,0 +1,83 @@
+///|
+/// Error information visible to ERROR_xxx() inside a CATCH block.
+pub(all) struct ErrorInfo {
+  number : Int
+  severity : Int
+  state : Int
+  message : String
+  line : Int
+  procedure : String?
+} derive(Debug)
+
+///|
+/// Session state that expressions can observe. Owned by the session; the
+/// executor reads it and never performs I/O.
+pub(all) struct Runtime {
+  mut rowcount : Int64
+  mut error : Int
+  mut trancount : Int
+  mut xact_state : Int
+  mut identity : @types.Value
+  mut scope_identity : @types.Value
+  mut fetch_status : Int
+  mut nest_level : Int
+  mut catch_error : ErrorInfo?
+  mut now : Int64 // 100 ns ticks since 0001-01-01 UTC
+  mut rng : UInt64
+  database : String
+  spid : Int
+  server_name : String
+  version : String
+}
+
+///|
+pub fn Runtime::new(
+  database~ : String,
+  spid~ : Int,
+  now~ : Int64,
+  seed~ : Int64,
+  server_name? : String = "bitsql",
+  version? : String = "Microsoft SQL Server 2025 (bitsql emulator)",
+) -> Runtime {
+  {
+    rowcount: 0,
+    error: 0,
+    trancount: 0,
+    xact_state: 0,
+    identity: Null,
+    scope_identity: Null,
+    fetch_status: -1,
+    nest_level: 0,
+    catch_error: None,
+    now,
+    rng: seed.reinterpret_as_uint64() ^ 0x9E3779B97F4A7C15UL,
+    database,
+    spid,
+    server_name,
+    version,
+  }
+}
+
+///|
+/// SplitMix64: deterministic randomness from the engine seed (NEWID, RAND).
+pub fn Runtime::next_random(self : Runtime) -> UInt64 {
+  self.rng = self.rng + 0x9E3779B97F4A7C15UL
+  let mut z = self.rng
+  z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL
+  z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL
+  z ^ (z >> 31)
+}
+
+///|
+/// Evaluation context: variable slots, the current row and enclosing rows.
+pub(all) struct Ctx {
+  rt : Runtime
+  vars : Array[@types.Value]
+  row : Array[@types.Value]
+  outer : Array[Array[@types.Value]] // innermost last
+}
+
+///|
+pub fn Ctx::with_row(self : Ctx, row : Array[@types.Value]) -> Ctx {
+  { ..self, row, }
+}

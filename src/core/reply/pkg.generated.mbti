@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/reply"
+
+import {
+  "mirek/bitsql/core/tds",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn render(RequestKind, Array[Item], String) -> Bytes raise @tds.TdsError
+
+// Errors
+
+// Types and methods
+pub(all) enum Item {
+  ResultSet(Array[@tds.Column])
+  Order(Array[Int])
+  Row(Array[@tds.WireValue])
+  StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
+  Message(SqlMessage)
+  ReturnStatus(Int)
+  ReturnValue(ordinal~ : Int, name~ : String, type_info~ : @tds.TypeInfo, value~ : @tds.WireValue)
+} derive(@debug.Debug)
+
+pub(all) enum RequestKind {
+  Batch
+  Rpc
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SqlMessage {
+  number : Int
+  state : Int
+  class : Int
+  message : String
+  procedure : String
+  line : Int
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

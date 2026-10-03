@@ -15,10 +15,6 @@ pub fn encode_event(Event) -> Bytes
 
 pub fn encode_event_log_header(Int64) -> Bytes
 
-pub fn render(RequestKind, Array[Item], String) -> Bytes raise @tds.TdsError
-
-pub fn stub_executor() -> Executor
-
 // Errors
 
 // Types and methods
@@ -31,17 +27,13 @@ pub fn Config::default() -> Self
 
 type Engine
 pub fn Engine::handle(Self, Event) -> Array[Output]
-pub fn Engine::new(Config, Int64, executor? : Executor) -> Self
+pub fn Engine::new(Config, Int64) -> Self
 pub fn Engine::seed(Self) -> Int64
 
 pub(all) struct Event {
   input : Input
   now : Int64
 } derive(Eq, @debug.Debug)
-
-pub(all) struct Executor {
-  run : (SessionInfo, Request) -> Array[Item]
-}
 
 pub(all) enum Input {
   Connected(Int)
@@ -51,16 +43,6 @@ pub(all) enum Input {
   Resume
 } derive(Eq, @debug.Debug)
 
-pub(all) enum Item {
-  ResultSet(Array[@tds.Column])
-  Order(Array[Int])
-  Row(Array[@tds.WireValue])
-  StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
-  Message(SqlMessage)
-  ReturnStatus(Int)
-  ReturnValue(ordinal~ : Int, name~ : String, type_info~ : @tds.TypeInfo, value~ : @tds.WireValue)
-} derive(@debug.Debug)
-
 pub(all) enum Output {
   Send(Int, Bytes)
   Close(Int)
@@ -68,31 +50,6 @@ pub(all) enum Output {
   CancelTimer(Int)
   Yield
   Log(String)
-} derive(Eq, @debug.Debug)
-
-pub(all) enum Request {
-  SqlBatch(String)
-  Rpc(@tds.RpcCall)
-} derive(@debug.Debug)
-
-pub(all) enum RequestKind {
-  Batch
-  Rpc
-} derive(Eq, @debug.Debug)
-
-pub(all) struct SessionInfo {
-  conn_id : Int
-  database : String
-  now : Int64
-} derive(@debug.Debug)
-
-pub(all) struct SqlMessage {
-  number : Int
-  state : Int
-  class : Int
-  message : String
-  procedure : String
-  line : Int
 } derive(Eq, @debug.Debug)
 
 // Type aliases

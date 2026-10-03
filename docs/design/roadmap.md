@@ -53,7 +53,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
   `FROM t (NOLOCK)` hints, `.WRITE`, xml/CLR method calls (`x.value(...)` parses as a
   qualified call), `type::Method()`, DDL triggers (`ON DATABASE`), CREATE/ALTER DATABASE,
   ALTER INDEX, ENABLE/DISABLE TRIGGER statements, `EXECUTE AS` statement, `EXEC ... AT`,
-  legacy `RAISERROR n 'msg'`, `SET @cursor = CURSOR ...`, TRIM(... FROM ...), JSON_OBJECT.
+  legacy `RAISERROR n 'msg'`, `SET @cursor = CURSOR ...`, JSON_OBJECT.
   Error numbers 102/156/111/319/10713 follow captures where available; trailing statements
   after CREATE VIEW/FUNCTION and the THROW-after-unterminated rule are unverified guesses.
 - [~] Parse differential over the corpus: 1707/1707 batches agree with SQL Server (`npm run parse-diff`); `parsecheck FILE...` ready for the target codebase (needs app repo)

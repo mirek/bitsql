@@ -273,3 +273,69 @@ pub fn write_order(w : Writer, ordinals : ArrayView[Int]) -> Unit {
     w.u16le(o)
   }
 }
+
+///|
+/// NBCROW (0xD2): null bitmap (bit i set = column i NULL) followed by the
+/// non-null values. SQL Server sends it only when it is smaller than ROW:
+/// see `nbcrow_is_smaller` (captured: smoke/rpc-null-params uses NBCROW,
+/// smoke/multiple-sets with an equal size uses ROW).
+pub fn write_nbcrow(
+  w : Writer,
+  cols : ArrayView[Column],
+  values : ArrayView[WireValue],
+) -> Unit raise TdsError {
+  if cols.length() != values.length() {
+    raise Malformed(
+      "row has \{values.length()} values for \{cols.length()} columns",
+    )
+  }
+  w.u8(0xD2)
+  let n = (cols.length() + 7) / 8
+  for b in 0..<n {
+    let mut byte = 0
+    for bit in 0..<8 {
+      let i = b * 8 + bit
+      if i < values.length() && values[i] is Null {
+        byte = byte | (1 << bit)
+      }
+    }
+    w.u8(byte)
+  }
+  for i in 0..<cols.length() {
+    if !(values[i] is Null) {
+      write_value(w, cols[i].type_info, values[i])
+    }
+  }
+}
+
+///|
+/// Bytes a NULL takes in ROW encoding for this type.
+fn null_size(ti : TypeInfo) -> Int {
+  if ti.is_plp() {
+    return 8
+  }
+  match ti {
+    BigVarChar(_, _)
+    | BigChar(_, _)
+    | NVarChar(_, _)
+    | NChar(_, _)
+    | BigVarBinary(_)
+    | BigBinary(_) => 2
+    _ => 1
+  }
+}
+
+///|
+/// True when NBCROW encodes this row in fewer bytes than ROW.
+pub fn nbcrow_is_smaller(
+  cols : ArrayView[Column],
+  values : ArrayView[WireValue],
+) -> Bool {
+  let mut saved = 0
+  for i in 0..<values.length() {
+    if values[i] is Null {
+      saved += null_size(cols[i].type_info)
+    }
+  }
+  saved > (cols.length() + 7) / 8
+}
