@@ -16,6 +16,8 @@ pub(all) struct SqlMessage {
 pub(all) enum Item {
   /// Start of a result set (COLMETADATA).
   ResultSet(Array[@tds.Column])
+  /// ORDER token: projected ordinals of the ORDER BY keys (0 = hidden key).
+  Order(Array[Int])
   Row(Array[@tds.WireValue])
   /// End of one statement. `count` is Some when DONE_COUNT applies (NOCOUNT OFF
   /// and a counting statement); `error` sets DONE_ERROR.
@@ -63,6 +65,7 @@ pub fn render(
         cols = c
         @tds.write_colmetadata(w, c)
       }
+      Order(ordinals) => @tds.write_order(w, ordinals)
       Row(values) => @tds.write_row(w, cols, values)
       Message(m) => {
         if m.class > 10 {

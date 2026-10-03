@@ -107,6 +107,8 @@ pub fn write_loginack(Writer, tds_version~ : Int64, prog_name~ : String, version
 
 pub fn write_message(Writer, is_error~ : Bool, number~ : Int, state~ : Int, class~ : Int, message~ : String, server~ : String, procedure~ : String, line~ : Int) -> Unit
 
+pub fn write_order(Writer, ArrayView[Int]) -> Unit
+
 pub fn write_return_status(Writer, Int) -> Unit
 
 pub fn write_return_value(Writer, ordinal~ : Int, name~ : String, udf~ : Bool, type_info~ : TypeInfo, value~ : WireValue) -> Unit raise TdsError

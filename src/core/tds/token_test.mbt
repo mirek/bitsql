@@ -196,3 +196,8 @@ test "RPC example 4.8 and sp_executesql by id" {
     Int(42),
   ])
 }
+
+///|
+test "ORDER token" {
+  assert_eq(bytes_of(w => @tds.write_order(w, [2, 0])), "a9 04 00 02 00 00 00")
+}

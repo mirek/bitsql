@@ -261,3 +261,15 @@ pub const CMD_EXECUTE : Int = 0xE0
 
 ///|
 pub const CMD_CONDITIONAL : Int = 0xC0
+
+///|
+/// ORDER (0xA9): 1-based projected ordinals of the ORDER BY keys, 0 for a
+/// key that is not projected. Sent between COLMETADATA and the first ROW.
+/// Emission rules are subtle (msduck docs/order-token.md); the binder decides.
+pub fn write_order(w : Writer, ordinals : ArrayView[Int]) -> Unit {
+  w.u8(0xA9)
+  w.u16le(ordinals.length() * 2)
+  for o in ordinals {
+    w.u16le(o)
+  }
+}

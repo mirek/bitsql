@@ -32,7 +32,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [x] PRELOGIN request decode / response encode (`ENCRYPT_NOT_SUP`)
 - [x] LOGIN7 decode; LOGINACK, ENVCHANGE (database, packet size, collation), INFO, DONE
 - [x] SQLBatch decode (ALL_HEADERS, UTF-16LE text)
-- [~] Token encoders: COLMETADATA, ROW, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE done; NBCROW, ORDER (0xA9) missing
+- [~] Token encoders: COLMETADATA, ROW, ORDER, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE done; NBCROW missing (only needed if captures show SQL Server using it for our shapes)
 - [x] RPC decode: proc id / name, params with TYPE_INFO and values (incl. PLP); dispatch of sp_executesql/sp_prepexec is in session work
 - [~] ATTENTION: acknowledged as a separate DONE_ATTN message; real cancellation needs time-sliced execution
 - [~] Engine::handle + native host (TcpServer, queue, `--listen`, `listening on` contract), `--record` event log and `replay` tool done; timers missing
