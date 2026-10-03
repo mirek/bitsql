@@ -1,0 +1,736 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/ast"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub let empty_span : Span
+
+// Errors
+pub(all) suberror SyntaxError {
+  SyntaxError(number~ : Int, severity~ : Int, state~ : Int, message~ : String, span~ : Span)
+} derive(@debug.Debug)
+pub fn SyntaxError::line(Self) -> Int
+pub fn SyntaxError::message(Self) -> String
+pub fn SyntaxError::number(Self) -> Int
+pub fn SyntaxError::render(Self) -> String
+
+// Types and methods
+pub(all) enum AlterTableAction {
+  Add(TableBody, with_check~ : Bool?)
+  AlterColumn(Ident, TypeName, collate~ : Ident?, nullable~ : Bool?, options~ : Array[String])
+  DropItems(Array[(Bool, Bool, Ident)])
+  CheckConstraints(enable~ : Bool, Array[Ident], with_check~ : Bool?)
+  EnableTriggers(enable~ : Bool, Array[Ident])
+  SetOptions(Array[OptionKV])
+} derive(Eq, @debug.Debug)
+
+pub(all) enum AssignOp {
+  Assign
+  AddAssign
+  SubAssign
+  MulAssign
+  DivAssign
+  ModAssign
+  AndAssign
+  OrAssign
+  XorAssign
+} derive(Eq, @debug.Debug)
+
+pub(all) enum BinOp {
+  Add
+  Sub
+  Mul
+  Div
+  Mod
+  BitAnd
+  BitOr
+  BitXor
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CmpOp {
+  Eq
+  Ne
+  Lt
+  Le
+  Gt
+  Ge
+  NotLt
+  NotGt
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ColumnConstraint {
+  name : Ident?
+  kind : ColumnConstraintKind
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ColumnConstraintKind {
+  ColPrimaryKey(clustered~ : Bool?, options~ : Array[OptionKV])
+  ColUnique(clustered~ : Bool?, options~ : Array[OptionKV])
+  ColCheck(Expr, not_for_replication~ : Bool)
+  ColDefault(Expr)
+  ColReferences(ForeignRef)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ColumnDef {
+  name : Ident
+  type_ : TypeName?
+  computed : Expr?
+  persisted : Bool
+  collate : Ident?
+  nullable : Bool?
+  identity : Identity?
+  rowguidcol : Bool
+  sparse : Bool
+  constraints : Array[ColumnConstraint]
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateFunction {
+  mode : CreateMode
+  name : ObjectName
+  params : Array[Param]
+  returns : FuncReturns
+  options : Array[String]
+  definition : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateIndex {
+  unique : Bool
+  clustered : Bool?
+  columnstore : Bool
+  name : Ident
+  table : ObjectName
+  columns : Array[IndexColumn]
+  included : Array[Ident]
+  where_ : Expr?
+  options : Array[OptionKV]
+  on_filegroup : Ident?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CreateMode {
+  Create
+  Alter
+  CreateOrAlter
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateProcedure {
+  mode : CreateMode
+  name : ObjectName
+  params : Array[Param]
+  options : Array[String]
+  body : Array[Stmt]
+  definition : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateTable {
+  name : ObjectName
+  body : TableBody
+  on_filegroup : Ident?
+  options : Array[OptionKV]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateTrigger {
+  mode : CreateMode
+  name : ObjectName
+  table : ObjectName
+  timing : TriggerTiming
+  events : Array[DmlEvent]
+  options : Array[String]
+  not_for_replication : Bool
+  body : Array[Stmt]
+  definition : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateType {
+  name : ObjectName
+  base : TypeName?
+  nullable : Bool?
+  table : TableBody?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CreateView {
+  mode : CreateMode
+  name : ObjectName
+  columns : Array[Ident]
+  attributes : Array[String]
+  query : Query
+  check_option : Bool
+  definition : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Cte {
+  name : Ident
+  columns : Array[Ident]
+  query : Query
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Cursor {
+  name : Ident
+  options : Array[String]
+  query : Query
+  for_update : Bool
+  update_columns : Array[Ident]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct DeclareVar {
+  name : String
+  type_ : TypeName
+  init : Expr?
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Delete {
+  ctes : Array[Cte]
+  top : Top?
+  target : TableRef
+  output : Array[OutputClause]
+  from : Array[TableRef]
+  where_ : Expr?
+  current_of : Ident?
+  options : Array[QueryHint]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DmlEvent {
+  OnInsert
+  OnUpdate
+  OnDelete
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DropKind {
+  DropTable
+  DropView
+  DropProcedure
+  DropFunction
+  DropTrigger
+  DropSchema
+  DropType
+  DropSequence
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Exec {
+  return_var : String?
+  target : ExecTarget
+  args : Array[ExecArg]
+  with_recompile : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ExecArg {
+  name : String?
+  value : Expr
+  output : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ExecTarget {
+  ExecProc(ObjectName)
+  ExecVar(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Expr {
+  kind : ExprKind
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn Expr::to_sexp(Self) -> String
+
+pub(all) enum ExprKind {
+  Null
+  Default
+  IntLit(String)
+  DecimalLit(String)
+  FloatLit(String)
+  MoneyLit(String)
+  StrLit(String, national~ : Bool)
+  BinaryLit(String)
+  Var(String)
+  GlobalVar(String)
+  Column(Array[Ident])
+  Unary(UnaryOp, Expr)
+  Binary(BinOp, Expr, Expr)
+  Compare(CmpOp, Expr, Expr)
+  Quantified(CmpOp, Quantifier, Expr, Query)
+  Not(Expr)
+  And(Expr, Expr)
+  Or(Expr, Expr)
+  IsNull(Expr, negated~ : Bool)
+  Like(Expr, Expr, escape~ : Expr?, negated~ : Bool)
+  Between(Expr, Expr, Expr, negated~ : Bool)
+  InList(Expr, Array[Expr], negated~ : Bool)
+  InQuery(Expr, Query, negated~ : Bool)
+  Exists(Query)
+  Subquery(Query)
+  Case(operand~ : Expr?, whens~ : Array[(Expr, Expr)], else_~ : Expr?)
+  Cast(Expr, TypeName, try_~ : Bool)
+  Convert(TypeName, Expr, style~ : Expr?, try_~ : Bool)
+  Parse(Expr, TypeName, culture~ : Expr?, try_~ : Bool)
+  Call(FuncCall)
+  Collate(Expr, Ident)
+  AtTimeZone(Expr, Expr)
+  NextValueFor(ObjectName)
+  Paren(Expr)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Fetch {
+  orientation : FetchOrientation
+  cursor : Ident
+  global : Bool
+  into : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum FetchOrientation {
+  Next
+  Prior
+  First
+  Last
+  Absolute(Expr)
+  Relative(Expr)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ForClause {
+  ForJson(mode~ : JsonMode, root~ : String?, include_null_values~ : Bool, without_array_wrapper~ : Bool)
+  ForXml(mode~ : String, element~ : String?, options~ : Array[String])
+  ForBrowse
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ForeignRef {
+  table : ObjectName
+  columns : Array[Ident]
+  on_delete : RefAction?
+  on_update : RefAction?
+  not_for_replication : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Frame {
+  unit : FrameUnit
+  start : FrameBound
+  end : FrameBound?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum FrameBound {
+  UnboundedPreceding
+  UnboundedFollowing
+  CurrentRow
+  Preceding(Expr)
+  Following(Expr)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum FrameUnit {
+  Rows
+  Range
+} derive(Eq, @debug.Debug)
+
+pub(all) struct FuncCall {
+  name : ObjectName
+  args : Array[Expr]
+  distinct : Bool
+  star : Bool
+  niladic : Bool
+  within_group : Array[OrderItem]
+  over : Over?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum FuncReturns {
+  Scalar(TypeName, Array[Stmt])
+  InlineTable(Query)
+  TableVariable(String, TableBody, Array[Stmt])
+} derive(Eq, @debug.Debug)
+
+pub(all) enum GroupItem {
+  GroupExpr(Expr)
+  Rollup(Array[Array[Expr]])
+  Cube(Array[Array[Expr]])
+  GroupingSets(Array[GroupItem])
+  GroupEmpty
+  GroupTuple(Array[Expr])
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Ident {
+  name : String
+  quoted : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Identity {
+  seed : String?
+  increment : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct IndexColumn {
+  name : Ident
+  desc : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Insert {
+  ctes : Array[Cte]
+  top : Top?
+  target : TableRef
+  columns : Array[Ident]
+  output : Array[OutputClause]
+  source : InsertSource
+  options : Array[QueryHint]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum InsertSource {
+  InsertValues(Array[Array[Expr]])
+  InsertQuery(Query)
+  InsertExec(Exec)
+  DefaultValues
+} derive(Eq, @debug.Debug)
+
+pub(all) enum JoinKind {
+  Inner
+  Left
+  Right
+  Full
+  Cross
+  CrossApply
+  OuterApply
+} derive(Eq, @debug.Debug)
+
+pub(all) enum JsonMode {
+  JsonPath
+  JsonAuto
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Merge {
+  ctes : Array[Cte]
+  top : Top?
+  target : TableRef
+  source : TableRef
+  on : Expr
+  whens : Array[MergeWhen]
+  output : Array[OutputClause]
+  options : Array[QueryHint]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum MergeAction {
+  MergeUpdate(Array[SetClause])
+  MergeDelete
+  MergeInsert(columns~ : Array[Ident], values~ : Array[Expr], default_values~ : Bool)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum MergeMatch {
+  Matched
+  NotMatchedByTarget
+  NotMatchedBySource
+} derive(Eq, @debug.Debug)
+
+pub(all) struct MergeWhen {
+  match_ : MergeMatch
+  condition : Expr?
+  action : MergeAction
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ObjectName {
+  parts : Array[Ident]
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn ObjectName::base(Self) -> String
+pub fn ObjectName::to_sexp(Self) -> String
+
+pub(all) struct OpenJsonColumn {
+  name : Ident
+  type_ : TypeName
+  path : String?
+  as_json : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct OptionKV {
+  name : String
+  value : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct OrderItem {
+  expr : Expr
+  desc : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct OutputClause {
+  items : Array[SelectItem]
+  into : (TableRef, Array[Ident])?
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Over {
+  partition_by : Array[Expr]
+  order_by : Array[OrderItem]
+  frame : Frame?
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Param {
+  name : String
+  type_ : TypeName
+  varying : Bool
+  default_ : Expr?
+  output : Bool
+  read_only : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Permission {
+  action : PermissionAction
+  permissions : Array[String]
+  on_class : String?
+  on : ObjectName?
+  columns : Array[Ident]
+  principals : Array[Ident]
+  grant_option : Bool
+  cascade : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) enum PermissionAction {
+  Grant
+  Deny
+  Revoke
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Quantifier {
+  All
+  Any
+  Some_
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Query {
+  ctes : Array[Cte]
+  body : QueryBody
+  order_by : Array[OrderItem]
+  offset : Expr?
+  fetch : Expr?
+  for_clause : ForClause?
+  options : Array[QueryHint]
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn Query::to_sexp(Self) -> String
+
+pub(all) enum QueryBody {
+  Select(Select)
+  SetOperation(SetOp, QueryBody, QueryBody)
+  Nested(Query)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct QueryHint {
+  text : String
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum RefAction {
+  NoAction
+  Cascade
+  SetNull
+  SetDefault
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Select {
+  distinct : Bool
+  top : Top?
+  items : Array[SelectItem]
+  into : ObjectName?
+  from : Array[TableRef]
+  where_ : Expr?
+  group_by : Array[GroupItem]
+  having : Expr?
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SelectItem {
+  kind : SelectItemKind
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SelectItemKind {
+  Star(Array[Ident])
+  ExprItem(Expr, alias_~ : Ident?)
+  Assign(String, AssignOp, Expr)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SetClause {
+  target : SetTarget
+  op : AssignOp
+  value : Expr
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SetOp {
+  Union
+  UnionAll
+  Except
+  Intersect
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SetTarget {
+  SetColumn(Array[Ident])
+  SetVariable(String)
+  SetVarColumn(String, Array[Ident])
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SetValue {
+  On
+  Off
+  Word(String)
+  ValueExpr(Expr)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Span {
+  start : Int
+  end : Int
+  line : Int
+  col : Int
+} derive(Eq, @debug.Debug)
+pub fn Span::to(Self, Self) -> Self
+
+pub(all) struct Stmt {
+  kind : StmtKind
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn Stmt::to_sexp(Self) -> String
+
+pub(all) enum StmtKind {
+  Select(Query)
+  Insert(Insert)
+  Update(Update)
+  Delete(Delete)
+  Merge(Merge)
+  Truncate(ObjectName)
+  CreateTable(CreateTable)
+  AlterTable(ObjectName, AlterTableAction)
+  CreateIndex(CreateIndex)
+  DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?)])
+  CreateView(CreateView)
+  CreateProcedure(CreateProcedure)
+  CreateFunction(CreateFunction)
+  CreateTrigger(CreateTrigger)
+  CreateSchema(Ident, authorization~ : Ident?)
+  CreateType(CreateType)
+  CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
+  Drop(DropKind, if_exists~ : Bool, Array[ObjectName])
+  Permission(Permission)
+  Declare(Array[DeclareVar])
+  DeclareTable(String, TableBody)
+  DeclareCursor(Cursor)
+  SetVar(String, AssignOp, Expr)
+  SetOption(Array[String], SetValue)
+  SetIdentityInsert(ObjectName, Bool)
+  SetIsolation(String)
+  If(Expr, Stmt, Stmt?)
+  While(Expr, Stmt)
+  Block(Array[Stmt])
+  TryCatch(Array[Stmt], Array[Stmt])
+  Break
+  Continue
+  Return(Expr?)
+  Goto(Ident)
+  Label(Ident)
+  WaitFor(String, Expr)
+  Throw(Array[Expr])
+  RaisError(Array[Expr], options~ : Array[String])
+  Print(Expr)
+  Exec(Exec)
+  ExecString(Array[Expr])
+  BeginTran(name~ : Expr?, distributed~ : Bool)
+  Commit(name~ : Expr?)
+  Rollback(name~ : Expr?)
+  Save(name~ : Expr?)
+  OpenCursor(Ident, global~ : Bool)
+  Fetch(Fetch)
+  CloseCursor(Ident, global~ : Bool)
+  Deallocate(Ident, global~ : Bool)
+  Use(Ident)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TableBody {
+  columns : Array[ColumnDef]
+  constraints : Array[TableConstraint]
+  indexes : Array[(Ident, Array[IndexColumn])]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TableConstraint {
+  name : Ident?
+  kind : TableConstraintKind
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TableConstraintKind {
+  PrimaryKey(clustered~ : Bool?, Array[IndexColumn], options~ : Array[OptionKV])
+  Unique(clustered~ : Bool?, Array[IndexColumn], options~ : Array[OptionKV])
+  ForeignKey(Array[Ident], ForeignRef)
+  Check(Expr, not_for_replication~ : Bool)
+  DefaultFor(Expr, Ident)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TableHint {
+  name : String
+  args : Array[String]
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TableRef {
+  kind : TableRefKind
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn TableRef::to_sexp(Self) -> String
+
+pub(all) enum TableRefKind {
+  Table(ObjectName, alias_~ : Ident?, hints~ : Array[TableHint])
+  TableVar(String, alias_~ : Ident?, hints~ : Array[TableHint])
+  Derived(Query, alias_~ : Ident?, columns~ : Array[Ident])
+  Values(Array[Array[Expr]], alias_~ : Ident, columns~ : Array[Ident])
+  TableFunc(ObjectName, Array[Expr], openjson_with~ : Array[OpenJsonColumn]?, alias_~ : Ident?, columns~ : Array[Ident])
+  Join(JoinKind, TableRef, TableRef, on~ : Expr?, hint~ : String?)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Top {
+  count : Expr
+  percent : Bool
+  with_ties : Bool
+  parenthesized : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TriggerTiming {
+  After
+  For
+  InsteadOf
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TypeArg {
+  Num(String)
+  Max
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TypeName {
+  schema : Ident?
+  name : String
+  args : Array[TypeArg]
+  span : Span
+} derive(Eq, @debug.Debug)
+pub fn TypeName::to_sexp(Self) -> String
+
+pub(all) enum UnaryOp {
+  Neg
+  Plus
+  BitNot
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Update {
+  ctes : Array[Cte]
+  top : Top?
+  target : TableRef
+  sets : Array[SetClause]
+  output : Array[OutputClause]
+  from : Array[TableRef]
+  where_ : Expr?
+  current_of : Ident?
+  options : Array[QueryHint]
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

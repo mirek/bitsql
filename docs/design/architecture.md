@@ -76,7 +76,9 @@ moon.mod                 module mirek/bitsql, source = "src"
 src/core/                pure MoonBit: no async, no FFI, any backend
   types/                 Value, SqlType, decimal, datetime2, uniqueidentifier
   tds/                   packet framing, tokens, TYPE_INFO, PRELOGIN/LOGIN7
-  ast/                   T-SQL lexer, AST, parser
+  ast/                   syntactic T-SQL AST, Span, SyntaxError, to_sexp printer
+  lex/                   T-SQL lexer (tokens with spans), split_go_batches
+  parse/                 recursive-descent parser: parse_batch / parse_statement / parse_expr
   ir/                    Plan, Expr, Stmt, LockSpec
   bind/                  shared binder + Semantics record (tsql.mbt)
   exec/                  step function, Delta consumers

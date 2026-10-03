@@ -55,6 +55,9 @@ integer result metadata (#60)" (2026-07-18). Paths are relative to that repo.
 - Tests: `parse.test.ts` (53 tests), `lex.test.ts`. `packages/tsql/Readme.md` is a feature checklist.
 - tedious's post-login SET batch requires permissive generic `SET name ON|OFF|word|expr` handling
   (`parse/statement.ts:172-220`).
+- **Ported 2026-10-03** to `src/core/{ast,lex,parse}` (hand-written recursive descent, spans on
+  every node); parse.test.ts cases live in `src/core/parse/*_test.mbt`. Not ported: PIVOT/UNPIVOT,
+  WITH XMLNAMESPACES, CREATE/ALTER DATABASE.
 
 ## Differential harness (packages/differential, ~700 lines): lift almost as-is
 
