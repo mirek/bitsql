@@ -285,15 +285,14 @@ fn insert_checked(
 
 ///|
 fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
-  if !ins.output.is_empty() {
-    raise @types.not_supported("OUTPUT clause")
-  }
   if !ins.ctes.is_empty() || ins.top is Some(_) {
     raise @types.not_supported("INSERT with CTE or TOP")
   }
   let target = self.dml_target(ins.target)
   let t = target.table
   let identity_insert = self.identity_insert == Some(t.id)
+  let outputs = self.bind_output(ins.output, target, false, true, [])
+  let inserted_rows = []
   // target columns
   let cols : Array[Int] = if ins.columns.is_empty() {
     let out = []
@@ -475,8 +474,10 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     }
     self.check_row(target, db, row, "INSERT")
     db = insert_checked(target, db, self.server.rowid(), row)
+    inserted_rows.push(row)
   }
   self.write(target.scope, db)
+  let sent = self.emit_output(outputs, inserted_rows)
   if last_identity is Some(v) {
     let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
     self.rt.identity = iv
@@ -484,7 +485,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   }
   let n = source.length().to_int64()
   self.rt.rowcount = n
-  self.done(195, count=Some(n))
+  self.done(195, count=Some(n), result_set=sent)
 }
 
 ///|
@@ -493,41 +494,79 @@ fn rowversion_bytes(v : Int64) -> Bytes {
 }
 
 ///|
-/// Rows of the target matching WHERE, with their row ids.
+/// Rows to modify: (rowid, target row image, full source row). Handles
+/// FROM/JOIN sources, WHERE and TOP; each target row appears once.
 fn Session::dml_rows(
   self : Session,
   target : Target,
+  from : Array[@ast.TableRef],
   where_ : @ast.Expr?,
-  env : @bind.Env,
-) -> Array[(Int64, Array[@types.Value])] raise {
+  top : @ast.Top?,
+) -> (
+  Array[(Int64, Array[@types.Value], Array[@types.Value])],
+  @bind.Env,
+  Array[@bind.ColumnRef],
+) raise {
   let t = target.table
-  let scan : @ir.Plan = Scan(scope=target.scope, id=t.id, rowid=true)
-  let plan : @ir.Plan = match where_ {
-    Some(w) => Filter(scan, @bind.bind_expr(env, w))
-    None => scan
-  }
   let n = t.columns.length()
-  @exec.run(self.ctx(), plan).map(r => {
-    let rowid = r[n].as_int64().unwrap_or(0L)
-    (rowid, r[0:n].to_owned())
-  })
+  let binding : @bind.TableBinding = {
+    scope: target.scope,
+    id: t.id,
+    schema: t.schema,
+    name: t.name,
+    columns: table_columns(t),
+  }
+  let names = [target.qualifier, t.name.to_lower()]
+  let (source, cols, start, rowid_at) = if from.is_empty() {
+    let cols = table_columns(t).map(c => { ..c, qualifier: target.qualifier, })
+    cols.push({
+      qualifier: "%rowid",
+      name: "%rowid",
+      ty: BigInt,
+      nullable: false,
+      origin: Computed,
+    })
+    (@ir.Plan::Scan(scope=target.scope, id=t.id, rowid=true), cols, 0, n)
+  } else {
+    @bind.bind_dml_source(self.env(), from, binding, names)
+  }
+  let env = self.env().with_columns(cols)
+  let mut plan : @ir.Plan = match where_ {
+    Some(w) => Filter(source, @bind.bind_expr(env, w))
+    None => source
+  }
+  match top {
+    Some(tp) => {
+      if tp.percent || tp.with_ties {
+        raise @types.not_supported("TOP PERCENT / WITH TIES in DML")
+      }
+      let count = @bind.coerce(@bind.bind_expr(self.env(), tp.count), BigInt)
+      plan = Limit(plan, None, Some(count))
+    }
+    None => ()
+  }
+  let seen : Set[Int64] = Set([])
+  let out = []
+  for r in @exec.run(self.ctx(), plan) {
+    let rowid = r[rowid_at].as_int64().unwrap_or(0L)
+    if seen.contains(rowid) {
+      continue
+    }
+    seen.add(rowid)
+    out.push((rowid, r[start:start + n].to_owned(), r))
+  }
+  (out, env, cols)
 }
 
 ///|
 fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
-  if !u.output.is_empty() {
-    raise @types.not_supported("OUTPUT clause")
+  if !u.ctes.is_empty() || u.current_of is Some(_) {
+    raise @types.not_supported("UPDATE with CTE or CURRENT OF")
   }
-  if !u.from.is_empty() ||
-    !u.ctes.is_empty() ||
-    u.top is Some(_) ||
-    u.current_of is Some(_) {
-    raise @types.not_supported("UPDATE with FROM, CTE, TOP or CURRENT OF")
-  }
-  let target = self.dml_target(u.target)
+  let target = self.dml_target(resolve_alias(u.target, u.from))
   let t = target.table
-  let env = self.column_env(target)
-  // bind SET clauses
+  let (rows, env, cols) = self.dml_rows(target, u.from, u.where_, u.top)
+  // bind SET clauses against the full source row
   let sets = []
   for s in u.sets {
     match s.target {
@@ -561,14 +600,16 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
         raise @types.not_supported("UPDATE SET @variable")
     }
   }
-  let rows = self.dml_rows(target, u.where_, env)
+  let extra = if u.from.is_empty() { [] } else { cols }
+  let outputs = self.bind_output(u.output, target, true, true, extra)
   self.cur_cmd = 197
   let mut db = self.db_of(target.scope)
   let images = []
-  for pair in rows {
-    let (rowid, old) = pair
+  let output_rows = []
+  for rec in rows {
+    let (rowid, old, full) = rec
     let row = old.copy()
-    let ctx = self.ctx().with_row(old)
+    let ctx = self.ctx().with_row(full)
     for s in sets {
       let (ci, op, rhs) = s
       let c = t.columns[ci]
@@ -607,7 +648,17 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     }
     self.check_row(target, db, row, "UPDATE")
     images.push((rowid, old, row))
+    output_rows.push(
+      old + row + (if extra.is_empty() { [] } else { full.filter(_ => true) }),
+    )
   }
+  // OUTPUT rows are streamed before end-of-statement constraint checks
+  let sent = self.emit_output(
+    outputs,
+    output_rows.map(r => strip_rowid(r, cols, t.columns.length() * 2)),
+  )
+  // OUTPUT INTO may have written to the same database
+  db = self.db_of(target.scope)
   self.check_references(
     target,
     db,
@@ -625,7 +676,27 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   self.write(target.scope, db)
   let n = images.length().to_int64()
   self.rt.rowcount = n
-  self.done(197, count=Some(n))
+  self.done(197, count=Some(n), result_set=sent)
+}
+
+///|
+/// Removes the hidden "%rowid" column from a combined OUTPUT row, whose
+/// source part starts at `offset`.
+fn strip_rowid(
+  row : Array[@types.Value],
+  cols : Array[@bind.ColumnRef],
+  offset : Int,
+) -> Array[@types.Value] {
+  if row.length() <= offset {
+    return row
+  }
+  let out = row[0:offset].to_owned()
+  for i, c in cols {
+    if c.qualifier != "%rowid" && offset + i < row.length() {
+      out.push(row[offset + i])
+    }
+  }
+  out
 }
 
 ///|
@@ -696,18 +767,13 @@ fn Session::check_references(
 
 ///|
 fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
-  if !d.output.is_empty() {
-    raise @types.not_supported("OUTPUT clause")
+  if !d.ctes.is_empty() || d.current_of is Some(_) {
+    raise @types.not_supported("DELETE with CTE or CURRENT OF")
   }
-  if !d.from.is_empty() ||
-    !d.ctes.is_empty() ||
-    d.top is Some(_) ||
-    d.current_of is Some(_) {
-    raise @types.not_supported("DELETE with FROM, CTE, TOP or CURRENT OF")
-  }
-  let target = self.dml_target(d.target)
-  let env = self.column_env(target)
-  let rows = self.dml_rows(target, d.where_, env)
+  let target = self.dml_target(resolve_alias(d.target, d.from))
+  let (rows, _, cols) = self.dml_rows(target, d.from, d.where_, d.top)
+  let extra = if d.from.is_empty() { [] } else { cols }
+  let outputs = self.bind_output(d.output, target, true, false, extra)
   self.cur_cmd = 196
   let mut db = self.db_of(target.scope)
   self.check_references(
@@ -717,13 +783,21 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     rows.map(_ => None),
     "DELETE",
   )
+  let output_rows = rows.map(r => {
+    r.1 + (if extra.is_empty() { [] } else { r.2 })
+  })
+  let sent = self.emit_output(
+    outputs,
+    output_rows.map(r => strip_rowid(r, cols, target.table.columns.length())),
+  )
+  db = self.db_of(target.scope)
   for r in rows {
     db = db.delete_row(target.table.id, r.0)
   }
   self.write(target.scope, db)
   let n = rows.length().to_int64()
   self.rt.rowcount = n
-  self.done(196, count=Some(n))
+  self.done(196, count=Some(n), result_set=sent)
 }
 
 ///|
@@ -753,4 +827,38 @@ fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise 
         "Cannot find the object \"\{name.base()}\" because it does not exist or you do not have permissions.",
       )
   }
+}
+
+///|
+/// `UPDATE a ... FROM t a`: a one-part target naming an alias in FROM
+/// refers to that table (keeping the alias as the qualifier).
+fn resolve_alias(
+  target : @ast.TableRef,
+  from : Array[@ast.TableRef],
+) -> @ast.TableRef {
+  guard target.kind is Table(name, alias_=None, hints~) &&
+    name.parts.length() == 1 else {
+    return target
+  }
+  let wanted = name.parts[0].name.to_lower()
+  fn find(r : @ast.TableRef) -> @ast.TableRef? {
+    match r.kind {
+      Table(real, alias_=Some(a), ..) if a.name.to_lower() == wanted =>
+        Some({ ..r, kind: Table(real, alias_=Some(a), hints~), })
+      Join(_, l, rr, ..) =>
+        match find(l) {
+          Some(x) => Some(x)
+          None => find(rr)
+        }
+      _ => None
+    }
+  }
+
+  for r in from {
+    match find(r) {
+      Some(x) => return x
+      None => ()
+    }
+  }
+  target
 }
