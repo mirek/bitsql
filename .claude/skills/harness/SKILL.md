@@ -171,6 +171,14 @@ whose emulator output contains an `Emulator:` error is **skipped** (unless
 `allowlist.txt` once `npm run diff -- <selector>` passes, so they cannot
 regress.
 
+`test/parse.test.mjs` runs the parser over every captured (compared or
+hand-written setup) batch in the whole corpus, no server needed. Replayed run
+prefixes are skipped (they are checked in their own case). Disagreements
+listed in `harness/parse-known.txt` (seeded with the msduck layout import's
+276: JSON_OBJECTAGG `k:v`, ALTER DATABASE, `precision` as a column name,
+JSON_ARRAYAGG ORDER BY, DBCC, …) are tolerated; new ones fail. Delete lines
+as the parser catches up (the test prints the ones that now agree).
+
 ## msduck import
 
 `npm run import:msduck -- --from "$TMPDIR/msduck" --force` regenerates

@@ -161,7 +161,7 @@ export function expandSteps(doc, c) {
   if (c.run === undefined) return c.steps
   const run = doc.runs?.[c.run]
   if (!run || run.length < (c.prefix ?? 0)) throw new Error(`case ${c.name}: unknown run ${c.run} or prefix ${c.prefix} too long`)
-  return [...run.slice(0, c.prefix ?? 0).map(s => ({ ...s, compare: false })), ...c.steps]
+  return [...run.slice(0, c.prefix ?? 0).map(s => ({ ...s, compare: false, replay: true })), ...c.steps]
 }
 
 const expectedCache = new Map()
