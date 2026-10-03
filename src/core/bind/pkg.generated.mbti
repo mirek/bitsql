@@ -6,9 +6,12 @@ import {
   "mirek/bitsql/core/ir",
   "mirek/bitsql/core/types",
   "moonbitlang/core/debug",
+  "moonbitlang/core/ref",
 }
 
 // Values
+pub fn bind_assignment_select(Env, @ast.Query) -> (BoundQuery, Array[(Int, @types.SqlType)]) raise @types.SqlError
+
 pub fn bind_dml_source(Env, Array[@ast.TableRef], TableBinding, Array[String]) -> (@ir.Plan, Array[ColumnRef], Int, Int) raise @types.SqlError
 
 pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
@@ -18,6 +21,10 @@ pub fn bind_query(Env, @ast.Query) -> BoundQuery raise @types.SqlError
 pub fn bind_sources(Env, Array[@ast.TableRef]) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError
 
 pub fn coerce(@ir.Expr, @types.SqlType) -> @ir.Expr raise @types.SqlError
+
+pub let for_json_column : String
+
+pub fn has_aggregate(@ast.Expr) -> Bool
 
 pub fn resolve_type(@ast.TypeName, TypeContext, @types.Collation) -> @types.SqlType raise @types.SqlError
 
@@ -46,12 +53,22 @@ pub(all) struct ColumnRef {
   origin : @ir.Origin
 } derive(@debug.Debug)
 
+pub(all) struct CteDef {
+  name : String
+  def : @ast.Cte
+  env : Env
+  work : (Int, Array[ColumnRef])?
+}
+
 pub(all) struct Env {
   vars : Map[String, VarInfo]
   columns : Array[ColumnRef]
   outer : Env?
   collation : @types.Collation
   catalog : Catalog
+  ctes : Array[CteDef]
+  maxrecursion : Int
+  ids : @ref.Ref[Int]
 }
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self

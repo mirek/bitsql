@@ -123,6 +123,37 @@ mention the correction here.
   (SQL_Latin1_General_CP1_*, Latin1_General_*) treat every surrogate unit
   and U+FFFD as ignorable; _100 sorts them above the BMP. BIN2 pads the
   shorter operand with spaces before comparing code units ('a' > 'a'+NUL).
+- 2026-10-03 (query language, `harness/corpus/query/*`): aggregate result
+  types — COUNT int, COUNT_BIG bigint, SUM/AVG of tiny/small/int → int,
+  bigint → bigint, decimal(p,s) → SUM decimal(38,s) / AVG decimal(38,max(s,6))
+  (quotient truncated, msduck decimal-avg), money → money, real/float → float;
+  MIN/MAX keep the type; STRING_AGG: varchar(n) → varchar(8000), nvarchar(n)
+  and non-strings → nvarchar(4000), (n)varchar(max) stays max. All aggregates
+  report nullable (flags 1, origin "aggregate"); GROUPING() is NOT NULL
+  tinyint flags 32. Errors: SUM/AVG/MIN on bit or SUM on varchar 8117
+  ("Operand data type bit is invalid for sum operator."), aggregate in WHERE
+  147 (class 15), nested aggregate 130, aggregate in GROUP BY 144, ungrouped
+  column 8120 select list / 8121 HAVING / 8127 ORDER BY (double quotes),
+  differing WITHIN GROUP orders 8711, scalar subquery >1 row 512, multi-column
+  subquery 116, set-op width 205, ORDER BY not in a set-op select list 104,
+  WITH TIES without ORDER BY 1062, ROW_NUMBER without ORDER BY 4112, window in
+  WHERE 4108, duplicate derived column 8156, unnamed derived column 8155
+  state 2 (followed by a second error 207 for the outer reference),
+  SELECT INTO existing table 2714 state 6, STRING_SPLIT separator not one
+  char 214 state 11 (after COLMETADATA). INFO 8153 (class 0, the statement's
+  line) follows the rows; STRING_AGG never triggers it.
+- 2026-10-03 (query language): window functions — ranking functions are
+  bigint, LAG/LEAD/FIRST/LAST_VALUE keep the argument type, PERCENT_RANK and
+  CUME_DIST float, all nullable. Default frame with ORDER BY is RANGE
+  UNBOUNDED PRECEDING..CURRENT ROW (peers included). EXCEPT/INTERSECT keep the
+  left operand's column metadata (base flags 9), UNION/UNION ALL report flags
+  0|nullable; NULL literal branches do not take part in type unification.
+  SELECT INTO completes with cmd 194 and the row count; `SELECT @v = …
+  FROM` completes with 193 and the number of rows (last row wins). OPENJSON
+  `key` is nvarchar(4000) Latin1_General_BIN2 NOT NULL (flags 2), `value`
+  nvarchar(max), `type` tinyint NOT NULL; OPENJSON WITH over an object root
+  yields one row. STRING_SPLIT `value` takes the input's type and
+  nullability, `ordinal` is NOT NULL bigint.
 - 2026-10-03: unverified choices in src/core/types (need captures): states
   of 8115 for CAST overflows other than string→numeric (8), arithmetic (2);
   220 "Arithmetic overflow error for data type tinyint, value = 256." for

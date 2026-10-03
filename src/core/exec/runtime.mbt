@@ -25,6 +25,14 @@ pub(all) struct Runtime {
   mut catch_error : ErrorInfo?
   mut now : Int64 // 100 ns ticks since 0001-01-01 UTC
   mut rng : UInt64
+  /// Set when an aggregate skipped a NULL input; the session turns it into
+  /// INFO 8153 after the statement's rows, then clears it.
+  mut null_eliminated : Bool
+  /// Row count to report instead of the number of result rows (FOR JSON
+  /// counts its input rows); the session reads and clears it.
+  mut count_override : Int64?
+  /// Recursive CTE work tables by plan id (exec/plan.mbt `Recursive`).
+  work : Map[Int, Array[Array[@types.Value]]]
   mut database : String
   spid : Int
   server_name : String
@@ -53,6 +61,9 @@ pub fn Runtime::new(
     catch_error: None,
     now,
     rng: seed.reinterpret_as_uint64() ^ 0x9E3779B97F4A7C15UL,
+    null_eliminated: false,
+    count_override: None,
+    work: Map([]),
     database,
     spid,
     server_name,

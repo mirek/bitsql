@@ -72,7 +72,9 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 ## Phase 4: DML and access paths
 
 - [~] Binder + IR (core/bind, core/ir) with captured metadata rules; Semantics record not extracted yet (T-SQL rules inline)
-- [~] Executor: scan, filter, project, nested-loop joins (inner/left/right/full/cross), sort, limit, distinct, union all, values. Missing: aggregate/GROUP BY, subqueries, CTEs, APPLY, window functions
+- [~] Executor: scan, filter, project, nested-loop joins (inner/left/right/full/cross), sort, limit, distinct, union all, values, streaming result sets (rows before a run-time error stay sent)
+- [x] Query language (2026-10-03, `harness/corpus/query/*`): aggregates (COUNT/COUNT_BIG/SUM/AVG/MIN/MAX/STRING_AGG WITHIN GROUP/STDEV/VAR, DISTINCT), GROUP BY expressions, HAVING, ROLLUP/CUBE/GROUPING SETS + GROUPING/GROUPING_ID, INFO 8153; scalar/EXISTS/IN/ANY/SOME/ALL subqueries with correlation (512, 116); derived tables, CTEs incl. recursive + MAXRECURSION (530), CROSS/OUTER APPLY; UNION/EXCEPT/INTERSECT + ORDER BY (104, 205); TOP WITH TIES/PERCENT (1062); window functions (ROW_NUMBER/RANK/DENSE_RANK/NTILE/LAG/LEAD/FIRST_VALUE/LAST_VALUE/PERCENT_RANK/CUME_DIST, aggregates OVER with ROWS frames); OPENJSON (default + WITH) and STRING_SPLIT (ordinal); SELECT INTO; FOR JSON PATH/AUTO; `SELECT @v = … FROM`
+- [ ] Query language gaps: two-error binds (8155 + 207), RANGE frames with offsets, DISTINCT window aggregates, FOR JSON AUTO with joins (nesting), FOR XML, PIVOT/UNPIVOT, SELECT INTO identity propagation, CI-equal GROUP BY spelling for heap plans (see fidelity traps)
 - [~] INSERT (VALUES/SELECT/DEFAULT VALUES, defaults, identity, IDENTITY_INSERT, computed, rowversion), UPDATE (compound SET, DEFAULT), DELETE, statement-level rollback. OUTPUT (incl. INTO), UPDATE/DELETE FROM/TOP/aliases, MERGE (all clause families, 8672, TOP, OUTPUT $action). Missing: triggers (Delta consumers), MERGE with CTE
 - [~] Constraints: NOT NULL 515, PK/UNIQUE 2627, unique index 2601, CHECK 547, FK 547 both directions, truncation 2628, identity not rolled back. Missing: cascades, NOCHECK, messages verified against captures
 - [ ] Index seeks on sargable predicates
@@ -87,7 +89,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [~] TRY/CATCH with captured completion tokens, THROW/rethrow, RAISERROR (formatting, SETERROR, 2787), @@ERROR per statement, statement-level rollback, XACT_ABORT (doom in TRY, rollback outside), 3930 on writes/COMMIT when doomed, 3998 at request end, savepoints (SAVE/ROLLBACK TRAN name), 266 after EXEC; temp tables roll back, table variables don't. Missing: verification against gaps-transactions captures
 - [x] Cursors: STATIC snapshot, FAST_FORWARD/default read from a snapshot with an Emulator error if base tables change while open; LOCAL/GLOBAL; FETCH NEXT/PRIOR/FIRST/LAST/ABSOLUTE/RELATIVE; @@FETCH_STATUS, @@CURSOR_ROWS; captured CurCmd codes. DYNAMIC/KEYSET/FOR UPDATE raise Emulator errors
 - [ ] Triggers (AFTER, INSTEAD OF)
-- [~] JSON: `core/json` implements JSON_VALUE, JSON_QUERY, ISJSON (types, depth 13606), OPENJSON default schema, path parsing (lax/strict, keys, quoted keys, indexes), passing all msduck boundary captures. Missing: OPENJSON WITH schema, wildcards/advanced accessors, JSON_MODIFY, FOR JSON, binder wiring
+- [~] JSON: `core/json` implements JSON_VALUE, JSON_QUERY, ISJSON (types, depth 13606), OPENJSON default schema, path parsing (lax/strict, keys, quoted keys, indexes), passing all msduck boundary captures; OPENJSON WITH schema, FOR JSON PATH/AUTO and binder wiring done (query corpus). Missing: wildcards/advanced accessors, JSON_MODIFY
 - Gate: all non-concurrency tests on the emulator.
 
 ## Phase 6: concurrency

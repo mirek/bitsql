@@ -163,8 +163,11 @@ fn Session::assign(
 ///|
 fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
   match s.kind {
-    Select(q) => self.exec_select(q)
-    Declare(vars) =>
+    Select(q) => self.exec_select(q, s.span.line)
+    Declare(vars) => {
+      // captured (query/select-into-assign): one DONE for the whole
+      // DECLARE, however many variables are initialized
+      let mut initialized = false
       for v in vars {
         let ty = @bind.resolve_type(
           v.type_,
@@ -183,10 +186,14 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         if v.init is Some(init) {
           self.cur_cmd = 193
           self.assign(v.name, Assign, init)
-          self.rt.rowcount = 1
-          self.done(193, count=Some(1L))
+          initialized = true
         }
       }
+      if initialized {
+        self.rt.rowcount = 1
+        self.done(193, count=Some(1L))
+      }
+    }
     SetVar(name, op, e) => {
       self.cur_cmd = 193
       self.assign(name, op, e)
@@ -423,7 +430,11 @@ fn stmt_name(s : @ast.Stmt) -> String {
 }
 
 ///|
-fn Session::exec_select(self : Session, q : @ast.Query) -> Unit raise {
+fn Session::exec_select(
+  self : Session,
+  q : @ast.Query,
+  line : Int,
+) -> Unit raise {
   // SELECT @v = expr assignments
   if q.body is Select(sel) &&
     sel.items.iter().any(i => i.kind is Assign(_, _, _)) {
@@ -434,8 +445,13 @@ fn Session::exec_select(self : Session, q : @ast.Query) -> Unit raise {
         severity=15,
       )
     }
-    if !sel.from.is_empty() || sel.where_ is Some(_) {
-      raise @types.not_supported("SELECT assignment with FROM/WHERE")
+    if !sel.from.is_empty() ||
+      sel.where_ is Some(_) ||
+      !sel.group_by.is_empty() ||
+      sel.having is Some(_) ||
+      !q.order_by.is_empty() {
+      self.exec_assignment_select(q, line)
+      return
     }
     self.cur_cmd = 193
     for item in sel.items {
@@ -446,19 +462,11 @@ fn Session::exec_select(self : Session, q : @ast.Query) -> Unit raise {
     self.done(193, count=Some(1L))
     return
   }
-  let bound = @bind.bind_query(self.env(), q)
-  let cols = bound.columns.map(tds_column)
-  self.out.push(ResultSet(cols))
-  self.cur_cmd = 193
-  if !bound.order.is_empty() {
-    self.out.push(Order(bound.order))
+  if q.body is Select(sel) && sel.into is Some(into) {
+    self.exec_select_into(q, sel, into, line)
+    return
   }
-  let rows = @exec.run(self.ctx(), bound.plan)
-  for r in rows {
-    self.out.push(Row(r.map(wire_value)))
-  }
-  self.rt.rowcount = rows.length().to_int64()
-  self.done(193, count=Some(rows.length().to_int64()), result_set=true)
+  self.exec_query(q, line)
 }
 
 ///|

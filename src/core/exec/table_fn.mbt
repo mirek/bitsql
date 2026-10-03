@@ -1,0 +1,117 @@
+///|
+/// Table-valued functions: OPENJSON and STRING_SPLIT.
+fn run_table_fn(
+  ctx : Ctx,
+  f : @ir.TableFn,
+  args : Array[@ir.Expr],
+) -> Array[Row] raise @types.SqlError {
+  let out = []
+  stream_table_fn(ctx, f, args, r => out.push(r))
+  out
+}
+
+///|
+/// Emits rows one by one: OPENJSON WITH conversion errors surface after the
+/// earlier rows (captured: query/table-functions step 3).
+fn stream_table_fn(
+  ctx : Ctx,
+  f : @ir.TableFn,
+  args : Array[@ir.Expr],
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  let text = (i : Int) => {
+    match eval(ctx, args[i]) {
+      Null => None
+      v =>
+        match
+          @types.cast(v, args[i].ty, NVarChar(None, @types.default_collation)) {
+          String(s) => Some(s)
+          _ => None
+        }
+    }
+  }
+  match f {
+    OpenJsonDefault => {
+      guard text(0) is Some(doc) else { return }
+      let path = if args.length() > 1 { text(1) } else { Some("$") }
+      guard path is Some(path) else { return }
+      for r in json(() => @json.openjson(doc, path~)) {
+        emit([
+          @types.Value::String(r.key),
+          match r.value {
+            Some(v) => String(v)
+            None => Null
+          },
+          TinyInt(r.ty),
+        ])
+      }
+    }
+    OpenJsonWith(columns) => {
+      guard text(0) is Some(doc) else { return }
+      let path = if args.length() > 1 { text(1) } else { Some("$") }
+      guard path is Some(path) else { return }
+      let all = json(() => @json.openjson(doc, path~))
+      // an object selection is one row; an array gives one row per element
+      // (captured: query/table-functions step 2)
+      let elements = match json(() => @json.json_query(doc, path~)) {
+        Some(t) if t.has_prefix("{") =>
+          [@json.OpenJsonRow::{ key: "", value: Some(t), ty: 5, }]
+        _ => all
+      }
+      for el in elements {
+        let row : Row = []
+        for c in columns {
+          let v : @types.Value = match el.value {
+            None => Null
+            Some(item) =>
+              // scalar elements are not JSON text; only containers have paths
+              if el.ty == 4 || el.ty == 5 {
+                let got = if c.as_json {
+                  json(() => @json.json_query(item, path=c.path))
+                } else {
+                  json(() => @json.json_value(item, c.path))
+                }
+                match got {
+                  Some(s) =>
+                    @types.cast(
+                      String(s),
+                      NVarChar(None, @types.default_collation),
+                      c.ty,
+                    )
+                  None => Null
+                }
+              } else {
+                Null
+              }
+          }
+          row.push(v)
+        }
+        emit(row)
+      }
+    }
+    StringSplit(ordinal~) => {
+      let sep = text(1)
+      match sep {
+        Some(s) if s.length() == 1 => ()
+        _ =>
+          raise @types.sql_error(
+            214,
+            "Procedure expects parameter 'separator' of type 'nchar(1)/nvarchar(1)'.",
+            state=11,
+          )
+      }
+      guard text(0) is Some(s) else { return }
+      let sep_unit = sep.unwrap().code_unit_at(0)
+      let mut start = 0
+      let mut n = 0L
+      for i in 0..<=s.length() {
+        if i == s.length() || s.code_unit_at(i) == sep_unit {
+          n += 1L
+          let part : @types.Value = String(s.unsafe_substring(start~, end=i))
+          emit(if ordinal { [part, BigInt(n)] } else { [part] })
+          start = i + 1
+        }
+      }
+    }
+  }
+}

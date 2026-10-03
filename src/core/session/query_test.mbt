@@ -1,0 +1,138 @@
+///|
+/// Query-language behaviour end to end (expected values from the captures in
+/// harness/corpus/query/*).
+fn query_session() -> @session.Session {
+  let s = @session.Session::new(
+    @session.Server::new(),
+    spid=51,
+    database="master",
+    seed=1,
+  )
+  ignore(
+    s.run_batch(
+      "CREATE TABLE gb (id int NOT NULL, g int NULL, n int NULL); INSERT INTO gb VALUES (1, 1, 10), (2, 1, 20), (3, 2, NULL), (4, NULL, 5)",
+      0,
+    ),
+  )
+  s
+}
+
+///|
+test "GROUP BY with HAVING, ORDER BY on an aggregate and warning 8153" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT g, COUNT(*) AS c, SUM(n) AS s FROM gb GROUP BY g HAVING COUNT(*) >= 1 ORDER BY SUM(n) DESC",
+    0,
+  )
+  assert_eq(row_values(r), [
+    [Int(1), Int(2), Int(30)],
+    [Null, Int(1), Int(5)],
+    [Int(2), Int(1), Null],
+  ])
+  assert_eq(messages(r), [8153])
+  let bad = s.run_batch("SELECT g, n FROM gb GROUP BY g", 0)
+  assert_eq(messages(bad), [8120])
+}
+
+///|
+test "scalar aggregate over empty input returns one row, GROUP BY () none" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT COUNT(*) AS c, SUM(n) AS s FROM gb WHERE id > 100; SELECT COUNT(*) FROM gb WHERE id > 100 GROUP BY ()",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(0), Null]])
+}
+
+///|
+test "correlated subqueries, NOT IN with NULL, ALL over empty" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT id, (SELECT COUNT(*) FROM gb i WHERE i.g = o.g) AS same_g FROM gb o ORDER BY id",
+    0,
+  )
+  assert_eq(row_values(r), [
+    [Int(1), Int(2)],
+    [Int(2), Int(2)],
+    [Int(3), Int(1)],
+    [Int(4), Int(0)],
+  ])
+  let notin = s.run_batch(
+    "SELECT id FROM gb WHERE id NOT IN (SELECT g FROM gb); SELECT id FROM gb WHERE id > ALL (SELECT id FROM gb WHERE id > 100) ORDER BY id",
+    0,
+  )
+  assert_eq(row_values(notin), [[Int(1)], [Int(2)], [Int(3)], [Int(4)]])
+  let many = s.run_batch("SELECT (SELECT id FROM gb) AS x", 0)
+  assert_eq(messages(many), [512])
+}
+
+///|
+test "recursive CTE streams rows before 530" {
+  let s = query_session()
+  let r = s.run_batch(
+    "WITH r AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM r WHERE n < 10) SELECT n FROM r OPTION (MAXRECURSION 3)",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(1)], [Int(2)], [Int(3)], [Int(4)]])
+  assert_eq(messages(r), [530])
+}
+
+///|
+test "window functions, set operations and TOP WITH TIES" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT id, ROW_NUMBER() OVER (PARTITION BY g ORDER BY id DESC) AS rn, SUM(n) OVER (ORDER BY id ROWS UNBOUNDED PRECEDING) AS run FROM gb ORDER BY id",
+    0,
+  )
+  assert_eq(row_values(r), [
+    [Int(1), Int(2), Int(10)],
+    [Int(2), Int(1), Int(30)],
+    [Int(3), Int(1), Int(30)],
+    [Int(4), Int(1), Int(35)],
+  ])
+  let u = s.run_batch(
+    "SELECT g FROM gb UNION SELECT 3 EXCEPT SELECT 1 ORDER BY g; SELECT TOP 1 WITH TIES g FROM gb WHERE g IS NOT NULL ORDER BY g",
+    0,
+  )
+  assert_eq(row_values(u), [[Null], [Int(2)], [Int(3)], [Int(1)], [Int(1)]])
+}
+
+///|
+test "STRING_SPLIT with ordinal, OPENJSON over APPLY" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT value, ordinal FROM STRING_SPLIT('x;y', ';', 1); SELECT v.id, j.[value] FROM (VALUES (1, N'[1,2]')) v(id, doc) CROSS APPLY OPENJSON(v.doc) j",
+    0,
+  )
+  assert_eq(row_values(r), [
+    [Text("x"), Int(1)],
+    [Text("y"), Int(2)],
+    [Int(1), Text("1")],
+    [Int(1), Text("2")],
+  ])
+}
+
+///|
+test "SELECT INTO and SELECT @v = ... FROM" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT id, n * 2 AS twice INTO copy FROM gb WHERE n IS NOT NULL; DECLARE @s int = 0; SELECT @s = @s + twice FROM copy; SELECT @s AS s",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(70)]])
+}
+
+///|
+test "FOR JSON splits text into 2033-character rows" {
+  let s = query_session()
+  let r = s.run_batch(
+    "SELECT REPLICATE(CAST(N'x' AS nvarchar(max)), 5000) AS big FOR JSON PATH", 0,
+  )
+  let lens = row_values(r).map(row => {
+    match row[0] {
+      Text(t) => t.length()
+      _ => -1
+    }
+  })
+  assert_eq(lens, [2033, 2033, 946])
+}

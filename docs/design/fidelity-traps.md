@@ -42,3 +42,10 @@ Unsupported features raise severity 16 errors whose message starts with
 clients treat them as ordinary errors; above 50000 so they never collide with a
 real system message). Keep the allocation table in
 `src/core/types/emulator_errors.mbt` once it exists.
+| Aggregate metadata | Binder rules in `bind/aggregate.mbt` | Every aggregate is nullable (COUNT is `IntN` flags 1); SUM/AVG of tinyint/smallint are `int`; SUM(decimal(p,s)) is decimal(38,s), AVG is decimal(38,max(s,6)) truncated; STRING_AGG skips NULLs *without* 8153 while other aggregates send INFO 8153 after the rows (`query/aggregate-basics`, `string-agg`) |
+| Arithmetic nullability | Binder | Exact-numeric arithmetic over NOT NULL columns is nullable (`id + 1` IntN flags 33) while float arithmetic, string `+` and bitwise operators are not; derived tables drop the computed flag (`id + 1` reads back flags 1) |
+| Empty grouping | `Aggregate` plan | No GROUP BY over empty input returns one row; `GROUP BY ()` and `ROLLUP` over empty input return none |
+| CI-equal group keys | First/binary-min representative | Which spelling of `'a'`/`'A'` a GROUP BY / DISTINCT / UNION shows is plan-dependent in SQL Server; bitsql: GROUP BY keeps the first, DISTINCT/set operations the binary-smallest (`query/set-operations`, `traps/collation-ci-trailing-spaces`). Avoid relying on it in tests |
+| Streaming errors | `@exec.stream` | Rows produced before a run-time error are sent (530 after 101 rows, OPENJSON WITH conversion 245 after row 1); a Sort/aggregate above makes the error arrive before any row |
+| Recursive CTE | `Recursive` plan | Columns are nullable; 530 fires when level max+1 produces a row (MAXRECURSION 3 returns 4 rows, then the error) |
+| FOR JSON | `ForJson` plan | One nvarchar(max) column `JSON_F52E2B61-…`, text split into 2033-char rows, DONE count = number of *input* rows, no rows for empty input, floats as `5.000000000000000e-001`, `/` escaped |

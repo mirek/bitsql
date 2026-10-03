@@ -40,13 +40,34 @@ pub fn Catalog::empty() -> Catalog {
 
 ///|
 /// Binding environment: variables of the current frame, visible columns and
-/// the enclosing query scope for correlated references.
+/// the enclosing query scope for correlated references. Every query level
+/// (SELECT, derived table, APPLY right side) adds one `with_columns` level;
+/// at run time the executor pushes one outer row per level
+/// (`@exec.Ctx::push_outer`), so `OuterCol(depth, i)` lines up.
 pub(all) struct Env {
   vars : Map[String, VarInfo] // key: lowercased name including '@'
   columns : Array[ColumnRef]
   outer : Env?
   collation : @types.Collation
   catalog : Catalog
+  /// Common table expressions in scope, innermost last.
+  ctes : Array[CteDef]
+  /// OPTION (MAXRECURSION n) of the statement (default 100, 0 = unlimited).
+  maxrecursion : Int
+  /// Counter for plan-local ids (recursive CTE work tables).
+  ids : Ref[Int]
+}
+
+///|
+/// A CTE visible to FROM: its definition and the environment it binds in
+/// (earlier CTEs of the same WITH). `work` is set while binding a recursive
+/// CTE's recursive member: references then read work table `id` with the
+/// anchor's columns.
+pub(all) struct CteDef {
+  name : String // lowercased
+  def : @ast.Cte
+  env : Env
+  work : (Int, Array[ColumnRef])?
 }
 
 ///|
@@ -55,18 +76,21 @@ pub fn Env::new(
   collation? : @types.Collation = @types.default_collation,
   catalog? : Catalog = Catalog::empty(),
 ) -> Env {
-  { vars, columns: [], outer: None, collation, catalog, }
+  {
+    vars,
+    columns: [],
+    outer: None,
+    collation,
+    catalog,
+    ctes: [],
+    maxrecursion: 100,
+    ids: Ref(0),
+  }
 }
 
 ///|
 pub fn Env::with_columns(self : Env, columns : Array[ColumnRef]) -> Env {
-  {
-    vars: self.vars,
-    columns,
-    outer: Some(self),
-    collation: self.collation,
-    catalog: self.catalog,
-  }
+  { ..self, columns, outer: Some(self), }
 }
 
 ///|

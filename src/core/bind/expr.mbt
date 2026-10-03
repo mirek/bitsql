@@ -118,7 +118,11 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       match op {
         Neg =>
           // A negated literal stays a literal so `-2147483648` keeps its type.
-          mk(Neg(a), a.ty, a.nullable)
+          mk(
+            Neg(a),
+            a.ty,
+            a.nullable || (may_overflow(a.ty) && !(a.kind is Lit(_))),
+          )
         Plus => a
         BitNot => mk(BitNot(a), a.ty, a.nullable)
       }
@@ -136,7 +140,16 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
             _ => Mod
           }
           let ty = @types.arith_result_type(aop, a.ty, b.ty)
-          fold_arith(mk(Arith(aop, a, b), ty, a.nullable || b.nullable))
+          // captured: exact-numeric arithmetic is nullable even over NOT
+          // NULL operands (overflow may yield NULL); float and string `+`
+          // are not (query/README probe: id + 1 IntN 33, f * 2 Float 32)
+          fold_arith(
+            mk(
+              Arith(aop, a, b),
+              ty,
+              a.nullable || b.nullable || may_overflow(ty),
+            ),
+          )
         }
         BitAnd | BitOr | BitXor => {
           let ty = @types.common_type(a.ty, b.ty)
@@ -274,8 +287,21 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       { kind: Collate(a), ty, nullable: a.nullable, }
     }
     Call(call) => bind_call(env, call)
-    Exists(_) | Subquery(_) | InQuery(_, _, ..) | Quantified(_, _, _, _) =>
-      raise @types.not_supported("subqueries")
+    Exists(q) => bit_expr(Exists(bind_subquery(env, q).plan), false)
+    Subquery(q) => {
+      let (plan, c) = single_column(env, q)
+      // captured: scalar subqueries are nullable computed columns (flags 33)
+      mk(Subquery(plan), c.ty, true)
+    }
+    InQuery(x, q, negated~) => {
+      let (a, plan, coll) = compare_with_subquery(env, Eq, x, q)
+      bit_expr(InQuery(a, plan, negated~, collation=coll), true)
+    }
+    Quantified(op, quant, x, q) => {
+      let (o, _) = cmp_op(op)
+      let (a, plan, coll) = compare_with_subquery(env, o, x, q)
+      bit_expr(Quantified(o, a, plan, all=quant is All, collation=coll), true)
+    }
     Parse(_, _, ..) => raise @types.not_supported("PARSE / TRY_PARSE")
     AtTimeZone(_, _) => raise @types.not_supported("AT TIME ZONE")
     NextValueFor(_) => raise @types.not_supported("sequences (NEXT VALUE FOR)")
@@ -387,4 +413,50 @@ fn bind_column(
     raise err(4104, "The multi-part identifier \"\{text}\" could not be bound.")
   }
   raise err(207, "Invalid column name '\{parts[0].name}'.")
+}
+
+///|
+/// A subquery that must return one column (116 otherwise).
+fn single_column(
+  env : Env,
+  q : @ast.Query,
+) -> (@ir.Plan, @ir.ResultColumn) raise @types.SqlError {
+  let bq = bind_subquery(env, q)
+  if bq.columns.length() != 1 {
+    raise err(
+      116, "Only one expression can be specified in the select list when the subquery is not introduced with EXISTS.",
+    )
+  }
+  (bq.plan, bq.columns[0])
+}
+
+///|
+/// `x IN (subquery)` / `x op ANY (subquery)`: both sides converted to their
+/// common type.
+fn compare_with_subquery(
+  env : Env,
+  op : @ir.CmpOp,
+  x : @ast.Expr,
+  q : @ast.Query,
+) -> (@ir.Expr, @ir.Plan, @types.Collation?) raise @types.SqlError {
+  let a = bind_expr(env, x)
+  let (plan, c) = single_column(env, q)
+  let t = @types.common_type(a.ty, c.ty)
+  let a = coerce(a, t)
+  let plan : @ir.Plan = if c.ty == t {
+    plan
+  } else {
+    Project(plan, [coerce(mk(Col(0), c.ty, c.nullable), t)])
+  }
+  let coll = resolve_collation(env, cmp_op_name(op), [
+    a,
+    mk(Col(0), c.ty, c.nullable),
+  ])
+  (a, plan, coll)
+}
+
+///|
+/// Exact numeric types whose arithmetic SQL Server reports as nullable.
+fn may_overflow(t : @types.SqlType) -> Bool {
+  t.family() is (FInteger | FDecimal | FMoney)
 }
