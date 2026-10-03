@@ -1,0 +1,306 @@
+{
+  "source": "msduck/reference/output-typed-stages.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "89e124bbda187359",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"whole","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [
+                [
+                  10,
+                  110,
+                  6,
+                  "123.45",
+                  123.455,
+                  1.2345678806304932,
+                  3.46,
+                  {"kind":"date","value":"1970-01-01T12:34:56.130Z","nanosecondsDelta":0},
+                  9,
+                  4
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 2,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197}
+          ]
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": [[110,6,123.455,"123.45",1.2345678806304932,3.46,{"kind":"date","value":"1970-01-01T12:34:56.130Z","nanosecondsDelta":0},9]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "96b56a3961304029",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 157,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "An aggregate may not appear in the set list of an UPDATE statement."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": [[10,7,123.45,"old",0,0,{"kind":"date","value":"1970-01-01T00:00:00.000Z","nanosecondsDelta":0},1]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002": {
+      "case": "24a3aeedbc0c468b",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":158,"state":1,"class":15,"lineNumber":1,"message":"An aggregate may not appear in the OUTPUT clause."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": [[10,7,123.45,"old",0,0,{"kind":"date","value":"1970-01-01T00:00:00.000Z","nanosecondsDelta":0},1]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003": {
+      "case": "8e3923def6097f42",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 4108,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "Windowed functions can only appear in the SELECT or ORDER BY clauses."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": [[10,7,123.45,"old",0,0,{"kind":"date","value":"1970-01-01T00:00:00.000Z","nanosecondsDelta":0},1]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004": {
+      "case": "e863411c6db973f0",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":197}]
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"m","type":"MoneyN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+                {
+                  "name": "label",
+                  "type": "NVarChar",
+                  "length": 24,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"r","type":"FloatN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+                {"name":"d","type":"DecimalN","length":17,"precision":5,"scale":2,"flags":9,"collation":null},
+                {"name":"tm","type":"Time","length":null,"precision":null,"scale":2,"flags":9,"collation":null},
+                {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+              ],
+              "rows": [[10,7,123.45,"old",0,0,{"kind":"date","value":"1970-01-01T00:00:00.000Z","nanosecondsDelta":0},1]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    }
+  }
+}

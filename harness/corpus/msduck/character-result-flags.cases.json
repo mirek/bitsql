@@ -1,0 +1,50 @@
+{
+  "source": "msduck/reference/character-result-flags.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-nchar-fixed-unicode-results",
+      "description": "NCHAR fixed Unicode results",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT NCHAR(65) AS latin,NCHAR(8364) AS euro,NCHAR(65535) AS last_unit,NCHAR(65536) AS out_of_range,NCHAR(NULL) AS absent,ISNULL(NCHAR(NULL),'') AS padded; SELECT NCHAR(65) AS empty_result WHERE 1=0; BEGIN TRY SELECT NCHAR(N'2147483648'); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS text_overflow; END CATCH"
+        }
+      ]
+    },
+    {
+      "name": "001-isnull-unicode-replacement-width",
+      "description": "ISNULL Unicode replacement width",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNULL(DATENAME(month,CAST(NULL AS DATETIME2(7))),N'abcdefghijklmnopqrstuvwxyz0123456789') AS shortened,ISNULL(DATENAME(month,CAST(NULL AS DATETIME2(7))),42) AS converted,ISNULL(DATENAME(month,CAST(NULL AS DATETIME2(7))),NULL) AS absent"
+        }
+      ]
+    },
+    {
+      "name": "002-datename-bounded-unicode-descriptors",
+      "description": "DATENAME bounded Unicode descriptors",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT DATENAME(month,'2026-01-01') AS month_name,COALESCE(DATENAME(month,CAST(NULL AS DATETIME2(7))),DATENAME(month,'2026-02-01')) AS fallback; SELECT DATENAME(month,CAST(NULL AS DATETIME2(7))) AS absent WHERE 1=0"
+        }
+      ]
+    },
+    {
+      "name": "003-character-function-descriptors",
+      "description": "character function descriptors",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CHAR(65) AS c,CHAR(NULL) AS cn,SPACE(3) AS s,SPACE(0) AS empty_space,UNICODE(N'🦆') AS code; SELECT CHAR(65) AS mixed UNION ALL SELECT SPACE(3) UNION ALL SELECT NULL; SELECT COALESCE(CHAR(NULL),SPACE(4)) AS co,IIF(1=0,SPACE(7),CHAR(65)) AS conditional; SELECT ISNULL(CHAR(NULL),SPACE(5)) AS replacement,ISNULL(CHAR(NULL),SPACE(0)) AS padded"
+        }
+      ]
+    }
+  ]
+}

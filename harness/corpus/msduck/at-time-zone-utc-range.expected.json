@@ -1,0 +1,297 @@
+{
+  "source": "msduck/reference/at-time-zone-utc-range.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-local-minimum": {
+      "case": "d79ea8c1518520df",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"0001-01-01T00:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001-local-before-snapshot": {
+      "case": "476f8adf6bc3c051",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1899-12-31T23:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002-local-snapshot-start": {
+      "case": "87c52583c86d30ce",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1900-01-01T00:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003-local-snapshot-end": {
+      "case": "1c55677c1a22550e",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2050-12-31T23:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004-local-after-snapshot": {
+      "case": "998bfc34f9e313ca",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2051-01-01T00:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "005-local-maximum": {
+      "case": "e2cae8cefb81ce7f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"9999-12-31T23:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "006-instant-minimum": {
+      "case": "c7087cf0f102a4c2",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"0001-01-01T00:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "007-instant-before-snapshot": {
+      "case": "c7de109b2eb2dbf4",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1899-12-31T23:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "008-instant-after-snapshot": {
+      "case": "109553e82bde1423",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2051-01-01T00:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "009-instant-maximum": {
+      "case": "839e06eaa6388548",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"9999-12-31T23:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "010-instant-offset-before-snapshot": {
+      "case": "b44c661526f97e5e",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1899-12-31T21:59:59.999Z","nanosecondsDelta":0.0009999}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "011-instant-offset-after-snapshot": {
+      "case": "3370370b20ec1595",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2050-12-31T22:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "012-local-pacific-before-snapshot": {
+      "case": "5fa5341c4d9f2615",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1899-12-31T20:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "013-local-pacific-after-snapshot": {
+      "case": "f988a98bd8d41964",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2051-01-01T20:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "014-instant-pacific-before-snapshot": {
+      "case": "b54df44de784088f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"1899-12-31T12:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "015-instant-pacific-after-snapshot": {
+      "case": "a3a1ad953ce09bf0",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2051-01-01T12:00:00.000Z","nanosecondsDelta":0}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    }
+  }
+}

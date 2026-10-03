@@ -1,0 +1,1409 @@
+{
+  "source": "msduck/reference/collation-functions.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-isnull-literal-null-property": {
+      "case": "1ec004922da23f13",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "001-isnull-literal-null-comparison": {
+      "case": "7424a57005f4a27c",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "002-isnull-typed-null-property": {
+      "case": "318d0c5004bd3698",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["SQL_Latin1_General_CP1_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "003-isnull-typed-null-comparison": {
+      "case": "cce6d2a3932b9f71",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "004-lower-numeric-property": {
+      "case": "a1c3e80e7b3d1ffb",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["SQL_Latin1_General_CP1_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "005-lower-numeric-comparison": {
+      "case": "3f6a8575fecbac15",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "006-concat-numeric-property": {
+      "case": "872c5f136513928b",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "007-concat-numeric-comparison": {
+      "case": "87b6e08050910ed8",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "008-left-explicit-property": {
+      "case": "595b22760ebd23b5",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "009-left-explicit-comparison": {
+      "case": "0164d915602dc0d6",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "010-right-explicit-property": {
+      "case": "8c4806fb26a54022",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "011-right-explicit-comparison": {
+      "case": "2fd6bb918f3e562f",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "012-lower-explicit-property": {
+      "case": "5c36b86822c60d07",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "013-lower-explicit-comparison": {
+      "case": "ea0d29301b55ffd7",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "014-upper-explicit-property": {
+      "case": "520657df269998b6",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "015-upper-explicit-comparison": {
+      "case": "0fd61bfee77f4fa7",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "016-trim-explicit-property": {
+      "case": "d4bfecfea3911b71",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "017-trim-explicit-comparison": {
+      "case": "82eeab3cae71f571",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "018-ltrim-explicit-property": {
+      "case": "6bfd6ddc9698464a",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "019-ltrim-explicit-comparison": {
+      "case": "f573e446a5afc58c",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "020-rtrim-explicit-property": {
+      "case": "2ec1a3ab7088eb19",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "021-rtrim-explicit-comparison": {
+      "case": "60ac17dfc7466a45",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "022-substring-explicit-property": {
+      "case": "f6bd5e2da1fa2afd",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "023-substring-explicit-comparison": {
+      "case": "319552be46f031a7",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "024-reverse-explicit-property": {
+      "case": "7c47cdc5d98a7d26",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "025-reverse-explicit-comparison": {
+      "case": "edfe287690ebc122",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "026-replicate-explicit-property": {
+      "case": "099bdde9f17ba406",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "027-replicate-explicit-comparison": {
+      "case": "18a35df416bafc30",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "028-replace-implicit-conflict-property": {
+      "case": "36b81e76ccdbd0fd",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the replace operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "029-replace-implicit-conflict-comparison": {
+      "case": "882981f7478e6970",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the replace operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "030-replace-explicit-pattern-property": {
+      "case": "3e3b9e13f563ce4f",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "031-replace-explicit-pattern-comparison": {
+      "case": "c23fe74da583c190",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "032-replace-explicit-replacement-property": {
+      "case": "ee1b3b8949e18ff2",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "033-replace-explicit-replacement-comparison": {
+      "case": "04848c9f9cc80a6b",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "034-stuff-implicit-conflict-property": {
+      "case": "5c6b1ad8a6fdea66",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the stuff operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "035-stuff-implicit-conflict-comparison": {
+      "case": "28d55c00cfe6fd48",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the stuff operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "036-stuff-explicit-replacement-property": {
+      "case": "5094b83eca4b1122",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "037-stuff-explicit-replacement-comparison": {
+      "case": "f4f29da61754e52e",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "038-concat-implicit-conflict-property": {
+      "case": "13fae25971ffe36e",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 456,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Implicit conversion of nvarchar value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in concat operator."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "039-concat-implicit-conflict-comparison": {
+      "case": "8137ab5af4601642",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "040-concat-explicit-property": {
+      "case": "d470605a592f89b1",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "041-concat-explicit-comparison": {
+      "case": "dd215c7893deea53",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "042-isnull-implicit-conflict-property": {
+      "case": "a32d6bf09bab772a",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "043-isnull-implicit-conflict-comparison": {
+      "case": "2199e4323818665e",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "044-isnull-explicit-replacement-property": {
+      "case": "3497402298ebf914",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "045-isnull-explicit-replacement-comparison": {
+      "case": "ccf86841910cb001",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "046-coalesce-implicit-conflict-property": {
+      "case": "3e66e7847ad78bcf",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 456,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Implicit conversion of nvarchar value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in CASE operator."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "047-coalesce-implicit-conflict-comparison": {
+      "case": "ce03363db4eb1e20",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "048-nullif-implicit-conflict-property": {
+      "case": "16b8527916426dec",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "049-nullif-implicit-conflict-comparison": {
+      "case": "cb086c36f86061a5",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "050-choose-implicit-conflict-property": {
+      "case": "2fca7ae402f546cd",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 456,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Implicit conversion of nvarchar value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in CHOOSE operator."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "051-choose-implicit-conflict-comparison": {
+      "case": "e7645d1220682a67",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "052-iif-implicit-conflict-property": {
+      "case": "b16c71e42ec7ce52",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 456,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Implicit conversion of nvarchar value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in CASE operator."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "053-iif-implicit-conflict-comparison": {
+      "case": "5dfdbf10206547b8",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "054-left-implicit-property": {
+      "case": "7653dcecb10d458a",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "055-left-implicit-comparison": {
+      "case": "90560b92a800c4a6",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "056-left-default-property": {
+      "case": "b96910742dd12de1",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["SQL_Latin1_General_CP1_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "057-left-default-comparison": {
+      "case": "e498ff606a8601dd",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    }
+  }
+}

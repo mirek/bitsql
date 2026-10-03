@@ -1,0 +1,15 @@
+{
+  "source": "msduck/reference/replicate-numeric-inputs.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLICATE(CAST(1 AS BIT),2) AS c0,REPLICATE(CAST(1 AS TINYINT),2) AS c1,REPLICATE(CAST(1 AS SMALLINT),2) AS c2,REPLICATE(CAST(1 AS INT),2) AS c3,REPLICATE(CAST(1 AS BIGINT),2) AS c4,REPLICATE(CAST(1 AS DECIMAL(5,2)),2) AS c5,REPLICATE(CAST(1 AS MONEY),2) AS c6,REPLICATE(CAST(1 AS SMALLMONEY),2) AS c7,REPLICATE(CAST(1 AS REAL),2) AS c8,REPLICATE(CAST(1 AS FLOAT),2) AS c9"
+        }
+      ]
+    }
+  ]
+}

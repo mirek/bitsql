@@ -1,0 +1,60 @@
+{
+  "source": "msduck/reference/unicode-first-unit.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; SELECT 1 AS id,CAST(LEFT(N'🦆',1) AS NVARCHAR(4)) AS s,CAST(LEFT(N'🦆',1) AS NCHAR(4)) AS f INTO typed_stage",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT UNICODE(LEFT(N'🦆',1)) AS h,UNICODE(RIGHT(N'🦆',1)) AS l,UNICODE(N'') AS e,UNICODE(NULL) AS n,UNICODE(12) AS d"
+        },
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; SELECT 1 AS id,CAST(LEFT(N'🦆',1) AS NVARCHAR(4)) AS s,CAST(LEFT(N'🦆',1) AS NCHAR(4)) AS f INTO typed_stage",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT UNICODE(s) AS h,UNICODE(f) AS f FROM typed_stage"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; SELECT 1 AS id,CAST(LEFT(N'🦆',1) AS NVARCHAR(4)) AS s,CAST(LEFT(N'🦆',1) AS NCHAR(4)) AS f INTO typed_stage",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE typed_stage SET s=RIGHT(N'🦆',1) OUTPUT UNICODE(deleted.s) AS old_unit,UNICODE(inserted.s) AS new_unit"
+        },
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; SELECT 1 AS id,CAST(LEFT(N'🦆',1) AS NVARCHAR(4)) AS s,CAST(LEFT(N'🦆',1) AS NCHAR(4)) AS f INTO typed_stage",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT UNICODE(s) AS h FROM typed_stage WHERE 1=0"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    }
+  ]
+}

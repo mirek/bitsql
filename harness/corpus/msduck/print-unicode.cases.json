@@ -1,0 +1,18 @@
+{
+  "source": "msduck/reference/print-unicode.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"PRINT NULL; PRINT ''; SELECT @@ROWCOUNT AS r,@@ERROR AS e"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"PRINT LEFT(N'🦆xy',1); SELECT 1 AS alive"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"PRINT RIGHT(N'x🦆',1)"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"DECLARE @s NCHAR(3)=LEFT(N'🦆xy',1); PRINT @s"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"PRINT REPLICATE(CAST(N'x' AS NVARCHAR(MAX)),3999)+N'🦆'"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"PRINT REPLICATE(CAST('x' AS VARCHAR(MAX)),8100)"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"PRINT CAST(NULL AS NVARCHAR(3))"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"PRINT N'a'+NCHAR(0)+N'b'"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"PRINT CAST(12.34 AS DECIMAL(5,2))"}]},
+    {"name":"009","steps":[{"kind":"batch","sql":"DECLARE @s NVARCHAR(MAX)=LEFT(N'🦆xy',1); PRINT @s; SELECT LEN(@s) AS l"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"IF 1=0 PRINT LEFT(N'🦆xy',1); PRINT N'after'"}]},
+    {"name":"011","steps":[{"kind":"batch","sql":"PRINT REPLICATE(CAST(N'x' AS NVARCHAR(MAX)),3998)+N'🦆'"}]}
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "source": "msduck/reference/collation-wire.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-sql-latin1-general-cp1-ci-as",
+      "description": "SQL_Latin1_General_CP1_CI_AS",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE SQL_Latin1_General_CP1_CI_AS AS n,CAST('a' AS VARCHAR(4)) COLLATE SQL_Latin1_General_CP1_CI_AS AS v"
+        }
+      ]
+    },
+    {
+      "name": "001-latin1-general-100-ci-as",
+      "description": "Latin1_General_100_CI_AS",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE Latin1_General_100_CI_AS AS n,CAST('a' AS VARCHAR(4)) COLLATE Latin1_General_100_CI_AS AS v"
+        }
+      ]
+    },
+    {
+      "name": "002-latin1-general-100-cs-as",
+      "description": "Latin1_General_100_CS_AS",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE Latin1_General_100_CS_AS AS n,CAST('a' AS VARCHAR(4)) COLLATE Latin1_General_100_CS_AS AS v"
+        }
+      ]
+    },
+    {
+      "name": "003-latin1-general-100-ci-ai",
+      "description": "Latin1_General_100_CI_AI",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE Latin1_General_100_CI_AI AS n,CAST('a' AS VARCHAR(4)) COLLATE Latin1_General_100_CI_AI AS v"
+        }
+      ]
+    },
+    {
+      "name": "004-latin1-general-100-cs-ai",
+      "description": "Latin1_General_100_CS_AI",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE Latin1_General_100_CS_AI AS n,CAST('a' AS VARCHAR(4)) COLLATE Latin1_General_100_CS_AI AS v"
+        }
+      ]
+    },
+    {
+      "name": "005-latin1-general-100-bin2",
+      "description": "Latin1_General_100_BIN2",
+      "steps": [
+        {"kind":"batch","sql":"SET NOCOUNT OFF","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' COLLATE Latin1_General_100_BIN2 AS n,CAST('a' AS VARCHAR(4)) COLLATE Latin1_General_100_BIN2 AS v"
+        }
+      ]
+    }
+  ]
+}

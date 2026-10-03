@@ -1,0 +1,1456 @@
+{
+  "source": "msduck/reference/trim-collation.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-sql-latin1-general-cp1-ci-as-case",
+      "description": "SQL_Latin1_General_CP1_CI_AS: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'a') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'AaxAa') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'a') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'a') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'AaxAa') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'a') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'AaxAa') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'a') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'AaxAa') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "001-sql-latin1-general-cp1-ci-as-accent",
+      "description": "SQL_Latin1_General_CP1_CI_AS: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'e') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'éxÉe') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'e') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'e') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxÉe') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'e') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxÉe') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'e') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxÉe') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "002-sql-latin1-general-cp1-ci-as-nonbreaking-space",
+      "description": "SQL_Latin1_General_CP1_CI_AS: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS,(N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS,(N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "003-sql-latin1-general-cp1-ci-as-tab",
+      "description": "SQL_Latin1_General_CP1_CI_AS: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "004-sql-latin1-general-cp1-ci-as-combining-accent",
+      "description": "SQL_Latin1_General_CP1_CI_AS: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "005-sql-latin1-general-cp1-ci-as-composed-versus-decomposed",
+      "description": "SQL_Latin1_General_CP1_CI_AS: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'éxé') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxé') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxé') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'éxé') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "006-sql-latin1-general-cp1-ci-as-decomposed-versus-composed",
+      "description": "SQL_Latin1_General_CP1_CI_AS: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS,(N'é') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS,(N'é') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'é') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'é') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'é') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "007-sql-latin1-general-cp1-ci-as-sharp-s-expansion",
+      "description": "SQL_Latin1_General_CP1_CI_AS: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'ss') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'ßxß') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'ss') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'ss') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ßxß') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'ss') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ßxß') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'ss') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ßxß') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "008-sql-latin1-general-cp1-ci-as-ligature-expansion",
+      "description": "SQL_Latin1_General_CP1_CI_AS: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'oe') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'œxœ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'oe') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'oe') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'œxœ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'oe') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'œxœ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'oe') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'œxœ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "009-sql-latin1-general-cp1-ci-as-fullwidth-letter",
+      "description": "SQL_Latin1_General_CP1_CI_AS: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'A') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'ＡxＡ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'A') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'A') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ＡxＡ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'A') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ＡxＡ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'A') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'ＡxＡ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "010-sql-latin1-general-cp1-ci-as-null-code-unit",
+      "description": "SQL_Latin1_General_CP1_CI_AS: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "011-sql-latin1-general-cp1-ci-as-soft-hyphen",
+      "description": "SQL_Latin1_General_CP1_CI_AS: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "012-sql-latin1-general-cp1-ci-as-surrogate-pair-and-high-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "013-sql-latin1-general-cp1-ci-as-surrogate-pair-and-low-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "014-sql-latin1-general-cp1-ci-as-isolated-high-and-low-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS,(NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "015-sql-latin1-general-cp1-ci-as-isolated-surrogate-default-spac",
+      "description": "SQL_Latin1_General_CP1_CI_AS: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N' ') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "016-sql-latin1-general-cp1-ci-as-supplementary-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'🦆') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'🦆') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'🦆') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'🦆x🦆') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "017-sql-latin1-general-cp1-ci-as-empty-source",
+      "description": "SQL_Latin1_General_CP1_CI_AS: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "018-sql-latin1-general-cp1-ci-as-empty-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N' x ') COLLATE SQL_Latin1_General_CP1_CI_AS,(N'') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' x ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' x ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N' x ') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "019-sql-latin1-general-cp1-ci-as-null-source",
+      "description": "SQL_Latin1_General_CP1_CI_AS: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS,(N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS,(N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "020-sql-latin1-general-cp1-ci-as-null-set",
+      "description": "SQL_Latin1_General_CP1_CI_AS: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE SQL_Latin1_General_CP1_CI_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((N'x') COLLATE SQL_Latin1_General_CP1_CI_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE SQL_Latin1_General_CP1_CI_AS FROM (N'x') COLLATE SQL_Latin1_General_CP1_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "021-sql-latin1-general-cp1-ci-as-omitted-characters",
+      "description": "SQL_Latin1_General_CP1_CI_AS: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE SQL_Latin1_General_CP1_CI_AS) AS b"
+        }
+      ]
+    },
+    {
+      "name": "022-latin1-general-100-ci-as-case",
+      "description": "Latin1_General_100_CI_AS: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE Latin1_General_100_CI_AS,(N'a') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'AaxAa') COLLATE Latin1_General_100_CI_AS,(N'a') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'a') COLLATE Latin1_General_100_CI_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'a') COLLATE Latin1_General_100_CI_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'a') COLLATE Latin1_General_100_CI_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "023-latin1-general-100-ci-as-accent",
+      "description": "Latin1_General_100_CI_AS: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE Latin1_General_100_CI_AS,(N'e') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'éxÉe') COLLATE Latin1_General_100_CI_AS,(N'e') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'e') COLLATE Latin1_General_100_CI_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'e') COLLATE Latin1_General_100_CI_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'e') COLLATE Latin1_General_100_CI_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "024-latin1-general-100-ci-as-nonbreaking-space",
+      "description": "Latin1_General_100_CI_AS: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS,(N' ') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS,(N' ') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N' ') COLLATE Latin1_General_100_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CI_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "025-latin1-general-100-ci-as-tab",
+      "description": "Latin1_General_100_CI_AS: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AS,(NCHAR(9)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AS,(NCHAR(9)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(9)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(9)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "026-latin1-general-100-ci-as-combining-accent",
+      "description": "Latin1_General_100_CI_AS: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS,(NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS,(NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "027-latin1-general-100-ci-as-composed-versus-decomposed",
+      "description": "Latin1_General_100_CI_AS: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE Latin1_General_100_CI_AS,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'éxé') COLLATE Latin1_General_100_CI_AS,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'éxé') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'éxé') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS FROM (N'éxé') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "028-latin1-general-100-ci-as-decomposed-versus-composed",
+      "description": "Latin1_General_100_CI_AS: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS,(N'é') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS,(N'é') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'é') COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'é') COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'é') COLLATE Latin1_General_100_CI_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "029-latin1-general-100-ci-as-sharp-s-expansion",
+      "description": "Latin1_General_100_CI_AS: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE Latin1_General_100_CI_AS,(N'ss') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'ßxß') COLLATE Latin1_General_100_CI_AS,(N'ss') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'ss') COLLATE Latin1_General_100_CI_AS FROM (N'ßxß') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'ss') COLLATE Latin1_General_100_CI_AS FROM (N'ßxß') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'ss') COLLATE Latin1_General_100_CI_AS FROM (N'ßxß') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "030-latin1-general-100-ci-as-ligature-expansion",
+      "description": "Latin1_General_100_CI_AS: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE Latin1_General_100_CI_AS,(N'oe') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'œxœ') COLLATE Latin1_General_100_CI_AS,(N'oe') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'oe') COLLATE Latin1_General_100_CI_AS FROM (N'œxœ') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'oe') COLLATE Latin1_General_100_CI_AS FROM (N'œxœ') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'oe') COLLATE Latin1_General_100_CI_AS FROM (N'œxœ') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "031-latin1-general-100-ci-as-fullwidth-letter",
+      "description": "Latin1_General_100_CI_AS: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CI_AS,(N'A') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CI_AS,(N'A') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'A') COLLATE Latin1_General_100_CI_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'A') COLLATE Latin1_General_100_CI_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'A') COLLATE Latin1_General_100_CI_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "032-latin1-general-100-ci-as-null-code-unit",
+      "description": "Latin1_General_100_CI_AS: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AS,(NCHAR(0)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AS,(NCHAR(0)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(0)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(0)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "033-latin1-general-100-ci-as-soft-hyphen",
+      "description": "Latin1_General_100_CI_AS: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AS,(NCHAR(173)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AS,(NCHAR(173)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(173)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(173)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "034-latin1-general-100-ci-as-surrogate-pair-and-high-set",
+      "description": "Latin1_General_100_CI_AS: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(NCHAR(55358)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(NCHAR(55358)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(55358)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "035-latin1-general-100-ci-as-surrogate-pair-and-low-set",
+      "description": "Latin1_General_100_CI_AS: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "036-latin1-general-100-ci-as-isolated-high-and-low-set",
+      "description": "Latin1_General_100_CI_AS: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "037-latin1-general-100-ci-as-isolated-surrogate-default-spaces",
+      "description": "Latin1_General_100_CI_AS: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AS,(N' ') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AS,(N' ') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N' ') COLLATE Latin1_General_100_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CI_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "038-latin1-general-100-ci-as-supplementary-set",
+      "description": "Latin1_General_100_CI_AS: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(N'🦆') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AS,(N'🦆') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'🦆') COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'🦆') COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'🦆') COLLATE Latin1_General_100_CI_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "039-latin1-general-100-ci-as-empty-source",
+      "description": "Latin1_General_100_CI_AS: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE Latin1_General_100_CI_AS,(N'x') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'') COLLATE Latin1_General_100_CI_AS,(N'x') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'x') COLLATE Latin1_General_100_CI_AS FROM (N'') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CI_AS FROM (N'') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CI_AS FROM (N'') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "040-latin1-general-100-ci-as-empty-set",
+      "description": "Latin1_General_100_CI_AS: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE Latin1_General_100_CI_AS,(N'') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N' x ') COLLATE Latin1_General_100_CI_AS,(N'') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'') COLLATE Latin1_General_100_CI_AS FROM (N' x ') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'') COLLATE Latin1_General_100_CI_AS FROM (N' x ') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'') COLLATE Latin1_General_100_CI_AS FROM (N' x ') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "041-latin1-general-100-ci-as-null-source",
+      "description": "Latin1_General_100_CI_AS: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS,(N'x') COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS,(N'x') COLLATE Latin1_General_100_CI_AS) AS r,TRIM((N'x') COLLATE Latin1_General_100_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CI_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "042-latin1-general-100-ci-as-null-set",
+      "description": "Latin1_General_100_CI_AS: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE Latin1_General_100_CI_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((N'x') COLLATE Latin1_General_100_CI_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS FROM (N'x') COLLATE Latin1_General_100_CI_AS) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS FROM (N'x') COLLATE Latin1_General_100_CI_AS) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AS FROM (N'x') COLLATE Latin1_General_100_CI_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "043-latin1-general-100-ci-as-omitted-characters",
+      "description": "Latin1_General_100_CI_AS: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AS) AS b"
+        }
+      ]
+    },
+    {
+      "name": "044-latin1-general-100-cs-as-case",
+      "description": "Latin1_General_100_CS_AS: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE Latin1_General_100_CS_AS,(N'a') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'AaxAa') COLLATE Latin1_General_100_CS_AS,(N'a') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'a') COLLATE Latin1_General_100_CS_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'a') COLLATE Latin1_General_100_CS_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'a') COLLATE Latin1_General_100_CS_AS FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "045-latin1-general-100-cs-as-accent",
+      "description": "Latin1_General_100_CS_AS: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE Latin1_General_100_CS_AS,(N'e') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'éxÉe') COLLATE Latin1_General_100_CS_AS,(N'e') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'e') COLLATE Latin1_General_100_CS_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'e') COLLATE Latin1_General_100_CS_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'e') COLLATE Latin1_General_100_CS_AS FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "046-latin1-general-100-cs-as-nonbreaking-space",
+      "description": "Latin1_General_100_CS_AS: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS,(N' ') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS,(N' ') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N' ') COLLATE Latin1_General_100_CS_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CS_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CS_AS FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "047-latin1-general-100-cs-as-tab",
+      "description": "Latin1_General_100_CS_AS: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AS,(NCHAR(9)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AS,(NCHAR(9)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(9)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(9)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "048-latin1-general-100-cs-as-combining-accent",
+      "description": "Latin1_General_100_CS_AS: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS,(NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS,(NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "049-latin1-general-100-cs-as-composed-versus-decomposed",
+      "description": "Latin1_General_100_CS_AS: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE Latin1_General_100_CS_AS,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'éxé') COLLATE Latin1_General_100_CS_AS,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'éxé') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'éxé') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS FROM (N'éxé') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "050-latin1-general-100-cs-as-decomposed-versus-composed",
+      "description": "Latin1_General_100_CS_AS: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS,(N'é') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS,(N'é') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'é') COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'é') COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'é') COLLATE Latin1_General_100_CS_AS FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "051-latin1-general-100-cs-as-sharp-s-expansion",
+      "description": "Latin1_General_100_CS_AS: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE Latin1_General_100_CS_AS,(N'ss') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'ßxß') COLLATE Latin1_General_100_CS_AS,(N'ss') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'ss') COLLATE Latin1_General_100_CS_AS FROM (N'ßxß') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'ss') COLLATE Latin1_General_100_CS_AS FROM (N'ßxß') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'ss') COLLATE Latin1_General_100_CS_AS FROM (N'ßxß') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "052-latin1-general-100-cs-as-ligature-expansion",
+      "description": "Latin1_General_100_CS_AS: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE Latin1_General_100_CS_AS,(N'oe') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'œxœ') COLLATE Latin1_General_100_CS_AS,(N'oe') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'oe') COLLATE Latin1_General_100_CS_AS FROM (N'œxœ') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'oe') COLLATE Latin1_General_100_CS_AS FROM (N'œxœ') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'oe') COLLATE Latin1_General_100_CS_AS FROM (N'œxœ') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "053-latin1-general-100-cs-as-fullwidth-letter",
+      "description": "Latin1_General_100_CS_AS: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CS_AS,(N'A') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CS_AS,(N'A') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'A') COLLATE Latin1_General_100_CS_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'A') COLLATE Latin1_General_100_CS_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'A') COLLATE Latin1_General_100_CS_AS FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "054-latin1-general-100-cs-as-null-code-unit",
+      "description": "Latin1_General_100_CS_AS: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AS,(NCHAR(0)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AS,(NCHAR(0)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(0)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(0)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "055-latin1-general-100-cs-as-soft-hyphen",
+      "description": "Latin1_General_100_CS_AS: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AS,(NCHAR(173)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AS,(NCHAR(173)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(173)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(173)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "056-latin1-general-100-cs-as-surrogate-pair-and-high-set",
+      "description": "Latin1_General_100_CS_AS: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(NCHAR(55358)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(NCHAR(55358)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(55358)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "057-latin1-general-100-cs-as-surrogate-pair-and-low-set",
+      "description": "Latin1_General_100_CS_AS: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "058-latin1-general-100-cs-as-isolated-high-and-low-set",
+      "description": "Latin1_General_100_CS_AS: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AS,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AS FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "059-latin1-general-100-cs-as-isolated-surrogate-default-spaces",
+      "description": "Latin1_General_100_CS_AS: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AS,(N' ') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AS,(N' ') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N' ') COLLATE Latin1_General_100_CS_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CS_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CS_AS FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "060-latin1-general-100-cs-as-supplementary-set",
+      "description": "Latin1_General_100_CS_AS: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(N'🦆') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AS,(N'🦆') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'🦆') COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'🦆') COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'🦆') COLLATE Latin1_General_100_CS_AS FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "061-latin1-general-100-cs-as-empty-source",
+      "description": "Latin1_General_100_CS_AS: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE Latin1_General_100_CS_AS,(N'x') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'') COLLATE Latin1_General_100_CS_AS,(N'x') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'x') COLLATE Latin1_General_100_CS_AS FROM (N'') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CS_AS FROM (N'') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CS_AS FROM (N'') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "062-latin1-general-100-cs-as-empty-set",
+      "description": "Latin1_General_100_CS_AS: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE Latin1_General_100_CS_AS,(N'') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N' x ') COLLATE Latin1_General_100_CS_AS,(N'') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'') COLLATE Latin1_General_100_CS_AS FROM (N' x ') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'') COLLATE Latin1_General_100_CS_AS FROM (N' x ') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'') COLLATE Latin1_General_100_CS_AS FROM (N' x ') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "063-latin1-general-100-cs-as-null-source",
+      "description": "Latin1_General_100_CS_AS: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS,(N'x') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS,(N'x') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'x') COLLATE Latin1_General_100_CS_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CS_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CS_AS FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "064-latin1-general-100-cs-as-null-set",
+      "description": "Latin1_General_100_CS_AS: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE Latin1_General_100_CS_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'x') COLLATE Latin1_General_100_CS_AS,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS FROM (N'x') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS FROM (N'x') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AS FROM (N'x') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "065-latin1-general-100-cs-as-omitted-characters",
+      "description": "Latin1_General_100_CS_AS: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AS) AS b"
+        }
+      ]
+    },
+    {
+      "name": "066-latin1-general-100-ci-ai-case",
+      "description": "Latin1_General_100_CI_AI: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE Latin1_General_100_CI_AI,(N'a') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'AaxAa') COLLATE Latin1_General_100_CI_AI,(N'a') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'a') COLLATE Latin1_General_100_CI_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'a') COLLATE Latin1_General_100_CI_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'a') COLLATE Latin1_General_100_CI_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "067-latin1-general-100-ci-ai-accent",
+      "description": "Latin1_General_100_CI_AI: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE Latin1_General_100_CI_AI,(N'e') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'éxÉe') COLLATE Latin1_General_100_CI_AI,(N'e') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'e') COLLATE Latin1_General_100_CI_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'e') COLLATE Latin1_General_100_CI_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'e') COLLATE Latin1_General_100_CI_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "068-latin1-general-100-ci-ai-nonbreaking-space",
+      "description": "Latin1_General_100_CI_AI: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI,(N' ') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI,(N' ') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N' ') COLLATE Latin1_General_100_CI_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CI_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CI_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "069-latin1-general-100-ci-ai-tab",
+      "description": "Latin1_General_100_CI_AI: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AI,(NCHAR(9)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AI,(NCHAR(9)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(9)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(9)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "070-latin1-general-100-ci-ai-combining-accent",
+      "description": "Latin1_General_100_CI_AI: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI,(NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI,(NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "071-latin1-general-100-ci-ai-composed-versus-decomposed",
+      "description": "Latin1_General_100_CI_AI: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE Latin1_General_100_CI_AI,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'éxé') COLLATE Latin1_General_100_CI_AI,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'éxé') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'éxé') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI FROM (N'éxé') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "072-latin1-general-100-ci-ai-decomposed-versus-composed",
+      "description": "Latin1_General_100_CI_AI: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI,(N'é') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI,(N'é') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'é') COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'é') COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'é') COLLATE Latin1_General_100_CI_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "073-latin1-general-100-ci-ai-sharp-s-expansion",
+      "description": "Latin1_General_100_CI_AI: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE Latin1_General_100_CI_AI,(N'ss') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'ßxß') COLLATE Latin1_General_100_CI_AI,(N'ss') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'ss') COLLATE Latin1_General_100_CI_AI FROM (N'ßxß') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'ss') COLLATE Latin1_General_100_CI_AI FROM (N'ßxß') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'ss') COLLATE Latin1_General_100_CI_AI FROM (N'ßxß') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "074-latin1-general-100-ci-ai-ligature-expansion",
+      "description": "Latin1_General_100_CI_AI: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE Latin1_General_100_CI_AI,(N'oe') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'œxœ') COLLATE Latin1_General_100_CI_AI,(N'oe') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'oe') COLLATE Latin1_General_100_CI_AI FROM (N'œxœ') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'oe') COLLATE Latin1_General_100_CI_AI FROM (N'œxœ') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'oe') COLLATE Latin1_General_100_CI_AI FROM (N'œxœ') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "075-latin1-general-100-ci-ai-fullwidth-letter",
+      "description": "Latin1_General_100_CI_AI: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CI_AI,(N'A') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CI_AI,(N'A') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'A') COLLATE Latin1_General_100_CI_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'A') COLLATE Latin1_General_100_CI_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'A') COLLATE Latin1_General_100_CI_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "076-latin1-general-100-ci-ai-null-code-unit",
+      "description": "Latin1_General_100_CI_AI: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AI,(NCHAR(0)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AI,(NCHAR(0)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(0)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(0)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "077-latin1-general-100-ci-ai-soft-hyphen",
+      "description": "Latin1_General_100_CI_AI: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AI,(NCHAR(173)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AI,(NCHAR(173)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(173)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(173)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "078-latin1-general-100-ci-ai-surrogate-pair-and-high-set",
+      "description": "Latin1_General_100_CI_AI: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(NCHAR(55358)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(NCHAR(55358)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(55358)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "079-latin1-general-100-ci-ai-surrogate-pair-and-low-set",
+      "description": "Latin1_General_100_CI_AI: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "080-latin1-general-100-ci-ai-isolated-high-and-low-set",
+      "description": "Latin1_General_100_CI_AI: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CI_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "081-latin1-general-100-ci-ai-isolated-surrogate-default-spaces",
+      "description": "Latin1_General_100_CI_AI: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AI,(N' ') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AI,(N' ') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N' ') COLLATE Latin1_General_100_CI_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CI_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CI_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "082-latin1-general-100-ci-ai-supplementary-set",
+      "description": "Latin1_General_100_CI_AI: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(N'🦆') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CI_AI,(N'🦆') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'🦆') COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'🦆') COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'🦆') COLLATE Latin1_General_100_CI_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "083-latin1-general-100-ci-ai-empty-source",
+      "description": "Latin1_General_100_CI_AI: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE Latin1_General_100_CI_AI,(N'x') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'') COLLATE Latin1_General_100_CI_AI,(N'x') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'x') COLLATE Latin1_General_100_CI_AI FROM (N'') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CI_AI FROM (N'') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CI_AI FROM (N'') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "084-latin1-general-100-ci-ai-empty-set",
+      "description": "Latin1_General_100_CI_AI: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE Latin1_General_100_CI_AI,(N'') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N' x ') COLLATE Latin1_General_100_CI_AI,(N'') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'') COLLATE Latin1_General_100_CI_AI FROM (N' x ') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'') COLLATE Latin1_General_100_CI_AI FROM (N' x ') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'') COLLATE Latin1_General_100_CI_AI FROM (N' x ') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "085-latin1-general-100-ci-ai-null-source",
+      "description": "Latin1_General_100_CI_AI: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI,(N'x') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI,(N'x') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'x') COLLATE Latin1_General_100_CI_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CI_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CI_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "086-latin1-general-100-ci-ai-null-set",
+      "description": "Latin1_General_100_CI_AI: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE Latin1_General_100_CI_AI,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'x') COLLATE Latin1_General_100_CI_AI,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI FROM (N'x') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI FROM (N'x') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CI_AI FROM (N'x') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "087-latin1-general-100-ci-ai-omitted-characters",
+      "description": "Latin1_General_100_CI_AI: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CI_AI) AS b"
+        }
+      ]
+    },
+    {
+      "name": "088-latin1-general-100-cs-ai-case",
+      "description": "Latin1_General_100_CS_AI: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE Latin1_General_100_CS_AI,(N'a') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'AaxAa') COLLATE Latin1_General_100_CS_AI,(N'a') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'a') COLLATE Latin1_General_100_CS_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'a') COLLATE Latin1_General_100_CS_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'a') COLLATE Latin1_General_100_CS_AI FROM (N'AaxAa') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "089-latin1-general-100-cs-ai-accent",
+      "description": "Latin1_General_100_CS_AI: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE Latin1_General_100_CS_AI,(N'e') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'éxÉe') COLLATE Latin1_General_100_CS_AI,(N'e') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'e') COLLATE Latin1_General_100_CS_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'e') COLLATE Latin1_General_100_CS_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'e') COLLATE Latin1_General_100_CS_AI FROM (N'éxÉe') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "090-latin1-general-100-cs-ai-nonbreaking-space",
+      "description": "Latin1_General_100_CS_AI: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI,(N' ') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI,(N' ') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N' ') COLLATE Latin1_General_100_CS_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CS_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CS_AI FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "091-latin1-general-100-cs-ai-tab",
+      "description": "Latin1_General_100_CS_AI: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AI,(NCHAR(9)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AI,(NCHAR(9)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(9)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(9)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "092-latin1-general-100-cs-ai-combining-accent",
+      "description": "Latin1_General_100_CS_AI: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI,(NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI,(NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "093-latin1-general-100-cs-ai-composed-versus-decomposed",
+      "description": "Latin1_General_100_CS_AI: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE Latin1_General_100_CS_AI,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'éxé') COLLATE Latin1_General_100_CS_AI,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'éxé') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'éxé') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI FROM (N'éxé') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "094-latin1-general-100-cs-ai-decomposed-versus-composed",
+      "description": "Latin1_General_100_CS_AI: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI,(N'é') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI,(N'é') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'é') COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'é') COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'é') COLLATE Latin1_General_100_CS_AI FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "095-latin1-general-100-cs-ai-sharp-s-expansion",
+      "description": "Latin1_General_100_CS_AI: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE Latin1_General_100_CS_AI,(N'ss') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'ßxß') COLLATE Latin1_General_100_CS_AI,(N'ss') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'ss') COLLATE Latin1_General_100_CS_AI FROM (N'ßxß') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'ss') COLLATE Latin1_General_100_CS_AI FROM (N'ßxß') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'ss') COLLATE Latin1_General_100_CS_AI FROM (N'ßxß') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "096-latin1-general-100-cs-ai-ligature-expansion",
+      "description": "Latin1_General_100_CS_AI: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE Latin1_General_100_CS_AI,(N'oe') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'œxœ') COLLATE Latin1_General_100_CS_AI,(N'oe') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'oe') COLLATE Latin1_General_100_CS_AI FROM (N'œxœ') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'oe') COLLATE Latin1_General_100_CS_AI FROM (N'œxœ') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'oe') COLLATE Latin1_General_100_CS_AI FROM (N'œxœ') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "097-latin1-general-100-cs-ai-fullwidth-letter",
+      "description": "Latin1_General_100_CS_AI: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CS_AI,(N'A') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'ＡxＡ') COLLATE Latin1_General_100_CS_AI,(N'A') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'A') COLLATE Latin1_General_100_CS_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'A') COLLATE Latin1_General_100_CS_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'A') COLLATE Latin1_General_100_CS_AI FROM (N'ＡxＡ') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "098-latin1-general-100-cs-ai-null-code-unit",
+      "description": "Latin1_General_100_CS_AI: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AI,(NCHAR(0)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AI,(NCHAR(0)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(0)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(0)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "099-latin1-general-100-cs-ai-soft-hyphen",
+      "description": "Latin1_General_100_CS_AI: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AI,(NCHAR(173)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AI,(NCHAR(173)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(173)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(173)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "100-latin1-general-100-cs-ai-surrogate-pair-and-high-set",
+      "description": "Latin1_General_100_CS_AI: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(NCHAR(55358)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(NCHAR(55358)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(55358)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "101-latin1-general-100-cs-ai-surrogate-pair-and-low-set",
+      "description": "Latin1_General_100_CS_AI: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "102-latin1-general-100-cs-ai-isolated-high-and-low-set",
+      "description": "Latin1_General_100_CS_AI: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AI,(NCHAR(56710)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_CS_AI FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "103-latin1-general-100-cs-ai-isolated-surrogate-default-spaces",
+      "description": "Latin1_General_100_CS_AI: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AI,(N' ') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AI,(N' ') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N' ') COLLATE Latin1_General_100_CS_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_CS_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_CS_AI FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "104-latin1-general-100-cs-ai-supplementary-set",
+      "description": "Latin1_General_100_CS_AI: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(N'🦆') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_CS_AI,(N'🦆') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'🦆') COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'🦆') COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'🦆') COLLATE Latin1_General_100_CS_AI FROM (N'🦆x🦆') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "105-latin1-general-100-cs-ai-empty-source",
+      "description": "Latin1_General_100_CS_AI: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE Latin1_General_100_CS_AI,(N'x') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'') COLLATE Latin1_General_100_CS_AI,(N'x') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'x') COLLATE Latin1_General_100_CS_AI FROM (N'') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CS_AI FROM (N'') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CS_AI FROM (N'') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "106-latin1-general-100-cs-ai-empty-set",
+      "description": "Latin1_General_100_CS_AI: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE Latin1_General_100_CS_AI,(N'') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N' x ') COLLATE Latin1_General_100_CS_AI,(N'') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'') COLLATE Latin1_General_100_CS_AI FROM (N' x ') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'') COLLATE Latin1_General_100_CS_AI FROM (N' x ') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'') COLLATE Latin1_General_100_CS_AI FROM (N' x ') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "107-latin1-general-100-cs-ai-null-source",
+      "description": "Latin1_General_100_CS_AI: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI,(N'x') COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI,(N'x') COLLATE Latin1_General_100_CS_AI) AS r,TRIM((N'x') COLLATE Latin1_General_100_CS_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_CS_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_CS_AI FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "108-latin1-general-100-cs-ai-null-set",
+      "description": "Latin1_General_100_CS_AI: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE Latin1_General_100_CS_AI,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((N'x') COLLATE Latin1_General_100_CS_AI,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI FROM (N'x') COLLATE Latin1_General_100_CS_AI) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI FROM (N'x') COLLATE Latin1_General_100_CS_AI) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_CS_AI FROM (N'x') COLLATE Latin1_General_100_CS_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "109-latin1-general-100-cs-ai-omitted-characters",
+      "description": "Latin1_General_100_CS_AI: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_CS_AI) AS b"
+        }
+      ]
+    },
+    {
+      "name": "110-latin1-general-100-bin2-case",
+      "description": "Latin1_General_100_BIN2: case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AaxAa') COLLATE Latin1_General_100_BIN2,(N'a') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'AaxAa') COLLATE Latin1_General_100_BIN2,(N'a') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'a') COLLATE Latin1_General_100_BIN2 FROM (N'AaxAa') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'a') COLLATE Latin1_General_100_BIN2 FROM (N'AaxAa') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'a') COLLATE Latin1_General_100_BIN2 FROM (N'AaxAa') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "111-latin1-general-100-bin2-accent",
+      "description": "Latin1_General_100_BIN2: accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxÉe') COLLATE Latin1_General_100_BIN2,(N'e') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'éxÉe') COLLATE Latin1_General_100_BIN2,(N'e') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'e') COLLATE Latin1_General_100_BIN2 FROM (N'éxÉe') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'e') COLLATE Latin1_General_100_BIN2 FROM (N'éxÉe') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'e') COLLATE Latin1_General_100_BIN2 FROM (N'éxÉe') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "112-latin1-general-100-bin2-nonbreaking-space",
+      "description": "Latin1_General_100_BIN2: nonbreaking space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2,(N' ') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2,(N' ') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N' ') COLLATE Latin1_General_100_BIN2 FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_BIN2 FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_BIN2 FROM (NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "113-latin1-general-100-bin2-tab",
+      "description": "Latin1_General_100_BIN2: tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_BIN2,(NCHAR(9)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_BIN2,(NCHAR(9)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(9)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(9)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(9)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(9)+N'x'+NCHAR(9)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "114-latin1-general-100-bin2-combining-accent",
+      "description": "Latin1_General_100_BIN2: combining accent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_BIN2,(NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_BIN2,(NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "115-latin1-general-100-bin2-composed-versus-decomposed",
+      "description": "Latin1_General_100_BIN2: composed versus decomposed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'éxé') COLLATE Latin1_General_100_BIN2,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'éxé') COLLATE Latin1_General_100_BIN2,(N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'éxé') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'éxé') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2 FROM (N'éxé') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "116-latin1-general-100-bin2-decomposed-versus-composed",
+      "description": "Latin1_General_100_BIN2: decomposed versus composed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2,(N'é') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2,(N'é') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'é') COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'é') COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'é') COLLATE Latin1_General_100_BIN2 FROM (N'e'+NCHAR(769)+N'x'+N'e'+NCHAR(769)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "117-latin1-general-100-bin2-sharp-s-expansion",
+      "description": "Latin1_General_100_BIN2: sharp s expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ßxß') COLLATE Latin1_General_100_BIN2,(N'ss') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'ßxß') COLLATE Latin1_General_100_BIN2,(N'ss') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'ss') COLLATE Latin1_General_100_BIN2 FROM (N'ßxß') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'ss') COLLATE Latin1_General_100_BIN2 FROM (N'ßxß') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'ss') COLLATE Latin1_General_100_BIN2 FROM (N'ßxß') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "118-latin1-general-100-bin2-ligature-expansion",
+      "description": "Latin1_General_100_BIN2: ligature expansion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'œxœ') COLLATE Latin1_General_100_BIN2,(N'oe') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'œxœ') COLLATE Latin1_General_100_BIN2,(N'oe') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'oe') COLLATE Latin1_General_100_BIN2 FROM (N'œxœ') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'oe') COLLATE Latin1_General_100_BIN2 FROM (N'œxœ') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'oe') COLLATE Latin1_General_100_BIN2 FROM (N'œxœ') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "119-latin1-general-100-bin2-fullwidth-letter",
+      "description": "Latin1_General_100_BIN2: fullwidth letter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'ＡxＡ') COLLATE Latin1_General_100_BIN2,(N'A') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'ＡxＡ') COLLATE Latin1_General_100_BIN2,(N'A') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'A') COLLATE Latin1_General_100_BIN2 FROM (N'ＡxＡ') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'A') COLLATE Latin1_General_100_BIN2 FROM (N'ＡxＡ') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'A') COLLATE Latin1_General_100_BIN2 FROM (N'ＡxＡ') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "120-latin1-general-100-bin2-null-code-unit",
+      "description": "Latin1_General_100_BIN2: null code unit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_BIN2,(NCHAR(0)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_BIN2,(NCHAR(0)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(0)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(0)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(0)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(0)+N'x'+NCHAR(0)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "121-latin1-general-100-bin2-soft-hyphen",
+      "description": "Latin1_General_100_BIN2: soft hyphen",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_BIN2,(NCHAR(173)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_BIN2,(NCHAR(173)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(173)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(173)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(173)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(173)+N'x'+NCHAR(173)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "122-latin1-general-100-bin2-surrogate-pair-and-high-set",
+      "description": "Latin1_General_100_BIN2: surrogate pair and high set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(NCHAR(55358)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(NCHAR(55358)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(55358)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(55358)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(55358)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "123-latin1-general-100-bin2-surrogate-pair-and-low-set",
+      "description": "Latin1_General_100_BIN2: surrogate pair and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(NCHAR(56710)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(NCHAR(56710)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "124-latin1-general-100-bin2-isolated-high-and-low-set",
+      "description": "Latin1_General_100_BIN2: isolated high and low set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_BIN2,(NCHAR(56710)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_BIN2,(NCHAR(56710)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (NCHAR(56710)) COLLATE Latin1_General_100_BIN2 FROM (NCHAR(55358)+N'x'+NCHAR(55358)) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "125-latin1-general-100-bin2-isolated-surrogate-default-spaces",
+      "description": "Latin1_General_100_BIN2: isolated surrogate default spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_BIN2,(N' ') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_BIN2,(N' ') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N' ') COLLATE Latin1_General_100_BIN2 FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N' ') COLLATE Latin1_General_100_BIN2 FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N' ') COLLATE Latin1_General_100_BIN2 FROM (N' '+NCHAR(55358)+N' ') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "126-latin1-general-100-bin2-supplementary-set",
+      "description": "Latin1_General_100_BIN2: supplementary set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(N'🦆') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'🦆x🦆') COLLATE Latin1_General_100_BIN2,(N'🦆') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'🦆') COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'🦆') COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'🦆') COLLATE Latin1_General_100_BIN2 FROM (N'🦆x🦆') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "127-latin1-general-100-bin2-empty-source",
+      "description": "Latin1_General_100_BIN2: empty source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'') COLLATE Latin1_General_100_BIN2,(N'x') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'') COLLATE Latin1_General_100_BIN2,(N'x') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'x') COLLATE Latin1_General_100_BIN2 FROM (N'') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_BIN2 FROM (N'') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_BIN2 FROM (N'') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "128-latin1-general-100-bin2-empty-set",
+      "description": "Latin1_General_100_BIN2: empty set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N' x ') COLLATE Latin1_General_100_BIN2,(N'') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N' x ') COLLATE Latin1_General_100_BIN2,(N'') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'') COLLATE Latin1_General_100_BIN2 FROM (N' x ') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'') COLLATE Latin1_General_100_BIN2 FROM (N' x ') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'') COLLATE Latin1_General_100_BIN2 FROM (N' x ') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "129-latin1-general-100-bin2-null-source",
+      "description": "Latin1_General_100_BIN2: null source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2,(N'x') COLLATE Latin1_General_100_BIN2) AS l,RTRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2,(N'x') COLLATE Latin1_General_100_BIN2) AS r,TRIM((N'x') COLLATE Latin1_General_100_BIN2 FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (N'x') COLLATE Latin1_General_100_BIN2 FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (N'x') COLLATE Latin1_General_100_BIN2 FROM (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "130-latin1-general-100-bin2-null-set",
+      "description": "Latin1_General_100_BIN2: null set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'x') COLLATE Latin1_General_100_BIN2,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((N'x') COLLATE Latin1_General_100_BIN2,(CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2) AS r,TRIM((CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2 FROM (N'x') COLLATE Latin1_General_100_BIN2) AS b,TRIM(LEADING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2 FROM (N'x') COLLATE Latin1_General_100_BIN2) AS tl,TRIM(TRAILING (CAST(NULL AS NVARCHAR(8))) COLLATE Latin1_General_100_BIN2 FROM (N'x') COLLATE Latin1_General_100_BIN2) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "131-latin1-general-100-bin2-omitted-characters",
+      "description": "Latin1_General_100_BIN2: omitted characters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS l,RTRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS r,TRIM((NCHAR(160)+N' x '+NCHAR(160)) COLLATE Latin1_General_100_BIN2) AS b"
+        }
+      ]
+    },
+    {
+      "name": "132-precedence-latin1-general-100-ci-ai-latin1-general-100-ci-ai",
+      "description": "precedence Latin1_General_100_CI_AI / Latin1_General_100_CI_AI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,(N'ae') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,(N'ae') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "133-conflict-ltrim-latin1-general-100-ci-ai-latin1-general-100-c",
+      "description": "conflict ltrim: Latin1_General_100_CI_AI / Latin1_General_100_CS_AS",
+      "steps": [{"kind":"batch","sql":"SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,(N'ae') COLLATE Latin1_General_100_CS_AS) AS n"}]
+    },
+    {
+      "name": "134-conflict-rtrim-latin1-general-100-ci-ai-latin1-general-100-c",
+      "description": "conflict rtrim: Latin1_General_100_CI_AI / Latin1_General_100_CS_AS",
+      "steps": [{"kind":"batch","sql":"SELECT RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,(N'ae') COLLATE Latin1_General_100_CS_AS) AS n"}]
+    },
+    {
+      "name": "135-conflict-trim-latin1-general-100-ci-ai-latin1-general-100-cs",
+      "description": "conflict trim: Latin1_General_100_CI_AI / Latin1_General_100_CS_AS",
+      "steps": [{"kind":"batch","sql":"SELECT TRIM((N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS n"}]
+    },
+    {
+      "name": "136-conflict-trim-leading-latin1-general-100-ci-ai-latin1-genera",
+      "description": "conflict trim leading: Latin1_General_100_CI_AI / Latin1_General_100_CS_AS",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS n"
+        }
+      ]
+    },
+    {
+      "name": "137-conflict-trim-trailing-latin1-general-100-ci-ai-latin1-gener",
+      "description": "conflict trim trailing: Latin1_General_100_CI_AI / Latin1_General_100_CS_AS",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS n"
+        }
+      ]
+    },
+    {
+      "name": "138-explicit-source-latin1-general-100-ci-ai",
+      "description": "explicit source Latin1_General_100_CI_AI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,N'ae') AS l,RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CI_AI,N'ae') AS r,TRIM(N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS b,TRIM(LEADING N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS tl,TRIM(TRAILING N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CI_AI) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "139-explicit-set-latin1-general-100-ci-ai",
+      "description": "explicit set Latin1_General_100_CI_AI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM(N'AéxÉa',(N'ae') COLLATE Latin1_General_100_CI_AI) AS l,RTRIM(N'AéxÉa',(N'ae') COLLATE Latin1_General_100_CI_AI) AS r,TRIM((N'ae') COLLATE Latin1_General_100_CI_AI FROM N'AéxÉa') AS b,TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CI_AI FROM N'AéxÉa') AS tl,TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CI_AI FROM N'AéxÉa') AS tr"
+        }
+      ]
+    },
+    {
+      "name": "140-conflict-ltrim-latin1-general-100-cs-as-latin1-general-100-c",
+      "description": "conflict ltrim: Latin1_General_100_CS_AS / Latin1_General_100_CI_AI",
+      "steps": [{"kind":"batch","sql":"SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,(N'ae') COLLATE Latin1_General_100_CI_AI) AS n"}]
+    },
+    {
+      "name": "141-conflict-rtrim-latin1-general-100-cs-as-latin1-general-100-c",
+      "description": "conflict rtrim: Latin1_General_100_CS_AS / Latin1_General_100_CI_AI",
+      "steps": [{"kind":"batch","sql":"SELECT RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,(N'ae') COLLATE Latin1_General_100_CI_AI) AS n"}]
+    },
+    {
+      "name": "142-conflict-trim-latin1-general-100-cs-as-latin1-general-100-ci",
+      "description": "conflict trim: Latin1_General_100_CS_AS / Latin1_General_100_CI_AI",
+      "steps": [{"kind":"batch","sql":"SELECT TRIM((N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS n"}]
+    },
+    {
+      "name": "143-conflict-trim-leading-latin1-general-100-cs-as-latin1-genera",
+      "description": "conflict trim leading: Latin1_General_100_CS_AS / Latin1_General_100_CI_AI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS n"
+        }
+      ]
+    },
+    {
+      "name": "144-conflict-trim-trailing-latin1-general-100-cs-as-latin1-gener",
+      "description": "conflict trim trailing: Latin1_General_100_CS_AS / Latin1_General_100_CI_AI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CI_AI FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS n"
+        }
+      ]
+    },
+    {
+      "name": "145-precedence-latin1-general-100-cs-as-latin1-general-100-cs-as",
+      "description": "precedence Latin1_General_100_CS_AS / Latin1_General_100_CS_AS",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,(N'ae') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,(N'ae') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CS_AS FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "146-explicit-source-latin1-general-100-cs-as",
+      "description": "explicit source Latin1_General_100_CS_AS",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,N'ae') AS l,RTRIM((N'AéxÉa') COLLATE Latin1_General_100_CS_AS,N'ae') AS r,TRIM(N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS b,TRIM(LEADING N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS tl,TRIM(TRAILING N'ae' FROM (N'AéxÉa') COLLATE Latin1_General_100_CS_AS) AS tr"
+        }
+      ]
+    },
+    {
+      "name": "147-explicit-set-latin1-general-100-cs-as",
+      "description": "explicit set Latin1_General_100_CS_AS",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LTRIM(N'AéxÉa',(N'ae') COLLATE Latin1_General_100_CS_AS) AS l,RTRIM(N'AéxÉa',(N'ae') COLLATE Latin1_General_100_CS_AS) AS r,TRIM((N'ae') COLLATE Latin1_General_100_CS_AS FROM N'AéxÉa') AS b,TRIM(LEADING (N'ae') COLLATE Latin1_General_100_CS_AS FROM N'AéxÉa') AS tl,TRIM(TRAILING (N'ae') COLLATE Latin1_General_100_CS_AS FROM N'AéxÉa') AS tr"
+        }
+      ]
+    }
+  ]
+}

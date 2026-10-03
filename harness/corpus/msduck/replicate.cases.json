@@ -1,0 +1,53 @@
+{
+  "source": "msduck/reference/replicate.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLICATE('ab',3) AS a,REPLICATE(N'雪',3) AS n,REPLICATE(CAST('x' AS CHAR(3)),2) AS c,REPLICATE(CAST(N'x' AS NCHAR(3)),2) AS nc"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLICATE('x',0) AS z,REPLICATE('x',-1) AS neg,REPLICATE('',-1) AS empty_neg,REPLICATE(NULL,3) AS absent,REPLICATE('x',NULL) AS missing_count"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(CAST('x' AS VARCHAR(MAX)),3) AS a,REPLICATE(CAST(N'雪' AS NVARCHAR(MAX)),3) AS n"}]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATALENGTH(REPLICATE('x',8100)) AS a,DATALENGTH(REPLICATE(N'x',4100)) AS n,DATALENGTH(REPLICATE(CAST('x' AS VARCHAR(MAX)),8100)) AS am,DATALENGTH(REPLICATE(CAST(N'x' AS NVARCHAR(MAX)),4100)) AS nm"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(12,3) AS number,REPLICATE(0x4142,3) AS bytes,REPLICATE('x',2.9) AS fraction"}]
+    },
+    {"name":"005","steps":[{"kind":"batch","sql":"DECLARE @n INT=3; SELECT REPLICATE('ab',@n) AS a,REPLICATE(N'ab',@n) AS n"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"SELECT REPLICATE(N'🦆x',1334) AS split"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"SELECT REPLICATE(N'🦆',2001) AS pairs"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"SELECT DATALENGTH(REPLICATE('x',CAST(2147483648 AS BIGINT))) AS large_count"}]},
+    {
+      "name": "009",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE('x','3') AS text_count,REPLICATE('x',CAST(2.9 AS FLOAT)) AS float_count"}]
+    },
+    {"name":"010","steps":[{"kind":"batch","sql":"SELECT REPLICATE(CAST(NULL AS NVARCHAR(MAX)),3) AS n"}]},
+    {"name":"011","steps":[{"kind":"batch","sql":"SELECT REPLICATE('x',-0.5) AS near_zero"}]},
+    {"name":"012","steps":[{"kind":"batch","sql":"SELECT REPLICATE(0x008041,2) AS bytes"}]},
+    {"name":"013","steps":[{"kind":"batch","sql":"SELECT REPLICATE('x',1,2)"}]}
+  ]
+}

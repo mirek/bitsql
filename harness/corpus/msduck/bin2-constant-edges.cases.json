@@ -1,0 +1,226 @@
+{
+  "source": "msduck/reference/bin2-constant-edges.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-default-unicode-cast-width",
+      "description": "default Unicode cast width",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CAST(N'abcdefghijklmnopqrstuvwxyz012345' AS NVARCHAR)) COLLATE Latin1_General_100_BIN2=(N'abcdefghijklmnopqrstuvwxyz0123') THEN 1 WHEN NOT ((CAST(N'abcdefghijklmnopqrstuvwxyz012345' AS NVARCHAR)) COLLATE Latin1_General_100_BIN2=(N'abcdefghijklmnopqrstuvwxyz0123')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "001-default-ansi-cast-width",
+      "description": "default ANSI cast width",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CAST('abcdefghijklmnopqrstuvwxyz012345' AS VARCHAR)) COLLATE Latin1_General_100_BIN2=('abcdefghijklmnopqrstuvwxyz0123') THEN 1 WHEN NOT ((CAST('abcdefghijklmnopqrstuvwxyz012345' AS VARCHAR)) COLLATE Latin1_General_100_BIN2=('abcdefghijklmnopqrstuvwxyz0123')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "002-fixed-unicode-cast-padding",
+      "description": "fixed Unicode cast padding",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CAST(N'a' AS NCHAR(4))) COLLATE Latin1_General_100_BIN2=(N'a') THEN 1 WHEN NOT ((CAST(N'a' AS NCHAR(4))) COLLATE Latin1_General_100_BIN2=(N'a')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "003-right-raw-low-surrogate",
+      "description": "RIGHT raw low surrogate",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (RIGHT(N'🦆',1)) COLLATE Latin1_General_100_BIN2=(RIGHT(N'🦆',1)) THEN 1 WHEN NOT ((RIGHT(N'🦆',1)) COLLATE Latin1_General_100_BIN2=(RIGHT(N'🦆',1))) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "004-left-zero",
+      "description": "LEFT zero",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (LEFT(N'🦆',0)) COLLATE Latin1_General_100_BIN2=(N'') THEN 1 WHEN NOT ((LEFT(N'🦆',0)) COLLATE Latin1_General_100_BIN2=(N'')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "005-char-out-of-range",
+      "description": "CHAR out of range",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CHAR(256)) COLLATE Latin1_General_100_BIN2=('x') THEN 1 WHEN NOT ((CHAR(256)) COLLATE Latin1_General_100_BIN2=('x')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "006-nchar-out-of-range",
+      "description": "NCHAR out of range",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (NCHAR(65536)) COLLATE Latin1_General_100_BIN2=(N'x') THEN 1 WHEN NOT ((NCHAR(65536)) COLLATE Latin1_General_100_BIN2=(N'x')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "007-space-zero",
+      "description": "SPACE zero",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (SPACE(0)) COLLATE Latin1_General_100_BIN2=('') THEN 1 WHEN NOT ((SPACE(0)) COLLATE Latin1_General_100_BIN2=('')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "008-space-negative",
+      "description": "SPACE negative",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (SPACE(-1)) COLLATE Latin1_General_100_BIN2=('') THEN 1 WHEN NOT ((SPACE(-1)) COLLATE Latin1_General_100_BIN2=('')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "009-space-positive",
+      "description": "SPACE positive",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (SPACE(3)) COLLATE Latin1_General_100_BIN2=(' ') THEN 1 WHEN NOT ((SPACE(3)) COLLATE Latin1_General_100_BIN2=(' ')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "010-unicode-plus",
+      "description": "Unicode plus",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (N'a'+N'b') COLLATE Latin1_General_100_BIN2=(N'ab') THEN 1 WHEN NOT ((N'a'+N'b') COLLATE Latin1_General_100_BIN2=(N'ab')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "011-ansi-plus-cap",
+      "description": "ANSI plus cap",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CAST('a' AS VARCHAR(8000))+CAST('b' AS VARCHAR(8000))) COLLATE Latin1_General_100_BIN2=('ab') THEN 1 WHEN NOT ((CAST('a' AS VARCHAR(8000))+CAST('b' AS VARCHAR(8000))) COLLATE Latin1_General_100_BIN2=('ab')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "012-unicode-plus-null",
+      "description": "Unicode plus NULL",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (N'a'+CAST(NULL AS NVARCHAR(4))) COLLATE Latin1_General_100_BIN2=(N'a') THEN 1 WHEN NOT ((N'a'+CAST(NULL AS NVARCHAR(4))) COLLATE Latin1_General_100_BIN2=(N'a')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "013-ansi-euro-to-unicode",
+      "description": "ANSI Euro to Unicode",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CHAR(128)) COLLATE Latin1_General_100_BIN2=(N'€') THEN 1 WHEN NOT ((CHAR(128)) COLLATE Latin1_General_100_BIN2=(N'€')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "014-unpaired-nchar",
+      "description": "unpaired NCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (NCHAR(55358)) COLLATE Latin1_General_100_BIN2=(LEFT(N'🦆',1)) THEN 1 WHEN NOT ((NCHAR(55358)) COLLATE Latin1_General_100_BIN2=(LEFT(N'🦆',1))) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "015-invalid-left-length",
+      "description": "invalid LEFT length",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (LEFT(N'a',-1)) COLLATE Latin1_General_100_BIN2=(N'a') THEN 1 WHEN NOT ((LEFT(N'a',-1)) COLLATE Latin1_General_100_BIN2=(N'a')) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "016-try-cast-invalid-numeric-text",
+      "description": "TRY_CAST invalid numeric text",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (TRY_CAST(N'no' AS INT))=(1) THEN 1 WHEN NOT ((TRY_CAST(N'no' AS INT))=(1)) THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "017-runtime-parameter",
+      "description": "runtime parameter",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p NVARCHAR(4)=N'a'; SELECT CASE WHEN @p COLLATE Latin1_General_100_BIN2=N'a' THEN 1 WHEN NOT (@p COLLATE Latin1_General_100_BIN2=N'a') THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "018-linguistic-condition",
+      "description": "linguistic condition",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN N'a' COLLATE Latin1_General_100_CI_AS=N'A' THEN 1 WHEN NOT (N'a' COLLATE Latin1_General_100_CI_AS=N'A') THEN 0 ELSE NULL END AS n"
+        }
+      ]
+    },
+    {
+      "name": "019-explicit-collation-conflict",
+      "description": "explicit collation conflict",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN N'a' COLLATE Latin1_General_100_BIN2=N'a' COLLATE Latin1_General_100_CI_AS THEN 1 ELSE NULL END AS n"
+        }
+      ]
+    }
+  ]
+}

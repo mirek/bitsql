@@ -1,0 +1,69 @@
+{
+  "source": "msduck/reference/error-continuation.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"batch","sql":"SELECT 1/0 AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"}]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(1 AS DECIMAL(5,2))/CAST(0 AS DECIMAL(5,2)) AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))) AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ABS(CAST(-2147483648 AS INT)) AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('bad' AS INT) AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"}]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_VALUE('bad', '$.x') AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"
+        }
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [{"kind":"batch","sql":"RAISERROR('test',16,1); SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"}]
+    },
+    {
+      "name": "007",
+      "steps": [{"kind":"batch","sql":"THROW 51000,'test',1; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"}]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.continuation_guard(n INT); INSERT INTO dbo.continuation_guard VALUES(1); SELECT 1/0 AS bad; INSERT INTO dbo.continuation_guard VALUES(2); SELECT n FROM dbo.continuation_guard ORDER BY n; DROP TABLE dbo.continuation_guard"
+        }
+      ]
+    },
+    {"name":"009","steps":[{"kind":"batch","sql":"SELECT 1/0 AS first_error; SELECT 2/0 AS second_error; SELECT 42 AS after_error"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"SET XACT_ABORT ON; SELECT 1/0 AS bad; SELECT 42 AS after_error"}]}
+  ]
+}

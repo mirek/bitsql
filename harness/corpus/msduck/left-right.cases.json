@@ -1,0 +1,26 @@
+{
+  "source": "msduck/reference/left-right.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"batch","sql":"SELECT LEFT('abcdef',3) AS l,RIGHT('abcdef',3) AS r,LEFT(N'abcdef',3) AS nl,RIGHT(N'abcdef',3) AS nr"}]
+    },
+    {"name":"001","steps":[{"kind":"batch","sql":"SELECT LEFT(CAST('x' AS CHAR(10)),3) AS l,RIGHT(CAST(N'x' AS NCHAR(10)),3) AS r"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"DECLARE @s VARCHAR(10)='abcdef',@n INT=3; SELECT LEFT(@s,3) AS a,RIGHT(@s,@n) AS b"}]},
+    {
+      "name": "003",
+      "steps": [{"kind":"batch","sql":"SELECT LEFT('abc',0) AS a,RIGHT('abc',20) AS b,RIGHT(NULL,3) AS c,LEFT('abc',NULL) AS d"}]
+    },
+    {
+      "name": "004",
+      "steps": [{"kind":"batch","sql":"SELECT LEFT(CAST('abc' AS VARCHAR(MAX)),2) AS a,RIGHT(CAST(N'abc' AS NVARCHAR(MAX)),2) AS b"}]
+    },
+    {"name":"005","steps":[{"kind":"batch","sql":"SELECT LEFT(12345,2) AS a,RIGHT(CAST(12345 AS BIGINT),2) AS b,LEFT(0x008041,2) AS c"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"SELECT LEFT('abc',-1) AS a"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"SELECT RIGHT('abc',-1) AS a"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"SELECT LEFT('abcdef',2.9) AS a,RIGHT('abcdef','2') AS b"}]},
+    {"name":"009","steps":[{"kind":"batch","sql":"SELECT RIGHT('abcdef',2147483648) AS a"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"SELECT LEFT(N'🦆xy',1) AS a,RIGHT(N'x🦆',1) AS b"}]}
+  ]
+}

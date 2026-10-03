@@ -1,0 +1,34 @@
+{
+  "source": "msduck/reference/error-metadata.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT CAST(1 AS DECIMAL(5,2))/CAST(0 AS DECIMAL(5,2)) AS d; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s; END CATCH"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS before_error; SELECT CAST(1 AS DECIMAL(5,2))/CAST(0 AS DECIMAL(5,2)) AS d; SELECT 2 AS after_error"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT AVG(CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))) AS a; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"
+        }
+      ]
+    },
+    {"name":"003","steps":[{"kind":"batch","sql":"EXEC sp_executesql N'SELECT CAST(1 AS DECIMAL(5,2))/@d AS d', N'@d DECIMAL(5,2)', @d=0"}]}
+  ]
+}

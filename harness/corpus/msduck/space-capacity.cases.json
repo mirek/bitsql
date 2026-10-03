@@ -1,0 +1,27 @@
+{
+  "source": "msduck/reference/space-capacity.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "008-signed-integer-boundary",
+      "description": "signed integer boundary",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(-2147483648) AS n"}]
+    },
+    {
+      "name": "009-zero-and-signs",
+      "description": "zero and signs",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(0) AS a,SPACE(-1) AS b,SPACE(+3) AS c,SPACE(-(-3)) AS d"}]
+    },
+    {
+      "name": "010-decimal-counts",
+      "description": "decimal counts",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(2.9) AS a,SPACE(-0.9) AS b,SPACE(-2.9) AS c"}]
+    },
+    {"name":"011-null-and-cap","description":"null and cap","steps":[{"kind":"batch","sql":"SELECT SPACE(NULL) AS a,SPACE(9000) AS b"}]},
+    {
+      "name": "012-dependent-width",
+      "description": "dependent width",
+      "steps": [{"kind":"batch","sql":"SELECT ISNULL(CASE WHEN 1=0 THEN SPACE(0) END,CHAR(65)) AS n,SPACE(0)+'x' AS s"}]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "source": "msduck/reference/output-sink-currency.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b VARCHAR(30) NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref(id,n,t) OUTPUT inserted.id,CAST(12.3456 AS MONEY) INTO output_sink(a,b) VALUES(30,3,N'tri')"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b VARCHAR(30) NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref(id,n,t) OUTPUT inserted.id,CAST(-12.3456 AS SMALLMONEY) INTO output_sink(a,b) VALUES(30,3,N'tri')"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

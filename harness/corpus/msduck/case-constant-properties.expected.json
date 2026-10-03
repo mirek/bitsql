@@ -1,0 +1,320 @@
+{
+  "source": "msduck/reference/case-constant-properties.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-true-literal": {
+      "case": "559de1f1d95cc5fd",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "001-false-literal": {
+      "case": "59db6fdd48c77e27",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "002-selected-nonnull-column": {
+      "case": "d0ce2e5cf0170090",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "003-selected-nullable-column": {
+      "case": "085b564fcd13c294",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}],"rows":[[null]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "004-selected-cast": {
+      "case": "b41d93b51314af52",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[["7"]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "005-null-test": {
+      "case": "a34d3567e037fc28",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "006-unknown-runtime": {
+      "case": "5fe4a410824ad2eb",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[1]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "007-typed-parameter": {
+      "case": "8a4423df3d390af1",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 2,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+          ]
+        }
+      ]
+    },
+    "008-simple-literal": {
+      "case": "92748a4ccb1188ac",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "009-try-invalid": {
+      "case": "15296119fb754440",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[null]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "010-selected-column-same-type": {
+      "case": "c33cc16c3a61a399",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "011-selected-column-widened": {
+      "case": "8eee5118327ec148",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[["7"]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "012-selected-literal-widened": {
+      "case": "1f4e18a9e267eef3",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[["7"]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "013-selected-null": {
+      "case": "6b6d9794a2f9caa6",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[null]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "014-false-no-else": {
+      "case": "b9c111aa52d44bb0",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[null]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "015-multiple-conditions": {
+      "case": "b34daefc3a918bbf",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "016-unknown-earlier-condition": {
+      "case": "c50db156bcd139db",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "017-logical-constant": {
+      "case": "64ddac8708a1e618",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "018-integer-arithmetic": {
+      "case": "8c5473703aee371c",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "019-integer-overflow": {
+      "case": "99fa7e0614b8fcb3",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    }
+  }
+}

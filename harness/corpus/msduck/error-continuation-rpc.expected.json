@@ -1,0 +1,83 @@
+{
+  "source": "msduck/reference/error-continuation-rpc.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "8977ed917c8ec421",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[8134,0,42]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "950b179ea347ac65",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": 8134,
+          "rowCount": 0
+        }
+      ]
+    },
+    "002": {
+      "case": "9e519ecc4918be8f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"first_error","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": []
+            },
+            {
+              "columns": [{"name":"second_error","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": []
+            },
+            {
+              "columns": [{"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[42]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [
+            {"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."},
+            {"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}
+          ],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    }
+  }
+}

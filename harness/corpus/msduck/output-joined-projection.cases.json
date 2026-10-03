@@ -1,0 +1,102 @@
+{
+  "source": "msduck/reference/output-joined-projection.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=t.n+s.extra OUTPUT deleted.*,inserted.*,s.*,deleted.n+s.extra AS computed FROM output_ref t JOIN (VALUES(10,7)) s(id,extra) ON t.id=s.id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=99 OUTPUT inserted.n,deleted.n FROM output_ref t JOIN (VALUES(10,7)) inserted(id,n) ON t.id=inserted.id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=99 OUTPUT inserted.n,deleted.n FROM output_ref t JOIN (VALUES(10,7)) deleted(id,n) ON t.id=deleted.id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=99 OUTPUT t.id FROM output_ref t JOIN (VALUES(10)) s(id) ON t.id=s.id"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=99 OUTPUT t.* FROM output_ref t JOIN (VALUES(10)) s(id) ON t.id=s.id"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=99 OUTPUT s.missing FROM output_ref t JOIN (VALUES(10)) s(id) ON t.id=s.id"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=99 OUTPUT [s.dot].[n.dot],[s.dot].* FROM output_ref t JOIN (VALUES(10,7)) [s.dot](id,[n.dot]) ON t.id=[s.dot].id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

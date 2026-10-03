@@ -1,0 +1,96 @@
+{
+  "source": "msduck/reference/at-time-zone-utc-range.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-local-minimum",
+      "description": "local minimum",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('0001-01-01T00:00:00.0000000' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "001-local-before-snapshot",
+      "description": "local before snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1899-12-31T23:59:59.9999999' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "002-local-snapshot-start",
+      "description": "local snapshot start",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1900-01-01T00:00:00.0000000' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "003-local-snapshot-end",
+      "description": "local snapshot end",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2050-12-31T23:59:59.9999999' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "004-local-after-snapshot",
+      "description": "local after snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2051-01-01T00:00:00.0000000' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "005-local-maximum",
+      "description": "local maximum",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('9999-12-31T23:59:59.9999999' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "006-instant-minimum",
+      "description": "instant minimum",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('0001-01-01T00:00:00.0000000+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "007-instant-before-snapshot",
+      "description": "instant before snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1899-12-31T23:59:59.9999999+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "008-instant-after-snapshot",
+      "description": "instant after snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2051-01-01T00:00:00.0000000+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "009-instant-maximum",
+      "description": "instant maximum",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('9999-12-31T23:59:59.9999999+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "010-instant-offset-before-snapshot",
+      "description": "instant offset before snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1899-12-31T23:59:59.9999999+02:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "011-instant-offset-after-snapshot",
+      "description": "instant offset after snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2051-01-01T00:00:00.0000000+02:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "012-local-pacific-before-snapshot",
+      "description": "local Pacific before snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1899-12-31T12:00:00.0000000' AS DATETIME2(7)) AT TIME ZONE 'Pacific Standard Time' AS value"}]
+    },
+    {
+      "name": "013-local-pacific-after-snapshot",
+      "description": "local Pacific after snapshot",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2051-01-01T12:00:00.0000000' AS DATETIME2(7)) AT TIME ZONE 'Pacific Standard Time' AS value"}]
+    },
+    {
+      "name": "014-instant-pacific-before-snapshot",
+      "description": "instant Pacific before snapshot",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1899-12-31T12:00:00.0000000+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'Pacific Standard Time' AS value"
+        }
+      ]
+    },
+    {
+      "name": "015-instant-pacific-after-snapshot",
+      "description": "instant Pacific after snapshot",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2051-01-01T12:00:00.0000000+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'Pacific Standard Time' AS value"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "source": "msduck/reference/decimal-division.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2)) AS d,CONVERT(VARCHAR(100),CAST('1' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2)) AS d,CONVERT(VARCHAR(100),CAST('2' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('-2' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2)) AS d,CONVERT(VARCHAR(100),CAST('-2' AS DECIMAL(5,2))/CAST('3' AS DECIMAL(5,2))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6)) AS d,CONVERT(VARCHAR(100),CAST('1' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6)) AS d,CONVERT(VARCHAR(100),CAST('2' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('-2' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6)) AS d,CONVERT(VARCHAR(100),CAST('-2' AS DECIMAL(38,6))/CAST('3' AS DECIMAL(38,6))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1' AS DECIMAL(38,0))/CAST('6' AS DECIMAL(38,0)) AS d,CONVERT(VARCHAR(100),CAST('1' AS DECIMAL(38,0))/CAST('6' AS DECIMAL(38,0))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('-1' AS DECIMAL(38,0))/CAST('6' AS DECIMAL(38,0)) AS d,CONVERT(VARCHAR(100),CAST('-1' AS DECIMAL(38,0))/CAST('6' AS DECIMAL(38,0))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('0.1' AS DECIMAL(38,38))/CAST('0.3' AS DECIMAL(38,38)) AS d,CONVERT(VARCHAR(100),CAST('0.1' AS DECIMAL(38,38))/CAST('0.3' AS DECIMAL(38,38))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1' AS DECIMAL(38,20))/CAST('3' AS DECIMAL(38,20)) AS d,CONVERT(VARCHAR(100),CAST('1' AS DECIMAL(38,20))/CAST('3' AS DECIMAL(38,20))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))/CAST('1' AS DECIMAL(1,0)) AS d,CONVERT(VARCHAR(100),CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))/CAST('1' AS DECIMAL(1,0))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))/CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0)) AS d,CONVERT(VARCHAR(100),CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))/CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "012",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('1' AS DECIMAL(5,2))/CAST('0' AS DECIMAL(5,2)) AS d,CONVERT(VARCHAR(100),CAST('1' AS DECIMAL(5,2))/CAST('0' AS DECIMAL(5,2))) AS exact_value"
+        }
+      ]
+    },
+    {
+      "name": "013",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('0' AS DECIMAL(5,2))/CAST('0' AS DECIMAL(5,2)) AS d,CONVERT(VARCHAR(100),CAST('0' AS DECIMAL(5,2))/CAST('0' AS DECIMAL(5,2))) AS exact_value"
+        }
+      ]
+    },
+    {"name":"014","steps":[{"kind":"batch","sql":"SELECT CAST(NULL AS DECIMAL(5,2))/CAST(0 AS DECIMAL(5,2)) AS d"}]},
+    {"name":"015","steps":[{"kind":"batch","sql":"SELECT CAST(1 AS DECIMAL(5,2))/CAST(NULL AS DECIMAL(5,2)) AS d"}]}
+  ]
+}

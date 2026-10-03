@@ -1,0 +1,74 @@
+{
+  "source": "msduck/reference/try-completion-tokens-rpc.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"rpc","sql":"BEGIN TRY PRINT 'ok'; END TRY BEGIN CATCH PRINT 'catch'; END CATCH; SELECT @@ROWCOUNT AS r,@@ERROR AS e"}]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "BEGIN TRY RAISERROR('x',16,3); END TRY BEGIN CATCH PRINT 'catch'; END CATCH; SELECT @@ROWCOUNT AS r,@@ERROR AS e"
+        }
+      ]
+    },
+    {"name":"002","steps":[{"kind":"rpc","sql":"BEGIN TRY THROW 50003,'x',2; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"}]},
+    {"name":"003","steps":[{"kind":"rpc","sql":"BEGIN TRY SELECT 1/0 AS bad; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"}]},
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "BEGIN TRY BEGIN TRY RAISERROR('inner',16,2); END TRY BEGIN CATCH PRINT 'inner'; END CATCH; PRINT 'outer'; END TRY BEGIN CATCH PRINT 'bad'; END CATCH"
+        }
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "BEGIN TRY BEGIN TRY RAISERROR('inner',16,2); END TRY BEGIN CATCH THROW; END CATCH; PRINT 'skip'; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"
+        }
+      ]
+    },
+    {"name":"006","steps":[{"kind":"rpc","sql":"BEGIN TRY RETURN; END TRY BEGIN CATCH PRINT 'bad'; END CATCH; PRINT 'skip'"}]},
+    {"name":"007","steps":[{"kind":"rpc","sql":"BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH RETURN; END CATCH; PRINT 'skip'"}]},
+    {
+      "name": "008",
+      "steps": [{"kind":"rpc","sql":"WHILE 1=1 BEGIN TRY BREAK; END TRY BEGIN CATCH PRINT 'bad'; END CATCH; SELECT 1 AS after_loop"}]
+    },
+    {
+      "name": "009",
+      "steps": [{"kind":"rpc","sql":"WHILE 1=1 BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH BREAK; END CATCH; SELECT 1 AS after_loop"}]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "DECLARE @i INT=0; WHILE @i<2 BEGIN TRY SET @i=@i+1; CONTINUE; END TRY BEGIN CATCH PRINT 'bad'; END CATCH; SELECT @i AS i"
+        }
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "DECLARE @i INT=0; WHILE @i<2 BEGIN TRY SET @i=@i+1; RAISERROR('x',16,1); END TRY BEGIN CATCH CONTINUE; END CATCH; SELECT @i AS i"
+        }
+      ]
+    },
+    {"name":"012","steps":[{"kind":"rpc","sql":"BEGIN TRY END TRY BEGIN CATCH END CATCH"}]},
+    {"name":"013","steps":[{"kind":"rpc","sql":"BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH END CATCH"}]},
+    {
+      "name": "014",
+      "steps": [{"kind":"rpc","sql":"SET NOCOUNT ON; BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"}]
+    },
+    {"name":"015","steps":[{"kind":"rpc","sql":"SET NOCOUNT OFF; SELECT 1 AS alive"}]}
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "source": "msduck/reference/at-time-zone-catalog.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-local-1900-01-15t12-00-00",
+      "description": "local 1900-01-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('1900-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "001-local-1970-07-15t12-00-00",
+      "description": "local 1970-07-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('1970-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "002-local-2000-01-15t12-00-00",
+      "description": "local 2000-01-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2000-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "003-local-2024-01-15t12-00-00",
+      "description": "local 2024-01-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2024-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "004-local-2024-07-15t12-00-00",
+      "description": "local 2024-07-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2024-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "005-local-2030-01-15t12-00-00",
+      "description": "local 2030-01-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2030-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "006-local-2050-07-15t12-00-00",
+      "description": "local 2050-07-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2050-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    },
+    {
+      "name": "007-utc-instant-2024-06-15t12-00-00",
+      "description": "UTC instant 2024-06-15T12:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT z.name AS zone_name,v.value,CONVERT(VARCHAR(40),v.value) AS rendered,DATEPART(TZOFFSET,v.value) AS offset_minutes FROM sys.time_zone_info z CROSS APPLY (VALUES (CAST('2024-06-15T12:00:00+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE z.name)) v(value) ORDER BY z.name"
+        }
+      ]
+    }
+  ]
+}

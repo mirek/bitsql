@@ -1,0 +1,16 @@
+{
+  "source": "msduck/reference/raiserror-arguments.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"RAISERROR(N'x',NULL,1); SELECT @@ERROR AS e"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"RAISERROR(NULL,16,1); SELECT @@ERROR AS e"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"RAISERROR(N'x','16',1); SELECT @@ERROR AS e"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"RAISERROR(N'%d',16,1,1.0); SELECT @@ERROR AS e"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"DECLARE @x DECIMAL(5,2)=1; RAISERROR(N'plain',16,1,@x); SELECT @@ERROR AS e"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"RAISERROR(N'x',16,1,1+2)"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"RAISERROR(N'x',16,1,(1))"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"RAISERROR(N'x',16,1,+1)"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"DECLARE @x INT=1; RAISERROR(N'%d',16,1,-@x)"}]},
+    {"name":"009","steps":[{"kind":"batch","sql":"RAISERROR(N'x',16,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)"}]}
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "source": "msduck/reference/output-joined-runtime-errors.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=2147483648 OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=2147483648 OUTPUT deleted.n,inserted.n FROM typed_stage t; SELECT 99 AS after_error"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=CAST(2147483648 AS BIGINT) OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=t.n/0 OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=1 OUTPUT inserted.n/0 AS n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=1 OUTPUT deleted.n,inserted.n FROM typed_stage t WHERE t.n/0=0"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY UPDATE t SET n=2147483648 OUTPUT deleted.n,inserted.n FROM typed_stage t; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,@@ROWCOUNT AS rc; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SET NOCOUNT ON; UPDATE t SET n=2147483648 OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=CAST(1e30 AS INT) OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,n INT); INSERT INTO typed_stage VALUES(10,7)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=CAST('2147483648' AS INT) OUTPUT deleted.n,inserted.n FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,n FROM typed_stage ORDER BY id"}
+      ]
+    }
+  ]
+}

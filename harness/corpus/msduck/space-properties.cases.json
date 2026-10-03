@@ -1,0 +1,21 @@
+{
+  "source": "msduck/reference/space-properties.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "008-constant-space",
+      "description": "constant SPACE",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(3) AS a,SPACE(0) AS b,SPACE(-1) AS c,SPACE(NULL) AS d"}]
+    },
+    {
+      "name": "009-column-space",
+      "description": "column SPACE",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(n) AS s FROM (VALUES(1),(NULL),(-1)) t(n)"}]
+    },
+    {
+      "name": "010-empty-column-space",
+      "description": "empty column SPACE",
+      "steps": [{"kind":"batch","sql":"SELECT SPACE(n) AS s FROM (VALUES(1)) t(n) WHERE 1=0"}]
+    }
+  ]
+}

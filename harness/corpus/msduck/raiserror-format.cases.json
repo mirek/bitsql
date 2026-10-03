@@ -1,0 +1,22 @@
+{
+  "source": "msduck/reference/raiserror-format.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"RAISERROR(N'%*.*s',16,1,6,3,N'duck')"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"RAISERROR(N'%*s',16,1,-6,N'duck')"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"RAISERROR(N'%u|%x|%X|%o',16,1,-1,-1,255,9)"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"RAISERROR(N'%#x|%#o|% d|%-5d',16,1,255,9,12,12)"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"RAISERROR(N'%.0d|%.4d|%05d',16,1,0,12,-12)"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"RAISERROR(N'%q',16,1,1)"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"RAISERROR(N'%d',16,1,N'duck')"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"RAISERROR(N'%s',16,1,1)"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"RAISERROR(N'%s',16,1)"}]},
+    {"name":"009","steps":[{"kind":"batch","sql":"RAISERROR(N'%d',16,1)"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"RAISERROR(N'plain',16,1,42)"}]},
+    {"name":"011","steps":[{"kind":"batch","sql":"DECLARE @n BIGINT=9223372036854775807; RAISERROR(N'%I64d',16,1,@n)"}]},
+    {"name":"012","steps":[{"kind":"batch","sql":"DECLARE @n BIGINT=9223372036854775807; RAISERROR(N'%d',16,1,@n)"}]},
+    {"name":"013","steps":[{"kind":"batch","sql":"RAISERROR(N'%.1s',16,1,N'🦆x')"}]},
+    {"name":"014","steps":[{"kind":"batch","sql":"DECLARE @s NVARCHAR(3000)=REPLICATE(N'x',2100); RAISERROR(@s,16,1)"}]},
+    {"name":"015","steps":[{"kind":"batch","sql":"DECLARE @s NVARCHAR(3000)=REPLICATE(N'x',2100); RAISERROR(N'%s',16,1,@s)"}]}
+  ]
+}

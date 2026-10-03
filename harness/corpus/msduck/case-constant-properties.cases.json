@@ -1,0 +1,166 @@
+{
+  "source": "msduck/reference/case-constant-properties.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-true-literal",
+      "description": "true literal",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "001-false-literal",
+      "description": "false literal",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=0 THEN NULL ELSE 7 END AS n"}
+      ]
+    },
+    {
+      "name": "002-selected-nonnull-column",
+      "description": "selected nonnull column",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN id ELSE NULL END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "003-selected-nullable-column",
+      "description": "selected nullable column",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN v ELSE 7 END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "004-selected-cast",
+      "description": "selected cast",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN CAST(7 AS BIGINT) ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "005-null-test",
+      "description": "null test",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN NULL=NULL THEN 1 ELSE 7 END AS n"}
+      ]
+    },
+    {
+      "name": "006-unknown-runtime",
+      "description": "unknown runtime",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN id=7 THEN 1 ELSE NULL END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "007-typed-parameter",
+      "description": "typed parameter",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"DECLARE @p INT=1; SELECT CASE WHEN @p=1 THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "008-simple-literal",
+      "description": "simple literal",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE 1 WHEN 1 THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "009-try-invalid",
+      "description": "try invalid",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN TRY_CAST('no' AS INT) ELSE 7 END AS n"}
+      ]
+    },
+    {
+      "name": "010-selected-column-same-type",
+      "description": "selected column same type",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN id ELSE v END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "011-selected-column-widened",
+      "description": "selected column widened",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN id ELSE CAST(NULL AS BIGINT) END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "012-selected-literal-widened",
+      "description": "selected literal widened",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN 7 ELSE CAST(NULL AS BIGINT) END AS n"}
+      ]
+    },
+    {
+      "name": "013-selected-null",
+      "description": "selected null",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN NULL ELSE 7 END AS n"}
+      ]
+    },
+    {
+      "name": "014-false-no-else",
+      "description": "false no else",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=0 THEN 7 END AS n"}
+      ]
+    },
+    {
+      "name": "015-multiple-conditions",
+      "description": "multiple conditions",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 1=0 THEN NULL WHEN 2=2 THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "016-unknown-earlier-condition",
+      "description": "unknown earlier condition",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN id=1 THEN NULL WHEN 2=2 THEN 7 ELSE NULL END AS n FROM case_props"}
+      ]
+    },
+    {
+      "name": "017-logical-constant",
+      "description": "logical constant",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN NOT (1=0) AND (NULL=NULL OR 2=2) THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "018-integer-arithmetic",
+      "description": "integer arithmetic",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN (1+2)*3=9 THEN 7 ELSE NULL END AS n"}
+      ]
+    },
+    {
+      "name": "019-integer-overflow",
+      "description": "integer overflow",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE case_props(id INT NOT NULL,v INT); INSERT INTO case_props VALUES(7,NULL)","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 2147483647+1=0 THEN 7 ELSE NULL END AS n"}
+      ]
+    }
+  ]
+}

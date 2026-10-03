@@ -1,0 +1,54 @@
+{
+  "source": "msduck/reference/unicode-character-storage.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,s NVARCHAR(4),f NCHAR(4)); INSERT INTO typed_stage VALUES(1,N'old',N'old')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE typed_stage SET s=LEFT(N'🦆',1) OUTPUT inserted.s"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,s NVARCHAR(4),f NCHAR(4)); INSERT INTO typed_stage VALUES(1,N'old',N'old')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET s=LEFT(N'🦆',1) OUTPUT deleted.s,inserted.s FROM typed_stage t"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,s NVARCHAR(4),f NCHAR(4)); INSERT INTO typed_stage VALUES(1,N'old',N'old')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"INSERT INTO typed_stage(id,s,f) OUTPUT inserted.s,inserted.f VALUES(2,LEFT(N'🦆',1),LEFT(N'🦆',1))"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE typed_stage(id INT PRIMARY KEY,s NVARCHAR(4),f NCHAR(4)); INSERT INTO typed_stage VALUES(1,N'old',N'old')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE typed_stage SET f=LEFT(N'🦆',1) OUTPUT inserted.f"},
+        {"kind":"batch","sql":"SELECT id,s,f,LEN(s) AS units,DATALENGTH(s) AS bytes FROM typed_stage ORDER BY id"}
+      ]
+    }
+  ]
+}

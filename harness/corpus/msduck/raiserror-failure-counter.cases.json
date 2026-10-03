@@ -1,0 +1,12 @@
+{
+  "source": "msduck/reference/raiserror-failure-counter.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"rpc","sql":"RAISERROR(N'%q',16,99,1); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"001","steps":[{"kind":"rpc","sql":"RAISERROR(N'%d',16,99,N'duck'); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"002","steps":[{"kind":"rpc","sql":"RAISERROR(N'%q',0,99,1); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"003","steps":[{"kind":"rpc","sql":"RAISERROR(N'%q',0,99,1) WITH SETERROR; SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"004","steps":[{"kind":"rpc","sql":"RAISERROR(50001,16,99); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"005","steps":[{"kind":"rpc","sql":"RAISERROR(N'%q',16,99,1)"}]}
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "source": "msduck/reference/raiserror-failure-counter.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "b692a6b903097af6",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":2787,"state":1,"class":16,"lineNumber":1,"message":"Invalid format specification: '%q'."}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "c8b2f2f3a632cf58",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [
+            {
+              "number": 2786,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The data type of substitution parameter 1 does not match the expected type of the format specification."
+            }
+          ],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002": {
+      "case": "3aab65b7d6e007e6",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[2787,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":2787,"state":1,"class":16,"lineNumber":1,"message":"Invalid format specification: '%q'."}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003": {
+      "case": "82a073e154137ec4",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":2787,"state":1,"class":16,"lineNumber":1,"message":"Invalid format specification: '%q'."}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004": {
+      "case": "d122c28f1d58aac7",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50001,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [
+            {
+              "number": 18054,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Error 50001, severity 16, state 99 was raised, but no message with that error number was found in sys.messages. If error is larger than 50000, make sure the user-defined message is added using sp_addmessage."
+            }
+          ],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "005": {
+      "case": "5c356036199d4127",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [{"number":2787,"state":1,"class":16,"lineNumber":1,"message":"Invalid format specification: '%q'."}],
+          "info": [],
+          "returnStatus": 50000,
+          "rowCount": 0
+        }
+      ]
+    }
+  }
+}

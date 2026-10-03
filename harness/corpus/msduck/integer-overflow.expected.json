@@ -1,0 +1,198 @@
+{
+  "source": "msduck/reference/integer-overflow.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-add-int": {
+      "case": "5cdaf514d7cba01e",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    },
+    "001-subtract-int": {
+      "case": "38cc0e7de9a732a9",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    },
+    "002-multiply-int": {
+      "case": "457c77c15c5c0b75",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    },
+    "003-add-bigint": {
+      "case": "a3c76eb4e4536ce8",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type bigint."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    },
+    "004-case-overflow": {
+      "case": "c433ddeb04209fab",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}]
+        }
+      ]
+    },
+    "005-case-overflow-continuation": {
+      "case": "4617fc8349829532",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[9]]}
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+          ]
+        }
+      ]
+    },
+    "006-case-overflow-catch": {
+      "case": "6800629df4fd8505",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {
+                  "name": "m",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [[8115,2,"Arithmetic overflow error converting expression to data type int."]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":349},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":350},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":351}
+          ]
+        }
+      ]
+    }
+  }
+}

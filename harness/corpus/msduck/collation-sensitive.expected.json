@@ -1,0 +1,441 @@
+{
+  "source": "msduck/reference/collation-sensitive.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-replace-deferred-property": {
+      "case": "4c85588d9130a67a",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for replace operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "001-replace-deferred-comparison": {
+      "case": "cb14abd60c765b58",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for replace operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "002-replace-deferred-explicit-property": {
+      "case": "fb779fc5e2d8a73e",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "003-replace-deferred-explicit-comparison": {
+      "case": "b414f3efea54d7b7",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "004-stuff-deferred-property": {
+      "case": "d57cbdef83a8a7cf",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for stuff operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "005-stuff-deferred-comparison": {
+      "case": "ed2d701cb931a0a4",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for stuff operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "006-nullif-deferred-property": {
+      "case": "a5264f6d3ce25171",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for equal to operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "007-nullif-deferred-comparison": {
+      "case": "c4179be05b4c749b",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4191,"state":9,"class":16,"lineNumber":1,"message":"Cannot resolve collation conflict for equal to operation."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "008-nullif-explicit-right-property": {
+      "case": "2efdf1b704612d8f",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_CI_AS"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "009-nullif-explicit-right-comparison": {
+      "case": "d54ede8793ffe2b9",
+      "steps": [
+        null,
+        {
+          "sets": [{"columns":[{"name":"n","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "010-nullif-explicit-left-property": {
+      "case": "dbdd3c7700148d3a",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "011-nullif-explicit-left-comparison": {
+      "case": "9212a2a77ade57e9",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "012-replace-implicit-repaired-third-property": {
+      "case": "43d7181e82836607",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["Latin1_General_100_BIN2"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "013-replace-implicit-repaired-third-comparison": {
+      "case": "6cb5d0ab3001e50c",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_BIN2\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "014-replace-nested-outer-repair-property": {
+      "case": "b921065c0ae932bb",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the replace operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "015-replace-nested-outer-repair-comparison": {
+      "case": "776217e7fceaa945",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the replace operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "016-stuff-nested-outer-repair-property": {
+      "case": "d276c69328be5e4e",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the stuff operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "017-stuff-nested-outer-repair-comparison": {
+      "case": "9a47af8070716852",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the stuff operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "018-nullif-nested-outer-repair-property": {
+      "case": "d6ad66f88b881272",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "019-nullif-nested-outer-repair-comparison": {
+      "case": "175b4460709268fb",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    }
+  }
+}

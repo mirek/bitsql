@@ -1,0 +1,15 @@
+{
+  "source": "msduck/reference/raiserror-format-types.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"RAISERROR(N'%hd',16,1,12)"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"DECLARE @n SMALLINT=12; RAISERROR(N'%hd|%d',16,1,@n,@n)"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"DECLARE @n TINYINT=12; RAISERROR(N'%d|%u',16,1,@n,@n)"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"RAISERROR(N'%ld|%ls',16,1,123,N'duck')"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"RAISERROR(N'%hs',16,1,N'duck')"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"RAISERROR(N'%*s',16,1,NULL,N'duck')"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"RAISERROR(N'%.*s',16,1,NULL,N'duck')"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"RAISERROR(N'%s',16,1,0x4142)"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"RAISERROR(N'%q',16,1)"}]}
+  ]
+}

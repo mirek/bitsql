@@ -1,0 +1,197 @@
+{
+  "source": "msduck/reference/collation-join-scopes.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-join-direct": {
+      "case": "7f264dc0c19d6f75",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "001-join-scalar-subquery": {
+      "case": "f94c150cf37372b9",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "002-join-preceding-comma-invalid": {
+      "case": "1006fd51fb062360",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"t.a\" could not be bound."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "003-join-future-alias-invalid": {
+      "case": "581471a6e3d10a54",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"v.b\" could not be bound."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "004-join-own-inputs-after-comma": {
+      "case": "3ebd23a116e77fbb",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the equal to operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "005-apply-correlated-conflict": {
+      "case": "237a27a4dee1a292",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 468,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Cannot resolve the collation conflict between \"Latin1_General_100_CS_AS\" and \"Latin1_General_100_CI_AS\" in the replace operation."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "006-apply-later-alias-invalid": {
+      "case": "7a0600e8a11b2477",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"u.a\" could not be bound."},
+            {"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"u.b\" could not be bound."}
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "007-derived-correlation-invalid": {
+      "case": "228704196b8bbfba",
+      "steps": [
+        null,
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"t.a\" could not be bound."},
+            {"number":4104,"state":1,"class":16,"lineNumber":1,"message":"The multi-part identifier \"t.b\" could not be bound."}
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}]
+        }
+      ]
+    },
+    "008-join-explicit-resolution": {
+      "case": "aac97725bafedec0",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "a",
+                  "type": "NVarChar",
+                  "length": 20,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":2,"sortId":0,"codepage":"CP1252"}
+                }
+              ],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":0,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}]
+        }
+      ]
+    }
+  }
+}

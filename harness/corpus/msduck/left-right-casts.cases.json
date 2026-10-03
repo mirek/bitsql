@@ -1,0 +1,21 @@
+{
+  "source": "msduck/reference/left-right-casts.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(LEFT(N'🦆xy',1) AS NVARCHAR(3)) AS n,CAST(LEFT(N'🦆xy',1) AS NCHAR(3)) AS f,CAST(LEFT(N'🦆xy',1) AS VARCHAR(3)) AS a"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(LEFT(N'🦆xy',2) AS NVARCHAR(1)) AS n,CAST(LEFT(N'🦆xy',2) AS VARCHAR(3)) AS a"}]
+    },
+    {"name":"002","steps":[{"kind":"batch","sql":"SELECT LEFT(CAST(LEFT(N'🦆xy',1) AS NVARCHAR(3)),1) AS n"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"SELECT CAST(LEFT(N'abc',2) AS VARCHAR(3)) AS a,CAST(LEFT(N'abc',2) AS CHAR(3)) AS f"}]}
+  ]
+}

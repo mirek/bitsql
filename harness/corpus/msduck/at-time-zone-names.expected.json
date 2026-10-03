@@ -1,0 +1,583 @@
+{
+  "source": "msduck/reference/at-time-zone-names.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-canonical-utc": {
+      "case": "faaa595716604ea6",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001-lowercase-utc": {
+      "case": "90ab69a41ce9700f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002-mixed-case-utc": {
+      "case": "66c6ed3cffaf3a6f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003-canonical-pacific": {
+      "case": "6bb45392a5e09ac0",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T19:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004-lowercase-pacific": {
+      "case": "7504ec049d449b27",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T19:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "005-uppercase-pacific": {
+      "case": "88e97616e478411b",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T19:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "006-leading-space": {
+      "case": "0d58dac049af8052",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter ' UTC' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "007-trailing-space": {
+      "case": "5b7bc36140fa396f",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'UTC ' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "008-both-spaces": {
+      "case": "1e816b21b7ed7032",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter ' UTC ' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "009-empty-name": {
+      "case": "ce311209aa44c5a6",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter '' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "010-unknown-name": {
+      "case": "a1b2379d0d2a0670",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'Not A Time Zone' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "011-iana-utc-alias": {
+      "case": "c31238866cc0ba55",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'Etc/UTC' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "012-iana-zurich-alias": {
+      "case": "52c869225a916299",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'Europe/Zurich' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "013-gmt-alias": {
+      "case": "fbfa51b217ab205b",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'GMT' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "014-fullwidth-utc": {
+      "case": "0db4f2acdd338019",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'ＵＴＣ' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "015-combining-accent": {
+      "case": "5ec7cb840f5832aa",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'ÚTC' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "016-embedded-nul": {
+      "case": "591887af88c6103d",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+                {"name":"input_bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"input_raw","type":"VarBinary","length":300,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [
+                [
+                  {"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567},
+                  8,
+                  {"kind":"binary","value":"5500540000004300"}
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "017-leading-nul": {
+      "case": "308522f90b950a84",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+                {"name":"input_bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"input_raw","type":"VarBinary","length":300,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [
+                [
+                  {"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567},
+                  8,
+                  {"kind":"binary","value":"0000550054004300"}
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "018-trailing-nul": {
+      "case": "5d3bad1f0fdc87b1",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+                {"name":"input_bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"input_raw","type":"VarBinary","length":300,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [
+                [
+                  {"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567},
+                  8,
+                  {"kind":"binary","value":"5500540043000000"}
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "019-nul-before-suffix": {
+      "case": "9411ebcd4877024c",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+                {"name":"input_bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"input_raw","type":"VarBinary","length":300,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'UTC.garbage' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "020-tab-within-name": {
+      "case": "33850df4726bfbec",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'UT\tC' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "021-dynamic-lowercase": {
+      "case": "125c637dd6e0d742",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": [[{"kind":"date","value":"2024-07-01T12:34:56.123Z","nanosecondsDelta":0.0004567}]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "022-dynamic-trailing-space": {
+      "case": "9784e94d64a1fc6e",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 9820,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The time zone parameter 'UTC ' provided to AT TIME ZONE clause is invalid."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "023-dynamic-null": {
+      "case": "4ec02708d877de7b",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"value","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+                {"name":"input_bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"input_raw","type":"VarBinary","length":300,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[null,null,null]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "source": "msduck/reference/nocount-completions.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; PRINT 'one'; PRINT 'two'"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; SELECT 1 AS n"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; SELECT 1 AS n WHERE 1=0"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; DECLARE @i INT=1; SET @i=2; SELECT @i AS n"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; DECLARE @i INT; SELECT @i=1"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; DECLARE @i INT=1; SET @i=2"}]},
+    {
+      "name": "006",
+      "steps": [{"kind":"batch","sql":"SET NOCOUNT ON; CREATE TABLE nc_insert(n INT); INSERT INTO nc_insert VALUES(1),(2); DROP TABLE nc_insert"}]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT ON; CREATE TABLE nc_output(n INT); INSERT INTO nc_output OUTPUT inserted.n VALUES(1),(2); DROP TABLE nc_output"
+        }
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT ON; CREATE TABLE nc_update(n INT); INSERT INTO nc_update VALUES(1); UPDATE nc_update SET n=2 OUTPUT inserted.n; DELETE FROM nc_update OUTPUT deleted.n; DROP TABLE nc_update"
+        }
+      ]
+    },
+    {"name":"009","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; RAISERROR('notice',10,1); SELECT 1 AS n"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; RAISERROR('error',16,1); SELECT 1 AS n"}]},
+    {"name":"011","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; THROW 50003,'error',1"}]},
+    {
+      "name": "012",
+      "steps": [{"kind":"batch","sql":"SET NOCOUNT ON; BEGIN TRY SELECT 1/0 AS n; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH"}]
+    },
+    {"name":"013","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; IF 1=1 PRINT 'yes'; WHILE 1=1 BREAK; SELECT 1 AS n"}]},
+    {"name":"014","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; RETURN; SELECT 1 AS skipped"}]},
+    {"name":"015","steps":[{"kind":"batch","sql":"SET NOCOUNT ON; BEGIN TRAN; SELECT @@TRANCOUNT AS n; ROLLBACK"}]},
+    {
+      "name": "016",
+      "steps": [{"kind":"batch","sql":"SET NOCOUNT ON; SELECT 1 AS first; SET NOCOUNT OFF; PRINT 'counted'; SET NOCOUNT ON; SELECT 2 AS last"}]
+    },
+    {"name":"017","steps":[{"kind":"batch","sql":"SET NOCOUNT OFF; SELECT 1 AS alive"}]}
+  ]
+}

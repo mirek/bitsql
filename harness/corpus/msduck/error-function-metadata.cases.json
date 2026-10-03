@@ -1,0 +1,37 @@
+{
+  "source": "msduck/reference/error-function-metadata.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS c,ERROR_LINE() AS l,ERROR_MESSAGE() AS m,ERROR_PROCEDURE() AS p"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY RAISERROR(N'message',16,7); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS c,ERROR_LINE() AS l,ERROR_MESSAGE() AS m,ERROR_PROCEDURE() AS p; END CATCH"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "WITH c AS (SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS c,ERROR_LINE() AS l,ERROR_MESSAGE() AS m,ERROR_PROCEDURE() AS p) SELECT * FROM c"
+        }
+      ]
+    },
+    {"name":"003","steps":[{"kind":"batch","sql":"SELECT ISNULL(ERROR_MESSAGE(),N'fallback') AS m, COALESCE(ERROR_NUMBER(),0) AS n"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"SELECT ERROR_NUMBER(1)"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"SELECT ERROR_MESSAGE() OVER ()"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"SELECT ERROR_PROCEDURE(*)"}]}
+  ]
+}

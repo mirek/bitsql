@@ -1,0 +1,246 @@
+{
+  "source": "msduck/reference/output-update-delete-errors.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/@p WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/@p INTO output_sink(a,b) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/@p WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/@p INTO output_sink(a,b) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/(inserted.n-1) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/(inserted.n-1) INTO output_sink(a,b) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/(inserted.n-1) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY UPDATE output_ref SET n=n OUTPUT inserted.id,10/(inserted.n-1) INTO output_sink(a,b) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/@p WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/@p INTO output_sink(a,b) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/@p WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p INT=0; BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/@p INTO output_sink(a,b) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "012",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/(deleted.n-1) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "013",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/(deleted.n-1) INTO output_sink(a,b) WHERE id=10; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "014",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/(deleted.n-1) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "015",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE FROM output_ref OUTPUT deleted.id,10/(deleted.n-1) INTO output_sink(a,b) WHERE id=99; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,XACT_STATE() AS xact; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "source": "msduck/reference/decimal-avg.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(5,2))),(CAST('0' AS DECIMAL(5,2))),(CAST('0' AS DECIMAL(5,2)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-1' AS DECIMAL(5,2))),(CAST('0' AS DECIMAL(5,2))),(CAST('0' AS DECIMAL(5,2)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(5,2))),(CAST('1' AS DECIMAL(5,2))),(CAST('0' AS DECIMAL(5,2)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(18,0))),(CAST('0' AS DECIMAL(18,0))),(CAST('0' AS DECIMAL(18,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-1' AS DECIMAL(18,0))),(CAST('0' AS DECIMAL(18,0))),(CAST('0' AS DECIMAL(18,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(18,0))),(CAST('1' AS DECIMAL(18,0))),(CAST('0' AS DECIMAL(18,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,0))),(CAST('0' AS DECIMAL(38,0))),(CAST('0' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-1' AS DECIMAL(38,0))),(CAST('0' AS DECIMAL(38,0))),(CAST('0' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,0))),(CAST('1' AS DECIMAL(38,0))),(CAST('0' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,6))),(CAST('0' AS DECIMAL(38,6))),(CAST('0' AS DECIMAL(38,6)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-1' AS DECIMAL(38,6))),(CAST('0' AS DECIMAL(38,6))),(CAST('0' AS DECIMAL(38,6)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,6))),(CAST('1' AS DECIMAL(38,6))),(CAST('0' AS DECIMAL(38,6)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "012",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,7))),(CAST('0' AS DECIMAL(38,7))),(CAST('0' AS DECIMAL(38,7)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "013",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-1' AS DECIMAL(38,7))),(CAST('0' AS DECIMAL(38,7))),(CAST('0' AS DECIMAL(38,7)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "014",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('1' AS DECIMAL(38,7))),(CAST('1' AS DECIMAL(38,7))),(CAST('0' AS DECIMAL(38,7)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "015",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "016",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('-0.00000000000000000000000000000000000001' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "017",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))),(CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "018",
+      "steps": [{"kind":"batch","sql":"SELECT AVG(d) AS a FROM (VALUES (CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0)))) t(d)"}]
+    },
+    {
+      "name": "019",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a FROM (VALUES (CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "020",
+      "steps": [{"kind":"batch","sql":"SELECT AVG(d) AS a FROM (VALUES (CAST('99999999999999999999999999999999' AS DECIMAL(38,0)))) t(d)"}]
+    },
+    {
+      "name": "021",
+      "steps": [{"kind":"batch","sql":"SELECT AVG(d) AS a FROM (VALUES (CAST('999999999999999999999999999999999' AS DECIMAL(38,0)))) t(d)"}]
+    },
+    {
+      "name": "022",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a FROM (VALUES (CAST('50000000000000000000000000000000000000' AS DECIMAL(38,0))),(CAST('50000000000000000000000000000000000000' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {"name":"023","steps":[{"kind":"batch","sql":"SELECT AVG(d) AS a FROM (VALUES(CAST(NULL AS DECIMAL(5,2)))) t(d)"}]},
+    {"name":"024","steps":[{"kind":"batch","sql":"SELECT AVG(d) AS a FROM (VALUES(CAST(1 AS DECIMAL(5,2)))) t(d) WHERE 1=0"}]},
+    {
+      "name": "025",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('99999999999999999999999999999999' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "026",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('60000000000000000000000000000000' AS DECIMAL(38,6))),(CAST('60000000000000000000000000000000' AS DECIMAL(38,6)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "027",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('99999999999999999999999999999999999999' AS DECIMAL(38,0))),(CAST('1' AS DECIMAL(38,0))),(CAST('-1' AS DECIMAL(38,0)))) t(d)"
+        }
+      ]
+    },
+    {
+      "name": "028",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d) AS a,CONVERT(VARCHAR(100),AVG(d)) AS exact_value FROM (VALUES (CAST('99999999999999999999999999999999.999999' AS DECIMAL(38,6))),(CAST('0.000001' AS DECIMAL(38,6))),(CAST('-0.000001' AS DECIMAL(38,6)))) t(d)"
+        }
+      ]
+    }
+  ]
+}

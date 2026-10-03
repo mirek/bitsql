@@ -1,0 +1,10 @@
+{
+  "source": "msduck/reference/raiserror-format-widths.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"DECLARE @n SMALLINT=-1; RAISERROR(N'%hu|%u|%hx|%x',16,1,@n,@n,@n,@n)"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"DECLARE @n TINYINT=12; RAISERROR(N'%hd',16,1,@n)"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"DECLARE @n SMALLINT=6; RAISERROR(N'%*s',16,1,@n,N'duck')"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"RAISERROR(N'%ls',16,1,'duck')"}]}
+  ]
+}

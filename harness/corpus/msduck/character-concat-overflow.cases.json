@@ -1,0 +1,61 @@
+{
+  "source": "msduck/reference/character-concat-overflow.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "008-ansi-overflow",
+      "description": "ANSI overflow",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE('a',6000)+REPLICATE('b',6000) AS n"}]
+    },
+    {
+      "name": "009-unicode-overflow",
+      "description": "Unicode overflow",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(N'a',3000)+REPLICATE(N'b',3000) AS n"}]
+    },
+    {
+      "name": "010-mixed-overflow",
+      "description": "mixed overflow",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(N'a',3000)+REPLICATE('b',6000) AS n"}]
+    },
+    {
+      "name": "011-late-max",
+      "description": "late MAX",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE('a',8000)+'b'+CAST('c' AS VARCHAR(MAX)) AS n"}]
+    },
+    {
+      "name": "012-early-max",
+      "description": "early MAX",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(REPLICATE('a',8000) AS VARCHAR(MAX))+'b'+'c' AS n"}]
+    },
+    {
+      "name": "013-grouped-max",
+      "description": "grouped MAX",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE('a',8000)+('b'+CAST('c' AS VARCHAR(MAX))) AS n"}]
+    },
+    {
+      "name": "014-unicode-late-max",
+      "description": "Unicode late MAX",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(N'a',4000)+N'b'+CAST(N'c' AS NVARCHAR(MAX)) AS n"}]
+    },
+    {
+      "name": "015-unicode-early-max",
+      "description": "Unicode early MAX",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(REPLICATE(N'a',4000) AS NVARCHAR(MAX))+N'b'+N'c' AS n"}]
+    },
+    {
+      "name": "016-surrogate-boundary",
+      "description": "surrogate boundary",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(N'a',3999)+N'🦆' AS n"}]
+    },
+    {
+      "name": "017-raw-surrogate-pair",
+      "description": "raw surrogate pair",
+      "steps": [{"kind":"batch","sql":"SELECT LEFT(N'🦆',1)+RIGHT(N'🦆',1) AS n"}]
+    },
+    {
+      "name": "018-null-overflow",
+      "description": "NULL overflow",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(N'a',4000)+CAST(NULL AS NVARCHAR(1)) AS n"}]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "source": "msduck/reference/output-native-expressions.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE output_ref SET n=n+10 OUTPUT inserted.* WHERE id=10"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE output_ref SET id=id+100,n=n+1 OUTPUT inserted.id,inserted.n"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref(id,n,t) OUTPUT inserted.t,LEN(inserted.t) AS units,DATALENGTH(inserted.t) AS bytes VALUES(30,3,N'🦆')"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"DELETE FROM output_ref OUTPUT deleted.n+1 AS next_n,LEN(deleted.t) AS units WHERE id=10"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

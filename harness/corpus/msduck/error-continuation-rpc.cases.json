@@ -1,0 +1,9 @@
+{
+  "source": "msduck/reference/error-continuation-rpc.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"rpc","sql":"SELECT 1/0 AS bad; SELECT @@ERROR AS last_error,@@ROWCOUNT AS affected,42 AS after_error"}]},
+    {"name":"001","steps":[{"kind":"rpc","sql":"SELECT 1/0 AS bad"}]},
+    {"name":"002","steps":[{"kind":"rpc","sql":"SELECT 1/0 AS first_error; SELECT 2/0 AS second_error; SELECT 42 AS after_error"}]}
+  ]
+}

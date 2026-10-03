@@ -1,0 +1,230 @@
+{
+  "source": "msduck/reference/raiserror-rpc.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "0d3e0e95e7b4ef18",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [],
+          "info": [{"number":50000,"state":7,"class":0,"lineNumber":1,"message":"message"}],
+          "returnStatus": 0,
+          "rowCount": 0
+        }
+      ]
+    },
+    "001": {
+      "case": "b89fe3b158be2004",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [{"number":50000,"state":7,"class":9,"lineNumber":1,"message":"message"}],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002": {
+      "case": "d4a41393dd08040c",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [{"number":50000,"state":7,"class":16,"lineNumber":1,"message":"message"}],
+          "info": [],
+          "returnStatus": 50000,
+          "rowCount": 0
+        }
+      ]
+    },
+    "003": {
+      "case": "c22bba0607eab530",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":50000,"state":7,"class":16,"lineNumber":1,"message":"message"}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004": {
+      "case": "53446586575303e4",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":2787,"state":1,"class":16,"lineNumber":1,"message":"Invalid format specification: '%q'."}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "005": {
+      "case": "65e7c13c09e27f33",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {
+                  "name": "m",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [[2787,16,1,"Invalid format specification: '%q'."]]
+            }
+          ],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "006": {
+      "case": "6db5c5d3e4c156de",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[2754]]}],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [
+            {
+              "number": 2754,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Error severity levels greater than 18 can only be specified by members of the sysadmin role, using the WITH LOG option."
+            }
+          ],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "007": {
+      "case": "eb5dbce830604905",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[50000]]}],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":50000,"state":7,"class":16,"lineNumber":1,"message":"message"}],
+          "info": [],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "008": {
+      "case": "f7abe4651139aeab",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[50000]]}],
+          "done": [
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneInProc","rowCount":1,"more":true},
+            {"kind":"doneInProc","rowCount":null,"more":true},
+            {"kind":"doneProc","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [{"number":50000,"state":7,"class":9,"lineNumber":1,"message":"message"}],
+          "returnStatus": 0,
+          "rowCount": 1
+        }
+      ]
+    },
+    "009": {
+      "case": "f9b07a99a7646aa4",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 178,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "A RETURN statement with a return value cannot be used in this context."
+            }
+          ],
+          "info": [],
+          "returnStatus": 178,
+          "rowCount": 0
+        }
+      ]
+    }
+  }
+}

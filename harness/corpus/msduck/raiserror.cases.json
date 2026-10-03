@@ -1,0 +1,31 @@
+{
+  "source": "msduck/reference/raiserror.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"RAISERROR(N'message',0,1); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"RAISERROR(N'message',9,2); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"RAISERROR(N'message',10,3); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"003","steps":[{"kind":"batch","sql":"RAISERROR(N'message',11,4); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"004","steps":[{"kind":"batch","sql":"RAISERROR(N'message',16,5); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"005","steps":[{"kind":"batch","sql":"RAISERROR(N'message',-1,-1); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {"name":"006","steps":[{"kind":"batch","sql":"RAISERROR(N'message',16,256); SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]},
+    {
+      "name": "007",
+      "steps": [{"kind":"batch","sql":"RAISERROR(N'message',0,6) WITH SETERROR; SELECT @@ERROR AS e,@@ROWCOUNT AS n,42 AS after_error"}]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY RAISERROR(N'message',16,7); SELECT 1 AS skipped; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_SEVERITY() AS severity,ERROR_STATE() AS state,ERROR_MESSAGE() AS message; END CATCH"
+        }
+      ]
+    },
+    {"name":"009","steps":[{"kind":"batch","sql":"RAISERROR(N'%s:%d:%%',16,1,N'duck',42)"}]},
+    {"name":"010","steps":[{"kind":"batch","sql":"RAISERROR(N'%08x|%+6d|%.3s',16,1,255,12,N'duck')"}]},
+    {"name":"011","steps":[{"kind":"batch","sql":"RAISERROR(N'%s:%d',16,1,NULL,NULL)"}]},
+    {"name":"012","steps":[{"kind":"batch","sql":"RAISERROR(N'%s:%d',16,1,N'duck')"}]},
+    {"name":"013","steps":[{"kind":"batch","sql":"RAISERROR(50001,16,1)"}]}
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "source": "msduck/reference/character-result-flags.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000-nchar-fixed-unicode-results": {
+      "case": "d359670d66d5226a",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "latin",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "euro",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "last_unit",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "out_of_range",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "absent",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "padded",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["A","€","￿",null,null," "]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "empty_result",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "",
+                  "type": "NChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": []
+            },
+            {
+              "columns": [{"name":"text_overflow","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": [[248]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 2,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":349},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":350},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":351}
+          ]
+        }
+      ]
+    },
+    "001-isnull-unicode-replacement-width": {
+      "case": "2d64fa283fc13d88",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "shortened",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "converted",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "absent",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["abcdefghijklmnopqrstuvwxyz0123","42",null]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}]
+        }
+      ]
+    },
+    "002-datename-bounded-unicode-descriptors": {
+      "case": "a9d390f77de0ac7b",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "month_name",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "fallback",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["January","February"]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "absent",
+                  "type": "NVarChar",
+                  "length": 60,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":0,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}
+          ]
+        }
+      ]
+    },
+    "003-character-function-descriptors": {
+      "case": "6cdd67243a375857",
+      "steps": [
+        null,
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "c",
+                  "type": "Char",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "cn",
+                  "type": "Char",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "s",
+                  "type": "VarChar",
+                  "length": 3,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "empty_space",
+                  "type": "VarChar",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {"name":"code","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [["A",null,"   ","",55358]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "mixed",
+                  "type": "VarChar",
+                  "length": 3,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 1,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["A"],["   "],[null]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "co",
+                  "type": "VarChar",
+                  "length": 4,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "conditional",
+                  "type": "Char",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["    ","A"]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "replacement",
+                  "type": "Char",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "padded",
+                  "type": "Char",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [[" "," "]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":3,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":1,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 6,
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+          ]
+        }
+      ]
+    }
+  }
+}

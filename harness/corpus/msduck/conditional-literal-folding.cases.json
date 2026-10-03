@@ -1,0 +1,191 @@
+{
+  "source": "msduck/reference/conditional-literal-folding.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-case-true-unicode",
+      "description": "CASE true Unicode",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN N'a' ELSE N'longer' END AS value"}]
+    },
+    {
+      "name": "001-case-false-unicode",
+      "description": "CASE false Unicode",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=0 THEN N'a' ELSE N'longer' END AS value"}]
+    },
+    {
+      "name": "002-case-not-equal-constant",
+      "description": "CASE not equal constant",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1<>0 THEN N'a' ELSE N'longer' END AS value"}]
+    },
+    {
+      "name": "003-case-less-than-constant",
+      "description": "CASE less than constant",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN -1<0 THEN N'a' ELSE N'longer' END AS value"}]
+    },
+    {
+      "name": "004-case-greater-than-constant",
+      "description": "CASE greater than constant",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 2>1 THEN N'a' ELSE N'longer' END AS value"}]
+    },
+    {
+      "name": "005-case-no-else-unicode",
+      "description": "CASE no ELSE Unicode",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=0 THEN N'a' END AS value"}]
+    },
+    {
+      "name": "006-case-runtime-predicate",
+      "description": "CASE runtime predicate",
+      "steps": [{"kind":"batch","sql":"SELECT id,CASE WHEN id=1 THEN N'a' ELSE N'longer' END AS value FROM (VALUES(1),(2)) v(id) ORDER BY id"}]
+    },
+    {
+      "name": "007-case-empty-input",
+      "description": "CASE empty input",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN id=1 THEN N'a' ELSE N'longer' END AS value FROM (VALUES(1)) v(id) WHERE 1=0"}]
+    },
+    {
+      "name": "008-case-ansi",
+      "description": "CASE ANSI",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN 'a' ELSE 'longer' END AS value"}]
+    },
+    {
+      "name": "009-mixed-family-selected-ansi",
+      "description": "mixed family selected ANSI",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN 'a' ELSE N'longer' END AS case_result,IIF(1=1,'a',N'longer') AS iif_result,COALESCE('a',N'longer') AS coalesce_result"
+        }
+      ]
+    },
+    {
+      "name": "010-mixed-family-selected-unicode",
+      "description": "mixed family selected Unicode",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN N'a' ELSE 'longer' END AS case_result,IIF(1=1,N'a','longer') AS iif_result,COALESCE(N'a','longer') AS coalesce_result"
+        }
+      ]
+    },
+    {
+      "name": "011-mixed-family-three-branches",
+      "description": "mixed family three branches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN 'a' WHEN 1=0 THEN 'verylong' ELSE N'x' END AS case_result,COALESCE('a','verylong',N'x') AS coalesce_result"
+        }
+      ]
+    },
+    {
+      "name": "012-mixed-family-over-unicode-bound",
+      "description": "mixed family over Unicode bound",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' ELSE N'x' END AS value"
+        }
+      ]
+    },
+    {
+      "name": "013-mixed-family-typed-null",
+      "description": "mixed family typed NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN 'a' ELSE CAST(NULL AS NVARCHAR(12)) END AS case_result,IIF(1=1,'a',CAST(NULL AS NVARCHAR(12))) AS iif_result,COALESCE('a',CAST(NULL AS NVARCHAR(12))) AS coalesce_result"
+        }
+      ]
+    },
+    {
+      "name": "014-case-typed-null",
+      "description": "CASE typed NULL",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN CAST(NULL AS NVARCHAR(12)) ELSE N'🦆' END AS value"}]
+    },
+    {
+      "name": "015-case-max-branch",
+      "description": "CASE MAX branch",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN N'a' ELSE CAST(N'longer' AS NVARCHAR(MAX)) END AS value"}]
+    },
+    {
+      "name": "016-iif-true-and-false",
+      "description": "IIF true and false",
+      "steps": [{"kind":"batch","sql":"SELECT IIF(1=1,N'a',N'longer') AS yes,IIF(1=0,N'a',N'longer') AS no"}]
+    },
+    {
+      "name": "017-iif-not-equal-constant",
+      "description": "IIF not equal constant",
+      "steps": [{"kind":"batch","sql":"SELECT IIF(1<>0,N'a',N'longer') AS value"}]
+    },
+    {
+      "name": "018-iif-selected-untyped-null",
+      "description": "IIF selected untyped NULL",
+      "steps": [{"kind":"batch","sql":"SELECT IIF(1=1,NULL,N'x') AS unicode_result,IIF(1=1,NULL,'abc') AS ansi_result"}]
+    },
+    {
+      "name": "019-iif-runtime-predicate",
+      "description": "IIF runtime predicate",
+      "steps": [{"kind":"batch","sql":"SELECT id,IIF(id=1,N'a',N'longer') AS value FROM (VALUES(1),(2)) v(id) ORDER BY id"}]
+    },
+    {
+      "name": "020-iif-typed-null-and-max",
+      "description": "IIF typed NULL and MAX",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT IIF(1=1,CAST(NULL AS NVARCHAR(12)),N'🦆') AS bounded,IIF(1=1,N'a',CAST(N'longer' AS NVARCHAR(MAX))) AS unbounded"
+        }
+      ]
+    },
+    {
+      "name": "021-coalesce-first-nonnull",
+      "description": "COALESCE first nonnull",
+      "steps": [{"kind":"batch","sql":"SELECT COALESCE(N'a',N'longer') AS short,COALESCE(NULL,N'longer') AS long,COALESCE(N'',N'🦆') AS empty"}]
+    },
+    {
+      "name": "022-coalesce-typed-null",
+      "description": "COALESCE typed NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COALESCE(CAST(NULL AS NVARCHAR(12)),N'🦆') AS bounded,COALESCE(CAST(NULL AS NVARCHAR(MAX)),N'a') AS unbounded"
+        }
+      ]
+    },
+    {
+      "name": "023-coalesce-runtime-column",
+      "description": "COALESCE runtime column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id,COALESCE(CAST(v AS NVARCHAR(12)),N'🦆') AS value FROM (VALUES(1,N'a'),(2,NULL)) s(id,v) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "024-coalesce-ansi",
+      "description": "COALESCE ANSI",
+      "steps": [{"kind":"batch","sql":"SELECT COALESCE('a','longer') AS short,COALESCE('','longer') AS empty"}]
+    },
+    {
+      "name": "025-surrogate-and-empty-branches",
+      "description": "surrogate and empty branches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN 1=1 THEN N'🦆' ELSE N'longer' END AS bird,IIF(1=1,N'',N'🦆') AS empty,COALESCE(N'🦆',N'a') AS pair"
+        }
+      ]
+    },
+    {
+      "name": "026-set-after-folded-case",
+      "description": "set after folded CASE",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN N'a' ELSE N'longer' END AS value UNION ALL SELECT N'xx'"}]
+    },
+    {
+      "name": "027-set-after-runtime-case",
+      "description": "set after runtime CASE",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN id=1 THEN N'a' ELSE N'longer' END AS value FROM (VALUES(1)) v(id) UNION ALL SELECT N'xx'"}]
+    }
+  ]
+}

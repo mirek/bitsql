@@ -1,0 +1,241 @@
+{
+  "source": "msduck/reference/at-time-zone.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-datetime2-utc",
+      "description": "datetime2 UTC",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05.1234567' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "001-datetime-utc",
+      "description": "datetime UTC",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05.123' AS DATETIME) AT TIME ZONE 'UTC' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "002-smalldatetime-utc",
+      "description": "smalldatetime UTC",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:00' AS SMALLDATETIME) AT TIME ZONE 'UTC' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "003-datetime2-named-zone",
+      "description": "datetime2 named zone",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05.1234567' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "004-datetimeoffset-changes-zone",
+      "description": "datetimeoffset changes zone",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05+02:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'UTC' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "005-chained-zone-conversion",
+      "description": "chained zone conversion",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05' AS DATETIME2(7)) AT TIME ZONE 'Pacific Standard Time' AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "006-datetimeoffset-same-zone",
+      "description": "datetimeoffset same zone",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02T03:04:05+02:00' AS DATETIMEOFFSET(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "007-central-europe-spring-2022-03-27t01-59-59",
+      "description": "Central Europe spring 2022-03-27T01:59:59",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-03-27T01:59:59' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "008-central-europe-spring-2022-03-27t02-00-00",
+      "description": "Central Europe spring 2022-03-27T02:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-03-27T02:00:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "009-central-europe-spring-2022-03-27t02-30-00",
+      "description": "Central Europe spring 2022-03-27T02:30:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-03-27T02:30:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "010-central-europe-spring-2022-03-27t02-59-59",
+      "description": "Central Europe spring 2022-03-27T02:59:59",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-03-27T02:59:59' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "011-central-europe-spring-2022-03-27t03-00-00",
+      "description": "Central Europe spring 2022-03-27T03:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-03-27T03:00:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "012-central-europe-autumn-2022-10-30t01-59-59",
+      "description": "Central Europe autumn 2022-10-30T01:59:59",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-10-30T01:59:59' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "013-central-europe-autumn-2022-10-30t02-00-00",
+      "description": "Central Europe autumn 2022-10-30T02:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-10-30T02:00:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "014-central-europe-autumn-2022-10-30t02-30-00",
+      "description": "Central Europe autumn 2022-10-30T02:30:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-10-30T02:30:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "015-central-europe-autumn-2022-10-30t02-59-59",
+      "description": "Central Europe autumn 2022-10-30T02:59:59",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-10-30T02:59:59' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "016-central-europe-autumn-2022-10-30t03-00-00",
+      "description": "Central Europe autumn 2022-10-30T03:00:00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2022-10-30T03:00:00' AS DATETIME2(7)) AT TIME ZONE 'Central European Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "017-pacific-spring-gap",
+      "description": "Pacific spring gap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-03-10T02:30:00' AS DATETIME2(7)) AT TIME ZONE 'Pacific Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "018-pacific-autumn-overlap",
+      "description": "Pacific autumn overlap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-11-03T01:30:00' AS DATETIME2(7)) AT TIME ZONE 'Pacific Standard Time' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "019-typed-null-input",
+      "description": "typed NULL input",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST(NULL AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "020-null-zone",
+      "description": "NULL zone",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02' AS DATETIME2(7)) AT TIME ZONE CAST(NULL AS NVARCHAR(128)) AS value) v "
+        }
+      ]
+    },
+    {
+      "name": "021-invalid-zone",
+      "description": "invalid zone",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-01-02' AS DATETIME2(7)) AT TIME ZONE 'Not A Time Zone' AS value"}]
+    },
+    {
+      "name": "022-unsupported-date-input",
+      "description": "unsupported date input",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-01-02' AS DATE) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "023-unsupported-integer-input",
+      "description": "unsupported integer input",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(1 AS INT) AT TIME ZONE 'UTC' AS value"}]
+    },
+    {
+      "name": "024-empty-result-metadata",
+      "description": "empty result metadata",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT value,CONVERT(VARCHAR(40),value) AS rendered,DATEPART(TZOFFSET,value) AS offset_minutes FROM (SELECT CAST('2024-01-02' AS DATETIME2(7)) AT TIME ZONE 'UTC' AS value) v WHERE 1=0"
+        }
+      ]
+    }
+  ]
+}

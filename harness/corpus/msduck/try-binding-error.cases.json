@@ -1,0 +1,11 @@
+{
+  "source": "msduck/reference/try-binding-error.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"batch","sql":"BEGIN TRY SELECT -b FROM (VALUES(CAST(1 AS BIT))) s(b) END TRY BEGIN CATCH SELECT 99 END CATCH"}]
+    },
+    {"name":"001","steps":[{"kind":"batch","sql":"BEGIN TRY SELECT -CAST(1 AS BIT) END TRY BEGIN CATCH SELECT 99 END CATCH"}]}
+  ]
+}

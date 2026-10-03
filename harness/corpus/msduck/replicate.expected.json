@@ -1,0 +1,495 @@
+{
+  "source": "msduck/reference/replicate.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "23890b3362330d72",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "a",
+                  "type": "VarChar",
+                  "length": 6,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "n",
+                  "type": "NVarChar",
+                  "length": 6,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "c",
+                  "type": "VarChar",
+                  "length": 6,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "nc",
+                  "type": "NVarChar",
+                  "length": 12,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["ababab","雪雪雪","x  x  ","x  x  "]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "eb8f368b6e3275e1",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "z",
+                  "type": "VarChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "neg",
+                  "type": "VarChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "empty_neg",
+                  "type": "VarChar",
+                  "length": 2,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "absent",
+                  "type": "VarChar",
+                  "length": 3,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "missing_count",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["",null,null,null,null]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002": {
+      "case": "eee893bca753b67c",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "a",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "n",
+                  "type": "NVarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["xxx","雪雪雪"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003": {
+      "case": "eeffe1d43c420329",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"am","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"nm","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[8000,8000,"8100","8200"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004": {
+      "case": "3440981e7d22b166",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "number",
+                  "type": "VarChar",
+                  "length": 36,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "bytes",
+                  "type": "VarChar",
+                  "length": 6,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "fraction",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["121212","ABABAB","xx"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "005": {
+      "case": "13b798f41c68900d",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "a",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "n",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["ababab","ababab"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 2
+        }
+      ]
+    },
+    "006": {
+      "case": "fd71e919086b0a05",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "split",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [
+                [
+                  "🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x🦆x"
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "007": {
+      "case": "c43a42e0d782e875",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "pairs",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [
+                [
+                  "🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆"
+                ]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "008": {
+      "case": "8036de294a60d8b5",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"large_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": []
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "009": {
+      "case": "535cdfc7d46be889",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "text_count",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                },
+                {
+                  "name": "float_count",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["xxx","xx"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "010": {
+      "case": "fa915bb41dbf7b0e",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "n",
+                  "type": "NVarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [[null]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "011": {
+      "case": "4fea647d1727e6db",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "near_zero",
+                  "type": "VarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [[""]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "012": {
+      "case": "11e5496640e2b9a2",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "bytes",
+                  "type": "VarChar",
+                  "length": 6,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
+              ],
+              "rows": [["\u0000€A\u0000€A"]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "013": {
+      "case": "0fb486d61eaedb38",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":174,"state":1,"class":15,"lineNumber":1,"message":"The replicate function requires 2 argument(s)."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    }
+  }
+}

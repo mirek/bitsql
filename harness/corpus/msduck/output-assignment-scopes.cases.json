@@ -1,0 +1,108 @@
+{
+  "source": "msduck/reference/output-assignment-scopes.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=COALESCE((SELECT q.n+extra FROM lookup q WHERE q.id=t.id),n) OUTPUT deleted.id,deleted.n,inserted.n,s.extra FROM output_ref t LEFT JOIN (VALUES(10,7)) s(id,extra) ON t.id=s.id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=(SELECT t.n FROM lookup t WHERE t.id=10) OUTPUT deleted.id,deleted.n,inserted.n FROM output_ref t WHERE t.id=20"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=(SELECT n FROM lookup q WHERE q.id=t.id) OUTPUT deleted.id,deleted.n,inserted.n FROM output_ref t"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=(SELECT s.extra FROM lookup s WHERE s.id=t.id) OUTPUT deleted.id,inserted.n FROM output_ref t JOIN (VALUES(10,7)) s(id,extra) ON t.id=s.id"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=(SELECT n FROM lookup q JOIN lookup r ON q.id=r.id) OUTPUT deleted.id,inserted.n FROM output_ref t"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"UPDATE t SET n=(SELECT d.n FROM (SELECT t.n) d) OUTPUT deleted.id,deleted.n,inserted.n FROM output_ref t"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL); CREATE TABLE lookup(id INT NOT NULL,n INT NOT NULL); INSERT INTO lookup VALUES(10,50),(20,60)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET n=(SELECT t.n FROM lookup q JOIN lookup j ON j.n=t.n JOIN lookup t ON t.id=q.id WHERE q.id=20) OUTPUT deleted.id,deleted.n,inserted.n FROM output_ref t WHERE t.id=10"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "source": "msduck/reference/collation-join-scopes.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-join-direct",
+      "description": "join direct",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t JOIN coll_scope u ON t.a=u.b"}
+      ]
+    },
+    {
+      "name": "001-join-scalar-subquery",
+      "description": "join scalar subquery",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t JOIN coll_scope u ON EXISTS(SELECT 1 WHERE t.a=u.b)"}
+      ]
+    },
+    {
+      "name": "002-join-preceding-comma-invalid",
+      "description": "join preceding comma invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t,coll_scope u JOIN coll_scope v ON t.a=u.b"}
+      ]
+    },
+    {
+      "name": "003-join-future-alias-invalid",
+      "description": "join future alias invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t JOIN coll_scope u ON t.a=v.b JOIN coll_scope v ON 1=1"}
+      ]
+    },
+    {
+      "name": "004-join-own-inputs-after-comma",
+      "description": "join own inputs after comma",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t,coll_scope u JOIN coll_scope v ON u.a=v.b"}
+      ]
+    },
+    {
+      "name": "005-apply-correlated-conflict",
+      "description": "apply correlated conflict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT x.s FROM coll_scope t CROSS APPLY (SELECT REPLACE(t.a,t.b,N'z') AS s) x"}
+      ]
+    },
+    {
+      "name": "006-apply-later-alias-invalid",
+      "description": "apply later alias invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT x.s FROM coll_scope t CROSS APPLY (SELECT REPLACE(u.a,u.b,N'z') AS s) x CROSS JOIN coll_scope u"}
+      ]
+    },
+    {
+      "name": "007-derived-correlation-invalid",
+      "description": "derived correlation invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT x.s FROM coll_scope t CROSS JOIN (SELECT REPLACE(t.a,t.b,N'z') AS s) x"}
+      ]
+    },
+    {
+      "name": "008-join-explicit-resolution",
+      "description": "join explicit resolution",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT t.a FROM coll_scope t JOIN coll_scope u ON t.a=u.b COLLATE Latin1_General_100_BIN2"}
+      ]
+    }
+  ]
+}

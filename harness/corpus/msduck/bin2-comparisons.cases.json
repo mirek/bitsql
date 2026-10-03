@@ -1,0 +1,273 @@
+{
+  "source": "msduck/reference/bin2-comparisons.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-implicit",
+      "description": "implicit =",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a = b"}
+      ]
+    },
+    {
+      "name": "001-deferred",
+      "description": "deferred =",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) = N'z'"}
+      ]
+    },
+    {
+      "name": "002-implicit",
+      "description": "implicit <>",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a <> b"}
+      ]
+    },
+    {
+      "name": "003-deferred",
+      "description": "deferred <>",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) <> N'z'"}
+      ]
+    },
+    {
+      "name": "004-implicit",
+      "description": "implicit <",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a < b"}
+      ]
+    },
+    {
+      "name": "005-deferred",
+      "description": "deferred <",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) < N'z'"}
+      ]
+    },
+    {
+      "name": "006-implicit",
+      "description": "implicit >",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a > b"}
+      ]
+    },
+    {
+      "name": "007-deferred",
+      "description": "deferred >",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) > N'z'"}
+      ]
+    },
+    {
+      "name": "008-implicit",
+      "description": "implicit <=",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a <= b"}
+      ]
+    },
+    {
+      "name": "009-deferred",
+      "description": "deferred <=",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) <= N'z'"}
+      ]
+    },
+    {
+      "name": "010-implicit",
+      "description": "implicit >=",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a >= b"}
+      ]
+    },
+    {
+      "name": "011-deferred",
+      "description": "deferred >=",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) >= N'z'"}
+      ]
+    },
+    {
+      "name": "012-implicit",
+      "description": "implicit !<",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a !< b"}
+      ]
+    },
+    {
+      "name": "013-deferred",
+      "description": "deferred !<",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) !< N'z'"}
+      ]
+    },
+    {
+      "name": "014-implicit",
+      "description": "implicit !>",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE a !> b"}
+      ]
+    },
+    {
+      "name": "015-deferred",
+      "description": "deferred !>",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 FROM coll_scope WHERE (CASE WHEN id=1 THEN a ELSE b END) !> N'z'"}
+      ]
+    },
+    {
+      "name": "016-padding",
+      "description": "padding",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 = (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 = (N'a ')) THEN 0 ELSE NULL END AS eq,CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 <> (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 <> (N'a ')) THEN 0 ELSE NULL END AS ne,CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 < (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 < (N'a ')) THEN 0 ELSE NULL END AS lt,CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 > (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 > (N'a ')) THEN 0 ELSE NULL END AS gt,CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 <= (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 <= (N'a ')) THEN 0 ELSE NULL END AS le,CASE WHEN (N'a') COLLATE Latin1_General_100_BIN2 >= (N'a ') THEN 1 WHEN NOT ((N'a') COLLATE Latin1_General_100_BIN2 >= (N'a ')) THEN 0 ELSE NULL END AS ge"
+        }
+      ]
+    },
+    {
+      "name": "017-supplementary-ordering",
+      "description": "supplementary ordering",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 = (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 = (N'')) THEN 0 ELSE NULL END AS eq,CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 <> (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 <> (N'')) THEN 0 ELSE NULL END AS ne,CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 < (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 < (N'')) THEN 0 ELSE NULL END AS lt,CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 > (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 > (N'')) THEN 0 ELSE NULL END AS gt,CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 <= (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 <= (N'')) THEN 0 ELSE NULL END AS le,CASE WHEN (N'🦆') COLLATE Latin1_General_100_BIN2 >= (N'') THEN 1 WHEN NOT ((N'🦆') COLLATE Latin1_General_100_BIN2 >= (N'')) THEN 0 ELSE NULL END AS ge"
+        }
+      ]
+    },
+    {
+      "name": "018-surrogate",
+      "description": "surrogate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 = (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 = (N'')) THEN 0 ELSE NULL END AS eq,CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 <> (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 <> (N'')) THEN 0 ELSE NULL END AS ne,CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 < (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 < (N'')) THEN 0 ELSE NULL END AS lt,CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 > (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 > (N'')) THEN 0 ELSE NULL END AS gt,CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 <= (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 <= (N'')) THEN 0 ELSE NULL END AS le,CASE WHEN (LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 >= (N'') THEN 1 WHEN NOT ((LEFT(N'🦆',1)) COLLATE Latin1_General_100_BIN2 >= (N'')) THEN 0 ELSE NULL END AS ge"
+        }
+      ]
+    },
+    {
+      "name": "019-null",
+      "description": "null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 = (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 = (N'a')) THEN 0 ELSE NULL END AS eq,CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 <> (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 <> (N'a')) THEN 0 ELSE NULL END AS ne,CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 < (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 < (N'a')) THEN 0 ELSE NULL END AS lt,CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 > (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 > (N'a')) THEN 0 ELSE NULL END AS gt,CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 <= (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 <= (N'a')) THEN 0 ELSE NULL END AS le,CASE WHEN (CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 >= (N'a') THEN 1 WHEN NOT ((CAST(NULL AS NVARCHAR(10))) COLLATE Latin1_General_100_BIN2 >= (N'a')) THEN 0 ELSE NULL END AS ge"
+        }
+      ]
+    },
+    {
+      "name": "020-empty",
+      "description": "empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS); INSERT INTO coll_scope VALUES(1,N'a',N'A')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 = (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 = (N' ')) THEN 0 ELSE NULL END AS eq,CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 <> (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 <> (N' ')) THEN 0 ELSE NULL END AS ne,CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 < (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 < (N' ')) THEN 0 ELSE NULL END AS lt,CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 > (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 > (N' ')) THEN 0 ELSE NULL END AS gt,CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 <= (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 <= (N' ')) THEN 0 ELSE NULL END AS le,CASE WHEN (N'') COLLATE Latin1_General_100_BIN2 >= (N' ') THEN 1 WHEN NOT ((N'') COLLATE Latin1_General_100_BIN2 >= (N' ')) THEN 0 ELSE NULL END AS ge"
+        }
+      ]
+    }
+  ]
+}

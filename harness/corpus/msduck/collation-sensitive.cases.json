@@ -1,0 +1,306 @@
+{
+  "source": "msduck/reference/collation-sensitive.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-replace-deferred-property",
+      "description": "replace deferred property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(REPLACE((CASE WHEN id=1 THEN a ELSE b END),N'q',N'z'),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "001-replace-deferred-comparison",
+      "description": "replace deferred comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REPLACE((CASE WHEN id=1 THEN a ELSE b END),N'q',N'z')=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "002-replace-deferred-explicit-property",
+      "description": "replace deferred explicit property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(REPLACE((CASE WHEN id=1 THEN a ELSE b END),N'q',N'z' COLLATE Latin1_General_100_BIN2),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "003-replace-deferred-explicit-comparison",
+      "description": "replace deferred explicit comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REPLACE((CASE WHEN id=1 THEN a ELSE b END),N'q',N'z' COLLATE Latin1_General_100_BIN2)=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "004-stuff-deferred-property",
+      "description": "stuff deferred property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(STUFF((CASE WHEN id=1 THEN a ELSE b END),1,1,N'z'),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "005-stuff-deferred-comparison",
+      "description": "stuff deferred comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN STUFF((CASE WHEN id=1 THEN a ELSE b END),1,1,N'z')=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "006-nullif-deferred-property",
+      "description": "nullif deferred property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(NULLIF((CASE WHEN id=1 THEN a ELSE b END),N'z'),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "007-nullif-deferred-comparison",
+      "description": "nullif deferred comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN NULLIF((CASE WHEN id=1 THEN a ELSE b END),N'z')=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "008-nullif-explicit-right-property",
+      "description": "nullif explicit right property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(NULLIF(a,b COLLATE Latin1_General_100_BIN2),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "009-nullif-explicit-right-comparison",
+      "description": "nullif explicit right comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN NULLIF(a,b COLLATE Latin1_General_100_BIN2)=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "010-nullif-explicit-left-property",
+      "description": "nullif explicit left property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(NULLIF(a COLLATE Latin1_General_100_BIN2,b),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "011-nullif-explicit-left-comparison",
+      "description": "nullif explicit left comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN NULLIF(a COLLATE Latin1_General_100_BIN2,b)=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "012-replace-implicit-repaired-third-property",
+      "description": "replace implicit repaired third property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(REPLACE(a,b,N'z' COLLATE Latin1_General_100_BIN2),'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "013-replace-implicit-repaired-third-comparison",
+      "description": "replace implicit repaired third comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REPLACE(a,b,N'z' COLLATE Latin1_General_100_BIN2)=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "014-replace-nested-outer-repair-property",
+      "description": "replace nested outer repair property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(REPLACE(a,b,N'z') COLLATE Latin1_General_100_BIN2,'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "015-replace-nested-outer-repair-comparison",
+      "description": "replace nested outer repair comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REPLACE(a,b,N'z') COLLATE Latin1_General_100_BIN2=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "016-stuff-nested-outer-repair-property",
+      "description": "stuff nested outer repair property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(STUFF(a,1,1,b) COLLATE Latin1_General_100_BIN2,'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "017-stuff-nested-outer-repair-comparison",
+      "description": "stuff nested outer repair comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN STUFF(a,1,1,b) COLLATE Latin1_General_100_BIN2=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "018-nullif-nested-outer-repair-property",
+      "description": "nullif nested outer repair property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(NVARCHAR(128),SQL_VARIANT_PROPERTY(NULLIF(a,b) COLLATE Latin1_General_100_BIN2,'Collation')) AS c FROM coll_scope"
+        }
+      ]
+    },
+    {
+      "name": "019-nullif-nested-outer-repair-comparison",
+      "description": "nullif nested outer repair comparison",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE coll_scope(id INT,a NVARCHAR(10) COLLATE Latin1_General_100_CI_AS,b NVARCHAR(10) COLLATE Latin1_General_100_CS_AS,c NVARCHAR(10) COLLATE Latin1_General_100_BIN2); INSERT INTO coll_scope VALUES(1,N'a',N'A',N'a')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN NULLIF(a,b) COLLATE Latin1_General_100_BIN2=N'A' COLLATE Latin1_General_100_CS_AS THEN 1 ELSE 0 END AS n FROM coll_scope"
+        }
+      ]
+    }
+  ]
+}

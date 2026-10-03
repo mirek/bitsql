@@ -1,0 +1,166 @@
+{
+  "source": "msduck/reference/at-time-zone-names.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-canonical-utc",
+      "description": "canonical UTC",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'UTC' AS value"}]
+    },
+    {
+      "name": "001-lowercase-utc",
+      "description": "lowercase UTC",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'utc' AS value"}]
+    },
+    {
+      "name": "002-mixed-case-utc",
+      "description": "mixed-case UTC",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'uTc' AS value"}]
+    },
+    {
+      "name": "003-canonical-pacific",
+      "description": "canonical Pacific",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'Pacific Standard Time' AS value"}]
+    },
+    {
+      "name": "004-lowercase-pacific",
+      "description": "lowercase Pacific",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'pacific standard time' AS value"}]
+    },
+    {
+      "name": "005-uppercase-pacific",
+      "description": "uppercase Pacific",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'PACIFIC STANDARD TIME' AS value"}]
+    },
+    {
+      "name": "006-leading-space",
+      "description": "leading space",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N' UTC' AS value"}]
+    },
+    {
+      "name": "007-trailing-space",
+      "description": "trailing space",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'UTC ' AS value"}]
+    },
+    {
+      "name": "008-both-spaces",
+      "description": "both spaces",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N' UTC ' AS value"}]
+    },
+    {
+      "name": "009-empty-name",
+      "description": "empty name",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'' AS value"}]
+    },
+    {
+      "name": "010-unknown-name",
+      "description": "unknown name",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'Not A Time Zone' AS value"}]
+    },
+    {
+      "name": "011-iana-utc-alias",
+      "description": "IANA UTC alias",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'Etc/UTC' AS value"}]
+    },
+    {
+      "name": "012-iana-zurich-alias",
+      "description": "IANA Zurich alias",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'Europe/Zurich' AS value"}]
+    },
+    {
+      "name": "013-gmt-alias",
+      "description": "GMT alias",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'GMT' AS value"}]
+    },
+    {
+      "name": "014-fullwidth-utc",
+      "description": "fullwidth UTC",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'ＵＴＣ' AS value"}]
+    },
+    {
+      "name": "015-combining-accent",
+      "description": "combining accent",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE N'ÚTC' AS value"}]
+    },
+    {
+      "name": "016-embedded-nul",
+      "description": "embedded NUL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'UT'+NCHAR(0)+N'C' AS NVARCHAR(128)) AS value,DATALENGTH(CAST(N'UT'+NCHAR(0)+N'C' AS NVARCHAR(128))) AS input_bytes,CONVERT(VARBINARY(300),CAST(N'UT'+NCHAR(0)+N'C' AS NVARCHAR(128))) AS input_raw"
+        }
+      ]
+    },
+    {
+      "name": "017-leading-nul",
+      "description": "leading NUL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(NCHAR(0)+N'UTC' AS NVARCHAR(128)) AS value,DATALENGTH(CAST(NCHAR(0)+N'UTC' AS NVARCHAR(128))) AS input_bytes,CONVERT(VARBINARY(300),CAST(NCHAR(0)+N'UTC' AS NVARCHAR(128))) AS input_raw"
+        }
+      ]
+    },
+    {
+      "name": "018-trailing-nul",
+      "description": "trailing NUL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'UTC'+NCHAR(0) AS NVARCHAR(128)) AS value,DATALENGTH(CAST(N'UTC'+NCHAR(0) AS NVARCHAR(128))) AS input_bytes,CONVERT(VARBINARY(300),CAST(N'UTC'+NCHAR(0) AS NVARCHAR(128))) AS input_raw"
+        }
+      ]
+    },
+    {
+      "name": "019-nul-before-suffix",
+      "description": "NUL before suffix",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'UTC'+NCHAR(0)+N'garbage' AS NVARCHAR(128)) AS value,DATALENGTH(CAST(N'UTC'+NCHAR(0)+N'garbage' AS NVARCHAR(128))) AS input_bytes,CONVERT(VARBINARY(300),CAST(N'UTC'+NCHAR(0)+N'garbage' AS NVARCHAR(128))) AS input_raw"
+        }
+      ]
+    },
+    {
+      "name": "020-tab-within-name",
+      "description": "tab within name",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'UT'+NCHAR(9)+N'C' AS NVARCHAR(128)) AS value"
+        }
+      ]
+    },
+    {
+      "name": "021-dynamic-lowercase",
+      "description": "dynamic lowercase",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'utc' AS NVARCHAR(128)) AS value"
+        }
+      ]
+    },
+    {
+      "name": "022-dynamic-trailing-space",
+      "description": "dynamic trailing space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(N'UTC ' AS NVARCHAR(128)) AS value"
+        }
+      ]
+    },
+    {
+      "name": "023-dynamic-null",
+      "description": "dynamic NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2024-07-01T12:34:56.1234567' AS DATETIME2(7)) AT TIME ZONE CAST(NULL AS NVARCHAR(128)) AS value,DATALENGTH(CAST(NULL AS NVARCHAR(128))) AS input_bytes,CONVERT(VARBINARY(300),CAST(NULL AS NVARCHAR(128))) AS input_raw"
+        }
+      ]
+    }
+  ]
+}

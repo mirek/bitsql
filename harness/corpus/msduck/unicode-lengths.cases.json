@@ -1,0 +1,54 @@
+{
+  "source": "msduck/reference/unicode-lengths.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"batch","sql":"SELECT LEN(LEFT(N'🦆xy',1)) AS l,DATALENGTH(LEFT(N'🦆xy',1)) AS d,LEN(RIGHT(N'x🦆',1)) AS r"}]
+    },
+    {
+      "name": "001",
+      "steps": [{"kind":"batch","sql":"SELECT LEN(CAST(LEFT(N'🦆xy',1) AS NCHAR(3))) AS l,DATALENGTH(CAST(LEFT(N'🦆xy',1) AS NCHAR(3))) AS d"}]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LEN(LEFT(CAST(N'🦆 ' AS NVARCHAR(MAX)),3)) AS l,DATALENGTH(LEFT(CAST(N'🦆 ' AS NVARCHAR(MAX)),3)) AS d"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LEN(LEFT(N'',1)) AS l,DATALENGTH(LEFT(CAST(NULL AS NVARCHAR(3)),1)) AS d,LEN(LEFT(CAST(NULL AS NVARCHAR(3)),1)) AS n"
+        }
+      ]
+    },
+    {"name":"004","steps":[{"kind":"batch","sql":"WITH u AS (SELECT LEFT(N'🦆xy',1) AS s) SELECT LEN(s) AS l,DATALENGTH(s) AS d FROM u"}]},
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LEFT(N'🦆xy',1) AS s INTO dbo.unicode_lengths; SELECT LEN(s) AS l,DATALENGTH(s) AS d FROM dbo.unicode_lengths; DROP TABLE dbo.unicode_lengths"
+        }
+      ]
+    },
+    {"name":"006","steps":[{"kind":"batch","sql":"SELECT LEN(LEFT(N'a '+NCHAR(9),3)) AS l,LEN(LEFT(N'a  ',3)) AS spaces"}]},
+    {"name":"007","steps":[{"kind":"batch","sql":"SELECT LEN(LEFT(N'🦆xy',2)) AS l,DATALENGTH(LEFT(N'🦆xy',2)) AS d"}]},
+    {"name":"008","steps":[{"kind":"batch","sql":"SELECT LEN('abc') AS a,LEN(N'abc') AS n,LEN(NULL) AS z,LEN(123) AS i"}]},
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LEN(LEFT(CASE WHEN n IS NULL THEN CAST(NULL AS NVARCHAR(3)) ELSE N'🦆 ' END,3)) AS l,DATALENGTH(LEFT(CASE WHEN n IS NULL THEN CAST(NULL AS NVARCHAR(3)) ELSE N'🦆 ' END,3)) AS d FROM (VALUES(1),(NULL)) v(n)"
+        }
+      ]
+    }
+  ]
+}

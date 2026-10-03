@@ -1,0 +1,38 @@
+{
+  "source": "msduck/reference/replicate-metadata.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLICATE('abcd',0) AS a,REPLICATE(N'ab',0) AS n,REPLICATE(N'ab',-1) AS neg,REPLICATE(N'',0) AS empty,REPLICATE(CAST(N'x' AS NVARCHAR(MAX)),0) AS m"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLICATE('x',1+2) AS arithmetic,REPLICATE('x',CAST(3 AS INT)) AS converted,REPLICATE('x',+3) AS plus"
+        }
+      ]
+    },
+    {"name":"002","steps":[{"kind":"batch","sql":"DECLARE @s VARCHAR(10)='x'; SELECT REPLICATE(@s,3) AS declared"}]},
+    {
+      "name": "003",
+      "steps": [{"kind":"batch","sql":"SELECT DATALENGTH(REPLICATE('xx',2147483647)) AS large, DATALENGTH(REPLICATE(N'🦆',2147483647)) AS n"}]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATALENGTH(REPLICATE('abc',2667)) AS a,RIGHT(REPLICATE('abc',2667),5) AS tail,DATALENGTH(REPLICATE(N'abc',1334)) AS n,RIGHT(REPLICATE(N'abc',1334),5) AS ntail"
+        }
+      ]
+    }
+  ]
+}

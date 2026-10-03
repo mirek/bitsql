@@ -1,0 +1,172 @@
+{
+  "source": "msduck/reference/character-concat.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-char-plus-char",
+      "description": "CHAR plus CHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS CHAR(2))+CAST('b' AS CHAR(3)) AS n"}]
+    },
+    {
+      "name": "001-char-plus-varchar",
+      "description": "CHAR plus VARCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS CHAR(2))+CAST('b' AS VARCHAR(3)) AS n"}]
+    },
+    {
+      "name": "002-char-plus-nchar",
+      "description": "CHAR plus NCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS CHAR(2))+CAST('b' AS NCHAR(3)) AS n"}]
+    },
+    {
+      "name": "003-char-plus-nvarchar",
+      "description": "CHAR plus NVARCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS CHAR(2))+CAST('b' AS NVARCHAR(3)) AS n"}]
+    },
+    {
+      "name": "004-varchar-plus-char",
+      "description": "VARCHAR plus CHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(2))+CAST('b' AS CHAR(3)) AS n"}]
+    },
+    {
+      "name": "005-varchar-plus-varchar",
+      "description": "VARCHAR plus VARCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(2))+CAST('b' AS VARCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "006-varchar-plus-nchar",
+      "description": "VARCHAR plus NCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(2))+CAST('b' AS NCHAR(3)) AS n"}]
+    },
+    {
+      "name": "007-varchar-plus-nvarchar",
+      "description": "VARCHAR plus NVARCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(2))+CAST('b' AS NVARCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "008-nchar-plus-char",
+      "description": "NCHAR plus CHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS NCHAR(2))+CAST('b' AS CHAR(3)) AS n"}]
+    },
+    {
+      "name": "009-nchar-plus-varchar",
+      "description": "NCHAR plus VARCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS NCHAR(2))+CAST('b' AS VARCHAR(3)) AS n"}]
+    },
+    {
+      "name": "010-nchar-plus-nchar",
+      "description": "NCHAR plus NCHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS NCHAR(2))+CAST('b' AS NCHAR(3)) AS n"}]
+    },
+    {
+      "name": "011-nchar-plus-nvarchar",
+      "description": "NCHAR plus NVARCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NCHAR(2))+CAST('b' AS NVARCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "012-nvarchar-plus-char",
+      "description": "NVARCHAR plus CHAR",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(2))+CAST('b' AS CHAR(3)) AS n"}]
+    },
+    {
+      "name": "013-nvarchar-plus-varchar",
+      "description": "NVARCHAR plus VARCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(2))+CAST('b' AS VARCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "014-nvarchar-plus-nchar",
+      "description": "NVARCHAR plus NCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(2))+CAST('b' AS NCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "015-nvarchar-plus-nvarchar",
+      "description": "NVARCHAR plus NVARCHAR",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(2))+CAST('b' AS NVARCHAR(3)) AS n"}
+      ]
+    },
+    {
+      "name": "016-ansi-cap",
+      "description": "ANSI cap",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(6000))+CAST('b' AS VARCHAR(6000)) AS n"}
+      ]
+    },
+    {
+      "name": "017-unicode-cap",
+      "description": "Unicode cap",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(3000))+CAST('b' AS NVARCHAR(3000)) AS n"}
+      ]
+    },
+    {
+      "name": "018-unicode-mixed-cap",
+      "description": "Unicode mixed cap",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(3000))+CAST('b' AS VARCHAR(6000)) AS n"}
+      ]
+    },
+    {
+      "name": "019-ansi-max",
+      "description": "ANSI MAX",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(MAX))+CAST('b' AS VARCHAR(10)) AS n"}
+      ]
+    },
+    {
+      "name": "020-unicode-max",
+      "description": "Unicode MAX",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS NVARCHAR(MAX))+CAST('b' AS VARCHAR(10)) AS n"}
+      ]
+    },
+    {
+      "name": "021-ansi-max-unicode",
+      "description": "ANSI MAX Unicode",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CAST('a' AS VARCHAR(MAX))+CAST('b' AS NVARCHAR(10)) AS n"}
+      ]
+    },
+    {
+      "name": "022-null-literal",
+      "description": "null literal",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT N'a'+NULL AS n"}]
+    },
+    {
+      "name": "023-typed-null",
+      "description": "typed null",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT N'a'+CAST(NULL AS NVARCHAR(4)) AS n"}]
+    },
+    {
+      "name": "024-raw-unicode-unit",
+      "description": "raw Unicode unit",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT LEFT(N'🦆',1)+N'x' AS n"}]
+    },
+    {
+      "name": "025-raw-joined-pair",
+      "description": "raw joined pair",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT LEFT(N'🦆',1)+RIGHT(N'🦆',1) AS n"}]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "source": "msduck/reference/catch-return-rpc.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"rpc","sql":"BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH PRINT 'before'; RETURN; END CATCH"}]},
+    {
+      "name": "001",
+      "steps": [{"kind":"rpc","sql":"BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH SELECT 1 AS before_return; RETURN; END CATCH"}]
+    },
+    {"name":"002","steps":[{"kind":"rpc","sql":"BEGIN TRY THROW 50003,'x',1; END TRY BEGIN CATCH RETURN; END CATCH"}]},
+    {"name":"003","steps":[{"kind":"rpc","sql":"BEGIN TRY RAISERROR('x',16,1); END TRY BEGIN CATCH RETURN 7; END CATCH"}]}
+  ]
+}

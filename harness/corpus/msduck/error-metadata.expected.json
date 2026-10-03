@@ -1,0 +1,95 @@
+{
+  "source": "msduck/reference/error-metadata.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "9d0cc1f36d039936",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"d","type":"DecimalN","length":17,"precision":13,"scale":8,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"s","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[8134,1]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "58faa163a5cc0d55",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"before_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[1]]
+            },
+            {"columns":[{"name":"d","type":"DecimalN","length":17,"precision":13,"scale":8,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [{"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[2]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 2
+        }
+      ]
+    },
+    "002": {
+      "case": "f03b62e867ac6a90",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"a","type":"DecimalN","length":17,"precision":38,"scale":6,"flags":1,"collation":null}],"rows":[]},
+            {"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[8115]]}
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003": {
+      "case": "9ae4c7809baf1a59",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"d","type":"DecimalN","length":17,"precision":13,"scale":8,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": 8134,
+          "rowCount": 0
+        }
+      ]
+    }
+  }
+}

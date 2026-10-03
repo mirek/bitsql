@@ -1,0 +1,1266 @@
+{
+  "source": "msduck/reference/unicode-collation.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61002000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61000900 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x6100a000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61000b20 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x610000006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0xe100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "012",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe900 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x65000103 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "013",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xdf00 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x73007300 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "014",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe600 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x61006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "015",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x5301 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x6f006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "016",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3001 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x6900 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "017",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3101 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x4900 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "018",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xa303 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0xc203 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "019",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x21ff AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "020",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xab30 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x4b30 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "021",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "022",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x00e0 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "023",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x3ed887dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "025",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed82000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "026",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x3fd8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "027",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x87dd AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "028",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xfdff AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "029",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x0200 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "030",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x0900 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "031",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x1f00 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "032",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x2100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "033",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x610020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "034",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_BIN2 AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "035",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "036",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61002000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "037",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "038",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61000900 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "039",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61000000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "040",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "041",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x6100a000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "042",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61000b20 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "043",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x0000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "044",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "045",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x610000006200 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61006200 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "046",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0xe100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "047",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe900 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x65000103 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "048",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xdf00 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x73007300 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "049",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe600 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x61006500 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "050",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x5301 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x6f006500 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "051",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3001 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x6900 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "052",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3101 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x4900 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "053",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xa303 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0xc203 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "054",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x21ff AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "055",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xab30 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x4b30 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "056",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x86dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "057",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x00e0 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "058",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x3ed887dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "059",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "060",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed82000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "061",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x3fd8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "062",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x86dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x87dd AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "063",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xfdff AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "064",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x0200 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "065",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x0900 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "066",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x1f00 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "067",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x2100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "068",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020002100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x610020002100 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "069",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020000000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE SQL_Latin1_General_CP1_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "070",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "071",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61002000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "072",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "073",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61000900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "074",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "075",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "076",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x6100a000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "077",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61000b20 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "078",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "079",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "080",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x610000006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "081",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0xe100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "082",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x65000103 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "083",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xdf00 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x73007300 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "084",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe600 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x61006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "085",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x5301 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x6f006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "086",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3001 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x6900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "087",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3101 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x4900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "088",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xa303 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0xc203 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "089",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x21ff AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "090",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xab30 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x4b30 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "091",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "092",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x00e0 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "093",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x3ed887dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "094",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "095",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed82000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "096",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x3fd8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "097",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x87dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "098",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xfdff AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "099",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x0200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x0900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "101",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x1f00 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "102",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x2100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "103",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x610020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "104",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CI_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "105",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "106",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61002000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "107",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "108",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61000900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "109",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "110",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "111",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x6100a000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "112",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61000b20 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "113",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "114",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x2000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "115",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x610000006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61006200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "116",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0xe100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "117",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x65000103 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "118",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xdf00 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x73007300 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "119",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xe600 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x61006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "120",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x5301 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x6f006500 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "121",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3001 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x6900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "122",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3101 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x4900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "123",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xa303 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0xc203 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "124",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x21ff AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x4100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "125",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xab30 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x4b30 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "126",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x00e0 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x3ed887dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "129",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x3ed886dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "130",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed82000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "131",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x3fd8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "132",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x86dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x87dd AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "133",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0xfdff AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x3ed8 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "134",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x0100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x0200 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "135",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x0900 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "136",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x1f00 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "137",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x2100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "138",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x610020002100 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    },
+    {
+      "name": "139",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN l=r THEN 0 WHEN l<r THEN -1 WHEN l>r THEN 1 ELSE NULL END AS ordering FROM (SELECT CAST(0x6100200020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS l,CAST(0x610020000000 AS NVARCHAR(100)) COLLATE Latin1_General_100_CS_AS AS r) p"
+        }
+      ]
+    }
+  ]
+}

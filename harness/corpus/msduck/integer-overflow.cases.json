@@ -1,0 +1,50 @@
+{
+  "source": "msduck/reference/integer-overflow.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000-add-int",
+      "description": "add int",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT 2147483647+1 AS n"}]
+    },
+    {
+      "name": "001-subtract-int",
+      "description": "subtract int",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST(-2147483648 AS INT)-1 AS n"}]
+    },
+    {
+      "name": "002-multiply-int",
+      "description": "multiply int",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT 2147483647*2 AS n"}]
+    },
+    {
+      "name": "003-add-bigint",
+      "description": "add bigint",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CAST(9223372036854775807 AS BIGINT)+1 AS n"}]
+    },
+    {
+      "name": "004-case-overflow",
+      "description": "case overflow",
+      "steps": [{"kind":"batch","sql":"SELECT 1","compare":false},{"kind":"batch","sql":"SELECT CASE WHEN 2147483647+1=0 THEN 7 ELSE NULL END AS n"}]
+    },
+    {
+      "name": "005-case-overflow-continuation",
+      "description": "case overflow continuation",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {"kind":"batch","sql":"SELECT CASE WHEN 2147483647+1=0 THEN 7 ELSE NULL END AS n; SELECT 9 AS alive"}
+      ]
+    },
+    {
+      "name": "006-case-overflow-catch",
+      "description": "case overflow catch",
+      "steps": [
+        {"kind":"batch","sql":"SELECT 1","compare":false},
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT CASE WHEN 2147483647+1=0 THEN 7 ELSE NULL END AS n; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_MESSAGE() AS m; END CATCH"
+        }
+      ]
+    }
+  ]
+}

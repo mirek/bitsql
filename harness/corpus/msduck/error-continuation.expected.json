@@ -1,0 +1,263 @@
+{
+  "source": "msduck/reference/error-continuation.json",
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+    "version": "17.0.4065.4"
+  },
+  "cases": {
+    "000": {
+      "case": "9db61c0b24fc751f",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[8134,0,42]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "001": {
+      "case": "e023850550301a21",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"DecimalN","length":17,"precision":13,"scale":8,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[8134,0,42]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "002": {
+      "case": "828a8c0e6210bfb5",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"DecimalN","length":17,"precision":38,"scale":6,"flags":1,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[8115,0,42]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type numeric."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "003": {
+      "case": "c1c8639883fd1892",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[8115,0,42]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [
+            {
+              "number": 8115,
+              "state": 2,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Arithmetic overflow error converting expression to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "004": {
+      "case": "7deab686e5e63743",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 245,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Conversion failed when converting the varchar value 'bad' to data type int."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "005": {
+      "case": "60a2b4267726d6ff",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 13609,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "JSON text is not properly formatted. Unexpected character 'b' is found at position 0."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "006": {
+      "case": "60fff167b3625295",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"last_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"affected","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+                {"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [[50000,0,42]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "errors": [{"number":50000,"state":1,"class":16,"lineNumber":1,"message":"test"}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "007": {
+      "case": "26af3db43d50f207",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":51000,"state":1,"class":16,"lineNumber":1,"message":"test"}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    },
+    "008": {
+      "case": "90b143694e46805b",
+      "steps": [
+        {
+          "sets": [
+            {"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+            {"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}],"rows":[[1],[2]]}
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":2,"more":true},
+            {"kind":"done","rowCount":null,"more":false}
+          ],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 4
+        }
+      ]
+    },
+    "009": {
+      "case": "075060f4fc4bbf97",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"first_error","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": []
+            },
+            {
+              "columns": [{"name":"second_error","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": []
+            },
+            {
+              "columns": [{"name":"after_error","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[42]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":false}
+          ],
+          "errors": [
+            {"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."},
+            {"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}
+          ],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 1
+        }
+      ]
+    },
+    "010": {
+      "case": "86be12cdeeb29339",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"bad","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+          "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+          "info": [],
+          "returnStatus": null,
+          "rowCount": 0
+        }
+      ]
+    }
+  }
+}

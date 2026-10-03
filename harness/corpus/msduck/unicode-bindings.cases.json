@@ -1,0 +1,34 @@
+{
+  "source": "msduck/reference/unicode-bindings.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [{"kind":"batch","sql":"DECLARE @s NVARCHAR(3)=LEFT(N'🦆xy',1); SELECT @s AS s,LEN(@s) AS l,DATALENGTH(@s) AS d"}]
+    },
+    {
+      "name": "001",
+      "steps": [{"kind":"batch","sql":"DECLARE @s NVARCHAR(1)=N'x'; SET @s=RIGHT(N'x🦆',1); SELECT @s AS s,LEFT(@s,1) AS nested"}]
+    },
+    {"name":"002","steps":[{"kind":"batch","sql":"DECLARE @s NCHAR(3)=LEFT(N'🦆xy',1); SELECT @s AS s,LEN(@s) AS l,DATALENGTH(@s) AS d"}]},
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s NVARCHAR(3)=LEFT(N'🦆xy',1),@t NVARCHAR(2); SET @t=@s; SELECT @t AS t,CAST(@t AS VARCHAR(2)) AS a"
+        }
+      ]
+    },
+    {"name":"004","steps":[{"kind":"batch","sql":"DECLARE @s NVARCHAR(2)=LEFT(N'🦆xy',2); SET @s=LEFT(@s,1); SELECT @s AS s"}]},
+    {
+      "name": "005",
+      "steps": [{"kind":"batch","sql":"DECLARE @s NVARCHAR(3); SELECT @s=LEFT(N'🦆xy',1); SELECT @s AS s; SET @s=NULL; SELECT @s AS n"}]
+    },
+    {"name":"006","steps":[{"kind":"batch","sql":"DECLARE @s VARCHAR(2)=LEFT(N'🦆xy',2); SELECT @s AS s"}]},
+    {
+      "name": "007",
+      "steps": [{"kind":"batch","sql":"DECLARE @s NVARCHAR(MAX)=LEFT(N'🦆xy',1); SELECT @s AS s,LEN(@s) AS l,DATALENGTH(@s) AS d"}]
+    }
+  ]
+}

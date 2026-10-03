@@ -1,0 +1,174 @@
+{
+  "source": "msduck/reference/output-sinks.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref OUTPUT inserted.id,inserted.n INTO output_sink(a,b) VALUES(30,3,N'tri'); SELECT @@ROWCOUNT AS affected"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref OUTPUT inserted.n,inserted.id INTO output_sink(b,a) VALUES(30,3,N'tri'); SELECT @@ROWCOUNT AS affected"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref OUTPUT inserted.id INTO output_sink(a) VALUES(30,3,N'tri'); SELECT @@ROWCOUNT AS affected"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO output_ref OUTPUT inserted.id INTO output_sink(a) SELECT 30,3,N'tri' WHERE 1=0; SELECT @@ROWCOUNT AS affected"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"INSERT INTO output_ref OUTPUT inserted.id INTO output_sink(missing) VALUES(30,3,N'tri')"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"INSERT INTO output_ref OUTPUT inserted.id,inserted.n INTO output_sink(a) VALUES(30,3,N'tri')"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"INSERT INTO output_ref OUTPUT inserted.id INTO missing_sink(a) VALUES(30,3,N'tri')"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY INSERT INTO output_ref OUTPUT inserted.n,inserted.id INTO output_sink(a,b) VALUES(30,NULL,N'tri'); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS error; END CATCH"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE output_sink ADD CONSTRAINT ck_output_sink CHECK(a>0); INSERT INTO output_ref OUTPUT inserted.id INTO output_sink(a) VALUES(30,3,N'tri')"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "009",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE output_sink ADD CONSTRAINT uq_output_sink UNIQUE(a); INSERT INTO output_ref OUTPUT inserted.id INTO output_sink(a) VALUES(30,3,N'tri')"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE output_ref SET n=n+1 OUTPUT inserted.id,inserted.n INTO output_sink(a,b); SELECT @@ROWCOUNT AS affected"
+        },
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    },
+    {
+      "name": "011",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT OFF; CREATE TABLE output_ref(id INT NOT NULL PRIMARY KEY,n INT NULL,t NVARCHAR(4) NULL); INSERT INTO output_ref VALUES(10,1,N'one'),(20,2,N'two'); CREATE TABLE output_sink(a INT NOT NULL,b INT NULL DEFAULT 99)",
+          "compare": false
+        },
+        {"kind":"batch","sql":"DELETE FROM output_ref OUTPUT deleted.id,deleted.n INTO output_sink(a,b); SELECT @@ROWCOUNT AS affected"},
+        {"kind":"batch","sql":"SELECT id,n,t FROM output_ref ORDER BY id; SELECT a,b FROM output_sink ORDER BY a,b"}
+      ]
+    }
+  ]
+}

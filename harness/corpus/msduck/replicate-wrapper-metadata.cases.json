@@ -1,0 +1,9 @@
+{
+  "source": "msduck/reference/replicate-wrapper-metadata.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"batch","sql":"SELECT DATALENGTH('abc') AS s,DATALENGTH(NULL) AS n,DATALENGTH(1) AS i"}]},
+    {"name":"001","steps":[{"kind":"batch","sql":"SELECT DATALENGTH(x) AS n FROM (VALUES(CAST('x' AS VARCHAR(3)))) v(x)"}]},
+    {"name":"002","steps":[{"kind":"batch","sql":"SELECT REPLICATE('',3) AS a,REPLICATE(N'',3) AS n"}]}
+  ]
+}

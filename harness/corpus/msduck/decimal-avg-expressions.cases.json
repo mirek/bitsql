@@ -1,0 +1,78 @@
+{
+  "source": "msduck/reference/decimal-avg-expressions.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {
+      "name": "000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(AVG(d)) OVER() AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d) GROUP BY g"
+        }
+      ]
+    },
+    {
+      "name": "001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(SUM(d)) OVER() AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d) GROUP BY g"
+        }
+      ]
+    },
+    {
+      "name": "002",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "WITH q AS (SELECT AVG(d) AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d) GROUP BY g) SELECT AVG(a) AS a FROM q"
+        }
+      ]
+    },
+    {
+      "name": "003",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(d+CAST(0 AS DECIMAL(5,2))) AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d)"
+        }
+      ]
+    },
+    {
+      "name": "004",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(COALESCE(d,CAST(0 AS DECIMAL(5,2)))) AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d)"
+        }
+      ]
+    },
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(CASE WHEN g=1 THEN d ELSE CAST(0 AS DECIMAL(5,2)) END) AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d)"
+        }
+      ]
+    },
+    {
+      "name": "006",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(a) AS a FROM (SELECT AVG(d) AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d) GROUP BY g) q"
+        }
+      ]
+    },
+    {
+      "name": "007",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT AVG(MIN(d)) OVER() AS a FROM (VALUES(1,CAST(1 AS DECIMAL(5,2))),(1,CAST(0 AS DECIMAL(5,2))),(2,CAST(1 AS DECIMAL(5,2)))) t(g,d) GROUP BY g"
+        }
+      ]
+    }
+  ]
+}

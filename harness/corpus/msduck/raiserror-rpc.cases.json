@@ -1,0 +1,32 @@
+{
+  "source": "msduck/reference/raiserror-rpc.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',0,7)"}]},
+    {"name":"001","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',9,7) WITH SETERROR; SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"002","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',16,7)"}]},
+    {"name":"003","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',16,7); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {"name":"004","steps":[{"kind":"rpc","sql":"RAISERROR(N'%q',16,7,1); SELECT @@ERROR AS e, @@ROWCOUNT AS r"}]},
+    {
+      "name": "005",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "BEGIN TRY RAISERROR(N'%q',16,7,1); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n, ERROR_SEVERITY() AS c, ERROR_STATE() AS s, ERROR_MESSAGE() AS m; END CATCH"
+        }
+      ]
+    },
+    {"name":"006","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',19,7); SELECT @@ERROR AS e"}]},
+    {"name":"007","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',16,7) WITH LOG; SELECT @@ERROR AS e"}]},
+    {
+      "name": "008",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "BEGIN TRY RAISERROR(N'message',9,7) WITH SETERROR; SELECT @@ERROR AS e; END TRY BEGIN CATCH SELECT 999 AS unexpected; END CATCH"
+        }
+      ]
+    },
+    {"name":"009","steps":[{"kind":"rpc","sql":"RAISERROR(N'message',16,7); RETURN 42"}]}
+  ]
+}
