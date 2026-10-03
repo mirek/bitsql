@@ -73,3 +73,20 @@ scripts/check.sh                 # everything CI runs; must be green to push
   the build, but keep the tree warning-free.
 - 2026-10-03: building moonbitlang/async on Linux prints a C warning
   (`ignoring return value of 'write'` in thread_pool.c). Harmless and upstream.
+- 2026-10-03: deprecated in moonc v0.10.14: `derive(Show)` (use `derive(Debug)`
+  + `debug_inspect`, or `@debug.to_string(x)` for messages); `try?` (tests:
+  `try f() catch { e => ... } noraise { _ => fail("...") }`); `@buffer.new()` /
+  `StringBuilder::new()` (use `Buffer()` / `StringBuilder()`);
+  `Int64::to_uint64` (use `reinterpret_as_uint64`); `Double::to_float` (use
+  `Float::from_double`); `Int::reinterpret_as_float` (use
+  `Float::reinterpret_from_int`); `StringView::to_string` (use `to_owned`).
+- 2026-10-03: `{}` as an empty Map is ambiguous (warning 0082): write `Map([])`.
+- 2026-10-03: warning 0079 `implicit_impl_as_method` fires on any `derive` of a
+  pub type; disabled module-wide in `moon.mod` (`warnings = "-implicit_impl_as_method"`).
+- 2026-10-03: a `pub struct` cannot have a field of a `priv` type (error 4046).
+  Make the outer struct abstract (plain `struct`) instead. Raising a variant of
+  another package's error requires that error to be `pub(all) suberror`.
+- 2026-10-03: `"\{x:?}"` debug interpolation does not exist; use
+  `\{@debug.to_string(x)}` (import `moonbitlang/core/debug`).
+- 2026-10-03: test-only imports in `moon.pkg`: `import { "pkg" } for "test"`.
+- 2026-10-03: `Int::to_string(radix=16)` for hex; there is no `to_hex`.

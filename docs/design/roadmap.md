@@ -28,14 +28,16 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 ## Phase 2: TDS and the core boundary
 
-- [ ] Packet framing (reassembly across reads, split by negotiated size, EOM)
-- [ ] PRELOGIN request decode / response encode (`ENCRYPT_NOT_SUP`)
-- [ ] LOGIN7 decode; LOGINACK, ENVCHANGE (database, packet size, collation), INFO, DONE
-- [ ] SQLBatch decode (ALL_HEADERS, UTF-16LE text)
-- [ ] Token encoders: COLMETADATA, ROW/NBCROW, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE
-- [ ] RPC decode: proc id / name, params with TYPE_INFO (sp_executesql, sp_prepexec)
-- [ ] ATTENTION
-- [ ] Engine::handle + native host (TcpServer, queue, timers, event log, replay)
+- [x] Packet framing (reassembly across reads, split by negotiated size, EOM)
+- [x] PRELOGIN request decode / response encode (`ENCRYPT_NOT_SUP`)
+- [x] LOGIN7 decode; LOGINACK, ENVCHANGE (database, packet size, collation), INFO, DONE
+- [x] SQLBatch decode (ALL_HEADERS, UTF-16LE text)
+- [~] Token encoders: COLMETADATA, ROW, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE done; NBCROW, ORDER (0xA9) missing
+- [x] RPC decode: proc id / name, params with TYPE_INFO and values (incl. PLP); dispatch of sp_executesql/sp_prepexec is in session work
+- [~] ATTENTION: acknowledged as a separate DONE_ATTN message; real cancellation needs time-sliced execution
+- [~] Engine::handle + native host (TcpServer, queue, `--listen`, `listening on` contract) done; timers, event log, replay missing
+- [x] tedious 20.3.3 connects (encrypt:false), login SET batch accepted; other SQL → `Emulator:` error via stub executor
+- [ ] Replace stub executor with parser + executor for `SELECT <literals>` and sp_executesql
 - Gate: `tedious` runs `SELECT 1` and a parameterized `sp_executesql`, identical to MSSQL in the harness.
 
 ## Phase 3: parser coverage, DDL and catalog

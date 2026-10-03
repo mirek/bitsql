@@ -1,14 +1,341 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "mirek/bitsql/core/tds"
 
+import {
+  "moonbitlang/core/buffer",
+  "moonbitlang/core/debug",
+}
+
 // Values
+pub const CMD_CONDITIONAL : Int = 0xC0
+
+pub const CMD_DELETE : Int = 0xC4
+
+pub const CMD_EXECUTE : Int = 0xE0
+
+pub const CMD_INSERT : Int = 0xC3
+
+pub const CMD_SELECT : Int = 0xC1
+
+pub const CMD_UPDATE : Int = 0xC5
+
+pub const COL_CASE_SENSITIVE : Int = 0x0002
+
+pub const COL_COMPUTED : Int = 0x0020
+
+pub const COL_IDENTITY : Int = 0x0010
+
+pub const COL_NULLABLE : Int = 0x0001
+
+pub const COL_UPDATEABLE_UNKNOWN : Int = 0x0008
+
+pub const DEFAULT_PACKET_SIZE : Int = 4096
+
+pub const DONE_ATTN : Int = 0x20
+
+pub const DONE_COUNT : Int = 0x10
+
+pub const DONE_ERROR : Int = 0x02
+
+pub const DONE_FINAL : Int = 0x00
+
+pub const DONE_INXACT : Int = 0x04
+
+pub const DONE_MORE : Int = 0x01
+
+pub const DONE_SRVERROR : Int = 0x100
+
+pub const ENCRYPT_NOT_SUP : Int = 0x02
+
+pub const ENCRYPT_OFF : Int = 0x00
+
+pub const ENCRYPT_ON : Int = 0x01
+
+pub const ENCRYPT_REQ : Int = 0x03
+
 pub const HEADER_LEN : Int = 8
 
-pub fn hello() -> Int
+pub const MAX_LEN : Int = 0xFFFF
+
+pub const STATUS_EOM : Int = 0x01
+
+pub const STATUS_IGNORE : Int = 0x02
+
+pub const STATUS_RESET_CONNECTION : Int = 0x08
+
+pub const TDS_74 : Int64 = 0x74000004
+
+pub fn cp1252_decode(BytesView) -> String
+
+pub fn cp1252_encode(String) -> Bytes
+
+pub fn decode_login7(BytesView) -> Login7 raise TdsError
+
+pub fn decode_prelogin(BytesView) -> Prelogin raise TdsError
+
+pub fn decode_rpc(BytesView) -> RpcRequest raise TdsError
+
+pub fn decode_sql_batch(BytesView) -> SqlBatch raise TdsError
+
+pub let default_collation : Bytes
+
+pub fn encode_prelogin_response(version~ : (Int, Int, Int, Int), encryption~ : Int) -> Bytes
+
+pub fn frame(PacketType, BytesView, packet_size? : Int, spid? : Int) -> Bytes
+
+pub fn from_hex(String) -> Bytes
+
+pub fn hex(BytesView) -> String
+
+pub fn negotiate_encryption_without_tls(Int?) -> Int?
+
+pub fn read_all_headers(Reader) -> Headers raise TdsError
+
+pub fn read_type_info(Reader) -> TypeInfo raise TdsError
+
+pub fn read_value(Reader, TypeInfo) -> WireValue raise TdsError
+
+pub fn scramble_password(String) -> Bytes
+
+pub fn write_colmetadata(Writer, ArrayView[Column]) -> Unit
+
+pub fn write_done(Writer, DoneKind, Int, Int, Int64) -> Unit
+
+pub fn write_envchange(Writer, EnvChange) -> Unit
+
+pub fn write_loginack(Writer, tds_version~ : Int64, prog_name~ : String, version~ : (Int, Int, Int, Int)) -> Unit
+
+pub fn write_message(Writer, is_error~ : Bool, number~ : Int, state~ : Int, class~ : Int, message~ : String, server~ : String, procedure~ : String, line~ : Int) -> Unit
+
+pub fn write_return_status(Writer, Int) -> Unit
+
+pub fn write_return_value(Writer, ordinal~ : Int, name~ : String, udf~ : Bool, type_info~ : TypeInfo, value~ : WireValue) -> Unit raise TdsError
+
+pub fn write_row(Writer, ArrayView[Column], ArrayView[WireValue]) -> Unit raise TdsError
+
+pub fn write_type_info(Writer, TypeInfo) -> Unit
+
+pub fn write_value(Writer, TypeInfo, WireValue) -> Unit raise TdsError
 
 // Errors
+pub(all) suberror TdsError {
+  Malformed(String)
+} derive(@debug.Debug)
+pub fn TdsError::message(Self) -> String
 
 // Types and methods
+pub(all) struct Column {
+  name : String
+  type_info : TypeInfo
+  flags : Int
+  user_type : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DoneKind {
+  Done
+  DoneProc
+  DoneInProc
+} derive(Eq, @debug.Debug)
+
+pub(all) enum EnvChange {
+  Database(String, String)
+  Language(String, String)
+  PacketSize(Int, Int)
+  Collation(Bytes, Bytes)
+  BeginTransaction(UInt64)
+  CommitTransaction(UInt64)
+  RollbackTransaction(UInt64)
+  ResetConnectionAck
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Headers {
+  transaction_descriptor : UInt64
+  outstanding_requests : Int64
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Login7 {
+  tds_version : Int64
+  packet_size : Int
+  client_prog_ver : Int64
+  client_pid : Int64
+  connection_id : Int64
+  option_flags1 : Int
+  option_flags2 : Int
+  type_flags : Int
+  option_flags3 : Int
+  client_time_zone : Int
+  client_lcid : Int64
+  host_name : String
+  user_name : String
+  password : String
+  app_name : String
+  server_name : String
+  library_name : String
+  language : String
+  database : String
+  features : Array[(Int, Bytes)]
+} derive(@debug.Debug)
+
+pub(all) struct Message {
+  ty : PacketType
+  status : Int
+  payload : Bytes
+} derive(@debug.Debug)
+
+pub(all) enum PacketType {
+  SqlBatch
+  Rpc
+  TabularResult
+  Attention
+  BulkLoad
+  TransactionManager
+  Login7
+  Sspi
+  Prelogin
+  Other(Int)
+} derive(Eq, @debug.Debug)
+pub fn PacketType::from_byte(Int) -> Self
+pub fn PacketType::to_byte(Self) -> Int
+
+pub(all) struct Prelogin {
+  version : (Int, Int, Int, Int)?
+  encryption : Int?
+  instance : String?
+  thread_id : Int64?
+  mars : Bool?
+  options : Array[(Int, Bytes)]
+} derive(@debug.Debug)
+
+pub(all) enum ProcRef {
+  Name(String)
+  Id(Int)
+} derive(Eq, @debug.Debug)
+pub fn ProcRef::canonical_name(Self) -> String
+
+pub struct Reader {
+  data : BytesView
+  mut pos : Int
+}
+pub fn Reader::at_end(Self) -> Bool
+pub fn Reader::b_varchar(Self) -> String raise TdsError
+pub fn Reader::bytes(Self, Int) -> Bytes raise TdsError
+pub fn Reader::i32le(Self) -> Int raise TdsError
+pub fn Reader::new(BytesView) -> Self
+pub fn Reader::remaining(Self) -> Int
+pub fn Reader::skip(Self, Int) -> Unit raise TdsError
+pub fn Reader::u16be(Self) -> Int raise TdsError
+pub fn Reader::u16le(Self) -> Int raise TdsError
+pub fn Reader::u32be(Self) -> Int64 raise TdsError
+pub fn Reader::u32le(Self) -> Int64 raise TdsError
+pub fn Reader::u64le(Self) -> UInt64 raise TdsError
+pub fn Reader::u8(Self) -> Int raise TdsError
+pub fn Reader::ucs2(Self, Int) -> String raise TdsError
+pub fn Reader::us_varchar(Self) -> String raise TdsError
+
+pub struct Reassembler {
+  pending : @buffer.Buffer
+  body : @buffer.Buffer
+  mut ty : Int
+  mut status : Int
+  max_message : Int
+}
+pub fn Reassembler::new(max_message? : Int) -> Self
+pub fn Reassembler::push(Self, BytesView) -> Array[Message] raise TdsError
+
+pub(all) struct RpcCall {
+  proc : ProcRef
+  option_flags : Int
+  params : Array[RpcParam]
+} derive(@debug.Debug)
+
+pub(all) struct RpcParam {
+  name : String
+  by_ref : Bool
+  default_value : Bool
+  type_info : TypeInfo
+  value : WireValue
+} derive(@debug.Debug)
+
+pub(all) struct RpcRequest {
+  headers : Headers
+  calls : Array[RpcCall]
+} derive(@debug.Debug)
+
+pub(all) struct SqlBatch {
+  headers : Headers
+  text : String
+} derive(@debug.Debug)
+
+pub(all) enum TypeInfo {
+  Int1
+  Bit
+  Int2
+  Int4
+  Int8
+  Float8
+  Float4
+  Money
+  Money4
+  DateTime
+  DateTime4
+  IntN(Int)
+  BitN
+  FloatN(Int)
+  MoneyN(Int)
+  DateTimeN(Int)
+  Guid
+  DecimalN(Int, Int)
+  NumericN(Int, Int)
+  Date
+  Time(Int)
+  DateTime2(Int)
+  DateTimeOffset(Int)
+  BigVarChar(Int, Bytes)
+  BigChar(Int, Bytes)
+  NVarChar(Int, Bytes)
+  NChar(Int, Bytes)
+  BigVarBinary(Int)
+  BigBinary(Int)
+  Null
+} derive(Eq, @debug.Debug)
+pub fn TypeInfo::is_plp(Self) -> Bool
+pub fn TypeInfo::type_byte(Self) -> Int
+
+pub(all) enum WireValue {
+  Null
+  Int(Int64)
+  Float(Double)
+  Money(Int64)
+  Decimal(Bool, Bytes)
+  Text(String)
+  Binary(Bytes)
+  Guid(Bytes)
+  Date(Int)
+  Time(Int64)
+  DateTime2(Int, Int64)
+  DateTimeOffset(Int, Int64, Int)
+  DateTime(Int, Int)
+} derive(Eq, @debug.Debug)
+
+pub struct Writer {
+  buf : @buffer.Buffer
+}
+pub fn Writer::b_varbyte(Self, BytesView) -> Unit
+pub fn Writer::b_varchar(Self, String) -> Unit
+pub fn Writer::bytes(Self, BytesView) -> Unit
+pub fn Writer::i32le(Self, Int) -> Unit
+pub fn Writer::i64le(Self, Int64) -> Unit
+pub fn Writer::length(Self) -> Int
+pub fn Writer::new(size_hint? : Int) -> Self
+pub fn Writer::to_bytes(Self) -> Bytes
+pub fn Writer::u16be(Self, Int) -> Unit
+pub fn Writer::u16le(Self, Int) -> Unit
+pub fn Writer::u32be(Self, Int64) -> Unit
+pub fn Writer::u32le(Self, Int64) -> Unit
+pub fn Writer::u64le(Self, UInt64) -> Unit
+pub fn Writer::u8(Self, Int) -> Unit
+pub fn Writer::ucs2(Self, String) -> Unit
+pub fn Writer::us_varchar(Self, String) -> Unit
 
 // Type aliases
 

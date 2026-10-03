@@ -20,7 +20,18 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
-- _(none yet)_
+- 2026-10-03: tedious 20.3.3 completes login against bitsql with the
+  msduck login order (ENVCHANGE db, INFO 5701, ENVCHANGE collation, ENVCHANGE
+  language, INFO 5703, LOGINACK, ENVCHANGE packet size, DONE) and a PRELOGIN
+  response carrying only VERSION, ENCRYPTION=NOT_SUP and MARS=0. No
+  FEATUREEXTACK needed. Evidence: `src/core/engine/engine_test.mbt`, manual
+  tedious smoke test.
+- 2026-10-03: LOGINACK length is `1 + 4 + 1 + 2*len(progname) + 4`; MS-TDS
+  example 4.4's 0x36 includes two trailing NUL characters in the program name.
+  Don't copy that length.
+- 2026-10-03: DECIMAL row values use the smallest whole 4-byte group count for
+  the magnitude (5/9/13/17 bytes incl. sign) while TYPE_INFO advertises 17
+  (msduck `docs/decimal-wire.md`, captured). Implemented in `write_value`.
 
 
 # TDS Protocol Reference

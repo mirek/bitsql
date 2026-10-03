@@ -14,9 +14,11 @@ done
 echo "== moon test"
 moon test --target native 2>&1 | tail -n 5
 echo "== moon fmt / info drift"
+snapshot() { find src -type f \( -name '*.mbt' -o -name '*.mbti' -o -name 'moon.pkg' \) -print0 | sort -z | xargs -0 sha1sum; }
+before=$(snapshot)
 moon fmt >/dev/null && moon info >/dev/null
-if ! git diff --quiet -- src; then
-  echo "moon fmt / moon info changed files; commit them:"; git diff --stat -- src; exit 1
+if [ "$before" != "$(snapshot)" ]; then
+  echo "moon fmt / moon info rewrote files (now fixed in the tree); review and re-run"; exit 1
 fi
 if [ -d harness/node_modules ] && [ "${SKIP_HARNESS:-0}" != 1 ]; then
   echo "== harness (emulator)"
