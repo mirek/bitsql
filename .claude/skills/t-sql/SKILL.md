@@ -60,6 +60,71 @@ mention the correction here.
   consumed). Bare `TOP n` takes only a numeric literal; UPDATE/DELETE/INSERT
   require `TOP (expr)`. EXEC arguments are restricted to literals, variables,
   DEFAULT, NULL and bare words (passed as strings): `EXEC p 1 + 1` is 102.
+- 2026-10-03 (src/core/types, from msduck captures): **string → integer**
+  trims only ASCII spaces (tab, CR/LF, NBSP, NUL, fullwidth digits fail);
+  a sign may be followed by spaces (`'+ 7'` = 7); `''`, `'   '`, `'+'`, `'-'`
+  are 0. Failures: tinyint/smallint/int → 245 state 1 "Conversion failed
+  when converting the nvarchar value '…' to data type int."; **bigint →
+  8114 state 5 "Error converting data type nvarchar to bigint."** Overflow:
+  tinyint 244/1 "…overflowed an INT1 column. Use a larger integer column.",
+  smallint 244/2 (INT2), int 248/1 "…overflowed an int column.", bigint
+  8115/2. Sources over 4000 UTF-16 units raise 8152 state 10 even in
+  TRY_CAST. Messages use the bare type name for max sources (`nvarchar`),
+  while 529/257/206/8117 print `nvarchar(max)` (reference/unicode-integer.json).
+- 2026-10-03: integer arithmetic: overflow is 8115 **state 2**, `MIN / -1`
+  **and `MIN % -1`** overflow too; `x/0`, `x%0` → 8134 state 1; NULL / 0 is
+  NULL; `/` truncates toward zero, `%` has the dividend's sign
+  (reference/checked-integer.json, integer-overflow.json).
+- 2026-10-03: **decimal division truncates** at the result scale (2/3 as
+  decimal(13,8) = 0.66666666); overflow says "data type numeric" even for
+  DECIMAL operands (8115/2). Integer literals next to a decimal are typed
+  decimal(digits,0) by the binder: `2/2147483649` is numeric(12,11), but
+  `CAST(.. AS DECIMAL(5,2))/CAST(3 AS INT)` is decimal(16,13). NUMERIC with
+  INT stays numeric (reference/decimal-division.json,
+  numeric-arithmetic-context.json, numeric-literal-metadata.json).
+- 2026-10-03: **float → text** (CAST and CONVERT style 0) is `%.6g` with a
+  3-digit exponent (`1e+006`, `9.94922e-044`), computed by first rounding
+  the exact binary value to **17 significant digits**, then half away from
+  zero to 6: 1.2345749999999999779… prints `1.23458`. This matches all 2,170
+  grid values (reference/float-default-grid.json); exact rounding fails 14,
+  15/16-digit intermediates fail more. The float → int overflow message uses
+  the same 17 digits: 232 state 3 "Arithmetic overflow error for type int,
+  value = 1000000000000000000000000000000.000000." for 1e30.
+- 2026-10-03: temporal text (reference/temporal-guid-format.json,
+  us_english): CAST of date/time/datetime2/datetimeoffset is ISO with exactly
+  the declared fraction digits (`2024-03-01 00:00:00.00 +01:30`), but CAST of
+  datetime/smalldatetime and explicit style 0 of every type is `Mon dd yyyy
+  hh:miAM` with space-padded day and hour (`Jan  2 2024  3:04AM`, time alone
+  `11:59PM`, offset appended). Style 121 uses the declared digits (3 for
+  datetime and smalldatetime, `.000` for the latter). String → DATETIME2(0)
+  of `…23:59:59.9999999` rounds into the next day, but → TIME(0) gives
+  `23:59:59` (no wrap). Legacy datetime rounds to 1/300 s (.001→.000,
+  .002→.003, .005→.007, .998→.997, .999→next second); smalldatetime rounds
+  at 30 s *after* that (29.998 down, 29.999 up). Out of range: 242 state 3
+  "The conversion of a varchar data type to a smalldatetime data type
+  resulted in an out-of-range value."; datetimeoffset whose local or UTC
+  instant leaves 0001..9999: 8114 **state 31** "Error converting data type
+  varchar to datetimeoffset.".
+- 2026-10-03: uniqueidentifier: text is uppercase; storage bytes are
+  Data1/2/3 little-endian; ORDER BY compares storage bytes 10–15, then 8–9,
+  6–7, 4–5, 0–3 (reference/guid-conversion-order.json). Text → GUID accepts
+  a canonical 36-char prefix (rest ignored) or `{…}` (rest after `}`
+  ignored); otherwise 8169 state 2.
+- 2026-10-03: linguistic collations on nvarchar (reference/unicode-collation.json):
+  NUL is ignorable, tab/NBSP/ZWSP are not; é = e+U+0301, ß = ss, æ = ae,
+  œ = oe; fullwidth = ASCII and katakana = hiragana even in CS_AS; CS orders
+  lower before upper (Σ > ς); İ > i and ı > I under CI. Version-0 tables
+  (SQL_Latin1_General_CP1_*, Latin1_General_*) treat every surrogate unit
+  and U+FFFD as ignorable; _100 sorts them above the BMP. BIN2 pads the
+  shorter operand with spaces before comparing code units ('a' > 'a'+NUL).
+- 2026-10-03: unverified choices in src/core/types (need captures): states
+  of 8115 for CAST overflows other than string→numeric (8), arithmetic (2);
+  220 "Arithmetic overflow error for data type tinyint, value = 256." for
+  int → tinyint/smallint; float → decimal via 17 digits; datetime2 →
+  datetime rounding (the inherited table above says "truncated"); TIME
+  rounding mid-day; money × / ÷ rounding; binary comparison zero-padding;
+  word-sort ('-' and '\'' ignored at primary level) for Windows collations;
+  styles other than none/0/121 for temporal types.
 
 
 # T-SQL Language Reference

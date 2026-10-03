@@ -57,7 +57,13 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
   Error numbers 102/156/111/319/10713 follow captures where available; trailing statements
   after CREATE VIEW/FUNCTION and the THROW-after-unterminated rule are unverified guesses.
 - [~] Parse differential over the corpus: 1707/1707 batches agree with SQL Server (`npm run parse-diff`); `parsecheck FILE...` ready for the target codebase (needs app repo)
-- [ ] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
+- [~] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
+      (`src/core/types`: values, precedence/result types, CAST/CONVERT, checked arithmetic,
+      comparison and collations, emulator error table. Missing: `harness/corpus/traps` cases
+      for the new type traps and oracle captures for the unverified choices listed in the
+      t-sql skill findings (no MSSQL was run for this work), non-ISO date strings / DATEFORMAT / LANGUAGE, CONVERT styles beyond
+      0/1/2/3-12/20-25/100-112/120/121/126/127, float style 3, decimal ↔ binary, CP1252
+      best-fit, money styles beyond 0/1/2, collations other than Latin1_General/SQL_Latin1)
 - [~] Store: persistent ordered map `PMap` (AVL, explicit comparator, range seeks) done; tables, indexes, catalog objects missing
 - [ ] DDL execution: tables, constraints, indexes, views, procs, triggers, functions
 - [ ] Virtual `sys.*` / `INFORMATION_SCHEMA` views the scripts touch; `OBJECT_ID`, `COL_LENGTH`, …

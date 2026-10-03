@@ -70,7 +70,9 @@ enum Stmt {
 ```
 
 These sketches are the target shape; the real definitions live in
-`src/core/ir` and win when they differ. Update this page when the shape changes
+`src/core/ir` and win when they differ. `SqlType`, `Value`, `Collation` and
+`SqlError` already exist in `src/core/types` (see decisions.md, 2026-10-03:
+value types); `Cmp` carries a `Collation` from there. Update this page when the shape changes
 materially.
 
 ## Semantics record
