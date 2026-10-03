@@ -1,8 +1,9 @@
 -- GROUP BY / HAVING: grouping keys, expressions, NULL groups, HAVING filters,
--- ORDER BY on aggregates, errors for ungrouped columns.
+-- ORDER BY on aggregates, errors for ungrouped columns. (No CI-equal
+-- spellings in one group: the shown spelling is plan-dependent.)
 -- @step setup
 CREATE TABLE gb (id int NOT NULL, g int NULL, h varchar(5) NULL, n int NULL);
-INSERT INTO gb VALUES (1, 1, 'a', 10), (2, 1, 'b', 20), (3, 2, 'a', NULL), (4, NULL, 'b', 5), (5, 2, 'A', 7), (6, NULL, NULL, 1);
+INSERT INTO gb VALUES (1, 1, 'a', 10), (2, 1, 'b', 20), (3, 2, 'a', NULL), (4, NULL, 'b', 5), (5, 2, 'c', 7), (6, NULL, NULL, 1);
 -- @step batch
 SELECT g, COUNT(*) AS c, SUM(n) AS s FROM gb GROUP BY g ORDER BY g;
 -- @step batch

@@ -3,7 +3,7 @@
     "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
     "version": "17.0.5005.3"
   },
-  "case": "f42d6708a3d61852",
+  "case": "03d0e85087de7ff2",
   "steps": [
     null,
     {
@@ -55,23 +55,23 @@
             },
             {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
           ],
-          "rows": [[null,1],["A",3],["b",2]]
+          "rows": [[null,1],["a",2],["b",2],["c",1]]
         }
       ],
-      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "done": [{"kind":"done","rowCount":4,"more":false}],
       "errors": [],
       "info": [],
       "returnStatus": null,
       "outputs": [],
-      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":193}],
       "stream": [
         {"name":"COLMETADATA","columns":2},
         {"name":"ORDER","columns":[1]},
         {"name":"NBCROW","count":1},
-        {"name":"ROW","count":2},
+        {"name":"ROW","count":3},
         {"name":"DONE","status":16,"curCmd":193}
       ],
-      "rowCount": 3
+      "rowCount": 4
     },
     {
       "sets": [
@@ -89,10 +89,10 @@
             },
             {"name":"m","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
           ],
-          "rows": [[null,null,1],[null,"b",5],[1,"a",10],[1,"b",20],[2,"a",7]]
+          "rows": [[null,null,1],[null,"b",5],[1,"a",10],[1,"b",20],[2,"a",null],[2,"c",7]]
         }
       ],
-      "done": [{"kind":"done","rowCount":5,"more":false}],
+      "done": [{"kind":"done","rowCount":6,"more":false}],
       "errors": [],
       "info": [
         {
@@ -105,16 +105,16 @@
       ],
       "returnStatus": null,
       "outputs": [],
-      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":5,"curCmd":193}],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":6,"curCmd":193}],
       "stream": [
         {"name":"COLMETADATA","columns":3},
         {"name":"ORDER","columns":[1,2]},
         {"name":"NBCROW","count":1},
-        {"name":"ROW","count":4},
+        {"name":"ROW","count":5},
         {"name":"INFO","number":8153},
         {"name":"DONE","status":16,"curCmd":193}
       ],
-      "rowCount": 5
+      "rowCount": 6
     },
     {
       "sets": [
@@ -317,7 +317,7 @@
             {"name":"g","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
             {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
           ],
-          "rows": [[1,1],[2,2]]
+          "rows": [[1,1],[2,1]]
         }
       ],
       "done": [{"kind":"done","rowCount":2,"more":false}],

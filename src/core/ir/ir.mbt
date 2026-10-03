@@ -56,6 +56,8 @@ pub(all) enum ExprKind {
   Subquery(Plan)
   Exists(Plan)
   InQuery(Expr, Plan, negated~ : Bool, collation~ : @types.Collation?)
+  /// `x op ALL|ANY (subquery)`; `all` false means ANY/SOME.
+  Quantified(CmpOp, Expr, Plan, all~ : Bool, collation~ : @types.Collation?)
 } derive(Debug)
 
 ///|
@@ -181,6 +183,136 @@ pub(all) enum Plan {
   Limit(Plan, Expr?, Expr?)
   Distinct(Plan, Array[@types.Collation?])
   UnionAll(Array[Plan])
+  /// GROUP BY: output rows are keys ++ aggregate values (++ a BigInt
+  /// grouping id when `sets` is non-empty). `sets` lists the key positions
+  /// active in each grouping set (ROLLUP/CUBE/GROUPING SETS); empty means a
+  /// single set of all keys. Without keys and sets: one row, even for empty
+  /// input (scalar aggregate).
+  Aggregate(Plan, Array[Expr], Array[AggCall], sets~ : Array[Array[Int]])
+  /// Window functions: output rows are the input row ++ one value per call.
+  Window(Plan, Array[WindowCall])
+  /// CROSS/OUTER APPLY: `right` runs once per left row with that row pushed
+  /// as the innermost outer row.
+  Apply(Plan, Plan, outer~ : Bool, right_width~ : Int)
+  /// UNION (distinct), EXCEPT, INTERSECT (distinct semantics).
+  SetOp(SetOpKind, Plan, Plan, Array[@types.Collation?])
+  /// TOP n [PERCENT] [WITH TIES]; `ties` are the ORDER BY keys evaluated on
+  /// the input rows (empty without WITH TIES).
+  Top(Plan, Expr, percent~ : Bool, ties~ : Array[SortKey])
+  /// Recursive CTE: anchor rows, then `recursive` repeatedly with work table
+  /// `id` bound to the previous level's rows. `max` recursion levels
+  /// (0 = unlimited) before error 530.
+  Recursive(id~ : Int, Plan, Plan, max~ : Int)
+  /// Rows of a recursive CTE's current work table.
+  WorkTable(Int)
+  /// Table-valued function rows (OPENJSON, STRING_SPLIT).
+  TableFunc(TableFn, Array[Expr])
+  /// FOR JSON PATH/AUTO: formats the input rows (described by `columns`)
+  /// as one JSON text, returned in rows of 2033 characters.
+  ForJson(
+    Plan,
+    Array[ResultColumn],
+    root~ : String?,
+    include_nulls~ : Bool,
+    without_array_wrapper~ : Bool
+  )
+} derive(Debug)
+
+///|
+pub(all) enum SetOpKind {
+  Union
+  Except
+  Intersect
+} derive(Debug, Eq)
+
+///|
+pub(all) enum AggFn {
+  Count
+  CountBig
+  Sum
+  Avg
+  Min
+  Max
+  StringAgg
+  Stdev
+  StdevP
+  Var
+  VarP
+  /// GROUPING(key): 1 when the key is aggregated away in this grouping set.
+  Grouping(Int)
+  /// GROUPING_ID(keys...)
+  GroupingId(Array[Int])
+} derive(Debug, Eq)
+
+///|
+/// An aggregate call: `arg` is None for COUNT(*); `separator` is
+/// STRING_AGG's; `order` its WITHIN GROUP keys. `ty` is the result type.
+pub(all) struct AggCall {
+  func : AggFn
+  arg : Expr?
+  separator : Expr?
+  distinct : Bool
+  order : Array[SortKey]
+  ty : @types.SqlType
+} derive(Debug)
+
+///|
+pub(all) enum WinFn {
+  RowNumber
+  Rank
+  DenseRank
+  Ntile
+  Lag
+  Lead
+  FirstValue
+  LastValue
+  PercentRank
+  CumeDist
+  Agg(AggFn, distinct~ : Bool)
+} derive(Debug, Eq)
+
+///|
+pub(all) enum FrameBound {
+  UnboundedPreceding
+  Preceding(Expr)
+  CurrentRow
+  Following(Expr)
+  UnboundedFollowing
+} derive(Debug)
+
+///|
+pub(all) struct WindowFrame {
+  rows : Bool
+  start : FrameBound
+  end : FrameBound
+} derive(Debug)
+
+///|
+pub(all) struct WindowCall {
+  func : WinFn
+  args : Array[Expr]
+  partition : Array[Expr]
+  partition_collations : Array[@types.Collation?]
+  order : Array[SortKey]
+  frame : WindowFrame?
+  ty : @types.SqlType
+} derive(Debug)
+
+///|
+pub(all) enum TableFn {
+  /// OPENJSON default schema (key, value, type); args: json [, path].
+  OpenJsonDefault
+  /// OPENJSON WITH schema; args: json [, path].
+  OpenJsonWith(Array[OpenJsonColumn])
+  /// STRING_SPLIT; args: string, separator; `ordinal` adds the column.
+  StringSplit(ordinal~ : Bool)
+} derive(Debug)
+
+///|
+pub(all) struct OpenJsonColumn {
+  path : String
+  as_json : Bool
+  ty : @types.SqlType
 } derive(Debug)
 
 ///|

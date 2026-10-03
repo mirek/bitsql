@@ -109,7 +109,15 @@ pub fn openjson(
   path? : String = "$",
 ) -> Array[OpenJsonRow] raise JsonError {
   let p = parse_path(path, state=22)
-  validate_document(doc, 4)
+  // captured (harness/corpus/query/table-functions, probes): the root must
+  // be an object or array (a scalar fails at its first character) and text
+  // after the root value is ignored
+  let s : Scanner = { text: doc, pos: 0, doc_state: 4, }
+  s.ws()
+  if !(s.peek() is (0x7B | 0x5B)) {
+    raise s.fail()
+  }
+  ignore(s.skip_value(0))
   let hit = match select(doc, p, 4) {
     None =>
       if p.strict {

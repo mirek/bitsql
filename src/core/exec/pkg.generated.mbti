@@ -10,11 +10,15 @@ import {
 // Values
 pub fn eval(Ctx, @ir.Expr) -> @types.Value raise @types.SqlError
 
+pub fn eval_aggregate(Ctx, @ir.AggCall, ArrayView[Array[@types.Value]]) -> @types.Value raise @types.SqlError
+
 pub fn is_true(@types.Value) -> Bool
 
 pub fn like_match(String, String, Int?, Bool) -> Bool
 
 pub fn run(Ctx, @ir.Plan) -> Array[Array[@types.Value]] raise @types.SqlError
+
+pub fn stream(Ctx, @ir.Plan, (Array[@types.Value]) -> Unit raise @types.SqlError) -> Unit raise @types.SqlError
 
 // Errors
 
@@ -27,6 +31,7 @@ pub(all) struct Ctx {
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
   ext : (String, Array[@types.Value]) -> @types.Value?
 }
+pub fn Ctx::push_outer(Self, Array[@types.Value]) -> Self
 pub fn Ctx::with_row(Self, Array[@types.Value]) -> Self
 
 pub(all) struct ErrorInfo {
@@ -51,6 +56,9 @@ pub(all) struct Runtime {
   mut catch_error : ErrorInfo?
   mut now : Int64
   mut rng : UInt64
+  mut null_eliminated : Bool
+  mut count_override : Int64?
+  work : Map[Int, Array[Array[@types.Value]]]
   mut database : String
   spid : Int
   server_name : String

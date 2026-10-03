@@ -114,12 +114,13 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         let mut dup = false
         for seen in out {
           if same_row(seen, row, collations) {
+            prefer_representative(seen, row)
             dup = true
             break
           }
         }
         if !dup {
-          out.push(row)
+          out.push(row.copy())
         }
       }
       out
@@ -131,6 +132,239 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       }
       out
     }
+    Aggregate(input, keys, aggs, sets~) =>
+      run_aggregate(ctx, run(ctx, input), keys, aggs, sets)
+    Window(input, calls) => run_window(ctx, run(ctx, input), calls)
+    Apply(left, right, outer~, right_width~) => {
+      let out = []
+      for l in run(ctx, left) {
+        let rs = run(ctx.push_outer(l), right)
+        if rs.is_empty() {
+          if outer {
+            out.push(l + Array::make(right_width, @types.Value::Null))
+          }
+        } else {
+          for r in rs {
+            out.push(l + r)
+          }
+        }
+      }
+      out
+    }
+    SetOp(kind, left, right, collations) => {
+      let ls = run(ctx, left)
+      let rs = run(ctx, right)
+      let out : Array[Row] = []
+      let contains = (rows : Array[Row], row : Row) => {
+        for x in rows {
+          if same_row(x, row, collations) {
+            return true
+          }
+        }
+        false
+      }
+      let add = (row : Row) => {
+        for x in out {
+          if same_row(x, row, collations) {
+            prefer_representative(x, row)
+            return
+          }
+        }
+        out.push(row.copy())
+      }
+      match kind {
+        Union => {
+          for r in ls {
+            add(r)
+          }
+          for r in rs {
+            add(r)
+          }
+        }
+        Except =>
+          for r in ls {
+            if !contains(rs, r) {
+              add(r)
+            }
+          }
+        Intersect =>
+          for r in ls {
+            if contains(rs, r) {
+              add(r)
+            }
+          }
+      }
+      out
+    }
+    Top(input, count, percent~, ties~) => {
+      let rows = run(ctx, input)
+      top_rows(ctx, rows, count, percent, ties)
+    }
+    Recursive(id~, anchor, recursive, max~) => {
+      let out = []
+      run_recursive(ctx, id, anchor, recursive, max, r => out.push(r))
+      out
+    }
+    WorkTable(id) => ctx.rt.work.get(id).unwrap_or([])
+    TableFunc(f, args) => run_table_fn(ctx, f, args)
+    ForJson(input, columns, root~, include_nulls~, without_array_wrapper~) => {
+      let rows = run(ctx, input)
+      // captured: the DONE count is the number of input rows
+      ctx.rt.count_override = Some(rows.length().to_int64())
+      run_for_json(rows, columns, root, include_nulls, without_array_wrapper)
+    }
+  }
+}
+
+///|
+/// Context for running a subquery or APPLY right side: `row` becomes the
+/// innermost outer row (bind/env.mbt depth numbering).
+pub fn Ctx::push_outer(self : Ctx, row : Row) -> Ctx {
+  { ..self, outer: self.outer + [row], row: [], }
+}
+
+///|
+fn top_rows(
+  ctx : Ctx,
+  rows : Array[Row],
+  count : @ir.Expr,
+  percent : Bool,
+  ties : Array[@ir.SortKey],
+) -> Array[Row] raise @types.SqlError {
+  let n = if percent {
+    let p = match @types.cast(eval(ctx, count), count.ty, Float) {
+      Float(f) => f
+      _ => 0.0
+    }
+    if p < 0.0 || p > 100.0 {
+      raise @types.sql_error(1031, "Percent values must be between 0 and 100.")
+    }
+    (p * rows.length().to_double() / 100.0).ceil().to_int()
+  } else {
+    match eval(ctx, count).as_int64() {
+      Some(c) if c >= 0L =>
+        if c > rows.length().to_int64() {
+          rows.length()
+        } else {
+          c.to_int()
+        }
+      Some(_) =>
+        raise @types.sql_error(
+          1014, "A TOP or FETCH clause contains an invalid value.",
+        )
+      None => 0
+    }
+  }
+  let mut end = if n > rows.length() { rows.length() } else { n }
+  if !ties.is_empty() && end > 0 {
+    let last = ties.map(k => eval(ctx.with_row(rows[end - 1]), k.expr))
+    while end < rows.length() {
+      let next = ties.map(k => eval(ctx.with_row(rows[end]), k.expr))
+      if compare_keys(last, next, ties) != 0 {
+        break
+      }
+      end += 1
+    }
+  }
+  rows[0:end].to_owned()
+}
+
+///|
+/// Recursive CTE: anchor rows, then each level's rows feed the next level
+/// through work table `id`. Rows are emitted as produced (SQL Server streams
+/// them before raising 530).
+fn run_recursive(
+  ctx : Ctx,
+  id : Int,
+  anchor : @ir.Plan,
+  recursive : @ir.Plan,
+  max : Int,
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  let saved = ctx.rt.work.get(id)
+  let mut level = run(ctx, anchor)
+  for r in level {
+    emit(r)
+  }
+  let mut depth = 0
+  while !level.is_empty() {
+    ctx.rt.work.set(id, level)
+    let next = run(ctx, recursive)
+    if next.is_empty() {
+      break
+    }
+    depth += 1
+    if max > 0 && depth > max {
+      match saved {
+        Some(w) => ctx.rt.work.set(id, w)
+        None => ctx.rt.work.remove(id)
+      }
+      raise @types.sql_error(
+        530,
+        "The statement terminated. The maximum recursion \{max} has been exhausted before statement completion.",
+      )
+    }
+    for r in next {
+      emit(r)
+    }
+    level = next
+  }
+  match saved {
+    Some(w) => ctx.rt.work.set(id, w)
+    None => ctx.rt.work.remove(id)
+  }
+}
+
+///|
+/// Runs a plan, handing rows to `emit` as soon as the plan's pipelined
+/// shape allows (projection, filter, union all, recursive CTE, scans). Rows
+/// emitted before a run-time error stay emitted, like SQL Server's streaming
+/// result sets (captured: 530 after 101 rows, 245 in OPENJSON WITH after 1).
+pub fn stream(
+  ctx : Ctx,
+  plan : @ir.Plan,
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  match plan {
+    Project(input, exprs) =>
+      stream(ctx, input, row => {
+        let c = ctx.with_row(row)
+        emit(exprs.map(e => eval(c, e)))
+      })
+    Filter(input, pred) =>
+      stream(ctx, input, row => {
+        if is_true(eval(ctx.with_row(row), pred)) {
+          emit(row)
+        }
+      })
+    UnionAll(parts) =>
+      for p in parts {
+        stream(ctx, p, emit)
+      }
+    Recursive(id~, anchor, recursive, max~) =>
+      run_recursive(ctx, id, anchor, recursive, max, emit)
+    Values(rows) =>
+      for r in rows {
+        emit(r.map(e => eval(ctx, e)))
+      }
+    TableFunc(f, args) => stream_table_fn(ctx, f, args, emit)
+    Apply(left, right, outer~, right_width~) =>
+      stream(ctx, left, l => {
+        let rs = run(ctx.push_outer(l), right)
+        if rs.is_empty() {
+          if outer {
+            emit(l + Array::make(right_width, @types.Value::Null))
+          }
+        } else {
+          for r in rs {
+            emit(l + r)
+          }
+        }
+      })
+    _ =>
+      for r in run(ctx, plan) {
+        emit(r)
+      }
   }
 }
 

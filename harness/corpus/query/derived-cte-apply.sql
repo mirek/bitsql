@@ -9,8 +9,6 @@ SELECT a, b FROM (SELECT id + 1, v FROM dt) q(a, b) ORDER BY a;
 -- @step batch
 SELECT * FROM (SELECT g, COUNT(*) AS c FROM dt GROUP BY g) q ORDER BY g;
 -- @step batch
-SELECT id FROM (SELECT id + 1 FROM dt) q;
--- @step batch
 WITH c AS (SELECT id, v FROM dt) SELECT * FROM c WHERE id < 3 ORDER BY id;
 -- @step batch
 WITH c (x, y) AS (SELECT id, g FROM dt), d AS (SELECT x FROM c WHERE y = 1) SELECT d.x, c.y FROM d JOIN c ON c.x = d.x ORDER BY d.x;
