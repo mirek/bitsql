@@ -26,6 +26,8 @@ pub struct Server {
   locks : @sched.LockManager[LockKey]
   /// Sequence generators by "database:object id" (not transactional).
   priv seqs : Map[String, SeqState]
+  /// SET DEADLOCK_PRIORITY by spid (absent: 0, NORMAL).
+  priorities : Map[Int, Int]
   /// Sessions woken by lock releases (spid), to be re-run by the engine.
   woken : Array[Int]
   /// Parked sessions chosen as deadlock victims.
@@ -45,6 +47,7 @@ priv struct ServerSnapshot {
 
 ///|
 pub fn Server::new() -> Server {
+  let priorities : Map[Int, Int] = Map([])
   let dbs = Map([])
   let names = Map([])
   for n in ["master", "tempdb", "model", "msdb"] {
@@ -60,8 +63,9 @@ pub fn Server::new() -> Server {
     idents: Map([]),
     dbts: 2000L,
     snapshots: Map([]),
-    locks: new_lock_manager(),
+    locks: new_lock_manager(priorities),
     seqs: Map([]),
+    priorities,
     woken: [],
     victims: [],
     udfs: Map([]),
@@ -529,4 +533,13 @@ pub fn Session::set_login(
   self.login = login
   self.host_name = host_name
   self.app_name = app_name
+}
+
+///|
+fn Server::set_priority(self : Server, spid : Int, p : Int) -> Unit {
+  if p == 0 {
+    self.priorities.remove(spid)
+  } else {
+    self.priorities[spid] = p
+  }
 }

@@ -182,12 +182,18 @@ fn day_of_year(days : Int) -> Int {
 }
 
 ///|
-/// DATEPART(week): week 1 contains January 1, weeks start on Sunday
-/// (@@DATEFIRST 7).
-fn week_of_year(days : Int) -> Int {
+/// Position of a day within its week (0-based) when weeks start on
+/// @@DATEFIRST (1 = Monday … 7 = Sunday).
+fn week_position(days : Int, datefirst : Int) -> Int {
+  (weekday_index(days) - datefirst % 7 + 7) % 7
+}
+
+///|
+/// DATEPART(week): week 1 contains January 1, weeks start on @@DATEFIRST.
+fn week_of_year(days : Int, datefirst : Int) -> Int {
   let (y, _, _) = @types.civil_from_days(days)
   let jan1 = @types.days_from_civil(y, 1, 1)
-  (days - jan1 + weekday_index(jan1)) / 7 + 1
+  (days - jan1 + week_position(jan1, datefirst)) / 7 + 1
 }
 
 ///|
@@ -232,6 +238,7 @@ fn date_part(
   name : String,
   v : Array[@types.Value],
   args : Array[@ir.Expr],
+  datefirst : Int,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   if v[1] is Null {
@@ -258,8 +265,8 @@ fn date_part(
     "month" => mo.to_int64()
     "dayofyear" => day_of_year(m.days).to_int64()
     "day" => d.to_int64()
-    "week" => week_of_year(m.days).to_int64()
-    "weekday" => (weekday_index(m.days) + 1).to_int64()
+    "week" => week_of_year(m.days, datefirst).to_int64()
+    "weekday" => (week_position(m.days, datefirst) + 1).to_int64()
     "hour" => m.ns / 3_600_000_000_000L
     "minute" => m.ns / 60_000_000_000L % 60L
     "second" => m.ns / 1_000_000_000L % 60L
@@ -871,6 +878,7 @@ fn datetrunc(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  datefirst : Int,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   if v[1] is Null {
@@ -905,7 +913,7 @@ fn datetrunc(
     "year" => @types.days_from_civil(y, 1, 1)
     "quarter" => @types.days_from_civil(y, (mo - 1) / 3 * 3 + 1, 1)
     "month" => @types.days_from_civil(y, mo, 1)
-    "week" => m.days - weekday_index(m.days)
+    "week" => m.days - week_position(m.days, datefirst)
     "iso_week" => m.days - m.days % 7
     _ => m.days
   }
@@ -944,11 +952,12 @@ fn call_date(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  datefirst~ : Int,
 ) -> @types.Value? raise @types.SqlError {
   let r = match name {
     "DATEADD" => dateadd(v, args, e)
     "DATEDIFF" | "DATEDIFF_BIG" => datediff(name, v, args)
-    "DATEPART" | "DATENAME" => date_part(name, v, args)
+    "DATEPART" | "DATENAME" => date_part(name, v, args, datefirst)
     "EOMONTH" => eomonth(v, args)
     "DATEFROMPARTS"
     | "DATETIMEFROMPARTS"
@@ -958,7 +967,7 @@ fn call_date(
     | "DATETIMEOFFSETFROMPARTS" => from_parts(name, v, e)
     "TODATETIMEOFFSET" | "SWITCHOFFSET" => to_offset(name, v, args, e)
     "ISDATE" => isdate(v[0], args[0].ty)
-    "DATETRUNC" => datetrunc(v, args, e)
+    "DATETRUNC" => datetrunc(v, args, e, datefirst)
     _ => return None
   }
   Some(r)

@@ -39,8 +39,13 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | ALTER TABLE (every action) | 216 | no |
 | RETURN (bare) | 219 | no |
 | RETURN <expr> (in a procedure) | 193 | yes, 1 |
-| SET option (NOCOUNT on/off: 185/186) | 185/186 | no |
-| SET LOCK_TIMEOUT n, SET CONTEXT_INFO x | 249 | no |
+| SET flag option ON / OFF (NOCOUNT, XACT_ABORT, ANSI_*, ARITHABORT, IMPLICIT_TRANSACTIONS, NOEXEC, FMTONLY, …) | 185 / 186 | no |
+| SET QUOTED_IDENTIFIER | none (no DONE of its own) | |
+| SET STATISTICS IO/TIME | 188 | no |
+| SET ROWCOUNT n | 189 | no |
+| SET TEXTSIZE n | 190 | no |
+| SET TRANSACTION ISOLATION LEVEL, DATEFIRST, DATEFORMAT, LANGUAGE (+ ENVCHANGE language, INFO 5703), LOCK_TIMEOUT, DEADLOCK_PRIORITY, CONTEXT_INFO | 249 | no |
+| SET IDENTITY_INSERT t ON / OFF | 183 / 184 | no |
 | WAITFOR DELAY/TIME | 243 | no |
 | RAISERROR / THROW (caught) | 246 | no |
 | PRINT | 247 | no |

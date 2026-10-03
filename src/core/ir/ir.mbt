@@ -102,6 +102,7 @@ pub(all) enum Global {
   DbTs
   ProcId
   CursorRows
+  LockTimeout
 } derive(Debug, Eq)
 
 ///|

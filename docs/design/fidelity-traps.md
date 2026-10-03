@@ -72,3 +72,5 @@ real system message). Keep the allocation table in
 | `AT TIME ZONE` on a datetimeoffset | `tz_offset_at` (types/timezone.mbt) | A local time leaving 0001..9999 is not an error: SQL Server clamps to the min/max UTC value at +00:00; local (datetime2) input that overflows is 9813 | timezone/at-time-zone#038-dto-clamp-min |
 | `AT TIME ZONE` near a new year | annual rule evaluation | SQL Server picks the rule year from the standard-time clock and compares the daylight clock without its year: real one-hour offset blips (Central Brazilian 1904-01-01 03:00 UTC); an IANA/tz model is wrong here | scripts/gen-timezones.py window checks |
 | `sys.time_zone_info` | rows at the request clock | "current" reads the server's local clock as a wall time per zone, not the UTC instant: it lags `SYSUTCDATETIME() AT TIME ZONE` around DST changes | timezone/at-time-zone#063-catalog-consistent-with-at-time-zone |
+| SET options | `Session::set_options` | Ignoring a SET silently is a false green: ANSI_NULLS OFF, IMPLICIT_TRANSACTIONS ON, ROWCOUNT n, DATEFORMAT dmy, QUOTED_IDENTIFIER OFF all change results. bitsql applies what it models and raises 50100 for the rest |
+

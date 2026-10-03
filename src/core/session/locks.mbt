@@ -26,8 +26,12 @@ fn lock_key_cmp(a : LockKey, b : LockKey) -> Int {
 }
 
 ///|
-pub fn new_lock_manager() -> @sched.LockManager[LockKey] {
-  @sched.LockManager::new(lock_key_cmp)
+/// The deadlock victim is the session with the lowest DEADLOCK_PRIORITY
+/// (the manager picks the lowest cost; ties: longest waiter).
+fn new_lock_manager(priorities : Map[Int, Int]) -> @sched.LockManager[LockKey] {
+  @sched.LockManager::new(lock_key_cmp, cost=s => {
+    priorities.get(s).unwrap_or(0).to_int64()
+  })
 }
 
 ///|

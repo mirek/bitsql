@@ -391,6 +391,7 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
     "@@SPID" => mk(Global(Spid), SmallInt, false)
     "@@DATEFIRST" => mk(Global(DateFirst), TinyInt, true)
     "@@TEXTSIZE" => int_(TextSize)
+    "@@LOCK_TIMEOUT" => int_(LockTimeout)
     "@@MAX_PRECISION" => mk(Global(MaxPrecision), TinyInt, false)
     "@@PROCID" => int_(ProcId)
     "@@CURSOR_ROWS" => int_(CursorRows)

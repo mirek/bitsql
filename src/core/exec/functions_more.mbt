@@ -9,7 +9,7 @@ fn call_more(
   args : Array[@ir.Expr],
   e : @ir.Expr,
 ) -> @types.Value raise @types.SqlError {
-  if call_date(name, v, args, e) is Some(r) {
+  if call_date(name, v, args, e, datefirst=ctx.rt.datefirst) is Some(r) {
     return r
   }
   if call_string(name, v, args, e) is Some(r) {

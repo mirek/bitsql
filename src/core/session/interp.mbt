@@ -241,63 +241,15 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.rt.rowcount = 1
       self.done(193, count=Some(1L))
     }
-    SetOption(names, value) => {
-      let on = value is On
-      for n in names {
-        match n.to_upper() {
-          "NOCOUNT" => self.nocount = on
-          "XACT_ABORT" => self.xact_abort = on
-          "CONTEXT_INFO" =>
-            match value {
-              ValueExpr(e) => {
-                let (v, ty) = self.eval(e)
-                let bytes = match @types.cast(v, ty, VarBinary(Some(128))) {
-                  Binary(b) => b
-                  _ => b""
-                }
-                // padded with zeros to 128 bytes (captured: misc/session-context)
-                self.context_info = Some(
-                  Bytes::makei(128, i => {
-                    if i < bytes.length() {
-                      bytes[i]
-                    } else {
-                      b'\x00'
-                    }
-                  }),
-                )
-              }
-              _ => ()
-            }
-          "LOCK_TIMEOUT" =>
-            match value {
-              ValueExpr(e) => {
-                let (v, ty) = self.eval(e)
-                self.lock_timeout = match @types.cast(v, ty, Int) {
-                  Int(n) => n
-                  _ => -1
-                }
-              }
-              _ => ()
-            }
-          _ => ()
-        }
+    SetOption(names, value) =>
+      match self.set_options(names, value, s.span.line) {
+        Some(cmd) => self.done(cmd)
+        None => self.schema_ddl = true // no DONE (batch-final DONE if alone)
       }
-      // captured: SET LOCK_TIMEOUT completes with 249 (locking/lock-timeout)
-      self.done(
-        if names
-          .iter()
-          .any(n => n.to_upper() is ("LOCK_TIMEOUT" | "CONTEXT_INFO")) {
-          249
-        } else if value is Off {
-          186
-        } else {
-          185
-        },
-      )
-    }
     SetIsolation(level) => {
       self.isolation = level.to_upper()
-      self.done(185)
+      // captured: CurCmd 249 (corpus set/each)
+      self.done(249)
     }
     Print(e) => {
       self.cur_cmd = 247
@@ -487,7 +439,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
           } else if self.identity_insert == Some(t.id) {
             self.identity_insert = None
           }
-          self.done(if on { 185 } else { 186 })
+          // captured: 183 / 184 (corpus set/each)
+          self.done(if on { 183 } else { 184 })
         }
         None =>
           raise @types.sql_error(

@@ -97,10 +97,11 @@ test "prelogin, login and batch flow" {
   let r3 = sent(
     e.handle(ev(Received(1, @tds.frame(SqlBatch, batch.to_bytes())))),
   )
-  // each SET completes with its own DONE (cmd 185), the last one final
+  // each SET completes with its own DONE (TEXTSIZE 190, ANSI_NULLS ON 185;
+  // captured: corpus set/each), the last one final
   assert_eq(
     @tds.hex(r3[0].payload),
-    "fd 01 00 b9 00 00 00 00 00 00 00 00 00 fd 00 00 b9 00 00 00 00 00 00 00 00 00",
+    "fd 01 00 be 00 00 00 00 00 00 00 00 00 fd 00 00 b9 00 00 00 00 00 00 00 00 00",
   )
 }
 

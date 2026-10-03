@@ -78,7 +78,7 @@ test "ISNUMERIC text rules" {
 test "calendar helpers" {
   // 2024-12-29 is a Sunday in week 53, ISO week 52
   let d = @types.days_from_civil(2024, 12, 29)
-  inspect(week_of_year(d), content="53")
+  inspect(week_of_year(d, 7), content="53")
   inspect(iso_week(d), content="52")
   inspect(weekday_index(d), content="0")
   let jan31 = @types.days_from_civil(2024, 1, 31)

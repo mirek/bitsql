@@ -19,8 +19,6 @@ pub fn column_flags(@ir.ResultColumn) -> Int
 
 pub fn format_raiserror(String, Array[@types.Value]) -> String raise @types.SqlError
 
-pub fn new_lock_manager() -> @sched.LockManager[LockKey]
-
 pub fn param_type(@tds.TypeInfo) -> @types.SqlType
 
 pub fn param_value(@types.SqlType, @tds.WireValue) -> @types.Value
@@ -53,6 +51,7 @@ pub struct Server {
   idents : Map[Int, Int64]
   mut dbts : Int64
   locks : @sched.LockManager[LockKey]
+  priorities : Map[Int, Int]
   woken : Array[Int]
   victims : Array[Int]
   // private fields
@@ -107,6 +106,7 @@ pub fn Session::close(Self) -> Unit
 pub fn Session::is_parked(Self) -> Bool
 pub fn Session::make_victim(Self) -> Unit
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
+pub fn Session::reset(Self) -> Array[@reply.Item]
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]

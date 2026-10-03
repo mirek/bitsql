@@ -23,6 +23,8 @@ struct Engine {
   /// Requests waiting for locks, by connection id (decisions.md: request
   /// restart). Re-run when their session is woken.
   parked : Map[Int, Parked]
+  /// RESETCONNECTION tokens to send before a connection's next response.
+  reset_prefix : Map[Int, Bytes]
 }
 
 ///|
@@ -39,7 +41,15 @@ pub fn Engine::new(config : Config, seed : Int64) -> Engine {
   for name in config.databases {
     server.create_database(name)
   }
-  { config, seed, conns: Map([]), server, sessions: Map([]), parked: Map([]), }
+  {
+    config,
+    seed,
+    conns: Map([]),
+    server,
+    sessions: Map([]),
+    parked: Map([]),
+    reset_prefix: Map([]),
+  }
 }
 
 ///|
@@ -105,7 +115,14 @@ fn Engine::send(
   payload : Bytes,
   out : Array[Output],
 ) -> Unit {
-  ignore(self)
+  // tokens of a RESETCONNECTION go first (once, even if the request parked)
+  let payload = match self.reset_prefix.get(conn.id) {
+    Some(prefix) => {
+      self.reset_prefix.remove(conn.id)
+      prefix + payload
+    }
+    None => payload
+  }
   out.push(
     Send(
       conn.id,
@@ -205,6 +222,25 @@ fn Engine::on_message(
         login.app_name,
       )
       self.send(conn, self.login_response(db, conn.packet_size), out)
+    }
+    (LoggedIn, SqlBatch | Rpc | TransactionManager) if (
+        msg.status & @tds.STATUS_RESET_CONNECTION
+      ) !=
+      0 &&
+      !self.reset_prefix.contains(conn.id) &&
+      !self.parked.contains(conn.id) => {
+      let items = self.sessions[conn.id].reset()
+      self.reset_prefix[conn.id] = @reply.render(
+        Batch,
+        items,
+        self.config.server_name,
+      )
+      self.on_message(
+        conn,
+        { ..msg, status: msg.status & (0xFF ^ @tds.STATUS_RESET_CONNECTION), },
+        now,
+        out,
+      )
     }
     (LoggedIn, SqlBatch) => {
       if (msg.status & @tds.STATUS_IGNORE) != 0 {

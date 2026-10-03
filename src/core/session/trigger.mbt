@@ -162,6 +162,7 @@ fn Session::run_triggers(
   }
   let nocount = self.nocount
   let xact_abort = self.xact_abort
+  let option_bits = self.rt.option_bits
   let scope_identity = self.rt.scope_identity
   let rowcount = self.rt.rowcount
   let cur_cmd = self.cur_cmd
@@ -177,6 +178,7 @@ fn Session::run_triggers(
     }
     self.nocount = nocount
     self.xact_abort = xact_abort
+    self.rt.option_bits = option_bits
     self.rt.scope_identity = scope_identity
     self.rt.rowcount = rowcount
     self.cur_cmd = cur_cmd
@@ -209,6 +211,7 @@ fn Session::run_triggers(
     self.triggers.pop() |> ignore
     self.tvars = self.tvars.drop_object(ins).drop_object(del)
     self.nocount = nocount
+    self.rt.option_bits = option_bits
     match failure {
       Some(e) => {
         finish()

@@ -16,6 +16,7 @@ priv struct RequestSnapshot {
   database : String
   nocount : Bool
   xact_abort : Bool
+  option_bits : Int
   identity_insert : Int?
   dbts : Int64
 }
@@ -56,6 +57,7 @@ fn Session::snapshot_request(self : Session) -> RequestSnapshot {
     database: self.rt.database,
     nocount: self.nocount,
     xact_abort: self.xact_abort,
+    option_bits: self.rt.option_bits,
     identity_insert: self.identity_insert,
     dbts: self.server.dbts,
   }
@@ -84,6 +86,7 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
   self.rt.database = s.database
   self.nocount = s.nocount
   self.xact_abort = s.xact_abort
+  self.rt.option_bits = s.option_bits
   self.identity_insert = s.identity_insert
   self.server.dbts = s.dbts
   self.out.clear()
@@ -178,4 +181,41 @@ pub fn Session::time_out(self : Session) -> Unit {
   }
   self.waiting = None
   self.fail_next_wait = Some(1222)
+}
+
+///|
+/// RESETCONNECTION (TDS header status 0x08, tedious `connection.reset()`):
+/// roll back an open transaction, then reset session state before the
+/// request runs. Returns the ENVCHANGE items that precede the request's
+/// response: rollback (if any), then RESETACK (captured with tedious reset
+/// against SQL Server 17.0.5005.3).
+pub fn Session::reset(self : Session) -> Array[@reply.Item] {
+  let items : Array[@reply.Item] = []
+  if self.rt.trancount > 0 {
+    let d = self.tx_descriptor()
+    self.rollback_tx()
+    self.rt.trancount = 0
+    self.rt.xact_state = 0
+    items.push(EnvChange(RollbackTransaction(d)))
+  }
+  items.push(EnvChange(ResetConnectionAck))
+  // temp tables, cursors, SET options, context info, session-owned locks
+  self.temp = @store.Db::empty()
+  self.tvars = @store.Db::empty()
+  self.cursors.clear()
+  self.nocount = false
+  self.xact_abort = false
+  self.identity_insert = None
+  self.isolation = "READ COMMITTED"
+  self.lock_timeout = -1
+  self.rt.lock_timeout = -1
+  self.rt.datefirst = 7
+  self.rt.option_bits = 0
+  self.server.set_priority(self.rt.spid, 0)
+  self.context_info = None
+  self.applocks.clear()
+  self.server.wake_all(self.server.locks.release_session(self.rt.spid))
+  self.rt.error = 0
+  self.rt.rowcount = 0
+  items
 }
