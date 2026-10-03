@@ -126,3 +126,69 @@ fn Session::sp_helpindex(self : Session, name : String) -> Int {
   self.out.push(InProcDone(cmd=193, count=None, error=false))
   0
 }
+
+///|
+/// sp_set_session_context @key, @value [, @read_only] (captured:
+/// misc/session-context): RETURNSTATUS + DONEPROC; changing a read-only key
+/// is 15664.
+fn Session::exec_set_session_context(
+  self : Session,
+  args : Array[@ast.ExecArg],
+  return_var : String?,
+) -> Unit raise {
+  let order = ["@key", "@value", "@read_only"]
+  let vals : Map[String, (@types.Value, @types.SqlType)] = Map([])
+  for i, a in args {
+    let k = match a.name {
+      Some(n) => n.to_lower()
+      None => if i < order.length() { order[i] } else { "" }
+    }
+    vals[k] = self.eval(a.value)
+  }
+  let key = match vals.get("@key") {
+    Some((String(s), _)) => s
+    _ => ""
+  }
+  let read_only = match vals.get("@read_only") {
+    Some((v, _)) => v.as_int64().unwrap_or(0L) != 0L
+    None => false
+  }
+  let mut status = 0
+  match self.session_context.get(key) {
+    Some((_, true)) => {
+      self.out.push(
+        Message({
+          number: 15664,
+          state: 1,
+          class: 16,
+          message: "Cannot set key '\{key}' in the session context. The key has been set as read_only for this session.",
+          procedure: "sp_set_session_context",
+          line: 1,
+        }),
+      )
+      self.rt.error = 15664
+      status = 1
+    }
+    _ =>
+      match vals.get("@value") {
+        Some((Null, _)) | None => self.session_context.remove(key)
+        Some((Variant(_, _) as v, _)) =>
+          self.session_context[key] = (v, read_only)
+        Some((v, ty)) => self.session_context[key] = (Variant(v, ty), read_only)
+      }
+  }
+  match return_var {
+    Some(rv) =>
+      match self.frame().vars.get(rv.to_lower()) {
+        Some(info) =>
+          self.frame().values[info.slot] = @types.cast(
+            Int(status),
+            Int,
+            info.ty,
+          )
+        None => ()
+      }
+    None => ()
+  }
+  self.proc_done(status)
+}

@@ -436,6 +436,11 @@ fn bind_variant_fn(
       arity_n(name, args, 1)
       named(name, [text_arg(0, varchar)], Variant)
     }
+    // captured: sql_variant, nullable (misc/session-context)
+    "SESSION_CONTEXT" => {
+      arity_n(name, args, 1)
+      named(name, [text_arg(0, NVarChar(Some(128), env.collation))], Variant)
+    }
     "DATABASEPROPERTYEX" => {
       arity_n(name, args, 2)
       named(

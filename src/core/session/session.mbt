@@ -225,6 +225,8 @@ pub struct Session {
   /// @@ERROR to record for the failing statement instead of the error's
   /// number (RAISERROR format errors leave 50000).
   mut error_override : Int?
+  /// sp_set_session_context: key → (sql_variant value, read only).
+  priv session_context : Map[String, (@types.Value, Bool)]
   /// SET CONTEXT_INFO (always 128 bytes once set).
   mut context_info : Bytes?
   /// LOGIN7 login, host and application names.
@@ -308,6 +310,7 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    session_context: Map([]),
     error_override: None,
     context_info: None,
     waits_seen: 0,

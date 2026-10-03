@@ -213,6 +213,7 @@ pub fn Session::reset(self : Session) -> Array[@reply.Item] {
   self.rt.option_bits = 0
   self.server.set_priority(self.rt.spid, 0)
   self.context_info = None
+  self.session_context.clear()
   self.applocks.clear()
   self.server.wake_all(self.server.locks.release_session(self.rt.spid))
   self.rt.error = 0

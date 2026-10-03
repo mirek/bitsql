@@ -73,6 +73,15 @@ fn Session::security_fn(
     "APP_NAME" => String(self.app_name)
     "HOST_NAME" => String(self.host_name)
     "HOST_ID" => return None
+    "SESSION_CONTEXT" =>
+      match text(0) {
+        Some(k) =>
+          match self.session_context.get(k) {
+            Some((v, _)) => v
+            None => Null
+          }
+        None => Null
+      }
     "CONTEXT_INFO" =>
       match self.context_info {
         Some(b) => Binary(b)

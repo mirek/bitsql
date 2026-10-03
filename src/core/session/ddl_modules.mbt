@@ -321,6 +321,10 @@ fn Session::exec_system_proc(
   return_var : String?,
 ) -> Bool raise {
   match name.base().to_lower() {
+    "sp_set_session_context" => {
+      self.exec_set_session_context(args, return_var)
+      true
+    }
     "sp_helpindex" => {
       self.exec_sp_helpindex(args, return_var)
       true
