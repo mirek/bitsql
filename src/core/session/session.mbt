@@ -233,6 +233,8 @@ pub struct Session {
   mut error_override : Int?
   /// sp_set_session_context: key → (sql_variant value, read only).
   priv session_context : Map[String, (@types.Value, Bool)]
+  /// Binder errors reported before the statement's error (Env.deferred).
+  deferred : Array[@types.SqlError]
   /// SET CONTEXT_INFO (always 128 bytes once set).
   mut context_info : Bytes?
   /// LOGIN7 client library (client_interface_name) and login time.
@@ -319,6 +321,7 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    deferred: [],
     library: "",
     login_time: 0L,
     session_context: Map([]),
@@ -359,7 +362,11 @@ fn Session::frame(self : Session) -> Frame {
 
 ///|
 fn Session::env(self : Session) -> @bind.Env {
-  @bind.Env::new(self.frame().vars, catalog=self.catalog())
+  @bind.Env::new(
+    self.frame().vars,
+    catalog=self.catalog(),
+    deferred=self.deferred,
+  )
 }
 
 ///|

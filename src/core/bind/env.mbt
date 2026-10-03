@@ -110,6 +110,10 @@ pub(all) struct Env {
   /// varbinary(8000) (visible in sql_variant base types; captured:
   /// variant/insert-values.sql). Set by the session for INSERT/UPDATE.
   literal_params : Bool
+  /// Errors SQL Server reports together with a later one in the same
+  /// statement (8155 then 207); shared by all copies of the Env, owned by
+  /// the session, which prints them before the statement's error.
+  deferred : Array[@types.SqlError]
 }
 
 ///|
@@ -129,6 +133,7 @@ pub fn Env::new(
   vars : Map[String, VarInfo],
   collation? : @types.Collation = @types.default_collation,
   catalog? : Catalog = Catalog::empty(),
+  deferred? : Array[@types.SqlError] = [],
 ) -> Env {
   {
     vars,
@@ -142,6 +147,7 @@ pub fn Env::new(
     nest: 0,
     from_plan: None,
     literal_params: false,
+    deferred,
   }
 }
 

@@ -20,6 +20,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.uncatchable = false
   self.throwing = false
   self.stmt_error = 0
+  self.deferred.clear()
   self.refresh_tx()
   let snap_temp = self.temp
   let snap_tvars = self.tvars
@@ -32,6 +33,11 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let snap_database = self.rt.database
   let failure = try {
     self.exec_stmt(s)
+    // a deferred binder error no later error reported (bound outside
+    // bind_query): still an error
+    if !self.deferred.is_empty() {
+      raise self.deferred.remove(0)
+    }
     None
   } catch {
     @types.SqlError(..) as e => Some(e)
@@ -113,6 +119,10 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     ignore(self.terminated(e))
   }
   self.flush_pending(line)
+  for d in self.deferred {
+    self.message(d, line)
+  }
+  self.deferred.clear()
   self.message(e, line)
   // a deadlock victim's transaction is rolled back after the error
   // (captured order: ERROR, ENVCHANGE; locking/deadlock-two-tables)

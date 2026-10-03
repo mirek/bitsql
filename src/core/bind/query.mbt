@@ -91,6 +91,7 @@ fn derived_columns(
   alias_ : String,
   qualifier : String,
   names : Array[@ast.Ident],
+  deferred? : Array[@types.SqlError]? = None,
 ) -> Array[ColumnRef] raise @types.SqlError {
   let n = bq.columns.length()
   if !names.is_empty() && names.length() < n {
@@ -109,11 +110,17 @@ fn derived_columns(
   for i, c in bq.columns {
     let name = if names.is_empty() { c.name } else { names[i].name }
     if name == "" {
-      raise err(
+      let e = err(
         8155,
         "No column name was specified for column \{i + 1} of '\{alias_}'.",
         state=2,
       )
+      // a derived table goes on binding; a later error is reported after
+      // this one (captured: query/derived-unnamed-column)
+      match deferred {
+        Some(list) => list.push(e)
+        None => raise e
+      }
     }
     for o in out {
       if o.name.to_lower() == name.to_lower() {
@@ -333,7 +340,16 @@ fn bind_table_ref(
         Some(a) => a.name
         None => ""
       }
-      (bq.plan, derived_columns(bq, a, a.to_lower(), columns))
+      (
+        bq.plan,
+        derived_columns(
+          bq,
+          a,
+          a.to_lower(),
+          columns,
+          deferred=Some(env.deferred),
+        ),
+      )
     }
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
       bind_table_function(env, name, args, openjson_with, alias_, columns)
@@ -1624,6 +1640,10 @@ pub fn bind_query(
   match q.for_clause {
     None => {
       let bq = bind_query_inner(env, q, top_level=true)
+      // deferred errors with no later error: the first one is the error
+      if !env.deferred.is_empty() {
+        raise env.deferred.remove(0)
+      }
       // INSERT ... SELECT converts to the target columns instead (probe)
       if result_columns {
         check_result_collations(bq)

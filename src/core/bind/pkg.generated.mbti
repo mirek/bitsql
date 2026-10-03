@@ -75,8 +75,9 @@ pub(all) struct Env {
   nest : Int
   from_plan : @ir.Plan?
   literal_params : Bool
+  deferred : Array[@types.SqlError]
 }
-pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
+pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog, deferred? : Array[@types.SqlError]) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
 
 pub(all) struct TableBinding {
