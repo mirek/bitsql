@@ -38,7 +38,7 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
       match self.find_table_var(name) {
         Some(t) =>
           {
-            scope: 1,
+            scope: 3,
             table: t,
             display: name,
             qualifier: match alias_ {
@@ -61,6 +61,8 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
 fn Session::full_name(self : Session, target : Target) -> String {
   if target.scope == 1 {
     "tempdb.dbo." + target.table.name
+  } else if target.scope == 3 {
+    target.display
   } else {
     self.rt.database + "." + target.display
   }
@@ -289,6 +291,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     raise @types.not_supported("INSERT with CTE or TOP")
   }
   let target = self.dml_target(ins.target)
+  if target.scope != 3 {
+    self.check_writable()
+  }
   let t = target.table
   let identity_insert = self.identity_insert == Some(t.id)
   let outputs = self.bind_output(ins.output, target, false, true, [])
@@ -564,6 +569,9 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     raise @types.not_supported("UPDATE with CTE or CURRENT OF")
   }
   let target = self.dml_target(resolve_alias(u.target, u.from))
+  if target.scope != 3 {
+    self.check_writable()
+  }
   let t = target.table
   let (rows, env, cols) = self.dml_rows(target, u.from, u.where_, u.top)
   // bind SET clauses against the full source row
@@ -771,6 +779,9 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     raise @types.not_supported("DELETE with CTE or CURRENT OF")
   }
   let target = self.dml_target(resolve_alias(d.target, d.from))
+  if target.scope != 3 {
+    self.check_writable()
+  }
   let (rows, _, cols) = self.dml_rows(target, d.from, d.where_, d.top)
   let extra = if d.from.is_empty() { [] } else { cols }
   let outputs = self.bind_output(d.output, target, true, false, extra)
@@ -802,6 +813,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
 
 ///|
 fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise {
+  self.check_writable()
   match self.find_table(name) {
     Some((scope, t)) => {
       let db = self.db_of(scope)

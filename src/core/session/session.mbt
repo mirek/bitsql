@@ -99,11 +99,12 @@ pub struct Session {
   mut throwing : Bool
   /// @@ERROR value a successful statement leaves (RAISERROR WITH SETERROR).
   mut stmt_error : Int
-  /// Temp tables (#t) and table variables (scope 1).
+  /// Temp tables (#t, scope 1).
   mut temp : @store.Db
-  /// Explicit transaction: the committed state it started from and its
-  /// private view including its own writes.
-  mut tx : (@store.Db, @store.Db)?
+  /// Table variables (scope 3): not affected by transaction rollback.
+  mut tvars : @store.Db
+  /// Explicit transaction state.
+  priv mut tx : Tx?
   /// Text of the batch being executed (to slice definitions by span).
   mut text : String
   /// SET IDENTITY_INSERT target table id.
@@ -132,6 +133,7 @@ pub fn Session::new(
     throwing: false,
     stmt_error: 0,
     temp: @store.Db::empty(),
+    tvars: @store.Db::empty(),
     tx: None,
     text: "",
     identity_insert: None,
@@ -223,6 +225,7 @@ pub fn Session::run_batch(
   self.frames.clear()
   self.frames.push(Frame::new())
   self.run_text(text) |> ignore
+  self.end_of_request()
   self.frames.clear()
   let items = self.out.copy()
   self.out.clear()
@@ -267,5 +270,28 @@ fn Session::run_text(self : Session, text : String) -> Bool {
     _ => false
   } noraise {
     _ => true
+  }
+}
+
+///|
+/// A doomed transaction still open at the end of a request (batch or RPC) is
+/// rolled back with error 3998 (msduck transaction-recovery; the exact
+/// completion shape is unverified).
+fn Session::end_of_request(self : Session) -> Unit {
+  if self.rt.xact_state == -1 && self.rt.trancount > 0 {
+    self.out.push(
+      Message({
+        number: 3998,
+        state: 1,
+        class: 16,
+        message: "Uncommittable transaction is detected at the end of the batch. The transaction is rolled back.",
+        procedure: "",
+        line: 1,
+      }),
+    )
+    self.abort_transaction()
+    if !self.rpc {
+      self.out.push(StatementDone(cmd=0, count=None, error=true))
+    }
   }
 }

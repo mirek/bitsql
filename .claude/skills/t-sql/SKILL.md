@@ -20,6 +20,12 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03: transaction semantics as implemented (partly unverified, check
+  against the gaps-transactions captures): XACT_ABORT ON + error inside TRY
+  dooms the transaction (XACT_STATE() = -1); writes and COMMIT then raise 3930;
+  a doomed transaction open at the end of a request (batch *or* RPC — tedious
+  execSql is an RPC) is rolled back with 3998. Table variables keep their rows
+  after ROLLBACK, temp tables do not.
 - 2026-10-03: parse differential (`npm run parse-diff`) over all 1707 captured
   corpus batches agrees with SQL Server. Fixes it forced: `TRIM([LEADING|TRAILING|BOTH]
   chars FROM s)` (parsed as TRIM/LTRIM/RTRIM(s, chars)); RAISERROR arguments are

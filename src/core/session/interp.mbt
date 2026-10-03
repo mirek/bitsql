@@ -19,7 +19,12 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.throwing = false
   self.stmt_error = 0
   let snap_temp = self.temp
+  let snap_tvars = self.tvars
   let snap_tx = self.tx
+  let snap_view = match self.tx {
+    Some(tx) => Some(tx.view)
+    None => None
+  }
   let snap_db = self.server.db
   let failure = try {
     self.exec_stmt(s)
@@ -38,12 +43,23 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   // statement-level rollback: discard the failed statement's writes
   self.temp = snap_temp
-  match snap_tx {
-    Some(_) => self.tx = snap_tx
-    None => if self.tx is None { self.server.db = snap_db }
+  self.tvars = snap_tvars
+  match (snap_tx, self.tx, snap_view) {
+    (Some(_), Some(tx), Some(v)) => tx.view = v
+    (None, None, _) => self.server.db = snap_db
+    _ => ()
   }
   self.rt.error = e.number()
   self.rt.rowcount = 0
+  // XACT_ABORT ON: inside TRY the transaction becomes uncommittable
+  // (XACT_STATE() = -1); outside TRY it is rolled back and the batch ends.
+  if self.xact_abort && e.severity() > 10 && self.rt.trancount > 0 {
+    if self.try_depth > 0 {
+      self.rt.xact_state = -1
+    } else {
+      self.abort_transaction()
+    }
+  }
   if self.try_depth > 0 && e.severity() > 10 && e.severity() < 20 {
     // Complete the failed statement without the error flag, then unwind
     // to the enclosing CATCH (docs/reference/completions.md).
@@ -268,8 +284,10 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     BeginTran(..) => {
       self.begin_tx()
       self.rt.trancount += 1
-      self.rt.xact_state = 1
-      self.out.push(EnvChange(BeginTransaction(self.tx_descriptor())))
+      self.rt.xact_state = if self.rt.xact_state == -1 { -1 } else { 1 }
+      if self.rt.trancount == 1 {
+        self.out.push(EnvChange(BeginTransaction(self.tx_descriptor())))
+      }
       self.done(212)
     }
     Commit(..) => {
@@ -277,6 +295,9 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         raise @types.sql_error(
           3902, "The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.",
         )
+      }
+      if self.rt.xact_state == -1 {
+        raise doomed_error()
       }
       self.rt.trancount -= 1
       if self.rt.trancount == 0 {
@@ -287,11 +308,31 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       }
       self.done(213)
     }
-    Rollback(..) => {
+    Rollback(name~) => {
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           3903, "The ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION.",
         )
+      }
+      match self.savepoint_name(name) {
+        Some(sp) =>
+          match self.tx {
+            Some(tx) =>
+              match tx.savepoints.get(sp.to_lower()) {
+                Some((view, temp)) => {
+                  if self.rt.xact_state == -1 {
+                    raise doomed_error()
+                  }
+                  tx.view = view
+                  self.temp = temp
+                  self.done(210)
+                  return
+                }
+                None => ()
+              }
+            None => ()
+          }
+        None => ()
       }
       let d = self.tx_descriptor()
       self.rt.trancount = 0
@@ -299,6 +340,22 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.rollback_tx()
       self.out.push(EnvChange(RollbackTransaction(d)))
       self.done(210)
+    }
+    Save(name~) => {
+      if self.rt.trancount == 0 {
+        raise @types.sql_error(
+          628, "Cannot issue SAVE TRANSACTION when there is no active transaction.",
+        )
+      }
+      if self.rt.xact_state == -1 {
+        raise doomed_error()
+      }
+      match (self.savepoint_name(name), self.tx) {
+        (Some(sp), Some(tx)) =>
+          tx.savepoints[sp.to_lower()] = (tx.view, self.temp)
+        _ => ()
+      }
+      self.done(214)
     }
     CreateTable(ct) => self.exec_create_table(ct)
     DeclareTable(name, body) => self.exec_declare_table(name, body)

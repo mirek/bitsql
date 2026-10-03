@@ -425,8 +425,8 @@ fn Session::exec_declare_table(
   }
   let id = self.server.object_id()
   let internal = "@" + id.to_string()
-  let t = self.table_from_body(id, "dbo", internal, body, self.temp)
-  self.temp = self.temp.create_table(t)
+  let t = self.table_from_body(id, "dbo", internal, body, self.tvars)
+  self.tvars = self.tvars.create_table(t)
   self.frame().tables[key] = id
 }
 

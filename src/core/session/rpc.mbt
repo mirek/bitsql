@@ -206,6 +206,7 @@ pub fn Session::run_rpc(
     }
     None => ()
   }
+  self.end_of_request()
   self.frames.clear()
   let items = self.out.copy()
   self.out.clear()
@@ -303,6 +304,7 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     }
   }
   let saved_rpc = self.rpc
+  let trancount_before = self.rt.trancount
   let (status, outs) = self.run_with_params(
     proc.def.params,
     named,
@@ -317,6 +319,15 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   )
   self.rpc = saved_rpc
   self.write_back_outputs(e, outs)
+  if self.rt.trancount != trancount_before {
+    self.out.push(ReturnStatus(status))
+    self.out.push(ProcDone(cmd=224, count=None, error=false))
+    raise @types.sql_error(
+      266,
+      "Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = \{trancount_before}, current count = \{self.rt.trancount}.",
+      state=2,
+    )
+  }
   match e.return_var {
     Some(rv) =>
       match self.frame().vars.get(rv.to_lower()) {

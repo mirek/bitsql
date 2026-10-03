@@ -1,27 +1,40 @@
 ///|
-/// Current database view for a scope: 0 = user database (transaction view
-/// or last committed), 1 = session temp database.
+/// An explicit transaction: the committed state it started from, its private
+/// view including its own writes, the temp database at BEGIN (temp tables
+/// roll back; table variables do not) and named savepoints.
+priv struct Tx {
+  base : @store.Db
+  mut view : @store.Db
+  temp_at_begin : @store.Db
+  savepoints : Map[String, (@store.Db, @store.Db)]
+}
+
+///|
+/// Current database for a scope: 0 = user database (transaction view or last
+/// committed), 1 = session temp database (#tables), 3 = table variables.
 fn Session::db_of(self : Session, scope : Int) -> @store.Db {
-  if scope == 1 {
-    self.temp
-  } else {
-    match self.tx {
-      Some((_, view)) => view
-      None => self.server.db
-    }
+  match scope {
+    1 => self.temp
+    3 => self.tvars
+    _ =>
+      match self.tx {
+        Some(tx) => tx.view
+        None => self.server.db
+      }
   }
 }
 
 ///|
 /// Applies a database write for a scope (autocommit or into the transaction).
 fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
-  if scope == 1 {
-    self.temp = db
-  } else {
-    match self.tx {
-      Some((base, _)) => self.tx = Some((base, db))
-      None => self.server.db = db
-    }
+  match scope {
+    1 => self.temp = db
+    3 => self.tvars = db
+    _ =>
+      match self.tx {
+        Some(tx) => tx.view = db
+        None => self.server.db = db
+      }
   }
 }
 
@@ -29,7 +42,12 @@ fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
 /// Begins an explicit transaction (outermost BEGIN TRAN).
 fn Session::begin_tx(self : Session) -> Unit {
   if self.tx is None {
-    self.tx = Some((self.server.db, self.server.db))
+    self.tx = Some({
+      base: self.server.db,
+      view: self.server.db,
+      temp_at_begin: self.temp,
+      savepoints: Map([]),
+    })
   }
 }
 
@@ -38,14 +56,15 @@ fn Session::begin_tx(self : Session) -> Unit {
 /// merging are not supported yet (phase 6: lock manager + write log).
 fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
   match self.tx {
-    Some((base, view)) => {
-      if !physical_equal(base, self.server.db) && !physical_equal(base, view) {
+    Some(tx) => {
+      if !physical_equal(tx.base, self.server.db) &&
+        !physical_equal(tx.base, tx.view) {
         self.tx = None
         raise @types.emulator_error(
           50107, "Emulator: concurrent transactions writing the same database are not supported yet",
         )
       }
-      self.server.db = view
+      self.server.db = tx.view
       self.tx = None
     }
     None => ()
@@ -54,6 +73,10 @@ fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
 
 ///|
 fn Session::rollback_tx(self : Session) -> Unit {
+  match self.tx {
+    Some(tx) => self.temp = tx.temp_at_begin
+    None => ()
+  }
   self.tx = None
 }
 
@@ -106,7 +129,7 @@ fn Session::find_table_var(self : Session, name : String) -> @store.Table? {
   let mut i = self.frames.length() - 1
   while i >= 0 {
     match self.frames[i].tables.get(key) {
-      Some(id) => return self.temp.table(id)
+      Some(id) => return self.tvars.table(id)
       None => ()
     }
     i -= 1
@@ -134,7 +157,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       match self.find_table_var(name) {
         Some(t) =>
           Some({
-            scope: 1,
+            scope: 3,
             id: t.id,
             schema: "dbo",
             name,
@@ -164,4 +187,48 @@ fn Session::catalog_fn(
   ignore(name)
   ignore(args)
   None
+}
+
+///|
+/// 3930: writes and COMMIT are rejected in an uncommittable transaction.
+fn doomed_error() -> @types.SqlError {
+  @types.sql_error(
+    3930, "The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the transaction.",
+  )
+}
+
+///|
+/// Rolls back the whole transaction after an uncaught error under
+/// XACT_ABORT ON (or a doomed transaction at batch end).
+fn Session::abort_transaction(self : Session) -> Unit {
+  if self.rt.trancount > 0 {
+    let d = self.tx_descriptor()
+    self.rollback_tx()
+    self.rt.trancount = 0
+    self.rt.xact_state = 0
+    self.out.push(EnvChange(RollbackTransaction(d)))
+  }
+}
+
+///|
+/// Savepoint name of ROLLBACK/SAVE (identifier or variable); None for the
+/// whole transaction.
+fn Session::savepoint_name(self : Session, name : @ast.Expr?) -> String? raise {
+  match name {
+    None => None
+    Some({ kind: Column([id]), .. }) => Some(id.name)
+    Some(e) =>
+      match self.eval(e) {
+        (String(s), _) => Some(s)
+        _ => None
+      }
+  }
+}
+
+///|
+/// Raises 3930 when the transaction is uncommittable (called before writes).
+fn Session::check_writable(self : Session) -> Unit raise @types.SqlError {
+  if self.rt.xact_state == -1 {
+    raise doomed_error()
+  }
 }
