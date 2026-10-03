@@ -217,6 +217,20 @@ fn Engine::on_message(
       let req = @tds.decode_rpc(msg.payload)
       self.run_rpc(conn, req.calls, b"", now, out)
     }
+    (LoggedIn, BulkLoad) => {
+      let (columns, rows) = @tds.decode_bulk_load(msg.payload)
+      let items = self.sessions[conn.id].run_bulk(columns, rows, now)
+      self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
+    }
+    (LoggedIn, TransactionManager) => {
+      if (msg.status & @tds.STATUS_IGNORE) != 0 {
+        self.send(conn, done_only(), out)
+        return
+      }
+      let (_, req) = @tds.decode_tm(msg.payload)
+      let items = self.sessions[conn.id].run_tm(req, now)
+      self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
+    }
     (LoggedIn, Attention) => {
       // A parked request is abandoned; otherwise execution already
       // finished. Acknowledge as a separate message (tedious skill).

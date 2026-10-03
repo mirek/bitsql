@@ -99,7 +99,9 @@ pub fn Session::is_parked(Self) -> Bool
 pub fn Session::make_victim(Self) -> Unit
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
+pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
+pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
 pub fn Session::time_out(Self) -> Unit
 pub fn Session::wait_timeout(Self) -> Int?
 

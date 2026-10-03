@@ -14,6 +14,9 @@
 //    conn=N` waits for connection N's pending async step; its result is
 //    recorded at the async step's position. Pending steps are also awaited
 //    before the connection's next step and at the end of the case.
+//    `-- @step tm begin [READ_COMMITTED|SNAPSHOT|...] [name]`, `tm commit`,
+//    `tm rollback`, `tm save name`: TDS transaction manager requests
+//    (tedious beginTransaction/commitTransaction/...; mssql's Transaction).
 //    Expected output: sibling `name.expected.json` (captured, never hand-written).
 //
 // 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
@@ -38,13 +41,23 @@ export function parseSqlCase(text) {
     const words = rest.split(/\s+/).filter(Boolean)
     let arg = ''
     const extra = {}
+    const args = []
     for (const w of words) {
       const conn = /^conn=(\d+)$/i.exec(w)
       if (conn) extra.conn = Number(conn[1])
       else if (/^async$/i.test(w)) extra.async = true
-      else if (!arg) arg = w
-      else throw new Error(`bad @step argument: ${w}`)
+      else args.push(w)
     }
+    if (kind === 'tm') {
+      // transaction manager request: begin [ISOLATION] [name] | commit [name]
+      // | rollback [name] | save name
+      if (!/^(begin|commit|rollback|save)$/i.test(args[0] ?? '')) throw new Error('@step tm needs begin|commit|rollback|save')
+      steps.push({ kind: 'tm', sql: args.join(' ').toLowerCase(), compare: true, ...extra })
+      current = null
+      return
+    }
+    if (args.length > 1) throw new Error(`bad @step argument: ${args[1]}`)
+    arg = args[0] ?? ''
     if (kind === 'await') {
       if (!extra.conn) throw new Error('@step await needs conn=N')
       steps.push({ kind: 'await', sql: '', compare: false, conn: extra.conn })
@@ -57,7 +70,7 @@ export function parseSqlCase(text) {
     steps.push(current)
   }
   for (const line of lines) {
-    const step = /^\s*--\s*@step\s+(batch|setup|rpc|proc|await)\b(.*)$/i.exec(line)
+    const step = /^\s*--\s*@step\s+(batch|setup|rpc|proc|await|tm)\b(.*)$/i.exec(line)
     if (step) { open(step[1].toLowerCase(), step[2]); continue }
     if (/^\s*--\s*@step\b/i.test(line)) throw new Error(`bad directive: ${line}`)
     const param = /^\s*--\s*@param\s+@?([A-Za-z_][\w]*)\s+([a-z_0-9]+(?:\s*\([^)]*\))?)\s*(?:=\s*(.*?))?\s*(\boutput\b)?\s*$/i.exec(line)
@@ -72,7 +85,7 @@ export function parseSqlCase(text) {
     current.lines.push(line)
   }
   for (const step of steps) {
-    if (step.kind === 'await') continue
+    if (step.kind === 'await' || step.kind === 'tm') continue
     const body = step.lines
     while (body.length && body[0].trim() === '') body.shift()
     while (body.length && body.at(-1).trim() === '') body.pop()

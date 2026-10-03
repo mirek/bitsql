@@ -113,6 +113,7 @@ fn Parser::statement_kind(
         raise self.error()
       }
     }
+    "INSERT" if self.is_kw_at(1, "BULK") => self.insert_bulk()
     "INSERT" => Insert(self.insert_stmt([]))
     "UPDATE" => Update(self.update_stmt([]))
     "DELETE" => Delete(self.delete_stmt([]))
@@ -1236,4 +1237,48 @@ fn Parser::sequence_options(
     }
   }
   options
+}
+
+///|
+/// `INSERT BULK name (col type [COLLATE c] [NULL|NOT NULL], ...) [WITH
+/// (option [= value], ...)]` (tedious BulkLoad::getBulkInsertSql).
+fn Parser::insert_bulk(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
+  self.pos += 2
+  let name = self.object_name()
+  let cols = []
+  if self.eat_punct("(") {
+    while true {
+      let col = self.any_ident()
+      let ty = self.type_name()
+      if self.eat_kw("COLLATE") {
+        ignore(self.any_ident())
+      }
+      if self.eat_kw("NOT") {
+        self.expect_kw("NULL")
+      } else {
+        ignore(self.eat_kw("NULL"))
+      }
+      cols.push((col, ty))
+      if !self.eat_punct(",") {
+        break
+      }
+    }
+    self.expect_punct(")") |> ignore
+  }
+  let options = []
+  if self.eat_kw("WITH") {
+    self.expect_punct("(") |> ignore
+    while true {
+      let mut o = upper(self.advance())
+      if self.eat_punct("=") {
+        o = o + "=" + self.advance().text
+      }
+      options.push(o)
+      if !self.eat_punct(",") {
+        break
+      }
+    }
+    self.expect_punct(")") |> ignore
+  }
+  InsertBulk(name, cols, options)
 }

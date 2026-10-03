@@ -19,6 +19,9 @@ pub(all) enum StmtKind {
   Delete(Delete)
   Merge(Merge)
   Truncate(ObjectName)
+  /// `INSERT BULK t (col type, ...) [WITH (option, ...)]`: announces a TDS
+  /// BulkLoad message (tedious newBulkLoad / mssql request.bulk).
+  InsertBulk(ObjectName, Array[(Ident, TypeName)], Array[String])
   CreateTable(CreateTable)
   AlterTable(ObjectName, AlterTableAction)
   CreateIndex(CreateIndex)

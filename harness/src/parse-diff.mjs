@@ -27,7 +27,7 @@ export async function parseDiff(selectors = []) {
     const expected = await readExpected(c)
     if (!expected) continue
     c.steps.forEach((step, i) => {
-      if (step.kind === 'proc' || !step.sql) return
+      if (step.kind !== 'batch' && step.kind !== 'rpc' || !step.sql) return
       const errors = (expected.steps?.[i]?.errors ?? []).map(e => e.number)
       items.push({ id: `${c.id} step ${i}`, sql: step.sql, syntax: errors.filter(n => SYNTAX_ERRORS.has(n)) })
     })

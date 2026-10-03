@@ -709,6 +709,16 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       }
       self.close()
     }
+    InsertBulk(n, cols, options) => {
+      self.s("(insert-bulk " + n.to_sexp())
+      for c in cols {
+        self.s(" (" + c.0.name + " " + c.1.to_sexp() + ")")
+      }
+      for o in options {
+        self.atom(quote(o))
+      }
+      self.close()
+    }
     AlterSequence(n, options) => {
       self.s("(alter-sequence " + n.to_sexp())
       for o in options {

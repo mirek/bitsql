@@ -69,6 +69,8 @@ pub fn cp1252_decode(BytesView) -> String
 
 pub fn cp1252_encode(String) -> Bytes
 
+pub fn decode_bulk_load(BytesView) -> (Array[BulkColumn], Array[Array[WireValue]]) raise TdsError
+
 pub fn decode_login7(BytesView) -> Login7 raise TdsError
 
 pub fn decode_prelogin(BytesView) -> Prelogin raise TdsError
@@ -76,6 +78,8 @@ pub fn decode_prelogin(BytesView) -> Prelogin raise TdsError
 pub fn decode_rpc(BytesView) -> RpcRequest raise TdsError
 
 pub fn decode_sql_batch(BytesView) -> SqlBatch raise TdsError
+
+pub fn decode_tm(BytesView) -> (Headers, TmRequest) raise TdsError
 
 pub let default_collation : Bytes
 
@@ -130,6 +134,12 @@ pub(all) suberror TdsError {
 pub fn TdsError::message(Self) -> String
 
 // Types and methods
+pub(all) struct BulkColumn {
+  name : String
+  type_info : TypeInfo
+  nullable : Bool
+} derive(@debug.Debug)
+
 pub(all) struct Column {
   name : String
   type_info : TypeInfo
@@ -271,6 +281,14 @@ pub(all) struct SqlBatch {
   headers : Headers
   text : String
 } derive(@debug.Debug)
+
+pub(all) enum TmRequest {
+  Begin(Int, String)
+  Commit(String, begin_new~ : (Int, String)?)
+  Rollback(String, begin_new~ : (Int, String)?)
+  Save(String)
+  Unsupported(Int)
+} derive(Eq, @debug.Debug)
 
 pub(all) enum TypeInfo {
   Int1

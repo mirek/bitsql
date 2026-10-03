@@ -20,6 +20,17 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (corpus `tm/`, BulkLoad probe): transaction manager requests
+  (0x0E) are answered with ENVCHANGE 8/9/10 only when @@TRANCOUNT crosses 0,
+  then DONE status 0 CurCmd 253 without a count; errors are ERROR + DONE
+  (error) 253 (3902 state 3, 3903 state 2). tedious writes the B_VARCHAR
+  transaction name length as a byte count. Bulk load: tedious sends `insert
+  bulk t([c] type, ...) [WITH (...)]` as SQLBatch (answer: DONE 253 no
+  count), then BulkLoad 0x07 = COLMETADATA (UserType u32, flags, TYPE_INFO,
+  B_VARCHAR name) + ROW tokens with RPC-style values + DONE, no ALL_HEADERS;
+  the answer is DONE CurCmd 240 with the row count (errors: ERROR, INFO 3621,
+  DONE 240 error).
+
 - 2026-10-03: tedious 20.3.3 completes login against bitsql with the
   msduck login order (ENVCHANGE db, INFO 5701, ENVCHANGE collation, ENVCHANGE
   language, INFO 5703, LOGINACK, ENVCHANGE packet size, DONE) and a PRELOGIN

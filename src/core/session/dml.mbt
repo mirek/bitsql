@@ -192,6 +192,7 @@ fn Session::check_row(
   db : @store.Db,
   row : Array[@types.Value],
   verb : String,
+  constraints? : Bool = true,
 ) -> Unit raise {
   let t = target.table
   for i, c in t.columns {
@@ -203,6 +204,11 @@ fn Session::check_row(
       )
     }
   }
+  // bulk loads skip CHECK and FOREIGN KEY constraints unless
+  // CHECK_CONSTRAINTS (captured with tedious BulkLoad)
+  if !constraints {
+    return
+  }
   for ck in t.checks {
     if !ck.enabled {
       continue
@@ -211,7 +217,7 @@ fn Session::check_row(
     if v is Bit(false) {
       raise @types.sql_error(
         547,
-        "The \{verb} statement conflicted with the CHECK constraint \"\{ck.name}\". The conflict occurred in database \"\{if target.scope == 1 { "tempdb" } else { self.rt.database }}\", table \"\{target.display}\".",
+        "The \{verb} statement conflicted with the CHECK constraint \"\{ck.name}\". The conflict occurred in database \"\{if target.scope == 1 { "tempdb" } else { self.rt.database }}\", table \"\{target.display}\"\{check_column_suffix(t, ck.expr)}.",
         state=0,
       )
     }
@@ -948,4 +954,31 @@ fn resolve_alias(
     }
   }
   target
+}
+
+///|
+/// `, column 'c'` when a CHECK constraint references exactly one column
+/// (captured: 547 for `CHECK (name <> 'bad')` names column 'name').
+fn check_column_suffix(t : @store.Table, expr : String) -> String {
+  let e = @parse.parse_expr(expr) catch { _ => return "" }
+  let cols = []
+  walk_expr(e, x => {
+    match x.kind {
+      Column(parts) => {
+        let n = parts[parts.length() - 1].name.to_lower()
+        if !cols.contains(n) {
+          cols.push(n)
+        }
+      }
+      _ => ()
+    }
+  })
+  match cols {
+    [one] =>
+      match t.column_index(one) {
+        Some(i) => ", column '\{t.columns[i].name}'"
+        None => ""
+      }
+    _ => ""
+  }
 }

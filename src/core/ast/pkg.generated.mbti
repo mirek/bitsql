@@ -600,6 +600,7 @@ pub(all) enum StmtKind {
   Delete(Delete)
   Merge(Merge)
   Truncate(ObjectName)
+  InsertBulk(ObjectName, Array[(Ident, TypeName)], Array[String])
   CreateTable(CreateTable)
   AlterTable(ObjectName, AlterTableAction)
   CreateIndex(CreateIndex)

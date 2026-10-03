@@ -212,6 +212,8 @@ pub struct Session {
   mut isolation : String
   /// SET LOCK_TIMEOUT in milliseconds (-1: wait forever).
   mut lock_timeout : Int
+  /// INSERT BULK target awaiting its BulkLoad message.
+  priv mut bulk : BulkTarget?
   /// Running triggers, innermost last.
   priv triggers : Array[TriggerCtx]
   /// Lock request this session waits for (when its request is parked).
@@ -268,6 +270,7 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    bulk: None,
     lock_timeout: -1,
     isolation: "READ COMMITTED",
     implicit_tx: false,

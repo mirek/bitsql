@@ -9,7 +9,7 @@
 //   returnStatus, rowCount (request callback), outputs (RETURNVALUE)
 //   tokens: DONE-family tokens with curCmd and status bits (msduck layout)
 //   stream: the compact token sequence (ROW runs collapsed), bitsql only
-import { Request } from 'tedious'
+import { Request, ISOLATION_LEVEL } from 'tedious'
 import { isDeepStrictEqual } from 'node:util'
 import { resolveType } from './types.mjs'
 
@@ -83,7 +83,17 @@ export function capture(connection, step, { rowLimit = 100000 } = {}) {
         if (p.output) request.addOutputParameter(p.name.replace(/^@/, ''), type, value, options)
         else request.addParameter(p.name.replace(/^@/, ''), type, value, options)
       }
-      if (step.kind === 'batch') connection.execSqlBatch(request)
+      if (step.kind === 'tm') {
+        const [op, ...rest] = step.sql.split(/\s+/)
+        const done = error => finish(error)
+        if (op === 'begin') {
+          const level = rest[0] ? ISOLATION_LEVEL[rest[0].toUpperCase()] : ISOLATION_LEVEL.NO_CHANGE
+          if (level === undefined) throw new Error(`unknown isolation level ${rest[0]}`)
+          connection.beginTransaction(done, rest[1] ?? '', level)
+        } else if (op === 'commit') connection.commitTransaction(done, rest[0] ?? '')
+        else if (op === 'rollback') connection.rollbackTransaction(done, rest[0] ?? '')
+        else connection.saveTransaction(done, rest[0] ?? '')
+      } else if (step.kind === 'batch') connection.execSqlBatch(request)
       else if (step.kind === 'rpc') connection.execSql(request)
       else if (step.kind === 'proc') connection.callProcedure(request)
       else throw new Error(`unknown step kind ${step.kind}`)

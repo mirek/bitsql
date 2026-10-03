@@ -35,7 +35,9 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [~] Token encoders: COLMETADATA, ROW, ORDER, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE done; NBCROW missing (only needed if captures show SQL Server using it for our shapes)
 - [x] RPC decode: proc id / name, params with TYPE_INFO and values (incl. PLP); dispatch of sp_executesql/sp_prepexec is in session work
 - [~] ATTENTION: acknowledged as a separate DONE_ATTN message; real cancellation needs time-sliced execution
-- [~] Engine::handle + native host (TcpServer, queue, `--listen`, `listening on` contract), `--record` event log and `replay` tool done; timers missing
+- [x] Engine::handle + native host (TcpServer, queue, `--listen`, `listening on` contract), `--record` event log and `replay` tool, timers (SetTimer/CancelTimer → TimerFired, used by LOCK_TIMEOUT)
+- [x] Transaction manager requests (0x0E: TM_BEGIN/COMMIT/ROLLBACK/SAVE as tedious beginTransaction and mssql `Transaction` send them; corpus `tm/`, harness `-- @step tm`). Distributed TM requests raise 50100
+- [x] Bulk load: `INSERT BULK` + BulkLoad (0x07) messages (tedious newBulkLoad, mssql `request.bulk`): options CHECK_CONSTRAINTS, KEEP_IDENTITY, KEEP_NULLS, FIRE_TRIGGERS ignored (triggers never fire); responses captured (DONE 253, then DONE 240 + count; errors + 3621). Tests: harness `test/mssql-workflow.test.mjs`
 - [x] tedious 20.3.3 connects (encrypt:false), login SET batch accepted; other SQL → `Emulator:` error via stub executor
 - [x] Stub executor replaced by parser + binder + executor (core/bind, core/exec, core/session)
 - **Gate met 2026-10-03**: `tedious` runs `SELECT 1` and a parameterized `sp_executesql`, identical to MSSQL in the harness (smoke/select-1, smoke/rpc-*).

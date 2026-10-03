@@ -480,6 +480,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     CreateSchema(name, ..) => self.exec_create_schema(name)
     CreateSequence(name, type_~, options~) =>
       self.exec_create_sequence(name, type_, options, s.span.start, s.span.line)
+    InsertBulk(name, _, options) => self.exec_insert_bulk(name, options)
     AlterSequence(name, options) =>
       self.exec_alter_sequence(name, options, s.span.line)
     AlterTable(name, action) => {
