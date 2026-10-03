@@ -17,7 +17,7 @@ pub fn collation_bytes(@types.Collation) -> Bytes
 
 pub fn column_flags(@ir.ResultColumn) -> Int
 
-pub fn format_raiserror(String, Array[@types.Value]) -> String raise @types.SqlError
+pub fn format_raiserror(String, Array[@types.Value], types? : Array[@types.SqlType?]) -> String raise @types.SqlError
 
 pub fn param_type(@tds.TypeInfo) -> @types.SqlType
 
@@ -83,6 +83,7 @@ pub struct Session {
   mut waits_seen : Int
   mut waits_done : Int
   mut in_waitfor : Bool
+  mut error_override : Int?
   mut context_info : Bytes?
   mut login : String
   mut host_name : String

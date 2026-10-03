@@ -222,6 +222,9 @@ pub struct Session {
   mut waits_done : Int
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
+  /// @@ERROR to record for the failing statement instead of the error's
+  /// number (RAISERROR format errors leave 50000).
+  mut error_override : Int?
   /// SET CONTEXT_INFO (always 128 bytes once set).
   mut context_info : Bytes?
   /// LOGIN7 login, host and application names.
@@ -293,6 +296,7 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    error_override: None,
     context_info: None,
     waits_seen: 0,
     waits_done: 0,
@@ -482,7 +486,11 @@ fn Session::run_text(self : Session, text : String) -> Bool raise Park {
   match precheck_batch(stmts, self.frame().vars) {
     Some((e, line)) => {
       self.message(e, line)
-      self.out.push(StatementDone(cmd=253, count=None, error=true))
+      // like parse errors: a top-level RPC gets no DONE before its DONEPROC
+      // (captured: msduck raiserror-rpc 178)
+      if !self.rpc || self.rt.nest_level > 1 {
+        self.out.push(StatementDone(cmd=253, count=None, error=true))
+      }
       self.rt.error = e.number()
       return false
     }

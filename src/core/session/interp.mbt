@@ -56,7 +56,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     (None, None, _) => self.server.set_db(snap_database, snap_db)
     _ => ()
   }
-  self.rt.error = e.number()
+  self.rt.error = self.error_override.unwrap_or(e.number())
+  self.error_override = None
   self.rt.rowcount = 0
   // XACT_ABORT ON: inside TRY the transaction becomes uncommittable
   // (XACT_STATE() = -1); outside TRY it is rolled back and the batch ends.
@@ -548,13 +549,51 @@ fn Session::exec_raiserror(
     .get(2)
     .map(x => x.0.as_int64().unwrap_or(0L).to_int())
     .unwrap_or(1)
-  let (number, text) = match msg_v {
-    String(fmt) =>
-      (50000, format_raiserror(fmt, values[3:].to_owned().map(x => x.0)))
-    _ => raise @types.not_supported("RAISERROR with a message id")
-  }
   let severity = if severity < 0 { 0 } else { severity }
   let state = if state < 0 { 1 } else { state }
+  let (number, text) = match msg_v {
+    String(fmt) => {
+      let types : Array[@types.SqlType?] = []
+      for k in 3..<args.length() {
+        types.push(if args[k].kind is Null { None } else { Some(values[k].1) })
+      }
+      // format errors report their own number; @@ERROR becomes 50000
+      // (captured: msduck raiserror-failure-counter)
+      // format errors report their own number; @@ERROR becomes 50000 when
+      // the RAISERROR would have set it (severity > 10 or SETERROR;
+      // captured: msduck raiserror-failure-counter)
+      if severity > 10 || options.contains("SETERROR") {
+        self.error_override = Some(50000)
+      }
+      let text = format_raiserror(
+        fmt,
+        values[3:].to_owned().map(x => x.0),
+        types~,
+      )
+      self.error_override = None
+      (50000, text)
+    }
+    other =>
+      match other.as_int64() {
+        Some(id) if id > 50000L => {
+          // no sp_addmessage: every user message id is missing (captured)
+          self.error_override = Some(id.to_int())
+          raise @types.sql_error(
+            18054,
+            "Error \{id}, severity \{severity}, state \{state} was raised, but no message with that error number was found in sys.messages. If error is larger than 50000, make sure the user-defined message is added using sp_addmessage.",
+          )
+        }
+        _ => raise @types.not_supported("RAISERROR with a system message id")
+      }
+  }
+  if severity > 18 && !options.contains("LOG") {
+    raise @types.sql_error(
+      2754, "Error severity levels greater than 18 can only be specified by members of the sysadmin role, using the WITH LOG option.",
+    )
+  }
+  if severity > 18 {
+    raise @types.not_supported("RAISERROR WITH LOG severity above 18")
+  }
   if options.contains("SETERROR") {
     self.stmt_error = number
   }

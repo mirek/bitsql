@@ -20,6 +20,18 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (RAISERROR, msduck raiserror-*): argument types must suit
+  the specification: %d/%i/%u/%x/%o (also with `l`) take tinyint, smallint
+  or int; `h` takes tinyint/smallint only; `I64` takes bigint only; %s/%ls
+  take character types; `*` takes a non-NULL integer. A mismatch is 2786,
+  a bad specification (also a trailing `%`) 2787; both report their own
+  number but leave @@ERROR 50000 when the RAISERROR would have set it
+  (severity > 10 or WITH SETERROR). Variables of decimal/float/date… types
+  are compile error 2748 and more than 20 substitutions 2747 (the batch
+  does not run); a decimal literal only fails the format check. A message id
+  above 50000 gives 18054 and @@ERROR = the id. Severity > 18 without WITH
+  LOG is 2754. RETURN with a value outside a procedure (also sp_executesql
+  text) is compile error 178. `-@x` as an argument is 102 near '@x'.
 - 2026-10-03 (application locks, corpus `applock/`): sp_getapplock returns
   0 (granted), 1 (granted after waiting), -1 (timeout; no message), -999 with
   INFO 15625 "Option 'x' not recognized for '@LockMode' parameter." or 15626

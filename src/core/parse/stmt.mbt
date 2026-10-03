@@ -1165,6 +1165,12 @@ fn Parser::raiserror_arg(
   null_ok : Bool,
 ) -> @ast.Expr raise @ast.SyntaxError {
   let start = self.start()
+  // a signed variable is a syntax error at the variable (captured: -@x)
+  if (self.is_punct("-") || self.is_punct("+")) &&
+    self.peek_at(1).kind is Variable {
+    self.pos += 1
+    raise self.error()
+  }
   if self.is_punct("-") &&
     self.peek_at(1).kind is (IntNum | DecimalNum | FloatNum | Money) {
     self.pos += 1

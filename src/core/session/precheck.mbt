@@ -7,8 +7,11 @@ fn precheck_batch(
   params : Map[String, @bind.VarInfo],
 ) -> (@types.SqlError, Int)? {
   let declared : Set[String] = Set([])
-  for k, _ in params {
+  // declared types, for RAISERROR substitution parameter checks
+  let types : Map[String, @types.SqlType] = Map([])
+  for k, v in params {
     declared.add(k)
+    types[k] = v.ty
   }
   let mut failure : (@types.SqlError, Int)? = None
   fn check_name(name : String, line : Int) -> Unit {
@@ -41,6 +44,13 @@ fn precheck_batch(
             expr(i, line)
           }
           declared.add(v.name.to_lower())
+          try
+            @bind.resolve_type(v.type_, Declaration, @types.default_collation)
+          catch {
+            _ => ()
+          } noraise {
+            ty => types[v.name.to_lower()] = ty
+          }
         }
       DeclareTable(name, _) => declared.add(name.to_lower())
       SetVar(n, _, e) => {
@@ -65,8 +75,30 @@ fn precheck_batch(
         a.each(stmt)
         b.each(stmt)
       }
-      RaisError(args, ..) | Throw(args) => args.each(x => expr(x, line))
-      Return(Some(e)) => expr(e, line)
+      RaisError(args, ..) => {
+        args.each(x => expr(x, line))
+        if failure is None {
+          failure = raiserror_compile_error(args, types).map(e => (e, line))
+        }
+      }
+      Throw(args) => args.each(x => expr(x, line))
+      Return(Some(e)) => {
+        // RETURN with a value outside a procedure (batch, sp_executesql
+        // text): compile error 178 (captured: msduck raiserror-rpc)
+        if failure is None {
+          failure = Some(
+            (
+              @types.sql_error(
+                178,
+                "A RETURN statement with a return value cannot be used in this context.",
+                severity=15,
+              ),
+              line,
+            ),
+          )
+        }
+        expr(e, line)
+      }
       _ => ()
     }
   }
@@ -162,4 +194,45 @@ fn walk_expr(e : @ast.Expr, f : (@ast.Expr) -> Unit) -> Unit {
     Call(c) => c.args.each(x => walk_expr(x, f))
     _ => ()
   }
+}
+
+///|
+/// RAISERROR argument errors SQL Server raises while compiling the batch
+/// (captured: msduck raiserror-arguments): more than 20 substitution
+/// parameters (2747); a variable whose type cannot be substituted (2748).
+fn raiserror_compile_error(
+  args : Array[@ast.Expr],
+  types : Map[String, @types.SqlType],
+) -> @types.SqlError? {
+  if args.length() > 23 {
+    return Some(
+      @types.sql_error(
+        2747, "Too many substitution parameters for RAISERROR. Cannot exceed 20 substitution parameters.",
+      ),
+    )
+  }
+  for k in 3..<args.length() {
+    guard args[k].kind is Var(name) else { continue }
+    guard types.get(name.to_lower()) is Some(ty) else { continue }
+    if !(ty
+      is (TinyInt
+      | SmallInt
+      | Int
+      | BigInt
+      | Char(_, _)
+      | VarChar(_, _)
+      | NChar(_, _)
+      | NVarChar(_, _)
+      | Binary(_)
+      | VarBinary(_)
+      | Bit)) {
+      return Some(
+        @types.sql_error(
+          2748,
+          "Cannot specify \{ty.to_sql()} data type (parameter \{k + 1}) as a substitution parameter.",
+        ),
+      )
+    }
+  }
+  None
 }
