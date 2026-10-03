@@ -151,3 +151,17 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
 fn Session::tx_descriptor(self : Session) -> UInt64 {
   (self.rt.spid.to_int64() << 32).reinterpret_as_uint64() | 1UL
 }
+
+///|
+/// Catalog/metadata functions evaluated with database access (see
+/// bind/functions_catalog.mbt). None = not a catalog function.
+fn Session::catalog_fn(
+  self : Session,
+  name : String,
+  args : Array[@types.Value],
+) -> @types.Value? {
+  ignore(self)
+  ignore(name)
+  ignore(args)
+  None
+}

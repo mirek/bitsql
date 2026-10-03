@@ -349,12 +349,16 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       match bind_call_more(env, name, call) {
         Some(e) => e
         None =>
-          raise err(
-            195,
-            "'\{call.name.base()}' is not a recognized built-in function name.",
-            state=10,
-            severity=15,
-          )
+          match bind_call_catalog(env, name, call) {
+            Some(e) => e
+            None =>
+              raise err(
+                195,
+                "'\{call.name.base()}' is not a recognized built-in function name.",
+                state=10,
+                severity=15,
+              )
+          }
       }
   }
 }

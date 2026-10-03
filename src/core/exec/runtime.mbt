@@ -78,6 +78,9 @@ pub(all) struct Ctx {
   /// Table rows by (scope, id), as (rowid, row) pairs. Supplied by the
   /// session from its current database view.
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
+  /// Session-provided functions that need the database (catalog/metadata
+  /// functions). Returns None for names it does not implement.
+  ext : (String, Array[@types.Value]) -> @types.Value?
 }
 
 ///|

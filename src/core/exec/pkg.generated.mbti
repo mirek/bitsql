@@ -25,6 +25,7 @@ pub(all) struct Ctx {
   row : Array[@types.Value]
   outer : Array[Array[@types.Value]]
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
+  ext : (String, Array[@types.Value]) -> @types.Value?
 }
 pub fn Ctx::with_row(Self, Array[@types.Value]) -> Self
 

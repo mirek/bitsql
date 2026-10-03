@@ -149,6 +149,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     row: [],
     outer: [],
     source: (scope, id) => self.db_of(scope).rows(id),
+    ext: (name, args) => self.catalog_fn(name, args),
   }
 }
 
