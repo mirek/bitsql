@@ -153,3 +153,11 @@ scripts/check.sh                 # everything CI runs; must be green to push
 - 2026-10-03: big generated test tables (1–2k tuple literals) compile fine
   and keep capture-derived tests readable; generate them with a script and
   say so in the file header.
+- 2026-10-03: `errdefer { <stmts> }` (braces needed for assignments) runs cleanup only when the rest of the block
+  raises; the compiler flags `catch { e => { cleanup; raise e } }` (warning
+  0092) and suggests it.
+- 2026-10-03: `typealias X as Y` from older docs is gone; write
+  `pub type Row = Array[Value]`.
+- 2026-10-03: `moon fmt` adds trailing commas to one-line record literals and
+  re-wraps long calls. Scripted text edits against formatted code must match
+  that (or replace whole blocks between stable markers).

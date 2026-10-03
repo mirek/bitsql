@@ -46,7 +46,13 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     // Complete the failed statement without the error flag, then unwind
     // to the enclosing CATCH (docs/reference/completions.md).
     if self.cur_cmd != 253 {
-      self.done(self.cur_cmd, count=Some(0L), result_set=self.cur_cmd == 193)
+      let rows = self.cur_cmd == 193 ||
+        (self.cur_cmd >= 195 && self.cur_cmd <= 197)
+      self.done(
+        self.cur_cmd,
+        count=if rows { Some(0L) } else { None },
+        result_set=self.cur_cmd == 193,
+      )
     }
     raise Caught(e, line)
   }
@@ -483,18 +489,27 @@ fn Session::exec_try(
     }
   }
   self.try_depth -= 1
-  guard caught is Some((e, line)) else { return }
-  self.done(350)
-  let saved = self.rt.catch_error
-  self.rt.catch_error = Some({
-    number: e.number(),
-    severity: e.severity(),
-    state: e.state(),
-    message: e.message(),
-    line,
-    procedure: None,
-  })
-  self.exec_list(handler)
-  self.rt.catch_error = saved
+  match caught {
+    None => ()
+    Some((e, line)) => {
+      self.done(350)
+      let saved = self.rt.catch_error
+      self.rt.catch_error = Some({
+        number: e.number(),
+        severity: e.severity(),
+        state: e.state(),
+        message: e.message(),
+        line,
+        procedure: None,
+      })
+      errdefer {
+        self.rt.catch_error = saved
+      }
+      self.exec_list(handler)
+      self.rt.catch_error = saved
+    }
+  }
+  // The construct completes with 351 whether or not CATCH ran (captured:
+  // msduck control-completion-tokens #10/#11).
   self.done(351)
 }
