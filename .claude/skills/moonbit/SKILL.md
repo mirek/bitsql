@@ -186,3 +186,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   parse error on a 10-tuple): spell out every position with `_`. Generated
   data tables (`Array[(Int64, Int, Int, Bool)]`, ~650 rows) and test tables
   (~11k rows) compile quickly.
+- 2026-10-03: a new enum variant (ir Plan, ast TableRefKind, AggFn) turns every
+  match without a catch-all into error 0011 partial_match under the repo's
+  warning settings, so `moon check` lists exactly the places to extend.
+  `String::trim_end(chars=" ")` returns a StringView (`.to_owned()` it).

@@ -15,7 +15,8 @@ fn check_datepart(
     | "datediff_big"
     | "datepart"
     | "datename"
-    | "datetrunc") else {
+    | "datetrunc"
+    | "date_bucket") else {
     return
   }
   guard args[0].kind is Column([id]) else { return }
@@ -61,6 +62,8 @@ fn check_datepart(
     | "tzoffset"
     | "tz")
   if !known {
+    // captured: DATE_BUCKET's messages spell it Date_Bucket
+    let fname = if fname == "date_bucket" { "Date_Bucket" } else { fname }
     raise syntax_error(
       155,
       "'\{id.name}' is not a recognized \{fname} option.",

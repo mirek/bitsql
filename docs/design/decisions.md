@@ -238,3 +238,14 @@ binder, `Env::table_params`) and sp_executesql see the same rows. A TVP
 from the wire is loaded into a new table variable with the type's
 constraints. Synonyms are store Modules of kind SN resolved late
 (`Session::deref_synonym`) by the catalog hooks, DML targets and EXEC.
+## 2026-10-03: approximate and sampled query results raise instead of approximating
+
+APPROX_COUNT_DISTINCT returns the exact distinct count only while it is at
+most 30, the range where every capture (8 types, 3 value sequences) matched
+SQL Server's estimate; above that, and under ROLLUP/CUBE/GROUPING SETS (where
+SQL Server carries its sketch across groups), it raises 50151. TABLESAMPLE
+honours 0 and 100 PERCENT (deterministic) and raises 50150 otherwise: SQL
+Server samples whole pages, so even REPEATABLE results depend on page layout
+bitsql does not have. PIVOT is bound as an Aggregate over CASE arguments plus
+a Sort on the grouping columns, wrapped in `NoNullWarning`; UNPIVOT has its
+own `Unpivot` plan node.

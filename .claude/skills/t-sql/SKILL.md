@@ -415,6 +415,62 @@ mention the correction here.
   LF stays in the line) and every 255 characters. sp_columns reports ODBC 2
   types (nvarchar(max) is `ntext` -10, datetime2 is -9) and an
   SS_DATA_TYPE that depends on nullability (int 56 / 38, bigint 63 / 108).
+- 2026-10-03 (PIVOT/UNPIVOT, corpus `analytic/pivot*`, `unpivot`; rules in
+  docs/reference/analytic.md): PIVOT groups by every source column it does
+  not name and applies to the whole join tree written before it. The
+  aggregate takes one bare column (anything else is a syntax error at the
+  token); CHECKSUM_AGG is 406. IN values convert from nvarchar at compile
+  time (8114 + 473), a value named like a grouping column is 265 + 8156,
+  duplicates (case- and trailing-space-insensitive) 8156. Grouping columns
+  keep their metadata, value columns are the aggregate type with flags 1, no
+  8153 (except APPROX_COUNT_DISTINCT), no rows for empty input without
+  grouping columns, and the row order without ORDER BY is plan-dependent
+  once there are two grouping columns. UNPIVOT drops NULLs, emits IN-list
+  order per row, `k` is nullable nvarchar(128) with the source column's own
+  spelling, `v` needs identical types (8167) and takes their nullability.
+- 2026-10-03 (analytic, corpus `analytic/percentile`, `window-frames`,
+  `string-agg-checks`, `approx-checksum-agg`, `generate-series`,
+  `tablesample`): PERCENTILE_CONT interpolates at rn = 1 + p(n-1) as
+  (c-rn)v[f] + (rn-f)v[c] in double (float, flags 1), PERCENTILE_DISC
+  returns the first value with i/n >= p in the key's type (NOT NULL for a NOT
+  NULL key); errors 8726/8727/10751-10754/10758/402/5308/5309. SQL Server has
+  no RANGE offsets: 4194 is faithful; frame offsets are unsigned int literals
+  (102 otherwise), 4193 states 1/4/5, 10752 state 3 (ranking, NTILE,
+  PERCENT_RANK, CUME_DIST) or 1 (LAG/LEAD/percentiles), 10756 for PARTITION
+  BY without ORDER BY, 102 near ROWS with an empty OVER. STRING_AGG's
+  separator must be a string literal (also 'a'+'b'), NULL or variable (8733;
+  a column separator used to abort bitsql), nvarchar separators need a
+  unicode value (8116), DISTINCT is 102, OVER 4113 state 4, ROLLUP 8710,
+  9829 state 0 (varchar) / 1 (nvarchar). CHECKSUM_AGG is XOR over int only.
+  APPROX_COUNT_DISTINCT was exact up to 30 distinct values and drifts from
+  31 (bitsql: 50151 above 30 and under ROLLUP, where SQL Server accumulates
+  across groups). GENERATE_SERIES: same integer type for all arguments or
+  5373 (+206 per argument), decimal/numeric widen but do not mix, 8116 state
+  = argument position, zero step 4199 (state 1 constant, 2 variable).
+  TABLESAMPLE is deterministic only at 0/100 PERCENT (bitsql 50150
+  otherwise); 476/479/482/497/494. Correction: `-2147483648` is an int
+  literal (bitsql typed it numeric(10,0)).
+- 2026-10-03 (JSON constructors and JSON_MODIFY, corpus `json2/`; rules in
+  docs/reference/analytic.md): JSON_OBJECT/JSON_ARRAY return nvarchar(max)
+  flags 33, default NULL ON NULL / ABSENT ON NULL, embed JSON-typed values
+  (JSON_QUERY, JSON_OBJECT, JSON_ARRAY, FOR JSON with array wrapper) raw and
+  escape everything else, NULL key 13638 at run time, `JSON_OBJECT('a', 1)`
+  102 state 10. JSON_MODIFY edits the text in place: inserts go right before
+  the closing bracket after existing whitespace, a lax NULL removes the
+  member with its preceding comma (following comma for the first member),
+  lax misses return the text unchanged, strict misses 13608 state 2; float
+  values print with 16 digits; money/date/binary/guid/variant values are
+  8116; a typed NULL path is 8116 state 8 at run time.
+- 2026-10-03 (PARSE/TRY_PARSE, DATE_BUCKET, corpus `analytic/parse-*`,
+  `date-bucket*`): PARSE follows .NET NumberStyles (Number for integers and
+  decimal with thousands only after a digit and a trailing sign, Float,
+  Currency), cultures en-US/en/en_US and `iv` (9818 for '', 'Invariant',
+  NULL; bitsql 50171 for others), decimal targets report NumericN, two-digit
+  years use the 2049 cutoff, clock/time-zone dependent text is 50172 in
+  bitsql. DATE_BUCKET: origin 1900-01-01, floor division for fixed-length
+  parts, DATEADD-style stepping for months, datetimeoffset in UTC keeping
+  the offset, time wraps, result precision = max(date, origin), messages
+  spell "Date_Bucket" (155 is a parse error).
 
 # T-SQL Language Reference
 
