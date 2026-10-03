@@ -554,6 +554,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         }
         out.push(m)
       }
+    "sys.time_zone_info" => out.append(time_zone_rows(self.rt.now))
     "sys.schemas" =>
       for sc in db.schema_names() {
         out.push(

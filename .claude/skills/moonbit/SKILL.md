@@ -182,3 +182,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   0027 deprecated visibility); write `type X = Map[..]`. `Ref::new` is
   deprecated; a closure may assign a captured `let mut` directly. A struct
   field of closure type may raise: `(A) -> B? raise @types.SqlError`.
+- 2026-10-03: tuple patterns take no `..` rest (`let (a, b, ..) = t` is a
+  parse error on a 10-tuple): spell out every position with `_`. Generated
+  data tables (`Array[(Int64, Int, Int, Bool)]`, ~650 rows) and test tables
+  (~11k rows) compile quickly.

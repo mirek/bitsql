@@ -153,3 +153,16 @@ id in `Server.udfs`, keyed on the definition text (ALTER replaces it).
 Anything a function cannot leave with (lock waits, control flow) becomes an
 `Emulator:` error.
 
+## 2026-10-03: time zone rules come from SQL Server, not IANA
+
+AT TIME ZONE and sys.time_zone_info use tables generated from a dump of the
+oracle's own answers (`scripts/timezones/sqlserver-timezones.json` →
+`scripts/gen-timezones.py` → `src/core/types/timezone_data.mbt`), not from
+IANA tzdata or a CLDR Windows→IANA mapping. SQL Server applies Windows
+yearly rules, extrapolates the first and last rule over years 1–9999, and has
+year-boundary quirks (one-hour blips) that no IANA-based model reproduces.
+The core stays pure: no OS time zone database at run time. The rules model
+is described and checked in docs/reference/at-time-zone.md; zone-years whose
+local-time resolution the model cannot reproduce raise 50100 instead of
+guessing. sys.time_zone_info reads the server's local clock (UTC in bitsql)
+as a wall-clock time in each zone, as SQL Server does.

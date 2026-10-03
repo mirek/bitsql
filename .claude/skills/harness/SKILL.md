@@ -201,3 +201,13 @@ Start the host with `--database NAME` so the app's database exists at login
   mid-list). tedious drops sub-millisecond digits of datetime2/time values:
   add `CAST(x AS nvarchar(40))` columns when they matter.
 
+- 2026-10-03: when the shared `bitsql-oracle` is saturated (other agents'
+  bulk captures; logins time out after 15 s), start a private oracle:
+  `BITSQL_ORACLE_NAME=bitsql-oracle-tz BITSQL_ORACLE_PORT=47345 npm run
+  oracle:start` and pass the same env to `capture`/`diff --target oracle`.
+  Remove it with `npm run oracle:stop` under the same env when done.
+- 2026-10-03: `harness/gen/timezone.mjs` generates
+  `corpus/timezone/at-time-zone.cases.json`; `harness/src/dump-timezones.mjs`
+  dumps SQL Server's time zone behaviour for `scripts/gen-timezones.py`
+  (docs/reference/at-time-zone.md). Cases reading the clock
+  (sys.time_zone_info) compare only clock-independent facts.

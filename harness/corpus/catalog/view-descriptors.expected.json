@@ -3,7 +3,7 @@
     "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
     "version": "17.0.5005.3"
   },
-  "case": "49ebc01991ea0bbc",
+  "case": "adf78905a6a35a6b",
   "steps": [
     {
       "sets": [
@@ -2078,9 +2078,34 @@
             }
           ],
           "rows": []
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "current_utc_offset",
+              "type": "NVarChar",
+              "length": 12,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_currently_dst","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
         }
       ],
       "done": [
+        {"kind":"done","rowCount":0,"more":true},
         {"kind":"done","rowCount":0,"more":true},
         {"kind":"done","rowCount":0,"more":true},
         {"kind":"done","rowCount":0,"more":true},
@@ -2112,6 +2137,7 @@
       "returnStatus": null,
       "outputs": [],
       "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
         {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
         {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
         {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
@@ -2188,6 +2214,8 @@
         {"name":"COLMETADATA","columns":8},
         {"name":"DONE","status":17,"curCmd":193},
         {"name":"COLMETADATA","columns":9},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
         {"name":"DONE","status":16,"curCmd":193}
       ],
       "rowCount": 0

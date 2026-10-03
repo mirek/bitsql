@@ -34,6 +34,15 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (sys.time_zone_info, corpus `timezone/`): columns `name
+  nvarchar(128)`, `current_utc_offset nvarchar(6)`, `is_currently_dst bit`,
+  all NOT NULL, database default collation; 141 rows in a fixed catalog order
+  (Dateline Standard Time, UTC-11, Aleutian, …, not alphabetical). "Current"
+  reads the server's *local* clock as a wall-clock time in each zone (on a
+  UTC server just after a DST start in UTC but before it locally, the view
+  still shows standard time while `SYSUTCDATETIME() AT TIME ZONE` shows
+  daylight time). Rows: `src/core/session/sysviews_timezone.mbt`; details
+  in docs/reference/at-time-zone.md.
 - 2026-10-03: SQL Server 17.0 view contracts differ from the tables below
   (which are older/partial): sys.columns has 43 columns (vector_*, ledger_*,
   graph_*), sys.tables 48, sys.databases 98, sys.indexes 23 (incl.

@@ -59,6 +59,22 @@ mention the correction here.
   next to a decimal are typed decimal(digits,0)" was only implemented for
   CHOOSE/GREATEST; it now covers arithmetic (`1.5*2` numeric(4,1)) and
   CASE/IIF/COALESCE branches too, and the type is *numeric*.
+- 2026-10-03 (AT TIME ZONE, corpus `timezone/`, msduck `at-time-zone*`; full
+  rules in docs/reference/at-time-zone.md): input must be datetime,
+  smalldatetime, datetime2 or datetimeoffset (else 8116 arg 1; the zone must
+  be a string, else 8116 arg 2); result datetimeoffset with the input scale,
+  nullable. Zone names are the 141 Windows names, ASCII case-insensitive,
+  U+0000 ignored, Kelvin sign = k, spaces significant; unknown → 9820 at run
+  time (after COLMETADATA, NUL shown as '.'). Local input: repeated times take
+  the earlier (daylight) offset, skipped ones are read in standard time and
+  land after the change (02:30 → 03:30 -07:00); 9813 when the UTC instant
+  leaves the range. datetimeoffset input whose local time overflows is
+  silently clamped to the min/max UTC value at +00:00. SQL Server
+  extrapolates each zone's first/last Windows yearly rule to years 1/9999
+  and decides DST from the standard-time year with the daylight wall clock
+  moved into that year, which creates real one-hour blips near new year
+  (Central Brazilian 1904-01-01 03:00 UTC). `AT TIME ZONE` binds tighter than
+  `+`.
 - 2026-10-03 (triggers, corpus `triggers/`): XACT_ABORT is implied inside
   triggers, but RAISERROR never honors XACT_ABORT (no rollback, no batch
   abort; THROW does). In autocommit the trigger runs inside an implicit
@@ -594,8 +610,8 @@ The language pipeline lives in three packages:
 ### Not yet implemented (raise clean errors)
 
 WAITFOR, GOTO, BULK INSERT ... FROM file, source columns in MERGE OUTPUT,
-COLLATE as expression operator,
-AT TIME ZONE.
+COLLATE as expression operator.
+(AT TIME ZONE is implemented: docs/reference/at-time-zone.md.)
 
 `ALTER TABLE ... ALTER COLUMN` accepts declared type arguments, optional
 COLLATE, and explicit/omitted nullability (omitted means NULL). Character

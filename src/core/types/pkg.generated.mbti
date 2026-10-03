@@ -169,6 +169,20 @@ pub fn try_cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
 
 pub fn type_clash_error(SqlType, SqlType) -> SqlError
 
+pub fn tz_count() -> Int
+
+pub fn tz_local_to_utc(Int, Int64) -> (Int64, Int)
+
+pub fn tz_local_unsupported(Int, Int) -> Bool
+
+pub fn tz_lookup(String) -> Int?
+
+pub fn tz_name(Int) -> String
+
+pub fn tz_offset_at(Int, Int64) -> Int
+
+pub fn tz_offset_info(Int, Int64) -> (Int, Bool)
+
 // Errors
 pub(all) suberror SqlError {
   SqlError(number~ : Int, severity~ : Int, state~ : Int, message~ : String)
