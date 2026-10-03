@@ -105,6 +105,14 @@ SELECT @out = n FROM t WHERE id = @id
   connection's next step and at the end. "Process ID n" in messages is
   normalized to `{spid}`. SQL Server's deadlock monitor takes up to ~5 s, so
   deadlock captures are slow.
+- `-- @step tm begin [READ_COMMITTED|SERIALIZABLE|SNAPSHOT|…] [name]`, `tm
+  commit [name]`, `tm rollback [name]`, `tm save name`: TDS transaction
+  manager requests, as tedious `beginTransaction` and mssql `Transaction`
+  send them (corpus `tm/`).
+- Client flows that are not corpus-shaped (mssql pools, PreparedStatement,
+  bulk load) live in `harness/test/*.test.mjs`; pin their expectations to a
+  capture made with the same calls against the oracle (see
+  `test/mssql-workflow.test.mjs`).
 - Follow msduck capture conventions: never read the clock, name constraints
   explicitly, express counters relative to a baseline (see
   `traps/rowversion-modification-time.sql`), unique statement text for
