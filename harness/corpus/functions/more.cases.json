@@ -1,0 +1,499 @@
+{
+  "source": "harness/gen/functions.mjs",
+  "cases": [
+    {
+      "name": "000-binary-checksum-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT BINARY_CHECKSUM(256) AS c0, BINARY_CHECKSUM(-1) AS c1, BINARY_CHECKSUM(CAST(256 AS bigint)) AS c2, BINARY_CHECKSUM(CAST(256 AS smallint)) AS c3, BINARY_CHECKSUM(CAST(2 AS tinyint)) AS c4"
+        }
+      ]
+    },
+    {
+      "name": "001-binary-checksum-n",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT BINARY_CHECKSUM(N'é') AS c0, BINARY_CHECKSUM(N'雪') AS c1, BINARY_CHECKSUM('é') AS c2, BINARY_CHECKSUM(CAST('ab' AS char(4))) AS c3, BINARY_CHECKSUM(N'a', N'b') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "002-checksum-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(256) AS c0, CHECKSUM(-1) AS c1, CHECKSUM(CAST(256 AS bigint)) AS c2, CHECKSUM(CAST(-1 AS bigint)) AS c3, CHECKSUM(CAST(4294967296 AS bigint)) AS c4"
+        }
+      ]
+    },
+    {
+      "name": "003-checksum-1-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(1, NULL) AS c0, CHECKSUM(CAST(NULL AS int)) AS c1, CHECKSUM(CAST(1 AS tinyint), CAST(2 AS smallint)) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "004-datalength-cast-12345678901-as-decimal-20-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATALENGTH(CAST(12345678901 AS decimal(20,0))) AS c0, DATALENGTH(CAST(1 AS decimal(38,0))) AS c1, DATALENGTH(CAST(1 AS numeric(10,0))) AS c2, DATALENGTH(CAST(12345678901234567890123 AS decimal(30,0))) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "005-datalength-cast-10-00-as-time-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATALENGTH(CAST('10:00' AS time(0))) AS c0, DATALENGTH(CAST('10:00' AS time(4))) AS c1, DATALENGTH(CAST('2024-01-01' AS datetimeoffset(0))) AS c2, DATALENGTH(CAST('2024-01-01' AS smalldatetime)) AS c3, DATALENGTH(CAST(1 AS smallmoney)) AS c4"
+        }
+      ]
+    },
+    {
+      "name": "006-soundex-a1b",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('a1b') AS c0, SOUNDEX('ab-c') AS c1, SOUNDEX('Ab cd') AS c2, SOUNDEX('ébc') AS c3, SOUNDEX('O''Brien') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "007-soundex-lloyd",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Lloyd') AS c0, SOUNDEX('Jackson') AS c1, SOUNDEX('Washington') AS c2, SOUNDEX('Lee') AS c3, SOUNDEX('Bbbb') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "008-soundex-smith",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Smith') AS c0, SOUNDEX('Smyth') AS c1, DIFFERENCE('Smith', 'Smyth') AS c2, DIFFERENCE('Smyth', 'Smith') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "009-soundex-smith",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Smith') AS c0, SOUNDEX('Jones') AS c1, DIFFERENCE('Smith', 'Jones') AS c2, DIFFERENCE('Jones', 'Smith') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "010-soundex-robert",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Robert') AS c0, SOUNDEX('Rob') AS c1, DIFFERENCE('Robert', 'Rob') AS c2, DIFFERENCE('Rob', 'Robert') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "011-soundex-abc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('abc') AS c0, SOUNDEX('abd') AS c1, DIFFERENCE('abc', 'abd') AS c2, DIFFERENCE('abd', 'abc') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "012-soundex-lee",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Lee') AS c0, SOUNDEX('Leigh') AS c1, DIFFERENCE('Lee', 'Leigh') AS c2, DIFFERENCE('Leigh', 'Lee') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "013-soundex-washington",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Washington') AS c0, SOUNDEX('Washer') AS c1, DIFFERENCE('Washington', 'Washer') AS c2, DIFFERENCE('Washer', 'Washington') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "014-soundex-jackson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Jackson') AS c0, SOUNDEX('Jaxen') AS c1, DIFFERENCE('Jackson', 'Jaxen') AS c2, DIFFERENCE('Jaxen', 'Jackson') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "015-soundex-a",
+      "steps": [{"kind":"batch","sql":"SELECT SOUNDEX('a') AS c0, SOUNDEX('b') AS c1, DIFFERENCE('a', 'b') AS c2, DIFFERENCE('b', 'a') AS c3"}]
+    },
+    {
+      "name": "016-soundex-tymczak",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Tymczak') AS c0, SOUNDEX('Tinsdale') AS c1, DIFFERENCE('Tymczak', 'Tinsdale') AS c2, DIFFERENCE('Tinsdale', 'Tymczak') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "017-soundex-ashcraft",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Ashcraft') AS c0, SOUNDEX('Ashcroft') AS c1, DIFFERENCE('Ashcraft', 'Ashcroft') AS c2, DIFFERENCE('Ashcroft', 'Ashcraft') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "018-soundex-pfister",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Pfister') AS c0, SOUNDEX('Fister') AS c1, DIFFERENCE('Pfister', 'Fister') AS c2, DIFFERENCE('Fister', 'Pfister') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "019-soundex-honeyman",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SOUNDEX('Honeyman') AS c0, SOUNDEX('Moneyman') AS c1, DIFFERENCE('Honeyman', 'Moneyman') AS c2, DIFFERENCE('Moneyman', 'Honeyman') AS c3"
+        }
+      ]
+    },
+    {"name":"020-format-1234-5-c","steps":[{"kind":"batch","sql":"SELECT FORMAT(-1234.5, 'C') AS c0, FORMAT(-5, 'C0') AS c1"}]},
+    {
+      "name": "021-format-1234-5678-f",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(1234.5678, 'F') AS c0, FORMAT(-0.5, 'N0') AS c1, FORMAT(0.125, 'N2') AS c2, FORMAT(2.5, 'N0') AS c3, FORMAT(CAST(2.5 AS float), 'N0') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "022-format-cast-0-1-as-float-n20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(0.1 AS float), 'N20') AS c0, FORMAT(1e20, 'N0') AS c1, FORMAT(CAST(1.5 AS real), 'N2') AS c2, FORMAT(-0.001, 'P1') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "023-format-cast-1-as-int-x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1 AS int), 'X') AS c0, FORMAT(CAST(-1 AS smallint), 'X') AS c1, FORMAT(CAST(-1 AS bigint), 'x') AS c2, FORMAT(1.5, 'X') AS c3, FORMAT(1.5, 'D') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "024-format-1234567-891-0-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(1234567.891, '#,0.0') AS c0, FORMAT(0, '#') AS c1, FORMAT(0, '0.00') AS c2, FORMAT(-0.004, '0.00') AS c3, FORMAT(42, '00000') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "025-format-cast-2024-01-31-13-45-30-1234567-as-datetime2-yyyy-mm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-31 13:45:30.1234567' AS datetime2), 'yyyy-MM-ddTHH:mm:ss.fffffff') AS c0, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'MMM d yyyy h:mm tt') AS c1, FORMAT(CAST('2024-03-05' AS date), 'M/d/yy') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "026-format-cast-2024-01-31-13-45-30-as-datetime2-g",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'G') AS c0, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'g') AS c1, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 't') AS c2, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'T') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "027-format-cast-2024-01-31-13-45-30-as-datetime2-s",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 's') AS c0, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'M') AS c1, FORMAT(CAST('2024-01-31 13:45:30' AS datetime2), 'Y') AS c2, FORMAT(CAST('2024-01-31 13:45:30 +05:30' AS datetimeoffset), 'yyyy-MM-dd HH:mm zzz') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "028-format-cast-13-45-30-123-as-time-hh-mm-ss-fff",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('13:45:30.123' AS time), 'hh\\:mm\\:ss\\.fff') AS c0, FORMAT(CAST('13:45:30' AS time), 'hh:mm') AS c1, FORMAT(CAST('13:45:30' AS time), 'c') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "029-isnumeric-1-000-5e3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('1,000.5e3') AS c0, ISNUMERIC('- 5') AS c1, ISNUMERIC('5-') AS c2, ISNUMERIC('$1,2,3') AS c3, ISNUMERIC('1e+') AS c4, ISNUMERIC('.e1') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "030-isnumeric-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('¥5') AS c0, ISNUMERIC('5$') AS c1, ISNUMERIC('$$5') AS c2, ISNUMERIC('+-5') AS c3, ISNUMERIC('1.') AS c4, ISNUMERIC('1 2') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "031-dateadd-day-1-cast-2079-06-06-10-00-as-smalldatetime",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(day, 1, CAST('2079-06-06 10:00' AS smalldatetime)) AS c0"}]
+    },
+    {
+      "name": "032-dateadd-minute-1-cast-1900-01-01-00-00-as-smalldatetime",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(minute, -1, CAST('1900-01-01 00:00' AS smalldatetime)) AS c0"}]
+    },
+    {
+      "name": "033-dateadd-day-1-cast-9999-12-31-10-00-00-00-as-datetimeoffset",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(day, 1, CAST('9999-12-31 10:00 +00:00' AS datetimeoffset)) AS c0"}]
+    },
+    {
+      "name": "034-dateadd-hour-10-cast-9999-12-31-20-00-05-00-as-datetimeoffse",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(hour, 10, CAST('9999-12-31 20:00 -05:00' AS datetimeoffset)) AS c0"}]
+    },
+    {
+      "name": "035-dateadd-year-1-cast-0001-06-01-10-00-as-datetime2",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(year, -1, CAST('0001-06-01 10:00' AS datetime2)) AS c0"}]
+    },
+    {
+      "name": "036-dateadd-day-1-cast-1753-01-01-as-datetime",
+      "steps": [{"kind":"batch","sql":"SELECT DATEADD(day, -1, CAST('1753-01-01' AS datetime)) AS c0"}]
+    },
+    {
+      "name": "037-dateadd-millisecond-5-cast-2024-01-01-00-00-00-000-as-dateti",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATEADD(millisecond, 5, CAST('2024-01-01 00:00:00.000' AS datetime)) AS c0, DATEADD(millisecond, -1, CAST('2024-01-01 00:00:00.000' AS datetime)) AS c1, DATEADD(millisecond, -2, CAST('2024-01-01 00:00:00.000' AS datetime)) AS c2, DATEADD(second, -1, CAST('2024-01-01 00:00:10' AS smalldatetime)) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "038-datetrunc-second-cast-2024-01-31-13-45-00-as-smalldatetime",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATETRUNC(second, CAST('2024-01-31 13:45:00' AS smalldatetime)) AS c0, DATETRUNC(minute, CAST('2024-01-31 13:45:00' AS smalldatetime)) AS c1"
+        }
+      ]
+    },
+    {
+      "name": "039-datetrunc-millisecond-cast-2024-01-31-13-45-30-12-as-datetim",
+      "steps": [{"kind":"batch","sql":"SELECT DATETRUNC(millisecond, CAST('2024-01-31 13:45:30.12' AS datetime2(2))) AS c0"}]
+    },
+    {
+      "name": "040-datetrunc-weekday-cast-2024-01-31-as-datetime",
+      "steps": [{"kind":"batch","sql":"SELECT DATETRUNC(weekday, CAST('2024-01-31' AS datetime)) AS c0"}]
+    },
+    {
+      "name": "041-datetrunc-day-2024-01-31-13-45-30-05-00",
+      "steps": [{"kind":"batch","sql":"SELECT DATETRUNC(day, '2024-01-31 13:45:30 +05:00') AS c0, DATETRUNC(day, 45000) AS c1"}]
+    },
+    {
+      "name": "042-declare-n-int-1-select-left-abc-n-as-c0",
+      "steps": [{"kind":"batch","sql":"DECLARE @n int = -1; SELECT LEFT('abc', @n) AS c0"}]
+    },
+    {
+      "name": "043-declare-n-int-1-select-substring-abc-1-n-as-c0",
+      "steps": [{"kind":"batch","sql":"DECLARE @n int = -1; SELECT SUBSTRING('abc', 1, @n) AS c0"}]
+    },
+    {
+      "name": "044-declare-n-int-1-select-right-n-abc-n-as-c0",
+      "steps": [{"kind":"batch","sql":"DECLARE @n int = -1; SELECT RIGHT(N'abc', @n) AS c0"}]
+    },
+    {
+      "name": "045-declare-s-varchar-10-abcdef-i-int-2-j-int-3-select-stuff-s-i",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s varchar(10) = 'abcdef', @i int = 2, @j int = 3; SELECT STUFF(@s, @i, @j, 'XY') AS c0, STUFF(@s, 2, @j, 'XY') AS c1"
+        }
+      ]
+    },
+    {
+      "name": "046-declare-s-nvarchar-10-n-abcdef-select-replicate-s-1000-as-c0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(10) = N'abcdef'; SELECT REPLICATE(@s, 1000) AS c0, SPACE(LEN(@s)) AS c1, LEFT(@s, LEN(@s) - 1) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "047-declare-d-datetime2-3-2024-01-31-10-00-00-123-select-dateadd",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @d datetime2(3) = '2024-01-31 10:00:00.123'; SELECT DATEADD(day, 1, @d) AS c0, DATEPART(ms, @d) AS c1, EOMONTH(@d) AS c2, DATETRUNC(hour, @d) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "048-declare-x-decimal-10-4-123-4567-select-round-x-2-as-c0-round",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x decimal(10,4) = 123.4567; SELECT ROUND(@x, 2) AS c0, ROUND(@x, -1, 1) AS c1, CEILING(@x) AS c2, FLOOR(-@x) AS c3, ABS(-@x) AS c4, SIGN(@x) AS c5"
+        }
+      ]
+    },
+    {
+      "name": "049-declare-f-float-2-5-select-round-f-0-as-c0-power-f-2-as-c1-s",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @f float = 2.5; SELECT ROUND(@f, 0) AS c0, POWER(@f, 2) AS c1, SQRT(@f) AS c2, LOG(@f) AS c3, EXP(@f) AS c4"
+        }
+      ]
+    },
+    {
+      "name": "050-translate-n-abc-ab-n-xy",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRANSLATE(N'abc', 'ab', N'xy') AS c0, TRANSLATE('abc', N'ab', 'xy') AS c1, TRANSLATE(N'🦆a', N'🦆', N'xy') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "051-quotename-n-a-b",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT QUOTENAME(N'a]b', ']') AS c0, QUOTENAME('', '[') AS c1, QUOTENAME('a', '''''') AS c2, QUOTENAME('a', '\"') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "052-str-0-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT STR(-0.4) AS c0, STR(0.4) AS c1, STR(99.99, 4, 1) AS c2, STR(9.96, 4, 1) AS c3, STR(-9.96, 4, 1) AS c4, STR(123.45, 6, -1) AS c5"
+        }
+      ]
+    },
+    {
+      "name": "053-str-1e16-20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT STR(1e16, 20) AS c0, STR(123456789.123456789, 30, 15) AS c1, STR(0.000001, 10, 8) AS c2, STR(5, 10, 5) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "054-charindex-a-abc-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHARINDEX('a', 'abc', 0) AS c0, CHARINDEX('bc', 'abcbc', 3) AS c1, CHARINDEX(N'é', N'cafe' + NCHAR(769)) AS c2, CHARINDEX('ss', 'straße') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "055-replace-n-stra-e-ss-x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REPLACE(N'straße', 'ss', 'X') AS c0, REPLACE('aAa', 'a', 'b') AS c1, REPLACE('abc' COLLATE Latin1_General_BIN2, 'B', 'x') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "056-patindex-b-abc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT PATINDEX('%[b]%', 'ABC') AS c0, PATINDEX('%b%' COLLATE Latin1_General_CS_AS, 'ABC') AS c1, PATINDEX('a%', 'abc  ') AS c2, PATINDEX('%c', 'abc  ') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "057-greatest-n-a-b-collate-latin1-general-cs-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(N'a', 'b' COLLATE Latin1_General_CS_AS) AS c0, LEAST('A', 'a') AS c1, GREATEST('a ', 'a') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "058-greatest-cast-1-as-tinyint-cast-2-as-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(CAST(1 AS tinyint), CAST(2 AS int)) AS c0, LEAST(CAST(1 AS bigint), CAST(2 AS int)) AS c1, GREATEST(1.5, 2) AS c2, GREATEST(CAST(1 AS float), 2) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "059-choose-3-a-b-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHOOSE(3, 'a', 'b', 'c') AS c0, CHOOSE(-1, 'a') AS c1, CHOOSE(1, N'x', 'y') AS c2, CHOOSE(2, 1, 2.5) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "060-select-rand-3-as-c0-select-rand-as-c0-select-rand-3-as-c0-ra",
+      "steps": [{"kind":"batch","sql":"SELECT RAND(3) AS c0; SELECT RAND() AS c0; SELECT RAND(3) AS c0, RAND() AS c1"}]
+    },
+    {"name":"061-rand-2147483648","steps":[{"kind":"batch","sql":"SELECT RAND(-2147483648) AS c0"}]},
+    {
+      "name": "062-rand-2147483562",
+      "steps": [{"kind":"batch","sql":"SELECT RAND(2147483562) AS c0, RAND(2147483563) AS c1, RAND(2147483564) AS c2, RAND(1073741824) AS c3"}]
+    },
+    {
+      "name": "063-cos-0-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COS(0.5) AS c0, SIN(0.5) AS c1, TAN(0.5) AS c2, ATAN(0.5) AS c3, EXP(0.5) AS c4, LOG(0.5) AS c5, LOG10(0.5) AS c6, SQRT(0.5) AS c7"
+        }
+      ]
+    },
+    {
+      "name": "064-cos-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COS(2) AS c0, SIN(2) AS c1, TAN(2) AS c2, ACOS(0.1) AS c3, ASIN(0.1) AS c4, EXP(2) AS c5, LOG(2) AS c6, POWER(2.0e0, 0.1) AS c7"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "source": "harness/gen/functions.mjs",
+  "cases": [
+    {
+      "name": "000-hashbytes-md2-abc",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('MD2', 'abc') AS c0, HASHBYTES('MD2', N'abc') AS c1, HASHBYTES('MD2', '') AS c2"}]
+    },
+    {
+      "name": "001-hashbytes-md4-abc",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('MD4', 'abc') AS c0, HASHBYTES('MD4', N'abc') AS c1, HASHBYTES('MD4', '') AS c2"}]
+    },
+    {
+      "name": "002-hashbytes-md5-abc",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('MD5', 'abc') AS c0, HASHBYTES('MD5', N'abc') AS c1, HASHBYTES('MD5', '') AS c2"}]
+    },
+    {
+      "name": "003-hashbytes-sha-abc",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('SHA', 'abc') AS c0, HASHBYTES('SHA', N'abc') AS c1, HASHBYTES('SHA', '') AS c2"}]
+    },
+    {
+      "name": "004-hashbytes-sha1-abc",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('SHA1', 'abc') AS c0, HASHBYTES('SHA1', N'abc') AS c1, HASHBYTES('SHA1', '') AS c2"}]
+    },
+    {
+      "name": "005-hashbytes-sha2-256-abc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES('SHA2_256', 'abc') AS c0, HASHBYTES('SHA2_256', N'abc') AS c1, HASHBYTES('SHA2_256', '') AS c2"
+        }
+      ]
+    },
+    {
+      "name": "006-hashbytes-sha2-512-abc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES('SHA2_512', 'abc') AS c0, HASHBYTES('SHA2_512', N'abc') AS c1, HASHBYTES('SHA2_512', '') AS c2"
+        }
+      ]
+    },
+    {"name":"007-hashbytes-md5-null","steps":[{"kind":"batch","sql":"SELECT HASHBYTES('MD5', NULL) AS c0"}]},
+    {
+      "name": "008-hashbytes-null-abc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES(NULL, 'abc') AS c0, HASHBYTES('md5', 'abc') AS c1, HASHBYTES(N'Sha2_256', 0x616263) AS c2, HASHBYTES('MD5', CAST(NULL AS varchar(10))) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "009-hashbytes-sha2-256-replicate-cast-a-as-varchar-max-10000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES('SHA2_256', REPLICATE(CAST('a' AS varchar(max)), 10000)) AS c0, HASHBYTES('SHA1', REPLICATE('abcdefgh', 100)) AS c1"
+        }
+      ]
+    },
+    {
+      "name": "010-hashbytes-sha2-512-the-quick-brown-fox-jumps-over-the-lazy-d",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES('SHA2_512', 'The quick brown fox jumps over the lazy dog') AS c0, HASHBYTES('MD5', 'The quick brown fox jumps over the lazy dog') AS c1"
+        }
+      ]
+    },
+    {"name":"011-hashbytes-sha2-256-cast-1-as-int","steps":[{"kind":"batch","sql":"SELECT HASHBYTES('SHA2_256', CAST(1 AS int)) AS c0"}]},
+    {
+      "name": "012-hashbytes-sha2-256-cast-abc-as-char-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT HASHBYTES('SHA2_256', CAST('abc' AS char(5))) AS c0, HASHBYTES('SHA1', N'🦆') AS c1, HASHBYTES('SHA1', CAST('é' AS varchar(5))) AS c2"
+        }
+      ]
+    },
+    {"name":"013-hashbytes-sha3-256-abc","steps":[{"kind":"batch","sql":"SELECT HASHBYTES('SHA3_256', 'abc') AS c0"}]},
+    {
+      "name": "014-select-case-when-hashbytes-sha2-256-abc-hashbytes-sha2-256-a",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN HASHBYTES('SHA2_256', 'abc') = HASHBYTES('SHA2_256', 'abc') THEN 1 ELSE 0 END AS c0"}]
+    },
+    {
+      "name": "015-checksum-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(1) AS c0, CHECKSUM(1, 2) AS c1, CHECKSUM('abc') AS c2, CHECKSUM(N'abc') AS c3, CHECKSUM('ABC') AS c4"
+        }
+      ]
+    },
+    {"name":"016-checksum-null","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(NULL) AS c0"}]},
+    {
+      "name": "017-checksum-cast-1-as-bigint",
+      "steps": [{"kind":"batch","sql":"SELECT CHECKSUM(CAST(1 AS bigint)) AS c0, CHECKSUM(1.5) AS c1, CHECKSUM(CAST('2024-01-01' AS date)) AS c2"}]
+    },
+    {
+      "name": "018-binary-checksum-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT BINARY_CHECKSUM(1) AS c0, BINARY_CHECKSUM('abc') AS c1, BINARY_CHECKSUM('ABC') AS c2, BINARY_CHECKSUM(N'abc') AS c3, BINARY_CHECKSUM(1, 'a') AS c4"
+        }
+      ]
+    },
+    {"name":"019-binary-checksum-null","steps":[{"kind":"batch","sql":"SELECT BINARY_CHECKSUM(NULL) AS c0"}]},
+    {
+      "name": "020-binary-checksum",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT BINARY_CHECKSUM('') AS c0, BINARY_CHECKSUM('abcdefghijklmnopqrstuvwxyz') AS c1, BINARY_CHECKSUM(0x0102) AS c2"
+        }
+      ]
+    },
+    {"name":"021-compress-abc","steps":[{"kind":"batch","sql":"SELECT COMPRESS('abc') AS c0"}]}
+  ]
+}
