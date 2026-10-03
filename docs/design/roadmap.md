@@ -46,7 +46,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [ ] Expression parser, SELECT, DML, DDL, procedural statements
 - [ ] Parse the entire target codebase (needs app repo)
 - [ ] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
-- [ ] Store: persistent tables, catalog objects
+- [~] Store: persistent ordered map `PMap` (AVL, explicit comparator, range seeks) done; tables, indexes, catalog objects missing
 - [ ] DDL execution: tables, constraints, indexes, views, procs, triggers, functions
 - [ ] Virtual `sys.*` / `INFORMATION_SCHEMA` views the scripts touch; `OBJECT_ID`, `COL_LENGTH`, …
 - Gate: all migration scripts run green.

@@ -90,3 +90,13 @@ scripts/check.sh                 # everything CI runs; must be green to push
   `\{@debug.to_string(x)}` (import `moonbitlang/core/debug`).
 - 2026-10-03: test-only imports in `moon.pkg`: `import { "pkg" } for "test"`.
 - 2026-10-03: `Int::to_string(radix=16)` for hex; there is no `to_hex`.
+- 2026-10-03: the functional `loop x { pat => ... continue y }` form is
+  **deprecated** in moonc v0.10.14 (warning 0027), although the vendored agent
+  guide still teaches it. Write `for n = init { match n { ... => continue next;
+  ... => break result } }` instead.
+- 2026-10-03: `Set::new()` is deprecated: write `let s : Set[Int] = Set([])`.
+- 2026-10-03: a constructor with labelled fields needs its positional args in
+  patterns too: `KeyRange(table~, _, ..)`, not `KeyRange(table~, ..)`.
+- 2026-10-03: generic `==` on a type parameter needs `K : Eq`. For
+  comparator-based containers, pass `(K, K) -> Int` and write `same(a, b, cmp)`
+  helpers rather than adding trait bounds.
