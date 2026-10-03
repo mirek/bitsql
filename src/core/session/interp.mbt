@@ -363,6 +363,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Insert(ins) => self.exec_insert(ins)
     Update(u) => self.exec_update(u)
     Delete(d) => self.exec_delete(d)
+    Merge(m) => self.exec_merge(m)
     Truncate(name) => self.exec_truncate(name)
     SetIdentityInsert(name, on) =>
       match self.find_table(name) {

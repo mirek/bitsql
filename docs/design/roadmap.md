@@ -73,7 +73,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 - [~] Binder + IR (core/bind, core/ir) with captured metadata rules; Semantics record not extracted yet (T-SQL rules inline)
 - [~] Executor: scan, filter, project, nested-loop joins (inner/left/right/full/cross), sort, limit, distinct, union all, values. Missing: aggregate/GROUP BY, subqueries, CTEs, APPLY, window functions
-- [~] INSERT (VALUES/SELECT/DEFAULT VALUES, defaults, identity, IDENTITY_INSERT, computed, rowversion), UPDATE (compound SET, DEFAULT), DELETE, statement-level rollback. Missing: OUTPUT, UPDATE/DELETE FROM, TOP, MERGE, triggers (Delta consumers)
+- [~] INSERT (VALUES/SELECT/DEFAULT VALUES, defaults, identity, IDENTITY_INSERT, computed, rowversion), UPDATE (compound SET, DEFAULT), DELETE, statement-level rollback. OUTPUT (incl. INTO), UPDATE/DELETE FROM/TOP/aliases, MERGE (all clause families, 8672, TOP, OUTPUT $action). Missing: triggers (Delta consumers), MERGE with CTE
 - [~] Constraints: NOT NULL 515, PK/UNIQUE 2627, unique index 2601, CHECK 547, FK 547 both directions, truncation 2628, identity not rolled back. Missing: cascades, NOCHECK, messages verified against captures
 - [ ] Index seeks on sargable predicates
 - Gate: first tests move to the emulator allowlist.

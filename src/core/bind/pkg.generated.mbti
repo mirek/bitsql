@@ -15,6 +15,8 @@ pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
 
 pub fn bind_query(Env, @ast.Query) -> BoundQuery raise @types.SqlError
 
+pub fn bind_sources(Env, Array[@ast.TableRef]) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError
+
 pub fn coerce(@ir.Expr, @types.SqlType) -> @ir.Expr raise @types.SqlError
 
 pub fn resolve_type(@ast.TypeName, TypeContext, @types.Collation) -> @types.SqlType raise @types.SqlError

@@ -99,7 +99,9 @@ pub fn type_info(t : @types.SqlType, nullable : Bool) -> @tds.TypeInfo {
 ///|
 pub fn column_flags(c : @ir.ResultColumn) -> Int {
   let base = match c.origin {
-    BaseColumn(identity~) => if identity { 0x08 | 0x10 } else { 0x08 }
+    // identity columns are not updateable: 0x10 without 0x08 (captured:
+    // dml/merge-delete-insert-defaults)
+    BaseColumn(identity~) => if identity { 0x10 } else { 0x08 }
     Computed => 0x20
     SetOperation | Aggregate => 0
   }

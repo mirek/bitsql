@@ -123,3 +123,12 @@ pub fn bind_dml_source(
     }
   }
 }
+
+///|
+/// Binds arbitrary FROM items (MERGE USING source).
+pub fn bind_sources(
+  env : Env,
+  from : Array[@ast.TableRef],
+) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError {
+  bind_from(env, from)
+}

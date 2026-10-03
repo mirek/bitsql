@@ -13,9 +13,12 @@ evidence, whenever a capture forces one.
 | 0x01 | nullable | expression nullability (below) |
 | 0x02 | case-sensitive | collation is CS, BIN or BIN2 (msduck collation-wire: 34/35) |
 | 0x08 | updateable "unknown" | base table columns (`SELECT col FROM t`: 8/9) |
-| 0x10 | identity | identity base column |
+| 0x10 | identity | identity base column, *without* 0x08 (flags 16/17) |
 | 0x20 | computed | any non-column expression (32/33) |
 | none | | UNION outputs and VALUES-derived columns: 0; aggregates: 0x01 only |
+
+OUTPUT columns referencing inserted/deleted keep base-column flags; in MERGE
+both images are nullable (flags 9) and `$action` is nvarchar(10) with flags 0.
 
 A constant CASE that folds to a column keeps that column's base flags
 (`CASE WHEN 1=1 THEN v ELSE 7 END` gives 9).

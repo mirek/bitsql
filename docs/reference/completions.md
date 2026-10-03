@@ -13,7 +13,9 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | SELECT (result set), `SET @v = expr`, `SELECT @v = ...`, `DECLARE @v t = expr` | 193 (0xC1) | yes (1 for assignment) |
 | INSERT | 195 | yes |
 | DELETE | 196 | yes |
-| UPDATE (also MERGE?; WITH … UPDATE seen as 197) | 197 | yes |
+| UPDATE (WITH … UPDATE also 197) | 197 | yes |
+| MERGE | 279 | yes |
+| MERGE failing with 8672 (repeated match) | 253, batch ends, transaction rolled back | no |
 | CREATE TABLE | 198 | no |
 | DROP TABLE | 199 | no |
 | CREATE INDEX | 200 | no |

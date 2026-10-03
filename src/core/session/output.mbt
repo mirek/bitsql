@@ -34,11 +34,22 @@ fn Session::bind_output(
   }
   let base = table_columns(target.table)
   let cols : Array[@bind.ColumnRef] = []
+  // In MERGE either image may be absent, so both are nullable (captured:
+  // dml/merge-upsert).
+  let both = deleted && inserted && extra.iter().any(c => c.name == "$action")
   if deleted {
-    cols.append(base.map(c => { ..c, qualifier: "deleted", }))
+    cols.append(
+      base.map(c => { ..c, qualifier: "deleted", nullable: c.nullable || both, }),
+    )
   }
   if inserted {
-    cols.append(base.map(c => { ..c, qualifier: "inserted", }))
+    cols.append(
+      base.map(c => {
+        ..c,
+        qualifier: "inserted",
+        nullable: c.nullable || both,
+      }),
+    )
   }
   cols.append(extra.filter(c => c.qualifier != "%rowid"))
   let env = self.env().with_columns(cols)
