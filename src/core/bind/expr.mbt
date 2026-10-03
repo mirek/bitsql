@@ -235,11 +235,6 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let nullable = els is None ||
         branches.iter().any(b => b.1.nullable) ||
         (els is Some(x) && x.nullable)
-      let branches = branches.map(b => (b.0, coerce(b.1, t)))
-      let els = match els {
-        Some(x) => Some(coerce(x, t))
-        None => None
-      }
       fold_case(branches, els, t, nullable)
     }
     Cast(inner, tn, try_~) => {

@@ -248,11 +248,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let t = unify_types(b.map(x => x.ty))
       let branches = []
       for i in 0..<(b.length() - 1) {
-        branches.push(
-          (bit_expr(IsNull(b[i], negated=true), false), coerce(b[i], t)),
-        )
+        branches.push((bit_expr(IsNull(b[i], negated=true), false), b[i]))
       }
-      let last = coerce(b[b.length() - 1], t)
+      let last = b[b.length() - 1]
       fold_case(
         branches,
         Some(last),
@@ -278,12 +276,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let a = bind_expr(env, args[1])
       let b2 = bind_expr(env, args[2])
       let t = @types.common_type(a.ty, b2.ty)
-      fold_case(
-        [(c, coerce(a, t))],
-        Some(coerce(b2, t)),
-        t,
-        a.nullable || b2.nullable,
-      )
+      fold_case([(c, a)], Some(b2), t, a.nullable || b2.nullable)
     }
     "XACT_STATE" => {
       arity(name, args, 0)

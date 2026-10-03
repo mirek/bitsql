@@ -20,7 +20,8 @@ new trap, add a row here *and* a corpus case.
 | Views | Subplan inlined by the binder | Updatable-view rules are strict |
 | Cursors | Snapshot root plus iterator | Only `STATIC`, `FAST_FORWARD`, `LOCAL` in v1; others raise an explicit error |
 | `@@ROWCOUNT` | Session register | Reset by many statements, including `SET` options, `PRINT`, `BEGIN TRAN` and `COMMIT` |
-| Result metadata | Binder-computed | COLMETADATA type/length/precision/nullability must not depend on row values; empty results still carry exact metadata |
+| Result metadata | Binder-computed | COLMETADATA type/length/precision/nullability must not depend on row values; empty results still carry exact metadata. Rules: docs/reference/result-metadata.md |
+| Constant folding | Binder folds constant CASE/IIF/COALESCE/arithmetic | Folding changes metadata: lengths shrink to the selected branch, failing folds become nullable (result-metadata.md) |
 | ORDER token | Binder-computed ordinals | Emitted for ORDER BY results with projected ordinals (0 = hidden key), but not for every ORDER BY (all-NULL constant keys, window-only ordering, derived TOP ordering omit it). Rules: msduck `docs/order-token.md` |
 | `DONE` tokens | Per statement | `DONE_COUNT` presence depends on `NOCOUNT`; `DONEINPROC` vs `DONE` depends on proc context |
 | String → integer | `parse_int_text` in `src/core/types` | Only ASCII spaces are trimmed (tab/NBSP fail); `'+ 7'` is 7 and `''`/`'-'` are 0; bigint failures are 8114, not 245; over 4000 UTF-16 units is 8152 even under TRY_CAST |

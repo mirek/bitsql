@@ -65,16 +65,66 @@ fn fold_arith(e : @ir.Expr) -> @ir.Expr {
 }
 
 ///|
+/// Same type up to string/binary length (both bounded).
+fn same_family(a : @types.SqlType, b : @types.SqlType) -> Bool {
+  match (a, b) {
+    (VarChar(Some(_), _), VarChar(Some(_), _))
+    | (NVarChar(Some(_), _), NVarChar(Some(_), _))
+    | (Char(_, _), Char(_, _))
+    | (NChar(_, _), NChar(_, _))
+    | (VarBinary(Some(_)), VarBinary(Some(_)))
+    | (Binary(_), Binary(_)) => true
+    _ => a == b
+  }
+}
+
+///|
+fn is_untyped_null(e : @ir.Expr) -> Bool {
+  e.kind is Lit(Null) && e.ty is Int
+}
+
+///|
+fn is_lob(t : @types.SqlType) -> Bool {
+  t is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None))
+}
+
+///|
 /// Constant CASE folding (captured: msduck case-constant-properties,
-/// conditional-literal-folding): leading constant-FALSE branches are dropped
-/// and a constant-TRUE branch replaces the whole CASE, keeping that branch's
-/// nullability and column origin.
+/// conditional-literal-folding). Leading constant-FALSE branches are
+/// dropped; a constant-TRUE branch replaces the CASE:
+/// - if its type equals the CASE type up to length, it is returned as is
+///   (own length, nullability and column origin);
+/// - otherwise it is converted to the CASE type and the result is nullable
+///   when any branch is (an untyped NULL literal does not count).
+/// LOB (max) results are never folded.
 fn fold_case(
   branches : Array[(@ir.Expr, @ir.Expr)],
   els : @ir.Expr?,
   ty : @types.SqlType,
   nullable : Bool,
 ) -> @ir.Expr raise @types.SqlError {
+  let all = branches.map(b => b.1)
+  if els is Some(x) {
+    all.push(x)
+  }
+  let any_nullable = all.iter().any(x => x.nullable && !is_untyped_null(x))
+  let pick = (x : @ir.Expr) => {
+    if same_family(x.ty, ty) {
+      x
+    } else {
+      { ..coerce(x, ty), nullable: any_nullable || x.nullable, }
+    }
+  }
+  if is_lob(ty) {
+    return {
+      kind: Case(
+        branches.map(b => (b.0, coerce(b.1, ty))),
+        els.map(x => coerce(x, ty)),
+      ),
+      ty,
+      nullable,
+    }
+  }
   let mut i = 0
   while i < branches.length() {
     let cond = branches[i].0
@@ -82,17 +132,17 @@ fn fold_case(
       break
     }
     match try_fold(cond) {
-      Some(Bit(true)) => return coerce(branches[i].1, ty)
+      Some(Bit(true)) => return pick(branches[i].1)
       Some(_) => i += 1
       None => break
     }
   }
   if i == branches.length() {
     return match els {
-      Some(x) => coerce(x, ty)
+      Some(x) => pick(x)
       None => { kind: Lit(Null), ty, nullable: true, }
     }
   }
-  let rest = branches[i:].to_owned()
-  { kind: Case(rest, els), ty, nullable, }
+  let rest = branches[i:].to_owned().map(b => (b.0, coerce(b.1, ty)))
+  { kind: Case(rest, els.map(x => coerce(x, ty))), ty, nullable, }
 }
