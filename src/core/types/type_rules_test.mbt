@@ -180,4 +180,10 @@ test "cp1252" {
   assert_eq(@types.cp1252_encode(0x100), None)
   assert_eq(@types.cp1252_decode(0x9F), 0x178)
   assert_eq(@types.cp1252_string(@types.cp1252_bytes("€ÿŸ")), "€ÿŸ")
+  // best fit (captured from the oracle, cp1252_best_fit.mbt), else '?'
+  assert_eq(@types.cp1252_byte_of(0x100), 0x41)
+  assert_eq(@types.cp1252_byte_of(0x221E), 0x38)
+  assert_eq(@types.cp1252_byte_of(0x110), 0xD0)
+  assert_eq(@types.cp1252_byte_of(0xD83E), 0x3F)
+  assert_eq(@types.cp1252_byte_of(0x4E00), 0x3F)
 }

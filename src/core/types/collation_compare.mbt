@@ -50,6 +50,10 @@ pub fn compare_strings(
   ansi? : Bool = false,
 ) -> Int {
   match collation.kind {
+    // varchar data is stored in code page 1252: binary collations order
+    // its bytes (captured: msduck bin2-ansi-comparisons, '€' (0x80) <
+    // NBSP (0xA0) as varchar although U+20AC > U+00A0)
+    Bin2 | Bin if ansi => compare_bytes(a, b)
     Bin2 => compare_bin2(a, b)
     Bin => compare_bin(a, b)
     Linguistic => compare_linguistic(a, b, collation, ansi)
@@ -73,6 +77,20 @@ fn compare_bin2(a : String, b : String) -> Int {
   for i in 0..<n {
     let x = if i < a.length() { a[i].to_int() } else { 0x20 }
     let y = if i < b.length() { b[i].to_int() } else { 0x20 }
+    if x != y {
+      return sign_of(x - y)
+    }
+  }
+  0
+}
+
+///|
+/// Space-padded comparison of the CP1252 bytes of two varchar values.
+fn compare_bytes(a : String, b : String) -> Int {
+  let n = if a.length() > b.length() { a.length() } else { b.length() }
+  for i in 0..<n {
+    let x = if i < a.length() { cp1252_byte_of(a[i].to_int()) } else { 0x20 }
+    let y = if i < b.length() { cp1252_byte_of(b[i].to_int()) } else { 0x20 }
     if x != y {
       return sign_of(x - y)
     }
@@ -364,10 +382,17 @@ fn collation_elements(
         kana: 0,
         width: 0,
       })
-    } else if u == 0xDF {
+    } else if u == 0xDF && word_sort {
       // ß → ss
       push_letter(out, 's', 0, false)
       push_letter(out, 's', 0, false)
+    } else if u == 0xDF {
+      // string sort (SQL_ collation, varchar): ß sorts after 'ss' and before
+      // 'st' but is not equal to 'ss' (captured probe; CHARINDEX('ss',
+      // 'straße') is 0, functions/more#054). Modelled as "ss" with an
+      // accent-level difference.
+      push_letter(out, 's', 0, false)
+      push_letter(out, 's', 0x370, false)
     } else if u == 0xE6 && word_sort {
       push_letter(out, 'a', 0, upper)
       push_letter(out, 'e', 0, upper)

@@ -123,6 +123,11 @@ fn bind_agg_call(
     (Some(bind_expr(env, call.args[0])), None)
   }
   let ty = agg_result_type(f, arg.map(a => a.ty), env)
+  // captured probe: MAX(CASE .. a ELSE b END) over two implicit collations
+  // is 4191 "for max operation"
+  if f is (Min | Max) && arg is Some(a) {
+    ignore(resolve_collation(env, name.to_lower(), [a]))
+  }
   let order = call.within_group.map(o => {
     let k = bind_expr(env, o.expr)
     @ir.SortKey::{ expr: k, desc: o.desc, collation: k.ty.collation(), }

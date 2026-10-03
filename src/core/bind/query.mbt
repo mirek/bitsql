@@ -231,7 +231,7 @@ fn bind_table_ref(
       let (lp, lc) = bind_table_ref(env, left)
       if kind is (CrossApply | OuterApply) {
         // the right side sees the left row as its innermost outer row
-        let (rp, rc) = bind_table_ref(env.with_columns(lc), right)
+        let (rp, rc) = bind_table_ref(env.with_source(lc, lp), right)
         let outer = kind is OuterApply
         let rc2 = if outer { rc.map(c => { ..c, nullable: true, }) } else { rc }
         return (Apply(lp, rp, outer~, right_width=rc.length()), lc + rc2)
@@ -261,7 +261,22 @@ fn bind_table_ref(
           if has_aggregate(e) {
             raise aggregate_in_where()
           }
-          Some(bind_expr(env.with_columns(lc + rc), e))
+          Some(
+            bind_expr(
+              env.with_source(
+                lc + rc,
+                Join(
+                  Cross,
+                  lp,
+                  rp,
+                  None,
+                  left_width=lc.length(),
+                  right_width=rc.length(),
+                ),
+              ),
+              e,
+            ),
+          )
         }
         None => None
       }
@@ -916,7 +931,7 @@ fn bind_select_query(
     raise @types.not_supported("SELECT INTO here")
   }
   let (source, cols) = bind_from(env, s.from)
-  let inner = env.with_columns(cols)
+  let inner = env.with_source(cols, source)
   let mut plan = match s.where_ {
     Some(w) => {
       if has_aggregate(w) {
@@ -981,7 +996,7 @@ fn bind_select_query(
     }
     orders = orders.map(o => g.rewrite(o))
     plan = Aggregate(plan, g.keys, g.aggs, sets=g.sets)
-    base = env.with_columns(g.columns())
+    base = env.with_source(g.columns(), plan)
     match having {
       Some(h) => plan = Filter(plan, bind_clause(base, inner, h, Having, true))
       None => ()
@@ -1436,11 +1451,20 @@ fn bind_body(env : Env, b : @ast.QueryBody) -> BoundQuery raise @types.SqlError 
       let br = bind_body(env, r)
       check_width(bl, br)
       let columns = []
+      let op_name = match op {
+        Union => "UNION"
+        Except => "EXCEPT"
+        _ => "INTERSECT"
+      }
       for j, c in bl.columns {
         let t = unify_non_null([
           (c.ty, null_literal_column(bl.plan, j)),
           (br.columns[j].ty, null_literal_column(br.plan, j)),
         ])
+        let t = match set_op_collation(env, op_name, bl, br, j) {
+          Some(coll) => with_collation(t, coll)
+          None => t
+        }
         columns.push(
           match op {
             // captured: EXCEPT / INTERSECT keep the left operand's metadata
@@ -1517,6 +1541,12 @@ fn bind_union_all(
     let t = unify_non_null(
       bound.map(b => (b.columns[j].ty, null_literal_column(b.plan, j))),
     )
+    // an explicit collation in any branch labels the column (captured:
+    // collation/deferred-conflicts, UNION ALL with a BIN2 branch is CS)
+    let t = match union_all_collation(bound, j) {
+      Some(c) => with_collation(t, c)
+      None => t
+    }
     columns.push(@ir.ResultColumn::{
       name: bound[0].columns[j].name,
       ty: t,
@@ -1572,15 +1602,25 @@ fn max_recursion(hints : Array[@ast.QueryHint], default : Int) -> Int {
 }
 
 ///|
-/// Binds a query that returns rows to the client.
+/// Binds a query that returns rows to the client (or creates columns:
+/// SELECT INTO, views). `result_columns=false` (INSERT ... SELECT) skips
+/// the 451 check for result columns without a collation.
 pub fn bind_query(
   env : Env,
   q : @ast.Query,
+  result_columns? : Bool = true,
 ) -> BoundQuery raise @types.SqlError {
   check_next_value_context(q, false)
   let env = { ..env, maxrecursion: max_recursion(q.options, env.maxrecursion), }
   match q.for_clause {
-    None => bind_query_inner(env, q, top_level=true)
+    None => {
+      let bq = bind_query_inner(env, q, top_level=true)
+      // INSERT ... SELECT converts to the target columns instead (probe)
+      if result_columns {
+        check_result_collations(bq)
+      }
+      bq
+    }
     Some(ForJson(mode~, root~, include_null_values~, without_array_wrapper~)) => {
       let bq = bind_query_inner(env, { ..q, for_clause: None, }, top_level=true)
       if mode is JsonAuto {

@@ -111,7 +111,8 @@ fn string_literal(env : Env, s : String, national : Bool) -> @ir.Expr {
   if national {
     @ir.Expr::lit(String(s), NVarChar(Some(n), env.collation))
   } else {
-    // Characters outside code page 1252 become '?' in varchar literals.
+    // Characters outside code page 1252 take SQL Server's best fit or '?'
+    // (captured: 'Āłx🦆' is 0x416C783F3F).
     let v = @types.cp1252_string(@types.cp1252_bytes(s))
     @ir.Expr::lit(String(v), VarChar(Some(n), env.collation))
   }

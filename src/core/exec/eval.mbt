@@ -79,7 +79,10 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
     Cmp(op, a, b, coll) => {
       let va = eval(ctx, a)
       let vb = eval(ctx, b)
-      match @types.compare(va, vb, collation?=coll) {
+      // varchar operands compare as code page 1252 data (binary
+      // collations order bytes; SQL_ collations use string sort)
+      let ansi = a.ty.family() == FString && !a.ty.is_unicode()
+      match @types.compare(va, vb, collation?=coll, ansi~) {
         None => Null
         Some(c) =>
           of_bool(
@@ -153,7 +156,13 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
       }
       let mut unknown = false
       for item in items {
-        match @types.compare(va, eval(ctx, item), collation?) {
+        match
+          @types.compare(
+            va,
+            eval(ctx, item),
+            collation?,
+            ansi=a.ty.family() == FString && !a.ty.is_unicode(),
+          ) {
           Some(0) => return of_bool(Some(!negated))
           None => unknown = true
           _ => ()

@@ -275,9 +275,7 @@ fn to_character(
       }
     _ => render(v, from, style)
   }
-  if !to.is_unicode() {
-    require_cp1252(text)
-  }
+  let text = if to.is_unicode() { text } else { to_cp1252(text) }
   let mut out = text
   match char_capacity(to) {
     Some(cap) if text.length() > cap =>

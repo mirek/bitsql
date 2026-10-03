@@ -102,6 +102,9 @@ pub(all) struct Env {
   /// Views and inline table-valued functions being expanded (nesting
   /// guard: an ALTERed module can reference itself).
   nest : Int
+  /// The plan producing `columns`, when known: lets collation precedence
+  /// see through derived tables, CTEs and views (bind/collation.mbt).
+  from_plan : @ir.Plan?
 }
 
 ///|
@@ -132,12 +135,23 @@ pub fn Env::new(
     maxrecursion: 100,
     ids: Ref(0),
     nest: 0,
+    from_plan: None,
   }
 }
 
 ///|
 pub fn Env::with_columns(self : Env, columns : Array[ColumnRef]) -> Env {
-  { ..self, columns, outer: Some(self), }
+  { ..self, columns, outer: Some(self), from_plan: None, }
+}
+
+///|
+/// `with_columns` for columns produced by `plan` (row layout = columns).
+fn Env::with_source(
+  self : Env,
+  columns : Array[ColumnRef],
+  plan : @ir.Plan,
+) -> Env {
+  { ..self, columns, outer: Some(self), from_plan: Some(plan), }
 }
 
 ///|

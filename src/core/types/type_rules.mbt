@@ -273,14 +273,19 @@ fn string_len_units(t : SqlType) -> Int? {
 pub fn concat_result_type(a : SqlType, b : SqlType) -> SqlType {
   let coll = a.collation().unwrap_or(default_collation)
   let unicode = a.is_unicode() || b.is_unicode()
+  // captured (msduck character-concat-declarations, probes): two fixed
+  // operands give a fixed result (char+char char, char+nchar nchar, capped
+  // at char(8000) / nchar(4000)); any varying operand gives varying
+  let fixed = a is (Char(_, _) | NChar(_, _)) && b is (Char(_, _) | NChar(_, _))
   match (string_len_units(a), string_len_units(b)) {
     (Some(x), Some(y)) => {
       let cap = if unicode { 4000 } else { 8000 }
       let n = min_int(x + y, cap)
-      if unicode {
-        NVarChar(Some(n), coll)
-      } else {
-        VarChar(Some(n), coll)
+      match (unicode, fixed) {
+        (true, true) => NChar(n, coll)
+        (true, false) => NVarChar(Some(n), coll)
+        (false, true) => Char(n, coll)
+        (false, false) => VarChar(Some(n), coll)
       }
     }
     _ => if unicode { NVarChar(None, coll) } else { VarChar(None, coll) }
@@ -430,7 +435,13 @@ pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
       b is (Char(_, _) | NChar(_, _))
     return match (string_len_units(a), string_len_units(b)) {
       (Some(x), Some(y)) => {
-        let n = max_int(x, y)
+        // a long varchar meeting nvarchar caps at nvarchar(4000) (captured:
+        // msduck conditional-literal-folding #012, varchar(5000) vs N'x')
+        let n = if unicode {
+          min_int(max_int(x, y), 4000)
+        } else {
+          max_int(x, y)
+        }
         match (unicode, fixed) {
           (true, true) => NChar(n, coll)
           (true, false) => NVarChar(Some(n), coll)

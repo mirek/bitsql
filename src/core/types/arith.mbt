@@ -47,13 +47,13 @@ pub fn arith(
     FString =>
       match (a, b) {
         (String(x), String(y)) => {
-          let joined = x + y
+          let joined = if rt.is_unicode() { x + y } else { to_cp1252(x + y) }
           let cap = match rt {
-            VarChar(Some(n), _) | NVarChar(Some(n), _) => n
+            VarChar(Some(n), _)
+            | NVarChar(Some(n), _)
+            | Char(n, _)
+            | NChar(n, _) => n
             _ => joined.length()
-          }
-          if !rt.is_unicode() {
-            require_cp1252(joined)
           }
           String(
             if joined.length() > cap {

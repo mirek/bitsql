@@ -415,7 +415,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       )
     }
     InsertQuery(q) => {
-      let bq = @bind.bind_query(env, q)
+      let bq = @bind.bind_query(env, q, result_columns=false)
       if bq.columns.length() != cols.length() {
         raise @types.sql_error(
           120,

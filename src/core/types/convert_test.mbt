@@ -275,12 +275,11 @@ test "character conversions" {
   // truncation without error, char padding
   assert_eq(text_of(s("hello"), vc(), to=vc(n=3)), "hel")
   assert_eq(text_of(s("hi"), vc(), to=@types.NChar(4, coll)), "hi  ")
-  // Unicode → varchar must be exactly representable in CP1252
+  // Unicode → varchar: exact CP1252, then best fit, else '?' per UTF-16
+  // unit (captured: msduck left-right-casts, cp1252_best_fit.mbt)
   assert_eq(text_of(s("caf\u{e9} \u{20ac}"), nvc(), to=vc()), "café €")
-  inspect(
-    text_of(s("\u{100}"), nvc(), to=vc()),
-    content="50104/1 Emulator: converting U+0100 to code page 1252 needs SQL Server's best-fit mapping, which is not supported.",
-  )
+  assert_eq(text_of(s("\u{100}\u{142}e\u{301}"), nvc(), to=vc()), "Ale\u{b4}")
+  assert_eq(text_of(s("\u{4e00}\u{1f986}"), nvc(), to=vc()), "???")
   // binary ↔ character
   let b = @types.Value::Binary(b"AB")
   assert_eq(text_of(b, VarBinary(None)), "AB")

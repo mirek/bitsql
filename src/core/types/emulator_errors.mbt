@@ -24,9 +24,8 @@ pub const EMU_DATETIME_FORMAT_NOT_SUPPORTED : Int = 50102
 pub const EMU_COLLATION_NOT_SUPPORTED : Int = 50103
 
 ///|
-/// A Unicode character without an exact code page 1252 mapping was
-/// converted to a non-Unicode type (SQL Server applies a best-fit table the
-/// emulator does not have).
+/// Retired (2026-10-03): Unicode → code page 1252 now applies SQL Server's
+/// captured best-fit table (cp1252_best_fit.mbt). The number stays reserved.
 pub const EMU_CODE_PAGE_BEST_FIT : Int = 50104
 
 ///|

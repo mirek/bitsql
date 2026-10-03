@@ -61,7 +61,15 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let ty = if first_null { b[1].ty } else { b[0].ty }
       let first = coerce(b[0], ty)
       let second = coerce(b[1], ty)
-      mk(Call(IsNull, [first, second]), ty, b[0].nullable && b[1].nullable)
+      // a constant replacement that folds to a value makes the result NOT
+      // NULL even if the replacement alone reports nullable (captured
+      // probes: ISNULL(CAST(NULL AS int), CAST(1 AS int)) is int flags 32,
+      // ISNULL(.., CHAR(NULL)) 33, ISNULL(.., 1/0) 33; msduck
+      // character-result-flags #003, space-capacity #012)
+      let known = (x : @ir.Expr) => {
+        !x.nullable || (try_fold(x) is Some(v) && !(v is Null))
+      }
+      mk(Call(IsNull, [first, second]), ty, !(known(b[0]) || known(b[1])))
     }
     "COALESCE" => {
       if args.length() < 2 {
@@ -72,7 +80,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         )
       }
       let b = bound()
-      let t = unify_types(b.map(x => x.ty))
+      // captured: COALESCE(NULL, N'longer') is nvarchar(6) (msduck
+      // conditional-literal-folding #021)
+      let t = unify_args(b)
       let branches = []
       for i in 0..<(b.length() - 1) {
         branches.push((bit_expr(IsNull(b[i], negated=true), false), b[i]))
@@ -88,21 +98,26 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "NULLIF" => {
       arity(name, args, 2)
       let b = bound()
-      let t = @types.common_type(b[0].ty, b[1].ty)
-      let cond = compare_bound(env, Eq, b[0], b[1])
-      mk(
-        Case([(cond, mk(Lit(Null), b[0].ty, true))], Some(b[0])),
-        b[0].ty,
-        true,
-      )
-      |> ignore_type(t)
+      let first = nullif_operand(b[0])
+      let _ = @types.common_type(first.ty, b[1].ty)
+      let cond = compare_bound(env, Eq, first, b[1])
+      let null_ = mk(Lit(Null), first.ty, true)
+      // captured probes: a constant NULLIF folds; NULLIF(1,2) is tinyint
+      // NOT NULL, NULLIF(1,1) tinyint nullable (IntN 1)
+      match try_fold(cond) {
+        Some(Bit(true)) => null_
+        Some(_) => first
+        None => mk(Case([(cond, null_)], Some(first)), first.ty, true)
+      }
     }
     "IIF" => {
       arity(name, args, 3)
       let c = bind_expr(env, args[0])
       let a = bind_expr(env, args[1])
       let b2 = bind_expr(env, args[2])
-      let t = @types.common_type(a.ty, b2.ty)
+      // captured: IIF(1=1, NULL, N'x') is nvarchar(1), IIF(1=2, 1, 2.5)
+      // numeric(2,1) (msduck conditional-literal-folding #018, logic#022)
+      let t = unify_args([a, b2])
       fold_case([(c, a)], Some(b2), t, a.nullable || b2.nullable)
     }
     "XACT_STATE" => {
@@ -167,7 +182,18 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "JSON_QUERY" => {
       arity_range(name, args, 1, 2)
-      mk(Call(JsonQuery, bound()), nvarchar(None), true)
+      let b = bound()
+      // captured probes: nvarchar(max) only for a max input, else
+      // nvarchar(4000) (traps/json-lax-strict)
+      let n = if is_max_string(b[0].ty) { None } else { Some(4000) }
+      mk(Call(JsonQuery, b), nvarchar(n), true)
+    }
+    "SQL_VARIANT_PROPERTY" => {
+      // no sql_variant type yet: bind the arguments (their collation
+      // errors come first, captured: msduck collation-functions #028),
+      // then report the gap
+      ignore(bound())
+      raise @types.not_supported("SQL_VARIANT_PROPERTY (sql_variant)")
     }
     "ISJSON" => {
       arity_range(name, args, 1, 2)
@@ -192,6 +218,25 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
 }
 
 ///|
-fn ignore_type(e : @ir.Expr, _t : @types.SqlType) -> @ir.Expr {
-  e
+/// NULLIF's first argument: an integer literal is typed by its value
+/// (captured probes: NULLIF(1,1) is IntN(1) = tinyint, NULLIF(300,1)
+/// smallint, NULLIF(-1,-1) smallint, NULLIF(32768,0) int, NULLIF(1+1,0)
+/// int; functions/logic#023).
+fn nullif_operand(e : @ir.Expr) -> @ir.Expr {
+  // folded arithmetic (`1+1`) is a nullable literal and keeps int
+  if !(e.ty is Int) || e.nullable {
+    return e
+  }
+  let v = match e.kind {
+    Lit(Int(v)) => v
+    Neg({ kind: Lit(Int(v)), .. }) => -v
+    _ => return e
+  }
+  if v >= 0 && v <= 255 {
+    { kind: Lit(TinyInt(v)), ty: TinyInt, nullable: false, }
+  } else if v >= -32768 && v <= 32767 {
+    { kind: Lit(SmallInt(v)), ty: SmallInt, nullable: false, }
+  } else {
+    { kind: Lit(Int(v)), ty: Int, nullable: false, }
+  }
 }

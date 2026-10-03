@@ -61,6 +61,8 @@ pub fn compare_strings(String, String, Collation, ansi? : Bool) -> Int
 
 pub fn concat_result_type(SqlType, SqlType) -> SqlType
 
+pub fn cp1252_byte_of(Int) -> Int
+
 pub fn cp1252_bytes(String) -> Bytes
 
 pub fn cp1252_decode(Int) -> Int
@@ -145,8 +147,6 @@ pub fn render(Value, SqlType, Int?) -> String raise SqlError
 
 pub fn render_temporal(Value, SqlType, Int?) -> String raise SqlError
 
-pub fn require_cp1252(String) -> Unit raise SqlError
-
 pub fn round_ticks(Int64, Int) -> Int64
 
 pub fn round_time_ticks(Int64, Int) -> Int64
@@ -160,6 +160,8 @@ pub fn sql_error(Int, String, state? : Int, severity? : Int) -> SqlError
 pub let sql_latin1_general_cp1_ci_as : Collation
 
 pub fn ticks_to_datetime_units(Int64) -> Int64
+
+pub fn to_cp1252(String) -> String
 
 pub fn trim_spaces(String) -> String
 

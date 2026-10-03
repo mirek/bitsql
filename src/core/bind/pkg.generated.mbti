@@ -16,7 +16,7 @@ pub fn bind_dml_source(Env, Array[@ast.TableRef], TableBinding, Array[String]) -
 
 pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
 
-pub fn bind_query(Env, @ast.Query) -> BoundQuery raise @types.SqlError
+pub fn bind_query(Env, @ast.Query, result_columns? : Bool) -> BoundQuery raise @types.SqlError
 
 pub fn bind_sources(Env, Array[@ast.TableRef]) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError
 
@@ -73,6 +73,7 @@ pub(all) struct Env {
   maxrecursion : Int
   ids : @ref.Ref[Int]
   nest : Int
+  from_plan : @ir.Plan?
 }
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self

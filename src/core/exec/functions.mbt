@@ -349,7 +349,7 @@ fn call(
         String(s) if s.length() > 0 => {
           let c = s.code_unit_at(0).to_int()
           if f == Ascii {
-            Int(@types.cp1252_encode(c).unwrap_or('?'.to_int()))
+            Int(@types.cp1252_byte_of(c))
           } else {
             Int(c)
           }

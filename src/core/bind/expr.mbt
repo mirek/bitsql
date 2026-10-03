@@ -130,6 +130,22 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     Binary(op, l, r) => {
       let a = bind_expr(env, l)
       let b = bind_expr(env, r)
+      // an untyped NULL next to a string concatenates as varchar(1)
+      // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
+      // varchar(3); msduck character-concat #022)
+      let null_str = (x : @ir.Expr, other : @ir.Expr) => {
+        if op is Add && is_untyped_null(x) && other.ty.family() == FString {
+          mk(Lit(Null), VarChar(Some(1), env.collation), true)
+        } else {
+          x
+        }
+      }
+      let (a, b) = (null_str(a, b), null_str(b, a))
+      let (a, b) = if op is (Add | Sub | Mul | Div | Mod) {
+        (int_literal_as_numeric(a, b), int_literal_as_numeric(b, a))
+      } else {
+        (a, b)
+      }
       match op {
         Add | Sub | Mul | Div | Mod => {
           let aop : @types.ArithOp = match op {
@@ -241,11 +257,14 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         Some(x) => Some(bind_expr(env, x))
         None => None
       }
-      let tys = branches.map(b => b.1.ty)
+      let vals = branches.map(b => b.1)
       if els is Some(x) {
-        tys.push(x.ty)
+        vals.push(x)
       }
-      let t = unify_types(tys)
+      // untyped NULL branches do not take part; integer literals next to a
+      // decimal count as numeric(digits, 0) (captured: traps/
+      // metadata-not-from-values CASE .. 1 ELSE 2.5 is numeric(2,1))
+      let t = unify_args(vals)
       let nullable = els is None ||
         branches.iter().any(b => b.1.nullable) ||
         (els is Some(x) && x.nullable)
@@ -282,6 +301,8 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           raise err(
             447,
             "Expression type \{other.base_name()} is invalid for COLLATE clause.",
+            // captured: msduck collation-precedence #016
+            state=0,
           )
       }
       { kind: Collate(a), ty, nullable: a.nullable, }
@@ -478,6 +499,31 @@ fn compare_with_subquery(
     mk(Col(0), c.ty, c.nullable),
   ])
   (a, plan, coll)
+}
+
+///|
+/// An integer literal (possibly negated or parenthesized) meeting a
+/// decimal operand in arithmetic is typed numeric(digits, 0) (captured
+/// probes, corpus collation/expression-metadata: 1.5*2 is numeric(4,1),
+/// 1.5*20 numeric(5,1), 1.5+-2 numeric(3,1), 2/2147483649 numeric(12,11),
+/// but 1.5*CAST(2 AS int) and 2.5*@@TRANCOUNT numeric(13,1)).
+fn int_literal_as_numeric(
+  x : @ir.Expr,
+  other : @ir.Expr,
+) -> @ir.Expr raise @types.SqlError {
+  // folded arithmetic (`1+1`) is a nullable literal and keeps int
+  guard other.ty is (Decimal(_, _) | Numeric(_, _)) &&
+    x.ty is Int &&
+    !x.nullable else {
+    return x
+  }
+  let v = match x.kind {
+    Lit(Int(v)) => v
+    Neg({ kind: Lit(Int(v)), .. }) => v
+    _ => return x
+  }
+  let digits = @cmp.maximum(1, v.abs().to_string().length())
+  coerce(x, Numeric(digits, 0))
 }
 
 ///|

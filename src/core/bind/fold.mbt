@@ -18,9 +18,24 @@ fn is_constant(e : @ir.Expr) -> Bool {
         Some(x) => is_constant(x)
         None => true
       })
+    // deterministic string built-ins over constants fold too (captured:
+    // msduck bin2-constant-edges, CASE WHEN LEFT(N'..',0) COLLATE .. = N''
+    // THEN 1 .. is Int NOT NULL)
+    Call(Named(name), args) =>
+      foldable_fns.contains(name) && args.iter().all(is_constant)
+    Call(IsNull | NullIf | Iif, args) => args.iter().all(is_constant)
     _ => false
   }
 }
+
+///|
+/// Deterministic built-ins (bind/fn_string.mbt names) that SQL Server
+/// evaluates at compile time when their arguments are constant.
+let foldable_fns : Set[String] = Set([
+  "LEN", "DATALENGTH", "UPPER", "LOWER", "REVERSE", "LTRIM", "RTRIM", "TRIM", "LEFT",
+  "RIGHT", "SUBSTRING", "REPLACE", "REPLICATE", "SPACE", "CHARINDEX", "CONCAT", "CONCAT_WS",
+  "NCHAR", "CHAR", "ASCII", "UNICODE", "STUFF",
+])
 
 ///|
 let fold_runtime : @exec.Runtime = @exec.Runtime::new(
@@ -53,31 +68,55 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
 }
 
 ///|
-/// Constant folding of arithmetic: a successful fold becomes a non-null
-/// literal; a failing one (1/0, overflow) stays a run-time expression and is
-/// nullable (captured: msduck integer-overflow, error-continuation IntN 33).
-/// The non-null result of a successful fold is unverified.
+/// Constant folding of arithmetic: a successful fold becomes a literal that
+/// keeps the expression's nullability (captured probe: `1+1` is IntN 33,
+/// `N'a'+N'b'` NVarChar 32, `'a'+NULL` 33); a failing one (1/0, overflow)
+/// stays a run-time expression and is nullable (captured: msduck
+/// integer-overflow, error-continuation IntN 33). String results stay
+/// unfolded so COLLATE labels inside them keep their coercibility.
 fn fold_arith(e : @ir.Expr) -> @ir.Expr {
   if !is_constant(e) {
     return e
   }
   match try_fold(e) {
-    Some(v) => { kind: Lit(v), ty: e.ty, nullable: v is Null, }
+    Some(_) if e.ty.family() == FString => e
+    Some(v) => { kind: Lit(v), ty: e.ty, nullable: e.nullable || v is Null, }
     None => { ..e, nullable: true, }
   }
 }
 
 ///|
-/// Same type up to string/binary length (both bounded).
+/// Same type up to string/binary length and fixed/varying (both bounded).
+/// Captured probes: IIF(1=1, CAST('a' AS char(2)), 'abc') is char(2),
+/// IIF(1=1, CHAR(65), 'abc') char(1), but 'a' against N'longer' converts
+/// (msduck conditional-literal-folding #009).
 fn same_family(a : @types.SqlType, b : @types.SqlType) -> Bool {
   match (a, b) {
-    (VarChar(Some(_), _), VarChar(Some(_), _))
-    | (NVarChar(Some(_), _), NVarChar(Some(_), _))
-    | (Char(_, _), Char(_, _))
-    | (NChar(_, _), NChar(_, _))
-    | (VarBinary(Some(_)), VarBinary(Some(_)))
-    | (Binary(_), Binary(_)) => true
+    (VarChar(Some(_), _) | Char(_, _), VarChar(Some(_), _) | Char(_, _))
+    | (NVarChar(Some(_), _) | NChar(_, _), NVarChar(Some(_), _) | NChar(_, _))
+    | (VarBinary(Some(_)) | Binary(_), VarBinary(Some(_)) | Binary(_)) => true
     _ => a == b
+  }
+}
+
+///|
+/// A conversion that can cut the value (bounded source longer than the
+/// bounded target): SQL Server then reports the folded branch nullable
+/// (captured probes: CASE WHEN 1=1 THEN <4001-char literal> ELSE N'x' END
+/// is nvarchar(4000) flags 33, a 4000-char literal flags 32).
+fn truncates(from : @types.SqlType, to : @types.SqlType) -> Bool {
+  match (string_len_units(from), string_len_units(to)) {
+    (Some(x), Some(y)) => x > y
+    _ => false
+  }
+}
+
+///|
+fn string_len_units(t : @types.SqlType) -> Int? {
+  match t {
+    Char(n, _) | NChar(n, _) | Binary(n) => Some(n)
+    VarChar(n, _) | NVarChar(n, _) | VarBinary(n) => n
+    _ => None
   }
 }
 
@@ -115,7 +154,10 @@ fn fold_case(
     if same_family(x.ty, ty) {
       x
     } else {
-      { ..coerce(x, ty), nullable: any_nullable || x.nullable, }
+      {
+        ..coerce(x, ty),
+        nullable: any_nullable || x.nullable || truncates(x.ty, ty),
+      }
     }
   }
   if is_lob(ty) {

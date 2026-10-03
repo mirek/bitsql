@@ -419,6 +419,17 @@ fn bind_string_fn(
     }
     _ => return None
   }
+  // A string argument without a collation (a CASE or `+` over different
+  // implicit collations) fails in every collation-aware string function
+  // (captured probes: LEN/UPPER/LEFT(a+b) is 4191 "for len operation").
+  // CONCAT only propagates it (451 later, msduck collation-functions #038).
+  if !(name is ("CONCAT" | "CONCAT_WS")) && r.kind is Call(_, args) {
+    let op = match name {
+      "TRIM LEADING" | "TRIM TRAILING" => "trim"
+      other => other.to_lower()
+    }
+    check_deferred_collation(env, op, args)
+  }
   Some(r)
 }
 

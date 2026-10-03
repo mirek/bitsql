@@ -28,6 +28,28 @@ mention the correction here.
   11728 (exhausted) aborts the batch and names the sequence unqualified;
   11703/11702/2714 quote the name as written (2714 state 8). DROP SEQUENCE is
   CurCmd 516. Repeated references to one sequence in a row share one value.
+- 2026-10-03 (collations, corpus `collation/`, msduck bin2-*/collation-*):
+  two different *implicit* collations meeting in `+`, CONCAT, CASE/IIF/
+  COALESCE/CHOOSE or UNION ALL give a value with **no collation**. Using it
+  in a comparison/LIKE/IN/string function/MIN-MAX is **4191** state 9
+  "Cannot resolve collation conflict for <op> operation." (e.g. "for len
+  operation"); returning it as a result column is **451** state 1 "... in
+  <add|concat|CASE|UNION ALL> operator occurring in SELECT statement column
+  n."; meeting directly in a sensitive op (`a = b`, REPLACE(a,b,..), UNION,
+  INTERSECT, EXCEPT) is **468** state 9. INSERT…SELECT and `SELECT @v =`
+  accept it; COLLATE repairs it. ISNULL takes the first argument's
+  collation. `1 COLLATE x` is 447 **state 0**. Unicode → varchar applies
+  Windows best fit per UTF-16 unit (452 mappings, captured), else '?'
+  (surrogate pair → "??"); varchar compares by CP1252 bytes under BIN/BIN2,
+  and under SQL_ collations varchar 'ß' ≠ 'ss'. Rules with evidence:
+  docs/reference/result-metadata.md.
+- 2026-10-03 (metadata, corpus `collation/expression-metadata`): `1+1` is
+  IntN 33 (folding keeps nullability; the old "folds to non-null" guess was
+  wrong). NULLIF types an integer-literal first argument by value (tinyint/
+  smallint/int) and folds. Correction: the earlier note "integer literals
+  next to a decimal are typed decimal(digits,0)" was only implemented for
+  CHOOSE/GREATEST; it now covers arithmetic (`1.5*2` numeric(4,1)) and
+  CASE/IIF/COALESCE branches too, and the type is *numeric*.
 - 2026-10-03 (triggers, corpus `triggers/`): XACT_ABORT is implied inside
   triggers, but RAISERROR never honors XACT_ABORT (no rollback, no batch
   abort; THROW does). In autocommit the trigger runs inside an implicit
@@ -102,7 +124,7 @@ mention the correction here.
 - 2026-10-03: **decimal division truncates** at the result scale (2/3 as
   decimal(13,8) = 0.66666666); overflow says "data type numeric" even for
   DECIMAL operands (8115/2). Integer literals next to a decimal are typed
-  decimal(digits,0) by the binder: `2/2147483649` is numeric(12,11), but
+  numeric(digits,0) by the binder (corrected from decimal): `2/2147483649` is numeric(12,11), but
   `CAST(.. AS DECIMAL(5,2))/CAST(3 AS INT)` is decimal(16,13). NUMERIC with
   INT stays numeric (reference/decimal-division.json,
   numeric-arithmetic-context.json, numeric-literal-metadata.json).
