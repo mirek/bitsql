@@ -570,6 +570,7 @@ fn Parser::call(
       args.push(self.call_arg())
     }
   }
+  check_datepart(name, args)
   self.expect_punct(")")
   let within_group = if self.is_kw("WITHIN") && self.is_kw_at(1, "GROUP") {
     self.pos += 2

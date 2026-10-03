@@ -18,8 +18,34 @@ fn text(v : @types.Value, t : @types.SqlType) -> String? raise @types.SqlError {
 }
 
 ///|
-fn int_of(v : @types.Value) -> Int64? {
-  v.as_int64()
+/// An integer argument: decimals, money and floats truncate toward zero;
+/// values outside int raise 8115 state 2 (captured for RIGHT/REPLICATE).
+fn int_of(v : @types.Value) -> Int64? raise @types.SqlError {
+  let n = match v {
+    Null => return None
+    Float(d) =>
+      if d.is_nan() || d.is_inf() || d.abs() >= 9.0e18 {
+        raise @types.overflow_expression(Int)
+      } else {
+        d.trunc().to_int64()
+      }
+    _ =>
+      match v.as_decimal() {
+        Some(x) => {
+          let b = x.trunc_to_bigint()
+          if b < @bigint.BigInt::from_int(-2147483648) ||
+            b > @bigint.BigInt::from_int(2147483647) {
+            raise @types.overflow_expression(Int)
+          }
+          b.to_int64()
+        }
+        None => return None
+      }
+  }
+  if n < -2147483648L || n > 2147483647L {
+    raise @types.overflow_expression(Int)
+  }
+  Some(n)
 }
 
 ///|
@@ -644,13 +670,14 @@ fn call_string(
         NVarChar(Some(_), _) => 4000L
         _ => 2147483647L
       }
-      // build no more than needed before truncation
+      // a non-max result keeps whole copies only (captured:
+      // DATALENGTH(REPLICATE('abc', 2667)) is 7998)
       let copies = if s.length() == 0 {
         0L
       } else {
-        @cmp.minimum(n, cap / s.length().to_int64() + 1L)
+        @cmp.minimum(n, cap / s.length().to_int64())
       }
-      String(cap_text(s.repeat(copies.to_int()), e.ty))
+      String(s.repeat(copies.to_int()))
     }
     "SPACE" => {
       if any_null {

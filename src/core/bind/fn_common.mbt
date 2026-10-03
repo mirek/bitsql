@@ -43,7 +43,7 @@ fn null_arg(index : Int, fname : String, state? : Int = 1) -> @types.SqlError {
 /// A bare `NULL` literal (typed int by the binder, but SQL Server treats it
 /// as typeless in function arguments).
 fn is_null_lit(e : @ir.Expr) -> Bool {
-  e.kind is Lit(Null)
+  e.kind is Lit(Null) && e.ty is Int
 }
 
 ///|
@@ -107,10 +107,22 @@ fn fold(e : @ir.Expr) -> @types.Value? {
 ///|
 /// Integer value of a constant integer-typed expression.
 fn fold_int(e : @ir.Expr) -> Int64? {
-  if e.ty.family() != FInteger {
+  // integer types, and whole-number literals typed numeric(p, 0)
+  // (captured: SPACE(-2147483648) is varchar(1), SPACE(2.9) varchar(8000))
+  let whole = match e.ty {
+    Decimal(_, 0) | Numeric(_, 0) => true
+    t => t.family() == FInteger
+  }
+  if !whole {
     return None
   }
   match fold(e) {
+    Some(Decimal(d)) =>
+      if d.digits() <= 18 {
+        Some(d.trunc_to_bigint().to_int64())
+      } else {
+        None
+      }
     Some(v) => v.as_int64()
     None => None
   }
@@ -210,7 +222,9 @@ fn as_string_arg(e : @ir.Expr, env : Env) -> @ir.Expr {
 /// Implicit conversion to int for integer-valued arguments (positions,
 /// lengths, counts); a bare NULL stays as is.
 fn as_int_arg(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
-  if is_null_lit(e) || e.ty == Int {
+  // numbers stay as they are: the executor truncates them and reports an
+  // int overflow as 8115 state 2 (captured: RIGHT('abcdef', 2147483648))
+  if is_null_lit(e) || e.ty.family() != FString {
     e
   } else {
     coerce(e, Int)
@@ -279,10 +293,12 @@ fn collate_args(
   match resolve_collation(env, op, bs) {
     Some(c) =>
       (
-        bs.map(x => if x.ty.family() == FString {
-          { ..x, ty: with_collation(x.ty, c) }
-        } else {
-          x
+        bs.map(x => {
+          if x.ty.family() == FString {
+            { ..x, ty: with_collation(x.ty, c), }
+          } else {
+            x
+          }
         }),
         Some(c),
       )

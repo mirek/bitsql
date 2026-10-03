@@ -33,6 +33,10 @@ new trap, add a row here *and* a corpus case.
 | `datetimeoffset` range | UTC ticks + offset | Both the local and the UTC instant must lie in 0001..9999 (8114 state 31) |
 | Linguistic collations | Approximated weights (`collation_compare.mbt`) | NUL is ignorable, version-0 tables ignore all surrogates; é = e+U+0301, ß = ss; fullwidth/kana-insensitive even in CS_AS. Punctuation/symbol order and non-Latin scripts are approximations; word sort (hyphen ignored) is unverified |
 | varchar code page | CP1252-only Strings | Unicode → varchar uses a best-fit table bitsql lacks: unmappable characters raise emulator error 50104 instead of guessing |
+| Built-in result metadata | Binder folds constant arguments | Most function results are nullable (flags 33) even for literals, but SIGN/CEILING/FLOOR/ROUND/RADIANS/PI over numeric literals fold to NOT NULL; LEFT/SUBSTRING/REPLICATE/SPACE/STUFF lengths come from constant arguments (REPLICATE('x', 1+2) is varchar(3), a variable count is 8000) |
+| Function errors: compile vs run time | Binder vs executor raise | 9810/9806/517/289/535 arrive after COLMETADATA (run time); 8116, 155, 1023, 10760, constant negative LEFT length (536 state 6) have no result set |
+| DATEDIFF / DATEPART on text | Text read as datetimeoffset(7) | DATEADD reads text as datetime, DATEPART/DATEDIFF as datetimeoffset (offset honoured, 7 fraction digits); legacy datetime fractions are exact thirds (DATEPART(ns) of .997 is 996666666) |
+| Transcendental functions | MoonBit `@math` | SQL Server's libm differs by 1 ulp in places (COS(1) is 0.5403023058681397, ours …398); DEGREES/RADIANS multiply by the precomputed 180/π (π/180) |
 | Binary comparison | Zero-padded byte compare | Unverified: trailing 0x00 assumed insignificant, mirroring string padding |
 
 | Parked requests | Request restart (decisions.md) | Autocommit writes earlier in a batch that later waits on a lock stay invisible to other sessions until the batch completes; SQL Server publishes them immediately |

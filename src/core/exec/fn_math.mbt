@@ -204,7 +204,7 @@ fn call_math(
   }
   if name == "RAND" {
     if v.length() == 1 {
-      match v[0].as_int64() {
+      match int_of(v[0]) {
         Some(seed) => rand_seed(ctx.rt, seed)
         None => return Some(Null)
       }
@@ -324,9 +324,9 @@ fn call_math(
       }
     }
     "ROUND" => {
-      let n = v[1].as_int64().unwrap_or(0L)
+      let n = int_of(v[1]).unwrap_or(0L)
       let truncate = v.length() > 2 &&
-        (match v[2].as_int64() {
+        (match int_of(v[2]) {
           Some(k) => k != 0L
           None => false
         })

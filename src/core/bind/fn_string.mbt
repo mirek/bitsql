@@ -5,8 +5,6 @@
 // Captures: harness/corpus/functions/string.cases.json and msduck
 // left-right*, replicate*, space-*, trim-collation, character-*.
 
-
-
 ///|
 fn with_collation(t : @types.SqlType, c : @types.Collation) -> @types.SqlType {
   match t {
@@ -379,7 +377,10 @@ fn bind_string_fn(
       let s = string_arg_type(bs[0], env)
       // captured: any Unicode argument makes the result nvarchar
       let s = if !s.is_unicode() && bs.iter().any(x => x.ty.is_unicode()) {
-        @types.SqlType::NVarChar(string_len(s), s.collation().unwrap_or(env.collation))
+        @types.SqlType::NVarChar(
+          string_len(s),
+          s.collation().unwrap_or(env.collation),
+        )
       } else {
         s
       }

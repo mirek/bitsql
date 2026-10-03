@@ -613,10 +613,10 @@ fn eomonth(
 }
 
 ///|
-fn int_args(v : Array[@types.Value]) -> Array[Int]? {
+fn int_args(v : Array[@types.Value]) -> Array[Int]? raise @types.SqlError {
   let out = []
   for x in v {
-    match x.as_int64() {
+    match int_of(x) {
       Some(n) => out.push(n.to_int())
       None => return None
     }

@@ -38,7 +38,7 @@ fn bind_misc_fn(
       let x = bs()
       let values = x[1:].to_owned()
       let t = unify_args(values)
-      let index = as_int_arg(x[0])
+      let index = if is_null_lit(x[0]) { x[0] } else { coerce(x[0], Int) }
       // CHOOSE is a CASE over the index: only the chosen value is converted
       // (captured: CHOOSE(1, 2, 'a') is 2, CHOOSE(1, 'a', 2) fails on 'a').
       let branches = []

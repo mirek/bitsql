@@ -185,3 +185,11 @@ counters, @@DBTS and procedures). `EXEC emulator.restore 'name'` restores it
 in O(1). Use it after seeding instead of re-running migrations per test.
 Start the host with `--database NAME` so the app's database exists at login
 (SQL Server rejects logins to unknown databases with 4060/18456).
+- 2026-10-03: `harness/gen/functions.mjs` generates `corpus/functions/*.cases.json`
+  (one small SELECT per case; `!`-prefixed entries are raw batches). After
+  editing it, regenerate and recapture the touched file with
+  `npm run capture -- --force functions/<file>.cases.json` (case names are
+  index-based, so delete the file's expected.json first when inserting cases
+  mid-list). tedious drops sub-millisecond digits of datetime2/time values:
+  add `CAST(x AS nvarchar(40))` columns when they matter.
+

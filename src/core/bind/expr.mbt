@@ -325,7 +325,7 @@ fn conversion(
   style : Int?,
 ) -> @ir.Expr raise @types.SqlError {
   // a bare NULL converts to any type (CAST(NULL AS date))
-  if a.kind is Lit(Null) {
+  if a.kind is Lit(Null) && !(t is Int) {
     return { kind: Lit(Null), ty: t, nullable: true, }
   }
   if !@types.can_convert_explicitly(a.ty, t) {

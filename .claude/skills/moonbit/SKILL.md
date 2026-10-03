@@ -170,3 +170,11 @@ scripts/check.sh                 # everything CI runs; must be green to push
   user-controlled sizes or indexes to them unclamped (REPLICATE/SPACE/
   RAISERROR width crashed this way). Clamp, use `get()`, or raise a SqlError.
   The harness reports such crashes as `client error: ECONNRESET`.
+- 2026-10-03: transcendental math lives in `@math` (`@math.exp/ln/log10/sin/
+  atan2/pow`, `@math.PI`); `Double::pow` is deprecated and there is no
+  `Double::exp`/`ln`. `@double.not_a_number` for NaN. `BigInt` has no `abs`.
+  A local variable named `local` warns 0035 (reserved). Constructors of
+  another package's enum used as a value in an `if` expression need the type
+  (`let t : @types.SqlType = if c { Float } else { … }` — otherwise "using
+  constructors as higher order function").
+
