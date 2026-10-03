@@ -20,6 +20,8 @@ pub const TRUNCATED_MESSAGE : String = "String value in the specified JSON path 
 
 pub fn isjson(String, ty? : IsJsonType) -> Int raise JsonError
 
+pub fn json_modify(String, String, String?) -> String raise JsonError
+
 pub fn json_query(String, path? : String) -> String? raise JsonError
 
 pub fn json_value(String, String) -> String? raise JsonError
@@ -27,6 +29,8 @@ pub fn json_value(String, String) -> String? raise JsonError
 pub fn openjson(String, path? : String) -> Array[OpenJsonRow] raise JsonError
 
 pub fn parse_path(String, state? : Int) -> Path raise JsonError
+
+pub fn quote(String) -> String
 
 // Errors
 pub(all) suberror JsonError {

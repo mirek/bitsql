@@ -424,6 +424,8 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
             self.span_from(start),
           )
         }
+        "JSON_OBJECT" | "JSON_ARRAY" if next_paren =>
+          self.json_ctor(u == "JSON_OBJECT")
         "NEXT" if self.is_kw_at(1, "VALUE") && self.is_kw_at(2, "FOR") => {
           self.pos += 3
           let name = self.object_name()

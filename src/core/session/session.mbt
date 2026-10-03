@@ -533,7 +533,7 @@ fn Session::run_text(self : Session, text : String) -> Bool raise Park {
       self.out.push(
         Message({
           number: e.number(),
-          state: 1,
+          state: e.state(),
           class: 15,
           message: e.message(),
           procedure: "",

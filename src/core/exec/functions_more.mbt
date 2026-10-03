@@ -18,6 +18,9 @@ fn call_more(
   if call_math(ctx, name, v, args, e) is Some(r) {
     return r
   }
+  if call_json2(name, v, args) is Some(r) {
+    return r
+  }
   if name == "AT TIME ZONE" {
     return at_time_zone(v, args, e)
   }

@@ -87,6 +87,7 @@ fn variant_arg_rule(name : String, i : Int) -> VariantArg? {
     | "HASHBYTES"
     | "JSON_VALUE"
     | "JSON_QUERY"
+    | "JSON_MODIFY"
     | "ISJSON"
     | "SESSION_CONTEXT"
     | "STRING_AGG" => inv

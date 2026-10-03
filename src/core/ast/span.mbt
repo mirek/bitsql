@@ -51,6 +51,13 @@ pub fn SyntaxError::message(self : SyntaxError) -> String {
 }
 
 ///|
+pub fn SyntaxError::state(self : SyntaxError) -> Int {
+  match self {
+    SyntaxError(state~, ..) => state
+  }
+}
+
+///|
 pub fn SyntaxError::line(self : SyntaxError) -> Int {
   match self {
     SyntaxError(span~, ..) => span.line

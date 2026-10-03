@@ -18,5 +18,8 @@ fn bind_call_more(
     return Some(e)
   }
   bind_analytic_fn(name, call)
+  if bind_json2_fn(env, name, call) is Some(e) {
+    return Some(e)
+  }
   bind_misc_fn(env, name, call)
 }

@@ -439,3 +439,37 @@ test "expression errors" {
     ),
   )
 }
+
+///|
+test "JSON_OBJECT and JSON_ARRAY constructors" {
+  inspect(
+    ex("JSON_OBJECT('a':1, @k:x ABSENT ON NULL)"),
+    content=(
+      #|(call JSON_OBJECT ABSENT ON NULL 'a' 1 @k x)
+    ),
+  )
+  inspect(
+    ex("JSON_ARRAY(1, NULL NULL ON NULL RETURNING json)"),
+    content=(
+      #|(call JSON_ARRAY NULL ON NULL RETURNING JSON 1 NULL)
+    ),
+  )
+  inspect(
+    ex("JSON_OBJECT()"),
+    content=(
+      #|(call JSON_OBJECT)
+    ),
+  )
+  inspect(
+    ex("JSON_OBJECT('a', 1)"),
+    content=(
+      #|Msg 102, Level 15, State 10, Line 1: Incorrect syntax near 'JSON_OBJECT'.
+    ),
+  )
+  inspect(
+    ex("JSON_ARRAY(1 ABSENT ON NULL, 2)"),
+    content=(
+      #|Msg 102, Level 15, State 1, Line 1: Incorrect syntax near ','.
+    ),
+  )
+}
