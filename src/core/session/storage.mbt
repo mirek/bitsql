@@ -26,6 +26,20 @@ fn Session::db_of(self : Session, scope : Int) -> @store.Db {
 }
 
 ///|
+/// Rows of a bound table source: scope 2 are the virtual catalog views.
+fn Session::source(
+  self : Session,
+  scope : Int,
+  id : Int,
+) -> Array[(Int64, Array[@types.Value])] {
+  if scope == 2 {
+    self.sys_view_rows(id)
+  } else {
+    self.db_of(scope).rows(id)
+  }
+}
+
+///|
 /// Applies a database write for a scope (autocommit or into the transaction).
 fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
   match scope {
@@ -92,7 +106,11 @@ fn table_columns(t : @store.Table) -> Array[@bind.ColumnRef] {
     name: c.name,
     ty: c.ty,
     nullable: c.nullable,
-    origin: BaseColumn(identity=c.identity is Some(_)),
+    origin: if c.computed is Some(_) {
+      Computed
+    } else {
+      BaseColumn(identity=c.identity is Some(_))
+    },
   })
 }
 
@@ -146,6 +164,10 @@ fn Session::find_table_var(self : Session, name : String) -> @store.Table? {
 fn Session::catalog(self : Session) -> @bind.Catalog {
   {
     table: name => {
+      match self.sys_view_binding(name) {
+        Some(b) => return Some(b)
+        None => ()
+      }
       match self.find_table(name) {
         Some((scope, t)) =>
           Some({
@@ -155,7 +177,21 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
             name: t.name,
             columns: table_columns(t),
           })
-        None => None
+        None =>
+          match self.find_module(name) {
+            Some(m) if m.kind is (InlineFunction | TableFunction) =>
+              raise @types.not_supported("table-valued functions")
+            _ => None
+          }
+      }
+    },
+    view: name => {
+      if name.base().has_prefix("#") {
+        return None
+      }
+      match self.find_module(name) {
+        Some(m) if m.kind is View => Some(view_query(m))
+        _ => None
       }
     },
     table_var: name => {
@@ -175,23 +211,23 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
 }
 
 ///|
-/// Transaction descriptor sent in BEGIN/COMMIT/ROLLBACK ENVCHANGE tokens.
-fn Session::tx_descriptor(self : Session) -> UInt64 {
-  (self.rt.spid.to_int64() << 32).reinterpret_as_uint64() | 1UL
+/// Finds a view, procedure, function or trigger in the user database.
+fn Session::find_module(
+  self : Session,
+  name : @ast.ObjectName,
+) -> @store.Module? {
+  let (schema, base) = split_name(name)
+  let db = self.db_of(0)
+  match db.lookup(schema, base) {
+    Some(id) => db.get_module(id)
+    None => None
+  }
 }
 
 ///|
-/// Catalog/metadata functions evaluated with database access (see
-/// bind/functions_catalog.mbt). None = not a catalog function.
-fn Session::catalog_fn(
-  self : Session,
-  name : String,
-  args : Array[@types.Value],
-) -> @types.Value? {
-  ignore(self)
-  ignore(name)
-  ignore(args)
-  None
+/// Transaction descriptor sent in BEGIN/COMMIT/ROLLBACK ENVCHANGE tokens.
+fn Session::tx_descriptor(self : Session) -> UInt64 {
+  (self.rt.spid.to_int64() << 32).reinterpret_as_uint64() | 1UL
 }
 
 ///|
@@ -236,4 +272,21 @@ fn Session::check_writable(self : Session) -> Unit raise @types.SqlError {
   if self.rt.xact_state == -1 {
     raise doomed_error()
   }
+}
+
+///|
+/// The query of a stored view, re-parsed from its definition.
+fn view_query(
+  m : @store.Module,
+) -> (@ast.Query, Array[@ast.Ident]) raise @types.SqlError {
+  let stmts = @parse.parse_batch(m.definition) catch {
+    _ =>
+      raise @types.not_supported("view \{m.name} (definition does not parse)")
+  }
+  for s in stmts {
+    if s.kind is CreateView(v) {
+      return (v.query, v.columns)
+    }
+  }
+  raise @types.not_supported("view \{m.name} (no CREATE VIEW in definition)")
 }

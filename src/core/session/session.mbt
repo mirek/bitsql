@@ -129,7 +129,8 @@ fn Server::rowid(self : Server) -> Int64 {
 ///|
 fn Server::object_id(self : Server) -> Int {
   let r = self.next_object_id
-  self.next_object_id = r + 16000057
+  // stride modulo 2^31-1 (prime): positive, no repeats for 2^31 objects
+  self.next_object_id = ((r.to_int64() + 16000057L) % 2147483647L).to_int()
   r
 }
 
@@ -208,6 +209,21 @@ pub struct Session {
   /// sp_prepare handles: (parameter declarations, statement text).
   prepared : Map[Int, (String, String)]
   mut next_handle : Int
+  /// Messages SQL Server sends before the error that ends the statement
+  /// (2714 before 1750, 5074 before 4922); dropped inside TRY.
+  pending : Array[@types.SqlError]
+  /// Messages sent after that error (3621 "The statement has been
+  /// terminated.").
+  trailing : Array[@types.SqlError]
+  /// A CREATE/DROP SCHEMA ran: those send no DONE of their own; a batch
+  /// with no other completion ends with DONE cmd 253 (captured).
+  mut schema_ddl : Bool
+  /// CurCmd a failed DDL statement completes with inside TRY (outside TRY
+  /// it fails with 253 and ends the batch); 0 for other statements.
+  mut ddl_cmd : Int
+  /// The statement's error is a compile-time one TRY cannot catch
+  /// (captured: 4902, 1779/1750).
+  mut uncatchable : Bool
 }
 
 ///|
@@ -240,6 +256,11 @@ pub fn Session::new(
     fail_next_wait: None,
     parked: false,
     next_handle: 1,
+    pending: [],
+    trailing: [],
+    schema_ddl: false,
+    ddl_cmd: 0,
+    uncatchable: false,
   }
 }
 
@@ -260,7 +281,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     vars: self.frame().values,
     row: [],
     outer: [],
-    source: (scope, id) => self.db_of(scope).rows(id),
+    source: (scope, id) => self.source(scope, id),
     ext: (name, args) => self.catalog_fn(name, args),
   }
 }
@@ -329,6 +350,7 @@ pub fn Session::run_batch(
   self.rpc = false
   self.frames.clear()
   self.frames.push(Frame::new())
+  self.schema_ddl = false
   try self.run_text(text) |> ignore catch {
     _ => {
       // a lock wait: discard this attempt; the engine re-runs it later
@@ -339,6 +361,10 @@ pub fn Session::run_batch(
   }
   self.fail_next_wait = None
   self.end_of_request()
+  if self.schema_ddl &&
+    !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
+    self.out.push(StatementDone(cmd=253, count=None, error=false))
+  }
   self.frames.clear()
   let items = self.out.copy()
   self.out.clear()

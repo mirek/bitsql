@@ -22,14 +22,21 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | DROP INDEX … ON t | 201 | no |
 | CREATE/ALTER VIEW | 207 | no |
 | DROP VIEW | 208 | no |
+| CREATE/ALTER (OR ALTER) PROCEDURE, CREATE/ALTER FUNCTION | 222 | no |
+| DROP PROCEDURE | 223 | no |
+| DROP FUNCTION | 179 | no |
+| CREATE/ALTER TRIGGER | 221 | no |
+| DROP TRIGGER | 225 | no |
+| DROP SCHEMA (missing: error 15151) | 170 | no |
+| `DISABLE TRIGGER x ON t` statement | 253 | no |
 | TRUNCATE TABLE | 234 | no |
 | CREATE DATABASE | 203 | no |
 | DROP DATABASE | 204 | no |
-| CREATE/DROP SCHEMA | 253 (RPC: no DONEINPROC at all) | no |
+| CREATE/DROP SCHEMA | no DONE of its own (batch or RPC); a batch with no other completion ends with DONE 253 | no |
 | BREAK / CONTINUE | 202 | no |
 | ROLLBACK | 210 | no |
 | BEGIN TRAN | 212 | no |
-| ALTER TABLE (ADD/DROP COLUMN) | 216 | no |
+| ALTER TABLE (every action) | 216 | no |
 | RETURN (bare) | 219 | no |
 | RETURN <expr> (in a procedure) | 193 | yes, 1 |
 | SET option (NOCOUNT on/off: 185/186) | 185/186 | no |
@@ -48,7 +55,9 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | EXEC proc / dynamic SQL in a batch | DONEPROC 224, statements inside DONEINPROC | no |
 
 `DECLARE` without an initializer and `BEGIN … END` grouping emit nothing.
-Codes not listed here (COMMIT, CREATE PROC/FUNCTION/TRIGGER, MERGE, …) must be
+DDL errors complete with 253 (batch ends) outside TRY; see
+`docs/design/fidelity-traps.md` (DDL errors). Captures: `harness/corpus/catalog/`.
+Codes not listed here (COMMIT, MERGE, …) must be
 taken from captures before they are implemented. Add them here when found.
 
 ## Rules

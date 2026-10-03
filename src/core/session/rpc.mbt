@@ -84,7 +84,7 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
     vars: frame.values,
     row: [],
     outer: [],
-    source: (scope, id) => self.db_of(scope).rows(id),
+    source: (scope, id) => self.source(scope, id),
     ext: (name, args) => self.catalog_fn(name, args),
   }
 }
@@ -397,6 +397,9 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     self.write_back_outputs(e, outs)
     self.out.push(ReturnStatus(status))
     self.out.push(ProcDone(cmd=224, count=None, error=false))
+    return
+  }
+  if self.exec_system_proc(name, e.args, e.return_var) {
     return
   }
   let proc = self.find_proc(name)

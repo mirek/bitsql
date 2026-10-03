@@ -157,7 +157,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "DB_NAME" => {
       arity_range(name, args, 0, 1)
-      mk(Call(DbName, bound()), nvarchar(Some(128)), true)
+      // DB_NAME(id) needs the catalog (session, functions_catalog.mbt)
+      let f : @ir.Fn = if args.is_empty() { DbName } else { Named("DB_NAME") }
+      mk(Call(f, bound()), nvarchar(Some(128)), true)
     }
     "JSON_VALUE" => {
       arity(name, args, 2)

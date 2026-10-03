@@ -23,8 +23,27 @@ pub struct Db {
   priv tables : PMap[Int, Table]
   priv data : PMap[Int, TableData]
   priv modules : PMap[Int, Module]
-  priv schemas : PMap[String, Int] // lowercased schema name → schema id
+  priv schemas : PMap[String, (String, Int)] // lowercased name → (name, id)
 }
+
+///|
+/// Schemas present in every new database (captured: sys.schemas of a fresh
+/// SQL Server 2025 database; principal_id equals schema_id).
+let builtin_schemas : Array[(String, Int)] = [
+  ("dbo", 1),
+  ("guest", 2),
+  ("INFORMATION_SCHEMA", 3),
+  ("sys", 4),
+  ("db_owner", 16384),
+  ("db_accessadmin", 16385),
+  ("db_securityadmin", 16386),
+  ("db_ddladmin", 16387),
+  ("db_backupoperator", 16389),
+  ("db_datareader", 16390),
+  ("db_datawriter", 16391),
+  ("db_denydatareader", 16392),
+  ("db_denydatawriter", 16393),
+]
 
 ///|
 fn str_cmp(a : String, b : String) -> Int {
@@ -43,11 +62,10 @@ fn i64_cmp(a : Int64, b : Int64) -> Int {
 
 ///|
 pub fn Db::empty() -> Db {
-  let schemas = PMap::empty(str_cmp)
-    .add("dbo", 1)
-    .add("guest", 2)
-    .add("information_schema", 3)
-    .add("sys", 4)
+  let mut schemas = PMap::empty(str_cmp)
+  for s in builtin_schemas {
+    schemas = schemas.add(s.0.to_lower(), s)
+  }
   {
     names: PMap::empty(str_cmp),
     tables: PMap::empty(int_cmp),
@@ -89,17 +107,43 @@ pub fn Db::modules(self : Db) -> Array[Module] {
 
 ///|
 pub fn Db::schema_id(self : Db, name : String) -> Int? {
-  self.schemas.get(name.to_lower())
+  self.schemas.get(name.to_lower()).map(s => s.1)
 }
 
 ///|
+/// Schema name by id (as created).
+pub fn Db::schema_name(self : Db, id : Int) -> String? {
+  for kv in self.schemas.iter() {
+    if kv.1.1 == id {
+      return Some(kv.1.0)
+    }
+  }
+  None
+}
+
+///|
+/// All schemas as (name, schema_id), ordered by id.
 pub fn Db::schema_names(self : Db) -> Array[(String, Int)] {
-  self.schemas.iter().collect()
+  let out = self.schemas.iter().map(kv => kv.1).collect()
+  out.sort_by((a, b) => a.1.compare(b.1))
+  out
+}
+
+///|
+/// Next free user schema id (SQL Server allocates 5, 6, ...).
+pub fn Db::next_schema_id(self : Db) -> Int {
+  let mut m = 4
+  for kv in self.schemas.iter() {
+    if kv.1.1 < 16384 && kv.1.1 > m {
+      m = kv.1.1
+    }
+  }
+  m + 1
 }
 
 ///|
 pub fn Db::add_schema(self : Db, name : String, id : Int) -> Db {
-  { ..self, schemas: self.schemas.add(name.to_lower(), id), }
+  { ..self, schemas: self.schemas.add(name.to_lower(), (name, id)), }
 }
 
 ///|
@@ -149,6 +193,17 @@ fn index_key(ix : Index, row : Row, rowid : Int64) -> Array[@types.Value] {
 }
 
 ///|
+/// Filtered indexes skip rows outside their filter.
+fn in_index(ix : Index, row : Row) -> Bool {
+  for c in ix.not_null_filter {
+    if c < row.length() && row[c] is Null {
+      return false
+    }
+  }
+  true
+}
+
+///|
 fn empty_index(t : Table, ix : Index) -> IndexData {
   let types = ix.columns.map(c => t.columns[c.0].ty)
   let desc = ix.columns.map(c => c.1)
@@ -193,7 +248,9 @@ pub fn Db::alter_table(
   let indexes = t.indexes.map(ix => {
     let mut d = empty_index(t, ix)
     for kv in rows.iter() {
-      d = { map: d.map.add(index_key(ix, kv.1, kv.0), kv.0), }
+      if in_index(ix, kv.1) {
+        d = { map: d.map.add(index_key(ix, kv.1, kv.0), kv.0), }
+      }
     }
     d
   })
@@ -210,6 +267,55 @@ pub fn Db::alter_table(
     names: names.add(qualified_key(t.schema, t.name), t.id),
     tables: self.tables.add(t.id, t),
     data: self.data.add(t.id, { rows, indexes, }),
+  }
+}
+
+///|
+/// Replaces a table definition and all of its rows (ALTER TABLE that adds
+/// or drops columns), rebuilding the indexes.
+pub fn Db::replace_table(
+  self : Db,
+  t : Table,
+  rows : Array[(Int64, Row)],
+) -> Db {
+  let mut m : PMap[Int64, Row] = PMap::empty(i64_cmp)
+  for kv in rows {
+    m = m.add(kv.0, kv.1)
+  }
+  let indexes = t.indexes.map(ix => {
+    let mut d = empty_index(t, ix)
+    for kv in rows {
+      if in_index(ix, kv.1) {
+        d = { map: d.map.add(index_key(ix, kv.1, kv.0), kv.0), }
+      }
+    }
+    d
+  })
+  let names = match self.tables.get(t.id) {
+    Some(o) => self.names.remove(qualified_key(o.schema, o.name))
+    None => self.names
+  }
+  {
+    ..self,
+    names: names.add(qualified_key(t.schema, t.name), t.id),
+    tables: self.tables.add(t.id, t),
+    data: self.data.add(t.id, { rows: m, indexes, }),
+  }
+}
+
+///|
+/// Renames a table or module (sp_rename).
+pub fn Db::rename_module(self : Db, m : Module) -> Db {
+  match self.modules.get(m.id) {
+    Some(old) =>
+      {
+        ..self,
+        names: self.names
+        .remove(qualified_key(old.schema, old.name))
+        .add(qualified_key(m.schema, m.name), m.id),
+        modules: self.modules.add(m.id, m),
+      }
+    None => self
   }
 }
 
@@ -305,9 +411,13 @@ pub fn Db::insert_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
   }
   let indexes = []
   for i, ix in t.indexes {
-    indexes.push({
-      map: d.indexes[i].map.add(index_key(ix, row, rowid), rowid),
-    })
+    indexes.push(
+      if in_index(ix, row) {
+        { map: d.indexes[i].map.add(index_key(ix, row, rowid), rowid), }
+      } else {
+        d.indexes[i]
+      },
+    )
   }
   {
     ..self,
@@ -323,7 +433,13 @@ pub fn Db::delete_row(self : Db, id : Int, rowid : Int64) -> Db {
   guard d.rows.get(rowid) is Some(row) else { return self }
   let indexes = []
   for i, ix in t.indexes {
-    indexes.push({ map: d.indexes[i].map.remove(index_key(ix, row, rowid)), })
+    indexes.push(
+      if in_index(ix, row) {
+        { map: d.indexes[i].map.remove(index_key(ix, row, rowid)), }
+      } else {
+        d.indexes[i]
+      },
+    )
   }
   { ..self, data: self.data.add(id, { rows: d.rows.remove(rowid), indexes, }), }
 }

@@ -178,3 +178,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   (`let t : @types.SqlType = if c { Float } else { … }` — otherwise "using
   constructors as higher order function").
 
+- 2026-10-03: a type alias cannot be `priv` (`priv type X = Map[..]` warns
+  0027 deprecated visibility); write `type X = Map[..]`. `Ref::new` is
+  deprecated; a closure may assign a captured `let mut` directly. A struct
+  field of closure type may raise: `(A) -> B? raise @types.SqlError`.

@@ -14,7 +14,8 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
   match r.kind {
     Table(name, alias_~, ..) =>
       match self.find_table(name) {
-        Some((scope, t)) =>
+        Some((scope, t)) => {
+          self.check_no_triggers(t)
           {
             scope,
             table: t,
@@ -28,11 +29,16 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
               None => t.name.to_lower()
             },
           }
-        None =>
+        }
+        None => {
+          if self.find_module(name) is Some({ kind: View, .. }) {
+            raise @types.not_supported("INSERT/UPDATE/DELETE through a view")
+          }
           raise @types.sql_error(
             208,
             "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
           )
+        }
       }
     TableVar(name, alias_~, ..) =>
       match self.find_table_var(name) {
