@@ -104,7 +104,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 ## Phase 7: packaging
 
-- [ ] Static-ish native binary, minimal container image, size/RAM check (< 100 MB idle)
+- [x] Native release binary 2.7 MB (libc only); `Dockerfile` on distroless/cc: **26.4 MB image, ~0.8 MB RSS idle** (2026-10-03; 10k-row table ≈ 8 MB RSS). Possible next: static musl build on scratch (~3 MB image)
 
 ## Limiting factor
 
