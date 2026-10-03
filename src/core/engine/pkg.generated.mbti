@@ -9,6 +9,12 @@ import {
 // Values
 pub const UNIX_EPOCH_TICKS : Int64 = 621355968000000000
 
+pub fn decode_event_log(BytesView) -> (Int64, Array[Event]) raise @tds.TdsError
+
+pub fn encode_event(Event) -> Bytes
+
+pub fn encode_event_log_header(Int64) -> Bytes
+
 pub fn render(RequestKind, Array[Item], String) -> Bytes raise @tds.TdsError
 
 pub fn stub_executor() -> Executor

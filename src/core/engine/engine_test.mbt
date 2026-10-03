@@ -150,3 +150,25 @@ test "render: batch error and rpc framing" {
     ),
   )
 }
+
+///|
+test "event log round trip and truncation tolerance" {
+  let events : Array[@engine.Event] = [
+    { input: Connected(1), now: 10, },
+    { input: Received(1, b"\x12\x01"), now: 11, },
+    { input: TimerFired(3), now: 12, },
+    { input: Resume, now: 13, },
+    { input: Closed(1), now: 14, },
+  ]
+  let w = @tds.Writer::new()
+  w.bytes(@engine.encode_event_log_header(-7))
+  for e in events {
+    w.bytes(@engine.encode_event(e))
+  }
+  let log = w.to_bytes()
+  let (seed, back) = @engine.decode_event_log(log)
+  assert_eq(seed, -7)
+  assert_eq(back, events)
+  let (_, partial) = @engine.decode_event_log(log[0:log.length() - 3])
+  assert_eq(partial.length(), 4)
+}

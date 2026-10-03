@@ -61,8 +61,10 @@ The host is a native `moonbitlang/async` program of roughly 150 lines:
 
 Because the core is pure, logging the event stream of a failing CI run and
 replaying it locally reproduces the run byte for byte, including interleavings,
-timestamps and generated GUIDs. The host supports `--record <file>` and the
-`replay` tool feeds the file back into a fresh engine.
+timestamps and generated GUIDs. `host --record FILE` writes the event log
+(format in `src/core/engine/event_log.mbt`, header carries the seed) and
+`replay FILE [--hex]` (`src/replay`) feeds it to a fresh engine and prints every
+output.
 
 The core packages use no async and no FFI, so they compile to every MoonBit
 backend (`moon check --target all` must stay green for `src/core/**`).

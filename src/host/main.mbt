@@ -2,22 +2,38 @@
 /// Thin native host: moves bytes between sockets and the pure engine and
 /// fires timers. Knows nothing about SQL or TDS.
 ///
-/// Usage: host [--listen HOST:PORT]   (default 127.0.0.1:47333; port 0 = any)
+/// Usage: host [--listen HOST:PORT] [--record FILE]
+///   --listen  default 127.0.0.1:47333; port 0 picks a free port
+///   --record  append every engine event to FILE for `replay`
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
-  let listen = parse_listen(@env.args())
+  let args = @env.args()
+  let listen = flag(args, "--listen").unwrap_or("127.0.0.1:47333")
+  let seed = now_ticks()
+  let record = match flag(args, "--record") {
+    Some(path) => {
+      let f = @fs.create(path, allow_existing=true)
+      f.write(@engine.encode_event_log_header(seed))
+      Some(f)
+    }
+    None => None
+  }
   let server = @socket.TcpServer(@socket.Addr::parse(listen), reuse_addr=true)
   let port = server.addr.port()
   let host = listen.split(":").next().unwrap_or("127.0.0.1").to_owned()
   @stdio.stderr.write("listening on \{host}:\{port}\n")
-  let engine = @engine.Engine::new(@engine.Config::default(), now_ticks())
+  let engine = @engine.Engine::new(@engine.Config::default(), seed)
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)
   let conns : Map[Int, @socket.Tcp] = Map([])
   @async.with_task_group(group => {
     group.spawn_bg(() => {
       while true {
         let input = queue.get()
-        let outputs = engine.handle({ input, now: now_ticks(), })
+        let event : @engine.Event = { input, now: now_ticks(), }
+        if record is Some(f) {
+          f.write(@engine.encode_event(event))
+        }
+        let outputs = engine.handle(event)
         for o in outputs {
           match o {
             Send(id, bytes) =>
@@ -66,13 +82,13 @@ async fn main {
 }
 
 ///|
-fn parse_listen(args : Array[String]) -> String {
+fn flag(args : Array[String], name : String) -> String? {
   for i in 0..<args.length() {
-    if args[i] == "--listen" && i + 1 < args.length() {
-      return args[i + 1]
+    if args[i] == name && i + 1 < args.length() {
+      return Some(args[i + 1])
     }
   }
-  "127.0.0.1:47333"
+  None
 }
 
 ///|
