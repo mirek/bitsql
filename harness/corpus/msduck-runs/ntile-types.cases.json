@@ -1,0 +1,31 @@
+{
+  "source": "msduck/reference/ntile-types.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"001-tinyint-two","description":"tinyint two","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2 AS TINYINT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"002-smallint-two","description":"smallint two","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2 AS SMALLINT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"003-int-two","description":"int two","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2 AS INT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"004-bigint-two","description":"bigint two","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2 AS BIGINT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"005-bit-true","description":"bit true","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(1 AS BIT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"006-decimal-two","description":"decimal two","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2 AS DECIMAL(10,2))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"007-decimal-fractional","description":"decimal fractional","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2.5 AS DECIMAL(10,2))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"008-float-fractional","description":"float fractional","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(2.5 AS FLOAT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"009-varchar-numeric","description":"varchar numeric","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('2' AS VARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"010-nvarchar-numeric","description":"nvarchar numeric","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(N'2' AS NVARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"011-varchar-fractional","description":"varchar fractional","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('2.5' AS VARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"012-varchar-invalid","description":"varchar invalid","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('bad' AS VARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"013-binary-numeric","description":"binary numeric","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(0x02 AS VARBINARY(1))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"014-date-value","description":"date value","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('2024-01-02' AS DATE)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"015-guid-value","description":"guid value","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('00000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"016-bigint-maximum","description":"bigint maximum","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(9223372036854775807 AS BIGINT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"017-decimal-zero","description":"decimal zero","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(0 AS DECIMAL(10,2))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"018-decimal-negative","description":"decimal negative","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(-1.5 AS DECIMAL(10,2))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"019-varchar-zero","description":"varchar zero","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST('0' AS VARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"020-tinyint-null","description":"tinyint NULL","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(NULL AS TINYINT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"021-bit-null","description":"bit NULL","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(NULL AS BIT)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"022-decimal-null","description":"decimal NULL","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(NULL AS DECIMAL(10,2))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"023-varchar-null","description":"varchar NULL","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(NULL AS VARCHAR(8))) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"024-date-null","description":"date NULL","steps":[{"kind":"batch","sql":"SELECT NTILE(CAST(NULL AS DATE)) OVER (ORDER BY n) AS tile FROM (VALUES (1),(2),(3)) AS bucket(n) ORDER BY n"}]},
+    {"name":"025-session-reusable","description":"session reusable","steps":[{"kind":"batch","sql":"SELECT 1 AS reusable"}]}
+  ]
+}

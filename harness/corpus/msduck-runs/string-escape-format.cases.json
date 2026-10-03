@@ -1,0 +1,33 @@
+{
+  "source": "msduck/reference/string-escape-format.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000-json","description":"json","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','json') AS escaped"}]},
+    {"name":"001-json-trailing-space","description":"json trailing space","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','json ') AS escaped"}]},
+    {"name":"002-json-two-spaces","description":"json two spaces","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','json  ') AS escaped"}]},
+    {"name":"003-json-mixed-case-spaces","description":"JSON mixed case spaces","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',N'JsOn  ') AS escaped"}]},
+    {"name":"004-json-char8","description":"json char8","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST('json' AS CHAR(8))) AS escaped"}]},
+    {"name":"005-json-nchar8","description":"json nchar8","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(N'json' AS NCHAR(8))) AS escaped"}]},
+    {"name":"006-json-varchar8","description":"json varchar8","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST('json' AS VARCHAR(8))) AS escaped"}]},
+    {"name":"007-json-nvarchar8","description":"json nvarchar8","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(N'json' AS NVARCHAR(8))) AS escaped"}]},
+    {"name":"008-json-leading-space","description":"json leading space","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',' json') AS escaped"}]},
+    {"name":"009-json-trailing-tab","description":"json trailing tab","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','json'+CHAR(9)) AS escaped"}]},
+    {"name":"010-json-trailing-newline","description":"json trailing newline","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','json'+CHAR(10)) AS escaped"}]},
+    {"name":"011-json-trailing-nbsp","description":"json trailing NBSP","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',N'json'+NCHAR(160)) AS escaped"}]},
+    {"name":"012-json-suffix-x","description":"json suffix x","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x','jsonx') AS escaped"}]},
+    {"name":"013-literal-null","description":"literal NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',NULL) AS escaped"}]},
+    {"name":"014-typed-varchar-null","description":"typed varchar NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(NULL AS VARCHAR(8))) AS escaped"}]},
+    {"name":"015-typed-nvarchar-null","description":"typed nvarchar NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(NULL AS NVARCHAR(8))) AS escaped"}]},
+    {"name":"016-typed-char-null","description":"typed char NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(NULL AS CHAR(8))) AS escaped"}]},
+    {"name":"017-typed-nchar-null","description":"typed nchar NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'x',CAST(NULL AS NCHAR(8))) AS escaped"}]},
+    {"name":"018-null-source-invalid","description":"NULL source invalid","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST(NULL AS NVARCHAR(8)),'xml') AS escaped"}]},
+    {"name":"019-null-source-padded","description":"NULL source padded","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST(NULL AS NVARCHAR(8)),'json ') AS escaped"}]},
+    {"name":"020-null-source-typed-null","description":"NULL source typed NULL","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST(NULL AS NVARCHAR(8)),CAST(NULL AS NVARCHAR(8))) AS escaped"}]},
+    {"name":"021-empty-source-invalid","description":"empty source invalid","steps":[{"kind":"batch","sql":"SELECT STRING_ESCAPE(N'','xml') AS escaped"}]},
+    {"name":"022-rpc-nvarchar-null","description":"RPC nvarchar NULL","steps":[{"kind":"rpc","sql":"SELECT STRING_ESCAPE(N'x',@f) AS escaped","params":[{"name":"f","type":"nvarchar","value":null}]}]},
+    {"name":"023-rpc-varchar-null","description":"RPC varchar NULL","steps":[{"kind":"rpc","sql":"SELECT STRING_ESCAPE(N'x',@f) AS escaped","params":[{"name":"f","type":"varchar","value":null}]}]},
+    {"name":"024-rpc-nvarchar-padded","description":"RPC nvarchar padded","steps":[{"kind":"rpc","sql":"SELECT STRING_ESCAPE(N'x',@f) AS escaped","params":[{"name":"f","type":"nvarchar","value":"json "}]}]},
+    {"name":"025-rpc-varchar-padded","description":"RPC varchar padded","steps":[{"kind":"rpc","sql":"SELECT STRING_ESCAPE(N'x',@f) AS escaped","params":[{"name":"f","type":"varchar","value":"json "}]}]},
+    {"name":"026-rpc-nvarchar-leading","description":"RPC nvarchar leading","steps":[{"kind":"rpc","sql":"SELECT STRING_ESCAPE(N'x',@f) AS escaped","params":[{"name":"f","type":"nvarchar","value":" json"}]}]}
+  ]
+}

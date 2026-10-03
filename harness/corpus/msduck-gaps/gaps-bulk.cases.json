@@ -1,0 +1,32 @@
+{
+  "source": "msduck/reference/gaps-bulk.json",
+  "image": "mcr.microsoft.com/mssql/server:2022-latest",
+  "runs": {
+    "triggers": [{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL)"},{"kind":"batch","sql":"CREATE TABLE audit (n int NULL, note varchar(20) NULL)"}],
+    "transactions": [{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL CONSTRAINT pk_items PRIMARY KEY)"},{"kind":"batch","sql":"BEGIN TRAN"}],
+    "nocount": [{"kind":"batch","sql":"CREATE TABLE items (id int NULL)"}],
+    "names": [{"kind":"batch","sql":"CREATE SCHEMA s2"}]
+  },
+  "cases": [
+    {"name":"000-client-types-1","description":"client-types 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL, big bigint NULL, small smallint NULL, tiny tinyint NULL, flag bit NULL, amount decimal(18,4) NULL, price money NULL, ratio float NULL, single real NULL, code char(4) NULL, name varchar(20) NULL, uname nvarchar(20) NULL, ucode nchar(3) NULL, born date NULL, stamp datetime NULL, at2 datetime2(7) NULL, small_at smalldatetime NULL, moment datetimeoffset(7) NULL, clock time(7) NULL, guid uniqueidentifier NULL, bin varbinary(10) NULL, fixed binary(4) NULL, notes nvarchar(max) NULL, ansi varchar(max) NULL, blob varbinary(max) NULL)"}]},
+    {"name":"004-mssql-table-1","description":"mssql-table 1","steps":[{"kind":"batch","sql":"if object_id('[dbo].[people]') is null create table [dbo].[people] ([id] int not null, [name] nvarchar (50) null, [score] decimal (10, 2) null, [joined] datetime null, [active] bit null, [photo] varbinary (max) null)"}]},
+    {"name":"010-column-metadata-1","description":"column-metadata 1","steps":[{"kind":"batch","sql":"CREATE TABLE n (a int NULL, b int NOT NULL, s varchar(5) NULL, m nvarchar(max) NULL)"}]},
+    {"name":"026-statement-errors-1","description":"statement-errors 1","steps":[{"kind":"batch","sql":"CREATE TABLE t (id int NOT NULL, v AS id * 2)"}]},
+    {"name":"042-zero-rows-1","description":"zero-rows 1","steps":[{"kind":"batch","sql":"CREATE TABLE t (id int NULL)"}]},
+    {"name":"046-identity-1","description":"identity 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int IDENTITY(10,5) NOT NULL CONSTRAINT pk_items PRIMARY KEY, v varchar(10) NULL)"}]},
+    {"name":"055-keep-nulls-1","description":"keep-nulls 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL, v varchar(10) NULL CONSTRAINT df_v DEFAULT 'dflt', n int NULL CONSTRAINT df_n DEFAULT 42, w int NULL)"}]},
+    {"name":"061-check-constraints-1","description":"check-constraints 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL, v int NULL CONSTRAINT ck_items_v CHECK (v > 0))"}]},
+    {"name":"081-triggers-1","description":"triggers 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL)"}]},
+    {"name":"082-triggers-2","description":"triggers 2","run":"triggers","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE audit (n int NULL, note varchar(20) NULL)"}]},
+    {"name":"083-triggers-3","description":"triggers 3","run":"triggers","prefix":2,"steps":[{"kind":"batch","sql":"CREATE TRIGGER tr_items ON items AFTER INSERT AS INSERT audit SELECT count(*), 'fired' FROM inserted"}]},
+    {"name":"088-statement-failures-1","description":"statement-failures 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL CONSTRAINT pk_items PRIMARY KEY, s varchar(5) NULL, d datetime NULL, name varchar(10) NOT NULL CONSTRAINT df_items_name DEFAULT 'x')"}]},
+    {"name":"101-transactions-1","description":"transactions 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL CONSTRAINT pk_items PRIMARY KEY)"}]},
+    {"name":"102-transactions-2","description":"transactions 2","run":"transactions","prefix":1,"steps":[{"kind":"batch","sql":"BEGIN TRAN"}]},
+    {"name":"103-transactions-3","description":"transactions 3","run":"transactions","prefix":2,"steps":[{"kind":"batch","sql":"INSERT items VALUES (50)"}]},
+    {"name":"120-nocount-1","description":"nocount 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NULL)"}]},
+    {"name":"121-nocount-2","description":"nocount 2","run":"nocount","prefix":1,"steps":[{"kind":"batch","sql":"SET NOCOUNT ON"}]},
+    {"name":"128-names-1","description":"names 1","steps":[{"kind":"batch","sql":"CREATE SCHEMA s2"}]},
+    {"name":"129-names-2","description":"names 2","run":"names","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE s2.items (x int NULL)"}]},
+    {"name":"134-large-1","description":"large 1","steps":[{"kind":"batch","sql":"CREATE TABLE items (id int NOT NULL CONSTRAINT pk_items PRIMARY KEY, name nvarchar(40) NULL, n int NULL CONSTRAINT df_items_n DEFAULT 7)"}]}
+  ]
+}

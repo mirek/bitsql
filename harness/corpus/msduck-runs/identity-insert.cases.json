@@ -1,0 +1,17 @@
+{
+  "source": "msduck/reference/identity-insert.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"CREATE TABLE dbo.alpha(id INT IDENTITY(1,1) PRIMARY KEY, v INT)"},{"kind":"batch","sql":"CREATE TABLE dbo.beta(id INT IDENTITY(10,2) PRIMARY KEY, v INT)"},{"kind":"batch","sql":"INSERT dbo.alpha(v) VALUES(1); INSERT dbo.beta(v) VALUES(10)"},{"kind":"batch","sql":"SELECT id,v FROM dbo.alpha ORDER BY id; SELECT id,v FROM dbo.beta ORDER BY id; SELECT CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.alpha')) AS alpha_current, CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.beta')) AS beta_current"},{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.alpha ON"},{"kind":"batch","sql":"INSERT dbo.alpha VALUES(100,2)"},{"kind":"batch","sql":"INSERT dbo.alpha(id,v) VALUES(100,3)"}]
+  },
+  "cases": [
+    {"name":"001-create-alpha","description":"create alpha","steps":[{"kind":"batch","sql":"CREATE TABLE dbo.alpha(id INT IDENTITY(1,1) PRIMARY KEY, v INT)"}]},
+    {"name":"002-create-beta","description":"create beta","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE dbo.beta(id INT IDENTITY(10,2) PRIMARY KEY, v INT)"}]},
+    {"name":"003-baseline-inserts","description":"baseline inserts","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"INSERT dbo.alpha(v) VALUES(1); INSERT dbo.beta(v) VALUES(10)"}]},
+    {"name":"004-baseline-snapshot","description":"baseline snapshot","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"SELECT id,v FROM dbo.alpha ORDER BY id; SELECT id,v FROM dbo.beta ORDER BY id; SELECT CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.alpha')) AS alpha_current, CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.beta')) AS beta_current"}]},
+    {"name":"005-a-alpha-on","description":"A alpha on","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SET IDENTITY_INSERT dbo.alpha ON"}]},
+    {"name":"006-a-explicit-without-column-list","description":"A explicit without column list","run":"run","prefix":5,"steps":[{"kind":"batch","sql":"INSERT dbo.alpha VALUES(100,2)"}]},
+    {"name":"007-a-high-explicit","description":"A high explicit","run":"run","prefix":6,"steps":[{"kind":"batch","sql":"INSERT dbo.alpha(id,v) VALUES(100,3)"}]},
+    {"name":"008-a-high-snapshot","description":"A high snapshot","run":"run","prefix":7,"steps":[{"kind":"batch","sql":"SELECT id,v FROM dbo.alpha ORDER BY id; SELECT id,v FROM dbo.beta ORDER BY id; SELECT CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.alpha')) AS alpha_current, CONVERT(VARCHAR(40),IDENT_CURRENT('dbo.beta')) AS beta_current"}]}
+  ]
+}

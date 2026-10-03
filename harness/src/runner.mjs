@@ -17,8 +17,8 @@ import { emulatorBinary, emulatorConfig, fixedAddress, probe, spawnEmulator } fr
 
 export const REUSE_PROBE = 'SELECT @@TRANCOUNT AS trancount, XACT_STATE() AS xact_state; SELECT 1 AS reusable'
 
-export async function oracleTarget({ log } = {}) {
-  const { config, image } = await startOracle({ log })
+export async function oracleTarget({ log, name, port } = {}) {
+  const { config, image } = await startOracle({ log, name, port })
   const admin = await connect(config)
   const version = (await capture(admin, { kind: 'batch', sql: "SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar(64))" })).sets[0].rows[0][0]
   await close(admin)

@@ -1,0 +1,13 @@
+{
+  "source": "msduck/reference/at-time-zone-history-1500-1799.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000-baseline","description":"baseline","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1500-01-01T00:00:00+00:00' AS DATETIMEOFFSET(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"001-sample-0","description":"sample 0","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1500-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"002-sample-1","description":"sample 1","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1500-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"003-sample-2","description":"sample 2","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1650-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"004-sample-3","description":"sample 3","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1650-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"005-sample-4","description":"sample 4","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1799-01-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]},
+    {"name":"006-sample-5","description":"sample 5","steps":[{"kind":"batch","sql":"SELECT z.name AS zone_name,DATEPART(TZOFFSET,CAST('1799-07-15T12:00:00' AS DATETIME2(7)) AT TIME ZONE z.name) AS offset_minutes FROM sys.time_zone_info z ORDER BY z.name"}]}
+  ]
+}

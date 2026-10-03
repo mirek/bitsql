@@ -1,0 +1,20 @@
+{
+  "source": "msduck/reference/char-byte.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"001-all-bytes","description":"all bytes","steps":[{"kind":"batch","sql":"WITH n AS (SELECT 0 AS v UNION ALL SELECT v+1 FROM n WHERE v<255)\nSELECT v AS code, CHAR(v) AS c, CONVERT(VARBINARY(1), CHAR(v)) AS raw,\n       ASCII(CHAR(v)) AS ascii_code, UNICODE(CHAR(v)) AS unicode_code,\n       DATALENGTH(CHAR(v)) AS byte_length FROM n ORDER BY v OPTION (MAXRECURSION 0)"}]},
+    {"name":"002-boundaries","description":"boundaries","steps":[{"kind":"batch","sql":"SELECT CHAR(-1) AS negative,CHAR(0) AS zero,CHAR(255) AS maximum,CHAR(256) AS over_maximum,CHAR(NULL) AS null_code"}]},
+    {"name":"003-fractions-and-text","description":"fractions and text","steps":[{"kind":"batch","sql":"SELECT CHAR(65.9) AS fractional,CHAR('66') AS numeric_text,CHAR('') AS empty_text"}]},
+    {"name":"004-empty-metadata","description":"empty metadata","steps":[{"kind":"batch","sql":"SELECT CHAR(65) AS c WHERE 1=0"}]},
+    {"name":"005-invalid-text","description":"invalid text","steps":[{"kind":"batch","sql":"SELECT CHAR('bad') AS c"}]},
+    {"name":"006-int-overflow","description":"int overflow","steps":[{"kind":"batch","sql":"SELECT CHAR(2147483648) AS c"}]},
+    {"name":"007-rpc-65","description":"rpc 65","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":65}]}]},
+    {"name":"008-rpc-0","description":"rpc 0","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":0}]}]},
+    {"name":"009-rpc-128","description":"rpc 128","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":128}]}]},
+    {"name":"010-rpc-129","description":"rpc 129","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":129}]}]},
+    {"name":"011-rpc-255","description":"rpc 255","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":255}]}]},
+    {"name":"012-rpc-256","description":"rpc 256","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":256}]}]},
+    {"name":"013-rpc-null","description":"rpc null","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":null}]}]},
+    {"name":"014-rpc-65-replay","description":"rpc 65 replay","steps":[{"kind":"rpc","sql":"SELECT CHAR(@n) AS c, CONVERT(VARBINARY(1), CHAR(@n)) AS raw","params":[{"name":"n","type":"int","value":65}]}]}
+  ]
+}

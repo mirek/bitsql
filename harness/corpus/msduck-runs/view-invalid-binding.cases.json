@@ -1,0 +1,18 @@
+{
+  "source": "msduck/reference/view-invalid-binding.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"CREATE TABLE dbo.binding_base(id INT NOT NULL,v INT); INSERT INTO dbo.binding_base VALUES(1,7); CREATE TABLE dbo.binding_outer(v INT); INSERT INTO dbo.binding_outer VALUES(99)"},{"kind":"batch","sql":"CREATE VIEW dbo.binding_view AS SELECT MIN(v) AS result FROM dbo.binding_base"},{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"},{"kind":"batch","sql":"ALTER TABLE dbo.binding_base DROP COLUMN v"},{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"},{"kind":"batch","sql":"SELECT (SELECT result FROM dbo.binding_view) AS result FROM dbo.binding_outer"},{"kind":"batch","sql":"SELECT a.result FROM dbo.binding_outer AS o CROSS JOIN dbo.binding_view AS a"},{"kind":"batch","sql":"ALTER TABLE dbo.binding_base ADD v INT"},{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"},{"kind":"batch","sql":"CREATE VIEW dbo.binding_nested AS SELECT result FROM dbo.binding_view"}]
+  },
+  "cases": [
+    {"name":"000-base","description":"base","steps":[{"kind":"batch","sql":"CREATE TABLE dbo.binding_base(id INT NOT NULL,v INT); INSERT INTO dbo.binding_base VALUES(1,7); CREATE TABLE dbo.binding_outer(v INT); INSERT INTO dbo.binding_outer VALUES(99)"}]},
+    {"name":"001-view","description":"view","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"CREATE VIEW dbo.binding_view AS SELECT MIN(v) AS result FROM dbo.binding_base"}]},
+    {"name":"002-before","description":"before","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"}]},
+    {"name":"003-drop","description":"drop","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"ALTER TABLE dbo.binding_base DROP COLUMN v"}]},
+    {"name":"004-broken","description":"broken","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"}]},
+    {"name":"007-repair","description":"repair","run":"run","prefix":7,"steps":[{"kind":"batch","sql":"ALTER TABLE dbo.binding_base ADD v INT"}]},
+    {"name":"008-repaired","description":"repaired","run":"run","prefix":8,"steps":[{"kind":"batch","sql":"SELECT result FROM dbo.binding_view"}]},
+    {"name":"009-nested","description":"nested","run":"run","prefix":9,"steps":[{"kind":"batch","sql":"CREATE VIEW dbo.binding_nested AS SELECT result FROM dbo.binding_view"}]},
+    {"name":"010-alter","description":"alter","run":"run","prefix":10,"steps":[{"kind":"batch","sql":"ALTER VIEW dbo.binding_view AS SELECT id AS renamed FROM dbo.binding_base"}]}
+  ]
+}

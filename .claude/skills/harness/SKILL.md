@@ -171,6 +171,14 @@ whose emulator output contains an `Emulator:` error is **skipped** (unless
 `allowlist.txt` once `npm run diff -- <selector>` passes, so they cannot
 regress.
 
+`test/parse.test.mjs` runs the parser over every captured (compared or
+hand-written setup) batch in the whole corpus, no server needed. Replayed run
+prefixes are skipped (they are checked in their own case). Disagreements
+listed in `harness/parse-known.txt` (seeded with the msduck layout import's
+226: JSON_OBJECTAGG `k:v`, ALTER DATABASE, JSON_ARRAYAGG ORDER BY, DBCC,
+ALTER INDEX … DISABLE, …) are tolerated; new ones fail. Delete lines
+as the parser catches up (the test prints the ones that now agree).
+
 ## msduck import
 
 `npm run import:msduck -- --from "$TMPDIR/msduck" --force` regenerates
@@ -181,6 +189,44 @@ and `raiserror-failure-counter.json` are RPC; entries with `value` are RPC with
 case is re-run on the local oracle and kept only if reproduced exactly;
 `corpus/msduck/_import.json` lists counts and rejections. Each file keeps
 `source: "msduck/reference/<file>"`.
+
+## msduck layout import (gaps-* and other sequential captures)
+
+```bash
+npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --oracles 5 --stop-oracles   # all adapters
+npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --only savepoint,gaps-merge --oracles 5
+npm run import:msduck-layouts -- --only gaps-keys --dry-run --report /tmp/r.json      # verify, write nothing
+npm run import:msduck-layouts -- --list                                                # adapters
+```
+
+- Regenerates `corpus/msduck-gaps/` (`gaps-*.json`) and `corpus/msduck-runs/`
+  (everything else not in the clean layout). `--only` rewrites just those
+  files and merges their stats into `_import.json` (per file: entries,
+  cases, imported, `skipped` reasons, `rejected` reasons, rejected ids with
+  the first msduck/oracle difference).
+- Adapters live in `src/msduck-layouts/*.mjs`, one function per msduck file
+  (`(doc, ctx) => Run[]`, shape in `project.mjs`). They read the matching
+  `msduck/scripts/capture-<file>.mjs` semantics: connection, request kind
+  (batch / `rpc` / `proc` with typed params), what was recorded.
+- **Sequential runs** (one connection, state carries over): every entry
+  becomes its own case `<file>#NNN-<slug>`; all earlier entries of the run
+  replay as uncompared setup. The setup is stored once per file in the
+  cases.json `runs` table and referenced as `{run, prefix}`
+  (`corpus.mjs expandSteps`); the case hash covers the expanded steps.
+  Runs marked `independent` have no prefix.
+- Unrepresentable entries (transaction-manager requests, prepared handles,
+  second connections, reconnects, session reset, attention, bulk load, TVPs)
+  are skipped by reason, and the rest of their run with them (its state
+  would differ) unless marked `stateless`.
+- Verification: each case runs on the oracle; msduck's recorded result is
+  compared with a *projection* of the harness capture (only what msduck
+  recorded, in its shape); if equal the case runs a second time and the full
+  harness capture must reproduce (determinism). The stored expectation is the
+  oracle's full harness capture (`toExpected`), not msduck's partial one.
+  Login/request timeouts are retried, never counted as rejections.
+- `--oracles N` spreads verification over dedicated containers
+  `bitsql-oracle-import-1..N` on 47340+ (CREATE DATABASE serializes inside one
+  server; one oracle does ~2 cases/s). `--stop-oracles` removes them.
 
 ## Findings
 
@@ -226,3 +272,28 @@ Start the host with `--database NAME` so the app's database exists at login
   an hour on the shared oracle (CREATE DATABASE per case dominates); for a
   quick oracle-vs-emulator loop run the SQL of single-batch cases on one
   connection to each server instead and compare rows/errors.
+- 2026-10-03: msduck capture layouts (import-msduck-layouts): 154 non-clean
+  files, 13875 entries (plus ~16k grid entries sampled out) → 12885 cases →
+  12829 kept (4495 gaps, 8334 others); 56 rejected (43 msduck/oracle value
+  differences, 13 nondeterministic: generated constraint names). Lessons: (1) msduck's capture scripts,
+  not the fixtures, hold part of the SQL (applock batches, gaps-functions,
+  identifiers, json_string setup, missing RPC params) — adapters evaluate the
+  script's literal sections with `node:vm`. (2) Fixtures name the database in
+  many ways: `msduck_audit_<hex>`, `<fresh-database>`, `<database>`, `<db>`,
+  `msduck_audit_<database>`, fixed names (`gaps_constraints`,
+  `msduck_catalog_reference`), or `master` (unicode-storage,
+  windows-1252-best-fit, aggregate-warning-boundaries ran in master) — all
+  map to `{db}`. (3) Recorded fields bitsql cannot observe (`procName`,
+  `serverName`, column `userType`/`udtInfo`, DONE_INXACT status, raw
+  COLMETADATA hex, the raw row count of an uncounted DONE, which SQL Server
+  sends as 1 under NOCOUNT) are dropped from the projection, not rejected.
+  (4) -0 floats survive only where msduck kept `bits`. (5) Server-version
+  probes differ (msduck 17.0.4065.4 / some on 16.0.4236.2) and are skipped.
+  (6) Cost: a run of n entries costs n²/2 replayed steps; adapters mark runs
+  `independent` or replay only state-changing earlier entries. One oracle
+  verifies ~2 cases/s (CREATE DATABASE serializes); `--oracles 5` did the
+  full import (2 runs per case) in ~50 min on a busy host.
+- 2026-10-03: Under heavy shared-host load the oracle drops logins (15 s
+  connect timeout) and requests (30 s); the layout importer retries those
+  and never counts them as rejections. Port 47345 is used by another
+  agent's `bitsql-oracle-tz`; extra import oracles use 47340–47344.

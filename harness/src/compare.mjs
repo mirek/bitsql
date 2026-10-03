@@ -37,6 +37,12 @@ export function kindOf(diff, actualCapture) {
     if (error && /^Emulator:/.test(error.message ?? '')) return `${scope}unsupported: ${error.message.slice(0, 60)}`
     if (error?.client) return `${scope}client error: ${String(error.code ?? error.message).slice(0, 60)}`
     if (error && diff.expected === '<missing>') return `${scope}unexpected error ${error.number}`
+    // More errors than expected: name the first extra one.
+    if (local === 'errors/length' && typeof diff.actual === 'number' && diff.actual > diff.expected) {
+      const extra = actualErrors[diff.expected]
+      if (extra?.client) return `${scope}client error: ${String(extra.code ?? extra.message).slice(0, 60)}`
+      if (extra) return `${scope}unexpected error ${extra.number}`
+    }
   }
   return `${scope}${local}`
 }
@@ -51,7 +57,12 @@ export function compareCase(actual, expected) {
   for (let i = 0; i < steps.length; i++) {
     if (steps[i] === null) continue
     const d = compareCapture(actual.steps?.[i], steps[i], `/steps/${i}`)
-    if (d) return { kind: kindOf(d, actual.steps?.[i]), ...d }
+    if (d) {
+      // An explicit "not supported" in an earlier (setup) step is the root cause.
+      const earlier = (actual.steps ?? []).slice(0, i).flatMap(s => s?.errors ?? []).find(e => /^Emulator:/.test(e.message ?? ''))
+      if (earlier && !/unsupported/.test(kindOf(d, actual.steps?.[i]))) return { kind: `unsupported in setup: ${earlier.message.slice(0, 60)}`, ...d }
+      return { kind: kindOf(d, actual.steps?.[i]), ...d }
+    }
   }
   if (expected.reuse) {
     const d = compareCapture(actual.reuse, expected.reuse, '/reuse')

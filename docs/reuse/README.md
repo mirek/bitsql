@@ -22,7 +22,8 @@ git clone --depth 1 https://github.com/mirek/mssqlite.git "$TMPDIR/mssqlite"
 - [x] mssqlite divergence briefs → `docs/reuse/mssqlite-todo/`
 - [x] Harness: msduck `scripts/lib/{compatibility,reference,reference-container}.mjs` → `harness/src/`
 - [x] Host CLI contract `--listen 127.0.0.1:0` + stderr `listening on 127.0.0.1:<port>` (msduck `tests/support/client.mjs`; harness side in `harness/src/emulator.mjs`)
-- [~] Small `reference/*.json` captures (≤ 1 MB each) → `harness/corpus/msduck/` via `harness/src/import-msduck.mjs` (clean `results` layout only: 1153 cases; other layouts and prepared entries not yet normalized)
+- [x] Small `reference/*.json` captures (≤ 1 MB each) → `harness/corpus/msduck/` via `harness/src/import-msduck.mjs` (clean `results` layout: 1153 cases)
+- [x] Other capture layouts (gaps-* workload files, sequential `runs`/`run`/`cases`/`groups`/`containers` grids, rpc entries) → `harness/corpus/msduck-gaps/` (4495 cases) and `harness/corpus/msduck-runs/` (8334 cases) via `harness/src/import-msduck-layouts.mjs` + per-file adapters in `harness/src/msduck-layouts/`; oracle-verified, huge grids sampled. Not importable: attention, bulk load, TVP, login, transaction-manager and prepared-handle entries, second connections/reconnects (counted in `_import.json`)
 - [~] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds` (PRELOGIN 4.1, scramble, ALL_HEADERS, DONE/ENVCHANGE/RPC 4.8 done; mssqlite value.test.ts per-type vectors pending)
 - [ ] Lexer rules from mssqlite `packages/tsql/src/lex.ts` (with spans added)
 - [ ] msduck `tests/tedious.test.mjs` / `tests/compat/*` cases → harness client tests (selectively)

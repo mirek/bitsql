@@ -21,7 +21,11 @@
 //
 // 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
 //      { "source": "...", "cases": [{ "name", "steps": [{kind, sql, params?, compare?}] }] }
-//    Expected output: sibling `name.expected.json` = { server, cases: { <name>: expected } }.
+//    Expected output: sibling `name.expected.json` = { server, cases: { <name>: expected } },
+//    optionally with `defaultReuse` (the reuse capture of cases that omit `reuse`).
+//    Optional `runs: { <id>: [steps] }`: a case `{ name, run, prefix, steps }`
+//    replays the first `prefix` steps of that run (compare:false) before its
+//    own steps (msduck sequential captures; see expandSteps).
 //
 // A loaded case is { id, file, expectedFile, key, steps, source? } where `key`
 // is the case name inside a multi-case file (null for .sql cases).
@@ -143,11 +147,21 @@ export async function loadCorpus(selectors = []) {
       const doc = JSON.parse(await readFile(file, 'utf8'))
       for (const c of doc.cases) {
         if (!wanted(rel, c.name)) continue
-        cases.push({ id: `${rel.replace(/\.cases\.json$/, '')}#${c.name}`, file, expectedFile, key: c.name, steps: c.steps, source: doc.source })
+        cases.push({ id: `${rel.replace(/\.cases\.json$/, '')}#${c.name}`, file, expectedFile, key: c.name, steps: expandSteps(doc, c), source: doc.source })
       }
     }
   }
   return cases
+}
+
+// Sequential captures (one connection, state carries over) share their
+// steps: `doc.runs[<id>]` lists them once and a case `{ run, prefix, steps }`
+// first replays `prefix` steps of that run as uncompared setup.
+export function expandSteps(doc, c) {
+  if (c.run === undefined) return c.steps
+  const run = doc.runs?.[c.run]
+  if (!run || run.length < (c.prefix ?? 0)) throw new Error(`case ${c.name}: unknown run ${c.run} or prefix ${c.prefix} too long`)
+  return [...run.slice(0, c.prefix ?? 0).map(s => ({ ...s, compare: false, replay: true })), ...c.steps]
 }
 
 const expectedCache = new Map()
@@ -159,7 +173,11 @@ export async function readExpected(testCase) {
     expectedCache.set(testCase.expectedFile, doc)
   }
   if (!doc) return null
-  return testCase.key === null ? doc : doc.cases?.[testCase.key] ?? null
+  if (testCase.key === null) return doc
+  const expected = doc.cases?.[testCase.key] ?? null
+  // Generated files store the common reuse-probe capture once (`defaultReuse`).
+  if (expected && expected.reuse === undefined && doc.defaultReuse) return { ...expected, reuse: doc.defaultReuse }
+  return expected
 }
 
 export async function exists(path) {

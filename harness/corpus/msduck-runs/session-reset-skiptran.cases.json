@@ -1,0 +1,14 @@
+{
+  "source": "msduck/reference/session-reset-skiptran.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#skiptran_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists"},{"kind":"batch","sql":"CREATE TABLE dbo.skiptran_marker(n INT)"},{"kind":"batch","sql":"CREATE TABLE #skiptran_probe(n INT); INSERT #skiptran_probe VALUES(7); SET DATEFIRST 3; SET NOCOUNT ON"},{"kind":"batch","sql":"BEGIN TRANSACTION; INSERT dbo.skiptran_marker VALUES(9)"}]
+  },
+  "cases": [
+    {"name":"000-initial-state","description":"initial state","steps":[{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#skiptran_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists"}]},
+    {"name":"001-create-durable-table","description":"create durable table","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE dbo.skiptran_marker(n INT)"}]},
+    {"name":"002-create-local-temp-and-settings","description":"create local temp and settings","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"CREATE TABLE #skiptran_probe(n INT); INSERT #skiptran_probe VALUES(7); SET DATEFIRST 3; SET NOCOUNT ON"}]},
+    {"name":"005-begin-transaction-and-insert","description":"begin transaction and insert","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"BEGIN TRANSACTION; INSERT dbo.skiptran_marker VALUES(9)"}]},
+    {"name":"006-before-skiptran","description":"before skiptran","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SELECT @@TRANCOUNT AS transaction_count, XACT_STATE() AS transaction_state,\n  @@DATEFIRST AS datefirst, CASE WHEN (@@OPTIONS & 512) = 512 THEN 1 ELSE 0 END AS nocount,\n  CASE WHEN OBJECT_ID('tempdb..#skiptran_probe') IS NULL THEN 0 ELSE 1 END AS temp_exists; SELECT n FROM #skiptran_probe"}]}
+  ]
+}

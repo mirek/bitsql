@@ -1,0 +1,26 @@
+{
+  "source": "msduck/reference/for-xml-path.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"001-ordinary-row","description":"ordinary row","steps":[{"kind":"batch","sql":"SELECT 1 AS value FOR XML PATH('row')"}]},
+    {"name":"002-empty-row-name","description":"empty row name","steps":[{"kind":"batch","sql":"SELECT 1 AS value FOR XML PATH('')"}]},
+    {"name":"003-default-row-name","description":"default row name","steps":[{"kind":"batch","sql":"SELECT 1 AS value FOR XML PATH"}]},
+    {"name":"004-attribute-and-escaped-element","description":"attribute and escaped element","steps":[{"kind":"batch","sql":"SELECT 7 AS [@id], N'A&B <C> \"quoted\"' AS [name] FOR XML PATH('item')"}]},
+    {"name":"005-unnamed-text","description":"unnamed text","steps":[{"kind":"batch","sql":"SELECT N'A&B <C>' FOR XML PATH('row')"}]},
+    {"name":"006-text-node-alias","description":"text node alias","steps":[{"kind":"batch","sql":"SELECT N'A&B <C>' AS [text()] FOR XML PATH('row')"}]},
+    {"name":"007-nested-element-alias","description":"nested element alias","steps":[{"kind":"batch","sql":"SELECT 1 AS [meta/id], N'X' AS [meta/name] FOR XML PATH('row')"}]},
+    {"name":"008-ordered-rows","description":"ordered rows","steps":[{"kind":"batch","sql":"SELECT v AS [@id], label AS [name] FROM (VALUES (2,N'two'),(1,N'one')) AS t(v,label) ORDER BY v FOR XML PATH('item')"}]},
+    {"name":"009-null-element-omitted","description":"null element omitted","steps":[{"kind":"batch","sql":"SELECT CAST(NULL AS NVARCHAR(8)) AS [value] FOR XML PATH('row')"}]},
+    {"name":"010-null-attribute-omitted","description":"null attribute omitted","steps":[{"kind":"batch","sql":"SELECT CAST(NULL AS NVARCHAR(8)) AS [@code] FOR XML PATH('row')"}]},
+    {"name":"011-null-element-xinil","description":"null element xinil","steps":[{"kind":"batch","sql":"SELECT CAST(NULL AS NVARCHAR(8)) AS [value] FOR XML PATH('row'), ELEMENTS XSINIL"}]},
+    {"name":"012-zero-source-rows","description":"zero source rows","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] WHERE 1=0 FOR XML PATH('row')"}]},
+    {"name":"013-root-wrapper","description":"root wrapper","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), ROOT('root')"}]},
+    {"name":"014-xml-type","description":"xml type","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), TYPE"}]},
+    {"name":"015-xml-type-with-root","description":"xml type with root","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), TYPE, ROOT('root')"}]},
+    {"name":"016-typed-nested-xml","description":"typed nested xml","steps":[{"kind":"batch","sql":"SELECT (SELECT 1 AS [value] FOR XML PATH('item'), TYPE) AS payload"}]},
+    {"name":"017-binary-base64","description":"binary base64","steps":[{"kind":"batch","sql":"SELECT CONVERT(VARBINARY(3),0x00FF3C) AS [data] FOR XML PATH('row'), BINARY BASE64"}]},
+    {"name":"018-attribute-after-element","description":"attribute after element","steps":[{"kind":"batch","sql":"SELECT 1 AS [@id], 2 AS [value], 3 AS [@late] FOR XML PATH('row')"}]},
+    {"name":"019-duplicate-root-directive","description":"duplicate root directive","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), ROOT('a'), ROOT('b')"}]},
+    {"name":"020-duplicate-type-directive","description":"duplicate type directive","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), TYPE, TYPE"}]}
+  ]
+}

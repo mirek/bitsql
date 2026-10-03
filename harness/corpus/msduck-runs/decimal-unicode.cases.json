@@ -1,0 +1,15 @@
+{
+  "source": "msduck/reference/decimal-unicode.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "cases": [
+    {"name":"000-zero-and-typed-null","description":"zero and typed NULL","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(40),CAST('0' AS DECIMAL(38,38))) AS zero_value,CONVERT(NCHAR(40),CAST('0' AS DECIMAL(38,38))) AS fixed_zero,CONVERT(NVARCHAR(40),CAST(NULL AS DECIMAL(38,38))) AS null_value"}]},
+    {"name":"001-positive-exact-width-and-padding","description":"positive exact width and padding","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(40),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS bounded,CONVERT(NCHAR(40),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS fixed_exact,CONVERT(NCHAR(41),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS fixed_padded"}]},
+    {"name":"002-negative-exact-width","description":"negative exact width","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(41),CAST('-0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS bounded,CONVERT(NCHAR(41),CAST('-0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS fixed_exact"}]},
+    {"name":"003-try-narrow-widths","description":"TRY narrow widths","steps":[{"kind":"batch","sql":"SELECT TRY_CONVERT(NVARCHAR(39),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS unicode_short,TRY_CONVERT(NCHAR(39),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS fixed_short,TRY_CONVERT(NVARCHAR(40),CAST('-0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS negative_short"}]},
+    {"name":"004-nvarchar-narrow-overflow","description":"NVARCHAR narrow overflow","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(39),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS too_short"}]},
+    {"name":"005-nchar-narrow-overflow","description":"NCHAR narrow overflow","steps":[{"kind":"batch","sql":"SELECT CONVERT(NCHAR(39),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS too_short"}]},
+    {"name":"006-decimal-avg","description":"decimal AVG","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(40),AVG(d)) AS exact_value FROM (VALUES(CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38))),(CAST('0' AS DECIMAL(38,38)))) t(d)"}]},
+    {"name":"007-float-and-text-controls","description":"float and text controls","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(40),CAST(0.5 AS FLOAT)) AS floating_value,CONVERT(NVARCHAR(40),N'.25') AS text_value"}]},
+    {"name":"008-empty-descriptor","description":"empty descriptor","steps":[{"kind":"batch","sql":"SELECT CONVERT(NVARCHAR(40),CAST('0.00000000000000000000000000000000000001' AS DECIMAL(38,38))) AS empty_value WHERE 1=0"}]}
+  ]
+}

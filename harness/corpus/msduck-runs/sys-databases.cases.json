@@ -1,0 +1,14 @@
+{
+  "source": "msduck/reference/sys-databases.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"SELECT name,column_id,system_type_id,user_type_id,max_length,precision,scale,collation_name,is_nullable,is_computed FROM sys.all_columns WHERE object_id=OBJECT_ID(N'sys.databases') AND name IN (N'name',N'database_id',N'source_database_id',N'create_date',N'compatibility_level',N'collation_name',N'user_access',N'user_access_desc',N'is_read_only',N'state',N'state_desc',N'recovery_model',N'recovery_model_desc') ORDER BY column_id"},{"kind":"batch","sql":"SELECT name,database_id,source_database_id,create_date,compatibility_level,collation_name,user_access,user_access_desc,is_read_only,state,state_desc,recovery_model,recovery_model_desc FROM sys.databases WHERE database_id=-1"},{"kind":"batch","sql":"SELECT name,database_id,source_database_id,create_date,compatibility_level,collation_name,user_access,user_access_desc,is_read_only,state,state_desc,recovery_model,recovery_model_desc FROM sys.databases WHERE database_id=1"},{"kind":"batch","sql":"SELECT * FROM sys.databases WHERE database_id=-1"}]
+  },
+  "cases": [
+    {"name":"001-declarations","description":"declarations","steps":[{"kind":"batch","sql":"SELECT name,column_id,system_type_id,user_type_id,max_length,precision,scale,collation_name,is_nullable,is_computed FROM sys.all_columns WHERE object_id=OBJECT_ID(N'sys.databases') AND name IN (N'name',N'database_id',N'source_database_id',N'create_date',N'compatibility_level',N'collation_name',N'user_access',N'user_access_desc',N'is_read_only',N'state',N'state_desc',N'recovery_model',N'recovery_model_desc') ORDER BY column_id"}]},
+    {"name":"002-published-empty","description":"published empty","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"SELECT name,database_id,source_database_id,create_date,compatibility_level,collation_name,user_access,user_access_desc,is_read_only,state,state_desc,recovery_model,recovery_model_desc FROM sys.databases WHERE database_id=-1"}]},
+    {"name":"003-published-master","description":"published master","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"SELECT name,database_id,source_database_id,create_date,compatibility_level,collation_name,user_access,user_access_desc,is_read_only,state,state_desc,recovery_model,recovery_model_desc FROM sys.databases WHERE database_id=1"}]},
+    {"name":"004-complete-empty","description":"complete empty","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"SELECT * FROM sys.databases WHERE database_id=-1"}]},
+    {"name":"005-session-reusable","description":"session reusable","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SELECT 1 AS reusable"}]}
+  ]
+}

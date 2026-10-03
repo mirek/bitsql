@@ -1,0 +1,15 @@
+{
+  "source": "msduck/reference/for-xml-wire.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row')"},{"kind":"batch","sql":"SELECT 1 AS [value] WHERE 1=0 FOR XML PATH('row')"},{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), TYPE"},{"kind":"batch","sql":"SELECT (SELECT 1 AS [value] FOR XML PATH('item'), TYPE) AS payload"},{"kind":"batch","sql":"SELECT REPLICATE(CONVERT(NVARCHAR(MAX),N'x'),5000) AS [value] FOR XML PATH('row')"}]
+  },
+  "cases": [
+    {"name":"000-text","description":"text","steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row')"}]},
+    {"name":"001-empty","description":"empty","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"SELECT 1 AS [value] WHERE 1=0 FOR XML PATH('row')"}]},
+    {"name":"002-type","description":"type","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"SELECT 1 AS [value] FOR XML PATH('row'), TYPE"}]},
+    {"name":"003-nested-type","description":"nested type","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"SELECT (SELECT 1 AS [value] FOR XML PATH('item'), TYPE) AS payload"}]},
+    {"name":"004-large-text","description":"large text","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"SELECT REPLICATE(CONVERT(NVARCHAR(MAX),N'x'),5000) AS [value] FOR XML PATH('row')"}]},
+    {"name":"005-attribute-order-error","description":"attribute order error","run":"run","prefix":5,"steps":[{"kind":"batch","sql":"SELECT 1 AS [@id], 2 AS [value], 3 AS [@late] FOR XML PATH('row')"}]}
+  ]
+}

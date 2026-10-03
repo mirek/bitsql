@@ -1,0 +1,15 @@
+{
+  "source": "msduck/reference/identity-retrieval.json",
+  "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a",
+  "runs": {
+    "run": [{"kind":"batch","sql":"SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last"},{"kind":"batch","sql":"CREATE TABLE dbo.parent_id(id INT IDENTITY(10,2) PRIMARY KEY, value INT CONSTRAINT uq_parent_value UNIQUE)"},{"kind":"batch","sql":"CREATE TABLE dbo.audit_id(id INT IDENTITY(100,3) PRIMARY KEY, parent_id INT)"},{"kind":"batch","sql":"SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last, IDENT_CURRENT('dbo.parent_id') AS parent_last, IDENT_CURRENT('dbo.audit_id') AS audit_last"},{"kind":"batch","sql":"INSERT dbo.parent_id(value) VALUES(1); SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last, IDENT_CURRENT('dbo.parent_id') AS parent_last, IDENT_CURRENT('dbo.audit_id') AS audit_last"}]
+  },
+  "cases": [
+    {"name":"000-initial-session-values","description":"initial session values","steps":[{"kind":"batch","sql":"SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last"}]},
+    {"name":"001-create-parent","description":"create parent","run":"run","prefix":1,"steps":[{"kind":"batch","sql":"CREATE TABLE dbo.parent_id(id INT IDENTITY(10,2) PRIMARY KEY, value INT CONSTRAINT uq_parent_value UNIQUE)"}]},
+    {"name":"002-create-audit","description":"create audit","run":"run","prefix":2,"steps":[{"kind":"batch","sql":"CREATE TABLE dbo.audit_id(id INT IDENTITY(100,3) PRIMARY KEY, parent_id INT)"}]},
+    {"name":"003-before-allocation","description":"before allocation","run":"run","prefix":3,"steps":[{"kind":"batch","sql":"SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last, IDENT_CURRENT('dbo.parent_id') AS parent_last, IDENT_CURRENT('dbo.audit_id') AS audit_last"}]},
+    {"name":"004-first-batch-insert","description":"first batch insert","run":"run","prefix":4,"steps":[{"kind":"batch","sql":"INSERT dbo.parent_id(value) VALUES(1); SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last, IDENT_CURRENT('dbo.parent_id') AS parent_last, IDENT_CURRENT('dbo.audit_id') AS audit_last"}]},
+    {"name":"005-after-first-batch","description":"after first batch","run":"run","prefix":5,"steps":[{"kind":"batch","sql":"SELECT SCOPE_IDENTITY() AS scoped, @@IDENTITY AS session_last, IDENT_CURRENT('dbo.parent_id') AS parent_last, IDENT_CURRENT('dbo.audit_id') AS audit_last"}]}
+  ]
+}

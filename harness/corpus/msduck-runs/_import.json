@@ -1,0 +1,793 @@
+{
+  "source": "https://github.com/mirek/msduck reference/*.json (sequential and other layouts; src/import-msduck-layouts.mjs)",
+  "verified": true,
+  "files": {
+    "aggregate-warning-boundaries": {"entries":50,"cases":50,"imported":50,"skipped":{},"rejected":{},"bytes":158778,"rejectedCases":[]},
+    "aggregate-warnings": {"entries":126,"cases":126,"imported":126,"skipped":{},"rejected":{},"bytes":183877,"rejectedCases":[]},
+    "all-objects": {
+      "entries": 47,
+      "cases": 38,
+      "imported": 27,
+      "skipped": {"server version probe":1,"multi-connection (observer session)":8},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":3,"msduck mismatch /sets/*/rows/*/*/value":8},
+      "bytes": 44658,
+      "rejectedCases": [
+        {"id":"007-fresh-membership","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/0","actual":2755,"expected":2742},
+        {
+          "id": "008-fresh-full-catalog",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/3/7/value",
+          "actual": "2026-08-27T10:22:30.000Z",
+          "expected": "2026-07-09T00:25:35.090Z"
+        },
+        {"id":"021-created-membership","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/0","actual":2769,"expected":2756},
+        {
+          "id": "022-created-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T21:03:04.787Z",
+          "expected": "2026-09-24T20:33:29.507Z"
+        },
+        {
+          "id": "027-transaction-create-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T21:02:23.923Z",
+          "expected": "2026-09-24T20:33:29.507Z"
+        },
+        {
+          "id": "030-transaction-schema-transfer-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T21:01:43.450Z",
+          "expected": "2026-09-24T20:33:29.510Z"
+        },
+        {
+          "id": "033-transaction-drop-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T21:00:55.130Z",
+          "expected": "2026-09-24T20:33:29.510Z"
+        },
+        {
+          "id": "036-rollback-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T21:00:59.000Z",
+          "expected": "2026-09-24T20:33:29.507Z"
+        },
+        {
+          "id": "039-alter-table-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T20:59:54.487Z",
+          "expected": "2026-09-24T20:33:29.507Z"
+        },
+        {
+          "id": "044-committed-drop-owner-objects",
+          "reason": "msduck mismatch /sets/*/rows/*/*/value",
+          "path": "/sets/0/rows/0/7/value",
+          "actual": "2026-10-03T20:59:19.293Z",
+          "expected": "2026-09-24T20:33:29.507Z"
+        },
+        {"id":"046-final-membership","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/0","actual":2768,"expected":2755}
+      ]
+    },
+    "alter-database-sessions": {
+      "entries": 92,
+      "cases": 10,
+      "imported": 6,
+      "skipped": {"server version probe":1,"fixed-name server database (probe_db) / multi-connection":81},
+      "rejected": {"msduck mismatch /sets/*/rows/length":1,"msduck mismatch /sets/*/rows/*/*":3},
+      "bytes": 22430,
+      "rejectedCases": [
+        {"id":"004-spid-descriptor","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/0","actual":69,"expected":53},
+        {
+          "id": "006-owner-program-name-query",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "Tedious",
+          "expected": "msduck-capture"
+        },
+        {
+          "id": "007-own-session-values",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "linux",
+          "expected": "msduck-host"
+        },
+        {
+          "id": "009-other-session-status",
+          "reason": "msduck mismatch /sets/*/rows/length",
+          "path": "/sets/0/rows/length",
+          "actual": 4,
+          "expected": 1
+        }
+      ]
+    },
+    "alter-named-default": {"entries":72,"cases":71,"imported":71,"skipped":{"server version probe":1},"rejected":{},"bytes":125880,"rejectedCases":[]},
+    "apply-full-join": {"entries":24,"cases":24,"imported":24,"skipped":{},"rejected":{},"bytes":53030,"rejectedCases":[]},
+    "at-time-zone-history-0001-0499": {
+      "entries": 54,
+      "cases": 54,
+      "imported": 54,
+      "skipped": {"sampled out (grid)":380,"exhaustive grid chunk (too large)":50},
+      "rejected": {},
+      "bytes": 132018,
+      "rejectedCases": []
+    },
+    "at-time-zone-history-0500-0999": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":50},"rejected":{},"bytes":39995,"rejectedCases":[]},
+    "at-time-zone-history-1000-1499": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":50},"rejected":{},"bytes":39995,"rejectedCases":[]},
+    "at-time-zone-history-1500-1799": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":30},"rejected":{},"bytes":39995,"rejectedCases":[]},
+    "at-time-zone-history-1800-1899": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":10},"rejected":{},"bytes":39995,"rejectedCases":[]},
+    "at-time-zone-history-1900-2050": {"entries":8,"cases":8,"imported":8,"skipped":{"exhaustive grid chunk (too large)":16},"rejected":{},"bytes":45475,"rejectedCases":[]},
+    "at-time-zone-history-2051-2100": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":5},"rejected":{},"bytes":39992,"rejectedCases":[]},
+    "at-time-zone-history-2101-2500": {"entries":7,"cases":7,"imported":7,"skipped":{"exhaustive grid chunk (too large)":40},"rejected":{},"bytes":39992,"rejectedCases":[]},
+    "at-time-zone-transitions-2024": {"entries":21,"cases":21,"imported":21,"skipped":{},"rejected":{},"bytes":90177,"rejectedCases":[]},
+    "attention": {"entries":0,"cases":0,"imported":0,"skipped":{"attention (cancel) requests":24},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "attention-boundaries": {"entries":0,"cases":0,"imported":0,"skipped":{"attention (cancel) requests":18},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "attention-compute": {"entries":0,"cases":0,"imported":0,"skipped":{"attention (cancel) requests":24},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-character-capacity": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":96},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-character-conversion": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":69},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-character-cp1252": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":12},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-character-encoding": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":33},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-load-wire": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":4},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "bulk-staging-reference": {"entries":0,"cases":0,"imported":0,"skipped":{"bulk load (BCP)":29},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "char-byte": {"entries":15,"cases":14,"imported":14,"skipped":{"server version probe":1},"rejected":{},"bytes":31570,"rejectedCases":[]},
+    "character-extrema": {"entries":160,"cases":140,"imported":140,"skipped":{},"rejected":{},"bytes":465819,"rejectedCases":[]},
+    "charindex-patindex": {
+      "entries": 120,
+      "cases": 115,
+      "imported": 115,
+      "skipped": {"sampled out (grid)":91,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":4},
+      "rejected": {},
+      "bytes": 179594,
+      "rejectedCases": []
+    },
+    "checked-integer": {"entries":240,"cases":240,"imported":240,"skipped":{},"rejected":{},"bytes":205802,"rejectedCases":[]},
+    "compress-decompress": {
+      "entries": 76,
+      "cases": 69,
+      "imported": 69,
+      "skipped": {
+        "sampled out (grid)": 67,
+        "server version probe": 1,
+        "parameter value not representable (digest or non-finite)": 2,
+        "prepared protocol (sp_prepare/sp_execute)": 4
+      },
+      "rejected": {},
+      "bytes": 288395,
+      "rejectedCases": []
+    },
+    "concat-boundary": {
+      "entries": 18,
+      "cases": 15,
+      "imported": 15,
+      "skipped": {"sampled out (grid)":26,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 224003,
+      "rejectedCases": []
+    },
+    "concat-legacy-family": {
+      "entries": 137,
+      "cases": 135,
+      "imported": 135,
+      "skipped": {"sampled out (grid)":146,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":1},
+      "rejected": {},
+      "bytes": 204142,
+      "rejectedCases": []
+    },
+    "concat-numeric-format": {
+      "entries": 272,
+      "cases": 244,
+      "imported": 244,
+      "skipped": {
+        "sampled out (grid)": 1966,
+        "server version probe": 1,
+        "parameter value not representable (digest or non-finite)": 2,
+        "prepared protocol (sp_prepare/sp_execute)": 25
+      },
+      "rejected": {},
+      "bytes": 254929,
+      "rejectedCases": []
+    },
+    "concat-text-conversion": {
+      "entries": 221,
+      "cases": 217,
+      "imported": 217,
+      "skipped": {"sampled out (grid)":691,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":3},
+      "rejected": {},
+      "bytes": 217853,
+      "rejectedCases": []
+    },
+    "concat-ws-translate": {
+      "entries": 116,
+      "cases": 112,
+      "imported": 112,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":3},
+      "rejected": {},
+      "bytes": 154416,
+      "rejectedCases": []
+    },
+    "count-null-compilation": {"entries":72,"cases":71,"imported":71,"skipped":{"server version probe":1},"rejected":{},"bytes":215542,"rejectedCases":[]},
+    "count-ranking-declarations": {"entries":62,"cases":61,"imported":61,"skipped":{"server version probe":1},"rejected":{},"bytes":89355,"rejectedCases":[]},
+    "cursor": {
+      "entries": 114,
+      "cases": 88,
+      "imported": 87,
+      "skipped": {
+        "prepared protocol (sp_prepare/sp_execute)": 3,
+        "multi-connection (secondary session)": 1,
+        "after an unrepresentable step (multi-connection (secondary session))": 22
+      },
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":1},
+      "bytes": 254616,
+      "rejectedCases": [
+        {
+          "id": "088-prepared-global-cursor-after",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": -3,
+          "expected": 1
+        }
+      ]
+    },
+    "dateadd-legacy": {"entries":48,"cases":47,"imported":47,"skipped":{"server version probe":1},"rejected":{},"bytes":53348,"rejectedCases":[]},
+    "datediff-numeric": {"entries":38,"cases":37,"imported":37,"skipped":{"server version probe":1},"rejected":{},"bytes":41818,"rejectedCases":[]},
+    "dateformat": {
+      "entries": 43,
+      "cases": 38,
+      "imported": 38,
+      "skipped": {"server version probe":1,"multi-connection (session B)":4},
+      "rejected": {},
+      "bytes": 60933,
+      "rejectedCases": []
+    },
+    "datepart-numeric": {"entries":54,"cases":54,"imported":54,"skipped":{},"rejected":{},"bytes":93523,"rejectedCases":[]},
+    "datetrunc-bucket": {
+      "entries": 135,
+      "cases": 133,
+      "imported": 133,
+      "skipped": {"sampled out (grid)":787,"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 191916,
+      "rejectedCases": []
+    },
+    "ddl-completion": {"entries":30,"cases":30,"imported":30,"skipped":{},"rejected":{},"bytes":50604,"rejectedCases":[]},
+    "decimal-unicode": {"entries":9,"cases":9,"imported":9,"skipped":{},"rejected":{},"bytes":12534,"rejectedCases":[]},
+    "distribution-reference": {"entries":16,"cases":15,"imported":15,"skipped":{"server version probe":1},"rejected":{},"bytes":14801,"rejectedCases":[]},
+    "drop-index": {"entries":24,"cases":24,"imported":24,"skipped":{},"rejected":{},"bytes":84822,"rejectedCases":[]},
+    "float-aggregates": {"entries":46,"cases":45,"imported":45,"skipped":{"server version probe":1},"rejected":{},"bytes":64136,"rejectedCases":[]},
+    "float-default-grid": {
+      "entries": 83,
+      "cases": 74,
+      "imported": 74,
+      "skipped": {"sampled out (grid)":2097,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":8},
+      "rejected": {},
+      "bytes": 267552,
+      "rejectedCases": []
+    },
+    "for-xml-path": {"entries":21,"cases":20,"imported":20,"skipped":{"server version probe":1},"rejected":{},"bytes":18503,"rejectedCases":[]},
+    "for-xml-wire": {"entries":6,"cases":6,"imported":6,"skipped":{},"rejected":{},"bytes":11956,"rejectedCases":[]},
+    "format": {
+      "entries": 50,
+      "cases": 47,
+      "imported": 47,
+      "skipped": {"sampled out (grid)":142,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 147760,
+      "rejectedCases": []
+    },
+    "greatest-least": {
+      "entries": 101,
+      "cases": 100,
+      "imported": 100,
+      "skipped": {"sampled out (grid)":120,"server version probe":1},
+      "rejected": {},
+      "bytes": 195615,
+      "rejectedCases": []
+    },
+    "guid-assignment": {"entries":36,"cases":35,"imported":35,"skipped":{"server version probe":1},"rejected":{},"bytes":100561,"rejectedCases":[]},
+    "guid-character-conversion": {"entries":95,"cases":94,"imported":94,"skipped":{"server version probe":1},"rejected":{},"bytes":94850,"rejectedCases":[]},
+    "guid-conversion-order": {"entries":25,"cases":24,"imported":24,"skipped":{"server version probe":1},"rejected":{},"bytes":50964,"rejectedCases":[]},
+    "hashbytes-checksum": {
+      "entries": 86,
+      "cases": 85,
+      "imported": 85,
+      "skipped": {"sampled out (grid)":76,"prepared protocol (sp_prepare/sp_execute)":1},
+      "rejected": {},
+      "bytes": 226727,
+      "rejectedCases": []
+    },
+    "identity-insert": {
+      "entries": 34,
+      "cases": 8,
+      "imported": 8,
+      "skipped": {
+        "server version probe": 1,
+        "multi-connection (second session)": 1,
+        "after an unrepresentable step (multi-connection (second session))": 24
+      },
+      "rejected": {},
+      "bytes": 10650,
+      "rejectedCases": []
+    },
+    "identity-insert-column-order": {"entries":25,"cases":24,"imported":24,"skipped":{"server version probe":1},"rejected":{},"bytes":33736,"rejectedCases":[]},
+    "identity-insert-conversion": {"entries":19,"cases":18,"imported":18,"skipped":{"server version probe":1},"rejected":{},"bytes":23559,"rejectedCases":[]},
+    "identity-insert-errors": {"entries":34,"cases":33,"imported":33,"skipped":{"server version probe":1},"rejected":{},"bytes":43730,"rejectedCases":[]},
+    "identity-insert-multirow": {"entries":45,"cases":44,"imported":44,"skipped":{"server version probe":1},"rejected":{},"bytes":58173,"rejectedCases":[]},
+    "identity-insert-name-errors": {"entries":20,"cases":19,"imported":19,"skipped":{"server version probe":1},"rejected":{},"bytes":16659,"rejectedCases":[]},
+    "identity-insert-rpc": {
+      "entries": 44,
+      "cases": 32,
+      "imported": 32,
+      "skipped": {
+        "server version probe": 1,
+        "prepared protocol (sp_prepare/sp_execute)": 1,
+        "after an unrepresentable step (prepared protocol (sp_prepare/sp_execute))": 8
+      },
+      "rejected": {},
+      "bytes": 39155,
+      "rejectedCases": []
+    },
+    "identity-insert-shapes": {"entries":34,"cases":33,"imported":33,"skipped":{"server version probe":1},"rejected":{},"bytes":45655,"rejectedCases":[]},
+    "identity-retrieval": {
+      "entries": 31,
+      "cases": 6,
+      "imported": 6,
+      "skipped": {"multi-connection (second session)":2,"after an unrepresentable step (multi-connection (second session))":23},
+      "rejected": {},
+      "bytes": 8229,
+      "rejectedCases": []
+    },
+    "index-catalog": {"entries":32,"cases":32,"imported":32,"skipped":{},"rejected":{},"bytes":356874,"rejectedCases":[]},
+    "isjson-coercion": {"entries":44,"cases":44,"imported":44,"skipped":{},"rejected":{},"bytes":33396,"rejectedCases":[]},
+    "isjson-depth": {"entries":110,"cases":110,"imported":110,"skipped":{},"rejected":{},"bytes":306257,"rejectedCases":[]},
+    "isjson-source-types": {"entries":84,"cases":84,"imported":84,"skipped":{},"rejected":{},"bytes":65546,"rejectedCases":[]},
+    "json-advanced-path": {"entries":142,"cases":142,"imported":142,"skipped":{},"rejected":{},"bytes":113120,"rejectedCases":[]},
+    "json-aggregates": {
+      "entries": 114,
+      "cases": 110,
+      "imported": 110,
+      "skipped": {"sampled out (grid)":80,"prepared protocol (sp_prepare/sp_execute)":4},
+      "rejected": {},
+      "bytes": 206875,
+      "rejectedCases": []
+    },
+    "json-constructors": {"entries":94,"cases":94,"imported":94,"skipped":{"sampled out (grid)":153},"rejected":{},"bytes":191708,"rejectedCases":[]},
+    "json-extraction-boundaries": {"entries":80,"cases":80,"imported":80,"skipped":{},"rejected":{},"bytes":70538,"rejectedCases":[]},
+    "json-extraction-wildcard": {"entries":106,"cases":106,"imported":106,"skipped":{},"rejected":{},"bytes":85405,"rejectedCases":[]},
+    "like-patterns": {
+      "entries": 56,
+      "cases": 56,
+      "imported": 56,
+      "skipped": {"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 51758,
+      "rejectedCases": []
+    },
+    "login-database-error": {"entries":0,"cases":0,"imported":0,"skipped":{"login-time behavior (no SQL step)":11},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "merge-execution": {"entries":46,"cases":45,"imported":45,"skipped":{"server version probe":1},"rejected":{},"bytes":50060,"rejectedCases":[]},
+    "merge-top": {"entries":73,"cases":72,"imported":72,"skipped":{"server version probe":1},"rejected":{},"bytes":89752,"rejectedCases":[]},
+    "merge-top-percent": {"entries":110,"cases":109,"imported":109,"skipped":{"server version probe":1},"rejected":{},"bytes":131862,"rejectedCases":[]},
+    "merge-transaction": {"entries":78,"cases":77,"imported":77,"skipped":{"server version probe":1},"rejected":{},"bytes":131972,"rejectedCases":[]},
+    "ntile-null": {"entries":18,"cases":17,"imported":17,"skipped":{"server version probe":1},"rejected":{},"bytes":18392,"rejectedCases":[]},
+    "ntile-types": {
+      "entries": 29,
+      "cases": 25,
+      "imported": 25,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":3},
+      "rejected": {},
+      "bytes": 21025,
+      "rejectedCases": []
+    },
+    "numeric-arithmetic-context": {
+      "entries": 38,
+      "cases": 33,
+      "imported": 33,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":4},
+      "rejected": {},
+      "bytes": 34620,
+      "rejectedCases": []
+    },
+    "numeric-literal-metadata": {
+      "entries": 25,
+      "cases": 20,
+      "imported": 20,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":4},
+      "rejected": {},
+      "bytes": 21498,
+      "rejectedCases": []
+    },
+    "object-catalog-width": {"entries":71,"cases":70,"imported":70,"skipped":{},"rejected":{},"bytes":105613,"rejectedCases":[]},
+    "offset-functions": {
+      "entries": 134,
+      "cases": 134,
+      "imported": 134,
+      "skipped": {"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 189223,
+      "rejectedCases": []
+    },
+    "order-token": {
+      "entries": 68,
+      "cases": 65,
+      "imported": 65,
+      "skipped": {
+        "server version probe": 1,
+        "prepared protocol (sp_prepare/sp_execute)": 1,
+        "after an unrepresentable step (prepared protocol (sp_prepare/sp_execute))": 1
+      },
+      "rejected": {},
+      "bytes": 83269,
+      "rejectedCases": []
+    },
+    "order-token-expanded": {"entries":98,"cases":97,"imported":97,"skipped":{"server version probe":1},"rejected":{},"bytes":141694,"rejectedCases":[]},
+    "parse-try-parse": {
+      "entries": 110,
+      "cases": 106,
+      "imported": 106,
+      "skipped": {"sampled out (grid)":234,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":3},
+      "rejected": {},
+      "bytes": 197730,
+      "rejectedCases": []
+    },
+    "percentile-character-fraction": {
+      "entries": 109,
+      "cases": 103,
+      "imported": 103,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":5},
+      "rejected": {},
+      "bytes": 104140,
+      "rejectedCases": []
+    },
+    "percentile-numeric-rounding": {
+      "entries": 0,
+      "cases": 0,
+      "imported": 0,
+      "skipped": {"superseded by percentile-numeric-rounding-v2 (same SQL)":213},
+      "rejected": {},
+      "bytes": 0,
+      "rejectedCases": []
+    },
+    "percentile-numeric-rounding-v2": {
+      "entries": 213,
+      "cases": 212,
+      "imported": 207,
+      "skipped": {"server version probe":1},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":5},
+      "bytes": 234110,
+      "rejectedCases": [
+        {
+          "id": "007-source-0e0",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 0,
+          "expected": {"kind":"number","value":"-0"}
+        },
+        {
+          "id": "028-source-1e-308",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 0,
+          "expected": {"kind":"number","value":"-0"}
+        },
+        {
+          "id": "030-source-5e-324",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 0,
+          "expected": {"kind":"number","value":"-0"}
+        },
+        {
+          "id": "032-source-1e-324",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 0,
+          "expected": {"kind":"number","value":"-0"}
+        },
+        {
+          "id": "034-source-1e-400",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": 0,
+          "expected": {"kind":"number","value":"-0"}
+        }
+      ]
+    },
+    "percentile-order-type": {
+      "entries": 194,
+      "cases": 175,
+      "imported": 175,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":18},
+      "rejected": {},
+      "bytes": 176256,
+      "rejectedCases": []
+    },
+    "percentile-reference": {
+      "entries": 37,
+      "cases": 33,
+      "imported": 33,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":3},
+      "rejected": {},
+      "bytes": 33236,
+      "rejectedCases": []
+    },
+    "percentile-runtime-fraction": {
+      "entries": 137,
+      "cases": 102,
+      "imported": 102,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":34},
+      "rejected": {},
+      "bytes": 200113,
+      "rejectedCases": []
+    },
+    "quoted-session-identifiers": {"entries":30,"cases":30,"imported":30,"skipped":{},"rejected":{},"bytes":42045,"rejectedCases":[]},
+    "quotename": {"entries":47,"cases":47,"imported":47,"skipped":{},"rejected":{},"bytes":74854,"rejectedCases":[]},
+    "rand-session": {
+      "entries": 53,
+      "cases": 43,
+      "imported": 43,
+      "skipped": {
+        "server version probe": 1,
+        "multi-connection (second session)": 4,
+        "prepared protocol (sp_prepare/sp_execute)": 1,
+        "after an unrepresentable step (prepared protocol (sp_prepare/sp_execute))": 4
+      },
+      "rejected": {},
+      "bytes": 765348,
+      "rejectedCases": []
+    },
+    "rowversion": {"entries":31,"cases":31,"imported":31,"skipped":{},"rejected":{},"bytes":44372,"rejectedCases":[]},
+    "rpc-session-scope": {
+      "entries": 24,
+      "cases": 24,
+      "imported": 24,
+      "skipped": {"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 92586,
+      "rejectedCases": []
+    },
+    "savepoint": {
+      "entries": 661,
+      "cases": 567,
+      "imported": 567,
+      "skipped": {
+        "prepared protocol (sp_prepare/sp_execute)": 1,
+        "after an unrepresentable step (prepared protocol (sp_prepare/sp_execute))": 12,
+        "transaction manager request": 1,
+        "after an unrepresentable step (transaction manager request)": 79,
+        "drops tables of earlier programs (programs are separate runs)": 1
+      },
+      "rejected": {},
+      "bytes": 913212,
+      "rejectedCases": []
+    },
+    "select-top-percent": {
+      "entries": 50,
+      "cases": 45,
+      "imported": 45,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":4},
+      "rejected": {},
+      "bytes": 51472,
+      "rejectedCases": []
+    },
+    "sequence-reference": {
+      "entries": 24,
+      "cases": 21,
+      "imported": 19,
+      "skipped": {"server version probe":1,"multi-connection (session B)":2},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":2},
+      "bytes": 30534,
+      "rejectedCases": [
+        {
+          "id": "011-first-session-observes-shared-allocation",
+          "reason": "msduck mismatch /sets/*/rows/*/*",
+          "path": "/sets/0/rows/0/0",
+          "actual": "12",
+          "expected": "14"
+        },
+        {"id":"015-catalog-after-cycle","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/6","actual":"16","expected":"10"}
+      ]
+    },
+    "session-property-context": {
+      "entries": 76,
+      "cases": 73,
+      "imported": 73,
+      "skipped": {"session reset (resetConnection)":1,"after an unrepresentable step (session reset (resetConnection))":2},
+      "rejected": {},
+      "bytes": 129496,
+      "rejectedCases": []
+    },
+    "session-reset": {
+      "entries": 17,
+      "cases": 3,
+      "imported": 3,
+      "skipped": {"no SQL request recorded":1,"after an unrepresentable step (no SQL request recorded)":13},
+      "rejected": {},
+      "bytes": 7537,
+      "rejectedCases": []
+    },
+    "session-reset-skiptran": {
+      "entries": 17,
+      "cases": 5,
+      "imported": 5,
+      "skipped": {
+        "prepared protocol (sp_prepare/sp_execute)": 2,
+        "multi-connection (session secondary)": 1,
+        "session reset (resetConnection) request": 1,
+        "after an unrepresentable step (session reset (resetConnection) request)": 8
+      },
+      "rejected": {},
+      "bytes": 11234,
+      "rejectedCases": []
+    },
+    "soundex-difference": {
+      "entries": 27,
+      "cases": 26,
+      "imported": 26,
+      "skipped": {"sampled out (grid)":88,"prepared protocol (sp_prepare/sp_execute)":1},
+      "rejected": {},
+      "bytes": 149657,
+      "rejectedCases": []
+    },
+    "statistical-aggregates": {"entries":35,"cases":34,"imported":34,"skipped":{"server version probe":1},"rejected":{},"bytes":33534,"rejectedCases":[]},
+    "statistical-precision": {"entries":25,"cases":24,"imported":24,"skipped":{"server version probe":1},"rejected":{},"bytes":33484,"rejectedCases":[]},
+    "statistical-transition": {"entries":18,"cases":17,"imported":17,"skipped":{"server version probe":1},"rejected":{},"bytes":52937,"rejectedCases":[]},
+    "string-agg": {"entries":42,"cases":42,"imported":42,"skipped":{},"rejected":{},"bytes":67055,"rejectedCases":[]},
+    "string-escape-format": {"entries":27,"cases":27,"imported":27,"skipped":{},"rejected":{},"bytes":26682,"rejectedCases":[]},
+    "string-split": {"entries":49,"cases":49,"imported":49,"skipped":{},"rejected":{},"bytes":58694,"rejectedCases":[]},
+    "sys-databases": {"entries":6,"cases":5,"imported":5,"skipped":{"server version probe":1},"rejected":{},"bytes":25532,"rejectedCases":[]},
+    "system-all-columns": {
+      "entries": 17,
+      "cases": 15,
+      "imported": 14,
+      "skipped": {"server version probe":1,"full system catalog dump (4 MB)":1},
+      "rejected": {"msduck mismatch /sets/*/rows/*/*":1},
+      "bytes": 115785,
+      "rejectedCases": [{"id":"010-fresh-membership","reason":"msduck mismatch /sets/*/rows/*/*","path":"/sets/0/rows/0/0","actual":12838,"expected":12803}]
+    },
+    "table-type-catalog": {"entries":17,"cases":16,"imported":16,"skipped":{"server version probe":1},"rejected":{},"bytes":25781,"rejectedCases":[]},
+    "table-variable": {
+      "entries": 44,
+      "cases": 41,
+      "imported": 41,
+      "skipped": {"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":2},
+      "rejected": {},
+      "bytes": 69170,
+      "rejectedCases": []
+    },
+    "tedious-compat-gaps": {
+      "entries": 124,
+      "cases": 99,
+      "imported": 98,
+      "skipped": {"server version probe":1,"fixed-name server objects (probe_db/probe_login) or multi-connection":24},
+      "rejected": {"nondeterministic sets/*/rows/*/*":1},
+      "bytes": 136900,
+      "rejectedCases": [{"id":"007-getutcdate-datetime-rounding","reason":"nondeterministic sets/*/rows/*/*"}]
+    },
+    "temp-table-scope": {
+      "entries": 24,
+      "cases": 15,
+      "imported": 15,
+      "skipped": {
+        "server version probe": 1,
+        "multi-connection (session B)": 1,
+        "global temp table (shared across concurrent cases)": 5,
+        "reconnect (new connection)": 2
+      },
+      "rejected": {},
+      "bytes": 23332,
+      "rejectedCases": []
+    },
+    "temporal-guid-format": {
+      "entries": 159,
+      "cases": 103,
+      "imported": 103,
+      "skipped": {"sampled out (grid)":5391,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":55},
+      "rejected": {},
+      "bytes": 227538,
+      "rejectedCases": []
+    },
+    "temporal-parts": {"entries":221,"cases":220,"imported":220,"skipped":{"server version probe":1},"rejected":{},"bytes":192437,"rejectedCases":[]},
+    "translate-ascii-matching": {
+      "entries": 54,
+      "cases": 37,
+      "imported": 37,
+      "skipped": {"sampled out (grid)":2012,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":16},
+      "rejected": {},
+      "bytes": 208129,
+      "rejectedCases": []
+    },
+    "translate-character-matching": {
+      "entries": 62,
+      "cases": 45,
+      "imported": 45,
+      "skipped": {"sampled out (grid)":1620,"server version probe":1,"prepared protocol (sp_prepare/sp_execute)":16},
+      "rejected": {},
+      "bytes": 274664,
+      "rejectedCases": []
+    },
+    "tvp-binding": {"entries":0,"cases":0,"imported":0,"skipped":{"table-valued parameters":12},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "tvp-default": {"entries":0,"cases":0,"imported":0,"skipped":{"table-valued parameters":4},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "tvp-wire": {"entries":0,"cases":0,"imported":0,"skipped":{"table-valued parameters":4},"rejected":{},"bytes":0,"rejectedCases":[]},
+    "unicode-case": {"entries":66,"cases":66,"imported":66,"skipped":{},"rejected":{},"bytes":256005,"rejectedCases":[]},
+    "unicode-integer": {"entries":350,"cases":315,"imported":315,"skipped":{},"rejected":{},"bytes":404693,"rejectedCases":[]},
+    "unicode-json-storage": {"entries":468,"cases":423,"imported":423,"skipped":{},"rejected":{},"bytes":671942,"rejectedCases":[]},
+    "unicode-storage": {
+      "entries": 180,
+      "cases": 180,
+      "imported": 180,
+      "skipped": {"reconnect (afterReconnect read-back not representable)":180},
+      "rejected": {},
+      "bytes": 364613,
+      "rejectedCases": []
+    },
+    "view-execution": {"entries":27,"cases":27,"imported":27,"skipped":{},"rejected":{},"bytes":26806,"rejectedCases":[]},
+    "view-invalid-binding": {
+      "entries": 13,
+      "cases": 13,
+      "imported": 9,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/lineNumber":4},
+      "bytes": 9089,
+      "rejectedCases": [
+        {"id":"005-outer-name","reason":"msduck mismatch /errors/*/lineNumber","path":"/errors/1/lineNumber","actual":13,"expected":17},
+        {"id":"006-outer-join","reason":"msduck mismatch /errors/*/lineNumber","path":"/errors/1/lineNumber","actual":10,"expected":17},
+        {"id":"011-nested-broken","reason":"msduck mismatch /errors/*/lineNumber","path":"/errors/1/lineNumber","actual":13,"expected":17},
+        {"id":"012-nested-outer","reason":"msduck mismatch /errors/*/lineNumber","path":"/errors/1/lineNumber","actual":12,"expected":17}
+      ]
+    },
+    "view-properties": {"entries":41,"cases":41,"imported":41,"skipped":{},"rejected":{},"bytes":50112,"rejectedCases":[]},
+    "windows-1252-best-fit": {"entries":142,"cases":142,"imported":142,"skipped":{"sampled out":4},"rejected":{},"bytes":572473,"rejectedCases":[]}
+  },
+  "totals": {
+    "entries": 9109,
+    "cases": 8363,
+    "imported": 8334,
+    "bytes": 15630568,
+    "skipped": {
+      "sampled out (grid)": 16167,
+      "exhaustive grid chunk (too large)": 251,
+      "bulk load (BCP)": 243,
+      "prepared protocol (sp_prepare/sp_execute)": 242,
+      "superseded by percentile-numeric-rounding-v2 (same SQL)": 213,
+      "reconnect (afterReconnect read-back not representable)": 180,
+      "fixed-name server database (probe_db) / multi-connection": 81,
+      "after an unrepresentable step (transaction manager request)": 79,
+      "attention (cancel) requests": 66,
+      "server version probe": 65,
+      "after an unrepresentable step (multi-connection (second session))": 47,
+      "after an unrepresentable step (prepared protocol (sp_prepare/sp_execute))": 25,
+      "fixed-name server objects (probe_db/probe_login) or multi-connection": 24,
+      "after an unrepresentable step (multi-connection (secondary session))": 22,
+      "table-valued parameters": 20,
+      "after an unrepresentable step (no SQL request recorded)": 13,
+      "login-time behavior (no SQL step)": 11,
+      "multi-connection (observer session)": 8,
+      "after an unrepresentable step (session reset (resetConnection) request)": 8,
+      "multi-connection (session B)": 7,
+      "multi-connection (second session)": 7,
+      "global temp table (shared across concurrent cases)": 5,
+      "parameter value not representable (digest or non-finite)": 4,
+      "sampled out": 4,
+      "after an unrepresentable step (session reset (resetConnection))": 2,
+      "reconnect (new connection)": 2,
+      "multi-connection (secondary session)": 1,
+      "transaction manager request": 1,
+      "drops tables of earlier programs (programs are separate runs)": 1,
+      "session reset (resetConnection)": 1,
+      "no SQL request recorded": 1,
+      "multi-connection (session secondary)": 1,
+      "session reset (resetConnection) request": 1,
+      "full system catalog dump (4 MB)": 1
+    },
+    "rejected": {
+      "msduck mismatch /sets/*/rows/*/*": 15,
+      "msduck mismatch /sets/*/rows/*/*/value": 8,
+      "msduck mismatch /errors/*/lineNumber": 4,
+      "msduck mismatch /sets/*/rows/length": 1,
+      "nondeterministic sets/*/rows/*/*": 1
+    }
+  }
+}
