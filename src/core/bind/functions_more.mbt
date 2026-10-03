@@ -9,7 +9,14 @@ fn bind_call_more(
   call : @ast.FuncCall,
 ) -> @ir.Expr? raise @types.SqlError {
   ignore(env)
-  ignore(name)
   ignore(call)
+  if name == "" {
+    raise err(
+      195,
+      "'' is not a recognized built-in function name.",
+      state=10,
+      severity=15,
+    )
+  }
   None
 }
