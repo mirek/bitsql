@@ -66,7 +66,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       arity(name, args, 1)
       let b = bound()
       let ty : @types.SqlType = if is_max(b[0].ty) { BigInt } else { Int }
-      mk(Call(Len, b), ty, b[0].nullable)
+      mk(Call(Len, b), ty, true)
     }
     "DATALENGTH" => {
       arity(name, args, 1)
@@ -89,7 +89,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         arity_range(name, args, 1, 2)
       }
       let b = bound()
-      mk(Call(fnid, b), string_like(b[0].ty, env), any_null(b))
+      mk(Call(fnid, b), string_like(b[0].ty, env), true)
     }
     "LEFT" | "RIGHT" => {
       arity(name, args, 2)
@@ -253,7 +253,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         )
       }
       let last = coerce(b[b.length() - 1], t)
-      mk(Case(branches, Some(last)), t, b.iter().all(x => x.nullable))
+      fold_case(
+        branches,
+        Some(last),
+        t,
+        branches.iter().any(x => x.1.nullable) || last.nullable,
+      )
     }
     "NULLIF" => {
       arity(name, args, 2)
@@ -273,8 +278,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let a = bind_expr(env, args[1])
       let b2 = bind_expr(env, args[2])
       let t = @types.common_type(a.ty, b2.ty)
-      mk(
-        Case([(c, coerce(a, t))], Some(coerce(b2, t))),
+      fold_case(
+        [(c, coerce(a, t))],
+        Some(coerce(b2, t)),
         t,
         a.nullable || b2.nullable,
       )

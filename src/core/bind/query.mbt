@@ -209,8 +209,9 @@ fn bind_select(
       }
       ExprItem(e, ..) => {
         let b = bind_expr(inner, e)
-        let origin : @ir.Origin = match (e.kind, b.kind) {
-          (Column(_), Col(i)) => cols[i].origin
+        let origin : @ir.Origin = match b.kind {
+          // also a column after constant folding (CASE WHEN 1=1 THEN col ...)
+          Col(i) => cols[i].origin
           _ => Computed
         }
         exprs.push(b)

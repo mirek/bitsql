@@ -142,7 +142,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
             _ => Mod
           }
           let ty = @types.arith_result_type(aop, a.ty, b.ty)
-          mk(Arith(aop, a, b), ty, a.nullable || b.nullable)
+          fold_arith(mk(Arith(aop, a, b), ty, a.nullable || b.nullable))
         }
         BitAnd | BitOr | BitXor => {
           let ty = @types.common_type(a.ty, b.ty)
@@ -240,7 +240,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         Some(x) => Some(coerce(x, t))
         None => None
       }
-      mk(Case(branches, els), t, nullable)
+      fold_case(branches, els, t, nullable)
     }
     Cast(inner, tn, try_~) => {
       let a = bind_expr(env, inner)

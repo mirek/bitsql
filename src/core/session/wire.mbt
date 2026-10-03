@@ -103,7 +103,13 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
     Computed => 0x20
     SetOperation | Aggregate => 0
   }
-  base | (if c.nullable { 1 } else { 0 })
+  let case_sensitive = match c.ty.collation() {
+    Some(coll) => coll.case_sensitive || coll.kind is (Bin | Bin2)
+    None => false
+  }
+  // fCaseSen (0x02) is set for case-sensitive and binary collations
+  // (captured: msduck collation-wire flags 34/35).
+  base | (if c.nullable { 1 } else { 0 }) | (if case_sensitive { 2 } else { 0 })
 }
 
 ///|
