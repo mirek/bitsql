@@ -87,3 +87,37 @@ fidelity are unchanged. (execution.md updated.)
 - **`SqlError` (number, severity, state, message) is the core-wide error
   type**, defined in `src/core/types/error.mbt`.
 
+
+## 2026-10-03: request restart replaces statement restart (concurrency)
+
+The engine handles each request (batch or RPC) atomically and buffers its
+whole response until the request ends. That allows a simpler model than
+resumable statements:
+
+- A statement that must wait for a lock **parks the whole request**. All of
+  the request's private effects are discarded (session state, temp objects,
+  the transaction view and the server database map are restored to request
+  start). Locks it acquired before the wait are **kept**, as SQL Server keeps
+  them, so deadlock cycles stay detectable.
+- When a lock is released (commit, rollback, end of an autocommit statement),
+  the engine re-runs the woken sessions' parked requests from the start, in
+  the same `handle` call, and sends their responses then.
+- Deadlock: the lock manager picks the victim. If it is the requester, the
+  statement fails with 1205 and the transaction rolls back. If it is a parked
+  session, that session's request is re-run with "fail on next wait", so the
+  1205 surfaces at the same statement with the same preceding output.
+- The interpreter therefore stays recursive; the instruction-list design is
+  no longer needed.
+
+Known gap: autocommit writes made earlier in a parked batch become visible to
+other sessions only after the batch completes, while SQL Server publishes
+them immediately. Listed in fidelity-traps.md.
+
+Lock resources (design: storage-concurrency.md):
+- UPDATE/DELETE/MERGE take X on each modified row's primary key, or on its
+  row id without one.
+- INSERT takes X on the new key (a second inserter of the same key waits,
+  then gets 2627 or proceeds).
+- Reads with `UPDLOCK`/`HOLDLOCK`/`SERIALIZABLE`/`XLOCK` hints lock the point
+  key when the WHERE clause fixes the primary key with equalities, otherwise
+  the whole table. Plain reads under RCSI take no locks.

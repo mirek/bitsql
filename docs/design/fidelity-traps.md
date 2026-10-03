@@ -35,6 +35,8 @@ new trap, add a row here *and* a corpus case.
 | varchar code page | CP1252-only Strings | Unicode → varchar uses a best-fit table bitsql lacks: unmappable characters raise emulator error 50104 instead of guessing |
 | Binary comparison | Zero-padded byte compare | Unverified: trailing 0x00 assumed insignificant, mirroring string padding |
 
+| Parked requests | Request restart (decisions.md) | Autocommit writes earlier in a batch that later waits on a lock stay invisible to other sessions until the batch completes; SQL Server publishes them immediately |
+
 ## Emulator errors
 
 Unsupported features raise severity 16 errors whose message starts with
