@@ -9,6 +9,25 @@ fn call_more(
   args : Array[@ir.Expr],
   e : @ir.Expr,
 ) -> @types.Value raise @types.SqlError {
+  if name == "ROWCOUNT_BIG" {
+    return BigInt(ctx.rt.rowcount)
+  }
+  if name is ("CONVERT_STYLE" | "TRY_CONVERT_STYLE") {
+    let style = match v[1] {
+      // captured: a NULL style gives NULL
+      Null => return Null
+      x =>
+        match x.as_int64() {
+          Some(n) => Some(n.to_int())
+          None => raise @types.not_supported("CONVERT with a non-integer style")
+        }
+    }
+    return if name == "TRY_CONVERT_STYLE" {
+      @types.try_cast(v[0], args[0].ty, e.ty, style?)
+    } else {
+      @types.cast(v[0], args[0].ty, e.ty, style?)
+    }
+  }
   if call_date(name, v, args, e, datefirst=ctx.rt.datefirst) is Some(r) {
     return r
   }

@@ -1,0 +1,50 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-table",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.lt (id int NOT NULL PRIMARY KEY, t text NULL, n ntext NULL, i image NULL, tc text COLLATE Latin1_General_BIN2 NULL)",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT dbo.lt VALUES (1, 'abc', N'äbc', 0x0102, 'x'), (2, NULL, NULL, NULL, NULL), (3, REPLICATE('z', 10), N'ż', 0x, '')",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id, t, n, i, tc, DATALENGTH(t) AS dt, DATALENGTH(n) AS dn, DATALENGTH(i) AS di FROM dbo.lt ORDER BY id"
+        },
+        {"kind":"batch","sql":"SELECT id FROM dbo.lt WHERE t LIKE 'a%' OR n LIKE N'ż' ORDER BY id"},
+        {"kind":"batch","sql":"UPDATE dbo.lt SET t = 'new', n = N'nn', i = 0xFF WHERE id = 2; SELECT id, t, n, i FROM dbo.lt WHERE id = 2"},
+        {
+          "kind": "batch",
+          "sql": "SELECT c.name, c.system_type_id, c.user_type_id, c.max_length, c.collation_name, c.is_nullable FROM sys.columns c WHERE c.object_id = OBJECT_ID('dbo.lt') ORDER BY c.column_id"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH, COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'lt' ORDER BY ORDINAL_POSITION"
+        },
+        {"kind":"batch","sql":"SELECT id FROM dbo.lt ORDER BY t"},
+        {
+          "kind": "batch",
+          "sql": "SELECT SUBSTRING(t, 2, 2) AS a, SUBSTRING(n, 1, 1) AS b, SUBSTRING(i, 1, 1) AS c, CHARINDEX('b', t) AS d, PATINDEX('%b%', n) AS e FROM dbo.lt WHERE id = 1"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(t AS varchar(2)) AS a, CAST(n AS nvarchar(max)) AS b, CAST(i AS varbinary(1)) AS c, CAST(t AS nvarchar(10)) AS d FROM dbo.lt WHERE id = 1"
+        },
+        {"kind":"batch","sql":"INSERT dbo.lt (id, t) VALUES (4, 5)"},
+        {"kind":"batch","sql":"INSERT dbo.lt (id, i) VALUES (5, N'abc')"},
+        {"kind":"batch","sql":"INSERT dbo.lt (id, t) SELECT 6, n FROM dbo.lt WHERE id = 1; SELECT id, t FROM dbo.lt WHERE id = 6"},
+        {"kind":"batch","sql":"CREATE INDEX ix_t ON dbo.lt (t)"},
+        {"kind":"batch","sql":"CREATE TABLE dbo.lt3 (t text PRIMARY KEY)"},
+        {"kind":"batch","sql":"SELECT CONCAT(t, n) AS a, CONCAT_WS('-', t, 'x') AS b FROM dbo.lt WHERE id = 1"},
+        {"kind":"batch","sql":"SELECT ISNULL(t, 'none') AS a, COALESCE(n, N'none') AS b FROM dbo.lt ORDER BY id"}
+      ]
+    }
+  ]
+}

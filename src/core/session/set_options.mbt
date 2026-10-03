@@ -66,9 +66,18 @@ fn Session::set_options(
         cmd = None
       }
       // defaults bitsql implements; the other value changes semantics
+      // OFF drops the 8153 warning; the run-time errors it would turn into
+      // silent truncation or NULL are Emulator errors (interp.mbt)
+      "ANSI_WARNINGS" => {
+        self.session_flags["ANSI_WARNINGS"] = on
+        self.rt.option_bits = if on {
+          self.rt.option_bits & (8 ^ -1)
+        } else {
+          self.rt.option_bits | 8
+        }
+      }
       "ANSI_NULLS"
       | "ANSI_PADDING"
-      | "ANSI_WARNINGS"
       | "ANSI_NULL_DFLT_ON"
       | "CONCAT_NULL_YIELDS_NULL" => if !on { raise unsupported(n) }
       "ANSI_DEFAULTS" => if !on { raise unsupported(n) }

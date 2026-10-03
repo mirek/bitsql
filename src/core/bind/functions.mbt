@@ -49,6 +49,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
   let args = call.args
   variant_guard(env, name, args)
   xml_guard(env, name, args)
+  lob_guard(env, name, args)
   let bound = () => args.map(a => bind_expr(env, a))
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
@@ -71,12 +72,10 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let known = (x : @ir.Expr) => {
         !x.nullable || (try_fold(x) is Some(v) && !(v is Null))
       }
-      // captured: an xml result stays nullable (xml/type#043)
-      mk(
-        Call(IsNull, [first, second]),
-        ty,
-        ty is Xml || !(known(b[0]) || known(b[1])),
-      )
+      // captured: an xml result stays nullable (xml/type#043), as does
+      // ISNULL(CAST(0x.. AS image), 'x') (text: not)
+      let nullable = ty is (Xml | Image) || !(known(b[0]) || known(b[1]))
+      mk(Call(IsNull, [first, second]), ty, nullable)
     }
     "COALESCE" => {
       if args.length() < 2 {
@@ -130,6 +129,22 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "XACT_STATE" => {
       arity(name, args, 0)
       mk(Call(XactState, []), SmallInt, true)
+    }
+    "CURSOR_STATUS" => {
+      // captured: smallint NOT NULL; evaluated by the session (cursor.mbt)
+      arity(name, args, 2)
+      mk(Call(Named("CURSOR_STATUS"), bound()), SmallInt, false)
+    }
+    "COLUMNS_UPDATED" => {
+      // captured: varbinary(4000), NULL outside a trigger (trigger.mbt)
+      arity(name, args, 0)
+      mk(Call(Named("COLUMNS_UPDATED"), []), VarBinary(Some(4000)), true)
+    }
+    "ROWCOUNT_BIG" => {
+      // captured: bigint NOT NULL (flags 32), the @@ROWCOUNT value
+      // (msduck gaps-conversion#1322-1324)
+      arity(name, args, 0)
+      mk(Call(Named("ROWCOUNT_BIG"), []), BigInt, false)
     }
     "ERROR_NUMBER" | "ERROR_SEVERITY" | "ERROR_STATE" | "ERROR_LINE" => {
       arity(name, args, 0)
@@ -199,7 +214,17 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "ISJSON" => {
       arity_range(name, args, 1, 2)
-      mk(Call(IsJson, bound()), Int, true)
+      // captured: a non-character argument (also a typed NULL) is 8116
+      // (msduck isjson-coercion); text/ntext are rejected by lob_guard
+      let x = bind_expr(env, args[0])
+      if !is_null_lit(x) && x.ty.family() != FString {
+        raise bad_arg_type(x.ty, 1, "isjson")
+      }
+      if args.length() == 2 {
+        // ISJSON(x, VALUE | ARRAY | OBJECT | SCALAR)
+        raise @types.not_supported("ISJSON with a JSON type constraint")
+      }
+      mk(Call(IsJson, [x]), Int, true)
     }
     _ =>
       match bind_call_more(env, name, call) {

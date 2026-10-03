@@ -182,6 +182,37 @@ fn call_misc(
   e : @ir.Expr,
 ) -> @types.Value? raise @types.SqlError {
   let r : @types.Value = match name {
+    "COMPRESS" =>
+      match v[0] {
+        Null => Null
+        String(text) => {
+          let raw = if args[0].ty.is_unicode() {
+            Bytes::makei(text.length() * 2, i => {
+              let u = text.code_unit_at(i / 2).to_int()
+              (if i % 2 == 0 { u & 0xFF } else { u >> 8 }).to_byte()
+            })
+          } else {
+            @types.cp1252_bytes(text)
+          }
+          Binary(@gzip.gzip_compress(raw[:]))
+        }
+        Binary(b) => Binary(@gzip.gzip_compress(b[:]))
+        _ => raise @types.not_supported("COMPRESS of \{args[0].ty.to_sql()}")
+      }
+    "DECOMPRESS" =>
+      match v[0] {
+        Null => Null
+        Binary(b) =>
+          match @gzip.gzip_decompress(b[:]) {
+            Data(out) => Binary(out)
+            Incomplete => Null
+            Corrupt =>
+              raise @types.sql_error(
+                9826, "Uncompressed or corrupted data passed as argument to DECOMPRESS builtin.",
+              )
+          }
+        _ => raise @types.not_supported("DECOMPRESS of \{args[0].ty.to_sql()}")
+      }
     "GREATEST" | "LEAST" => {
       let mut best : @types.Value = Null
       let coll = e.ty.collation()
@@ -227,54 +258,21 @@ fn call_misc(
         _ => Null
       }
     }
-    "BINARY_CHECKSUM" => {
-      // h = rotl4(h) ^ unit over: varchar bytes as signed chars (captured:
-      // 'é' is -23), nvarchar UTF-16 units, binary bytes, integers whole
-      // (256 is 256); trailing spaces do not count (char(4) 'ab' = 'ab').
+    "BINARY_CHECKSUM" | "CHECKSUM" => {
+      // per argument a 32-bit hash, combined as h = rotl4(h) ^ hash
+      // (checksum.mbt); an untyped NULL argument of BINARY_CHECKSUM is
+      // skipped (captured: BINARY_CHECKSUM(1, NULL) is 1)
+      let binary = name == "BINARY_CHECKSUM"
       let mut h = 0
       for i, x in v {
-        match x {
-          Null => ()
-          String(s) => {
-            let s = rtrim_spaces(s)
-            if args[i].ty.is_unicode() {
-              for k in 0..<s.length() {
-                h = rotl4(h) ^ s.code_unit_at(k).to_int()
-              }
-            } else {
-              for b in @types.cp1252_bytes(s) {
-                let c = b.to_int()
-                h = rotl4(h) ^ (if c >= 128 { c - 256 } else { c })
-              }
-            }
-          }
-          Binary(bs) =>
-            for b in bs {
-              h = rotl4(h) ^ b.to_int()
-            }
-          TinyInt(n) | SmallInt(n) | Int(n) => h = rotl4(h) ^ n
-          BigInt(n) => h = rotl4(h) ^ (n.to_int() ^ (n >> 32).to_int())
-          _ =>
-            raise @types.not_supported(
-              "BINARY_CHECKSUM of \{args[i].ty.to_sql()}",
-            )
+        if binary && args[i].kind is Lit(Null) && args[i].ty is Int {
+          continue
         }
-      }
-      Int(h)
-    }
-    "CHECKSUM" => {
-      // integers only: their value, bigint as high ^ low word (captured:
-      // CHECKSUM(CAST(-1 AS bigint)) is 0, 4294967296 is 1); text hashes
-      // collation sort keys and is not emulated
-      let mut h = 0
-      for i, x in v {
-        let k = match x {
-          Null => 0
-          TinyInt(n) | SmallInt(n) | Int(n) => n
-          BigInt(n) => n.to_int() ^ (n >> 32).to_int()
-          _ => raise @types.not_supported("CHECKSUM of \{args[i].ty.to_sql()}")
+        match checksum_value(x, args[i].ty, binary) {
+          Some(k) => h = rotl4(h) ^ k
+          None =>
+            raise @types.not_supported("\{name} of \{args[i].ty.to_sql()}")
         }
-        h = rotl4(h) ^ k
       }
       Int(h)
     }

@@ -471,6 +471,11 @@ fn Session::done(
     !error {
     return
   }
+  // a pending "Null value is eliminated" warning precedes the statement's
+  // DONE (captured: INSERT … SELECT MIN(v), UPDATE … SET v = (SELECT MAX(v)
+  // …), SET/DECLARE @v = (SELECT MIN(v) …), and after the error and 3621
+  // of a failing INSERT; msduck aggregate-warning-boundaries)
+  self.emit_null_warning(self.stmt_line)
   let count = if self.nocount { None } else { count }
   if self.rt.nest_level > 0 {
     self.out.push(InProcDone(cmd~, count~, error~))
@@ -637,7 +642,17 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
   }
   // Compile-time checks that SQL Server performs for the whole batch.
   match precheck_batch(stmts, self.frame().vars) {
-    Some((e, line)) => self.text_error(e, line)
+    Some((e0, line)) => {
+      // COUNT(NULL) fails the whole batch, but the statement's own binding
+      // errors come first (captured: a missing table is 208, a missing
+      // column 207; msduck count-null-compilation)
+      let e = if e0.number() == 8117 {
+        self.count_null_error(stmts, e0)
+      } else {
+        e0
+      }
+      self.text_error(e, line)
+    }
     None => ()
   }
   // dynamic SQL modifying a READONLY table-valued parameter: 10700 ends
@@ -767,4 +782,29 @@ fn Session::next_rowversion(self : Session) -> @types.Value {
     self.server.active_rv[self.rt.spid] = self.server.dbts
   }
   Binary(rowversion_bytes(self.server.dbts))
+}
+
+///|
+/// The error the first SELECT holding COUNT(NULL) reports when bound.
+fn Session::count_null_error(
+  self : Session,
+  stmts : Array[@ast.Stmt],
+  fallback : @types.SqlError,
+) -> @types.SqlError {
+  for s in stmts {
+    match s.kind {
+      Select(q) =>
+        ignore(@bind.bind_query(self.env(), q)) catch {
+          e => return e
+        }
+      _ => ()
+    }
+  }
+  fallback
+}
+
+///|
+/// SET ANSI_WARNINGS (default ON).
+fn Session::ansi_warnings(self : Session) -> Bool {
+  self.session_flags.get("ANSI_WARNINGS").unwrap_or(true)
 }

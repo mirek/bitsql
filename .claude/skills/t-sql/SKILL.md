@@ -665,6 +665,71 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   type-conversion.md row "datetime fractional > 3 digits → truncated" does
   not hold for strings (241), and the old test claiming `.12345678` fails
   for datetime2 was wrong (it rounds).
+- 2026-10-04 (CONVERT styles, msduck gaps-conversion, corpus `conversion/`;
+  rules in docs/reference/conversion-styles.md): every temporal type has a
+  defined text for styles 0-14, 20-35, 100-115, 120, 121, 126, 127, 130, 131
+  (26-35, undocumented, are other day/month/year orders: 26 is yyyy-dd-mm);
+  other numbers are 281 state 1 (TRY_CONVERT: NULL). Date-only styles on time
+  and 8/24/108 on date are 8114 state 5 ("Error converting data type time to
+  varchar."), 14/114 on date 281. Undocumented style 115 is `hhmmss`. 126/127
+  drop an all-zero fraction for every type. 130/131 are Hijri (Kuwaiti
+  algorithm; before 622-07-18: 9814 state 0). Input styles: text styles reject
+  separated numeric dates like 112 (new parser 9807), unknown numbers are
+  9809 state 1 on the new parser and 112-like on the legacy one, 22/23/25 work
+  only on the new parser, 131 (both parsers) / 130 (legacy) read Hijri
+  `dd/mm/yyyy`. CONVERT with a variable style works per row (NULL style →
+  NULL; varchar/bit/decimal style 8116). float styles: 1/2/3 = 8/16/17
+  digits, 126 = 16 (real: 8), anything else = 0; money: anything but 1/2/126
+  = 0. Correction: the type-conversion.md style table said float style 3 and
+  unknown styles were invalid.
+- 2026-10-04 (storage bytes, msduck concat-numeric-format): CONVERT(varbinary,
+  x) of float/real is big-endian IEEE, of money/smallmoney the big-endian
+  int64/int32 units, of decimal `p, s, 0, sign(1 = +), magnitude LE` in the
+  fewest whole 4-byte groups. binary → float/real is 529 (not allowed), binary → money/
+  decimal read these layouts back. Binary → character styles 1/2 cut to whole
+  bytes; other styles 9809.
+- 2026-10-04 (text/ntext/image, docs/reference/lob-types.md): conversions only
+  between text/ntext and character types and between image and
+  binary/varbinary/timestamp (+ from varchar); comparisons and `+` are 402,
+  ORDER/GROUP BY 306 state 2, DISTINCT 421, UNION 5335, MIN/MAX/COUNT 8117,
+  DECLARE 2739, index keys 1919; most string functions 8116 (TRIM and
+  COMPRESS spell "Trim"/"Compress"), DATALENGTH/SUBSTRING/CHARINDEX/PATINDEX/
+  CONCAT/ISNULL work. SUBSTRING(text, s, n) is varchar(n).
+- 2026-10-04 (LIKE / PATINDEX / CHARINDEX, msduck like-patterns,
+  charindex-patindex): LIKE compares characters and ranges under the
+  collation (CI matches 'B' to [a-c], CI_AS does not match 'É' to [e], SQL CS
+  varchar orders aAbB so [a-c] matches 'B'); `[]` and an unclosed `[` never
+  match; a trailing escape character never matches; ESCAPE of length ≠ 1 is
+  506; trailing value blanks are ignored only when both sides are non-Unicode.
+  Ignorable code units (version-0 surrogates, NUL, soft hyphen) take no part
+  in LIKE/PATINDEX matches but block CHARINDEX matches (CHARINDEX(N'ab',
+  N'a'+NCHAR(0xAD)+N'b') = 0). `_SC` collations count a surrogate pair as one
+  character in positions and `_`. A constant `x LIKE p` folds (CASE result
+  NOT NULL), `NOT LIKE` does not. NCHAR/CHAR accept binary (NCHAR(0x00AD)).
+- 2026-10-04 (COMPRESS/DECOMPRESS, CHECKSUM; docs/reference/hash-compress.md):
+  COMPRESS is gzip with header 1F8B080000000000 0400 around zlib 1.3.1
+  level-6 deflate (byte-exact); DECOMPRESS returns NULL for input cut inside
+  header or data, 9826 for corruption, checks the trailer only when complete.
+  CHECKSUM/BINARY_CHECKSUM fold per-argument values with rotl4/xor; typed
+  NULL is 0x7FFFFFFF; per-type values in the reference. Correction: bitsql's
+  BINARY_CHECKSUM folded all arguments into one stream (wrong for several
+  arguments) and CHECKSUM hashed NULL as 0.
+- 2026-10-04 (errors): COUNT(NULL)/COUNT_BIG(NULL) is 8117 for the whole batch
+  (also under IF 1=0), but the statement's own 208/207 come first; SUM(NULL)
+  is 8117 "for sum operator" and inner NULL aggregates win over 130. CASE
+  whose results are all the NULL constant is 8133. A decimal literal with
+  more than 38 digits is 1007 (class 15). NTILE takes tinyint..bigint only and
+  a constant count < 1 or NULL is 4116 (class 15, also on empty input); a
+  query column in its argument is 4195. ISJSON of a non-character type is
+  8116. INFO 8153 precedes the DONE of every statement kind (DML, SET/DECLARE
+  with a subquery) and follows a failing INSERT's 3621; it is dropped under
+  SET ANSI_WARNINGS OFF and inside a caught TRY. The 529 message names
+  `decimal` (unlike 8115, which says numeric).
+- 2026-10-04 (built-ins): ROWCOUNT_BIG() is bigint NOT NULL; CURSOR_STATUS is
+  smallint NOT NULL (-3 missing, local lookups see only LOCAL cursors, -1
+  closed, 0/1 open without/with rows; 16902 state 42/43 for a bad source /
+  NULL name); COLUMNS_UPDATED() is varbinary(4000): one bit per column_id - 1
+  in ceil(n/8) bytes, empty for DELETE, NULL outside triggers.
 
 Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
 

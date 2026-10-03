@@ -21,6 +21,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.stmt_line = line
   self.rt.stmt_reads = statement_reads(self.slice(s.span))
+  self.rt.null_eliminated = false
   self.cur_cmd = 253
   self.ddl_cmd = 0
   self.uncatchable = false
@@ -99,6 +100,22 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     Some(l) => l
     None => udf_error_line(e, line)
   }
+  // under SET ANSI_WARNINGS OFF SQL Server truncates strings silently and,
+  // with ARITHABORT OFF, makes overflow and division by zero NULL: not
+  // modelled; with ARITHABORT ON those errors stay (captured: 8115 and 8134
+  // under OFF, msduck aggregate-warning-boundaries)
+  let e = if !self.ansi_warnings() &&
+    (
+      [2628, 8152].contains(e.number()) ||
+      (
+        [8115, 8134].contains(e.number()) &&
+        !self.session_flags.get("ARITHABORT").unwrap_or(true)
+      )
+    ) {
+    @types.not_supported("\{e.number()} under SET ANSI_WARNINGS OFF")
+  } else {
+    e
+  }
   let owner = self.module_name()
   // a module's own errors decide its return status (EXEC errors belong to
   // the callee; captured: proc/return-status)
@@ -152,7 +169,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       self.cur_cmd = self.ddl_cmd
     }
     // Complete the failed statement without the error flag, then unwind
-    // to the enclosing CATCH (docs/reference/completions.md).
+    // to the enclosing CATCH (docs/reference/completions.md). Its warnings
+    // are dropped (captured: no 8153 for a caught MIN(CONVERT(…)) failure).
+    self.rt.null_eliminated = false
     if self.cur_cmd != 253 {
       let rows = self.cur_cmd == 193 ||
         (self.cur_cmd >= 195 && self.cur_cmd <= 197)
@@ -376,6 +395,9 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
             self.declare_typed_table(v.name, ut)
             continue
           }
+        }
+        if ty.is_lob() {
+          raise @types.lob_variable_error()
         }
         let existing = self.frame().vars.contains(v.name.to_lower()) ||
           self.frame().tables.contains(v.name.to_lower())

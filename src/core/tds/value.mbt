@@ -76,6 +76,20 @@ fn write_plp_unknown(w : Writer, body : Bytes) -> Unit {
 }
 
 ///|
+/// A non-NULL text/ntext/image value: pointer, timestamp, length, data.
+fn write_lob(w : Writer, data : Bytes) -> Unit {
+  w.u8(16)
+  for _ in 0..<16 {
+    w.u8(0xFF)
+  }
+  for _ in 0..<8 {
+    w.u8(0)
+  }
+  w.u32le(data.length().to_int64())
+  w.bytes(data)
+}
+
+///|
 fn ucs2_bytes(s : String) -> Bytes {
   let w = Writer::new(size_hint=s.length() * 2)
   w.ucs2(s)
@@ -256,6 +270,13 @@ pub fn write_value(
       w.u16le(b.length())
       w.bytes(b)
     }
+    // text/ntext/image: TextPointer length 0 is NULL; otherwise a 16-byte
+    // text pointer, an 8-byte timestamp, a 4-byte length and the data
+    // (MS-TDS 2.2.5.2.4; tedious skips pointer and timestamp)
+    (TextLob(_) | NTextLob(_) | ImageLob, Null) => w.u8(0)
+    (TextLob(_), Text(s)) => write_lob(w, cp1252_encode(s))
+    (NTextLob(_), Text(s)) => write_lob(w, ucs2_bytes(s))
+    (ImageLob, Binary(b)) => write_lob(w, b)
     (Variant(_), Null) => w.u32le(0)
     (Variant(_), Variant(base, inner)) => write_variant(w, base, inner)
     _ =>
@@ -438,6 +459,20 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
         ignore(r.bytes(8))
         let n = r.u32le().to_int()
         Text(Reader::new(r.bytes(n)).ucs2(n / 2))
+      }
+    }
+    // RPC parameter form: 4-byte length (0xFFFFFFFF = NULL) and data
+    TextLob(_) | NTextLob(_) | ImageLob => {
+      let n = r.u32le()
+      if n == 0xFFFFFFFFL {
+        Null
+      } else {
+        let b = r.bytes(n.to_int())
+        match ti {
+          TextLob(_) => Text(cp1252_decode(b))
+          NTextLob(_) => Text(Reader::new(b).ucs2(b.length() / 2))
+          _ => Binary(b)
+        }
       }
     }
     BigVarChar(_, _)

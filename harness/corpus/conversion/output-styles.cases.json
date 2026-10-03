@@ -1,0 +1,81 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 16) AS v"}]
+    },
+    {
+      "name": "001-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 17) AS v"}]
+    },
+    {
+      "name": "002-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 18) AS v"}]
+    },
+    {
+      "name": "003-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 19) AS v"}]
+    },
+    {
+      "name": "004-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 26) AS v"}]
+    },
+    {
+      "name": "005-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 98) AS v"}]
+    },
+    {
+      "name": "006-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 116) AS v"}]
+    },
+    {
+      "name": "007-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 119) AS v"}]
+    },
+    {
+      "name": "008-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 122) AS v"}]
+    },
+    {
+      "name": "009-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 129) AS v"}]
+    },
+    {
+      "name": "010-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 132) AS v"}]
+    },
+    {
+      "name": "011-select-convert-varchar-60-cast-2024-01-02-03-04-05",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(60), CAST('2024-01-02 03:04:05' AS datetime2), 140) AS v"}]
+    },
+    {
+      "name": "012-declare-s-int-null-select-convert-varchar-30-cast-",
+      "steps": [{"kind":"batch","sql":"DECLARE @s int = NULL; SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), @s) AS a"}]
+    },
+    {
+      "name": "013-declare-s-varchar-5-112-select-convert-varchar-30-",
+      "steps": [{"kind":"batch","sql":"DECLARE @s varchar(5) = '112'; SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), @s) AS a"}]
+    },
+    {
+      "name": "014-declare-s-bigint-112-select-convert-varchar-30-cas",
+      "steps": [{"kind":"batch","sql":"DECLARE @s bigint = 112; SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), @s) AS a"}]
+    },
+    {
+      "name": "015-declare-s-bit-1-select-convert-varchar-30-cast-202",
+      "steps": [{"kind":"batch","sql":"DECLARE @s bit = 1; SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), @s) AS a"}]
+    },
+    {
+      "name": "016-declare-s-decimal-5-0-1-select-convert-varchar-30-",
+      "steps": [{"kind":"batch","sql":"DECLARE @s decimal(5,0) = 1; SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), @s) AS a"}]
+    },
+    {
+      "name": "017-convert-varchar-30-cast-2024-01-02-as-datetime-1-1",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(30), CAST('2024-01-02' AS datetime), 1+111) AS v"}]
+    },
+    {
+      "name": "018-try-convert-varchar-30-cast-03-04-05-as-time-1",
+      "steps": [{"kind":"batch","sql":"SELECT TRY_CONVERT(varchar(30), CAST('03:04:05' AS time), 1) AS v"}]
+    }
+  ]
+}

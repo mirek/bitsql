@@ -572,7 +572,7 @@ fn Session::alter_column(
     Some(i) =>
       match @types.Collation::parse(i.name) {
         Some(x) => x
-        None => raise @types.sql_error(448, "Invalid collation '\{i.name}'.")
+        None => raise @types.unknown_collation_error(i.name)
       }
     None => @types.default_collation
   }
@@ -948,7 +948,7 @@ fn Session::exec_create_index(
     if invalid_key_type(tc.ty) {
       raise @types.sql_error(
         1919,
-        "Column '\{tc.name}' in table '\{t.name}' is of a type that is invalid for use as a key column in an index.",
+        "Column '\{tc.name}' in table '\{object_text(ci.table)}' is of a type that is invalid for use as a key column in an index.",
       )
     }
   }

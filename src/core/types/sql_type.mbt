@@ -52,6 +52,11 @@ pub(all) enum SqlType {
   Variant
   /// untyped xml (values are `Value::Xml`)
   Xml
+  /// deprecated LOB types (lob.mbt): text and ntext keep `Value::String`,
+  /// image `Value::Binary`
+  Text(Collation)
+  NText(Collation)
+  Image
 } derive(Debug, Eq)
 
 ///|
@@ -80,8 +85,13 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
     Decimal(_, _) | Numeric(_, _) => FDecimal
     Money | SmallMoney => FMoney
     Float | Real => FFloat
-    Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _) => FString
-    Binary(_) | VarBinary(_) | RowVersion => FBinary
+    Char(_, _)
+    | VarChar(_, _)
+    | NChar(_, _)
+    | NVarChar(_, _)
+    | Text(_)
+    | NText(_) => FString
+    Binary(_) | VarBinary(_) | RowVersion | Image => FBinary
     Date => FDate
     Time(_) => FTime
     DateTime2(_) | DateTimeOffset(_) | DateTime | SmallDateTime => FDateTime
@@ -113,7 +123,9 @@ pub fn SqlType::clash_name(self : SqlType) -> String {
   match self {
     VarChar(None, _) | NVarChar(None, _) | VarBinary(None) =>
       self.base_name() + "(max)"
-    _ => self.message_name()
+    // captured: "Explicit conversion from data type decimal to text is not
+    // allowed." (529 keeps decimal, unlike the overflow messages)
+    _ => self.base_name()
   }
 }
 
@@ -148,6 +160,9 @@ pub fn SqlType::base_name(self : SqlType) -> String {
     RowVersion => "timestamp"
     Variant => "sql_variant"
     Xml => "xml"
+    Text(_) => "text"
+    NText(_) => "ntext"
+    Image => "image"
   }
 }
 
@@ -179,7 +194,7 @@ pub impl Show for SqlType with fn output(self, logger) {
 ///|
 /// Character types: is the data Unicode (nchar/nvarchar)?
 pub fn SqlType::is_unicode(self : SqlType) -> Bool {
-  self is (NChar(_, _) | NVarChar(_, _))
+  self is (NChar(_, _) | NVarChar(_, _) | NText(_))
 }
 
 ///|
@@ -187,6 +202,7 @@ pub fn SqlType::is_unicode(self : SqlType) -> Bool {
 pub fn SqlType::collation(self : SqlType) -> Collation? {
   match self {
     Char(_, c) | VarChar(_, c) | NChar(_, c) | NVarChar(_, c) => Some(c)
+    Text(c) | NText(c) => Some(c)
     _ => None
   }
 }

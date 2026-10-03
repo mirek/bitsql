@@ -57,6 +57,40 @@ fn collation_of(t : @types.SqlType) -> @types.Collation {
 /// Truncates a non-max result to its type's capacity (8000 bytes, 4000
 /// UTF-16 units without splitting a surrogate pair; captured for
 /// REPLICATE).
+/// Concatenation cut to the result type: a piece that does not fit is cut
+/// by code units but never inside its own surrogate pair, while pairs formed
+/// across pieces may be split (captured: msduck concat-boundary, 3999 'a' +
+/// N'😀' keeps 3999 units, 3999 'a' + NCHAR(0xD83D) + NCHAR(0xDE00) keeps
+/// the high surrogate).
+fn cap_pieces(pieces : Array[String], t : @types.SqlType) -> String {
+  let cap = match t {
+    VarChar(Some(_), _) | Char(_, _) => 8000
+    NVarChar(Some(_), _) | NChar(_, _) => 4000
+    _ => return pieces.iter().fold(init="", (a, b) => a + b)
+  }
+  let out = StringBuilder()
+  let mut len = 0
+  for p in pieces {
+    if len + p.length() <= cap {
+      out.write_string(p)
+      len += p.length()
+      continue
+    }
+    let mut take = cap - len
+    if take > 0 &&
+      p.code_unit_at(take - 1).to_int() >= 0xD800 &&
+      p.code_unit_at(take - 1).to_int() <= 0xDBFF &&
+      p.code_unit_at(take).to_int() >= 0xDC00 &&
+      p.code_unit_at(take).to_int() <= 0xDFFF {
+      take -= 1
+    }
+    out.write_string(p.unsafe_substring(start=0, end=take))
+    break
+  }
+  out.to_string()
+}
+
+///|
 fn cap_text(s : String, t : @types.SqlType) -> String {
   let cap = match t {
     VarChar(Some(_), _) | Char(_, _) => 8000
@@ -150,6 +184,30 @@ fn map_case(s : String, upper : Bool) -> String {
     )
   }
   out.to_string()
+}
+
+///|
+/// The characters of a string: code units, or under `_SC` collations
+/// surrogate pairs kept together.
+fn text_chars(s : String, sc : Bool) -> Array[String] {
+  let out = []
+  let mut i = 0
+  while i < s.length() {
+    let u = s.code_unit_at(i).to_int()
+    let w = if sc &&
+      u >= 0xD800 &&
+      u <= 0xDBFF &&
+      i + 1 < s.length() &&
+      s.code_unit_at(i + 1).to_int() >= 0xDC00 &&
+      s.code_unit_at(i + 1).to_int() <= 0xDFFF {
+      2
+    } else {
+      1
+    }
+    out.push(s.unsafe_substring(start=i, end=i + w))
+    i += w
+  }
+  out
 }
 
 ///|
@@ -424,8 +482,21 @@ fn coll_find(
   }
   let n = hay.length()
   let window = needle.length() * 3 + 3
+  // ignorable code units never take part in a match (captured: CHARINDEX
+  // of N'ab' in N'a'+NCHAR(0xAD)+N'b' is 0, of N'b' after a surrogate pair
+  // 3, of a surrogate pair 0; msduck charindex-patindex #042-#049)
+  let ignored = (k : Int) => @types.collation_ignores(hay[k].to_int(), coll)
+  if needle.iter().all(c => @types.collation_ignores(c.to_int(), coll)) {
+    return None
+  }
   for i in start..<n {
+    if ignored(i) {
+      continue
+    }
     for j in (i + 1)..<=@cmp.minimum(n, i + window) {
+      if ignored(j - 1) {
+        break
+      }
       let sub = hay.unsafe_substring(start=i, end=j)
       if is_spaces(sub) != is_spaces(needle) {
         continue
@@ -493,27 +564,6 @@ fn quotename(s : String, q : String) -> String? {
   }
   out.write_char(close)
   Some(out.to_string())
-}
-
-///|
-/// PATINDEX: position of the first match of a whole-string LIKE pattern
-/// (leading % lets the match start anywhere; captured PATINDEX('%', '')
-/// is 1).
-fn patindex(p : String, s : String, ci : Bool) -> Int {
-  let mut lead = 0
-  while lead < p.length() && p.code_unit_at(lead).to_int() == '%'.to_int() {
-    lead += 1
-  }
-  if lead == 0 {
-    return if like_match(s, p, None, ci) { 1 } else { 0 }
-  }
-  let rest = p.unsafe_substring(start=lead, end=p.length())
-  for i in 0..<=s.length() {
-    if like_match(s.unsafe_substring(start=i, end=s.length()), rest, None, ci) {
-      return i + 1
-    }
-  }
-  0
 }
 
 ///|
@@ -687,11 +737,53 @@ fn call_string(
       if any_null {
         return Some(Null)
       }
-      let start = if v.length() > 2 { int_of(v[2]).unwrap_or(1L) } else { 1L }
+      // a bigint start beyond int is clamped (captured: 3000000000 gives 0,
+      // -3000000000 searches from 1)
+      // (only for a max search string; otherwise 8115 like any int argument)
+      let start = match v.get(2) {
+        Some(BigInt(n)) if e.ty is BigInt => n
+        Some(x) => int_of(x).unwrap_or(1L)
+        None => 1L
+      }
       guard str(0) is Some(n) && str(1) is Some(h) else { return Some(Null) }
       let coll = pair_collation(args[0].ty, args[1].ty)
       let from = @cmp.maximum(1L, @cmp.minimum(start, 2147483647L)).to_int()
-      let pos = match coll_find(h, n, from, coll, !args[1].ty.is_unicode()) {
+      // `_SC` collations count a surrogate pair as one character (captured:
+      // CHARINDEX(N'b', 😀b COLLATE …_SC) is 2)
+      let sc = coll.supplementary()
+      let pair_at = (k : Int) => {
+        k + 1 < h.length() &&
+        h[k].to_int() >= 0xD800 &&
+        h[k].to_int() <= 0xDBFF &&
+        h[k + 1].to_int() >= 0xDC00 &&
+        h[k + 1].to_int() <= 0xDFFF
+      }
+      let unit_from = if sc {
+        let mut k = 0
+        let mut c = 1
+        while c < from && k < h.length() {
+          k += if pair_at(k) { 2 } else { 1 }
+          c += 1
+        }
+        if c < from {
+          h.length() + 1
+        } else {
+          k + 1
+        }
+      } else {
+        from
+      }
+      let pos = match
+        coll_find(h, n, unit_from, coll, !args[1].ty.is_unicode()) {
+        Some((p, _)) if sc => {
+          let mut k = 0
+          let mut c = 1
+          while k < p - 1 {
+            k += if pair_at(k) { 2 } else { 1 }
+            c += 1
+          }
+          c
+        }
         Some((p, _)) => p
         None => 0
       }
@@ -703,15 +795,15 @@ fn call_string(
       }
       guard str(0) is Some(p) && str(1) is Some(s) else { return Some(Null) }
       let coll = pair_collation(args[0].ty, args[1].ty)
-      let ci = coll.kind is Linguistic && !coll.case_sensitive
-      int_result(e.ty, patindex(p, s, ci).to_int64())
+      let ansi = !args[0].ty.is_unicode() && !args[1].ty.is_unicode()
+      int_result(e.ty, patindex(p, s, coll, ansi).to_int64())
     }
     "CONCAT" | "CONCAT_WS" => {
-      let out = StringBuilder()
+      let pieces : Array[String] = []
       if name == "CONCAT" {
         for i in 0..<v.length() {
           match str(i) {
-            Some(s) => out.write_string(s)
+            Some(s) => pieces.push(s)
             None => ()
           }
         }
@@ -722,16 +814,16 @@ fn call_string(
           match str(i) {
             Some(s) => {
               if !first {
-                out.write_string(sep)
+                pieces.push(sep)
               }
-              out.write_string(s)
+              pieces.push(s)
               first = false
             }
             None => ()
           }
         }
       }
-      String(cap_text(out.to_string(), e.ty))
+      String(cap_pieces(pieces, e.ty))
     }
     "NCHAR" | "CHAR" => {
       if any_null {
@@ -827,20 +919,38 @@ fn call_string(
       guard str(0) is Some(s) && str(1) is Some(from) && str(2) is Some(to) else {
         return Some(Null)
       }
-      if from.length() != to.length() {
+      let coll = collation_of(args[0].ty)
+      // `_SC` collations count a surrogate pair as one character (captured:
+      // TRANSLATE(…, N'x', N'😀') works under …_SC, is 9828 state 3 else)
+      let sc = coll.supplementary()
+      let (sc_chars, from_chars, to_chars) = (
+        text_chars(s, sc),
+        text_chars(from, sc),
+        text_chars(to, sc),
+      )
+      if from_chars.length() != to_chars.length() {
+        // state 3 when the mapping strings come from variables, parameters
+        // or table columns, or a surrogate pair makes the difference; else 1
+        // (captured: TRANSLATE('abc','ab','x') and constant CTE columns 1;
+        // a table column, parameters, N'x' → N'😀' 3)
+        let runtime = match v.get(3) {
+          Some(Bit(b)) => b
+          _ => false
+        }
+        let surrogate = (t : String) => t.iter().any(c => c.to_int() >= 0x10000)
         raise @types.sql_error(
-          9828, "The second and third arguments of the TRANSLATE built-in function must contain an equal number of characters.",
+          9828,
+          "The second and third arguments of the TRANSLATE built-in function must contain an equal number of characters.",
+          state=if runtime || surrogate(from) || surrogate(to) { 3 } else { 1 },
         )
       }
-      let coll = collation_of(args[0].ty)
       let ansi = !args[0].ty.is_unicode()
       let out = StringBuilder()
-      for i in 0..<s.length() {
-        let c = unit_str(s, i)
+      for c in sc_chars {
         let mut done = false
-        for j in 0..<from.length() {
-          if units_equal(c, unit_str(from, j), coll, ansi) {
-            out.write_string(unit_str(to, j))
+        for j, f in from_chars {
+          if units_equal(c, f, coll, ansi) {
+            out.write_string(to_chars[j])
             done = true
             break
           }
@@ -849,7 +959,7 @@ fn call_string(
           out.write_string(c)
         }
       }
-      String(out.to_string())
+      String(cap_text(out.to_string(), e.ty))
     }
     "FORMAT" => format_value(v, args)
     "SOUNDEX" =>

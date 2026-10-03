@@ -98,31 +98,76 @@ fn bind_misc_fn(
       named("HASHBYTES", x, VarBinary(Some(8000)))
     }
     "CHECKSUM" | "BINARY_CHECKSUM" => {
-      if args.length() == 0 {
+      // captured: 1076 "Function 'checksum' requires at least 1 argument(s)."
+      if args.length() == 0 && !call.star {
         raise err(
-          189,
-          "The \{name.to_lower()} function requires 1 to 255 arguments.",
+          1076,
+          "Function '\{name.to_lower()}' requires at least 1 argument(s).",
           severity=15,
         )
       }
-      if call.star {
-        raise @types.not_supported("\{name}(*)")
-      }
-      let x = bs()
-      for i, v in x {
-        if is_null_lit(v) {
-          raise if name == "CHECKSUM" {
-            null_arg(i + 1, "checksum", state=4)
-          } else {
-            err(
-              8184, "Error in binarychecksum. There are no comparable columns in the binarychecksum input.",
-            )
+      // CHECKSUM(*): every column of the FROM clause, in order; CHECKSUM
+      // reports each non-comparable one (8116 state 4, text and xml), while
+      // BINARY_CHECKSUM skips them (captured: hashbytes-checksum #055-#072)
+      let x = if call.star {
+        let cols = []
+        for i, c in env.columns {
+          let e = mk(Col(i), c.ty, c.nullable)
+          if c.ty.is_lob() {
+            if name == "CHECKSUM" {
+              env.deferred.push(bad_arg_type(c.ty, i + 1, "checksum", state=4))
+            }
+            continue
           }
+          cols.push(e)
         }
+        if !env.deferred.is_empty() && name == "CHECKSUM" {
+          raise env.deferred.pop().unwrap()
+        }
+        cols
+      } else {
+        bs()
+      }
+      // captured: CHECKSUM(NULL) is 8116 state 4; BINARY_CHECKSUM skips NULL
+      // literals and is 8184 only when nothing else is left
+      for i, v in x {
+        if is_null_lit(v) && name == "CHECKSUM" {
+          raise null_arg(i + 1, "checksum", state=4)
+        }
+      }
+      if name == "BINARY_CHECKSUM" && x.iter().all(is_null_lit) {
+        raise err(
+          8184, "Error in binarychecksum. There are no comparable columns in the binarychecksum input.",
+        )
       }
       named(name, x, Int)
     }
-    "COMPRESS" | "DECOMPRESS" => raise @types.not_supported(name)
+    "COMPRESS" | "DECOMPRESS" => {
+      // captured: 174 "The Compress function requires 1 argument(s).";
+      // COMPRESS takes character and binary types, DECOMPRESS only binary
+      // (8116 names varchar(max) with its length); both give varbinary(max)
+      let label = if name == "COMPRESS" { "Compress" } else { "Decompress" }
+      if args.length() != 1 {
+        raise err(
+          174,
+          "The \{label} function requires 1 argument(s).",
+          severity=15,
+        )
+      }
+      let x = bs()[0]
+      let ok = match x.ty.family() {
+        FBinary => !x.ty.is_lob()
+        FString => name == "COMPRESS" && !x.ty.is_lob()
+        _ => is_null_lit(x)
+      }
+      if !ok {
+        raise err(
+          8116,
+          "Argument data type \{x.ty.clash_name()} is invalid for argument 1 of \{label} function.",
+        )
+      }
+      named(name, [x], VarBinary(None))
+    }
     _ => return None
   }
   Some(r)

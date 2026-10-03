@@ -191,3 +191,23 @@ pub fn Collation::parse(name : String) -> Collation? {
     code_page: 1252,
   })
 }
+
+///|
+/// A supplementary-character (`_SC`) collation: string functions count a
+/// surrogate pair as one character.
+pub fn Collation::supplementary(self : Collation) -> Bool {
+  self.name.contains("_SC")
+}
+
+///|
+/// The error for a COLLATE name bitsql cannot resolve: 448 "Invalid
+/// collation", except for real SQL Server collations it does not model
+/// (UTF-8 varchar collations, `…_UTF8`), which are an explicit emulator
+/// error (EMU_COLLATION_NOT_SUPPORTED).
+pub fn unknown_collation_error(name : String) -> SqlError {
+  if name.to_upper().has_suffix("_UTF8") {
+    not_supported("collation \{name}", number=EMU_COLLATION_NOT_SUPPORTED)
+  } else {
+    sql_error(448, "Invalid collation '\{name}'.")
+  }
+}

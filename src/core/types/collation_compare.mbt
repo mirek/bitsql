@@ -285,6 +285,13 @@ fn letter_primary(c : Int) -> Int {
 }
 
 ///|
+/// Does a linguistic comparison under `c` ignore this code unit (NUL, soft
+/// hyphen; surrogates and U+FFFD in version-0 tables)?
+pub fn collation_ignores(u : Int, c : Collation) -> Bool {
+  c.kind is Linguistic && is_ignorable(u, c.version)
+}
+
+///|
 fn is_ignorable(u : Int, version : Int) -> Bool {
   u == 0 ||
   (version == 0 && ((u >= 0xD800 && u <= 0xDFFF) || u == 0xFFFD)) ||
@@ -562,7 +569,10 @@ fn compare_linguistic(
   if collation.case_sensitive {
     let c = compare_level(ea, eb, e => e.tertiary, true)
     if c != 0 {
-      return c
+      // SQL sort orders on varchar data put upper case first (captured:
+      // 'A' < 'a' COLLATE SQL_Latin1_General_CP1_CS_AS, while N'A' > N'a';
+      // msduck gaps-conversion#1221)
+      return if ansi && collation.sql_collation { -c } else { c }
     }
   }
   if collation.kana_sensitive {

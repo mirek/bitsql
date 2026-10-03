@@ -1,0 +1,100 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-select-st-try-convert-varchar-40-cast-1-5-as-float",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT st, TRY_CONVERT(varchar(40), CAST(1.5 AS float), st) AS f, TRY_CONVERT(varchar(40), CAST(0.1 AS real), st) AS r, TRY_CONVERT(varchar(40), CAST(1.5 AS money), st) AS m FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(20),(21),(100),(101),(102),(103),(120),(121),(126),(127),(128),(129),(130),(200),(-1)) v(st)"
+        }
+      ]
+    },
+    {
+      "name": "001-convert-varchar-30-cast-0-1-as-float-3-convert-var",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varchar(30), CAST(0.1 AS float), 3), CONVERT(varchar(30), CAST(-1e300 AS float), 3), CONVERT(varchar(30), CAST(0.1 AS real), 1), CONVERT(varchar(30), CAST(0.1 AS real), 2) AS v"
+        }
+      ]
+    },
+    {
+      "name": "002-convert-varbinary-max-cast-9-as-decimal-1-0-conver",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varbinary(max), CAST(9 AS decimal(1,0))), CONVERT(varbinary(max), CAST(-9 AS decimal(1,0))), CONVERT(varbinary(max), CAST(0 AS decimal(5,2))), CONVERT(varbinary(max), CAST(-0.00 AS decimal(5,2))), CONVERT(varbinary(max), CAST(12.5 AS numeric(12,3))) AS v"
+        }
+      ]
+    },
+    {
+      "name": "003-convert-varbinary-4-cast-12-5-as-numeric-12-3-conv",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varbinary(4), CAST(12.5 AS numeric(12,3))), CONVERT(binary(12), CAST(12.5 AS numeric(4,1))), CONVERT(varbinary(max), CAST(-0.99999999999999999999999999999999999999 AS decimal(38,38))) AS v"
+        }
+      ]
+    },
+    {
+      "name": "004-convert-varbinary-max-cast-1-5-as-float-convert-va",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varbinary(max), CAST(-1.5 AS float)), CONVERT(varbinary(max), CAST(-1.5 AS real)), CONVERT(varbinary(3), CAST(1.5 AS float)), CONVERT(binary(10), CAST(1.5 AS float)) AS v"
+        }
+      ]
+    },
+    {
+      "name": "005-convert-varbinary-max-cast-0-0051-as-money-convert",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varbinary(max), CAST(0.0051 AS money)), CONVERT(varbinary(max), CAST(-1 AS smallmoney)), CONVERT(varbinary(max), CAST(-922337203685477.5808 AS money)) AS v"
+        }
+      ]
+    },
+    {
+      "name": "006-convert-money-0x0000000000000033-convert-money-0x3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(money, 0x0000000000000033), CONVERT(money, 0x33), CONVERT(money, 0x000000000000000033), CONVERT(smallmoney, 0xFFFFFFFF), CONVERT(smallmoney, 0x0000000100000000) AS v"
+        }
+      ]
+    },
+    {
+      "name": "007-convert-decimal-5-2-0x0100000009000000-convert-dec",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(decimal(5,2), 0x0100000009000000), CONVERT(decimal(10,2), 0x0502010039300000), CONVERT(decimal(3,0), 0x0502010039300000), CONVERT(decimal(5,2), 0x050201003930000000) AS v"
+        }
+      ]
+    },
+    {"name":"008-convert-decimal-5-2-0x01","steps":[{"kind":"batch","sql":"SELECT CONVERT(decimal(5,2), 0x01) AS v"}]},
+    {
+      "name": "009-convert-decimal-5-2-0x2702010039300000",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(decimal(5,2), 0x2702010039300000) AS v"}]
+    },
+    {
+      "name": "010-convert-decimal-5-2-0x0506010039300000",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(decimal(5,2), 0x0506010039300000) AS v"}]
+    },
+    {"name":"011-convert-float-0x3ff8000000000000","steps":[{"kind":"batch","sql":"SELECT CONVERT(float, 0x3FF8000000000000) AS v"}]},
+    {"name":"012-convert-real-0x3fc00000","steps":[{"kind":"batch","sql":"SELECT CONVERT(real, 0x3FC00000) AS v"}]},
+    {
+      "name": "013-convert-varchar-3-0x0a0b-1-convert-varchar-3-0x0a0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(varchar(3), 0x0A0B, 1), CONVERT(varchar(3), 0x0A0B0C, 2), CONVERT(varchar(5), 0x0A0B0C, 1) AS v"
+        }
+      ]
+    },
+    {"name":"014-convert-varbinary-4-1","steps":[{"kind":"batch","sql":"SELECT CONVERT(varbinary(4), '', 1) AS v"}]},
+    {"name":"015-convert-varbinary-4-abc-3","steps":[{"kind":"batch","sql":"SELECT CONVERT(varbinary(4), 'abc', 3) AS v"}]},
+    {"name":"016-convert-varchar-20-0x0a0b-3","steps":[{"kind":"batch","sql":"SELECT CONVERT(varchar(20), 0x0A0B, 3) AS v"}]}
+  ]
+}

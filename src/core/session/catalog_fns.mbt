@@ -30,6 +30,9 @@ fn Session::catalog_fn(
     Some(v) => return Some(v)
     None => ()
   }
+  if name == "CURSOR_STATUS" {
+    return Some(self.cursor_status(args))
+  }
   if name == "NEXT VALUE FOR" {
     return Some(self.sequence_next(text(0).unwrap_or("")))
   }

@@ -29,15 +29,53 @@ fn parse_text(
   style : Int?,
 ) -> ParsedTemporal raise SqlError {
   let n = style.unwrap_or(0)
-  let st = match date_style(n) {
+  let legacy = to is (DateTime | SmallDateTime)
+  let st = match date_style(n, legacy) {
     Some(st) => st
+    // captured: "The style 99 is not supported for conversions from
+    // nvarchar to datetime2." (state 1; TRY_CONVERT gives NULL)
     None =>
-      raise not_supported(
-        "CONVERT style \{n} from character strings to \{to.base_name()}",
-        number=EMU_STYLE_NOT_SUPPORTED,
+      raise sql_error(
+        9809,
+        "The style \{n} is not supported for conversions from \{from.base_name()} to \{to.base_name()}.",
       )
   }
-  let legacy = to is (DateTime | SmallDateTime)
+  if legacy &&
+    n == 130 &&
+    s.iter().any(c => c.to_int() >= 0x600 && c.to_int() <= 0x6FF) {
+    raise not_supported(
+      "CONVERT style 130 with Arabic month names",
+      number=EMU_STYLE_NOT_SUPPORTED,
+    )
+  }
+  let p = parse_text_style(s, from, to, st, n, legacy)
+  if !st.hijri {
+    return p
+  }
+  // Hijri styles: the parsed date is Hijri; a time alone is on Hijri
+  // 1900-01-01 for the new parser (captured: 2464-12-29) and on Gregorian
+  // 1900-01-01 for datetime/smalldatetime
+  if p.date is None && legacy {
+    return p
+  }
+  let (hy, hm, hd) = p.date.unwrap_or((1900, 1, 1))
+  let days = days_from_hijri(hy, hm, hd)
+  if days > MAX_DAYS {
+    // captured: 242 state 3 also for datetime2 ('29/12/9666', 131)
+    raise legacy_out_of_range(from, to)
+  }
+  { ..p, date: Some(civil_from_days(days)), }
+}
+
+///|
+fn parse_text_style(
+  s : String,
+  from : SqlType,
+  to : SqlType,
+  st : DateStyle,
+  n : Int,
+  legacy : Bool,
+) -> ParsedTemporal raise SqlError {
   parse_date_string(s, if legacy { Legacy } else { Modern }, st) catch {
     Syntax if to is SmallDateTime =>
       // captured: 295 state 3

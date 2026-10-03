@@ -1,0 +1,65 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-select-a-d-16-b-d-as-n-checksum-char-a-d-16-b-d-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT a.d * 16 + b.d AS n, CHECKSUM(CHAR(a.d * 16 + b.d)) AS ci, CHECKSUM(CHAR(a.d * 16 + b.d) COLLATE SQL_Latin1_General_CP1_CS_AS) AS cs, CHECKSUM(CHAR(a.d * 16 + b.d) COLLATE Latin1_General_BIN2) AS bin, BINARY_CHECKSUM(CHAR(a.d * 16 + b.d)) AS bc FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) a(d) CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) b(d) WHERE a.d * 16 + b.d > 0 ORDER BY n"
+        }
+      ]
+    },
+    {
+      "name": "001-checksum-ab-as-a-checksum-ba-as-b-checksum-abcdefg",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM('ab') AS a, CHECKSUM('ba') AS b, CHECKSUM('abcdefghij') AS c, CHECKSUM('a ') AS d, CHECKSUM(' abc') AS e, CHECKSUM('a' + CHAR(0)) AS f"
+        }
+      ]
+    },
+    {
+      "name": "002-binary-checksum-abc-as-a-binary-checksum-n-abc-as-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT BINARY_CHECKSUM('abc ') AS a, BINARY_CHECKSUM(N'abc ') AS b, BINARY_CHECKSUM(N'é') AS c, BINARY_CHECKSUM(NCHAR(0x1234)) AS d, BINARY_CHECKSUM(REPLICATE('ab', 100)) AS e, BINARY_CHECKSUM(0x616200) AS f, BINARY_CHECKSUM(0xC8) AS g, BINARY_CHECKSUM(CHAR(200)) AS h"
+        }
+      ]
+    },
+    {
+      "name": "003-checksum-cast-1-5-as-float-as-a-checksum-cast-1-5-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(CAST(1.5 AS float)) AS a, CHECKSUM(CAST(1.5 AS real)) AS b, CHECKSUM(CAST(-1.5 AS float)) AS c, CHECKSUM(CAST(-0.0 AS float)) AS d, CHECKSUM(CAST(-1.5 AS money)) AS e, CHECKSUM(CAST(-1.5 AS smallmoney)) AS f, CHECKSUM(CAST(-1 AS smallint)) AS g"
+        }
+      ]
+    },
+    {
+      "name": "004-checksum-cast-03-04-05-123-as-time-3-as-a-checksum",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(CAST('03:04:05.123' AS time(3))) AS a, CHECKSUM(CAST('2024-01-02 03:04:05' AS datetime2(0))) AS b, CHECKSUM(CAST('2024-01-02 03:04:05.5 +01:00' AS datetimeoffset(1))) AS c, CHECKSUM(CAST('0001-01-01' AS date)) AS d, CHECKSUM(CAST('2024-01-02T03:04:05' AS smalldatetime)) AS e"
+        }
+      ]
+    },
+    {
+      "name": "005-checksum-cast-null-as-int-as-a-checksum-cast-null-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHECKSUM(CAST(NULL AS int)) AS a, CHECKSUM(CAST(NULL AS int), 1) AS b, BINARY_CHECKSUM(1, NULL) AS c, CHECKSUM(0x616200) AS d, CHECKSUM(CHAR(200) COLLATE Latin1_General_BIN) AS e, CHECKSUM(N'abc' COLLATE Latin1_General_100_BIN2) AS f"
+        }
+      ]
+    },
+    {
+      "name": "006-checksum-char-233-collate-sql-latin1-general-cp1-c",
+      "steps": [{"kind":"batch","sql":"SELECT CHECKSUM(CHAR(233) COLLATE SQL_Latin1_General_CP1_CI_AI) AS v"}]
+    },
+    {"name":"007-checksum-cast-1-as-decimal-10-2-as-v","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(CAST(1 AS decimal(10,2))) AS v"}]},
+    {"name":"008-checksum-n-abc-as-v","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(N'abc') AS v"}]}
+  ]
+}

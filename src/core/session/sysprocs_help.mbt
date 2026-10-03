@@ -1423,6 +1423,46 @@ fn odbc_column(
         Some(2147483646),
         0,
       )
+    // probed on SQL Server 17.0.5005 (sp_columns of text/ntext/image)
+    Text(_) =>
+      (
+        -1,
+        "text",
+        2147483647,
+        2147483647,
+        None,
+        None,
+        -1,
+        None,
+        Some(2147483647),
+        35,
+      )
+    NText(_) =>
+      (
+        -10,
+        "ntext",
+        1073741823,
+        2147483646,
+        None,
+        None,
+        -10,
+        None,
+        Some(2147483646),
+        35,
+      )
+    Image =>
+      (
+        -4,
+        "image",
+        2147483647,
+        2147483647,
+        None,
+        None,
+        -4,
+        None,
+        Some(2147483647),
+        34,
+      )
   }
 }
 

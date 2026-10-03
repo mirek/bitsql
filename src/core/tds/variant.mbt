@@ -52,7 +52,10 @@ fn variant_prefix_len(ti : TypeInfo) -> Int raise TdsError {
     | Variant(_)
     | Null
     | Xml
-    | NText(_, _) =>
+    | NText(_, _)
+    | TextLob(_)
+    | NTextLob(_)
+    | ImageLob =>
       raise Malformed("base type \{@debug.to_string(ti)} inside sql_variant")
   }
 }

@@ -98,11 +98,20 @@ fn window_values(
         CumeDist => Float(peer_end[j].to_double() / n.to_double())
         PercentileCont | PercentileDisc => Null
         Ntile => {
+          // captured: a NULL or non-positive count at run time is 4116
+          // (severity 15); counts beyond the row count give one row each
           let buckets = match eval(row_ctx, call.args[0]).as_int64() {
-            Some(b) if b > 0L => b.to_int()
+            Some(b) if b > 0L =>
+              if b > 2147483647L {
+                2147483647
+              } else {
+                b.to_int()
+              }
             _ =>
               raise @types.sql_error(
-                4111, "The function 'NTILE' takes only a positive int argument.",
+                4116,
+                "The function 'ntile' takes only a positive int or bigint expression as its input.",
+                severity=15,
               )
           }
           let size = n / buckets

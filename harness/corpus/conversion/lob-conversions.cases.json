@@ -1,0 +1,314 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {"name":"000-cast-cast-abc-as-text-as-bit","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS bit) AS v"}]},
+    {"name":"001-cast-cast-1-as-bit-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS bit) AS text) AS v"}]},
+    {"name":"002-cast-cast-abc-as-text-as-int","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS int) AS v"}]},
+    {"name":"003-cast-1-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(1 AS text) AS v"}]},
+    {
+      "name": "004-cast-cast-abc-as-text-as-decimal-5-2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS decimal(5,2)) AS v"}]
+    },
+    {
+      "name": "005-cast-cast-1-5-as-decimal-5-2-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(1.5 AS decimal(5,2)) AS text) AS v"}]
+    },
+    {"name":"006-cast-cast-abc-as-text-as-float","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS float) AS v"}]},
+    {"name":"007-cast-cast-1-as-float-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS float) AS text) AS v"}]},
+    {"name":"008-cast-cast-abc-as-text-as-char-3","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS char(3)) AS v"}]},
+    {"name":"009-cast-cast-abc-as-char-3-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS char(3)) AS text) AS v"}]},
+    {
+      "name": "010-cast-cast-abc-as-text-as-varchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS varchar(10)) AS v"}]
+    },
+    {"name":"011-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT CAST('abc' AS text) AS v"}]},
+    {
+      "name": "012-cast-cast-abc-as-text-as-varchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS varchar(max)) AS v"}]
+    },
+    {
+      "name": "013-cast-cast-abc-as-varchar-max-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS varchar(max)) AS text) AS v"}]
+    },
+    {"name":"014-cast-cast-abc-as-text-as-nchar-3","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS nchar(3)) AS v"}]},
+    {"name":"015-cast-cast-n-abc-as-nchar-3-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nchar(3)) AS text) AS v"}]},
+    {
+      "name": "016-cast-cast-abc-as-text-as-nvarchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS nvarchar(10)) AS v"}]
+    },
+    {"name":"017-cast-n-abc-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(N'abc' AS text) AS v"}]},
+    {
+      "name": "018-cast-cast-abc-as-text-as-nvarchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS nvarchar(max)) AS v"}]
+    },
+    {
+      "name": "019-cast-cast-n-abc-as-nvarchar-max-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nvarchar(max)) AS text) AS v"}]
+    },
+    {"name":"020-cast-cast-abc-as-text-as-binary-3","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS binary(3)) AS v"}]},
+    {
+      "name": "021-cast-cast-0x616263-as-binary-3-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS binary(3)) AS text) AS v"}]
+    },
+    {
+      "name": "022-cast-cast-abc-as-text-as-varbinary-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS varbinary(10)) AS v"}]
+    },
+    {"name":"023-cast-0x616263-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(0x616263 AS text) AS v"}]},
+    {
+      "name": "024-cast-cast-abc-as-text-as-varbinary-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS varbinary(max)) AS v"}]
+    },
+    {
+      "name": "025-cast-cast-0x616263-as-varbinary-max-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS varbinary(max)) AS text) AS v"}]
+    },
+    {"name":"026-cast-cast-abc-as-text-as-datetime","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS datetime) AS v"}]},
+    {
+      "name": "027-cast-cast-2024-01-02-as-datetime-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('2024-01-02' AS datetime) AS text) AS v"}]
+    },
+    {
+      "name": "028-cast-cast-abc-as-text-as-uniqueidentifier",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS uniqueidentifier) AS v"}]
+    },
+    {
+      "name": "029-cast-cast-6f9619ff-8b86-d011-b42d-00c04fd430c8-as-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('6F9619FF-8B86-D011-B42D-00C04FD430C8' AS uniqueidentifier) AS text) AS v"}]
+    },
+    {
+      "name": "030-cast-cast-abc-as-text-as-sql-variant",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS sql_variant) AS v"}]
+    },
+    {"name":"031-cast-cast-1-as-sql-variant-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS sql_variant) AS text) AS v"}]},
+    {
+      "name": "032-cast-cast-abc-as-text-as-rowversion",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS rowversion) AS v"}]
+    },
+    {
+      "name": "033-cast-cast-0x0000000000000001-as-rowversion-as-text",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x0000000000000001 AS rowversion) AS text) AS v"}]
+    },
+    {"name":"034-cast-cast-abc-as-text-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS text) AS v"}]},
+    {"name":"035-cast-cast-abc-as-text-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS ntext) AS v"}]},
+    {"name":"036-cast-cast-abc-as-text-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS text) AS image) AS v"}]},
+    {"name":"037-cast-cast-n-abc-as-ntext-as-bit","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS bit) AS v"}]},
+    {"name":"038-cast-cast-1-as-bit-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS bit) AS ntext) AS v"}]},
+    {"name":"039-cast-cast-n-abc-as-ntext-as-int","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS int) AS v"}]},
+    {"name":"040-cast-1-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(1 AS ntext) AS v"}]},
+    {
+      "name": "041-cast-cast-n-abc-as-ntext-as-decimal-5-2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS decimal(5,2)) AS v"}]
+    },
+    {
+      "name": "042-cast-cast-1-5-as-decimal-5-2-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(1.5 AS decimal(5,2)) AS ntext) AS v"}]
+    },
+    {"name":"043-cast-cast-n-abc-as-ntext-as-float","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS float) AS v"}]},
+    {"name":"044-cast-cast-1-as-float-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS float) AS ntext) AS v"}]},
+    {"name":"045-cast-cast-n-abc-as-ntext-as-char-3","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS char(3)) AS v"}]},
+    {"name":"046-cast-cast-abc-as-char-3-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS char(3)) AS ntext) AS v"}]},
+    {
+      "name": "047-cast-cast-n-abc-as-ntext-as-varchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS varchar(10)) AS v"}]
+    },
+    {"name":"048-cast-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST('abc' AS ntext) AS v"}]},
+    {
+      "name": "049-cast-cast-n-abc-as-ntext-as-varchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS varchar(max)) AS v"}]
+    },
+    {
+      "name": "050-cast-cast-abc-as-varchar-max-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS varchar(max)) AS ntext) AS v"}]
+    },
+    {
+      "name": "051-cast-cast-n-abc-as-ntext-as-nchar-3",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS nchar(3)) AS v"}]
+    },
+    {
+      "name": "052-cast-cast-n-abc-as-nchar-3-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nchar(3)) AS ntext) AS v"}]
+    },
+    {
+      "name": "053-cast-cast-n-abc-as-ntext-as-nvarchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS nvarchar(10)) AS v"}]
+    },
+    {"name":"054-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) AS v"}]},
+    {
+      "name": "055-cast-cast-n-abc-as-ntext-as-nvarchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS nvarchar(max)) AS v"}]
+    },
+    {
+      "name": "056-cast-cast-n-abc-as-nvarchar-max-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nvarchar(max)) AS ntext) AS v"}]
+    },
+    {
+      "name": "057-cast-cast-n-abc-as-ntext-as-binary-3",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS binary(3)) AS v"}]
+    },
+    {
+      "name": "058-cast-cast-0x616263-as-binary-3-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS binary(3)) AS ntext) AS v"}]
+    },
+    {
+      "name": "059-cast-cast-n-abc-as-ntext-as-varbinary-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS varbinary(10)) AS v"}]
+    },
+    {"name":"060-cast-0x616263-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(0x616263 AS ntext) AS v"}]},
+    {
+      "name": "061-cast-cast-n-abc-as-ntext-as-varbinary-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS varbinary(max)) AS v"}]
+    },
+    {
+      "name": "062-cast-cast-0x616263-as-varbinary-max-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS varbinary(max)) AS ntext) AS v"}]
+    },
+    {
+      "name": "063-cast-cast-n-abc-as-ntext-as-datetime",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS datetime) AS v"}]
+    },
+    {
+      "name": "064-cast-cast-2024-01-02-as-datetime-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('2024-01-02' AS datetime) AS ntext) AS v"}]
+    },
+    {
+      "name": "065-cast-cast-n-abc-as-ntext-as-uniqueidentifier",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS uniqueidentifier) AS v"}]
+    },
+    {
+      "name": "066-cast-cast-6f9619ff-8b86-d011-b42d-00c04fd430c8-as-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('6F9619FF-8B86-D011-B42D-00C04FD430C8' AS uniqueidentifier) AS ntext) AS v"}]
+    },
+    {
+      "name": "067-cast-cast-n-abc-as-ntext-as-sql-variant",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS sql_variant) AS v"}]
+    },
+    {"name":"068-cast-cast-1-as-sql-variant-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS sql_variant) AS ntext) AS v"}]},
+    {
+      "name": "069-cast-cast-n-abc-as-ntext-as-rowversion",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS rowversion) AS v"}]
+    },
+    {
+      "name": "070-cast-cast-0x0000000000000001-as-rowversion-as-ntex",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x0000000000000001 AS rowversion) AS ntext) AS v"}]
+    },
+    {"name":"071-cast-cast-n-abc-as-ntext-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS text) AS v"}]},
+    {"name":"072-cast-cast-n-abc-as-ntext-as-ntext","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS ntext) AS v"}]},
+    {"name":"073-cast-cast-n-abc-as-ntext-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS ntext) AS image) AS v"}]},
+    {"name":"074-cast-cast-0x616263-as-image-as-bit","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS bit) AS v"}]},
+    {"name":"075-cast-cast-1-as-bit-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS bit) AS image) AS v"}]},
+    {"name":"076-cast-cast-0x616263-as-image-as-int","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS int) AS v"}]},
+    {"name":"077-cast-1-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(1 AS image) AS v"}]},
+    {
+      "name": "078-cast-cast-0x616263-as-image-as-decimal-5-2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS decimal(5,2)) AS v"}]
+    },
+    {
+      "name": "079-cast-cast-1-5-as-decimal-5-2-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(1.5 AS decimal(5,2)) AS image) AS v"}]
+    },
+    {
+      "name": "080-cast-cast-0x616263-as-image-as-float",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS float) AS v"}]
+    },
+    {"name":"081-cast-cast-1-as-float-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS float) AS image) AS v"}]},
+    {
+      "name": "082-cast-cast-0x616263-as-image-as-char-3",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS char(3)) AS v"}]
+    },
+    {"name":"083-cast-cast-abc-as-char-3-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS char(3)) AS image) AS v"}]},
+    {
+      "name": "084-cast-cast-0x616263-as-image-as-varchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS varchar(10)) AS v"}]
+    },
+    {"name":"085-cast-abc-as-image","steps":[{"kind":"batch","sql":"SELECT CAST('abc' AS image) AS v"}]},
+    {
+      "name": "086-cast-cast-0x616263-as-image-as-varchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS varchar(max)) AS v"}]
+    },
+    {
+      "name": "087-cast-cast-abc-as-varchar-max-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('abc' AS varchar(max)) AS image) AS v"}]
+    },
+    {
+      "name": "088-cast-cast-0x616263-as-image-as-nchar-3",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS nchar(3)) AS v"}]
+    },
+    {
+      "name": "089-cast-cast-n-abc-as-nchar-3-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nchar(3)) AS image) AS v"}]
+    },
+    {
+      "name": "090-cast-cast-0x616263-as-image-as-nvarchar-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS nvarchar(10)) AS v"}]
+    },
+    {"name":"091-cast-n-abc-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(N'abc' AS image) AS v"}]},
+    {
+      "name": "092-cast-cast-0x616263-as-image-as-nvarchar-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS nvarchar(max)) AS v"}]
+    },
+    {
+      "name": "093-cast-cast-n-abc-as-nvarchar-max-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'abc' AS nvarchar(max)) AS image) AS v"}]
+    },
+    {
+      "name": "094-cast-cast-0x616263-as-image-as-binary-3",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS binary(3)) AS v"}]
+    },
+    {
+      "name": "095-cast-cast-0x616263-as-binary-3-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS binary(3)) AS image) AS v"}]
+    },
+    {
+      "name": "096-cast-cast-0x616263-as-image-as-varbinary-10",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS varbinary(10)) AS v"}]
+    },
+    {"name":"097-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) AS v"}]},
+    {
+      "name": "098-cast-cast-0x616263-as-image-as-varbinary-max",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS varbinary(max)) AS v"}]
+    },
+    {
+      "name": "099-cast-cast-0x616263-as-varbinary-max-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS varbinary(max)) AS image) AS v"}]
+    },
+    {
+      "name": "100-cast-cast-0x616263-as-image-as-datetime",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS datetime) AS v"}]
+    },
+    {
+      "name": "101-cast-cast-2024-01-02-as-datetime-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('2024-01-02' AS datetime) AS image) AS v"}]
+    },
+    {
+      "name": "102-cast-cast-0x616263-as-image-as-uniqueidentifier",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS uniqueidentifier) AS v"}]
+    },
+    {
+      "name": "103-cast-cast-6f9619ff-8b86-d011-b42d-00c04fd430c8-as-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST('6F9619FF-8B86-D011-B42D-00C04FD430C8' AS uniqueidentifier) AS image) AS v"}]
+    },
+    {
+      "name": "104-cast-cast-0x616263-as-image-as-sql-variant",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS sql_variant) AS v"}]
+    },
+    {"name":"105-cast-cast-1-as-sql-variant-as-image","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(1 AS sql_variant) AS image) AS v"}]},
+    {
+      "name": "106-cast-cast-0x616263-as-image-as-rowversion",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS rowversion) AS v"}]
+    },
+    {
+      "name": "107-cast-cast-0x0000000000000001-as-rowversion-as-imag",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x0000000000000001 AS rowversion) AS image) AS v"}]
+    },
+    {"name":"108-cast-cast-0x616263-as-image-as-text","steps":[{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS text) AS v"}]},
+    {
+      "name": "109-cast-cast-0x616263-as-image-as-ntext",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS ntext) AS v"}]
+    },
+    {
+      "name": "110-cast-cast-0x616263-as-image-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(0x616263 AS image) AS image) AS v"}]
+    }
+  ]
+}

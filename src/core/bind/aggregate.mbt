@@ -130,6 +130,13 @@ fn bind_agg_call(
     Some(f) => f
     None => raise @types.not_supported("aggregate \{name}")
   }
+  // 8117 for a NULL literal argument comes before 130 (captured:
+  // SUM(COUNT(NULL)) is 8117 "… for count operator")
+  match null_aggregate({ kind: Call(call), span: call.name.span, }) {
+    Some(n) =>
+      raise err(8117, "Operand data type NULL is invalid for \{n} operator.")
+    None => ()
+  }
   for a in call.args {
     if any_expr(a, x => is_aggregate(x) || is_window(x), subqueries=true) {
       raise nested_aggregate_error()
@@ -160,6 +167,18 @@ fn bind_agg_call(
   } else {
     arity(name, call.args, 1)
     (Some(bind_expr(env, call.args[0])), None)
+  }
+  // captured: MIN/MAX/COUNT/… of text, ntext or image is 8117 (COUNT
+  // DISTINCT state 2); STRING_AGG is 8116
+  if arg is Some(a) && a.ty.is_lob() {
+    if f is StringAgg {
+      raise bad_arg_type(a.ty, 1, "string_agg")
+    }
+    raise err(
+      8117,
+      "Operand data type \{a.ty.base_name()} is invalid for \{name.to_lower()} operator.",
+      state=if call.distinct { 2 } else { 1 },
+    )
   }
   let ty = agg_result_type(f, arg.map(a => a.ty), env)
   // captured probe: MAX(CASE .. a ELSE b END) over two implicit collations
@@ -250,7 +269,33 @@ fn bind_window_call(
     "NTILE" => {
       arity(name, call.args, 1)
       needs_order()
-      mk_call(Ntile, [coerce(bind_expr(env, call.args[0]), BigInt)], BigInt)
+      let x = bind_expr(env, call.args[0])
+      // captured: a column of the query itself is 4195 (ntile-null #008)
+      if x.kind is Col(i) && i < env.columns.length() {
+        raise err(
+          4195,
+          "The reference to column \"\{env.columns[i].name}\" is not allowed in an argument to the NTILE function. Only references to columns at an outer scope or standalone expressions and subqueries are allowed here.",
+          severity=15,
+        )
+      }
+      // captured (msduck ntile-types, ntile-null): only tinyint..bigint
+      // are accepted, and a constant NULL or count below 1 is rejected at
+      // compile time (also over no rows): 4116, severity 15
+      let ok = x.ty is (TinyInt | SmallInt | Int | BigInt) &&
+        !is_null_lit(x) &&
+        (match try_fold(x) {
+          Some(Null) => false
+          Some(v) =>
+            match v.as_int64() {
+              Some(n) => n > 0L
+              None => true
+            }
+          None => true
+        })
+      if !ok {
+        raise ntile_error()
+      }
+      mk_call(Ntile, [coerce(x, BigInt)], BigInt)
     }
     "PERCENT_RANK" | "CUME_DIST" => {
       arity(name, call.args, 0)
@@ -325,4 +370,14 @@ fn bind_window_call(
         }
       }
   }
+}
+
+///|
+/// 4116: NTILE's bucket count is not a positive integer (severity 15).
+fn ntile_error() -> @types.SqlError {
+  err(
+    4116,
+    "The function 'ntile' takes only a positive int or bigint expression as its input.",
+    severity=15,
+  )
 }

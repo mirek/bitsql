@@ -43,6 +43,16 @@ fn decimal_literal(text : String) -> @ir.Expr raise @types.SqlError {
   }
   let s = frac_part.length()
   let p = @cmp.maximum(1, int_digits + s)
+  // captured: a literal with a decimal point and more than 38 digits is
+  // 1007 (msduck percentile-numeric-rounding-v2 #016, #042-#044:
+  // 1.00000000000000011102230246251565404236 fails, 38 digits pass)
+  if p > 38 && text.contains(".") {
+    raise err(
+      1007,
+      "The number '\{text}' is out of the range for numeric representation (maximum precision 38).",
+      severity=15,
+    )
+  }
   if p > 38 {
     // SQL Server reads such literals as float
     match @types.parse_float_text(text) {

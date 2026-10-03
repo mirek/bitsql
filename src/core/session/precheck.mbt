@@ -32,7 +32,46 @@ fn precheck_batch(
   }
 
   fn expr(e : @ast.Expr, line : Int) -> Unit {
-    walk_expr(e, fn(x) { if x.kind is Var(n) { check_name(n, x.span.line) } })
+    walk_expr(e, fn(x) {
+      match x.kind {
+        Var(n) => check_name(n, x.span.line)
+        // captured: COUNT(NULL) / COUNT_BIG(NULL), also parenthesized,
+        // DISTINCT or windowed, is 8117 for the whole batch (msduck
+        // count-null-compilation)
+        Call(c) if failure is None && !c.star && c.args.length() == 1 => {
+          let fname = c.name.base().to_lower()
+          if (fname == "count" || fname == "count_big") &&
+            @bind.is_null_argument(c.args[0]) {
+            failure = Some(
+              (
+                @types.sql_error(
+                  8117,
+                  "Operand data type NULL is invalid for \{fname} operator.",
+                ),
+                x.span.line,
+              ),
+            )
+          }
+        }
+        // captured: a style variable of a non-integer type is 8116 for the
+        // whole batch (the DECLARE before it does not run)
+        Convert(_, _, style=Some({ kind: Var(vn), .. }), ..) if failure is None =>
+          match types.get(vn.to_lower()) {
+            Some(t) if !(t.family() is FInteger) =>
+              failure = Some(
+                (
+                  @types.sql_error(
+                    8116,
+                    "Argument data type \{t.base_name()} is invalid for argument 3 of convert function.",
+                  ),
+                  x.span.line,
+                ),
+              )
+            _ => ()
+          }
+        _ => ()
+      }
+    })
     ignore(line)
   }
 

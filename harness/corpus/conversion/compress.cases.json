@@ -1,0 +1,107 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-declare-s-varchar-max-i-bigint-1-while-i-3000-begi",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s varchar(max) = '', @i bigint = 1; WHILE @i <= 3000 BEGIN SET @s = @s + CHAR(97 + ((@i * 2654435761) % 4294967296) / 65536 % 3); SET @i = @i + 1 END; SELECT COMPRESS(@s) AS v"
+        }
+      ]
+    },
+    {
+      "name": "001-declare-s-varchar-max-i-bigint-1-while-i-4000-begi",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s varchar(max) = '', @i bigint = 1; WHILE @i <= 4000 BEGIN SET @s = @s + CHAR(97 + ((@i * 2654435761) % 4294967296) / 65536 % 6); SET @i = @i + 1 END; SELECT COMPRESS(@s) AS v"
+        }
+      ]
+    },
+    {
+      "name": "002-compress-replicate-cast-the-quick-brown-fox-jumps-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COMPRESS(REPLICATE(CAST('The quick brown fox jumps over the lazy dog. ' AS varchar(max)), 2000)) AS v"
+        }
+      ]
+    },
+    {
+      "name": "003-compress-n-abc-compress-0x-compress-cast-as-varcha",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COMPRESS(N'abc'), COMPRESS(0x), COMPRESS(CAST('' AS varchar(10))), COMPRESS(CAST(NULL AS varchar(10))) AS v"
+        }
+      ]
+    },
+    {"name":"004-compress-1","steps":[{"kind":"batch","sql":"SELECT COMPRESS(1) AS v"}]},
+    {"name":"005-decompress-n-abc","steps":[{"kind":"batch","sql":"SELECT DECOMPRESS(N'abc') AS v"}]},
+    {
+      "name": "006-decompress-cast-0x1f8b08000000000004004b4c4a0600c2",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(CAST(0x1f8b08000000000004004b4c4a0600c241243503000000 AS varchar(max))) AS v"}]
+    },
+    {
+      "name": "007-decompress-0x1f8b0800000000000400cb48cdc9c90700-no",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c90700) /* no-trailer */ AS v"}]
+    },
+    {
+      "name": "008-decompress-0x1f8b0800000000000400cb48cdc9c9070086a",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c9070086a6) /* crc-2-bytes */ AS v"}]
+    },
+    {
+      "name": "009-decompress-0x1f8b0800000000000400cb48cdc9c9070086a",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c9070086a6103605) /* isize-1-byte */ AS v"}]
+    },
+    {
+      "name": "010-decompress-0x1f8b0800000000000400cb48cdc9c907-trun",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c907) /* truncated-deflate */ AS v"}]
+    },
+    {
+      "name": "011-decompress-0x1f8b0800000000000400cb48cdc9c90700000",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c9070000000000) /* bad-crc-short-trailer */ AS v"}]
+    },
+    {
+      "name": "012-decompress-0x1f8b080800000000000376616d6500cb48cdc",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b080800000000000376616d6500cb48cdc9c9070086a6103605000000) /* fname */ AS v"}]
+    },
+    {
+      "name": "013-decompress-0x1f8b080400000000000302006162cb48cdc9c",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b080400000000000302006162cb48cdc9c9070086a6103605000000) /* fextra */ AS v"}]
+    },
+    {
+      "name": "014-decompress-0x1f8b0820000000000003cb48cdc9c9070086a",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0820000000000003cb48cdc9c9070086a6103605000000) /* reserved-flag */ AS v"}]
+    },
+    {
+      "name": "015-decompress-0x1f8c0800000000000400cb48cdc9c9070086a",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8c0800000000000400cb48cdc9c9070086a6103605000000) /* bad-magic */ AS v"}]
+    },
+    {
+      "name": "016-decompress-0x789ccb48cdc9c90700062c0215-zlib-wrapp",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x789ccb48cdc9c90700062c0215) /* zlib-wrapper */ AS v"}]
+    },
+    {
+      "name": "017-decompress-0xcb48cdc9c90700-raw-deflate",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0xcb48cdc9c90700) /* raw-deflate */ AS v"}]
+    },
+    {
+      "name": "018-decompress-0x1f8b0800000000000003010500faff68656c6",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000003010500faff68656c6c6f86a6103605000000) /* stored-block */ AS v"}]
+    },
+    {
+      "name": "019-decompress-0x1f8b0800000000000003070086a6103605000",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000003070086a6103605000000) /* bad-block-type */ AS v"}]
+    },
+    {
+      "name": "020-decompress-0x1f8b080000000000000303000000000000000",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000003030000000000000000) /* empty-member */ AS v"}]
+    },
+    {
+      "name": "021-decompress-0x1f8b0800000000000400cb48cdc9c9070086a",
+      "steps": [{"kind":"batch","sql":"SELECT DECOMPRESS(0x1f8b0800000000000400cb48cdc9c9070086a61036050000001f8b07) /* second-member-bad */ AS v"}]
+    }
+  ]
+}

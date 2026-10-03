@@ -105,6 +105,9 @@ pub fn resolve_type(
     "rowversion" | "timestamp" => RowVersion
     "sql_variant" => Variant
     "xml" => Xml
+    "text" => Text(collation)
+    "ntext" => NText(collation)
+    "image" => Image
     _ =>
       raise @types.sql_error(
         2715,

@@ -349,7 +349,7 @@ fn Session::add_column(
     Some(i) =>
       match @types.Collation::parse(i.name) {
         Some(x) => x
-        None => raise @types.sql_error(448, "Invalid collation '\{i.name}'.")
+        None => raise @types.unknown_collation_error(i.name)
       }
     None => @types.default_collation
   }
@@ -1297,7 +1297,8 @@ fn module_matches(kind : @ast.DropKind, m : @store.ObjectKind) -> Bool {
 ///|
 /// Types that cannot be index key columns (1919): the max types.
 fn invalid_key_type(ty : @types.SqlType) -> Bool {
-  ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None))
+  // also text/ntext/image (captured: harness/corpus/conversion/lob-table)
+  ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None)) || ty.is_lob()
 }
 
 ///|

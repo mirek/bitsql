@@ -91,6 +91,10 @@ fn Session::exec_select_into(
 fn Session::emit_null_warning(self : Session, line : Int) -> Unit {
   if self.rt.null_eliminated {
     self.rt.null_eliminated = false
+    // captured: none under SET ANSI_WARNINGS OFF
+    if !self.ansi_warnings() {
+      return
+    }
     self.info(
       8153, 1, "Warning: Null value is eliminated by an aggregate or other SET operation.",
       line,

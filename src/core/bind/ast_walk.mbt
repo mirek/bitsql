@@ -218,3 +218,47 @@ fn next_value_set_op() -> @types.SqlError {
     severity=15,
   )
 }
+
+///|
+/// A NULL literal argument, possibly parenthesized or with unary plus.
+pub fn is_null_argument(e : @ast.Expr) -> Bool {
+  match e.kind {
+    Null => true
+    Paren(x) | Unary(Plus, x) => is_null_argument(x)
+    _ => false
+  }
+}
+
+///|
+/// The innermost COUNT/COUNT_BIG/SUM/AVG call over a NULL literal in `e`
+/// (lower-case name): SQL Server rejects it with 8117 (captured: msduck
+/// count-null-compilation, COUNT(SUM(NULL)) names sum, SUM(COUNT(NULL))
+/// count).
+fn null_aggregate(e : @ast.Expr) -> String? {
+  let mut found : String? = None
+  ignore(
+    any_expr(e, x => {
+      match x.kind {
+        Call(c) if found is None &&
+          c.over is None &&
+          !c.star &&
+          c.args.length() == 1 => {
+          let n = c.name.base().to_lower()
+          if ["count", "count_big", "sum", "avg"].contains(n) {
+            if is_null_argument(c.args[0]) {
+              found = Some(n)
+            } else {
+              match null_aggregate(c.args[0]) {
+                Some(inner) => found = Some(inner)
+                None => ()
+              }
+            }
+          }
+        }
+        _ => ()
+      }
+      found is Some(_)
+    }),
+  )
+  found
+}

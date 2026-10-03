@@ -4,6 +4,10 @@
 fn is_constant(e : @ir.Expr) -> Bool {
   match e.kind {
     Lit(_) => true
+    // NOT LIKE does not fold (captured: CASE WHEN 'abc' NOT LIKE 'z%' THEN 1
+    // … and CASE WHEN 'ac' LIKE 'a_c' THEN 1 WHEN NOT ('ac' LIKE 'a_c') THEN 0
+    // ELSE NULL END are nullable; msduck like-patterns)
+    Not({ kind: Like(_, _, ..), .. }) => false
     Cast(a, ..) | Collate(a) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) =>
       is_constant(a)
     Arith(_, a, b)
@@ -24,6 +28,15 @@ fn is_constant(e : @ir.Expr) -> Bool {
     Call(Named(name), args) =>
       foldable_fns.contains(name) && args.iter().all(is_constant)
     Call(IsNull | NullIf | Iif, args) => args.iter().all(is_constant)
+    // captured: CASE WHEN 'alpha' LIKE 'a%' THEN 1 … is int NOT NULL
+    // (msduck like-patterns)
+    Like(a, p, escape~, negated=false, ..) =>
+      is_constant(a) &&
+      is_constant(p) &&
+      (match escape {
+        Some(x) => is_constant(x)
+        None => true
+      })
     _ => false
   }
 }

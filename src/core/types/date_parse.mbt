@@ -54,6 +54,9 @@ priv struct DateStyle {
   iso_z : Bool
   /// legacy: month names and 6/8-digit unseparated dates allowed
   words : Bool
+  /// styles 130/131: numeric dates are Hijri (dd/mm/yyyy); no month names,
+  /// unseparated or ISO `T` dates
+  hijri : Bool
 }
 
 ///|
@@ -66,13 +69,23 @@ let default_date_style : DateStyle = {
   iso_t: true,
   iso_z: true,
   words: true,
+  hijri: false,
 }
 
 ///|
 /// The parsing rules of a CONVERT style for character → date/time, or None
-/// when bitsql does not implement that style (captured behaviour for each
-/// supported style: harness/corpus/datestrings/styles.cases.json).
-fn date_style(style : Int) -> DateStyle? {
+/// when the new parser rejects the style number (9809). Captured behaviour:
+/// harness/corpus/datestrings/styles.cases.json (the numeric styles) and
+/// harness/corpus/conversion/input-styles.cases.json (the rest).
+///
+/// - The text styles (6-9, 12-14, 24, 100, 106-109, 113, 114) accept no
+///   separated numeric date, like 112. 22 is mm/dd/yy and 23/25 yyyy-mm-dd
+///   for the new parser, but like 112 for the legacy one.
+/// - 130/131 read dd/mm/yyyy as a Hijri date (legacy: both; new parser:
+///   131 only, 130 accepts no numeric date).
+/// - Any other number: the new parser raises 9809, the legacy one behaves
+///   like 112.
+fn date_style(style : Int, legacy : Bool) -> DateStyle? {
   let numeric = (order : DateOrder, digits : Int) => {
     Some({
       ..default_date_style,
@@ -83,6 +96,23 @@ fn date_style(style : Int) -> DateStyle? {
       iso_z: false,
     })
   }
+  let text_only : DateStyle = {
+    ..default_date_style,
+    explicit: true,
+    numeric: false,
+    iso_t: false,
+    iso_z: false,
+  }
+  let hijri : DateStyle = {
+    ..default_date_style,
+    order: Dmy,
+    year_digits: 4,
+    explicit: true,
+    iso_t: false,
+    iso_z: false,
+    words: false,
+    hijri: true,
+  }
   match style {
     0 => Some(default_date_style)
     1 | 10 => numeric(Mdy, 2)
@@ -91,14 +121,27 @@ fn date_style(style : Int) -> DateStyle? {
     101 | 110 => numeric(Mdy, 4)
     102 | 111 | 20 | 21 | 120 | 121 => numeric(Ymd, 4)
     103 | 104 | 105 => numeric(Dmy, 4)
-    112 =>
-      Some({
-        ..default_date_style,
-        explicit: true,
-        numeric: false,
-        iso_t: false,
-        iso_z: false,
-      })
+    22 if !legacy => numeric(Mdy, 2)
+    23 | 25 if !legacy => numeric(Ymd, 4)
+    112
+    | 6
+    | 7
+    | 8
+    | 9
+    | 12
+    | 13
+    | 14
+    | 22
+    | 23
+    | 24
+    | 25
+    | 100
+    | 106
+    | 107
+    | 108
+    | 109
+    | 113
+    | 114 => Some(text_only)
     126 =>
       Some({
         ..default_date_style,
@@ -117,7 +160,9 @@ fn date_style(style : Int) -> DateStyle? {
         iso_only: true,
         words: false,
       })
-    _ => None
+    131 => Some(hijri)
+    130 => Some(if legacy { hijri } else { { ..hijri, numeric: false, } })
+    _ => if legacy { Some(text_only) } else { None }
   }
 }
 
@@ -316,11 +361,14 @@ fn time_ticks(
 
 ///|
 fn check_date(
+  st : DateStyle,
   y : Int,
   m : Int,
   d : Int,
 ) -> (Int, Int, Int) raise DateParseError {
-  if !is_valid_date(y, m, d) {
+  // Hijri styles: a Hijri date, converted by the caller (captured:
+  // 29/02/1445 is valid under 131 although 1445 is no Gregorian leap year)
+  if !(if st.hijri { hijri_valid(y, m, d) } else { is_valid_date(y, m, d) }) {
     raise Value
   }
   (y, m, d)
@@ -533,7 +581,7 @@ fn NewParser::iso_t(self : NewParser) -> ParsedTemporal raise DateParseError {
   if self.i != self.toks.length() {
     raise Syntax
   }
-  let date = check_date(y, m, d) catch { _ => raise Syntax }
+  let date = check_date(self.style, y, m, d) catch { _ => raise Syntax }
   let time = time_ticks(h, mi, sec, frac, 0) catch { _ => raise Syntax }
   { date: Some(date), time: Some(time), fraction_digits: digits, offset, }
 }
@@ -608,13 +656,16 @@ fn NewParser::date(
       }
       self.i += 5
       if b.kind == Month {
+        if self.style.hijri {
+          raise Syntax
+        }
         // 2-Jan-2024, 2024/Jan/02
         let (d, y) = if first.len == 4 {
           (new_day_or_month(c), first.value)
         } else {
           (new_day_or_month(first), new_year(c))
         }
-        return (check_date(y, b.value, d), false)
+        return (check_date(self.style, y, b.value, d), false)
       }
       if b.kind != Num {
         raise Syntax
@@ -631,10 +682,15 @@ fn NewParser::date(
       } else {
         self.numeric_date(first, b, c)
       }
-      return (check_date(date.0, date.1, date.2), iso)
+      return (check_date(self.style, date.0, date.1, date.2), iso)
     }
     (Some(s1), _, _, _) if first.kind == Num && is_date_sep(s1) => raise Syntax
     _ => ()
+  }
+  // Hijri styles take only dd/mm/yyyy (captured: month names and
+  // unseparated dates fail under 131)
+  if self.style.hijri {
+    raise Syntax
   }
   // alphabetic: up to three components with exactly one month name
   let nums : Array[Tok] = []
@@ -679,7 +735,7 @@ fn NewParser::date(
     match nums {
       [t] =>
         match unseparated_date(t) {
-          Some((y, m, d)) => return (check_date(y, m, d), false)
+          Some((y, m, d)) => return (check_date(self.style, y, m, d), false)
           None => raise Syntax
         }
       _ => raise Syntax
@@ -693,7 +749,7 @@ fn NewParser::date(
     }
   }
   let (d, y) = alpha_day_year(nums)
-  (check_date(y, month, d), false)
+  (check_date(self.style, y, month, d), false)
 }
 
 ///|
@@ -703,6 +759,9 @@ fn NewParser::parse(self : NewParser) -> ParsedTemporal raise DateParseError {
     return { date: None, time: None, fraction_digits: 0, offset: None, }
   }
   if self.toks.iter().any(t => t.kind == TLetter) {
+    if self.style.hijri {
+      raise Syntax
+    }
     return self.iso_t() catch {
       // a numeric date before a misplaced T under a style without numeric
       // dates (captured: `1/2/2024T10:11`, style 112 → 9807)
@@ -1043,13 +1102,13 @@ fn LegacyParser::date(
   if n == 1 {
     let t = rest[0]
     if t.len == 4 {
-      return Some(check_date(t.value, 1, 1))
+      return Some(check_date(self.style, t.value, 1, 1))
     }
     if !st.words {
       raise Syntax
     }
     match unseparated_date(t) {
-      Some((y, m, d)) => return Some(check_date(y, m, d))
+      Some((y, m, d)) => return Some(check_date(self.style, y, m, d))
       None => raise Syntax
     }
   }
@@ -1121,7 +1180,7 @@ fn LegacyParser::numeric_date(
   } else {
     (others[0].value, others[1].value)
   }
-  check_date(legacy_year(parts[ypos]), m, d)
+  check_date(self.style, legacy_year(parts[ypos]), m, d)
 }
 
 ///|
@@ -1187,7 +1246,7 @@ fn LegacyParser::alpha_date(
       if y.len != 4 {
         raise Syntax
       }
-      check_date(y.value, month, 1)
+      check_date(self.style, y.value, month, 1)
     }
     2 => {
       let (a, b) = (nums[0], nums[1])
@@ -1201,7 +1260,7 @@ fn LegacyParser::alpha_date(
       } else {
         (a, b)
       }
-      check_date(legacy_year(y), month, d.value)
+      check_date(self.style, legacy_year(y), month, d.value)
     }
     _ => raise Value
   }

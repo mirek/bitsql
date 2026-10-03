@@ -113,9 +113,16 @@ fn bind_string_fn(
       let base = match x.ty {
         Binary(l) => @types.SqlType::VarBinary(Some(l))
         VarBinary(l) => @types.SqlType::VarBinary(l)
+        Image => @types.SqlType::VarBinary(None)
         _ => string_arg_type(x, env)
       }
       let ty : @types.SqlType = match (base, k) {
+        // captured: SUBSTRING(text, 2, 1) is varchar(1), of ntext
+        // nvarchar(1), of image varbinary(1)
+        (VarBinary(_), Some(v)) if x.ty.is_lob() =>
+          VarBinary(Some(@cmp.maximum(1L, v).to_int()))
+        (t, Some(v)) if x.ty.is_lob() =>
+          sized_like(t, Some(@cmp.maximum(1L, v).to_int()))
         (VarBinary(Some(l)), Some(v)) =>
           VarBinary(
             Some(@cmp.maximum(1, @cmp.minimum(v, l.to_int64()).to_int())),
@@ -206,6 +213,10 @@ fn bind_string_fn(
       let (two, _) = collate_args(env, "charindex", [bs[0], bs[1]])
       let conv = [as_string_arg(two[0], env), as_string_arg(two[1], env)]
       if bs.length() == 3 {
+        // captured: a float or varchar start is 8116 (argument 3)
+        if bs[2].ty.family() is (FString | FFloat) && !is_null_lit(bs[2]) {
+          raise bad_arg_type(bs[2].ty, 3, "charindex")
+        }
         conv.push(as_int_arg(bs[2]))
       }
       named("CHARINDEX", conv, ty)
@@ -374,6 +385,12 @@ fn bind_string_fn(
     "TRANSLATE" => {
       arity_n(name, args, 3)
       let (bs, _) = collate_args(env, "translate", [b(0), b(1), b(2)])
+      // captured: TRANSLATE('a1b', '1', 2) is 8116 for argument 3
+      for i in 1..<3 {
+        if !is_null_lit(bs[i]) && bs[i].ty.family() != FString {
+          raise bad_arg_type(bs[i].ty, i + 1, "translate")
+        }
+      }
       let s = string_arg_type(bs[0], env)
       // captured: any Unicode argument makes the result nvarchar
       let s = if !s.is_unicode() && bs.iter().any(x => x.ty.is_unicode()) {
@@ -385,7 +402,27 @@ fn bind_string_fn(
         s
       }
       let ty = if is_max_string(s) { s } else { sized_like(s, Some(8000)) }
-      named("TRANSLATE", bs.map(x => as_string_arg(x, env)), ty)
+      // whether the mapping strings are only known at run time (a variable,
+      // parameter or base-table column): their 9828 is state 3
+      let runtime = [args[1], args[2]]
+        .iter()
+        .any(x => {
+          any_expr(x, y => {
+            match y.kind {
+              Var(_) => true
+              Column(_) =>
+                is_base_column(bind_expr(env, y), env) catch {
+                  _ => false
+                }
+              _ => false
+            }
+          })
+        })
+      named(
+        "TRANSLATE",
+        bs.map(x => as_string_arg(x, env)) + [mk(Lit(Bit(runtime)), Bit, false)],
+        ty,
+      )
     }
     "FORMAT" => {
       arity_189(name, args, 2, 3)
@@ -471,11 +508,30 @@ fn concat_type(
     None => ()
   }
   let cap = if unicode { 4000 } else { 8000 }
-  let n = if max || total > cap { None } else { Some(@cmp.maximum(1, total)) }
+  // capped, not max, without a max argument (captured: CONCAT_WS(N'',
+  // nvarchar(3999), nvarchar(2)) is nvarchar(4000); msduck concat-boundary)
+  let n = if max {
+    None
+  } else {
+    Some(@cmp.minimum(@cmp.maximum(1, total), cap))
+  }
   let coll = label_collation(env, all)
   if unicode {
     NVarChar(n, coll)
   } else {
     VarChar(n, coll)
+  }
+}
+
+///|
+/// A bound column reference to a base-table column of the current scope.
+fn is_base_column(e : @ir.Expr, env : Env) -> Bool {
+  match e.kind {
+    Col(i) =>
+      match env.columns.get(i) {
+        Some(c) => c.origin is BaseColumn(..)
+        None => false
+      }
+    _ => false
   }
 }

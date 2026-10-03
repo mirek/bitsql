@@ -197,6 +197,11 @@ pub fn write_colmetadata(w : Writer, cols : ArrayView[Column]) -> Unit {
     w.u32le(c.user_type.to_int64())
     w.u16le(c.flags)
     write_type_info(w, c.type_info)
+    // TableName of text/ntext/image columns: no parts (expressions;
+    // tedious reads and ignores it)
+    if c.type_info.is_lob() {
+      w.u8(0)
+    }
     w.b_varchar(c.name)
   }
 }

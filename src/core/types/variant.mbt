@@ -67,6 +67,11 @@ pub fn check_assign(from : SqlType, to : SqlType) -> Unit raise SqlError {
   if (from is Xml || to is Xml) && !can_convert_implicitly(from, to) {
     raise implicit_conversion_error(from, to)
   }
+  // captured: INSERT of an int into text is 206 "Operand type clash: int
+  // is incompatible with text" (nvarchar into image too)
+  if (from.is_lob() || to.is_lob()) && !lob_convertible(from, to) {
+    raise type_clash_error(from, to)
+  }
   match (from, to) {
     (Variant, Variant) => ()
     (Variant, _) => raise implicit_conversion_error(from, to)
@@ -290,7 +295,7 @@ fn fixed_storage(t : SqlType) -> Int {
     VarChar(n, _) | VarBinary(n) => n.unwrap_or(0)
     NVarChar(n, _) => n.unwrap_or(0) * 2
     RowVersion => 8
-    Variant | Xml => 0
+    Variant | Xml | Text(_) | NText(_) | Image => 0
   }
 }
 

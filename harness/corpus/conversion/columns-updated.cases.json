@@ -1,0 +1,23 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-trigger",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE tcu (a int, b int, c int, d int, e int, f int, g int, h int, i int, j int)","compare":false},
+        {"kind":"batch","sql":"CREATE TABLE tcu_log (seq int IDENTITY, cu varbinary(10))","compare":false},
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tcu_t ON tcu AFTER INSERT, UPDATE, DELETE AS INSERT tcu_log (cu) SELECT COLUMNS_UPDATED()",
+          "compare": false
+        },
+        {"kind":"batch","sql":"INSERT tcu (a) VALUES (1)"},
+        {"kind":"batch","sql":"UPDATE tcu SET j = 2, a = 1"},
+        {"kind":"batch","sql":"DELETE tcu"},
+        {"kind":"batch","sql":"UPDATE tcu SET b = 1 WHERE 1 = 0"},
+        {"kind":"batch","sql":"SELECT seq, cu FROM tcu_log ORDER BY seq"},
+        {"kind":"batch","sql":"SELECT COLUMNS_UPDATED() AS outside"}
+      ]
+    }
+  ]
+}

@@ -342,8 +342,12 @@ pub(all) enum TypeInfo {
   Variant(Int)
   Xml
   NText(Int, Bytes)
+  TextLob(Bytes)
+  NTextLob(Bytes)
+  ImageLob
   Null
 } derive(Eq, @debug.Debug)
+pub fn TypeInfo::is_lob(Self) -> Bool
 pub fn TypeInfo::is_plp(Self) -> Bool
 pub fn TypeInfo::type_byte(Self) -> Int
 

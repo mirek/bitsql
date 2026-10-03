@@ -19,7 +19,11 @@ pub fn cp1252_encode(s : String) -> Bytes {
     } else {
       let mut found = -1
       for i in 0..<32 {
-        if cp1252_high[i] == cp && cp != 0 {
+        // the five undefined bytes (0x81, 0x8D, 0x8F, 0x90, 0x9D) are held
+        // as U+0081… and go out as themselves (captured: CHAR(129) reaches
+        // tedious as byte 0x81, msduck char-byte)
+        if (cp1252_high[i] == cp && cp != 0) ||
+          (cp1252_high[i] == 0 && cp == 0x80 + i) {
           found = 0x80 + i
           break
         }

@@ -44,6 +44,10 @@ fn compare_bound(
   b : @ir.Expr,
 ) -> @ir.Expr raise @types.SqlError {
   xml_compare_check(cmp_op_name(op), a, b)
+  // captured: text/ntext/image never compare (402)
+  if a.ty.is_lob() || b.ty.is_lob() {
+    raise @types.lob_operator_error(a.ty, b.ty, cmp_op_name(op))
+  }
   // collation precedence decides the comparison collation (or raises 468)
   let coll = resolve_collation(env, cmp_op_name(op), [a, b])
   let t = @types.common_type(a.ty, b.ty)
@@ -182,6 +186,10 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
             Div => Div
             _ => Mod
           }
+          // captured: text + 'x' is 402 "… incompatible in the add operator"
+          if a.ty.is_lob() || b.ty.is_lob() {
+            raise @types.lob_operator_error(a.ty, b.ty, aop.name())
+          }
           let ty = @types.arith_result_type(aop, a.ty, b.ty)
           // captured: exact-numeric arithmetic is nullable even over NOT
           // NULL operands (overflow may yield NULL); float and string `+`
@@ -243,8 +251,12 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     InList(x, items, negated~) => {
       let a = bind_expr(env, x)
       let bs = items.map(i => bind_expr(env, i))
+      // captured: text IN ('abc') is 402 "… in the equal to operator"
       for b in bs {
         xml_compare_check("equal to", a, b)
+        if a.ty.is_lob() || b.ty.is_lob() {
+          raise @types.lob_operator_error(a.ty, b.ty, "equal to")
+        }
       }
       let t = unify_types([a.ty] + bs.map(b => b.ty))
       let coll = resolve_collation(env, "equal to", [a] + bs)
@@ -263,6 +275,13 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       variant_like_check(a, p, esc)
       if a.ty is Xml || p.ty is Xml {
         raise bad_arg_type(Xml, if a.ty is Xml { 1 } else { 2 }, "like")
+      }
+      // captured: image LIKE '%b%' is 8116 for the pattern (argument 2)
+      if a.ty is Image || p.ty is Image {
+        raise err(
+          8116,
+          "Argument data type \{(if a.ty is Image { p.ty } else { a.ty }).base_name()} is invalid for argument 2 of like function.",
+        )
       }
       bit_expr(
         Like(
@@ -296,6 +315,13 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       if els is Some(x) {
         vals.push(x)
       }
+      // captured: CASE whose results are all the NULL constant is 8133
+      // (msduck count-null-compilation #032)
+      if vals.iter().all(is_untyped_null) {
+        raise err(
+          8133, "At least one of the result expressions in a CASE specification must be an expression other than the NULL constant.",
+        )
+      }
       // untyped NULL branches do not take part; integer literals next to a
       // decimal count as numeric(digits, 0) (captured: traps/
       // metadata-not-from-values CASE .. 1 ELSE 2.5 is numeric(2,1))
@@ -316,8 +342,30 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let st = match style {
         None => None
         Some({ kind: IntLit(s), .. }) => Some(parse_style(s))
-        Some(_) =>
-          raise @types.not_supported("CONVERT with a non-constant style")
+        Some(x) => {
+          // a run-time style (captured: DECLARE @s int = 112; CONVERT(..,
+          // @s) works): converted when evaluated
+          let sx = bind_expr(env, x)
+          if !(sx.ty.family() is FInteger) && !(sx.kind is Lit(Null)) {
+            // captured: varchar, bit and decimal style variables are 8116
+            // state 1; bigint works
+            raise err(
+              8116,
+              "Argument data type \{sx.ty.base_name()} is invalid for argument 3 of convert function.",
+            )
+          }
+          let c = conversion(a, t, try_, None)
+          if c.kind is Cast(_, ..) {
+            return {
+              ..c,
+              kind: Call(
+                Named(if try_ { "TRY_CONVERT_STYLE" } else { "CONVERT_STYLE" }),
+                [a, sx],
+              ),
+            }
+          }
+          return c
+        }
       }
       conversion(a, t, try_, st)
     }
@@ -325,13 +373,16 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let a = bind_expr(env, inner)
       let c = match @types.Collation::parse(name.name) {
         Some(c) => c
-        None => raise err(448, "Invalid collation '\{name.name}'.")
+        None => raise @types.unknown_collation_error(name.name)
       }
       let ty : @types.SqlType = match a.ty {
         Char(n, _) => Char(n, c)
         VarChar(n, _) => VarChar(n, c)
         NChar(n, _) => NChar(n, c)
         NVarChar(n, _) => NVarChar(n, c)
+        // captured: text/ntext take COLLATE (image is 447)
+        Text(_) => Text(c)
+        NText(_) => NText(c)
         other =>
           raise err(
             447,

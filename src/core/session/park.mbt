@@ -214,6 +214,7 @@ pub fn Session::reset(self : Session) -> Array[@reply.Item] {
   self.rt.lock_timeout = -1
   self.rt.datefirst = 7
   self.rt.option_bits = 0
+  self.session_flags.clear()
   self.server.set_priority(self.rt.spid, 0)
   self.context_info = None
   self.session_context.clear()

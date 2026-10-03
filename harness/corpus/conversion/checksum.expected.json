@@ -1,0 +1,793 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": {
+    "000-select-a-d-16-b-d-as-n-checksum-char-a-d-16-b-d-as": {
+      "case": "98253630c917a3b3",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"ci","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"cs","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"bin","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"bc","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [
+                [1,1,1,1,1],
+                [2,2,2,2,2],
+                [3,3,3,3,3],
+                [4,4,4,4,4],
+                [5,5,5,5,5],
+                [6,6,6,6,6],
+                [7,7,7,7,7],
+                [8,8,8,8,8],
+                [9,9,9,9,9],
+                [10,10,10,10,10],
+                [11,11,11,11,11],
+                [12,12,12,12,12],
+                [13,13,13,13,13],
+                [14,14,14,14,14],
+                [15,15,15,15,15],
+                [16,16,16,16,16],
+                [17,17,17,17,17],
+                [18,18,18,18,18],
+                [19,19,19,19,19],
+                [20,20,20,20,20],
+                [21,21,21,21,21],
+                [22,22,22,22,22],
+                [23,23,23,23,23],
+                [24,24,24,24,24],
+                [25,25,25,25,25],
+                [26,26,26,26,26],
+                [27,27,27,27,27],
+                [28,28,28,28,28],
+                [29,29,29,29,29],
+                [30,30,30,30,30],
+                [31,31,31,31,31],
+                [32,0,0,0,0],
+                [33,33,33,33,33],
+                [34,34,34,34,34],
+                [35,35,35,35,35],
+                [36,36,36,36,36],
+                [37,37,37,37,37],
+                [38,38,38,38,38],
+                [39,39,39,39,39],
+                [40,40,40,40,40],
+                [41,41,41,41,41],
+                [42,42,42,42,42],
+                [43,43,43,43,43],
+                [44,44,44,44,44],
+                [45,45,45,45,45],
+                [46,46,46,46,46],
+                [47,47,47,47,47],
+                [48,132,132,48,48],
+                [49,133,133,49,49],
+                [50,134,134,50,50],
+                [51,135,135,51,51],
+                [52,136,136,52,52],
+                [53,137,137,53,53],
+                [54,138,138,54,54],
+                [55,139,139,55,55],
+                [56,140,140,56,56],
+                [57,141,141,57,57],
+                [58,48,48,58,58],
+                [59,49,49,59,59],
+                [60,50,50,60,60],
+                [61,51,51,61,61],
+                [62,52,52,62,62],
+                [63,53,53,63,63],
+                [64,54,54,64,64],
+                [65,142,142,65,65],
+                [66,143,143,66,66],
+                [67,144,144,67,67],
+                [68,145,145,68,68],
+                [69,146,146,69,69],
+                [70,147,147,70,70],
+                [71,148,148,71,71],
+                [72,149,149,72,72],
+                [73,150,150,73,73],
+                [74,151,151,74,74],
+                [75,152,152,75,75],
+                [76,153,153,76,76],
+                [77,154,154,77,77],
+                [78,155,155,78,78],
+                [79,156,156,79,79],
+                [80,157,157,80,80],
+                [81,158,158,81,81],
+                [82,159,159,82,82],
+                [83,160,160,83,83],
+                [84,161,161,84,84],
+                [85,162,162,85,85],
+                [86,163,163,86,86],
+                [87,164,164,87,87],
+                [88,165,165,88,88],
+                [89,166,166,89,89],
+                [90,167,167,90,90],
+                [91,55,55,91,91],
+                [92,56,56,92,92],
+                [93,57,57,93,93],
+                [94,58,58,94,94],
+                [95,59,59,95,95],
+                [96,60,60,96,96],
+                [97,142,654,97,97],
+                [98,143,399,98,98],
+                [99,144,400,99,99],
+                [100,145,401,100,100],
+                [101,146,658,101,101],
+                [102,147,403,102,102],
+                [103,148,404,103,103],
+                [104,149,405,104,104],
+                [105,150,406,105,105],
+                [106,151,407,106,106],
+                [107,152,408,107,107],
+                [108,153,409,108,108],
+                [109,154,410,109,109],
+                [110,155,411,110,110],
+                [111,156,412,111,111],
+                [112,157,413,112,112],
+                [113,158,414,113,113],
+                [114,159,415,114,114],
+                [115,160,416,115,115],
+                [116,161,417,116,116],
+                [117,162,418,117,117],
+                [118,163,419,118,118],
+                [119,164,420,119,119],
+                [120,165,421,120,120],
+                [121,166,422,121,121],
+                [122,167,423,122,122],
+                [123,61,61,123,123],
+                [124,62,62,124,124],
+                [125,63,63,125,125],
+                [126,64,64,126,126],
+                [127,65,65,127,127],
+                [128,66,66,-128,-128],
+                [129,67,67,-127,-127],
+                [130,68,68,-126,-126],
+                [131,69,69,-125,-125],
+                [132,70,70,-124,-124],
+                [133,71,71,-123,-123],
+                [134,72,72,-122,-122],
+                [135,73,73,-121,-121],
+                [136,74,74,-120,-120],
+                [137,75,75,-119,-119],
+                [138,76,76,-118,-118],
+                [139,77,77,-117,-117],
+                [140,78,78,-116,-116],
+                [141,79,79,-115,-115],
+                [142,80,80,-114,-114],
+                [143,81,81,-113,-113],
+                [144,82,82,-112,-112],
+                [145,83,83,-111,-111],
+                [146,84,84,-110,-110],
+                [147,85,85,-109,-109],
+                [148,86,86,-108,-108],
+                [149,87,87,-107,-107],
+                [150,88,88,-106,-106],
+                [151,89,89,-105,-105],
+                [152,90,90,-104,-104],
+                [153,91,91,-103,-103],
+                [154,92,92,-102,-102],
+                [155,93,93,-101,-101],
+                [156,94,94,-100,-100],
+                [157,95,95,-99,-99],
+                [158,96,96,-98,-98],
+                [159,97,97,-97,-97],
+                [160,98,98,-96,-96],
+                [161,99,99,-95,-95],
+                [162,100,100,-94,-94],
+                [163,101,101,-93,-93],
+                [164,102,102,-92,-92],
+                [165,103,103,-91,-91],
+                [166,104,104,-90,-90],
+                [167,105,105,-89,-89],
+                [168,106,106,-88,-88],
+                [169,107,107,-87,-87],
+                [170,108,108,-86,-86],
+                [171,109,109,-85,-85],
+                [172,110,110,-84,-84],
+                [173,111,111,-83,-83],
+                [174,112,112,-82,-82],
+                [175,113,113,-81,-81],
+                [176,114,114,-80,-80],
+                [177,115,115,-79,-79],
+                [178,116,116,-78,-78],
+                [179,117,117,-77,-77],
+                [180,118,118,-76,-76],
+                [181,119,119,-75,-75],
+                [182,120,120,-74,-74],
+                [183,121,121,-73,-73],
+                [184,122,122,-72,-72],
+                [185,123,123,-71,-71],
+                [186,124,124,-70,-70],
+                [187,125,125,-69,-69],
+                [188,126,126,-68,-68],
+                [189,127,127,-67,-67],
+                [190,128,128,-66,-66],
+                [191,129,129,-65,-65],
+                [192,654,1166,-64,-64],
+                [193,910,1678,-63,-63],
+                [194,1166,2190,-62,-62],
+                [195,1422,2702,-61,-61],
+                [196,1678,3214,-60,-60],
+                [197,1934,3726,-59,-59],
+                [198,6514,6514,-58,-58],
+                [199,400,656,-57,-57],
+                [200,658,1170,-56,-56],
+                [201,914,1682,-55,-55],
+                [202,1170,2194,-54,-54],
+                [203,1426,2706,-53,-53],
+                [204,406,662,-52,-52],
+                [205,662,1174,-51,-51],
+                [206,918,1686,-50,-50],
+                [207,1174,2198,-49,-49],
+                [208,168,168,-48,-48],
+                [209,411,667,-47,-47],
+                [210,412,668,-46,-46],
+                [211,668,1180,-45,-45],
+                [212,924,1692,-44,-44],
+                [213,1180,2204,-43,-43],
+                [214,1436,2716,-42,-42],
+                [215,130,130,-41,-41],
+                [216,1692,3228,-40,-40],
+                [217,418,674,-39,-39],
+                [218,674,1186,-38,-38],
+                [219,930,1698,-37,-37],
+                [220,1186,2210,-36,-36],
+                [221,422,678,-35,-35],
+                [222,169,169,-34,-34],
+                [223,7072,10400,-33,-33],
+                [224,654,1422,-32,-32],
+                [225,910,1934,-31,-31],
+                [226,1166,2446,-30,-30],
+                [227,1422,2958,-29,-29],
+                [228,1678,3470,-28,-28],
+                [229,1934,3982,-27,-27],
+                [230,6514,15218,-26,-26],
+                [231,400,912,-25,-25],
+                [232,658,1426,-24,-24],
+                [233,914,1938,-23,-23],
+                [234,1170,2450,-22,-22],
+                [235,1426,2962,-21,-21],
+                [236,406,918,-20,-20],
+                [237,662,1430,-19,-19],
+                [238,918,1942,-18,-18],
+                [239,1174,2454,-17,-17],
+                [240,168,424,-16,-16],
+                [241,411,923,-15,-15],
+                [242,412,924,-14,-14],
+                [243,668,1436,-13,-13],
+                [244,924,1948,-12,-12],
+                [245,1180,2460,-11,-11],
+                [246,1436,2972,-10,-10],
+                [247,131,131,-9,-9],
+                [248,1692,3484,-8,-8],
+                [249,418,930,-7,-7],
+                [250,674,1442,-6,-6],
+                [251,930,1954,-5,-5],
+                [252,1186,2466,-4,-4],
+                [253,422,934,-3,-3],
+                [254,169,425,-2,-2],
+                [255,678,1190,-1,-1]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":255,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":255,"curCmd":193}],
+          "stream": [
+            {"name":"COLMETADATA","columns":5},
+            {"name":"ORDER","columns":[1]},
+            {"name":"ROW","count":255},
+            {"name":"DONE","status":16,"curCmd":193}
+          ],
+          "rowCount": 255
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "001-checksum-ab-as-a-checksum-ba-as-b-checksum-abcdefg": {
+      "case": "8764a0a452ff29fc",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"d","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"e","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[2159,2174,-1732586351,142,165472,2272]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":6},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "002-binary-checksum-abc-as-a-binary-checksum-n-abc-as-": {
+      "case": "6a178a5dc628d654",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"d","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"e","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"g","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"h","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[26435,26435,233,4660,1953789044,1650,200,-56]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":8},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "003-checksum-cast-1-5-as-float-as-a-checksum-cast-1-5-": {
+      "case": "567dfd18f75b598d",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"d","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"e","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"g","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[1073217536,1069547520,-1074266112,0,14999,-15000,65535]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":7},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "004-checksum-cast-03-04-05-123-as-time-3-as-a-checksum": {
+      "case": "d49074f497f8eacc",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"d","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"e","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[-1217919703,-1219104654,1440584506,-693595,-1326776136]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "005-checksum-cast-null-as-int-as-a-checksum-cast-null-": {
+      "case": "106ce520e2b4b594",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"d","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"e","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+              ],
+              "rows": [[2147483647,-10,1,1650,-56,26435]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":6},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "006-checksum-char-233-collate-sql-latin1-general-cp1-c": {
+      "case": "2492c6bcaa9c3628",
+      "steps": [
+        {
+          "sets": [{"columns":[{"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[146]]}],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "007-checksum-cast-1-as-decimal-10-2-as-v": {
+      "case": "398a580ce4a288db",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": [[-1374215283]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "008-checksum-n-abc-as-v": {
+      "case": "c3eafcc16d6d9753",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+              "rows": [[1132495864]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+          "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    }
+  }
+}

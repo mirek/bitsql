@@ -1,0 +1,376 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {"name":"000-len-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT LEN(CAST('abc' AS text)) AS v"}]},
+    {"name":"001-datalength-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT DATALENGTH(CAST('abc' AS text)) AS v"}]},
+    {"name":"002-left-cast-abc-as-text-1","steps":[{"kind":"batch","sql":"SELECT LEFT(CAST('abc' AS text),1) AS v"}]},
+    {"name":"003-substring-cast-abc-as-text-2-1","steps":[{"kind":"batch","sql":"SELECT SUBSTRING(CAST('abc' AS text),2,1) AS v"}]},
+    {
+      "name": "004-substring-cast-abc-as-text-1-10-substring-cast-abc",
+      "steps": [{"kind":"batch","sql":"SELECT SUBSTRING(CAST('abc' AS text),1,10) + SUBSTRING(CAST('abc' AS text),1,10) AS v"}]
+    },
+    {"name":"005-upper-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT UPPER(CAST('abc' AS text)) AS v"}]},
+    {"name":"006-trim-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT TRIM(CAST('abc' AS text)) AS v"}]},
+    {"name":"007-replace-cast-abc-as-text-b-x","steps":[{"kind":"batch","sql":"SELECT REPLACE(CAST('abc' AS text),'b','x') AS v"}]},
+    {"name":"008-charindex-b-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT CHARINDEX('b',CAST('abc' AS text)) AS v"}]},
+    {"name":"009-patindex-b-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT PATINDEX('%b%',CAST('abc' AS text)) AS v"}]},
+    {"name":"010-reverse-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT REVERSE(CAST('abc' AS text)) AS v"}]},
+    {"name":"011-stuff-cast-abc-as-text-1-1-x","steps":[{"kind":"batch","sql":"SELECT STUFF(CAST('abc' AS text),1,1,'x') AS v"}]},
+    {"name":"012-replicate-cast-abc-as-text-2","steps":[{"kind":"batch","sql":"SELECT REPLICATE(CAST('abc' AS text),2) AS v"}]},
+    {"name":"013-concat-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT CONCAT(CAST('abc' AS text),'x') AS v"}]},
+    {"name":"014-concat-ws-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT CONCAT_WS(',',CAST('abc' AS text),'x') AS v"}]},
+    {"name":"015-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT CAST('abc' AS text) + 'x' AS v"}]},
+    {"name":"016-x-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT 'x' + CAST('abc' AS text) AS v"}]},
+    {"name":"017-isnull-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT ISNULL(CAST('abc' AS text),'x') AS v"}]},
+    {"name":"018-coalesce-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT COALESCE(CAST('abc' AS text),'x') AS v"}]},
+    {"name":"019-nullif-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT NULLIF(CAST('abc' AS text),'x') AS v"}]},
+    {"name":"020-iif-1-1-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT IIF(1=1,CAST('abc' AS text),'x') AS v"}]},
+    {
+      "name": "021-case-when-1-1-then-cast-abc-as-text-else-x-end",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN CAST('abc' AS text) ELSE 'x' END AS v"}]
+    },
+    {"name":"022-ascii-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT ASCII(CAST('abc' AS text)) AS v"}]},
+    {"name":"023-soundex-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT SOUNDEX(CAST('abc' AS text)) AS v"}]},
+    {"name":"024-quotename-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT QUOTENAME(CAST('abc' AS text)) AS v"}]},
+    {
+      "name": "025-string-escape-cast-abc-as-text-json",
+      "steps": [{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST('abc' AS text),'json') AS v"}]
+    },
+    {"name":"026-format-cast-abc-as-text-x","steps":[{"kind":"batch","sql":"SELECT FORMAT(CAST('abc' AS text),'x') AS v"}]},
+    {"name":"027-hashbytes-md5-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT HASHBYTES('MD5',CAST('abc' AS text)) AS v"}]},
+    {"name":"028-checksum-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(CAST('abc' AS text)) AS v"}]},
+    {"name":"029-binary-checksum-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT BINARY_CHECKSUM(CAST('abc' AS text)) AS v"}]},
+    {
+      "name": "030-case-when-cast-abc-as-text-abc-then-1-else-0-end",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST('abc' AS text) = 'abc' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "031-case-when-cast-abc-as-text-like-a-then-1-else-0-en",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST('abc' AS text) LIKE 'a%' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "032-case-when-cast-abc-as-text-is-null-then-1-else-0-e",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST('abc' AS text) IS NULL THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "033-case-when-cast-abc-as-text-in-abc-then-1-else-0-en",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST('abc' AS text) IN ('abc') THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "034-case-when-cast-abc-as-text-a-then-1-else-0-end",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST('abc' AS text) > 'a' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "035-sql-variant-property-cast-abc-as-text-basetype",
+      "steps": [{"kind":"batch","sql":"SELECT SQL_VARIANT_PROPERTY(CAST('abc' AS text),'BaseType') AS v"}]
+    },
+    {"name":"036-difference-cast-abc-as-text-abc","steps":[{"kind":"batch","sql":"SELECT DIFFERENCE(CAST('abc' AS text),'abc') AS v"}]},
+    {"name":"037-max-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT MAX(CAST('abc' AS text)) AS v"}]},
+    {"name":"038-count-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT COUNT(CAST('abc' AS text)) AS v"}]},
+    {"name":"039-count-distinct-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT COUNT(DISTINCT CAST('abc' AS text)) AS v"}]},
+    {
+      "name": "040-cast-abc-as-text-collate-latin1-general-bin2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('abc' AS text) COLLATE Latin1_General_BIN2 AS v"}]
+    },
+    {"name":"041-translate-cast-abc-as-text-a-b","steps":[{"kind":"batch","sql":"SELECT TRANSLATE(CAST('abc' AS text),'a','b') AS v"}]},
+    {"name":"042-isjson-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT ISJSON(CAST('abc' AS text)) AS v"}]},
+    {"name":"043-compress-cast-abc-as-text","steps":[{"kind":"batch","sql":"SELECT COMPRESS(CAST('abc' AS text)) AS v"}]},
+    {
+      "name": "044-convert-varchar-10-cast-abc-as-text-1",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(10), CAST('abc' AS text), 1) AS v"}]
+    },
+    {"name":"045-greatest-cast-abc-as-text-a","steps":[{"kind":"batch","sql":"SELECT GREATEST(CAST('abc' AS text),'a') AS v"}]},
+    {"name":"046-json-value-cast-abc-as-text-a","steps":[{"kind":"batch","sql":"SELECT JSON_VALUE(CAST('abc' AS text),'$.a') AS v"}]},
+    {"name":"047-len-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT LEN(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"048-datalength-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT DATALENGTH(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"049-left-cast-n-abc-as-ntext-1","steps":[{"kind":"batch","sql":"SELECT LEFT(CAST(N'abc' AS ntext),1) AS v"}]},
+    {"name":"050-substring-cast-n-abc-as-ntext-2-1","steps":[{"kind":"batch","sql":"SELECT SUBSTRING(CAST(N'abc' AS ntext),2,1) AS v"}]},
+    {
+      "name": "051-substring-cast-n-abc-as-ntext-1-10-substring-cast-",
+      "steps": [{"kind":"batch","sql":"SELECT SUBSTRING(CAST(N'abc' AS ntext),1,10) + SUBSTRING(CAST(N'abc' AS ntext),1,10) AS v"}]
+    },
+    {"name":"052-upper-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT UPPER(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"053-trim-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT TRIM(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"054-replace-cast-n-abc-as-ntext-b-x","steps":[{"kind":"batch","sql":"SELECT REPLACE(CAST(N'abc' AS ntext),'b','x') AS v"}]},
+    {"name":"055-charindex-b-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT CHARINDEX('b',CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"056-patindex-b-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT PATINDEX('%b%',CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"057-reverse-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT REVERSE(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"058-stuff-cast-n-abc-as-ntext-1-1-x","steps":[{"kind":"batch","sql":"SELECT STUFF(CAST(N'abc' AS ntext),1,1,'x') AS v"}]},
+    {"name":"059-replicate-cast-n-abc-as-ntext-2","steps":[{"kind":"batch","sql":"SELECT REPLICATE(CAST(N'abc' AS ntext),2) AS v"}]},
+    {"name":"060-concat-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT CONCAT(CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"061-concat-ws-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT CONCAT_WS(',',CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"062-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) + 'x' AS v"}]},
+    {"name":"063-x-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT 'x' + CAST(N'abc' AS ntext) AS v"}]},
+    {"name":"064-isnull-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT ISNULL(CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"065-coalesce-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT COALESCE(CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"066-nullif-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT NULLIF(CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"067-iif-1-1-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT IIF(1=1,CAST(N'abc' AS ntext),'x') AS v"}]},
+    {
+      "name": "068-case-when-1-1-then-cast-n-abc-as-ntext-else-x-end",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN CAST(N'abc' AS ntext) ELSE 'x' END AS v"}]
+    },
+    {"name":"069-ascii-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT ASCII(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"070-soundex-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT SOUNDEX(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"071-quotename-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT QUOTENAME(CAST(N'abc' AS ntext)) AS v"}]},
+    {
+      "name": "072-string-escape-cast-n-abc-as-ntext-json",
+      "steps": [{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST(N'abc' AS ntext),'json') AS v"}]
+    },
+    {"name":"073-format-cast-n-abc-as-ntext-x","steps":[{"kind":"batch","sql":"SELECT FORMAT(CAST(N'abc' AS ntext),'x') AS v"}]},
+    {"name":"074-hashbytes-md5-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT HASHBYTES('MD5',CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"075-checksum-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"076-binary-checksum-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT BINARY_CHECKSUM(CAST(N'abc' AS ntext)) AS v"}]},
+    {
+      "name": "077-case-when-cast-n-abc-as-ntext-abc-then-1-else-0-en",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(N'abc' AS ntext) = 'abc' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "078-case-when-cast-n-abc-as-ntext-like-a-then-1-else-0",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(N'abc' AS ntext) LIKE 'a%' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "079-case-when-cast-n-abc-as-ntext-is-null-then-1-else-",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(N'abc' AS ntext) IS NULL THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "080-case-when-cast-n-abc-as-ntext-in-abc-then-1-else-0",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(N'abc' AS ntext) IN ('abc') THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "081-case-when-cast-n-abc-as-ntext-a-then-1-else-0-end",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(N'abc' AS ntext) > 'a' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "082-sql-variant-property-cast-n-abc-as-ntext-basetype",
+      "steps": [{"kind":"batch","sql":"SELECT SQL_VARIANT_PROPERTY(CAST(N'abc' AS ntext),'BaseType') AS v"}]
+    },
+    {"name":"083-difference-cast-n-abc-as-ntext-abc","steps":[{"kind":"batch","sql":"SELECT DIFFERENCE(CAST(N'abc' AS ntext),'abc') AS v"}]},
+    {"name":"084-max-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT MAX(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"085-count-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT COUNT(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"086-count-distinct-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT COUNT(DISTINCT CAST(N'abc' AS ntext)) AS v"}]},
+    {
+      "name": "087-cast-n-abc-as-ntext-collate-latin1-general-bin2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) COLLATE Latin1_General_BIN2 AS v"}]
+    },
+    {"name":"088-translate-cast-n-abc-as-ntext-a-b","steps":[{"kind":"batch","sql":"SELECT TRANSLATE(CAST(N'abc' AS ntext),'a','b') AS v"}]},
+    {"name":"089-isjson-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT ISJSON(CAST(N'abc' AS ntext)) AS v"}]},
+    {"name":"090-compress-cast-n-abc-as-ntext","steps":[{"kind":"batch","sql":"SELECT COMPRESS(CAST(N'abc' AS ntext)) AS v"}]},
+    {
+      "name": "091-convert-varchar-10-cast-n-abc-as-ntext-1",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(10), CAST(N'abc' AS ntext), 1) AS v"}]
+    },
+    {"name":"092-greatest-cast-n-abc-as-ntext-a","steps":[{"kind":"batch","sql":"SELECT GREATEST(CAST(N'abc' AS ntext),'a') AS v"}]},
+    {"name":"093-json-value-cast-n-abc-as-ntext-a","steps":[{"kind":"batch","sql":"SELECT JSON_VALUE(CAST(N'abc' AS ntext),'$.a') AS v"}]},
+    {"name":"094-len-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT LEN(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"095-datalength-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT DATALENGTH(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"096-left-cast-0x616263-as-image-1","steps":[{"kind":"batch","sql":"SELECT LEFT(CAST(0x616263 AS image),1) AS v"}]},
+    {
+      "name": "097-substring-cast-0x616263-as-image-2-1",
+      "steps": [{"kind":"batch","sql":"SELECT SUBSTRING(CAST(0x616263 AS image),2,1) AS v"}]
+    },
+    {
+      "name": "098-substring-cast-0x616263-as-image-1-10-substring-ca",
+      "steps": [{"kind":"batch","sql":"SELECT SUBSTRING(CAST(0x616263 AS image),1,10) + SUBSTRING(CAST(0x616263 AS image),1,10) AS v"}]
+    },
+    {"name":"099-upper-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT UPPER(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"100-trim-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT TRIM(CAST(0x616263 AS image)) AS v"}]},
+    {
+      "name": "101-replace-cast-0x616263-as-image-b-x",
+      "steps": [{"kind":"batch","sql":"SELECT REPLACE(CAST(0x616263 AS image),'b','x') AS v"}]
+    },
+    {"name":"102-charindex-b-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT CHARINDEX('b',CAST(0x616263 AS image)) AS v"}]},
+    {"name":"103-patindex-b-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT PATINDEX('%b%',CAST(0x616263 AS image)) AS v"}]},
+    {"name":"104-reverse-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT REVERSE(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"105-stuff-cast-0x616263-as-image-1-1-x","steps":[{"kind":"batch","sql":"SELECT STUFF(CAST(0x616263 AS image),1,1,'x') AS v"}]},
+    {"name":"106-replicate-cast-0x616263-as-image-2","steps":[{"kind":"batch","sql":"SELECT REPLICATE(CAST(0x616263 AS image),2) AS v"}]},
+    {"name":"107-concat-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT CONCAT(CAST(0x616263 AS image),'x') AS v"}]},
+    {
+      "name": "108-concat-ws-cast-0x616263-as-image-x",
+      "steps": [{"kind":"batch","sql":"SELECT CONCAT_WS(',',CAST(0x616263 AS image),'x') AS v"}]
+    },
+    {"name":"109-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) + 'x' AS v"}]},
+    {"name":"110-x-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT 'x' + CAST(0x616263 AS image) AS v"}]},
+    {"name":"111-isnull-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT ISNULL(CAST(0x616263 AS image),'x') AS v"}]},
+    {"name":"112-coalesce-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT COALESCE(CAST(0x616263 AS image),'x') AS v"}]},
+    {"name":"113-nullif-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT NULLIF(CAST(0x616263 AS image),'x') AS v"}]},
+    {"name":"114-iif-1-1-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT IIF(1=1,CAST(0x616263 AS image),'x') AS v"}]},
+    {
+      "name": "115-case-when-1-1-then-cast-0x616263-as-image-else-x-e",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN 1=1 THEN CAST(0x616263 AS image) ELSE 'x' END AS v"}]
+    },
+    {"name":"116-ascii-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT ASCII(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"117-soundex-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT SOUNDEX(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"118-quotename-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT QUOTENAME(CAST(0x616263 AS image)) AS v"}]},
+    {
+      "name": "119-string-escape-cast-0x616263-as-image-json",
+      "steps": [{"kind":"batch","sql":"SELECT STRING_ESCAPE(CAST(0x616263 AS image),'json') AS v"}]
+    },
+    {"name":"120-format-cast-0x616263-as-image-x","steps":[{"kind":"batch","sql":"SELECT FORMAT(CAST(0x616263 AS image),'x') AS v"}]},
+    {
+      "name": "121-hashbytes-md5-cast-0x616263-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT HASHBYTES('MD5',CAST(0x616263 AS image)) AS v"}]
+    },
+    {"name":"122-checksum-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT CHECKSUM(CAST(0x616263 AS image)) AS v"}]},
+    {
+      "name": "123-binary-checksum-cast-0x616263-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT BINARY_CHECKSUM(CAST(0x616263 AS image)) AS v"}]
+    },
+    {
+      "name": "124-case-when-cast-0x616263-as-image-abc-then-1-else-0",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(0x616263 AS image) = 'abc' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "125-case-when-cast-0x616263-as-image-like-a-then-1-els",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(0x616263 AS image) LIKE 'a%' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "126-case-when-cast-0x616263-as-image-is-null-then-1-el",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(0x616263 AS image) IS NULL THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "127-case-when-cast-0x616263-as-image-in-abc-then-1-els",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(0x616263 AS image) IN ('abc') THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "128-case-when-cast-0x616263-as-image-a-then-1-else-0-e",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN CAST(0x616263 AS image) > 'a' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "129-sql-variant-property-cast-0x616263-as-image-basety",
+      "steps": [{"kind":"batch","sql":"SELECT SQL_VARIANT_PROPERTY(CAST(0x616263 AS image),'BaseType') AS v"}]
+    },
+    {
+      "name": "130-difference-cast-0x616263-as-image-abc",
+      "steps": [{"kind":"batch","sql":"SELECT DIFFERENCE(CAST(0x616263 AS image),'abc') AS v"}]
+    },
+    {"name":"131-max-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT MAX(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"132-count-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT COUNT(CAST(0x616263 AS image)) AS v"}]},
+    {
+      "name": "133-count-distinct-cast-0x616263-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT COUNT(DISTINCT CAST(0x616263 AS image)) AS v"}]
+    },
+    {
+      "name": "134-cast-0x616263-as-image-collate-latin1-general-bin2",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) COLLATE Latin1_General_BIN2 AS v"}]
+    },
+    {
+      "name": "135-translate-cast-0x616263-as-image-a-b",
+      "steps": [{"kind":"batch","sql":"SELECT TRANSLATE(CAST(0x616263 AS image),'a','b') AS v"}]
+    },
+    {"name":"136-isjson-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT ISJSON(CAST(0x616263 AS image)) AS v"}]},
+    {"name":"137-compress-cast-0x616263-as-image","steps":[{"kind":"batch","sql":"SELECT COMPRESS(CAST(0x616263 AS image)) AS v"}]},
+    {
+      "name": "138-convert-varchar-10-cast-0x616263-as-image-1",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(10), CAST(0x616263 AS image), 1) AS v"}]
+    },
+    {"name":"139-greatest-cast-0x616263-as-image-a","steps":[{"kind":"batch","sql":"SELECT GREATEST(CAST(0x616263 AS image),'a') AS v"}]},
+    {
+      "name": "140-json-value-cast-0x616263-as-image-a",
+      "steps": [{"kind":"batch","sql":"SELECT JSON_VALUE(CAST(0x616263 AS image),'$.a') AS v"}]
+    },
+    {
+      "name": "141-select-v-from-select-cast-abc-as-text-as-v-d-order",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST('abc' AS text) AS v) d ORDER BY v"}]
+    },
+    {
+      "name": "142-select-v-from-select-cast-abc-as-text-as-v-d-group",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST('abc' AS text) AS v) d GROUP BY v"}]
+    },
+    {
+      "name": "143-select-distinct-v-from-select-cast-abc-as-text-as-",
+      "steps": [{"kind":"batch","sql":"SELECT DISTINCT v FROM (SELECT CAST('abc' AS text) AS v) d"}]
+    },
+    {
+      "name": "144-select-cast-abc-as-text-as-v-union-select-cast-abc",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('abc' AS text) AS v UNION SELECT CAST('abc' AS text)"}]
+    },
+    {
+      "name": "145-select-cast-abc-as-text-as-v-union-all-select-cast",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('abc' AS text) AS v UNION ALL SELECT CAST('abc' AS text)"}]
+    },
+    {"name":"146-declare-v-text","steps":[{"kind":"batch","sql":"DECLARE @v text"}]},
+    {
+      "name": "147-select-cast-abc-as-text-as-v-into-t-select-from-t",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('abc' AS text) AS v INTO #t; SELECT * FROM #t"}]
+    },
+    {
+      "name": "148-select-v-from-select-cast-abc-as-text-as-v-d-where",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST('abc' AS text) AS v) d WHERE v LIKE '%b%'"}]
+    },
+    {
+      "name": "149-select-from-select-cast-abc-as-text-as-v-a-join-se",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (SELECT CAST('abc' AS text) AS v) a JOIN (SELECT CAST('abc' AS text) AS v) b ON a.v = b.v"}]
+    },
+    {
+      "name": "150-select-v-from-select-cast-n-abc-as-ntext-as-v-d-or",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(N'abc' AS ntext) AS v) d ORDER BY v"}]
+    },
+    {
+      "name": "151-select-v-from-select-cast-n-abc-as-ntext-as-v-d-gr",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(N'abc' AS ntext) AS v) d GROUP BY v"}]
+    },
+    {
+      "name": "152-select-distinct-v-from-select-cast-n-abc-as-ntext-",
+      "steps": [{"kind":"batch","sql":"SELECT DISTINCT v FROM (SELECT CAST(N'abc' AS ntext) AS v) d"}]
+    },
+    {
+      "name": "153-select-cast-n-abc-as-ntext-as-v-union-select-cast-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) AS v UNION SELECT CAST(N'abc' AS ntext)"}]
+    },
+    {
+      "name": "154-select-cast-n-abc-as-ntext-as-v-union-all-select-c",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) AS v UNION ALL SELECT CAST(N'abc' AS ntext)"}]
+    },
+    {"name":"155-declare-v-ntext","steps":[{"kind":"batch","sql":"DECLARE @v ntext"}]},
+    {
+      "name": "156-select-cast-n-abc-as-ntext-as-v-into-t-select-from",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'abc' AS ntext) AS v INTO #t; SELECT * FROM #t"}]
+    },
+    {
+      "name": "157-select-v-from-select-cast-n-abc-as-ntext-as-v-d-wh",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(N'abc' AS ntext) AS v) d WHERE v LIKE '%b%'"}]
+    },
+    {
+      "name": "158-select-from-select-cast-n-abc-as-ntext-as-v-a-join",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (SELECT CAST(N'abc' AS ntext) AS v) a JOIN (SELECT CAST(N'abc' AS ntext) AS v) b ON a.v = b.v"}]
+    },
+    {
+      "name": "159-select-v-from-select-cast-0x616263-as-image-as-v-d",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(0x616263 AS image) AS v) d ORDER BY v"}]
+    },
+    {
+      "name": "160-select-v-from-select-cast-0x616263-as-image-as-v-d",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(0x616263 AS image) AS v) d GROUP BY v"}]
+    },
+    {
+      "name": "161-select-distinct-v-from-select-cast-0x616263-as-ima",
+      "steps": [{"kind":"batch","sql":"SELECT DISTINCT v FROM (SELECT CAST(0x616263 AS image) AS v) d"}]
+    },
+    {
+      "name": "162-select-cast-0x616263-as-image-as-v-union-select-ca",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) AS v UNION SELECT CAST(0x616263 AS image)"}]
+    },
+    {
+      "name": "163-select-cast-0x616263-as-image-as-v-union-all-selec",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) AS v UNION ALL SELECT CAST(0x616263 AS image)"}]
+    },
+    {"name":"164-declare-v-image","steps":[{"kind":"batch","sql":"DECLARE @v image"}]},
+    {
+      "name": "165-select-cast-0x616263-as-image-as-v-into-t-select-f",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(0x616263 AS image) AS v INTO #t; SELECT * FROM #t"}]
+    },
+    {
+      "name": "166-select-v-from-select-cast-0x616263-as-image-as-v-d",
+      "steps": [{"kind":"batch","sql":"SELECT v FROM (SELECT CAST(0x616263 AS image) AS v) d WHERE v LIKE '%b%'"}]
+    },
+    {
+      "name": "167-select-from-select-cast-0x616263-as-image-as-v-a-j",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM (SELECT CAST(0x616263 AS image) AS v) a JOIN (SELECT CAST(0x616263 AS image) AS v) b ON a.v = b.v"
+        }
+      ]
+    }
+  ]
+}

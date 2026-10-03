@@ -287,6 +287,22 @@ fn Session::trigger_fn(
         _ => Some(Bit(false))
       }
     "TRIGGER_NESTLEVEL" => Some(Int(self.triggers.length()))
+    // captured: one bit per column (column_id - 1, low bit first) in
+    // ceil(columns / 8) bytes; empty for DELETE; NULL outside a trigger
+    // (harness/corpus/conversion/columns-updated)
+    "COLUMNS_UPDATED" =>
+      match self.triggers.last() {
+        None => Some(Null)
+        Some(c) if c.updated.is_empty() => Some(Binary(b""))
+        Some(c) => {
+          let n = (c.table.columns.length() + 7) / 8
+          let bits = FixedArray::make(n, 0)
+          for i in c.updated {
+            bits[i / 8] = bits[i / 8] | (1 << (i % 8))
+          }
+          Some(Binary(Bytes::makei(n, k => bits[k].to_byte())))
+        }
+      }
     _ => None
   }
 }

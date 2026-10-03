@@ -355,6 +355,10 @@ fn type_ids(t : @types.SqlType) -> (Int, Int, Int, Int, Int) {
     Variant => (98, 98, 8016, 0, 0)
     // captured: xml/type (sys.columns, sys.types)
     Xml => (241, 241, -1, 0, 0)
+    // sys.types: the 16-byte text pointer
+    Text(_) => (35, 35, 16, 0, 0)
+    NText(_) => (99, 99, 16, 0, 0)
+    Image => (34, 34, 16, 0, 0)
   }
 }
 
@@ -1128,6 +1132,24 @@ fn Session::fill_type_info(
     VarBinary(None) | Xml => {
       r["character_maximum_length"] = i(-1)
       r["character_octet_length"] = i(-1)
+    }
+    // captured (harness/corpus/conversion/lob-table): text 2147483647
+    // characters, ntext 1073741823 (octets 2147483646), image 2147483647
+    Text(c) => {
+      r["character_maximum_length"] = i(2147483647)
+      r["character_octet_length"] = i(2147483647)
+      r["character_set_name"] = s("iso_1")
+      r["collation_name"] = s(c.name)
+    }
+    NText(c) => {
+      r["character_maximum_length"] = i(1073741823)
+      r["character_octet_length"] = i(2147483646)
+      r["character_set_name"] = s("UNICODE")
+      r["collation_name"] = s(c.name)
+    }
+    Image => {
+      r["character_maximum_length"] = i(2147483647)
+      r["character_octet_length"] = i(2147483647)
     }
     TinyInt
     | SmallInt

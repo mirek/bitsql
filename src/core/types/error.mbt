@@ -72,6 +72,10 @@ pub fn SqlError::is_try_convertible(self : SqlError) -> Bool {
     | 244
     | 245
     | 248
+    // style errors (captured: TRY_CONVERT(varchar, datetime, 99) and
+    // TRY_CONVERT(date, '…', 128) are NULL)
+    | 281
+    | 9809
     | 293
     | 295
     | 294

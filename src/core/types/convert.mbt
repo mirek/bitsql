@@ -456,7 +456,7 @@ fn to_decimal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
     Float(x) => double_to_decimal17(x)
     DateTime(_, _) | SmallDateTime(_, _) =>
       raise conversion_unsupported(from, to)
-    Binary(_) => raise conversion_unsupported(from, to)
+    Binary(b) => binary_to_decimal(b, from, to)
     _ =>
       match v.as_decimal() {
         Some(d) => d
@@ -534,7 +534,8 @@ fn to_money(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
           )
       }
     Float(x) => double_to_decimal17(x)
-    DateTime(_, _) | SmallDateTime(_, _) | Binary(_) =>
+    Binary(b) => return binary_to_money(b, to)
+    DateTime(_, _) | SmallDateTime(_, _) =>
       raise conversion_unsupported(from, to)
     _ =>
       match v.as_decimal() {

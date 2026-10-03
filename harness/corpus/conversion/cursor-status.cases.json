@@ -1,0 +1,39 @@
+{
+  "source": "harness/gen/conversion.mjs",
+  "cases": [
+    {
+      "name": "000-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CURSOR_STATUS('global','nope') AS g, CURSOR_STATUS('local','nope') AS l, CURSOR_STATUS('variable','@nope') AS v"
+        }
+      ]
+    },
+    {
+      "name": "001-lifecycle",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE c CURSOR FOR SELECT 1 AS x WHERE 1=0; SELECT CURSOR_STATUS('global','c') AS declared; OPEN c; SELECT CURSOR_STATUS('global','c') AS opened_empty, CURSOR_STATUS('local','c') AS l; CLOSE c; SELECT CURSOR_STATUS('global','c') AS closed; DEALLOCATE c; SELECT CURSOR_STATUS('global','c') AS deallocated"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE c4 CURSOR FOR SELECT 1 AS x; OPEN c4; SELECT CURSOR_STATUS('global','c4') AS default_open; DEALLOCATE c4"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE c3 CURSOR LOCAL FOR SELECT 1 AS x; SELECT CURSOR_STATUS('local','c3') AS l, CURSOR_STATUS('global','c3') AS g; OPEN c3; SELECT CURSOR_STATUS('local','c3') AS l, CURSOR_STATUS('global','c3') AS g; DEALLOCATE c3"
+        }
+      ]
+    },
+    {
+      "name": "002-errors",
+      "steps": [
+        {"kind":"batch","sql":"SELECT CURSOR_STATUS('bad','x') AS v"},
+        {"kind":"batch","sql":"SELECT CURSOR_STATUS('global', NULL) AS v"},
+        {"kind":"batch","sql":"SELECT CURSOR_STATUS('GLOBAL','x') AS a, CURSOR_STATUS(N'global',N'x') AS b"}
+      ]
+    }
+  ]
+}

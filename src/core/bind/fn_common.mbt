@@ -156,6 +156,9 @@ fn string_len(t : @types.SqlType) -> Int? {
     | UniqueIdentifier => Some(40)
     // variant and xml arguments are rejected before (fn_variant.mbt guard)
     Variant | Xml => None
+    // LOB arguments count as max (captured: CONCAT_WS('', text) is
+    // varchar(max)); functions that reject them check first (lob_args)
+    Text(_) | NText(_) | Image => None
   }
 }
 
@@ -179,6 +182,8 @@ fn string_arg_type(e : @ir.Expr, env : Env) -> @types.SqlType {
     NVarChar(n, c) => NVarChar(n, c)
     Char(n, c) => VarChar(Some(n), c)
     VarChar(n, c) => VarChar(n, c)
+    NText(c) => NVarChar(None, c)
+    Text(c) => VarChar(None, c)
     _ => VarChar(arg_len(e), env.collation)
   }
 }
@@ -226,7 +231,8 @@ fn as_string_arg(e : @ir.Expr, env : Env) -> @ir.Expr {
 fn as_int_arg(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
   // numbers stay as they are: the executor truncates them and reports an
   // int overflow as 8115 state 2 (captured: RIGHT('abcdef', 2147483648))
-  if is_null_lit(e) || e.ty.family() != FString {
+  // binary converts too (captured: NCHAR(0x00AD) is U+00AD, CHAR(0x41) 'A')
+  if is_null_lit(e) || !(e.ty.family() is (FString | FBinary)) {
     e
   } else {
     coerce(e, Int)

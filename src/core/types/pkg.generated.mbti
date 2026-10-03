@@ -72,6 +72,8 @@ pub fn check_assign(SqlType, SqlType) -> Unit raise SqlError
 
 pub fn civil_from_days(Int) -> (Int, Int, Int)
 
+pub fn collation_ignores(Int, Collation) -> Bool
+
 pub fn common_type(SqlType, SqlType) -> SqlType raise SqlError
 
 pub fn compare(Value, Value, collation? : Collation, ansi? : Bool) -> Int? raise SqlError
@@ -148,6 +150,16 @@ pub let latin1_general_100_ci_as : Collation
 
 pub let latin1_general_ci_as : Collation
 
+pub fn lob_distinct_error(SqlType) -> SqlError
+
+pub fn lob_operator_error(SqlType, SqlType, String) -> SqlError
+
+pub fn lob_sort_error() -> SqlError
+
+pub fn lob_union_error(SqlType) -> SqlError
+
+pub fn lob_variable_error() -> SqlError
+
 pub fn negate(Value, SqlType) -> Value raise SqlError
 
 pub fn not_supported(String, number? : Int) -> SqlError
@@ -168,9 +180,9 @@ pub fn pow10(Int) -> @bigint.BigInt
 
 pub fn precedence(SqlType) -> Int
 
-pub fn render(Value, SqlType, Int?) -> String raise SqlError
+pub fn render(Value, SqlType, Int?, target? : String) -> String raise SqlError
 
-pub fn render_temporal(Value, SqlType, Int?) -> String raise SqlError
+pub fn render_temporal(Value, SqlType, Int?, target? : String) -> String raise SqlError
 
 pub fn round_ticks(Int64, Int) -> Int64
 
@@ -209,6 +221,8 @@ pub fn tz_name(Int) -> String
 pub fn tz_offset_at(Int, Int64) -> Int
 
 pub fn tz_offset_info(Int, Int64) -> (Int, Bool)
+
+pub fn unknown_collation_error(String) -> SqlError
 
 pub fn variant_arith_error(ArithOp, SqlType, SqlType, a_name? : String, b_name? : String) -> SqlError
 
@@ -255,6 +269,7 @@ pub(all) struct Collation {
   code_page : Int
 } derive(Eq, @debug.Debug)
 pub fn Collation::parse(String) -> Self?
+pub fn Collation::supplementary(Self) -> Bool
 
 pub(all) enum CollationKind {
   Linguistic
@@ -331,11 +346,15 @@ pub(all) enum SqlType {
   RowVersion
   Variant
   Xml
+  Text(Collation)
+  NText(Collation)
+  Image
 } derive(Eq, @debug.Debug)
 pub fn SqlType::base_name(Self) -> String
 pub fn SqlType::clash_name(Self) -> String
 pub fn SqlType::collation(Self) -> Collation?
 pub fn SqlType::family(Self) -> TypeFamily
+pub fn SqlType::is_lob(Self) -> Bool
 pub fn SqlType::is_unicode(Self) -> Bool
 pub fn SqlType::is_valid(Self) -> Bool
 pub fn SqlType::message_name(Self) -> String

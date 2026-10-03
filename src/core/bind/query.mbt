@@ -727,6 +727,10 @@ fn Grouping::add_key(
   if b.ty is Xml {
     raise xml_not_comparable()
   }
+  // captured: GROUP BY a text/ntext/image key is 306 state 2
+  if b.ty.is_lob() {
+    raise @types.lob_sort_error()
+  }
   let text = expr_key(e)
   for i, k in self.keys {
     match (k.kind, b.kind) {
@@ -1185,6 +1189,10 @@ fn bind_select_query(
       exprs,
       grouped,
     )
+    // captured: ORDER BY a text/ntext/image key is 306 state 2
+    if key.ty.is_lob() {
+      raise @types.lob_sort_error()
+    }
     keys.push(@ir.SortKey::{
       expr: key,
       desc: o.desc,
@@ -1210,6 +1218,12 @@ fn bind_select_query(
   xml_sort_check(keys)
   if s.distinct {
     xml_distinct_check(result)
+    // captured: 421 "The text data type cannot be selected as DISTINCT …"
+    for c in result {
+      if c.ty.is_lob() {
+        raise @types.lob_distinct_error(c.ty)
+      }
+    }
     plan = Project(plan, exprs)
     plan = Distinct(plan, result.map(c => c.ty.collation()))
     if !keys.is_empty() {
@@ -1475,6 +1489,9 @@ fn order_set_result(
       )
     }
     let c = bq.columns[j]
+    if c.ty.is_lob() {
+      raise @types.lob_sort_error()
+    }
     keys.push(@ir.SortKey::{
       expr: mk(Col(j), c.ty, c.nullable),
       desc: o.desc,
@@ -1514,6 +1531,12 @@ fn bind_body(env : Env, b : @ast.QueryBody) -> BoundQuery raise @types.SqlError 
         _ => "INTERSECT"
       }
       for j, c in bl.columns {
+        // captured: 5335 for a text/ntext/image operand (UNION ALL works)
+        for t in [c.ty, br.columns[j].ty] {
+          if t.is_lob() {
+            raise @types.lob_union_error(t)
+          }
+        }
         let t = unify_non_null([
           (c.ty, null_literal_column(bl.plan, j)),
           (br.columns[j].ty, null_literal_column(br.plan, j)),

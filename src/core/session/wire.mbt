@@ -96,6 +96,9 @@ pub fn type_info(t : @types.SqlType, nullable : Bool) -> @tds.TypeInfo {
     // captured: COLMETADATA max length 8009
     Variant => Variant(8009)
     Xml => Xml
+    Text(_) => TextLob(coll(t))
+    NText(_) => NTextLob(coll(t))
+    Image => ImageLob
   }
 }
 
@@ -226,6 +229,9 @@ pub fn param_type(ti : @tds.TypeInfo) -> @types.SqlType {
     Variant(_) => Variant
     Xml => Xml
     NText(_, _) => NVarChar(None, c)
+    TextLob(_) => Text(c)
+    NTextLob(_) => NText(c)
+    ImageLob => Image
   }
 }
 

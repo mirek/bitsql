@@ -215,7 +215,13 @@ test "CONVERT styles from character strings" {
   )
   assert_eq(
     conv_text("12/31/2024", Date, 13),
-    "50105/1 Emulator: CONVERT style 13 from character strings to date is not supported.",
+    "9807/0 The input character string does not follow style 13, either change the input character string or use a different style.",
+  )
+  // captured: Hijri dd/mm/yyyy under 131, and invalid styles (9809)
+  assert_eq(conv_text("21/06/1445", Date, 131), "2024-01-02")
+  assert_eq(
+    conv_text("2024-12-31", Date, 128),
+    "9809/1 The style 128 is not supported for conversions from varchar to date.",
   )
 }
 
@@ -364,6 +370,8 @@ test "other CONVERT styles" {
   )
   inspect(
     st(13),
-    content="Emulator: CONVERT style 13 for datetime is not supported.",
+    content=(
+      #|06 May 2024 07:08:09:500
+    ),
   )
 }

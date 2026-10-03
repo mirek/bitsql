@@ -274,3 +274,61 @@ fn Session::exec_deallocate(
   }
   self.done(44)
 }
+
+///|
+/// CURSOR_STATUS('local' | 'global', name) (captured, harness/corpus/
+/// conversion/cursor-status): -3 no such cursor (a LOCAL lookup sees only
+/// LOCAL cursors), -1 declared or closed, 0 open without rows, 1 open with
+/// rows; an unknown source is 16902 state 42, a NULL name 16902 state 43.
+/// Cursor variables ('variable') are not modelled.
+fn Session::cursor_status(
+  self : Session,
+  args : Array[@types.Value],
+) -> @types.Value raise @types.SqlError {
+  let source = match args.get(0) {
+    Some(String(s)) => s.to_lower()
+    _ => ""
+  }
+  let name = match args.get(1) {
+    Some(String(s)) => s.to_lower()
+    _ =>
+      raise @types.sql_error(
+        16902,
+        "cursor_status: The value of the parameter 'cursor_identity' is invalid.",
+        state=43,
+      )
+  }
+  let found = match source {
+    "local" => {
+      let mut r : CursorState? = None
+      let mut i = self.frames.length() - 1
+      while i >= 0 && r is None {
+        r = self.frames[i].cursors.get(name)
+        i -= 1
+      }
+      r
+    }
+    "global" => self.cursors.get(name)
+    // an undeclared variable is -3 (captured); cursor variables themselves
+    // are not modelled
+    "variable" =>
+      if self.frame().vars.contains(name) {
+        raise @types.not_supported("CURSOR_STATUS of a cursor variable")
+      } else {
+        None
+      }
+    _ =>
+      raise @types.sql_error(
+        16902,
+        "cursor_status: The value of the parameter 'cursor_source' is invalid.",
+        state=42,
+      )
+  }
+  SmallInt(
+    match found {
+      None => -3
+      Some({ rows: None, .. }) => -1
+      Some({ rows: Some(rs), .. }) => if rs.is_empty() { 0 } else { 1 }
+    },
+  )
+}

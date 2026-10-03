@@ -135,14 +135,25 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
       match (va, vp) {
         (String(s), String(pat)) => {
           let esc = match ve {
-            String(x) if x.length() > 0 => Some(x.code_unit_at(0).to_int())
+            String(x) if x.length() == 1 => Some(x.code_unit_at(0).to_int())
+            // captured: ESCAPE 'xx' and ESCAPE '' are 506
+            String(x) =>
+              raise @types.sql_error(
+                506,
+                "The invalid escape character \"\{x}\" was specified in a LIKE predicate.",
+              )
             _ => None
           }
-          let ci = match collation {
-            Some(c) => !c.case_sensitive
-            None => true
+          let coll = match collation {
+            Some(c) => c
+            None =>
+              match (a.ty.collation(), p.ty.collation()) {
+                (Some(c), _) | (_, Some(c)) => c
+                _ => @types.default_collation
+              }
           }
-          let m = like_match(s, pat, esc, ci)
+          let ansi = !a.ty.is_unicode() && !p.ty.is_unicode()
+          let m = like_match(s, pat, esc, coll, ansi)
           of_bool(Some(m != negated))
         }
         (Null, _) | (_, Null) => Null
@@ -276,8 +287,10 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     ServerName => String(rt.server_name)
     ServiceName => String("MSSQLSERVER")
     NestLevel => Int(rt.nest_level)
-    // 5496 = the login defaults tedious sets (captured @@OPTIONS)
-    Options => Int(5496 | ctx.rt.option_bits)
+    // 5496 = the login defaults tedious sets (captured @@OPTIONS); a SET
+    // flips its bit (ANSI_WARNINGS OFF clears 8: 5488, captured msduck
+    // session-property-context)
+    Options => Int(5496 ^ ctx.rt.option_bits)
     Language => String("us_english")
     DateFirst => TinyInt(ctx.rt.datefirst)
     LockTimeout => Int(ctx.rt.lock_timeout)
@@ -287,100 +300,4 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     ProcId => Int(0)
     CursorRows => Int(rt.cursor_rows)
   }
-}
-
-///|
-/// LIKE with %, _, [set], [^set] and an optional escape character.
-pub fn like_match(s : String, p : String, esc : Int?, ci : Bool) -> Bool {
-  let fold = (c : Int) => {
-    if ci && c >= 'A'.to_int() && c <= 'Z'.to_int() {
-      c + 32
-    } else if ci && c >= 0xC0 && c <= 0xDE && c != 0xD7 {
-      c + 32
-    } else {
-      c
-    }
-  }
-  let sl = s.length()
-  let pl = p.length()
-  // memo[i][j]: does s[i..] match p[j..]; iterative DP from the end.
-  let memo = FixedArray::make((sl + 1) * (pl + 1), 0) // 0 unknown, 1 yes, 2 no
-  fn go(i : Int, j : Int) -> Bool {
-    let key = i * (pl + 1) + j
-    if memo[key] != 0 {
-      return memo[key] == 1
-    }
-    let r = if j == pl {
-      i == sl
-    } else {
-      let c = p.code_unit_at(j).to_int()
-      if esc is Some(e) && c == e && j + 1 < pl {
-        i < sl &&
-        fold(s.code_unit_at(i).to_int()) == fold(p.code_unit_at(j + 1).to_int()) &&
-        go(i + 1, j + 2)
-      } else if c == '%'.to_int() {
-        go(i, j + 1) || (i < sl && go(i + 1, j))
-      } else if c == '_'.to_int() {
-        i < sl && go(i + 1, j + 1)
-      } else if c == '['.to_int() {
-        let mut k = j + 1
-        let negate = k < pl && p.code_unit_at(k).to_int() == '^'.to_int()
-        if negate {
-          k += 1
-        }
-        let start = k
-        while k < pl &&
-              (p.code_unit_at(k).to_int() != ']'.to_int() || k == start) {
-          k += 1
-        }
-        if k >= pl {
-          // no closing bracket: literal '['
-          i < sl && fold(s.code_unit_at(i).to_int()) == c && go(i + 1, j + 1)
-        } else if i >= sl {
-          false
-        } else {
-          let ch = fold(s.code_unit_at(i).to_int())
-          let mut hit = false
-          let mut m = start
-          while m < k {
-            let lo = fold(p.code_unit_at(m).to_int())
-            if m + 2 < k && p.code_unit_at(m + 1).to_int() == '-'.to_int() {
-              let hi = fold(p.code_unit_at(m + 2).to_int())
-              if ch >= lo && ch <= hi {
-                hit = true
-              }
-              m += 3
-            } else {
-              if ch == lo {
-                hit = true
-              }
-              m += 1
-            }
-          }
-          hit != negate && go(i + 1, k + 1)
-        }
-      } else {
-        i < sl &&
-        fold(s.code_unit_at(i).to_int()) == fold(c) &&
-        go(i + 1, j + 1)
-      }
-    }
-    memo[key] = if r { 1 } else { 2 }
-    r
-  }
-
-  // LIKE ignores trailing spaces of the value only when the pattern does too
-  go(0, 0) || (s.length() > 0 && s.has_suffix(" ") && like_trim(s, p, esc, ci))
-}
-
-///|
-fn like_trim(s : String, p : String, esc : Int?, ci : Bool) -> Bool {
-  let mut n = s.length()
-  while n > 0 && s.code_unit_at(n - 1).to_int() == ' '.to_int() {
-    n -= 1
-  }
-  if n == s.length() {
-    return false
-  }
-  like_match(s.unsafe_substring(start=0, end=n), p, esc, ci)
 }

@@ -30,6 +30,9 @@ pub fn precedence(t : SqlType) -> Int {
     SmallInt => 13
     TinyInt => 12
     Bit => 11
+    NText(_) => 10
+    Text(_) => 9
+    Image => 8
     RowVersion => 7
     UniqueIdentifier => 6
     NVarChar(_, _) => 5
@@ -78,6 +81,9 @@ fn is_legacy_datetime(t : SqlType) -> Bool {
 /// assignment, comparison)? Follows SQL Server's conversion chart for the
 /// v1 types.
 pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
+  if from.is_lob() || to.is_lob() {
+    return lob_convertible(from, to)
+  }
   let ff = from.family()
   let tf = to.family()
   if ff == tf {
@@ -103,6 +109,8 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
     (FDateTime, FDate | FTime) => true
     (FGuid, FString | FBinary) => true
     (FBinary, FString | FGuid) => true
+    // captured: CONVERT(float, 0x3FF8000000000000) is 529
+    (FBinary, FFloat) => false
     (FBinary, t) if is_numeric_family(t) => true
     _ => false
   }
@@ -111,6 +119,9 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
 ///|
 /// May `CAST`/`CONVERT` convert `from` to `to` (otherwise error 529)?
 pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
+  if from.is_lob() || to.is_lob() {
+    return lob_convertible(from, to)
+  }
   if can_convert_implicitly(from, to) {
     return true
   }
@@ -462,6 +473,15 @@ fn string_len_units_bin(t : SqlType) -> Int {
 /// the collation of `a` is kept (collation precedence and 468 conflicts are
 /// the binder's job).
 pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
+  // a LOB wins by precedence (captured: CASE .. text .. ELSE 'x' is text)
+  if a.is_lob() || b.is_lob() {
+    let hi = higher(a, b)
+    let lo = if hi == a { b } else { a }
+    if !can_convert_implicitly(lo, hi) {
+      raise type_clash_error(lo, hi)
+    }
+    return hi
+  }
   match (a, b) {
     (Decimal(p1, s1) | Numeric(p1, s1), Decimal(p2, s2) | Numeric(p2, s2)) => {
       let (p, s) = decimal_union(p1, s1, p2, s2)

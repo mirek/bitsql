@@ -68,6 +68,15 @@ mention the correction here.
 - 2026-10-03: DECIMAL row values use the smallest whole 4-byte group count for
   the magnitude (5/9/13/17 bytes incl. sign) while TYPE_INFO advertises 17
   (msduck `docs/decimal-wire.md`, captured). Implemented in `write_value`.
+- 2026-10-04 (text/ntext/image, msduck concat-legacy-family, corpus
+  `conversion/lob-*`): COLMETADATA TEXT 0x23 / NTEXT 0x63 / IMAGE 0x22 carry a
+  4-byte max length (tedious reports 2147483647 / 2147483646 / 2147483647),
+  the 5-byte collation for text/ntext, and then a TableName (NumParts byte +
+  US_VARCHAR parts) *before* the column name; bitsql sends NumParts 0. ROW
+  values: TextPointer length byte (0 = NULL, nothing else follows), 16-byte
+  text pointer, 8-byte timestamp, u32 length, data; tedious skips pointer and
+  timestamp. RPC parameter values of these types are u32 length
+  (0xFFFFFFFF = NULL) + data.
 
 
 - 2026-10-03 (TVP_TYPE 0xF3, tedious lib/data-types/tvp.js, corpus

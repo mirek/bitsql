@@ -43,12 +43,24 @@ pub(all) enum TypeInfo {
   /// 0x63 NTEXT, 4-byte max length and collation; in COLMETADATA followed
   /// by a table name (SQL Server sends one part, "x", for FOR XML results)
   NText(Int, Bytes)
+  /// 0x23 TEXT: 4-byte max length 2147483647, collation; values carry a
+  /// text pointer and timestamp (value.mbt). The deprecated LOB types.
+  TextLob(Bytes)
+  /// 0x63 NTEXT: max length 2147483646
+  NTextLob(Bytes)
+  /// 0x22 IMAGE: max length 2147483647
+  ImageLob
   Null // 0x1F (RPC parameters only)
 } derive(Debug, Eq)
 
 ///|
 /// Length value meaning (max) for ushort-length types.
 pub const MAX_LEN : Int = 0xFFFF
+
+///|
+pub fn TypeInfo::is_lob(self : TypeInfo) -> Bool {
+  self is (TextLob(_) | NTextLob(_) | ImageLob)
+}
 
 ///|
 pub fn TypeInfo::is_plp(self : TypeInfo) -> Bool {
@@ -94,6 +106,9 @@ pub fn TypeInfo::type_byte(self : TypeInfo) -> Int {
     Variant(_) => 0x62
     Xml => 0xF1
     NText(_, _) => 0x63
+    TextLob(_) => 0x23
+    NTextLob(_) => 0x63
+    ImageLob => 0x22
     Null => 0x1F
   }
 }
@@ -127,6 +142,17 @@ pub fn write_type_info(w : Writer, ti : TypeInfo) -> Unit {
       w.u16le(1)
       w.ucs2("x")
     }
+    // captured lengths (msduck concat-legacy-family: Text 2147483647,
+    // NText 2147483646, Image 2147483647)
+    TextLob(c) => {
+      w.u32le(2147483647L)
+      w.bytes(c)
+    }
+    NTextLob(c) => {
+      w.u32le(2147483646L)
+      w.bytes(c)
+    }
+    ImageLob => w.u32le(2147483647L)
     _ => ()
   }
 }
@@ -195,6 +221,19 @@ pub fn read_type_info(r : Reader) -> TypeInfo raise TdsError {
         ignore(r.us_varchar())
       }
       Xml
+    }
+    0x23 | 0x63 => {
+      ignore(r.u32le())
+      let c = r.bytes(5)
+      if ty == 0x23 {
+        TextLob(c)
+      } else {
+        NTextLob(c)
+      }
+    }
+    0x22 => {
+      ignore(r.u32le())
+      ImageLob
     }
     _ => raise Malformed("unsupported TYPE_INFO 0x\{ty.to_string(radix=16)}")
   }

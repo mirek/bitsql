@@ -2,10 +2,12 @@
 // (CONVERT styles).
 
 ///|
-fn style_unsupported(style : Int, from : SqlType) -> SqlError {
-  not_supported(
-    "CONVERT style \{style} for \{from.base_name()}",
-    number=EMU_STYLE_NOT_SUPPORTED,
+/// 9809 state 1 (captured for binary ↔ character style 3): "The style 3 is
+/// not supported for conversions from varchar to varbinary."
+fn style_not_supported(style : Int, from : SqlType, to : SqlType) -> SqlError {
+  sql_error(
+    9809,
+    "The style \{style} is not supported for conversions from \{from.base_name()} to \{to.base_name()}.",
   )
 }
 
@@ -19,135 +21,7 @@ fn pad2s(n : Int) -> String {
 }
 
 ///|
-/// Text of a temporal value for a CONVERT style (None = CAST).
-///
-/// Captured (msduck reference/temporal-guid-format.json, us_english):
-/// CAST of date/time/datetime2/datetimeoffset is ISO with the declared
-/// number of fraction digits (`2024-03-01 00:00:00.00 +01:30`); CAST of
-/// datetime/smalldatetime and style 0 of everything is `Mon dd yyyy
-/// hh:miAM` (`Jan  2 2024  3:04AM`, time alone `11:59PM`); style 121 is
-/// ISO with the declared fraction digits (3 for datetime/smalldatetime).
-/// Styles 1-12/101-112, 20/120, 23, 8/108, 126 and 127 follow the CONVERT
-/// documentation and are unverified. Month names are us_english only.
-pub fn render_temporal(
-  v : Value,
-  from : SqlType,
-  style : Int?,
-) -> String raise SqlError {
-  let inst = instant_of(v, from)
-  let days = inst.days.unwrap_or(DAYS_TO_1900)
-  // display ticks: legacy datetime shows whole milliseconds
-  let time = match v {
-    DateTime(_, u) => {
-      let sec = u / 300
-      let ms = (u % 300 * 10 + 1) / 3
-      sec.to_int64() * TICKS_PER_SECOND + ms.to_int64() * 10_000L
-    }
-    _ => inst.time.unwrap_or(0L)
-  }
-  let digits = match from {
-    Time(s) | DateTime2(s) | DateTimeOffset(s) => s
-    _ => 3
-  }
-  let date_only = from is Date
-  let time_only = from is Time(_)
-  let offset_text = match inst.offset {
-    Some(o) => " " + format_offset(o)
-    None => ""
-  }
-  let iso = fn(fraction_digits : Int, sep : String) -> String {
-    if date_only {
-      format_date_iso(days)
-    } else if time_only {
-      format_time_iso(time, fraction_digits)
-    } else {
-      format_date_iso(days) + sep + format_time_iso(time, fraction_digits)
-    }
-  }
-  let (y, m, d) = civil_from_days(days)
-  let yyyy = format_date_iso(days).unsafe_substring(start=0, end=4)
-  let yy = yyyy.unsafe_substring(start=2, end=4)
-  let mm = pad2s(m)
-  let dd = pad2s(d)
-  ignore(y)
-  match style {
-    None =>
-      match from {
-        DateTime | SmallDateTime => render_temporal(v, from, Some(0))
-        _ => iso(digits, " ") + offset_text
-      }
-    Some(0 | 100) =>
-      if date_only {
-        format_date_style0(days)
-      } else if time_only {
-        format_time_style0(time)
-      } else {
-        format_date_style0(days) + " " + format_time_style0(time) + offset_text
-      }
-    Some(20 | 120) => {
-      if inst.offset is Some(_) {
-        raise style_unsupported(style.unwrap(), from)
-      }
-      iso(0, " ")
-    }
-    Some(21 | 25 | 121) => iso(digits, " ") + offset_text
-    Some(23) => format_date_iso(days)
-    Some(126) => {
-      if inst.offset is Some(_) {
-        raise style_unsupported(126, from)
-      }
-      match from {
-        DateTime | SmallDateTime =>
-          iso(if time % TICKS_PER_SECOND == 0L { 0 } else { 3 }, "T")
-        _ => iso(digits, "T")
-      }
-    }
-    Some(127) =>
-      match v {
-        DateTimeOffset(utc, _) => {
-          let ud = (utc / TICKS_PER_DAY).to_int()
-          let ut = utc % TICKS_PER_DAY
-          format_date_iso(ud) +
-          "T" +
-          format_time_iso(
-            ut,
-            if ut % TICKS_PER_SECOND == 0L {
-              0
-            } else {
-              digits
-            },
-          ) +
-          "Z"
-        }
-        _ => render_temporal(v, from, Some(126))
-      }
-    Some(1) => mm + "/" + dd + "/" + yy
-    Some(101) => mm + "/" + dd + "/" + yyyy
-    Some(2) => yy + "." + mm + "." + dd
-    Some(102) => yyyy + "." + mm + "." + dd
-    Some(3) => dd + "/" + mm + "/" + yy
-    Some(103) => dd + "/" + mm + "/" + yyyy
-    Some(4) => dd + "." + mm + "." + yy
-    Some(104) => dd + "." + mm + "." + yyyy
-    Some(5) => dd + "-" + mm + "-" + yy
-    Some(105) => dd + "-" + mm + "-" + yyyy
-    Some(10) => mm + "-" + dd + "-" + yy
-    Some(110) => mm + "-" + dd + "-" + yyyy
-    Some(11) => yy + "/" + mm + "/" + dd
-    Some(111) => yyyy + "/" + mm + "/" + dd
-    Some(12) => yy + mm + dd
-    Some(112) => yyyy + mm + dd
-    Some(8 | 24 | 108) => format_time_iso(time, 0)
-    Some(s) => raise style_unsupported(s, from)
-  }
-}
-
-///|
-fn money_text(
-  units : Int64,
-  style : Int,
-  from : SqlType,
-) -> String raise SqlError {
+fn money_text(units : Int64, style : Int) -> String {
   let d = Decimal::new(@bigint.BigInt::from_int64(units), 4)
   match style {
     0 | 1 => {
@@ -177,13 +51,19 @@ fn money_text(
       }
     }
     2 | 126 => d.to_string()
-    _ => raise style_unsupported(style, from)
+    // captured: any other style number is style 0
+    _ => d.rescale(2).to_string()
   }
 }
 
 ///|
 /// Text of a non-character value for a CONVERT style (None = CAST).
-pub fn render(v : Value, from : SqlType, style : Int?) -> String raise SqlError {
+pub fn render(
+  v : Value,
+  from : SqlType,
+  style : Int?,
+  target? : String = "varchar",
+) -> String raise SqlError {
   match v {
     Null => raise internal("render of NULL")
     String(s) => s
@@ -191,13 +71,19 @@ pub fn render(v : Value, from : SqlType, style : Int?) -> String raise SqlError 
     TinyInt(n) | SmallInt(n) | Int(n) => n.to_string()
     BigInt(n) => n.to_string()
     Decimal(d) => d.to_string()
-    Money(u) => money_text(u, style.unwrap_or(0), from)
+    Money(u) => money_text(u, style.unwrap_or(0))
     Float(d) =>
       match style.unwrap_or(0) {
         0 => format_float_general(d)
+        // captured (harness/corpus/conversion/float-styles): 1 is 8
+        // significant digits, 2 is 16, 3 is 17 (real too, of its double
+        // value), 126 is 16 for float but 8 for real; every other style
+        // number is style 0
         1 => format_float_scientific(d, 8)
         2 => format_float_scientific(d, 16)
-        s => raise style_unsupported(s, from)
+        3 => format_float_scientific(d, 17)
+        126 => format_float_scientific(d, if from is Real { 8 } else { 16 })
+        _ => format_float_general(d)
       }
     Guid(b) => format_guid(b)
     Binary(b) =>
@@ -211,7 +97,7 @@ pub fn render(v : Value, from : SqlType, style : Int?) -> String raise SqlError 
     | DateTime2(_)
     | DateTimeOffset(_, _)
     | DateTime(_, _)
-    | SmallDateTime(_, _) => render_temporal(v, from, style)
+    | SmallDateTime(_, _) => render_temporal(v, from, style, target~)
     Variant(_, _) => raise internal("render of a sql_variant")
     Xml(x) => x.to_text()
   }
@@ -275,7 +161,9 @@ fn to_character(
       } else {
         cp1252_string(b)
       }
-    _ => render(v, from, style)
+    Binary(_) if !(style.unwrap_or(0) is (1 | 2)) =>
+      raise style_not_supported(style.unwrap_or(0), from, to)
+    _ => render(v, from, style, target=to.base_name())
   }
   let text = if to.is_unicode() { text } else { to_cp1252(text) }
   let mut out = text
@@ -295,6 +183,10 @@ fn to_character(
           raise sql_error(
             8170, "Insufficient result space to convert uniqueidentifier value to char.",
           )
+        // hex text keeps whole bytes (captured: 0x0A0B as varchar(3),
+        // style 1, is `0x`; 0x0A0B0C, style 2, is `0A`)
+        FBinary if style.unwrap_or(0) is (1 | 2) =>
+          text.unsafe_substring(start=0, end=cap - cap % 2)
         _ => text.unsafe_substring(start=0, end=cap)
       }
     _ => ()
@@ -310,7 +202,7 @@ fn to_character(
 ///|
 fn parse_hex(s : String, start : Int) -> Bytes? {
   let n = s.length() - start
-  if n % 2 != 0 {
+  if n < 0 || n % 2 != 0 {
     return None
   }
   let out = FixedArray::make(n / 2, b'\x00')
@@ -361,7 +253,7 @@ fn to_binary(
             _ => raise error_converting(from, to)
           }
         }
-        st => raise style_unsupported(st, from)
+        st => raise style_not_supported(st, from, to)
       }
     Binary(b) => (b, false)
     Guid(b) => (b, false)
@@ -380,8 +272,15 @@ fn to_binary(
       let b = big_endian(m.to_int64(), 2)
       (Bytes::makei(4, fn(i) { if i < 2 { a[i] } else { b[i - 2] } }), true)
     }
+    Float(_) | Money(_) | Decimal(_) =>
+      match numeric_storage_bytes(v, from) {
+        Some(x) => x
+        None => raise conversion_unsupported(from, to)
+      }
     _ => raise conversion_unsupported(from, to)
   }
+  // decimal storage keeps its head when cut but is padded on the left
+  let pad_left = left_aligned || v is Decimal(_)
   let n = bytes.length()
   let fixed = match to {
     Binary(k) => Some(k)
@@ -405,7 +304,7 @@ fn to_binary(
     Some(k) if fitted.length() < k => {
       let m = fitted.length()
       Binary(
-        if left_aligned {
+        if pad_left {
           Bytes::makei(k, fn(i) {
             if i < k - m {
               b'\x00'
