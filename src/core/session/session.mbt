@@ -255,6 +255,8 @@ pub struct Session {
   /// Timeout of the current lock wait when it is not SET LOCK_TIMEOUT
   /// (sp_getapplock @LockTimeout).
   mut wait_ms : Int?
+  /// Last NEXT VALUE FOR per sequence key: (row number, value).
+  priv seq_row : Map[String, (Int64, @types.Value)]
   /// INSERT BULK target awaiting its BulkLoad message.
   priv mut bulk : BulkTarget?
   /// Running triggers, innermost last.
@@ -325,6 +327,7 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    seq_row: Map([]),
     deferred: [],
     library: "",
     login_time: 0L,

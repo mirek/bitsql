@@ -46,6 +46,9 @@ pub(all) struct Runtime {
   /// Work done by the current request (rows filtered, join pairs, loop
   /// iterations) and its limit (`charge`).
   mut work_done : Int64
+  /// Counts rows whose expressions are evaluated; repeated NEXT VALUE FOR of
+  /// one sequence within a row share a value (`Runtime::next_row`).
+  mut row_seq : Int64
   mut work_limit : Int64
   spid : Int
   server_name : String
@@ -87,6 +90,7 @@ pub fn Runtime::new(
     lock_timeout: -1,
     option_bits: 0,
     work_done: 0L,
+    row_seq: 0L,
     work_limit: default_work_limit,
     spid,
     server_name,
@@ -182,4 +186,10 @@ pub fn Runtime::charge(self : Runtime, n : Int64) -> Unit raise @types.SqlError 
       "the request exceeded the work budget of \{self.work_limit} units (a runaway loop or join?); see --max-request-work",
     )
   }
+}
+
+///|
+/// Starts evaluating a new row's expressions.
+pub fn Runtime::next_row(self : Runtime) -> Unit {
+  self.row_seq += 1L
 }

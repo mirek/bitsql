@@ -20,6 +20,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.uncatchable = false
   self.throwing = false
   self.stmt_error = 0
+  self.rt.next_row()
   self.deferred.clear()
   self.refresh_tx()
   let snap_temp = self.temp

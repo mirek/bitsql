@@ -397,6 +397,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   {
     errdefer self.output_send(outputs, evaluated[:])
     for rec in rows {
+      self.rt.next_row()
       let (rowid, old, full) = rec
       let row = old.copy()
       self.update_row(
@@ -714,9 +715,6 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let (source, types) : (Array[Array[@types.Value]], Array[@types.SqlType]) = match
     ins.source {
     InsertValues(rows) => {
-      for r in rows {
-        check_sequence_refs(r)
-      }
       let bound = rows.map(r => {
         r.map(e => {
           if e.kind is Default {
@@ -762,6 +760,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       let types = []
       let values = []
       for r in bound {
+        self.rt.next_row()
         let row = []
         let tys = []
         for e in r {
@@ -833,6 +832,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let inserted_rows = []
   let evaluated = []
   for ri, src in source {
+    self.rt.next_row()
     let row = Array::make(t.columns.length(), @types.Value::Null)
     let step = () => {
       errdefer self.output_send(outputs, evaluated[:])

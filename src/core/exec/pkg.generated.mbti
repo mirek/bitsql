@@ -79,6 +79,7 @@ pub(all) struct Runtime {
   mut lock_timeout : Int
   mut option_bits : Int
   mut work_done : Int64
+  mut row_seq : Int64
   mut work_limit : Int64
   spid : Int
   server_name : String
@@ -88,6 +89,7 @@ pub(all) struct Runtime {
 pub fn Runtime::charge(Self, Int64) -> Unit raise @types.SqlError
 pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String, build? : (Int, Int, Int)) -> Self
 pub fn Runtime::next_random(Self) -> UInt64
+pub fn Runtime::next_row(Self) -> Unit
 
 // Type aliases
 pub type Row = Array[@types.Value]

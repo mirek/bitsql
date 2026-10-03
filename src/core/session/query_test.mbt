@@ -202,3 +202,33 @@ test "equi-join index gives the nested-loop result and order" {
   )
   assert_eq(rows("SELECT COUNT(*) FROM l FULL JOIN r ON r.k = l.k"), [[Int(7L)]])
 }
+
+///|
+test "NEXT VALUE FOR: one value per row, new values per row and statement" {
+  let s = @session.Session::new(
+    @session.Server::new(),
+    spid=51,
+    database="master",
+    seed=1,
+  )
+  ignore(s.run_batch("CREATE SEQUENCE dbo.q AS int START WITH 1", 0))
+  let rows = (sql : String) => row_values(s.run_batch(sql, 0))
+  assert_eq(
+    rows(
+      "SELECT NEXT VALUE FOR dbo.q, NEXT VALUE FOR dbo.q FROM (VALUES (1), (2)) v(x)",
+    ),
+    [[Int(1L), Int(1L)], [Int(2L), Int(2L)]],
+  )
+  assert_eq(
+    rows(
+      "DECLARE @a int, @b int; SET @a = NEXT VALUE FOR dbo.q; SET @b = NEXT VALUE FOR dbo.q; SELECT @a, @b",
+    ),
+    [[Int(3L), Int(4L)]],
+  )
+  assert_eq(
+    rows(
+      "CREATE TABLE sq (a int, b int); INSERT sq VALUES (NEXT VALUE FOR dbo.q, NEXT VALUE FOR dbo.q), (NEXT VALUE FOR dbo.q, 0); SELECT a, b FROM sq",
+    ),
+    [[Int(5L), Int(5L)], [Int(6L), Int(0L)]],
+  )
+}

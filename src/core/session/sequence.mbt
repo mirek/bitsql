@@ -280,6 +280,11 @@ fn Session::sequence_next(
   guard self.server.seqs.get(key) is Some(s) else {
     raise @types.not_supported("NEXT VALUE FOR a dropped sequence")
   }
+  // one value per row for repeated references (captured: sequence/basics)
+  match self.seq_row.get(key) {
+    Some((row, v)) if row == self.rt.row_seq => return v
+    _ => ()
+  }
   let b = s.base()
   let overflow = match s.current {
     None => false
@@ -316,7 +321,9 @@ fn Session::sequence_next(
     )
   }
   s.current = Some(v)
-  @types.cast(BigInt(v), BigInt, s.ty)
+  let out = @types.cast(BigInt(v), BigInt, s.ty)
+  self.seq_row[key] = (self.rt.row_seq, out)
+  out
 }
 
 ///|
@@ -328,29 +335,5 @@ fn Session::sequence_binding(
   match self.find_sequence(name) {
     Some((m, s)) => Some((seq_key(self.rt.database, m.id), s.ty))
     None => None
-  }
-}
-
-///|
-/// SQL Server hands out one value per row for repeated references to the same
-/// sequence (captured: sequence/basics); the emulator evaluates each
-/// reference, so that shape is reported instead of approximated.
-fn check_sequence_refs(exprs : Array[@ast.Expr]) -> Unit raise {
-  let seen = []
-  for e in exprs {
-    walk_expr(e, x => {
-      if x.kind is NextValueFor(n) {
-        seen.push(n.parts.map(p => p.name.to_lower()).join("."))
-      }
-    })
-  }
-  for i, a in seen {
-    for j in (i + 1)..<seen.length() {
-      if seen[j] == a {
-        raise @types.not_supported(
-          "NEXT VALUE FOR the same sequence more than once in a row",
-        )
-      }
-    }
   }
 }

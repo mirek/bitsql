@@ -66,9 +66,14 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       }
       out
     }
-    Values(rows) => rows.map(r => r.map(e => eval(ctx, e)))
+    Values(rows) =>
+      rows.map(r => {
+        ctx.rt.next_row()
+        r.map(e => eval(ctx, e))
+      })
     Project(input, exprs) =>
       run(ctx, input).map(row => {
+        ctx.rt.next_row()
         let c = ctx.with_row(row)
         exprs.map(e => eval(c, e))
       })
@@ -361,6 +366,7 @@ pub fn stream(
   match plan {
     Project(input, exprs) =>
       stream(ctx, input, row => {
+        ctx.rt.next_row()
         let c = ctx.with_row(row)
         emit(exprs.map(e => eval(c, e)))
       })
@@ -386,6 +392,7 @@ pub fn stream(
       run_recursive(ctx, id, anchor, recursive, max, emit)
     Values(rows) =>
       for r in rows {
+        ctx.rt.next_row()
         emit(r.map(e => eval(ctx, e)))
       }
     TableFunc(f, args) => stream_table_fn(ctx, f, args, emit)
