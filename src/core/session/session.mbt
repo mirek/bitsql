@@ -336,6 +336,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     ext: (name, args) => self.catalog_fn(name, args),
     user_fn: (id, args) => self.call_scalar_udf(id, args),
     user_table: (id, args) => self.call_table_udf(id, args),
+    seek: (scope, id, key) => self.seek(scope, id, key),
   }
 }
 

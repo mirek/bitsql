@@ -105,6 +105,22 @@ pub(all) struct Ctx {
   /// Multi-statement table-valued function call: the rows of its return
   /// table after the body ran.
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
+  /// Unique-index lookup: rows of table (scope, id) whose columns equal the
+  /// given (column ordinal, value) pairs, or None when no unique index is
+  /// fully covered (the caller scans). See `seek_rows` in plan.mbt.
+  seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[
+    (Int64, Array[@types.Value]),
+  ]?
+}
+
+///|
+/// `seek` for contexts without a database: always scan.
+pub fn no_seek(
+  _scope : Int,
+  _id : Int,
+  _key : Array[(Int, @types.Value)],
+) -> Array[(Int64, Array[@types.Value])]? {
+  None
 }
 
 ///|

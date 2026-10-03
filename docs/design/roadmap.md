@@ -84,7 +84,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [ ] Query language gaps: two-error binds (8155 + 207), RANGE frames with offsets, DISTINCT window aggregates, FOR JSON AUTO with joins (nesting), FOR XML, PIVOT/UNPIVOT, SELECT INTO identity propagation, CI-equal GROUP BY spelling for heap plans (see fidelity traps)
 - [~] INSERT (VALUES/SELECT/DEFAULT VALUES, defaults, identity, IDENTITY_INSERT, computed, rowversion), UPDATE (compound SET, DEFAULT), DELETE, statement-level rollback. OUTPUT (incl. INTO), UPDATE/DELETE FROM/TOP/aliases, MERGE (all clause families, 8672, TOP, OUTPUT $action). Missing: MERGE with CTE, MERGE on a table with triggers (50100)
 - [~] Constraints: NOT NULL 515, PK/UNIQUE 2627, unique index 2601, CHECK 547, FK 547 both directions, truncation 2628, identity not rolled back. Missing: cascades, NOCHECK, messages verified against captures
-- [ ] Index seeks on sargable predicates
+- [~] Index seeks: `Filter(Scan)` whose WHERE pins every column of a unique, unfiltered index with `col = literal/variable/outer column` of the column's own type looks the key up (`exec/plan.mbt seek_rows`, `Session::seek`); the full predicate is re-applied, so results equal a scan. 10k rows: PK select 1.76 → 0.23 ms, PK update 2.4 → 0.12 ms. Missing: range seeks, non-unique indexes, joins (nested loops scan the inner side)
 - Gate: first tests move to the emulator allowlist.
 
 ## Phase 5: procedural

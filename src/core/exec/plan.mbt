@@ -55,6 +55,10 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         let c = ctx.with_row(row)
         exprs.map(e => eval(c, e))
       })
+    Filter(Scan(scope~, id~, rowid~), pred) if seek_rows(
+        ctx, scope, id, rowid, pred,
+      )
+      is Some(rows) => rows
     Filter(input, pred) => {
       let out = []
       for row in run(ctx, input) {
@@ -341,6 +345,13 @@ pub fn stream(
         let c = ctx.with_row(row)
         emit(exprs.map(e => eval(c, e)))
       })
+    Filter(Scan(scope~, id~, rowid~), pred) if seek_rows(
+        ctx, scope, id, rowid, pred,
+      )
+      is Some(rows) =>
+      for row in rows {
+        emit(row)
+      }
     Filter(input, pred) =>
       stream(ctx, input, row => {
         if is_true(eval(ctx.with_row(row), pred)) {
@@ -412,4 +423,89 @@ fn same_row(
     }
   }
   true
+}
+
+///|
+/// A key value that does not depend on the current row and cannot fail or
+/// vary per row: a literal, variable/parameter or outer column. (Casts and
+/// arithmetic could raise where a scan of an empty table never evaluates
+/// them.)
+fn row_free(e : @ir.Expr) -> Bool {
+  match e.kind {
+    Lit(_) | Var(_) | OuterCol(_, _) => true
+    Collate(a) => row_free(a)
+    _ => false
+  }
+}
+
+///|
+/// `Filter(Scan)` through a unique index: when the predicate's conjuncts
+/// pin all columns of a unique index with `column = value` of the column's
+/// own type and collation, the session looks the key up instead of the scan
+/// reading every row. The full predicate is applied to the result, so the
+/// rows are exactly those of the scan (a unique key matches at most one).
+/// None: no index applies; scan.
+fn seek_rows(
+  ctx : Ctx,
+  scope : Int,
+  id : Int,
+  rowid : Bool,
+  pred : @ir.Expr,
+) -> Array[Row]? raise @types.SqlError {
+  let conj = []
+  fn split(e : @ir.Expr) -> Unit {
+    match e.kind {
+      And(a, b) => {
+        split(a)
+        split(b)
+      }
+      _ => conj.push(e)
+    }
+  }
+
+  split(pred)
+  let key : Array[(Int, @types.Value)] = []
+  for e in conj {
+    guard e.kind is Cmp(Eq, a, b, coll) else { continue }
+    let pinned = match (a.kind, b.kind) {
+      (Col(i), _) if row_free(b) => Some((i, a, b))
+      (_, Col(i)) if row_free(a) => Some((i, b, a))
+      _ => None
+    }
+    guard pinned is Some((i, col, value)) else { continue }
+    if col.ty != value.ty {
+      continue
+    }
+    match coll {
+      Some(c) if col.ty.collation() != Some(c) => continue
+      _ => ()
+    }
+    if key.iter().any(k => k.0 == i) {
+      continue
+    }
+    let v = eval(ctx, value)
+    if v is Null {
+      // `column = NULL` is never true
+      return Some([])
+    }
+    key.push((i, v))
+  }
+  if key.is_empty() {
+    return None
+  }
+  guard (ctx.seek)(scope, id, key) is Some(found) else { return None }
+  let out = []
+  for kv in found {
+    let row = if rowid {
+      let r = kv.1.copy()
+      r.push(BigInt(kv.0))
+      r
+    } else {
+      kv.1
+    }
+    if is_true(eval(ctx.with_row(row), pred)) {
+      out.push(row)
+    }
+  }
+  Some(out)
 }

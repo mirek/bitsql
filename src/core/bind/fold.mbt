@@ -61,6 +61,7 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
     ext: (_, _) => None,
     user_fn: @exec.no_user_fn,
     user_table: @exec.no_user_table,
+    seek: @exec.no_seek,
   }
   Some(@exec.eval(ctx, e)) catch {
     _ => None

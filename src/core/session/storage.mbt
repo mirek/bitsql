@@ -327,3 +327,45 @@ fn view_query(
   }
   raise @types.not_supported("view \{m.name} (no CREATE VIEW in definition)")
 }
+
+///|
+/// Unique-index lookup for the executor (`@exec.Ctx::seek`): the row whose
+/// unique, unfiltered index columns equal `key`, or None when no such index
+/// is fully covered by `key`.
+fn Session::seek(
+  self : Session,
+  scope : Int,
+  id : Int,
+  key : Array[(Int, @types.Value)],
+) -> Array[(Int64, Array[@types.Value])]? {
+  if scope == 2 {
+    return None
+  }
+  let db = self.db_of(scope)
+  guard db.table(id) is Some(t) else { return None }
+  for i, ix in t.indexes {
+    if !ix.unique || ix.filter is Some(_) {
+      continue
+    }
+    let vals = []
+    for c in ix.columns {
+      match key.search_by(k => k.0 == c.0) {
+        Some(j) => vals.push(key[j].1)
+        None => break
+      }
+    }
+    if vals.length() == ix.columns.length() {
+      return Some(
+        match db.find_key(id, i, vals) {
+          Some(rowid) =>
+            match db.row(id, rowid) {
+              Some(r) => [(rowid, r)]
+              None => []
+            }
+          None => []
+        },
+      )
+    }
+  }
+  None
+}

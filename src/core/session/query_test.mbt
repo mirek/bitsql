@@ -136,3 +136,40 @@ test "FOR JSON splits text into 2033-character rows" {
   })
   assert_eq(lens, [2033, 2033, 946])
 }
+
+///|
+test "unique-index seeks return exactly the rows a scan would" {
+  let s = @session.Session::new(
+    @session.Server::new(),
+    spid=51,
+    database="master",
+    seed=1,
+  )
+  ignore(
+    s.run_batch(
+      "CREATE TABLE k (a int NOT NULL, b nvarchar(10) NOT NULL, v int, CONSTRAINT pk_k PRIMARY KEY (a, b), CONSTRAINT uq_v UNIQUE (v)); INSERT k VALUES (1, N'x', 10), (1, N'Y', 20), (2, N'x', NULL)",
+      0,
+    ),
+  )
+  let rows = (sql : String) => row_values(s.run_batch(sql, 0))
+  // case-insensitive collation and trailing spaces, as `=` compares
+  assert_eq(
+    rows(
+      "DECLARE @b nvarchar(10) = N'y  '; SELECT v FROM k WHERE a = 1 AND b = @b",
+    ),
+    [[Int(20L)]],
+  )
+  // NULL key value: no row
+  assert_eq(rows("DECLARE @v int; SELECT a FROM k WHERE v = @v"), [])
+  // partial composite key: scan
+  assert_eq(rows("SELECT COUNT(*) FROM k WHERE a = 1").length(), 1)
+  // extra predicate is still applied
+  assert_eq(rows("SELECT a FROM k WHERE v = 10 AND a = 2"), [])
+  // correlated (outer column) key
+  assert_eq(
+    rows(
+      "SELECT (SELECT k2.b FROM k k2 WHERE k2.v = k1.v) AS b FROM k k1 WHERE k1.a = 1 AND k1.b = N'x'",
+    ),
+    [[Text("x")]],
+  )
+}
