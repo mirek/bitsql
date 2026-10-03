@@ -13,7 +13,7 @@ pub const DAYS_TO_1753 : Int = 639_905
 
 pub const DAYS_TO_1900 : Int = 693_595
 
-pub const DAYS_TO_2079_06_06 : Int = 758_885
+pub const DAYS_TO_2079_06_06 : Int = 759_130
 
 pub const EMU_CODE_PAGE_BEST_FIT : Int = 50104
 
@@ -39,7 +39,19 @@ pub const TICKS_PER_MINUTE : Int64 = 600_000_000
 
 pub const TICKS_PER_SECOND : Int64 = 10_000_000
 
+pub fn arith_result_type(ArithOp, SqlType, SqlType) -> SqlType raise SqlError
+
+pub fn can_convert_explicitly(SqlType, SqlType) -> Bool
+
+pub fn can_convert_implicitly(SqlType, SqlType) -> Bool
+
+pub fn cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
+
 pub fn civil_from_days(Int) -> (Int, Int, Int)
+
+pub fn common_type(SqlType, SqlType) -> SqlType raise SqlError
+
+pub fn concat_result_type(SqlType, SqlType) -> SqlType
 
 pub fn cp1252_bytes(String) -> Bytes
 
@@ -53,11 +65,19 @@ pub fn datetime_units_to_ticks(Int) -> Int64
 
 pub fn days_from_civil(Int, Int, Int) -> Int
 
+pub fn decimal_result(ArithOp, Int, Int, Int, Int) -> (Int, Int)
+
+pub fn decimal_union(Int, Int, Int, Int) -> (Int, Int)
+
 pub let default_collation : Collation
+
+pub fn double_to_decimal17(Double) -> Decimal
 
 pub fn emulator_error(Int, String) -> SqlError
 
 pub let emulator_error_table : Array[(Int, String)]
+
+pub fn explicit_conversion_error(SqlType, SqlType) -> SqlError
 
 pub fn format_date_iso(Int) -> String
 
@@ -77,6 +97,14 @@ pub fn format_time_style0(Int64) -> String
 
 pub fn guid_compare(Bytes, Bytes) -> Int
 
+pub fn implicit_conversion_error(SqlType, SqlType) -> SqlError
+
+pub fn int_range(SqlType) -> (Int64, Int64)
+
+pub fn int_value(SqlType, Int64) -> Value
+
+pub fn invalid_operand_error(SqlType, ArithOp) -> SqlError
+
 pub fn is_valid_date(Int, Int, Int) -> Bool
 
 pub let latin1_general_100_bin2 : Collation
@@ -87,13 +115,23 @@ pub let latin1_general_ci_as : Collation
 
 pub fn not_supported(String, number? : Int) -> SqlError
 
+pub fn overflow_expression(SqlType, state? : Int) -> SqlError
+
 pub fn parse_float_text(String) -> Double?
 
 pub fn parse_guid(String) -> Bytes?
 
+pub fn parse_int_text(String) -> @bigint.BigInt?
+
 pub fn parse_temporal(String) -> ParsedTemporal raise TemporalParseError
 
 pub fn pow10(Int) -> @bigint.BigInt
+
+pub fn precedence(SqlType) -> Int
+
+pub fn render(Value, SqlType, Int?) -> String raise SqlError
+
+pub fn render_temporal(Value, SqlType, Int?) -> String raise SqlError
 
 pub fn require_cp1252(String) -> Unit raise SqlError
 
@@ -110,6 +148,10 @@ pub let sql_latin1_general_cp1_ci_as : Collation
 pub fn ticks_to_datetime_units(Int64) -> Int64
 
 pub fn trim_spaces(String) -> String
+
+pub fn try_cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
+
+pub fn type_clash_error(SqlType, SqlType) -> SqlError
 
 // Errors
 pub(all) suberror SqlError {
@@ -128,6 +170,15 @@ pub(all) suberror TemporalParseError {
 } derive(Eq, @debug.Debug)
 
 // Types and methods
+pub(all) enum ArithOp {
+  Add
+  Sub
+  Mul
+  Div
+  Mod
+} derive(Eq, @debug.Debug)
+pub fn ArithOp::name(Self) -> String
+
 pub(all) struct Collation {
   name : String
   kind : CollationKind
@@ -215,6 +266,7 @@ pub(all) enum SqlType {
   RowVersion
 } derive(Eq, @debug.Debug)
 pub fn SqlType::base_name(Self) -> String
+pub fn SqlType::clash_name(Self) -> String
 pub fn SqlType::collation(Self) -> Collation?
 pub fn SqlType::family(Self) -> TypeFamily
 pub fn SqlType::is_unicode(Self) -> Bool
@@ -258,6 +310,8 @@ pub(all) enum Value {
   SmallDateTime(Int, Int)
   Guid(Bytes)
 } derive(Eq, @debug.Debug)
+pub fn Value::as_decimal(Self) -> Decimal?
+pub fn Value::as_int64(Self) -> Int64?
 pub fn Value::is_null(Self) -> Bool
 
 // Type aliases

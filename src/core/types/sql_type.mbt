@@ -96,6 +96,20 @@ pub fn SqlType::message_name(self : SqlType) -> String {
 }
 
 ///|
+/// Type name as used by type-clash and disallowed-conversion messages:
+/// like `message_name` but max types print as `varchar(max)` (captured:
+/// "Explicit conversion from data type image to varchar(max) is not
+/// allowed.", msduck reference). Conversion-failure messages (245, 8114)
+/// use the bare name even for max sources (reference/unicode-integer.json).
+pub fn SqlType::clash_name(self : SqlType) -> String {
+  match self {
+    VarChar(None, _) | NVarChar(None, _) | VarBinary(None) =>
+      self.base_name() + "(max)"
+    _ => self.message_name()
+  }
+}
+
+///|
 /// The base type name (`decimal`, `varchar`, `datetime2`, ...).
 pub fn SqlType::base_name(self : SqlType) -> String {
   match self {

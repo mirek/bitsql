@@ -28,7 +28,7 @@ pub const DAYS_TO_1753 : Int = 639_905
 
 ///|
 /// Days from 0001-01-01 to 2079-06-06 (smalldatetime maximum).
-pub const DAYS_TO_2079_06_06 : Int = 758_885
+pub const DAYS_TO_2079_06_06 : Int = 759_130
 
 ///|
 /// Proleptic Gregorian date → days since 0001-01-01 (no validation).
