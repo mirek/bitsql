@@ -192,3 +192,26 @@ fn fold_case(
   let rest = branches[i:].to_owned().map(b => (b.0, coerce(b.1, ty)))
   { kind: Case(rest, els.map(x => coerce(x, ty))), ty, nullable, }
 }
+
+///|
+/// JSON_VALUE / JSON_QUERY over literal arguments are evaluated while
+/// compiling: an error is a compile error (no column metadata, the batch
+/// ends; captured: traps/json-lax-strict, msduck error-continuation#005).
+fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
+  guard e.kind is Call(_, args) && args.iter().all(a => a.kind is Lit(_)) else {
+    return e
+  }
+  let ctx : @exec.Ctx = {
+    rt: fold_runtime,
+    vars: [],
+    row: [],
+    outer: [],
+    source: (_, _) => [],
+    ext: (_, _) => None,
+    user_fn: @exec.no_user_fn,
+    user_table: @exec.no_user_table,
+    seek: @exec.no_seek,
+  }
+  ignore(@exec.eval(ctx, e))
+  e
+}

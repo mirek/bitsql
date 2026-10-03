@@ -179,7 +179,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "JSON_VALUE" => {
       arity(name, args, 2)
-      mk(Call(JsonValue, bound()), nvarchar(Some(4000)), true)
+      constant_json_check(
+        mk(Call(JsonValue, bound()), nvarchar(Some(4000)), true),
+      )
     }
     "JSON_QUERY" => {
       arity_range(name, args, 1, 2)
@@ -187,7 +189,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       // captured probes: nvarchar(max) only for a max input, else
       // nvarchar(4000) (traps/json-lax-strict)
       let n = if is_max_string(b[0].ty) { None } else { Some(4000) }
-      mk(Call(JsonQuery, b), nvarchar(n), true)
+      constant_json_check(mk(Call(JsonQuery, b), nvarchar(n), true))
     }
     "ISJSON" => {
       arity_range(name, args, 1, 2)
