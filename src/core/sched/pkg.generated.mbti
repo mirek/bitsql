@@ -1,0 +1,68 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/sched"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn compatible(LockMode, LockMode) -> Bool
+
+// Errors
+
+// Types and methods
+pub(all) enum Bound[K] {
+  Unbounded
+  Inclusive(K)
+  Exclusive(K)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Duration {
+  Statement
+  Transaction
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Interval[K] {
+  lo : Bound[K]
+  hi : Bound[K]
+} derive(Eq, @debug.Debug)
+pub fn[K] Interval::all() -> Self[K]
+pub fn[K] Interval::overlaps(Self[K], Self[K], (K, K) -> Int) -> Bool
+pub fn[K] Interval::point(K) -> Self[K]
+
+pub struct LockManager[K] {
+  cmp : (K, K) -> Int
+  cost : (Int) -> Int64
+  // private fields
+}
+pub fn[K] LockManager::cancel(Self[K], Int) -> Array[(Int, Int)]
+pub fn[K] LockManager::held(Self[K], Int) -> Int
+pub fn[K] LockManager::new((K, K) -> Int, cost? : (Int) -> Int64) -> Self[K]
+pub fn[K] LockManager::release_all(Self[K], Int) -> Array[(Int, Int)]
+pub fn[K] LockManager::release_statement(Self[K], Int) -> Array[(Int, Int)]
+pub fn[K] LockManager::request(Self[K], Int, Resource[K], LockMode, Duration) -> Outcome
+
+pub(all) enum LockMode {
+  S
+  U
+  X
+} derive(Eq, @debug.Debug)
+pub fn LockMode::max(Self, Self) -> Self
+
+pub(all) enum Outcome {
+  Granted
+  Waiting(request~ : Int)
+  Deadlock(victim~ : Int, request~ : Int?)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Resource[K] {
+  KeyRange(table~ : Int, index~ : Int, Interval[K])
+  WholeTable(Int)
+} derive(Eq, @debug.Debug)
+pub fn[K] Resource::overlaps(Self[K], Self[K], (K, K) -> Int) -> Bool
+pub fn[K] Resource::same(Self[K], Self[K], (K, K) -> Int) -> Bool
+pub fn[K] Resource::table(Self[K]) -> Int
+
+// Type aliases
+
+// Traits

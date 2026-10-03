@@ -89,3 +89,14 @@ therefore depends on access-path choice.
 Because the core returns `NeedLock` instead of blocking, and the host only feeds
 a logged event stream, interleavings are deterministic and replayable from the
 log. Concurrency tests become reproducible, which real SQL Server cannot offer.
+
+## Implementation notes (core/sched)
+
+- Conversions (a session upgrading a lock it already holds, e.g. U → X after
+  `UPDLOCK, HOLDLOCK`) are served before queued new requests. Without that rule
+  the upsert pattern deadlocks against its own waiter (test
+  `insert into a HOLDLOCK range waits`).
+- New requests queue FIFO behind earlier conflicting waiters, so writers are not
+  starved by readers.
+- Key ranges on *different* indexes of one table are treated as overlapping.
+  Without row identity this is the conservative choice; refine when needed.

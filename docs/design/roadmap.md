@@ -74,8 +74,8 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 ## Phase 6: concurrency
 
 - [ ] Transactions over persistent roots; RCSI statement snapshots
-- [ ] Interval lock manager, LockSpec from hints/isolation
-- [ ] Wait-for graph, deadlock victim 1205
+- [~] Interval lock manager (`core/sched`: S/U/X, key intervals, whole-table fallback, FIFO + conversion priority, statement/transaction durations) done; LockSpec from hints/isolation not wired yet
+- [~] Wait-for graph + cycle detection + cheapest-victim choice in `core/sched`; engine parking/1205 not wired yet. Victim tie-break (requester) unverified against SQL Server
 - [ ] Deterministic mode + replay
 - [ ] `emulator.snapshot` / `emulator.restore`
 - Gate: the MSSQL CI job is removed; nightly cross-check remains.
