@@ -14,6 +14,7 @@ it in exactly one place:
 | A roadmap item is done, partly done, or newly discovered | `docs/design/roadmap.md` checkboxes |
 | The design changed or a draft assumption was wrong | `docs/design/decisions.md` (dated entry) + fix the topic page |
 | A behavior where a plausible implementation diverges from SQL Server | `docs/design/fidelity-traps.md` row + corpus case |
+| A precise SQL Server rule derived from captures (metadata, completion tokens, folding, …) | `docs/reference/<topic>.md` (cite the capture files) |
 | TDS wire detail, token order, byte layout | `.claude/skills/tds-protocol/SKILL.md` → "bitsql findings" |
 | T-SQL semantics, error numbers/classes, conversions | `.claude/skills/t-sql/SKILL.md` → "bitsql findings" |
 | Catalog view contracts | `.claude/skills/sys/SKILL.md` → "bitsql findings" |

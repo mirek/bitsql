@@ -95,6 +95,8 @@ pub struct Session {
   mut cur_cmd : Int
   /// The current statement is THROW (uncaught THROW ends the batch).
   mut throwing : Bool
+  /// @@ERROR value a successful statement leaves (RAISERROR WITH SETERROR).
+  mut stmt_error : Int
   /// Temp tables (#t) and table variables (scope 1).
   mut temp : @store.Db
   /// Explicit transaction: the committed state it started from and its
@@ -124,6 +126,7 @@ pub fn Session::new(
     try_depth: 0,
     cur_cmd: 253,
     throwing: false,
+    stmt_error: 0,
     temp: @store.Db::empty(),
     tx: None,
     text: "",

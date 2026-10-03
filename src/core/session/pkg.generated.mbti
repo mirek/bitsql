@@ -16,7 +16,7 @@ pub fn collation_bytes(@types.Collation) -> Bytes
 
 pub fn column_flags(@ir.ResultColumn) -> Int
 
-pub fn format_raiserror(String, Array[@types.Value]) -> String
+pub fn format_raiserror(String, Array[@types.Value]) -> String raise @types.SqlError
 
 pub fn param_type(@tds.TypeInfo) -> @types.SqlType
 
@@ -55,6 +55,7 @@ pub struct Session {
   mut try_depth : Int
   mut cur_cmd : Int
   mut throwing : Bool
+  mut stmt_error : Int
   mut temp : @store.Db
   mut tx : (@store.Db, @store.Db)?
   mut text : String

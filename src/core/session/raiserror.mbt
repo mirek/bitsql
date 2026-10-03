@@ -1,7 +1,10 @@
 ///|
 /// printf-style RAISERROR message formatting: %d %i %u %s %x %X %o %%, with
 /// optional flags, width and precision (`*` takes an argument).
-pub fn format_raiserror(fmt : String, args : Array[@types.Value]) -> String {
+pub fn format_raiserror(
+  fmt : String,
+  args : Array[@types.Value],
+) -> String raise @types.SqlError {
   let out = StringBuilder()
   let mut ai = 0
   let n = fmt.length()
@@ -78,12 +81,14 @@ pub fn format_raiserror(fmt : String, args : Array[@types.Value]) -> String {
         }
       }
     }
+    let mut size_prefix = false
     while i < n &&
           (
             fmt.code_unit_at(i).to_int() == 'h'.to_int() ||
             fmt.code_unit_at(i).to_int() == 'l'.to_int() ||
             fmt.code_unit_at(i).to_int() == 'I'.to_int()
           ) {
+      size_prefix = true
       i += 1
     }
     if i >= n {
@@ -92,6 +97,17 @@ pub fn format_raiserror(fmt : String, args : Array[@types.Value]) -> String {
     }
     let ty = fmt.code_unit_at(i).to_int().unsafe_to_char()
     i += 1
+    // Captured (msduck raiserror-format*): unknown types and size prefixes on
+    // %s are error 2787 naming the whole specification.
+    let valid = match ty {
+      'd' | 'i' | 'u' | 'x' | 'X' | 'o' => true
+      's' => !size_prefix
+      _ => false
+    }
+    if !valid {
+      let spec = fmt.unsafe_substring(start~, end=i)
+      raise @types.sql_error(2787, "Invalid format specification: '\{spec}'.")
+    }
     let arg = next_arg()
     let body = match (ty, arg) {
       (_, None) => "(null)"

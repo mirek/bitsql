@@ -17,6 +17,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.cur_cmd = 253
   self.throwing = false
+  self.stmt_error = 0
   let snap_temp = self.temp
   let snap_tx = self.tx
   let snap_db = self.server.db
@@ -28,9 +29,10 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     other => raise other
   }
   guard failure is Some(e) else {
-    if self.rt.error != 0 &&
-      !(s.kind is (If(_, _, _) | While(_, _) | Block(_) | TryCatch(_, _))) {
-      self.rt.error = 0
+    // a successful statement sets @@ERROR to 0, or to 50000 for
+    // RAISERROR ... WITH SETERROR (stmt_error)
+    if !(s.kind is (If(_, _, _) | While(_, _) | Block(_) | TryCatch(_, _))) {
+      self.rt.error = self.stmt_error
     }
     return
   }
@@ -417,8 +419,8 @@ fn Session::exec_raiserror(
   }
   let severity = if severity < 0 { 0 } else { severity }
   let state = if state < 0 { 1 } else { state }
-  if options.contains("SETERROR") || severity > 10 {
-    self.rt.error = number
+  if options.contains("SETERROR") {
+    self.stmt_error = number
   }
   if severity <= 10 {
     // Informational: INFO token with class 0 (captured), statement succeeds.
