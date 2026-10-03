@@ -335,6 +335,18 @@ pub fn arith_result_type(
         )
     }
   }
+  // a string with date/time/datetime2/datetimeoffset: 402 (captured:
+  // timezone/at-time-zone#030); legacy datetime converts the string
+  if (fa == FString) != (fb == FString) {
+    let other = if fa == FString { b } else { a }
+    if other.family() is (FDate | FTime | FDateTime) &&
+      !is_legacy_datetime(other) {
+      raise sql_error(
+        402,
+        "The data types \{a.clash_name()} and \{b.clash_name()} are incompatible in the \{op.name()} operator.",
+      )
+    }
+  }
   let a1 = if fa == FString { b } else { a }
   let b1 = if fb == FString { a } else { b }
   let fa1 = a1.family()
