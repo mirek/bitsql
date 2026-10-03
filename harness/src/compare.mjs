@@ -27,6 +27,9 @@ function compareCapture(actual, expected, base) {
 export function kindOf(diff, actualCapture) {
   const local = diff.path.replace(/^\/(steps\/\d+|reuse)\//, '').replace(/\/\d+(?=\/|$)/g, '/*')
   const scope = diff.path.startsWith('/reuse') ? 'reuse ' : ''
+  // An explicit "not supported" anywhere in the step explains the difference.
+  const unsupported = (actualCapture?.errors ?? []).find(e => /^Emulator:/.test(e.message ?? ''))
+  if (unsupported) return `${scope}unsupported: ${unsupported.message.slice(0, 60)}`
   if (local.startsWith('errors')) {
     const actualErrors = actualCapture?.errors ?? []
     const index = Number(/^\/(?:steps\/\d+|reuse)\/errors\/(\d+)/.exec(diff.path)?.[1] ?? 0)

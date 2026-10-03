@@ -17,10 +17,10 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 ## Phase 1: capture and harness
 
-- [ ] `harness/` package: tedious + mssql, connect helper (emulator or MSSQL by env)
-- [ ] Corpus format + `capture` (run against real MSSQL, store expected output)
-- [ ] `diff` runner: run corpus against emulator, compare, ranked failure list
-- [ ] Import msduck `reference/*.json` captures that fit the corpus format
+- [x] `harness/` package: tedious 20.3.3 + mssql 12.7.2, connect helper (emulator via BITSQL_BIN/BITSQL_ADDR, oracle container `bitsql-oracle` on 47314); `npm test` skips cleanly until the emulator runs SQL
+- [x] Corpus format (`.sql` with `-- @step`/`-- @param`, `.cases.json`) + `capture` (real MSSQL → `.expected.json`); smoke (18) and traps (17) captured on 17.0.5005.3
+- [x] `diff` runner: run corpus against emulator, compare, ranked failure list (`harness/out/report.json`)
+- [~] Import msduck `reference/*.json` captures that fit the corpus format: 1153 cases from the 76 clean-layout files ≤ 1 MB, each verified on the local oracle. Missing: the ~123 files in other layouts, the 24 prepared-protocol entries (needs a `prepared` step kind), and samples of the 31 files > 1 MB
 - [ ] **Blocked on access:** capture one CI run of the target app with tedious
       debug logging; grep its SQL for `OBJECT_ID|COL_LENGTH|sys\.|INFORMATION_SCHEMA|UPDLOCK|HOLDLOCK|SERIALIZABLE`.
       Needs the app repo path or a capture from its owner.

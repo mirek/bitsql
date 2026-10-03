@@ -20,7 +20,25 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
-- _(none yet)_
+- 2026-10-03: `mssql` (12.7.2) `ConnectionPool` validates every acquired
+  connection by default with `SELECT 1;` sent through `execSql` (an RPC
+  `sp_executesql`, not a batch). If that request fails, `pool.connect()` and
+  every query retry until `connectionTimeout`/tarn's timeout ("operation timed
+  out for an unknown reason") instead of surfacing the server error. Against a
+  partial emulator use `validateConnection: 'socket'` (or `false`).
+- 2026-10-03: tedious decodes DATETIMEOFFSET into a UTC JS `Date` (plus
+  `nanosecondsDelta`); the offset itself is not observable through the value.
+  Corpus cases that care about offsets must also select
+  `CONVERT(nvarchar(40), x, 127)`. `uniqueidentifier` arrives as an upper-case
+  string; bigint/COUNT_BIG/DATEDIFF_BIG as decimal strings.
+- 2026-10-03: `connection.debug.token` is invoked for every parsed token even
+  without debug listeners, so overriding it per request (as the harness does)
+  records the full token stream, DONE `curCmd` and status bits included,
+  without enabling packet logging (which would capture LOGIN7 secrets).
+- 2026-10-03: `execSql` without parameters still sends RPC `sp_executesql`
+  (completions: DONEINPROC per statement, RETURNSTATUS 0, final DONEPROC with
+  curCmd 224); only `execSqlBatch` sends a SQL batch. `callProcedure` with an
+  output param yields RETURNSTATUS before RETURNVALUE before DONEPROC.
 
 
 # tedious Client Against mssqlite

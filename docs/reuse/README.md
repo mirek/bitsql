@@ -20,9 +20,9 @@ git clone --depth 1 https://github.com/mirek/mssqlite.git "$TMPDIR/mssqlite"
 
 - [x] Skills: tds-protocol, t-sql, sys, tedious → `.claude/skills/` (from msduck, the newer copies)
 - [x] mssqlite divergence briefs → `docs/reuse/mssqlite-todo/`
-- [ ] Harness: msduck `scripts/lib/{compatibility,reference,reference-container}.mjs` → `harness/src/`
-- [ ] Host CLI contract `--listen 127.0.0.1:0` + stderr `listening on 127.0.0.1:<port>` (msduck `tests/support/client.mjs`)
-- [ ] Small `reference/*.json` captures (≤ 1 MB each) → `harness/reference/msduck/` + normalizer to one corpus format
+- [x] Harness: msduck `scripts/lib/{compatibility,reference,reference-container}.mjs` → `harness/src/`
+- [x] Host CLI contract `--listen 127.0.0.1:0` + stderr `listening on 127.0.0.1:<port>` (msduck `tests/support/client.mjs`; harness side in `harness/src/emulator.mjs`)
+- [~] Small `reference/*.json` captures (≤ 1 MB each) → `harness/corpus/msduck/` via `harness/src/import-msduck.mjs` (clean `results` layout only: 1153 cases; other layouts and prepared entries not yet normalized)
 - [ ] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds`
 - [ ] Lexer rules from mssqlite `packages/tsql/src/lex.ts` (with spans added)
 - [ ] msduck `tests/tedious.test.mjs` / `tests/compat/*` cases → harness client tests (selectively)
