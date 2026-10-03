@@ -173,3 +173,32 @@ test "unique-index seeks return exactly the rows a scan would" {
     [[Text("x")]],
   )
 }
+
+///|
+test "equi-join index gives the nested-loop result and order" {
+  let s = @session.Session::new(
+    @session.Server::new(),
+    spid=51,
+    database="master",
+    seed=1,
+  )
+  ignore(
+    s.run_batch(
+      "CREATE TABLE l (k nvarchar(5), n int); CREATE TABLE r (k nvarchar(5), m int); INSERT l VALUES (N'a', 1), (N'B', 2), (NULL, 3), (N'c', 4); INSERT r VALUES (N'b', 10), (N'A', 20), (N'a', 30), (NULL, 40), (N'b ', 50)",
+      0,
+    ),
+  )
+  let rows = (sql : String) => row_values(s.run_batch(sql, 0))
+  // CI collation, trailing spaces, duplicates in input order, NULL never matches
+  assert_eq(rows("SELECT l.n, r.m FROM l JOIN r ON l.k = r.k"), [
+    [Int(1L), Int(20L)],
+    [Int(1L), Int(30L)],
+    [Int(2L), Int(10L)],
+    [Int(2L), Int(50L)],
+  ])
+  assert_eq(
+    rows("SELECT l.n, r.m FROM l LEFT JOIN r ON l.k = r.k AND r.m > 25"),
+    [[Int(1L), Int(30L)], [Int(2L), Int(50L)], [Int(3L), Null], [Int(4L), Null]],
+  )
+  assert_eq(rows("SELECT COUNT(*) FROM l FULL JOIN r ON r.k = l.k"), [[Int(7L)]])
+}

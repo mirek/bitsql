@@ -22,10 +22,26 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let rs = run(ctx, right)
       let out = []
       let right_matched = Array::make(rs.length(), false)
+      // equi-join: candidates by binary search over the right rows sorted
+      // on the key (stable, so candidates keep the nested-loop order)
+      let index = match on {
+        Some(p) => equi_index(p, left_width, rs)
+        None => None
+      }
       for l in ls {
         let mut matched = false
-        ctx.rt.charge(rs.length().to_int64() + 1L)
-        for j, r in rs {
+        let candidates = match index {
+          Some(ix) => ix.lookup(l)
+          None => {
+            ctx.rt.charge(rs.length().to_int64() + 1L)
+            Array::makei(rs.length(), j => j)
+          }
+        }
+        if index is Some(_) {
+          ctx.rt.charge(candidates.length().to_int64() + 1L)
+        }
+        for j in candidates {
+          let r = rs[j]
           let row = l + r
           let ok = match on {
             Some(p) => is_true(eval(ctx.with_row(row), p))
@@ -512,4 +528,110 @@ fn seek_rows(
     }
   }
   Some(out)
+}
+
+///|
+/// Right rows of an equi-join ordered by their join key.
+priv struct EquiIndex {
+  left_col : Int
+  /// (key, original right row index), sorted by key then index
+  keys : Array[(@types.Value, Int)]
+  coll : @types.Collation?
+  ansi : Bool
+}
+
+///|
+/// Index for `left.col = right.col` (same type and collation) conjunct of a
+/// join predicate; None when the predicate has none.
+fn equi_index(
+  pred : @ir.Expr,
+  left_width : Int,
+  rs : Array[Row],
+) -> EquiIndex? raise @types.SqlError {
+  let conj = []
+  fn split(e : @ir.Expr) -> Unit {
+    match e.kind {
+      And(a, b) => {
+        split(a)
+        split(b)
+      }
+      _ => conj.push(e)
+    }
+  }
+
+  split(pred)
+  for e in conj {
+    guard e.kind is Cmp(Eq, a, b, coll) else { continue }
+    guard a.kind is Col(x) && b.kind is Col(y) else { continue }
+    if a.ty != b.ty {
+      continue
+    }
+    let (li, ri) = if x < left_width && y >= left_width {
+      (x, y - left_width)
+    } else if y < left_width && x >= left_width {
+      (y, x - left_width)
+    } else {
+      continue
+    }
+    let ansi = a.ty.family() == FString && !a.ty.is_unicode()
+    let keys = []
+    for j, r in rs {
+      if ri < r.length() && !(r[ri] is Null) {
+        keys.push((r[ri], j))
+      }
+    }
+    let mut failure : @types.SqlError? = None
+    keys.sort_by((p, q) => {
+      let c = (@types.compare(p.0, q.0, collation?=coll, ansi~) catch {
+        err => {
+          failure = Some(err)
+          None
+        }
+      }).unwrap_or(0)
+      if c != 0 {
+        c
+      } else {
+        p.1.compare(q.1)
+      }
+    })
+    match failure {
+      Some(err) => raise err
+      None => ()
+    }
+    return Some({ left_col: li, keys, coll, ansi, })
+  }
+  None
+}
+
+///|
+/// Right row indexes whose key equals the left row's key, in input order.
+fn EquiIndex::lookup(
+  self : EquiIndex,
+  l : Row,
+) -> Array[Int] raise @types.SqlError {
+  let v = l[self.left_col]
+  if v is Null {
+    return []
+  }
+  let cmp = (k : @types.Value) => {
+    @types.compare(k, v, collation?=self.coll, ansi=self.ansi).unwrap_or(0)
+  }
+  // first key >= v
+  let mut lo = 0
+  let mut hi = self.keys.length()
+  while lo < hi {
+    let mid = (lo + hi) / 2
+    if cmp(self.keys[mid].0) < 0 {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  let out = []
+  let mut i = lo
+  while i < self.keys.length() && cmp(self.keys[i].0) == 0 {
+    out.push(self.keys[i].1)
+    i += 1
+  }
+  out
 }
