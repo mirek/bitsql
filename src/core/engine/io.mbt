@@ -35,12 +35,12 @@ pub const UNIX_EPOCH_TICKS : Int64 = 621355968000000000L
 pub(all) struct Config {
   server_name : String
   /// Reported in PRELOGIN and LOGINACK. Default matches the oracle image
-  /// (SQL Server 2025, 17.0.4065).
+  /// (SQL Server 2025, 17.0.5005; see harness skill).
   version : (Int, Int, Int)
   default_database : String
 } derive(Debug)
 
 ///|
 pub fn Config::default() -> Config {
-  { server_name: "bitsql", version: (17, 0, 4065), default_database: "master", }
+  { server_name: "bitsql", version: (17, 0, 5005), default_database: "master", }
 }

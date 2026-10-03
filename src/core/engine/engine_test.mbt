@@ -70,7 +70,7 @@ test "prelogin, login and batch flow" {
   assert_eq(r1.length(), 1)
   let p = @tds.decode_prelogin(r1[0].payload)
   assert_eq(p.encryption, Some(@tds.ENCRYPT_NOT_SUP))
-  assert_eq(p.version, Some((17, 0, 4065, 0)))
+  assert_eq(p.version, Some((17, 0, 5005, 0)))
   // LOGIN7 split across two chunks
   let login = @tds.frame(Login7, login7_payload("sa", "secret", "tempdb"))
   assert_eq(e.handle(ev(Received(1, login[0:10].to_owned()))), [])
