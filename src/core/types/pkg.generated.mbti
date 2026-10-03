@@ -47,11 +47,15 @@ pub fn arith(ArithOp, Value, SqlType, Value, SqlType) -> Value raise SqlError
 
 pub fn arith_result_type(ArithOp, SqlType, SqlType) -> SqlType raise SqlError
 
+pub fn assign(Value, SqlType, SqlType) -> Value raise SqlError
+
 pub fn can_convert_explicitly(SqlType, SqlType) -> Bool
 
 pub fn can_convert_implicitly(SqlType, SqlType) -> Bool
 
 pub fn cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
+
+pub fn check_assign(SqlType, SqlType) -> Unit raise SqlError
 
 pub fn civil_from_days(Int) -> (Int, Int, Int)
 
@@ -80,6 +84,8 @@ pub fn datetime_units_to_ticks(Int) -> Int64
 pub fn days_from_civil(Int, Int, Int) -> Int
 
 pub fn decimal_result(ArithOp, Int, Int, Int, Int) -> (Int, Int)
+
+pub fn decimal_storage_bytes(Decimal) -> Int
 
 pub fn decimal_union(Int, Int, Int, Int) -> (Int, Int)
 
@@ -163,6 +169,8 @@ pub fn sql_error(Int, String, state? : Int, severity? : Int) -> SqlError
 
 pub let sql_latin1_general_cp1_ci_as : Collation
 
+pub fn sql_variant_property(Value, String) -> Value
+
 pub fn ticks_to_datetime_units(Int64) -> Int64
 
 pub fn to_cp1252(String) -> String
@@ -186,6 +194,12 @@ pub fn tz_name(Int) -> String
 pub fn tz_offset_at(Int, Int64) -> Int
 
 pub fn tz_offset_info(Int, Int64) -> (Int, Bool)
+
+pub fn variant_arith_error(ArithOp, SqlType, SqlType, a_name? : String, b_name? : String) -> SqlError
+
+pub fn variant_can_hold(SqlType) -> Bool
+
+pub fn variant_data_length(Value, SqlType) -> Int
 
 // Errors
 pub(all) suberror SqlError {
@@ -299,6 +313,7 @@ pub(all) enum SqlType {
   SmallDateTime
   UniqueIdentifier
   RowVersion
+  Variant
 } derive(Eq, @debug.Debug)
 pub fn SqlType::base_name(Self) -> String
 pub fn SqlType::clash_name(Self) -> String
@@ -323,6 +338,7 @@ pub(all) enum TypeFamily {
   FTime
   FDateTime
   FGuid
+  FVariant
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Value {
@@ -344,6 +360,7 @@ pub(all) enum Value {
   DateTime(Int, Int)
   SmallDateTime(Int, Int)
   Guid(Bytes)
+  Variant(Value, SqlType)
 } derive(Eq, @debug.Debug)
 pub fn Value::as_decimal(Self) -> Decimal?
 pub fn Value::as_int64(Self) -> Int64?

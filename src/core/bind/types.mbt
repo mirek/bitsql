@@ -103,6 +103,7 @@ pub fn resolve_type(
     "smalldatetime" => SmallDateTime
     "uniqueidentifier" => UniqueIdentifier
     "rowversion" | "timestamp" => RowVersion
+    "sql_variant" => Variant
     _ =>
       raise @types.sql_error(
         2715,

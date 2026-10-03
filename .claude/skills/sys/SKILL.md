@@ -43,6 +43,17 @@ mention the correction here.
   still shows standard time while `SYSUTCDATETIME() AT TIME ZONE` shows
   daylight time). Rows: `src/core/session/sysviews_timezone.mbt`; details
   in docs/reference/at-time-zone.md.
+- 2026-10-03 (properties/identity-columns.sql, sequences-catalog.sql):
+  sys.identity_columns = sys.columns columns + seed_value/increment_value/
+  last_value as sql_variant of the column type (last_value NULL until a value
+  was generated, unchanged by DELETE). sys.sequences = sys.objects columns +
+  start_value/increment/minimum_value/maximum_value/current_value/
+  last_used_value as sql_variant of the sequence type (non-null base-column
+  flags 8; last_used_value nullable), current_value = start until first use,
+  is_exhausted after the last value before the bound (no CYCLE), cache_size
+  NULL unless `CACHE n`. Descriptors: catalog/view-descriptors-variant.sql
+  (appended to view_defs by scripts/gen-sysviews.py).
+
 - 2026-10-03: SQL Server 17.0 view contracts differ from the tables below
   (which are older/partial): sys.columns has 43 columns (vector_*, ledger_*,
   graph_*), sys.tables 48, sys.databases 98, sys.indexes 23 (incl.

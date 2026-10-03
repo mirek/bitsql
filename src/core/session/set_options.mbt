@@ -84,7 +84,7 @@ fn Session::set_options(
       | "SHOWPLAN_TEXT"
       | "SHOWPLAN_XML" => if on { raise unsupported(n) }
       // no effect while ANSI_WARNINGS is ON
-      "ARITHABORT" | "ARITHIGNORE" => ()
+      "ARITHABORT" | "ARITHIGNORE" => self.session_flags[n.to_upper()] = on
       "STATISTICS"
       | "STATISTICS IO"
       | "STATISTICS TIME"

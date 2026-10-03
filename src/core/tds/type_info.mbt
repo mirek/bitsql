@@ -36,6 +36,8 @@ pub(all) enum TypeInfo {
   NChar(Int, Bytes) // 0xEF
   BigVarBinary(Int) // 0xA5
   BigBinary(Int) // 0xAD
+  /// 0x62 SSVARIANTTYPE, 4-byte max length (SQL Server sends 8009)
+  Variant(Int)
   Null // 0x1F (RPC parameters only)
 } derive(Debug, Eq)
 
@@ -83,6 +85,7 @@ pub fn TypeInfo::type_byte(self : TypeInfo) -> Int {
     NChar(_, _) => 0xEF
     BigVarBinary(_) => 0xA5
     BigBinary(_) => 0xAD
+    Variant(_) => 0x62
     Null => 0x1F
   }
 }
@@ -105,6 +108,7 @@ pub fn write_type_info(w : Writer, ti : TypeInfo) -> Unit {
       w.bytes(c)
     }
     BigVarBinary(n) | BigBinary(n) => w.u16le(n)
+    Variant(n) => w.u32le(n.to_int64())
     _ => ()
   }
 }
@@ -163,6 +167,7 @@ pub fn read_type_info(r : Reader) -> TypeInfo raise TdsError {
     }
     0xA5 => BigVarBinary(r.u16le())
     0xAD => BigBinary(r.u16le())
+    0x62 => Variant(r.u32le().to_int())
     _ => raise Malformed("unsupported TYPE_INFO 0x\{ty.to_string(radix=16)}")
   }
 }

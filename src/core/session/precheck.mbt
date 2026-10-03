@@ -58,7 +58,23 @@ fn precheck_batch(
         expr(e, line)
       }
       Select(q) => query_vars(q, x => expr(x, line), n => check_name(n, line))
-      Print(e) => expr(e, line)
+      Print(e) => {
+        expr(e, line)
+        // captured: PRINT of a sql_variant variable is a compile-time 257
+        if failure is None &&
+          e.kind is Var(n) &&
+          types.get(n.to_lower()) is Some(Variant) {
+          failure = Some(
+            (
+              @types.implicit_conversion_error(
+                Variant,
+                NVarChar(Some(1), @types.default_collation),
+              ),
+              line,
+            ),
+          )
+        }
+      }
       If(c, a, b) => {
         expr(c, line)
         stmt(a)

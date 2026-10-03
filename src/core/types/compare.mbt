@@ -19,6 +19,9 @@ pub fn compare(
     return None
   }
   let r = match (a, b) {
+    (Variant(x, tx), Variant(y, ty)) => compare_variants(x, tx, y, ty)
+    (Variant(_, _), _) | (_, Variant(_, _)) =>
+      raise internal("sql_variant compared with a non-variant value")
     (String(x), String(y)) => compare_strings(x, y, collation, ansi~)
     (Guid(x), Guid(y)) => guid_compare(x, y)
     (Binary(x), Binary(y)) => compare_binary(x, y)

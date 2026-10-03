@@ -50,6 +50,8 @@ pub(all) struct Runtime {
   spid : Int
   server_name : String
   version : String
+  /// Product version (major, minor, build) reported by SERVERPROPERTY.
+  build : (Int, Int, Int)
 }
 
 ///|
@@ -60,6 +62,7 @@ pub fn Runtime::new(
   seed~ : Int64,
   server_name? : String = "bitsql",
   version? : String = "Microsoft SQL Server 2025 (bitsql emulator)",
+  build? : (Int, Int, Int) = (17, 0, 5005),
 ) -> Runtime {
   {
     rowcount: 0,
@@ -88,6 +91,7 @@ pub fn Runtime::new(
     spid,
     server_name,
     version,
+    build,
   }
 }
 

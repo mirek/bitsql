@@ -100,13 +100,14 @@ pub struct Session {
   mut schema_ddl : Bool
   mut ddl_cmd : Int
   mut uncatchable : Bool
+  session_flags : Map[String, Bool]
   // private fields
 }
 pub fn Session::cancel_wait(Self) -> Unit
 pub fn Session::close(Self) -> Unit
 pub fn Session::is_parked(Self) -> Bool
 pub fn Session::make_victim(Self) -> Unit
-pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self
+pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64, server_name? : String, build? : (Int, Int, Int)) -> Self
 pub fn Session::reset(Self) -> Array[@reply.Item]
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]

@@ -26,6 +26,8 @@ pub fn no_user_table(Int, Array[@types.Value]) -> Array[Array[@types.Value]] rai
 
 pub fn run(Ctx, @ir.Plan) -> Array[Array[@types.Value]] raise @types.SqlError
 
+pub fn server_property(Runtime, String) -> @types.Value
+
 pub fn stream(Ctx, @ir.Plan, (Array[@types.Value]) -> Unit raise @types.SqlError) -> Unit raise @types.SqlError
 
 // Errors
@@ -81,9 +83,10 @@ pub(all) struct Runtime {
   spid : Int
   server_name : String
   version : String
+  build : (Int, Int, Int)
 }
 pub fn Runtime::charge(Self, Int64) -> Unit raise @types.SqlError
-pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String) -> Self
+pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String, build? : (Int, Int, Int)) -> Self
 pub fn Runtime::next_random(Self) -> UInt64
 
 // Type aliases

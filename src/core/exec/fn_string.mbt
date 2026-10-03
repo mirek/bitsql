@@ -233,20 +233,6 @@ fn units_equal(
 }
 
 ///|
-fn decimal_storage(d : @types.Decimal) -> Int {
-  let digits = d.digits()
-  if digits <= 9 {
-    5
-  } else if digits <= 19 {
-    9
-  } else if digits <= 28 {
-    13
-  } else {
-    17
-  }
-}
-
-///|
 fn temporal_bytes(scale : Int, base : Int) -> Int {
   base + (if scale <= 2 { 0 } else if scale <= 4 { 1 } else { 2 })
 }
@@ -265,7 +251,11 @@ fn datalength(v : @types.Value, t : @types.SqlType) -> Int64? {
     Money(_) => if t is SmallMoney { 4 } else { 8 }
     Float(_) => if t is Real { 4 } else { 8 }
     Guid(_) => 16
-    Decimal(d) => decimal_storage(d)
+    // by magnitude, not declared precision (captured: DATALENGTH of
+    // CAST(12345678901234567890 AS decimal(38,0)) is 9)
+    Decimal(d) => @types.decimal_storage_bytes(d)
+    // the base value's bytes (captured: variant/basics.sql)
+    Variant(inner, base) => @types.variant_data_length(inner, base)
     Time(_) =>
       match t {
         Time(s) => temporal_bytes(s, 3)

@@ -320,6 +320,7 @@ pub(all) enum TypeInfo {
   NChar(Int, Bytes)
   BigVarBinary(Int)
   BigBinary(Int)
+  Variant(Int)
   Null
 } derive(Eq, @debug.Debug)
 pub fn TypeInfo::is_plp(Self) -> Bool
@@ -339,6 +340,7 @@ pub(all) enum WireValue {
   DateTime2(Int, Int64)
   DateTimeOffset(Int, Int64, Int)
   DateTime(Int, Int)
+  Variant(TypeInfo, WireValue)
 } derive(Eq, @debug.Debug)
 
 pub struct Writer {

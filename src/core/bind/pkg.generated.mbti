@@ -74,6 +74,7 @@ pub(all) struct Env {
   ids : @ref.Ref[Int]
   nest : Int
   from_plan : @ir.Plan?
+  literal_params : Bool
 }
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self

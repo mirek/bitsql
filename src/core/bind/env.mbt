@@ -105,6 +105,11 @@ pub(all) struct Env {
   /// The plan producing `columns`, when known: lets collation precedence
   /// see through derived tables, CTEs and views (bind/collation.mbt).
   from_plan : @ir.Plan?
+  /// SQL Server's simple parameterization applies to the statement:
+  /// string and binary literals are typed varchar(8000) / nvarchar(4000) /
+  /// varbinary(8000) (visible in sql_variant base types; captured:
+  /// variant/insert-values.sql). Set by the session for INSERT/UPDATE.
+  literal_params : Bool
 }
 
 ///|
@@ -136,6 +141,7 @@ pub fn Env::new(
     ids: Ref(0),
     nest: 0,
     from_plan: None,
+    literal_params: false,
   }
 }
 

@@ -9,8 +9,6 @@ priv struct ViewCol {
   ty : @types.SqlType
   nullable : Bool
   computed : Bool
-  /// sql_variant: not modelled (the view raises an emulator error).
-  variant : Bool
 }
 
 ///|
@@ -26,9 +24,8 @@ fn vc(
   ty : @types.SqlType,
   nullable : Bool,
   computed : Bool,
-  variant? : Bool = false,
 ) -> ViewCol {
-  { name, ty, nullable, computed, variant, }
+  { name, ty, nullable, computed, }
 }
 
 ///|
@@ -79,11 +76,6 @@ fn Session::sys_view_binding(
   match view_index(schema, base) {
     Some(i) => {
       let v = view_defs[i]
-      if v.columns.iter().any(c => c.variant) {
-        raise @types.not_supported(
-          "catalog view \{v.schema}.\{v.name} (sql_variant columns)",
-        )
-      }
       Some({
         scope: 2,
         id: i,
@@ -130,6 +122,7 @@ fn project_row(v : ViewDef, r : VRow) -> Array[@types.Value] {
         match c.ty {
           Bit => Bit(false)
           _ if c.nullable => Null
+          Variant => Null
           TinyInt => TinyInt(0)
           SmallInt => SmallInt(0)
           Int => Int(0)
@@ -358,6 +351,8 @@ fn type_ids(t : @types.SqlType) -> (Int, Int, Int, Int, Int) {
     SmallDateTime => (58, 58, 4, 16, 0)
     UniqueIdentifier => (36, 36, 16, 0, 0)
     RowVersion => (189, 189, 8, 0, 0)
+    // sys.types: sql_variant max_length 8016 (COLMETADATA says 8009)
+    Variant => (98, 98, 8016, 0, 0)
   }
 }
 
@@ -986,7 +981,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           )
         }
       }
-    _ => ()
+    _ => out.append(self.variant_view_rows(key))
   }
   out
 }

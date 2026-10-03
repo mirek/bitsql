@@ -11,6 +11,9 @@ priv struct SeqState {
   mut cycle : Bool
   /// Cache size (None: NO CACHE); 50 when CACHE has no size.
   mut cache : Int?
+  /// CACHE was given with an explicit size (sys.sequences.cache_size is
+  /// NULL otherwise; captured: properties/sequences-catalog.sql).
+  mut cache_sized : Bool
   /// Last value handed out; None before the first (or after RESTART).
   mut current : Int64?
 }
@@ -83,12 +86,15 @@ fn SeqState::apply(
       self.cycle = false
     } else if o == "NO CACHE" {
       self.cache = None
+      self.cache_sized = false
     } else if o == "CACHE" {
       self.cache = Some(50)
+      self.cache_sized = false
     } else if o.has_prefix("CACHE ") {
       self.cache = Some(
         seq_number(o.unsafe_substring(start=6, end=o.length())).to_int(),
       )
+      self.cache_sized = true
     }
   }
   restart
@@ -113,14 +119,19 @@ fn Session::seq_cache_warning(
 ) -> Unit {
   guard s.cache is Some(cache) else { return }
   let b = s.base()
+  // the distance can exceed Int64 (bigint range): negative means huge
   let left = if s.increment > 0L {
     if b > s.max {
       0L
+    } else if s.max - b < 0L {
+      9223372036854775807L
     } else {
       (s.max - b) / s.increment + 1L
     }
   } else if b < s.min {
     0L
+  } else if b - s.min < 0L {
+    9223372036854775807L
   } else {
     (b - s.min) / -s.increment + 1L
   }
@@ -172,6 +183,7 @@ fn Session::exec_create_sequence(
     max: bounds.1,
     cycle: false,
     cache: Some(50),
+    cache_sized: false,
     current: None,
   }
   let explicit_start = options.iter().any(o => o.has_prefix("START WITH "))
@@ -246,13 +258,16 @@ fn Session::exec_alter_sequence(
       "The start value for sequence object '\{object_text(name)}' must be between the minimum and maximum value of the sequence object.",
     )
   }
+  // the cache warning looks at the values left before the restart
+  // (captured: RESTART of an exhausted sequence warns 11729,
+  // properties/sequences-catalog.sql)
+  self.seq_cache_warning(s, m.name, line)
   if restart is Some(_) {
     // RESTART WITH n also becomes the start value (captured: RESTART after
     // RESTART WITH 50 restarts at 50)
     s.start = start
     s.current = None
   }
-  self.seq_cache_warning(s, m.name, line)
   self.schema_ddl = true
 }
 

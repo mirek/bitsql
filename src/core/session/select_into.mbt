@@ -107,6 +107,9 @@ fn Session::exec_assignment_select(
 ) -> Unit raise {
   self.lock_reads(q)
   let (bound, targets) = @bind.bind_assignment_select(self.env(), q)
+  for j, t in targets {
+    @types.check_assign(bound.columns[j].ty, t.1)
+  }
   self.cur_cmd = 193
   let ctx = self.ctx()
   self.rt.null_eliminated = false
@@ -114,7 +117,7 @@ fn Session::exec_assignment_select(
   @exec.stream(ctx, bound.plan, row => {
     n += 1L
     for j, t in targets {
-      ctx.vars[t.0] = @types.cast(row[j], bound.columns[j].ty, t.1)
+      ctx.vars[t.0] = @types.assign(row[j], bound.columns[j].ty, t.1)
     }
   })
   self.emit_null_warning(line)

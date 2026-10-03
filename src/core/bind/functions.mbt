@@ -47,6 +47,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     )
   }
   let args = call.args
+  variant_guard(env, name, args)
   let bound = () => args.map(a => bind_expr(env, a))
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
@@ -188,13 +189,6 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let n = if is_max_string(b[0].ty) { None } else { Some(4000) }
       mk(Call(JsonQuery, b), nvarchar(n), true)
     }
-    "SQL_VARIANT_PROPERTY" => {
-      // no sql_variant type yet: bind the arguments (their collation
-      // errors come first, captured: msduck collation-functions #028),
-      // then report the gap
-      ignore(bound())
-      raise @types.not_supported("SQL_VARIANT_PROPERTY (sql_variant)")
-    }
     "ISJSON" => {
       arity_range(name, args, 1, 2)
       mk(Call(IsJson, bound()), Int, true)
@@ -202,6 +196,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     _ =>
       match bind_call_more(env, name, call) {
         Some(e) => e
+        None if bind_variant_fn(env, name, call) is Some(e) => e
         None =>
           match bind_call_catalog(env, name, call) {
             Some(e) => e

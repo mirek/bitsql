@@ -19,6 +19,9 @@ pub fn cast(
   if !can_convert_explicitly(from, to) {
     raise explicit_conversion_error(from, to)
   }
+  if from is Variant || to is Variant {
+    return cast_variant(v, from, to, style)
+  }
   if v is Null {
     return Null
   }
@@ -32,6 +35,7 @@ pub fn cast(
     FBinary => to_binary(v, from, to, style)
     FDate | FTime | FDateTime => to_temporal(v, from, to)
     FGuid => to_guid(v, from)
+    FVariant => raise internal("variant target")
   }
 }
 

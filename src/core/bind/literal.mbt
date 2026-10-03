@@ -90,7 +90,7 @@ fn hex_value(c : Char) -> Int {
 }
 
 ///|
-fn binary_literal(text : String) -> @ir.Expr {
+fn binary_literal(text : String, params? : Bool = false) -> @ir.Expr {
   let hex = text.unsafe_substring(start=2, end=text.length())
   let odd = hex.length() % 2
   let n = (hex.length() + odd) / 2
@@ -101,6 +101,7 @@ fn binary_literal(text : String) -> @ir.Expr {
     let lo = hex_value(digits[hi_idx + 1])
     ((hi << 4) | lo).to_byte()
   })
+  let n = if params && n <= 8000 { 8000 } else { n }
   @ir.Expr::lit(Binary(bytes), VarBinary(Some(@cmp.maximum(1, n))))
 }
 
@@ -108,6 +109,11 @@ fn binary_literal(text : String) -> @ir.Expr {
 fn string_literal(env : Env, s : String, national : Bool) -> @ir.Expr {
   // An empty literal still has length 1 in metadata (varchar(1)).
   let n = @cmp.maximum(1, s.length())
+  let n = match (env.literal_params, national) {
+    (true, true) if n <= 4000 => 4000
+    (true, false) if n <= 8000 => 8000
+    _ => n
+  }
   if national {
     @ir.Expr::lit(String(s), NVarChar(Some(n), env.collation))
   } else {
