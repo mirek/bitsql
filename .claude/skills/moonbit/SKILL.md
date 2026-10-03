@@ -100,3 +100,29 @@ scripts/check.sh                 # everything CI runs; must be green to push
 - 2026-10-03: generic `==` on a type parameter needs `K : Eq`. For
   comparator-based containers, pass `(K, K) -> Int` and write `same(a, b, cmp)`
   helpers rather than adding trait bounds.
+- 2026-10-03: a record literal of another package's struct needs a known
+  expected type: `out.push({ name, desc })` on an un-annotated `[]` fails with
+  4033 "There is no record definition with the fields". Annotate the array
+  (`let out : Array[@ast.IndexColumn] = []`) or write `@ast.Identity::{ ... }`.
+- 2026-10-03: `declare` and `readonly` are keywords (method `Parser::declare`
+  is a parse error); `alias` and `include` warn 0035 (reserved for future use).
+  Use `declare_stmt`, `read_only`, `alias_`, `included`.
+- 2026-10-03: `const` only takes immutable primitives; `const X : FixedArray[..]`
+  is error 4143. Use a top-level `let` (initialiser may be a block `{ ... }`).
+- 2026-10-03: a match guard must stay on the pattern line
+  (`"A" | "B" if cond =>`); breaking before `if` is a parse error.
+- 2026-10-03: passing a `#|` multi-line string directly as an argument is
+  deprecated; wrap it in parentheses: `f((\n #|...\n))`. `moon test -u` writes
+  snapshots containing `\r` raw into `#|` blocks and corrupts the file: escape
+  CRs before `inspect`.
+- 2026-10-03: `String::trim_space` is deprecated (use `trim()`); `inspect` on an
+  `Array` warns (Show-for-debugging deprecated), use `debug_inspect`; mixing
+  `&&` and `||` without parentheses warns 0051; a function declared `raise E`
+  that never raises warns 0024.
+- 2026-10-03: `f() catch { e => .. } noraise { v => .. }` is the expression form
+  of error handling (moon fmt rewrites it to `try f() catch ...`). Local
+  closures may raise: `let check = fn(x : String) raise E { ... }`. Struct
+  patterns nest enums and arrays: `{ body: Nested(q), order_by: [], .. }`.
+- 2026-10-03: a recursive-descent parser on `Array[Token]` with a `mut pos`
+  and save/restore backtracking (`try { ... } catch { _ => None }`) is simple
+  and fast: 10k statements parse in well under a second natively.

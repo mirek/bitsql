@@ -50,3 +50,22 @@ Instead:
 
 Effect: `NeedLock` is per statement, not per row. Deadlock detection and lock
 fidelity are unchanged. (execution.md updated.)
+## 2026-10-03: parser packages
+
+- **`core/ast`, `core/lex`, `core/parse` instead of one `core/ast`.** The binder
+  imports only the AST; the lexer is reusable for `GO` splitting; the parser is
+  the largest compile unit. `ast` owns `Span` and `SyntaxError` (both other
+  packages import it). (architecture.md)
+- **Spans are UTF-16 code-unit offsets** (MoonBit `String` indexing, also TDS
+  UCS-2) plus 1-based line/column counted on `\n`.
+- **Reserved words are SQL Server's official list**, not mssqlite's ad-hoc one:
+  `THROW`, `OUTPUT`, `USING`, `OFFSET`, `TRY`, `CATCH` stay non-reserved like on
+  SQL Server (so `SELECT 1 THROW ...` misparses exactly like SQL Server does).
+  Errors near a reserved word are 156 ("near the keyword"), others 102.
+- **Scalar vs condition grammar.** Comparisons, predicates and NOT/AND/OR only
+  parse in condition positions (WHERE/ON/HAVING/WHEN/IF/WHILE/CHECK, function
+  arguments, parentheses), so `SELECT 1 = 1` is a 102 like on SQL Server.
+- **Module bodies.** CREATE PROC/TRIGGER bodies run to the end of the batch;
+  VIEW/FUNCTION must be followed only by `;`. All of them (and CREATE SCHEMA)
+  must be first in the batch (error 111). Each module node keeps its source
+  text in `definition` for `sys.sql_modules`.

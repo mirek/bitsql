@@ -42,8 +42,20 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 ## Phase 3: parser coverage, DDL and catalog
 
-- [ ] Lexer (bracket/quoted identifiers, N'' strings, comments incl. nested `/* */`, `GO` separators)
-- [ ] Expression parser, SELECT, DML, DDL, procedural statements
+- [x] Lexer (bracket/quoted identifiers, N'' strings, comments incl. nested `/* */`, `GO` separators):
+  `core/lex` (`lex`, `split_go_batches`), spans with line/col on every token.
+- [~] Expression parser, SELECT, DML, DDL, procedural statements: `core/parse` covers the
+  v1 list (expressions with T-SQL precedence, SELECT/CTE/set ops/APPLY/OPENJSON/FOR JSON,
+  INSERT/UPDATE/DELETE/MERGE/OUTPUT, CREATE/ALTER/DROP TABLE/INDEX/VIEW/PROC/FUNCTION/
+  TRIGGER/SCHEMA/TYPE/SEQUENCE, GRANT/DENY/REVOKE, DECLARE/SET/IF/WHILE/TRY/THROW/
+  RAISERROR/EXEC/cursors/transactions, tedious's login SET batch). Missing: PIVOT/UNPIVOT,
+  WITH XMLNAMESPACES, GROUP BY ALL / WITH ROLLUP, TABLESAMPLE, FOR SYSTEM_TIME, legacy
+  `FROM t (NOLOCK)` hints, `.WRITE`, xml/CLR method calls (`x.value(...)` parses as a
+  qualified call), `type::Method()`, DDL triggers (`ON DATABASE`), CREATE/ALTER DATABASE,
+  ALTER INDEX, ENABLE/DISABLE TRIGGER statements, `EXECUTE AS` statement, `EXEC ... AT`,
+  legacy `RAISERROR n 'msg'`, `SET @cursor = CURSOR ...`, TRIM(... FROM ...), JSON_OBJECT.
+  Error numbers 102/156/111/319/10713 follow captures where available; trailing statements
+  after CREATE VIEW/FUNCTION and the THROW-after-unterminated rule are unverified guesses.
 - [ ] Parse the entire target codebase (needs app repo)
 - [ ] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
 - [~] Store: persistent ordered map `PMap` (AVL, explicit comparator, range seeks) done; tables, indexes, catalog objects missing

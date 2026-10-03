@@ -11,7 +11,7 @@ description: "Comprehensive T-SQL language reference for implementing a T-SQL en
 
 ## bitsql implementation
 
-`src/core/ast` (lexer, parser), `src/core/bind` (binder, `tsql.mbt` Semantics), `src/core/exec` (executor), `src/core/types` (values and conversions).
+`src/core/ast` (AST, spans, SyntaxError), `src/core/lex` (lexer, GO splitter), `src/core/parse` (parser), `src/core/bind` (binder, `tsql.mbt` Semantics), `src/core/exec` (executor), `src/core/types` (values and conversions).
 
 ## bitsql findings (keep current)
 
@@ -27,6 +27,32 @@ mention the correction here.
   "Unexpected character 'c' is found at position N." (0-based UTF-16 index,
   `'.'` at end of input). Implemented in `src/core/json`; evidence: msduck
   `reference/json-extraction-boundaries.json` → `src/core/json/captured_test.mbt`.
+- 2026-10-03 (parser): reserved words follow SQL Server's official list, so
+  `THROW`, `OUTPUT`, `USING`, `OFFSET`, `TRY`, `CATCH` are *not* reserved.
+  Consequences that match SQL Server: `SELECT 1 THROW 50000, 'x', 1` takes
+  THROW as a column alias and fails near '50000'; `ROLLBACK TRANSACTION THROW`
+  rolls back to a savepoint named THROW; MERGE's target alias must special-case
+  `USING`. This corrects the inherited mssqlite note that treats USING/OUTPUT
+  as reserved.
+- 2026-10-03 (parser): msduck captures confirm message shapes: errors near a
+  reserved keyword are 156 "Incorrect syntax near the keyword 'x'." using the
+  token as written (e.g. 'values', 'ORDER'); others are 102. A CTE after an
+  unterminated statement is 319 with the long "previous statement must be
+  terminated with a semicolon" text. Modules not first in a batch are 111
+  "'CREATE/ALTER PROCEDURE' must be the first statement in a query batch."
+  (procedures use that combined name; functions say 'CREATE FUNCTION').
+  `ERROR_PROCEDURE(*)` is 102 near '*': only COUNT/COUNT_BIG/CHECKSUM/
+  BINARY_CHECKSUM take `*`. Duplicate FOR XML options report near 'XML'.
+- 2026-10-03 (parser): at end of input SQL Server reports the last token
+  ("SELECT * FROM" → near the keyword 'FROM'); bitsql does the same. Not yet
+  verified against captures: the exact error for statements after CREATE
+  VIEW/FUNCTION in the same batch (bitsql: 156/102 near the next token), THROW
+  after an unterminated statement (bitsql: 102 near 'THROW'), empty
+  `BEGIN END` (bitsql: 156 near 'END'), unclosed `[ident` (bitsql: 105).
+- 2026-10-03 (parser): `IF c stmt; ELSE stmt` is legal (the `;` before ELSE is
+  consumed). Bare `TOP n` takes only a numeric literal; UPDATE/DELETE/INSERT
+  require `TOP (expr)`. EXEC arguments are restricted to literals, variables,
+  DEFAULT, NULL and bare words (passed as strings): `EXEC p 1 + 1` is 102.
 
 
 # T-SQL Language Reference
