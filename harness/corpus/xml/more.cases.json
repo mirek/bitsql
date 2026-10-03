@@ -1,0 +1,397 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {
+      "name": "000-select-c-name-stuff-select-o-item-from-dbo-ord-o-where-o-cus",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT c.name, STUFF((SELECT ', ' + o.item FROM dbo.ord o WHERE o.cust_id = c.id ORDER BY o.id FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') AS items FROM dbo.cust c ORDER BY c.id"
+        }
+      ]
+    },
+    {
+      "name": "001-select-c-id-as-id-c-name-as-name-select-o-id-as-id-o-item-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT c.id AS [@id], c.name AS [name], (SELECT o.id AS [@id], o.item AS [item], o.qty AS [qty] FROM dbo.ord o WHERE o.cust_id = c.id ORDER BY o.id FOR XML PATH('order'), TYPE) AS [orders] FROM dbo.cust c ORDER BY c.id FOR XML PATH('customer'), ROOT('customers')"
+        }
+      ]
+    },
+    {
+      "name": "002-select-c-id-c-name-o-id-o-item-from-dbo-cust-c-left-join-dbo",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT c.id, c.name, o.id, o.item FROM dbo.cust c LEFT JOIN dbo.ord o ON o.cust_id = c.id ORDER BY c.id, o.id FOR XML AUTO"
+        }
+      ]
+    },
+    {
+      "name": "003-select-cust-id-cust-name-ord-item-ord-qty-from-dbo-cust-cust",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT cust.id, cust.name, ord.item, ord.qty FROM dbo.cust cust JOIN dbo.ord ord ON ord.cust_id = cust.id ORDER BY cust.id, ord.id FOR XML AUTO, ELEMENTS, ROOT('r')"
+        }
+      ]
+    },
+    {
+      "name": "004-select-from-dbo-ord-order-by-id-for-xml-raw-o-elements-xsini",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT * FROM dbo.ord ORDER BY id FOR XML RAW('o'), ELEMENTS XSINIL, ROOT('orders')"}
+      ]
+    },
+    {
+      "name": "005-select-cust-id-count-as-n-sum-qty-as-total-from-dbo-ord-grou",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT cust_id, COUNT(*) AS n, SUM(qty) AS total FROM dbo.ord GROUP BY cust_id ORDER BY cust_id FOR XML PATH('c')"
+        }
+      ]
+    },
+    {
+      "name": "006-declare-doc-xml-select-id-as-id-item-from-dbo-ord-order-by-i",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @doc xml = (SELECT id AS [@id], item FROM dbo.ord ORDER BY id FOR XML PATH('o'), ROOT('all'), TYPE);\nSELECT x.o.value('@id', 'int') AS id, x.o.value('(item/text())[1]', 'nvarchar(20)') AS item, x.o.exist('item') AS has_item FROM @doc.nodes('/all/o') x(o) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "007-declare-doc-xml-n-ids-id-11-id-id-13-id-id-99-id-ids-select-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @doc xml = N'<ids><id>11</id><id>13</id><id>99</id></ids>';\nSELECT o.id, o.item FROM dbo.ord o JOIN @doc.nodes('/ids/id') t(n) ON o.id = t.n.value('.', 'int') ORDER BY o.id"
+        }
+      ]
+    },
+    {
+      "name": "008-declare-doc-xml-n-ids-id-11-id-id-13-id-ids-select-id-from-d",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @doc xml = N'<ids><id>11</id><id>13</id></ids>';\nSELECT id FROM dbo.ord WHERE id IN (SELECT t.n.value('.', 'int') FROM @doc.nodes('/ids/id') t(n)) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "009-create-table-dbo-docs-id-int-not-null-primary-key-body-xml-n",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.docs (id int NOT NULL PRIMARY KEY, body xml NULL);\nINSERT dbo.docs (id, body) SELECT c.id, (SELECT o.item AS [@item], o.qty AS [@qty] FROM dbo.ord o WHERE o.cust_id = c.id ORDER BY o.id FOR XML RAW('line'), ROOT('order'), TYPE) FROM dbo.cust c;\nSELECT id, body, body.value('count(/order/line)', 'int') AS lines, body.value('sum(/order/line/@qty)', 'int') AS qty FROM dbo.docs ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "010-create-table-dbo-docs2-id-int-not-null-primary-key-body-xml-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.docs2 (id int NOT NULL PRIMARY KEY, body xml NULL);\nINSERT dbo.docs2 VALUES (1, N'<a><b>1</b></a>'), (2, NULL);\nUPDATE dbo.docs2 SET body = (SELECT id AS [@id] FROM dbo.ord WHERE cust_id = 2 ORDER BY id FOR XML PATH('o'), TYPE) WHERE id = 2;\nSELECT id, body FROM dbo.docs2 ORDER BY id;\nSELECT d.id, n.x.value('@id', 'int') AS oid FROM dbo.docs2 d CROSS APPLY d.body.nodes('/o') n(x) ORDER BY d.id, oid"
+        }
+      ]
+    },
+    {
+      "name": "011-select-d-id-from-values-1-cast-n-a-k-x-as-xml-2-cast-n-a-k-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT d.id FROM (VALUES (1, CAST(N'<a k=\"x\"/>' AS xml)), (2, CAST(N'<a k=\"y\"/>' AS xml))) d(id, doc) WHERE d.doc.exist('/a[@k=\"y\"]') = 1"
+        }
+      ]
+    },
+    {
+      "name": "012-declare-k-nvarchar-5-n-y-select-d-id-from-values-1-cast-n-a-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @k nvarchar(5) = N'y'; SELECT d.id FROM (VALUES (1, CAST(N'<a k=\"x\"/>' AS xml)), (2, CAST(N'<a k=\"y\"/>' AS xml))) d(id, doc) WHERE d.doc.exist('/a[@k=sql:variable(\"@k\")]') = 1"
+        }
+      ]
+    },
+    {
+      "name": "013-select-o-id-d-doc-value-a-k-1-nvarchar-5-as-k-from-dbo-ord-o",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT o.id, d.doc.value('(/a/@k)[1]', 'nvarchar(5)') AS k FROM dbo.ord o CROSS APPLY (SELECT CAST(N'<a k=\"' + CAST(o.qty AS nvarchar(5)) + N'\"/>' AS xml) AS doc) d WHERE d.doc.value('(/a/@k)[1]', 'int') > 2 ORDER BY o.id"
+        }
+      ]
+    },
+    {
+      "name": "014-select-item-from-dbo-ord-where-item-is-not-null-order-by-id-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT ' ' + item FROM dbo.ord WHERE item IS NOT NULL ORDER BY id FOR XML PATH('')"}
+      ]
+    },
+    {
+      "name": "015-select-select-for-xml-path-as-a-select-as-text-for-xml-path-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT (SELECT ' ' FOR XML PATH('')) AS a, (SELECT ' ' AS [text()] FOR XML PATH('')) AS b, (SELECT N' x ' FOR XML PATH('')) AS c"
+        }
+      ]
+    },
+    {
+      "name": "016-select-1-as-a-null-as-b-for-xml-path-elements-xsinil",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 AS a, NULL AS b FOR XML PATH(''), ELEMENTS XSINIL"}
+      ]
+    },
+    {
+      "name": "017-select-1-as-a-null-as-b-for-xml-path-elements-xsinil-root-r",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT 1 AS a, NULL AS b FOR XML PATH(''), ELEMENTS XSINIL, ROOT('r')"}
+      ]
+    },
+    {
+      "name": "018-select-id-select-qty-from-dbo-ord-i-where-i-id-o-id-for-xml-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id, (SELECT qty FROM dbo.ord i WHERE i.id = o.id FOR XML RAW, TYPE) AS x FROM dbo.ord o ORDER BY id FOR XML RAW, ELEMENTS"
+        }
+      ]
+    },
+    {
+      "name": "019-create-view-dbo-v-items-as-select-c-id-select-o-item-from-db",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VIEW dbo.v_items AS SELECT c.id, (SELECT o.item + ';' FROM dbo.ord o WHERE o.cust_id = c.id ORDER BY o.id FOR XML PATH('')) AS items FROM dbo.cust c"
+        },
+        {"kind":"batch","sql":"SELECT id, items FROM dbo.v_items ORDER BY id"}
+      ]
+    },
+    {
+      "name": "020-with-x-as-select-select-id-as-id-from-dbo-ord-order-by-id-fo",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "WITH x AS (SELECT (SELECT id AS [@id] FROM dbo.ord ORDER BY id FOR XML PATH('o'), TYPE) AS doc) SELECT n.o.value('@id', 'int') AS id FROM x CROSS APPLY x.doc.nodes('/o') n(o) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "021-select-replicate-cast-n-ab-as-nvarchar-max-1100-nchar-55357-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT REPLICATE(CAST(N'ab' AS nvarchar(max)), 1100) + NCHAR(55357) + NCHAR(56838) AS a FOR XML PATH('')"}
+      ]
+    },
+    {
+      "name": "022-declare-x-xml-n-r-i-n-1-i-n-2-i-n-3-r-select-n-i-value-n-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\"/><i n=\"2\"/><i n=\"3\"/></r>'; SELECT n.i.value('@n', 'int') AS n, n.i.value('count(../i)', 'int') AS c, n.i.value('local-name(..)', 'varchar(5)') AS p FROM @x.nodes('/r/i') n(i)"
+        }
+      ]
+    },
+    {
+      "name": "023-declare-x-xml-n-r-i-n-1-i-n-2-i-n-3-r-select-n-i-value-n-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\"/><i n=\"2\"/><i n=\"3\"/></r>'; SELECT n.i.value('@n', 'int') AS n FROM @x.nodes('/r/i[@n >= 2]') n(i) ORDER BY n DESC"
+        }
+      ]
+    },
+    {
+      "name": "024-declare-x-xml-n-r-i-n-1-a-i-r-select-x-value-r-i-n-1-nvarcha",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT @x.value('(/r/i/@n)[1]', 'nvarchar(10)') + @x.value('(/r/i)[1]', 'nvarchar(10)') AS v, LEN(@x.value('(/r/i)[1]', 'nvarchar(10)')) AS l, CAST(@x AS nvarchar(max)) AS t"
+        }
+      ]
+    },
+    {
+      "name": "025-declare-x-xml-n-r-select-x-query-r-as-a-x-query-r-as-b-x-val",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r/>'; SELECT @x.query('/r') AS a, @x.query('/r/*') AS b, @x.value('string(/r[1])', 'nvarchar(5)') AS c, @x.exist('/') AS d"
+        }
+      ]
+    },
+    {
+      "name": "026-declare-x-xml-set-x-select-top-2-id-item-from-dbo-ord-order-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml; SET @x = (SELECT TOP 2 id, item FROM dbo.ord ORDER BY id FOR XML RAW, TYPE); SELECT @x AS x; SET @x = NULL; SELECT @x AS y, CAST(@x AS nvarchar(10)) AS z"
+        }
+      ]
+    },
+    {
+      "name": "027-declare-t-table-d-xml-insert-t-select-select-id-from-dbo-ord",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @t TABLE (d xml); INSERT @t SELECT (SELECT id FROM dbo.ord ORDER BY id FOR XML PATH, TYPE); SELECT d FROM @t"
+        }
+      ]
+    },
+    {
+      "name": "028-select-convert-nvarchar-max-select-id-item-from-dbo-ord-orde",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.cust (id int NOT NULL PRIMARY KEY, name nvarchar(20) NOT NULL);\nCREATE TABLE dbo.ord (id int NOT NULL PRIMARY KEY, cust_id int NOT NULL, item nvarchar(20) NULL, qty int NOT NULL);\nINSERT dbo.cust VALUES (1, N'Ann & Co'), (2, N'Bob'), (3, N'Cy');\nINSERT dbo.ord VALUES (10, 1, N'pen', 2), (11, 1, N'ink <blue>', 1), (12, 2, NULL, 5), (13, 2, N'pad', 3);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CONVERT(nvarchar(max), (SELECT id, item FROM dbo.ord ORDER BY id FOR XML PATH('o'), TYPE)) AS t, CAST((SELECT item FROM dbo.ord ORDER BY id FOR XML PATH('')) AS xml) AS x"
+        }
+      ]
+    }
+  ]
+}

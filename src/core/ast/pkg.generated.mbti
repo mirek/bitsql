@@ -275,6 +275,7 @@ pub(all) enum ExprKind {
   AtTimeZone(Expr, Expr)
   NextValueFor(ObjectName)
   Paren(Expr)
+  MethodCall(Expr, Ident, Array[Expr])
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Fetch {
@@ -627,6 +628,7 @@ pub(all) enum StmtKind {
   DeclareTable(String, TableBody)
   DeclareCursor(Cursor)
   SetVar(String, AssignOp, Expr)
+  SetVarMethod(String, Ident, Array[Expr])
   SetOption(Array[String], SetValue)
   SetIdentityInsert(ObjectName, Bool)
   SetIsolation(String)
@@ -696,6 +698,7 @@ pub(all) enum TableRefKind {
   Values(Array[Array[Expr]], alias_~ : Ident, columns~ : Array[Ident])
   TableFunc(ObjectName, Array[Expr], openjson_with~ : Array[OpenJsonColumn]?, alias_~ : Ident?, columns~ : Array[Ident])
   Join(JoinKind, TableRef, TableRef, on~ : Expr?, hint~ : String?)
+  Nodes(Expr, Array[Expr], alias_~ : Ident?, columns~ : Array[Ident])
   Pivot(TableRef, PivotClause, alias_~ : Ident)
 } derive(Eq, @debug.Debug)
 

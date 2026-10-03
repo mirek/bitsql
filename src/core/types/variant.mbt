@@ -10,7 +10,8 @@
 /// timestamp may not (captured: CAST → 529, assignment → 206). A variant
 /// "holds" another variant by copying it.
 pub fn variant_can_hold(t : SqlType) -> Bool {
-  !(t is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None) | RowVersion))
+  !(t
+  is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None) | RowVersion | Xml))
 }
 
 ///|
@@ -49,6 +50,11 @@ fn cast_variant(
 /// sql_variant target (257) and a target sql_variant rejects max types and
 /// timestamp (206). Checked before the value, so a NULL fails too.
 pub fn assign(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
+  // an untyped NULL (typed int by the binder) may be assigned to xml; the
+  // type rule for other sources is checked at compile time (precheck_xml)
+  if v is Null && (from is Xml || to is Xml) {
+    return Null
+  }
   check_assign(from, to)
   cast(v, from, to)
 }
@@ -56,6 +62,11 @@ pub fn assign(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
 ///|
 /// Type check of an assignment `to ← from` (see `assign`).
 pub fn check_assign(from : SqlType, to : SqlType) -> Unit raise SqlError {
+  // xml never converts implicitly to another type, and only strings and
+  // binary convert to it (captured: xml/type 257/206)
+  if (from is Xml || to is Xml) && !can_convert_implicitly(from, to) {
+    raise implicit_conversion_error(from, to)
+  }
   match (from, to) {
     (Variant, Variant) => ()
     (Variant, _) => raise implicit_conversion_error(from, to)
@@ -81,7 +92,7 @@ fn variant_rank(t : SqlType) -> Int {
     FString => 3
     FBinary => 2
     FGuid => 1
-    FVariant => 0
+    FVariant | FXml => 0
   }
 }
 
@@ -279,7 +290,7 @@ fn fixed_storage(t : SqlType) -> Int {
     VarChar(n, _) | VarBinary(n) => n.unwrap_or(0)
     NVarChar(n, _) => n.unwrap_or(0) * 2
     RowVersion => 8
-    Variant => 0
+    Variant | Xml => 0
   }
 }
 

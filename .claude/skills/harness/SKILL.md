@@ -305,3 +305,8 @@ Start the host with `--database NAME` so the app's database exists at login
   connect timeout) and requests (30 s); the layout importer retries those
   and never counts them as rejections. Port 47345 is used by another
   agent's `bitsql-oracle-tz`; extra import oracles use 47340–47344.
+- 2026-10-03: `harness/gen/xml.mjs` generates `corpus/xml/*.cases.json`
+  (FOR XML, the xml type and its methods; one batch per case, `setup`
+  steps for tables). Template strings hold T-SQL literals: double the
+  single quotes inside `N'...'`. Recapture one case with
+  `npm run capture -- --force "xml/<file>.cases.json#<name>"`.

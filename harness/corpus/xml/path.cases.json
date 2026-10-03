@@ -1,0 +1,246 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {"name":"000-select-1-as-a-n-x-y-as-b-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS a, N'x<&>\"''y' AS b FOR XML PATH"}]},
+    {"name":"001-select-1-as-a-2-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS a, 2 FOR XML PATH"}]},
+    {"name":"002-select-1-2-x-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1, 2, 'x' FOR XML PATH('')"}]},
+    {
+      "name": "003-select-1-1-n-a-n-b-cast-3-as-int-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT 1 + 1, N'a' + N'b', CAST(3 AS int) FOR XML PATH('r')"}]
+    },
+    {
+      "name": "004-select-1-as-id-n-v-as-a-b-n-t-as-text-n-d-as-data-for-xml-pa",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [@id], N'v' AS [a/b], N't' AS [text()], N'd' AS [data()] FOR XML PATH('row'), ROOT('root')"}]
+    },
+    {
+      "name": "005-select-1-as-id-n-v-as-a-b-2-as-a-c-for-xml-path-row",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [@id], N'v' AS [a/b], 2 AS [a/@c] FOR XML PATH('row')"}]
+    },
+    {
+      "name": "006-select-1-as-id-null-as-x-n-y-as-z-for-xml-path-row-elements-",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [@id], NULL AS [x], N'y' AS [z] FOR XML PATH('row'), ELEMENTS XSINIL"}]
+    },
+    {
+      "name": "007-select-1-as-id-null-as-x-n-y-as-z-for-xml-path-row-elements-",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [@id], NULL AS [x], N'y' AS [z] FOR XML PATH('row'), ELEMENTS XSINIL, ROOT('r')"}]
+    },
+    {"name":"008-select-null-as-x-for-xml-path-row","steps":[{"kind":"batch","sql":"SELECT NULL AS [x] FOR XML PATH('row')"}]},
+    {"name":"009-select-null-as-x-for-xml-path","steps":[{"kind":"batch","sql":"SELECT NULL AS [x] FOR XML PATH('')"}]},
+    {
+      "name": "010-select-x-from-values-1-v-x-where-1-0-for-xml-path-row",
+      "steps": [{"kind":"batch","sql":"SELECT x FROM (VALUES (1)) v(x) WHERE 1 = 0 FOR XML PATH('row')"}]
+    },
+    {
+      "name": "011-select-x-from-values-1-v-x-where-1-0-for-xml-path-row-root-r",
+      "steps": [{"kind":"batch","sql":"SELECT x FROM (VALUES (1)) v(x) WHERE 1 = 0 FOR XML PATH('row'), ROOT('r')"}]
+    },
+    {
+      "name": "012-select-x-from-values-1-v-x-where-1-0-for-xml-path-row-type",
+      "steps": [{"kind":"batch","sql":"SELECT x FROM (VALUES (1)) v(x) WHERE 1 = 0 FOR XML PATH('row'), TYPE"}]
+    },
+    {
+      "name": "013-select-cast-1-50-as-decimal-5-2-as-d-cast-2-5-as-float-as-f-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(1.50 AS decimal(5,2)) AS d, CAST(2.5 AS float) AS f, CAST(1.5 AS real) AS r, CAST(3 AS money) AS m, CAST(1 AS bit) AS b FOR XML PATH('r')"
+        }
+      ]
+    },
+    {
+      "name": "014-select-cast-2020-01-02t03-04-05-1234567-as-datetime2-as-dt2-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2020-01-02T03:04:05.1234567' AS datetime2) AS dt2, CAST('2020-01-02T03:04:05.123' AS datetime) AS dt, CAST('2020-01-02' AS date) AS dd, CAST('03:04:05' AS time) AS tt, CAST('2020-01-02T03:04:05+02:00' AS datetimeoffset) AS dto, CAST('2020-01-02T03:04:00' AS smalldatetime) AS sdt FOR XML PATH('r')"
+        }
+      ]
+    },
+    {
+      "name": "015-select-cast-2020-01-02t03-04-05-as-datetime2-as-a-cast-2020-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2020-01-02T03:04:05' AS datetime2) AS a, CAST('2020-01-02T03:04:05.5' AS datetime2(3)) AS b, CAST('03:04:05.120' AS time(3)) AS c, CAST('2020-01-02T03:04:05' AS datetime) AS d, CAST('2020-01-02T03:04:05.1' AS datetimeoffset(2)) AS e, CAST('2020-01-02T00:00:00' AS datetime) AS f FOR XML PATH('r')"
+        }
+      ]
+    },
+    {
+      "name": "016-select-cast-2020-01-02t03-04-05-120-as-datetime-as-a-cast-20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('2020-01-02T03:04:05.120' AS datetime) AS a, CAST('2020-01-02T03:04:05.1' AS datetime2(7)) AS b, CAST('2020-01-02T03:04:05-07:30' AS datetimeoffset(0)) AS c, CAST('00:00:00' AS time(0)) AS d FOR XML PATH('r')"
+        }
+      ]
+    },
+    {
+      "name": "017-select-cast-6f9619ff-8b86-d011-b42d-00c04fc964ff-as-uniqueid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('6F9619FF-8B86-D011-B42D-00C04FC964FF' AS uniqueidentifier) AS g, CAST(-0.5 AS decimal(3,2)) AS d, CAST(255 AS tinyint) AS t, CAST(-3 AS smallmoney) AS m, CAST(-1e300 AS float) AS f, CAST(0 AS float) AS z FOR XML PATH('r')"
+        }
+      ]
+    },
+    {"name":"018-select-0x0102ff-as-b-for-xml-path-r","steps":[{"kind":"batch","sql":"SELECT 0x0102FF AS b FOR XML PATH('r')"}]},
+    {
+      "name": "019-select-0x0102ff-as-b-for-xml-path-r-binary-base64",
+      "steps": [{"kind":"batch","sql":"SELECT 0x0102FF AS b FOR XML PATH('r'), BINARY BASE64"}]
+    },
+    {
+      "name": "020-select-n-a-nchar-13-nchar-10-nchar-9-n-b-nchar-1-n-n-n-as-t-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'a' + NCHAR(13) + NCHAR(10) + NCHAR(9) + N'b' + NCHAR(1) + N'\"' + N'''' + N'>' AS t FOR XML PATH('')"
+        }
+      ]
+    },
+    {
+      "name": "021-select-cast-x-as-char-3-as-h-cast-n-as-nvarchar-5-as-i-cast-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('x ' AS char(3)) AS h, CAST(N'é' AS nvarchar(5)) AS i, CAST(N'🦆' AS nvarchar(5)) AS j FOR XML PATH('r')"
+        }
+      ]
+    },
+    {"name":"022-select-1-as-my-col-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS [my col] FOR XML PATH"}]},
+    {"name":"023-select-1-as-a-b-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS [a//b] FOR XML PATH"}]},
+    {"name":"024-select-1-as-a-b-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS [@a/b] FOR XML PATH"}]},
+    {"name":"025-select-1-as-a-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS [a/] FOR XML PATH"}]},
+    {
+      "name": "026-select-n-v-as-a-b-n-w-as-a-c-n-x-as-d-n-y-as-a-e-for-xml-pat",
+      "steps": [{"kind":"batch","sql":"SELECT N'v' AS [a/b], N'w' AS [a/c], N'x' AS [d], N'y' AS [a/e] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "027-select-n-v-as-a-b-c-n-w-as-a-b-d-n-x-as-a-e-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'v' AS [a/b/c], N'w' AS [a/b/d], N'x' AS [a/e] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "028-select-n-a-as-x-n-b-as-x-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [x], N'b' AS [x] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "029-select-n-a-as-text-n-b-as-text-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [text()], N'b' AS [text()] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "030-select-n-a-as-data-n-b-as-data-3-as-data-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [data()], N'b' AS [data()], 3 AS [data()] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "031-select-n-a-as-data-n-b-as-text-n-c-as-data-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [data()], N'b' AS [text()], N'c' AS [data()] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "032-select-n-a-as-data-n-b-as-x-n-c-as-data-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [data()], N'b' AS [x], N'c' AS [data()] FOR XML PATH('r')"}]
+    },
+    {"name":"033-select-1-as-x-2-as-y-for-xml-path-r","steps":[{"kind":"batch","sql":"SELECT 1 AS [x], 2 AS [@y] FOR XML PATH('r')"}]},
+    {
+      "name": "034-select-cast-n-q-1-q-as-xml-as-x-cast-n-q-2-q-as-xml-as-cast-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'<q>1</q>' AS xml) AS [x], CAST(N'<q>2</q>' AS xml) AS [*], CAST(N'<q>3</q>' AS xml) FOR XML PATH('r')"
+        }
+      ]
+    },
+    {
+      "name": "035-select-cast-n-q-1-q-as-xml-as-x-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<q>1</q>' AS xml) AS [@x] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "036-select-n-z-as-n-y-as-node-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'<z/>' AS [*], N'<y/>' AS [node()] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "037-select-a-as-node-b-as-comment-c-as-processing-instruction-pi",
+      "steps": [{"kind":"batch","sql":"SELECT 'a' AS [node()], 'b' AS [comment()], 'c' AS [processing-instruction(pi)] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "038-select-n-as-x-n-as-text-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'' AS [x], N'' AS [text()] FOR XML PATH('r')"}]
+    },
+    {"name":"039-select-n-as-x-for-xml-path-r-type","steps":[{"kind":"batch","sql":"SELECT N'' AS [x] FOR XML PATH('r'), TYPE"}]},
+    {"name":"040-select-n-as-y-for-xml-path-r","steps":[{"kind":"batch","sql":"SELECT N'' AS [@y] FOR XML PATH('r')"}]},
+    {"name":"041-select-n-as-x-n-as-y-for-xml-path-r","steps":[{"kind":"batch","sql":"SELECT N' ' AS [x], N'  ' AS [y] FOR XML PATH('r')"}]},
+    {
+      "name": "042-select-n-as-x-n-as-y-for-xml-path-r-type",
+      "steps": [{"kind":"batch","sql":"SELECT N' ' AS [x], N'  ' AS [y] FOR XML PATH('r'), TYPE"}]
+    },
+    {
+      "name": "043-select-n-a-as-x-text-n-b-as-x-y-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [x/text()], N'b' AS [x/@y] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "044-select-n-b-as-x-y-n-a-as-x-text-n-c-as-x-z-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'b' AS [x/@y], N'a' AS [x/text()], N'c' AS [x/z] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "045-select-n-a-as-x-null-as-x-y-n-b-as-z-for-xml-path-r-elements",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [x], NULL AS [x/y], N'b' AS [z] FOR XML PATH('r'), ELEMENTS XSINIL"}]
+    },
+    {
+      "name": "046-select-n-a-as-a-b-null-as-a-c-n-b-as-a-d-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' AS [a/b], NULL AS [a/c], N'b' AS [a/d] FOR XML PATH('r')"}]
+    },
+    {"name":"047-select-1-as-a-2-as-b-for-xml-path","steps":[{"kind":"batch","sql":"SELECT 1 AS [@a], 2 AS [@b] FOR XML PATH('')"}]},
+    {"name":"048-select-1-as-a-for-xml-path-elements","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH, ELEMENTS"}]},
+    {"name":"049-select-1-as-a-for-xml-path-root-r","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH(''), ROOT('r')"}]},
+    {"name":"050-select-1-as-a-for-xml-path-root","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH, ROOT"}]},
+    {"name":"051-select-1-as-a-for-xml-path-a-b","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('a b')"}]},
+    {"name":"052-select-1-as-a-for-xml-path-a-b","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('a/b')"}]},
+    {"name":"053-select-1-as-a-for-xml-path-r-root-x-y","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), ROOT('x y')"}]},
+    {
+      "name": "054-select-1-as-x-union-all-select-2-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [x] UNION ALL SELECT 2 FOR XML PATH('r')"}]
+    },
+    {
+      "name": "055-select-v-as-v-v-10-as-w-from-values-3-1-2-t-v-order-by-v-for",
+      "steps": [{"kind":"batch","sql":"SELECT v AS [@v], v * 10 AS [w] FROM (VALUES (3), (1), (2)) t(v) ORDER BY v FOR XML PATH('r'), ROOT('all')"}]
+    },
+    {
+      "name": "056-select-top-1-1-as-x-for-xml-path-r-order-by-1",
+      "steps": [{"kind":"batch","sql":"SELECT TOP 1 1 AS x FOR XML PATH('r') ORDER BY 1"}]
+    },
+    {
+      "name": "057-select-replicate-cast-n-x-as-nvarchar-max-5000-as-a-for-xml-",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(CAST(N'x' AS nvarchar(max)), 5000) AS a FOR XML PATH('r')"}]
+    },
+    {
+      "name": "058-select-replicate-cast-n-as-nvarchar-max-1000-as-a-for-xml-pa",
+      "steps": [{"kind":"batch","sql":"SELECT REPLICATE(CAST(N'&' AS nvarchar(max)), 1000) AS a FOR XML PATH('r'), TYPE"}]
+    },
+    {"name":"059-select-1-as-a-for-xml-path-r-type","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), TYPE"}]},
+    {
+      "name": "060-select-1-as-a-select-2-as-b-for-xml-path-i-type-as-c-for-xml",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS a, (SELECT 2 AS b FOR XML PATH('i'), TYPE) AS c FOR XML PATH('r')"}]
+    },
+    {
+      "name": "061-select-1-as-a-for-xml-path-r-binary-base64-type-root-x",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), BINARY BASE64, TYPE, ROOT('x')"}]
+    },
+    {"name":"062-select-1-as-a-for-xml-path-r-type-type","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), TYPE, TYPE"}]},
+    {"name":"063-select-1-as-a-for-xml-path-r-xmlschema","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), XMLSCHEMA"}]},
+    {
+      "name": "064-select-1-as-a-for-xml-path-r-elements-absent",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS a FOR XML PATH('r'), ELEMENTS ABSENT"}]
+    },
+    {"name":"065-select-1-as-x-y-for-xml-path-r","steps":[{"kind":"batch","sql":"SELECT 1 AS [x:y] FOR XML PATH('r')"}]},
+    {
+      "name": "066-select-1-as-x-2-as-x-y-3-as-x-y-for-xml-path-r",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [_x] , 2 AS [x.y], 3 AS [x-y] FOR XML PATH('r')"}]
+    },
+    {
+      "name": "067-select-cast-1-as-sql-variant-as-a-cast-n-x-as-sql-variant-as",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(1 AS sql_variant) AS a, CAST(N'x' AS sql_variant) AS b FOR XML PATH('r')"}]
+    },
+    {
+      "name": "068-select-1-as-id-for-xml-path-r-elements-xsinil",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [@id] FOR XML PATH('r'), ELEMENTS XSINIL"}]
+    }
+  ]
+}

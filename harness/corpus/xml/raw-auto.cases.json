@@ -1,0 +1,219 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {
+      "name": "000-select-from-values-1-n-a-2-null-v-id-n-for-xml-raw",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, N'a'), (2, NULL)) v(id, n) FOR XML RAW"}]
+    },
+    {
+      "name": "001-select-from-values-1-n-a-2-null-v-id-n-for-xml-raw-elements-",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, N'a'), (2, NULL)) v(id, n) FOR XML RAW, ELEMENTS XSINIL, ROOT('r'), TYPE"}]
+    },
+    {
+      "name": "002-select-from-values-1-n-a-2-null-v-id-n-for-xml-raw-elements",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, N'a'), (2, NULL)) v(id, n) FOR XML RAW, ELEMENTS"}]
+    },
+    {
+      "name": "003-select-from-values-1-n-a-2-null-v-id-n-for-xml-raw-item-root",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, N'a'), (2, NULL)) v(id, n) FOR XML RAW('item'), ROOT('items')"}]
+    },
+    {"name":"004-select-1-as-a-for-xml-raw-item-root","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW('item'), ROOT"}]},
+    {"name":"005-select-1-as-a-for-xml-raw-item-elements","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW('item'), ELEMENTS"}]},
+    {
+      "name": "006-select-1-as-a-null-as-b-for-xml-raw-item-elements-absent",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS a, NULL AS b FOR XML RAW('item'), ELEMENTS ABSENT"}]
+    },
+    {"name":"007-select-1-as-a-for-xml-raw-root","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW(''), ROOT('')"}]},
+    {"name":"008-select-1-as-a-for-xml-raw-elements","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW(''), ELEMENTS"}]},
+    {"name":"009-select-1-as-a-for-xml-raw-root-x-y","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW, ROOT('x y')"}]},
+    {"name":"010-select-1-as-a-for-xml-raw-a-b","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW('a b')"}]},
+    {"name":"011-select-1-as-a-2-as-a-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT 1 AS a, 2 AS a FOR XML RAW"}]},
+    {"name":"012-select-1-as-a-2-as-a-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT 1 AS a, 2 AS A FOR XML RAW"}]},
+    {"name":"013-select-1-as-a-2-as-a-for-xml-raw-elements","steps":[{"kind":"batch","sql":"SELECT 1 AS a, 2 AS a FOR XML RAW, ELEMENTS"}]},
+    {"name":"014-select-1-2-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT 1, 2 FOR XML RAW"}]},
+    {"name":"015-select-1-2-for-xml-raw-elements","steps":[{"kind":"batch","sql":"SELECT 1, 2 FOR XML RAW, ELEMENTS"}]},
+    {"name":"016-select-0x0102ff-as-b-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT 0x0102FF AS b FOR XML RAW"}]},
+    {
+      "name": "017-select-0x0102ff-as-b-for-xml-raw-binary-base64",
+      "steps": [{"kind":"batch","sql":"SELECT 0x0102FF AS b FOR XML RAW, BINARY BASE64"}]
+    },
+    {
+      "name": "018-select-n-a-nchar-13-nchar-10-nchar-9-n-b-n-n-n-n-as-t-for-xm",
+      "steps": [{"kind":"batch","sql":"SELECT N'a' + NCHAR(13) + NCHAR(10) + NCHAR(9) + N'b' + N'\"' + N'''' + N'>' + N'<&' AS t FOR XML RAW"}]
+    },
+    {"name":"019-select-n-x-nchar-1-as-t-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT N'x' + NCHAR(1) AS t FOR XML RAW"}]},
+    {
+      "name": "020-select-1-as-my-col-2-as-a-b-3-as-1x-4-as-x-y-5-as-6-as-z-for",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS [my col], 2 AS [a$b], 3 AS [1x], 4 AS [x:y], 5 AS [é], 6 AS [@z] FOR XML RAW"}]
+    },
+    {"name":"021-select-1-as-my-col-for-xml-raw-elements","steps":[{"kind":"batch","sql":"SELECT 1 AS [my col] FOR XML RAW, ELEMENTS"}]},
+    {"name":"022-select-n-as-x-for-xml-raw","steps":[{"kind":"batch","sql":"SELECT N'' AS [x] FOR XML RAW"}]},
+    {"name":"023-select-n-as-x-for-xml-raw-elements","steps":[{"kind":"batch","sql":"SELECT N'' AS [x] FOR XML RAW, ELEMENTS"}]},
+    {"name":"024-select-n-as-x-for-xml-raw-elements-type","steps":[{"kind":"batch","sql":"SELECT N'' AS [x] FOR XML RAW, ELEMENTS, TYPE"}]},
+    {
+      "name": "025-declare-x-xml-n-a-select-1-as-i-x-as-x-2-as-j-x-as-y-for-xml",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS i, @x AS [x], 2 AS j, @x AS [@y] FOR XML RAW"}]
+    },
+    {
+      "name": "026-declare-x-xml-n-a-select-x-as-x-for-xml-raw-elements",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT @x AS [x] FOR XML RAW, ELEMENTS"}]
+    },
+    {
+      "name": "027-select-cast-1-5-as-float-as-f-cast-2020-01-02t03-04-05-as-da",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(1.5 AS float) AS f, CAST('2020-01-02T03:04:05' AS datetime) AS d, CAST(1 AS bit) AS b, CAST(2.25 AS money) AS m FOR XML RAW"
+        }
+      ]
+    },
+    {
+      "name": "028-select-1-as-id-for-xml-raw-elements-xsinil-root-r",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS id FOR XML RAW, ELEMENTS XSINIL, ROOT('r')"}]
+    },
+    {
+      "name": "029-select-select-1-as-id-for-xml-raw-elements-xsinil-type-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT (SELECT 1 AS id FOR XML RAW, ELEMENTS XSINIL, TYPE) AS x"}]
+    },
+    {
+      "name": "030-select-1-as-id-null-as-n-for-xml-raw-xsinil",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS id, NULL AS n FOR XML RAW, XSINIL"}]
+    },
+    {
+      "name": "031-select-a-from-values-1-2-3-v-a-order-by-a-desc-for-xml-raw",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (1), (2), (3)) v(a) ORDER BY a DESC FOR XML RAW"}]
+    },
+    {
+      "name": "032-select-a-from-values-1-2-v-a-where-a-5-for-xml-raw",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (1), (2)) v(a) WHERE a > 5 FOR XML RAW"}]
+    },
+    {
+      "name": "033-select-a-from-values-1-2-v-a-where-a-5-for-xml-raw-root-r",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (1), (2)) v(a) WHERE a > 5 FOR XML RAW, ROOT('r')"}]
+    },
+    {"name":"034-select-1-as-a-for-xml-raw-xmlschema","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW, XMLSCHEMA"}]},
+    {"name":"035-select-1-as-a-for-xml-raw-xmldata","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML RAW, XMLDATA"}]},
+    {"name":"036-select-1-as-a-for-xml-explicit","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML EXPLICIT"}]},
+    {
+      "name": "037-select-1-as-tag-null-as-parent-2-as-x-1-id-for-xml-explicit",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS Tag, NULL AS Parent, 2 AS [x!1!id] FOR XML EXPLICIT"}]
+    },
+    {"name":"038-select-1-as-a-for-xml-auto","steps":[{"kind":"batch","sql":"SELECT 1 AS a FOR XML AUTO"}]},
+    {
+      "name": "039-select-from-values-1-2-v-a-b-for-xml-auto",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, 2)) v(a, b) FOR XML AUTO"}]
+    },
+    {
+      "name": "040-select-from-values-1-2-v-a-b-for-xml-auto-elements",
+      "steps": [{"kind":"batch","sql":"SELECT * FROM (VALUES (1, 2)) v(a, b) FOR XML AUTO, ELEMENTS"}]
+    },
+    {
+      "name": "041-select-1-as-x-into-xt-select-from-xt-for-xml-auto-select-x-f",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS x INTO #xt; SELECT * FROM #xt FOR XML AUTO; SELECT x FROM #xt AS t FOR XML AUTO, ELEMENTS; SELECT x, x+1 AS y FROM #xt FOR XML AUTO, ROOT('r'), TYPE"
+        }
+      ]
+    },
+    {
+      "name": "042-declare-t-table-id-int-name-varchar-10-insert-t-values-1-a-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @t TABLE (id int, name varchar(10)); INSERT @t VALUES (1, 'a&'), (2, 'b'); SELECT * FROM @t FOR XML AUTO; SELECT id FROM @t AS q FOR XML AUTO('x')"
+        }
+      ]
+    },
+    {
+      "name": "043-select-from-dbo-tt-for-xml-auto-select-from-dbo-tt-x-for-xml",
+      "steps": [
+        {"kind":"batch","sql":"CREATE TABLE dbo.tt (id int, v nvarchar(5)); INSERT dbo.tt VALUES (1, N'a'), (2, NULL);","compare":false},
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM dbo.tt FOR XML AUTO; SELECT * FROM dbo.tt x FOR XML AUTO; SELECT tt.id, tt.v FROM dbo.tt FOR XML AUTO, ELEMENTS; SELECT id + 1 AS n, id FROM dbo.tt FOR XML AUTO; SELECT * FROM tt FOR XML AUTO, ELEMENTS XSINIL; SELECT * FROM [tt] FOR XML AUTO"
+        }
+      ]
+    },
+    {
+      "name": "044-select-p-pid-p-name-c-cid-c-v-from-p-join-c-on-c-pid-p-pid-o",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT p.pid, p.name, c.cid, c.v FROM p JOIN c ON c.pid = p.pid ORDER BY p.pid, c.cid FOR XML AUTO"}
+      ]
+    },
+    {
+      "name": "045-select-p-pid-c-cid-from-p-left-join-c-on-c-pid-p-pid-order-b",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT p.pid, c.cid FROM p LEFT JOIN c ON c.pid = p.pid ORDER BY p.pid, c.cid FOR XML AUTO, ELEMENTS"}
+      ]
+    },
+    {
+      "name": "046-select-c-cid-p-pid-from-p-join-c-on-c-pid-p-pid-order-by-c-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT c.cid, p.pid FROM p JOIN c ON c.pid = p.pid ORDER BY c.cid FOR XML AUTO"}
+      ]
+    },
+    {
+      "name": "047-select-p-pid-c-cid-p-name-from-p-join-c-on-c-pid-p-pid-order",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT p.pid, c.cid, p.name FROM p JOIN c ON c.pid = p.pid ORDER BY c.cid FOR XML AUTO, ROOT('r')"}
+      ]
+    },
+    {
+      "name": "048-select-name-select-cid-from-c-where-c-pid-p-pid-for-xml-auto",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name, (SELECT cid FROM c WHERE c.pid = p.pid FOR XML AUTO, TYPE) AS kids FROM p ORDER BY pid FOR XML AUTO"
+        }
+      ]
+    },
+    {
+      "name": "049-select-pid-count-as-n-from-c-group-by-pid-order-by-pid-for-x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT pid, COUNT(*) AS n FROM c GROUP BY pid ORDER BY pid FOR XML AUTO"}
+      ]
+    },
+    {
+      "name": "050-select-from-p-order-by-pid-for-xml-raw-elements-xsinil",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE p (pid int, name nvarchar(5)); CREATE TABLE c (cid int, pid int, v nvarchar(5));\nINSERT p VALUES (1, N'a'), (2, N'b'), (3, NULL); INSERT c VALUES (10, 1, N'x'), (11, 1, N'y'), (12, 2, N'z');",
+          "compare": false
+        },
+        {"kind":"batch","sql":"SELECT * FROM p ORDER BY pid FOR XML RAW, ELEMENTS XSINIL"}
+      ]
+    }
+  ]
+}

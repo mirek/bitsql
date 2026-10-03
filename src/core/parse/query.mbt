@@ -206,7 +206,9 @@ fn Parser::for_clause(self : Parser) -> @ast.ForClause raise @ast.SyntaxError {
   let options = []
   while self.eat_punct(",") {
     let t = self.peek()
-    if !(t.kind is Word) {
+    if !(t.kind is Word) ||
+      !(upper(t)
+      is ("TYPE" | "ROOT" | "ELEMENTS" | "BINARY" | "XMLSCHEMA" | "XMLDATA")) {
       raise self.error()
     }
     self.pos += 1
@@ -813,6 +815,19 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     self.expect_punct(")")
     return r
   }
+  if t.kind is Variable &&
+    self.is_punct_at(1, ".") &&
+    self.peek_at(2).kind is Word &&
+    self.is_punct_at(3, "(") {
+    // `@x.nodes('/a/b') AS T(c)`
+    self.pos += 2
+    let m = self.advance()
+    if m.text != "nodes" {
+      raise near(m)
+    }
+    let args = self.method_args()
+    return self.nodes_ref(start, mk(Var(t.text), t.span), args)
+  }
   if t.kind is Variable {
     self.pos += 1
     let alias_ = self.table_alias()
@@ -823,6 +838,16 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     }
   }
   let name = self.object_name()
+  let np = name.parts.length()
+  if self.is_punct("(") &&
+    np >= 2 &&
+    !name.parts[np - 1].quoted &&
+    name.parts[np - 1].name == "nodes" {
+    // `t.col.nodes('/a/b') AS T(c)`
+    let target = name.parts[0:np - 1].to_owned()
+    let args = self.method_args()
+    return self.nodes_ref(start, mk(Column(target), name.span), args)
+  }
   if self.is_punct("(") {
     self.pos += 1
     let args = []
@@ -860,6 +885,23 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
   let alias_ = self.table_alias()
   let hints = self.tablesample() + self.table_hints()
   { kind: Table(name, alias_~, hints~), span: self.span_from(start), }
+}
+
+///|
+/// The alias and column list after `x.nodes(...)`.
+fn Parser::nodes_ref(
+  self : Parser,
+  start : @ast.Span,
+  target : @ast.Expr,
+  args : Array[@ast.Expr],
+) -> @ast.TableRef raise @ast.SyntaxError {
+  let alias_ = self.table_alias()
+  let columns = if alias_ is Some(_) && self.is_punct("(") {
+    self.paren_idents()
+  } else {
+    []
+  }
+  { kind: Nodes(target, args, alias_~, columns~), span: self.span_from(start), }
 }
 
 ///|

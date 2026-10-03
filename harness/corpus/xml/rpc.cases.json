@@ -1,0 +1,72 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {
+      "name": "000-declare-x-xml-p-select-x-as-x-x-value-a-b-1-int-as-v",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "DECLARE @x xml = @p; SELECT @x AS x, @x.value('(/a/b)[1]', 'int') AS v",
+          "params": [{"name":"@p","type":"nvarchar(max)","value":"<a><b>7</b></a>"}]
+        }
+      ]
+    },
+    {
+      "name": "001-select-cast-p-as-xml-as-x",
+      "steps": [{"kind":"rpc","sql":"SELECT CAST(@p AS xml) AS x","params":[{"name":"@p","type":"nvarchar(50)","value":"<a>"}]}]
+    },
+    {
+      "name": "002-select-select-n-from-values-1-2-v-n-where-n-m-for-xml-path-a",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "SELECT (SELECT n FROM (VALUES (1), (2)) v(n) WHERE n >= @m FOR XML PATH('')) AS s",
+          "params": [{"name":"@m","type":"int","value":1}]
+        }
+      ]
+    },
+    {
+      "name": "003-select-n-from-values-1-2-v-n-where-n-m-for-xml-raw",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "SELECT n FROM (VALUES (1), (2)) v(n) WHERE n >= @m FOR XML RAW",
+          "params": [{"name":"@m","type":"int","value":1}]
+        }
+      ]
+    },
+    {
+      "name": "004-select-n-from-values-1-2-v-n-where-n-m-for-xml-raw-type",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "SELECT n FROM (VALUES (1), (2)) v(n) WHERE n >= @m FOR XML RAW, TYPE",
+          "params": [{"name":"@m","type":"int","value":1}]
+        }
+      ]
+    },
+    {
+      "name": "005-dbo-px",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE PROCEDURE dbo.px @d xml, @n int OUTPUT AS BEGIN SET @n = @d.value('count(/r/i)', 'int'); SELECT @d AS d; END",
+          "compare": false
+        },
+        {
+          "kind": "proc",
+          "sql": "dbo.px",
+          "params": [{"name":"@d","type":"nvarchar(max)","value":"<r><i/><i/></r>"},{"name":"@n","type":"int","output":true}]
+        }
+      ]
+    },
+    {
+      "name": "006-dbo-py",
+      "steps": [{"kind":"batch","sql":"CREATE PROCEDURE dbo.py AS SELECT 1 AS a FOR XML PATH('r')","compare":false},{"kind":"proc","sql":"dbo.py"}]
+    },
+    {
+      "name": "007-exec-sp-executesql-n-select-x-value-a-1-int-as-v-n-x-xml-x-n",
+      "steps": [{"kind":"batch","sql":"EXEC sp_executesql N'SELECT @x.value(''(/a)[1]'', ''int'') AS v', N'@x xml', @x = N'<a>5</a>'"}]
+    }
+  ]
+}

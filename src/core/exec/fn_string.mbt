@@ -256,6 +256,9 @@ fn datalength(v : @types.Value, t : @types.SqlType) -> Int64? {
     Decimal(d) => @types.decimal_storage_bytes(d)
     // the base value's bytes (captured: variant/basics.sql)
     Variant(inner, base) => @types.variant_data_length(inner, base)
+    // the binder rejects DATALENGTH(xml): SQL Server reports the size of
+    // its internal binary XML form
+    Xml(_) => return None
     Time(_) =>
       match t {
         Time(s) => temporal_bytes(s, 3)

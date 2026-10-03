@@ -44,7 +44,15 @@ fn variant_prefix_len(ti : TypeInfo) -> Int raise TdsError {
         2
       }
     DecimalN(_, _) | NumericN(_, _) => 1
-    IntN(_) | BitN | FloatN(_) | MoneyN(_) | DateTimeN(_) | Variant(_) | Null =>
+    IntN(_)
+    | BitN
+    | FloatN(_)
+    | MoneyN(_)
+    | DateTimeN(_)
+    | Variant(_)
+    | Null
+    | Xml
+    | NText(_, _) =>
       raise Malformed("base type \{@debug.to_string(ti)} inside sql_variant")
   }
 }

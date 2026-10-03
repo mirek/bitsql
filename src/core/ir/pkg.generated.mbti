@@ -147,6 +147,18 @@ pub(all) enum Fn {
   Named(String)
 } derive(Eq, @debug.Debug)
 
+pub(all) struct ForXmlSpec {
+  mode : XmlMode
+  row : String
+  root : String?
+  elements : Bool
+  xsinil : Bool
+  type_ : Bool
+  top_level : Bool
+  auto_names : Array[String]
+  auto_levels : Array[Int]
+} derive(@debug.Debug)
+
 pub(all) enum FrameBound {
   UnboundedPreceding
   Preceding(Expr)
@@ -197,6 +209,7 @@ pub(all) enum Origin {
   TableComputed
   SetOperation
   Aggregate
+  XmlNodes
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Plan {
@@ -223,6 +236,8 @@ pub(all) enum Plan {
   ForJson(Plan, Array[ResultColumn], root~ : String?, include_nulls~ : Bool, without_array_wrapper~ : Bool)
   NoNullWarning(Plan)
   Unpivot(Plan, keep~ : Array[Int], columns~ : Array[Int], names~ : Array[String])
+  ForXml(Plan, Array[ResultColumn], ForXmlSpec, chunked~ : Bool)
+  Concat(Plan)
 } derive(@debug.Debug)
 
 pub(all) struct ResultColumn {
@@ -249,6 +264,7 @@ pub(all) enum TableFn {
   OpenJsonWith(Array[OpenJsonColumn])
   StringSplit(ordinal~ : Bool)
   GenerateSeries(@types.SqlType)
+  XmlNodes
 } derive(@debug.Debug)
 
 pub(all) enum WinFn {
@@ -282,6 +298,12 @@ pub(all) struct WindowFrame {
   start : FrameBound
   end : FrameBound
 } derive(@debug.Debug)
+
+pub(all) enum XmlMode {
+  XmlRaw
+  XmlAuto
+  XmlPath
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

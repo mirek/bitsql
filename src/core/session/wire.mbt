@@ -95,6 +95,7 @@ pub fn type_info(t : @types.SqlType, nullable : Bool) -> @tds.TypeInfo {
     RowVersion => BigBinary(8)
     // captured: COLMETADATA max length 8009
     Variant => Variant(8009)
+    Xml => Xml
   }
 }
 
@@ -114,7 +115,7 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
         0x08
       }
     Computed | TableComputed => 0x20
-    SetOperation | Aggregate => 0
+    SetOperation | Aggregate | XmlNodes => 0
   }
   let case_sensitive = match c.ty.collation() {
     Some(coll) => coll.case_sensitive || coll.kind is (Bin | Bin2)
@@ -122,6 +123,8 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
   }
   // fCaseSen (0x02) is set for case-sensitive and binary collations
   // (captured: msduck collation-wire flags 34/35).
+  // captured: xml columns always carry fCaseSen (xml/type flags 3/11/35)
+  let case_sensitive = case_sensitive || c.ty is Xml
   base | (if c.nullable { 1 } else { 0 }) | (if case_sensitive { 2 } else { 0 })
 }
 
@@ -129,7 +132,12 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
 pub fn tds_column(c : @ir.ResultColumn) -> @tds.Column {
   {
     name: c.name,
-    type_info: type_info(c.ty, c.nullable),
+    // captured: the FOR XML result column is NTEXT (max length 0x7FFFFFFE)
+    type_info: if c.name == @bind.for_xml_column {
+      NText(0x7FFFFFFE, coll(c.ty))
+    } else {
+      type_info(c.ty, c.nullable)
+    },
     flags: column_flags(c),
     user_type: if c.ty is RowVersion {
       80
@@ -179,6 +187,7 @@ pub fn wire_value(v : @types.Value) -> @tds.WireValue {
     Guid(b) => Guid(b)
     // base type in its non-nullable TYPE_INFO form (Int4, not IntN)
     Variant(inner, base) => Variant(type_info(base, false), wire_value(inner))
+    Xml(x) => Text(x.to_text())
   }
 }
 
@@ -214,6 +223,8 @@ pub fn param_type(ti : @tds.TypeInfo) -> @types.SqlType {
     BigVarBinary(n) => VarBinary(if n == @tds.MAX_LEN { None } else { Some(n) })
     BigBinary(n) => Binary(n)
     Variant(_) => Variant
+    Xml => Xml
+    NText(_, _) => NVarChar(None, c)
   }
 }
 
@@ -234,6 +245,8 @@ pub fn param_value(ty : @types.SqlType, w : @tds.WireValue) -> @types.Value {
       let coef = @bigint.BigInt::from_octets(be)
       Decimal(@types.Decimal::new(if neg { coef.neg() } else { coef }, s))
     }
+    // a malformed xml parameter stays text; check_rpc_params reports it
+    (Xml, Text(s)) => @types.parse_xml(s) catch { _ => String(s) }
     (_, Text(s)) => String(s)
     (_, Binary(b)) => Binary(b)
     (_, Guid(b)) => Guid(b)
@@ -262,6 +275,10 @@ pub fn param_value(ty : @types.SqlType, w : @tds.WireValue) -> @types.Value {
 /// TDS bytes: only the default collation is accepted.
 fn check_variant_params(params : Array[@tds.RpcParam]) -> Unit raise {
   for p in params {
+    // xml parameters must parse (the parse error is the call's error)
+    if p.type_info is Xml && p.value is Text(s) {
+      ignore(@types.parse_xml(s))
+    }
     match p.value {
       Variant(
         BigVarChar(_, c)

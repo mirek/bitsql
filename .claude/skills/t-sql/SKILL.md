@@ -20,6 +20,22 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (FOR XML and xml, corpus `xml/`, docs/reference/xml.md):
+  an untyped FOR XML subquery is nvarchar(max), with TYPE xml; no rows give
+  NULL, rows without text `''`. Entities stay escaped in the STUFF idiom
+  unless read back with `.value('.', 'nvarchar(max)')`. Whitespace-only
+  values write their last character as `&#x20;`-style references, also in
+  the text form. PATH merges consecutive columns with the same element
+  path and skips NULL columns; RAW encodes invalid names as `_xHHHH_`, PATH
+  rejects them (6850). The xml type is not comparable (305/402/421/5335),
+  converts implicitly only from strings and binary (257 out to strings,
+  206 otherwise), and its type errors are batch compile errors. XML parse
+  errors (9400–9459, "line L, character C") end the batch and are NULL
+  under TRY_CAST. value() converts the atomized string as nvarchar (245
+  names nvarchar), requires a static singleton (2389) and rejects xml,
+  sql_variant, text, image, timestamp and unknown types (9500); method
+  names are case-sensitive (227); `name()` does not exist (2395); XQuery
+  sum() of nothing is `0.0E0`.
 - 2026-10-03 (RAISERROR, msduck raiserror-*): argument types must suit
   the specification: %d/%i/%u/%x/%o (also with `l`) take tinyint, smallint
   or int; `h` takes tinyint/smallint only; `I64` takes bigint only; %s/%ls

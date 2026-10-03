@@ -48,6 +48,8 @@ pub(all) enum Value {
   /// Null: a NULL sql_variant is `Null`). The base type keeps its declared
   /// length/precision/scale/collation (SQL_VARIANT_PROPERTY reports them).
   Variant(Value, SqlType)
+  /// xml: a parsed fragment, or a `nodes()` context reference into one
+  Xml(@xml.Xml)
 } derive(Debug, Eq)
 
 ///|

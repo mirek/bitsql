@@ -43,6 +43,7 @@ fn compare_bound(
   a : @ir.Expr,
   b : @ir.Expr,
 ) -> @ir.Expr raise @types.SqlError {
+  xml_compare_check(cmp_op_name(op), a, b)
   // collation precedence decides the comparison collation (or raises 468)
   let coll = resolve_collation(env, cmp_op_name(op), [a, b])
   let t = @types.common_type(a.ty, b.ty)
@@ -115,7 +116,8 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           )
       }
     GlobalVar(name) => bind_global(name)
-    Column(parts) => bind_column(env, parts)
+    Column(parts) => bind_column_checked(env, parts)
+    MethodCall(target, name, args) => bind_method_call(env, target, name, args)
     Paren(inner) => bind_expr(env, inner)
     // captured: -2147483648 and -(2147483648) are int, not numeric(10,0)
     // (analytic/generate-series, approx-checksum-agg VALUES rows)
@@ -226,7 +228,8 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       bit_expr(Or(a, b), a.nullable || b.nullable)
     }
     IsNull(inner, negated~) =>
-      bit_expr(IsNull(bind_expr(env, inner), negated~), false)
+      // nodes() columns may be tested for NULL (captured: xml/methods)
+      bit_expr(IsNull(bind_xml_target(env, inner), negated~), false)
     Between(x, lo, hi, negated~) => {
       let ge = compare(env, Ge, x, lo)
       let le = compare(env, Le, x, hi)
@@ -240,6 +243,9 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     InList(x, items, negated~) => {
       let a = bind_expr(env, x)
       let bs = items.map(i => bind_expr(env, i))
+      for b in bs {
+        xml_compare_check("equal to", a, b)
+      }
       let t = unify_types([a.ty] + bs.map(b => b.ty))
       let coll = resolve_collation(env, "equal to", [a] + bs)
       let a = coerce(a, t)
@@ -255,6 +261,9 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         None => None
       }
       variant_like_check(a, p, esc)
+      if a.ty is Xml || p.ty is Xml {
+        raise bad_arg_type(Xml, if a.ty is Xml { 1 } else { 2 }, "like")
+      }
       bit_expr(
         Like(
           a,

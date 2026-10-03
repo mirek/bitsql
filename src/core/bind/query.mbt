@@ -368,6 +368,8 @@ fn bind_table_ref(
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
       bind_table_function(env, name, args, openjson_with, alias_, columns)
     Pivot(src, clause, alias_~) => bind_pivot(env, src, clause, alias_)
+    Nodes(target, args, alias_~, columns~) =>
+      bind_nodes_ref(env, target, args, alias_, columns)
   }
 }
 
@@ -722,6 +724,9 @@ fn Grouping::add_key(
     )
   }
   let b = bind_expr(self.inner, e)
+  if b.ty is Xml {
+    raise xml_not_comparable()
+  }
   let text = expr_key(e)
   for i, k in self.keys {
     match (k.kind, b.kind) {
@@ -1202,7 +1207,9 @@ fn bind_select_query(
     }
     None => None
   }
+  xml_sort_check(keys)
   if s.distinct {
+    xml_distinct_check(result)
     plan = Project(plan, exprs)
     plan = Distinct(plan, result.map(c => c.ty.collation()))
     if !keys.is_empty() {
@@ -1342,8 +1349,10 @@ fn order_key(
   let text = expr_key(original)
   // a key calling a user function is never matched to a select item
   // (captured: udf/scalar-basics, ORDER 0)
+  // (likewise an xml method call: captured xml/methods#053)
   let user_call = any_expr(original, x => {
-    x.kind is Call({ name, .. }) && name.parts.length() > 1
+    (x.kind is Call({ name, .. }) && name.parts.length() > 1) ||
+    x.kind is MethodCall(_, _, _)
   })
   for i, item in items {
     match item.kind {
@@ -1375,7 +1384,7 @@ fn bind_query_inner(
   top_level? : Bool = false,
 ) -> BoundQuery raise @types.SqlError {
   if q.for_clause is Some(_) {
-    raise @types.not_supported("FOR JSON / FOR XML in a subquery")
+    return bind_for_subquery(env, q)
   }
   let has_top = match q.body {
     Select({ top: Some(_), .. }) => true
@@ -1474,6 +1483,7 @@ fn order_set_result(
     order.push(j + 1)
   }
   let mut plan = bq.plan
+  xml_sort_check(keys)
   if !keys.is_empty() {
     plan = Sort(plan, keys)
   }
@@ -1526,6 +1536,7 @@ fn bind_body(env : Env, b : @ast.QueryBody) -> BoundQuery raise @types.SqlError 
           },
         )
       }
+      xml_set_op_check(columns)
       let kind : @ir.SetOpKind = match op {
         Union => Union
         Except => Except
@@ -1716,7 +1727,7 @@ pub fn bind_query(
         order: [],
       }
     }
-    Some(_) => raise @types.not_supported("FOR XML / FOR BROWSE")
+    Some(_) => bind_for_xml(env, q, true)
   }
 }
 

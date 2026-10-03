@@ -834,6 +834,14 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.expr(e)
       self.close()
     }
+    SetVarMethod(v, m, args) => {
+      self.s("(set-method " + v + " " + ident_text(m))
+      for a in args {
+        self.sp()
+        self.expr(a)
+      }
+      self.close()
+    }
     SetOption(opts, v) => {
       self.s("(set-option (" + opts.join(" ") + ") ")
       match v {

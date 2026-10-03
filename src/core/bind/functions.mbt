@@ -48,6 +48,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
   }
   let args = call.args
   variant_guard(env, name, args)
+  xml_guard(env, name, args)
   let bound = () => args.map(a => bind_expr(env, a))
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
@@ -70,7 +71,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let known = (x : @ir.Expr) => {
         !x.nullable || (try_fold(x) is Some(v) && !(v is Null))
       }
-      mk(Call(IsNull, [first, second]), ty, !(known(b[0]) || known(b[1])))
+      // captured: an xml result stays nullable (xml/type#043)
+      mk(
+        Call(IsNull, [first, second]),
+        ty,
+        ty is Xml || !(known(b[0]) || known(b[1])),
+      )
     }
     "COALESCE" => {
       if args.length() < 2 {

@@ -170,6 +170,9 @@ pub(all) enum TableRefKind {
   )
   /// `hint` is a join hint (LOOP/HASH/MERGE/REMOTE) if written.
   Join(JoinKind, TableRef, TableRef, on~ : Expr?, hint~ : String?)
+  /// xml `target.nodes('xquery') [AS] alias(column)`; `target` is a
+  /// variable or (possibly qualified) column.
+  Nodes(Expr, Array[Expr], alias_~ : Ident?, columns~ : Array[Ident])
   /// `source PIVOT (...) alias` / `source UNPIVOT (...) alias`.
   Pivot(TableRef, PivotClause, alias_~ : Ident)
 } derive(Eq, Debug)

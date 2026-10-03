@@ -295,6 +295,17 @@ fn W::expr(self : W, e : Expr) -> Unit {
       self.expr(x)
       self.close()
     }
+    MethodCall(target, name, args) => {
+      self.open("method")
+      self.atom(ident_text(name))
+      self.sp()
+      self.expr(target)
+      for a in args {
+        self.sp()
+        self.expr(a)
+      }
+      self.close()
+    }
   }
 }
 
@@ -755,6 +766,17 @@ fn W::table_ref(self : W, t : TableRef) -> Unit {
         }
       }
       self.alias_cols(Some(alias_), [])
+      self.close()
+    }
+    Nodes(target, args, alias_~, columns~) => {
+      self.open("nodes")
+      self.sp()
+      self.expr(target)
+      for a in args {
+        self.sp()
+        self.expr(a)
+      }
+      self.alias_cols(alias_, columns)
       self.close()
     }
     Join(kind, l, r, on~, hint~) => {

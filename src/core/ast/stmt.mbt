@@ -46,6 +46,8 @@ pub(all) enum StmtKind {
   DeclareTable(String, TableBody)
   DeclareCursor(Cursor)
   SetVar(String, AssignOp, Expr)
+  /// `SET @x.modify('xml dml')`: an xml mutator method on a variable.
+  SetVarMethod(String, Ident, Array[Expr])
   SetOption(Array[String], SetValue)
   SetIdentityInsert(ObjectName, Bool)
   /// Upper-cased level: `READ COMMITTED`, `SNAPSHOT`, ...

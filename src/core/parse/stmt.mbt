@@ -666,6 +666,14 @@ fn Parser::cursor_decl(self : Parser) -> @ast.Cursor raise @ast.SyntaxError {
 fn Parser::set_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
   self.expect_kw("SET")
   let t = self.peek()
+  if t.kind is Variable &&
+    self.is_punct_at(1, ".") &&
+    self.peek_at(2).kind is Word &&
+    self.is_punct_at(3, "(") {
+    self.pos += 2
+    let m = tok_ident(self.advance())
+    return SetVarMethod(t.text, m, self.method_args())
+  }
   if t.kind is Variable {
     self.pos += 1
     let op = match assign_op(self.peek()) {

@@ -38,6 +38,11 @@ pub(all) enum TypeInfo {
   BigBinary(Int) // 0xAD
   /// 0x62 SSVARIANTTYPE, 4-byte max length (SQL Server sends 8009)
   Variant(Int)
+  /// 0xF1 XML (untyped: no schema collection), PLP UTF-16LE values
+  Xml
+  /// 0x63 NTEXT, 4-byte max length and collation; in COLMETADATA followed
+  /// by a table name (SQL Server sends one part, "x", for FOR XML results)
+  NText(Int, Bytes)
   Null // 0x1F (RPC parameters only)
 } derive(Debug, Eq)
 
@@ -49,6 +54,7 @@ pub const MAX_LEN : Int = 0xFFFF
 pub fn TypeInfo::is_plp(self : TypeInfo) -> Bool {
   match self {
     BigVarChar(n, _) | NVarChar(n, _) | BigVarBinary(n) => n == MAX_LEN
+    Xml => true
     _ => false
   }
 }
@@ -86,6 +92,8 @@ pub fn TypeInfo::type_byte(self : TypeInfo) -> Int {
     BigVarBinary(_) => 0xA5
     BigBinary(_) => 0xAD
     Variant(_) => 0x62
+    Xml => 0xF1
+    NText(_, _) => 0x63
     Null => 0x1F
   }
 }
@@ -109,6 +117,16 @@ pub fn write_type_info(w : Writer, ti : TypeInfo) -> Unit {
     }
     BigVarBinary(n) | BigBinary(n) => w.u16le(n)
     Variant(n) => w.u32le(n.to_int64())
+    // no schema collection
+    Xml => w.u8(0)
+    NText(n, c) => {
+      w.u32le(n.to_int64())
+      w.bytes(c)
+      // table name: one part "x" (captured from SQL Server 17.0.5005)
+      w.u8(1)
+      w.u16le(1)
+      w.ucs2("x")
+    }
     _ => ()
   }
 }
@@ -168,6 +186,16 @@ pub fn read_type_info(r : Reader) -> TypeInfo raise TdsError {
     0xA5 => BigVarBinary(r.u16le())
     0xAD => BigBinary(r.u16le())
     0x62 => Variant(r.u32le().to_int())
+    0xF1 => {
+      // schema collection (typed xml) is read and ignored: values are
+      // handled as untyped xml
+      if r.u8() != 0 {
+        ignore(r.b_varchar())
+        ignore(r.b_varchar())
+        ignore(r.us_varchar())
+      }
+      Xml
+    }
     _ => raise Malformed("unsupported TYPE_INFO 0x\{ty.to_string(radix=16)}")
   }
 }

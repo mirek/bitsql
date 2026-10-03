@@ -72,6 +72,11 @@ pub const EMU_PARSE_CULTURE : Int = 50171
 pub const EMU_PARSE_FORMAT : Int = 50172
 
 ///|
+/// An XML or XQuery feature the emulator does not implement (FOR XML
+/// EXPLICIT, XQuery beyond the path subset, DTDs, typed xml).
+pub const EMU_XML_NOT_SUPPORTED : Int = 50109
+
+///|
 /// An internal invariant was violated (e.g. the binder handed the evaluator
 /// operands of incompatible families). Always a bitsql bug.
 pub const EMU_INTERNAL : Int = 50199
@@ -94,6 +99,7 @@ pub let emulator_error_table : Array[(Int, String)] = [
   (EMU_DATE_BUCKET_WIDTH, "DATE_BUCKET width overflowing int32 months"),
   (EMU_PARSE_CULTURE, "PARSE culture not supported"),
   (EMU_PARSE_FORMAT, "PARSE date/time format not supported"),
+  (EMU_XML_NOT_SUPPORTED, "XML/XQuery feature not supported"),
   (EMU_INTERNAL, "internal invariant violated"),
 ]
 

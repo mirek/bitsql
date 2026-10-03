@@ -31,6 +31,10 @@ fn stream_table_fn(
     }
   }
   match f {
+    XmlNodes =>
+      for r in xml_nodes_rows(ctx, args) {
+        emit(r)
+      }
     OpenJsonDefault => {
       guard text(0) is Some(doc) else { return }
       let path = if args.length() > 1 { text(1) } else { Some("$") }

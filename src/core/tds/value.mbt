@@ -64,6 +64,18 @@ fn write_plp(w : Writer, body : Bytes) -> Unit {
 }
 
 ///|
+/// PLP with an unknown total length, as SQL Server sends xml values
+/// (captured: 0xFFFFFFFFFFFFFFFE, one chunk, terminator).
+fn write_plp_unknown(w : Writer, body : Bytes) -> Unit {
+  w.u64le(0xFFFFFFFFFFFFFFFEUL)
+  if body.length() > 0 {
+    w.u32le(body.length().to_int64())
+    w.bytes(body)
+  }
+  w.u32le(0)
+}
+
+///|
 fn ucs2_bytes(s : String) -> Bytes {
   let w = Writer::new(size_hint=s.length() * 2)
   w.ucs2(s)
@@ -81,6 +93,7 @@ pub fn write_value(
   if ti.is_plp() {
     match v {
       Null => w.u64le(0xFFFFFFFFFFFFFFFFUL)
+      Text(s) if ti is Xml => write_plp_unknown(w, ucs2_bytes(s))
       Text(s) =>
         write_plp(
           w,
@@ -99,6 +112,17 @@ pub fn write_value(
     return
   }
   match (ti, v) {
+    // NTEXT (FOR XML results): text pointer and timestamp placeholders as
+    // SQL Server sends them, then a 4-byte length (captured)
+    (NText(_, _), Null) => w.u8(0)
+    (NText(_, _), Text(s)) => {
+      let body = ucs2_bytes(s)
+      w.u8(16)
+      w.bytes(b"dummy textptr\x00\x00\x00")
+      w.bytes(b"dummyTS\x00")
+      w.u32le(body.length().to_int64())
+      w.bytes(body)
+    }
     (Int1, Int(i)) => w.u8(i.to_int())
     (Bit, Int(i)) => w.u8(i.to_int())
     (Int2, Int(i)) => w.u16le(i.to_int())
@@ -283,6 +307,8 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
         match ti {
           BigVarChar(_, _) => Text(cp1252_decode(b))
           NVarChar(_, _) => Text(Reader::new(b).ucs2(b.length() / 2))
+          // xml parameters arrive as UTF-16LE (optionally with a BOM)
+          Xml => Text(Reader::new(b).ucs2(b.length() / 2))
           _ => Binary(b)
         }
     }
@@ -402,6 +428,18 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
       }
     }
     Variant(_) => read_variant(r)
+    Xml => raise Malformed("xml value outside PLP")
+    NText(_, _) => {
+      let ptr = r.u8()
+      if ptr == 0 {
+        Null
+      } else {
+        ignore(r.bytes(ptr))
+        ignore(r.bytes(8))
+        let n = r.u32le().to_int()
+        Text(Reader::new(r.bytes(n)).ucs2(n / 2))
+      }
+    }
     BigVarChar(_, _)
     | BigChar(_, _)
     | NVarChar(_, _)
