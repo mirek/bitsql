@@ -74,28 +74,40 @@ backend (`moon check --target all` must stay green for `src/core/**`).
 ```
 moon.mod                 module mirek/bitsql, source = "src"
 src/core/                pure MoonBit: no async, no FFI, any backend
-  types/                 Value, SqlType, decimal, datetime2, uniqueidentifier
-  tds/                   packet framing, tokens, TYPE_INFO, PRELOGIN/LOGIN7
+  types/                 Value, SqlType, Decimal, collations, CAST/CONVERT, arithmetic, comparison
+  tds/                   packet framing, PRELOGIN/LOGIN7/SQLBatch/RPC decode, token + value codecs
   ast/                   syntactic T-SQL AST, Span, SyntaxError, to_sexp printer
   lex/                   T-SQL lexer (tokens with spans), split_go_batches
   parse/                 recursive-descent parser: parse_batch / parse_statement / parse_expr
-  ir/                    Plan, Expr, Stmt, LockSpec
-  bind/                  shared binder + Semantics record (tsql.mbt)
-  exec/                  step function, Delta consumers
-  sched/                 interval locks, wait-for graph, 1205
-  store/                 persistent maps, snapshots, catalog, virtual sys.* views
-  session/               scope stack, registers, RPC dispatch
-  engine/                Engine::new, Engine::handle(Event) -> Array[Output]
-src/host/                native, moonbitlang/async: TcpServer, queue, timers, event log
+  ir/                    bound expressions and plans (typed, nullability, column origin)
+  bind/                  AST → IR: names, types, metadata rules, constant folding, functions
+  exec/                  expression evaluator, built-in functions, plan runner
+  json/                  T-SQL JSON semantics (JSON_VALUE/QUERY, ISJSON, OPENJSON)
+  store/                 persistent AVL maps, Db value (tables, indexes, modules, schemas)
+  sched/                 interval lock manager, wait-for graph, deadlock victim (not wired yet)
+  session/               statement interpreter: completion tokens, errors, transactions,
+                         DDL/DML/MERGE/OUTPUT, cursors, procs, dynamic SQL, prepared stmts
+  reply/                 response items → TDS token stream (DONE/DONEINPROC/DONEPROC framing)
+  engine/                Engine::new / Engine::handle(Event) -> Array[Output]; login; event log
+src/host/                native, moonbitlang/async: TcpServer, queue, event log (--record)
+src/replay/              replays an event log through a fresh engine (native)
+src/parsecheck/          parses SQL files / JSON batch lists (parser coverage, parse differential)
 harness/                 TypeScript test tooling (tedious + mssql are the real clients)
   corpus/                SQL + RPC cases with expected SQL Server output
-  src/                   runner, differential diff, capture against real MSSQL
+  src/                   runner, differential diff, capture, parse-diff, msduck importer
 docs/design/             this design
+docs/reference/          SQL Server rules distilled from captures (completions, metadata)
 docs/moonbit/            vendored MoonBit docs (generated, see VERSIONS.md)
-docs/reference/          ported SQL Server behavior notes
+docs/reuse/              what to reuse from msduck / mssqlite
 .claude/skills/          project skills (kept current as we learn)
-scripts/                 maintenance scripts
+scripts/                 check.sh (pre-push gate), update-moonbit-docs.py
+Dockerfile               distroless image around the release binary
 ```
+
+Package dependencies flow one way: `engine → session → {bind, exec, store,
+reply} → ir → types`. `bind` may evaluate constant expressions through
+`exec`; `exec` never depends on `bind`. The Semantics record (ir.md) is not
+extracted yet: T-SQL rules live directly in bind/types.
 
 Packages are created lazily: a directory appears when the first code for it
 lands.
