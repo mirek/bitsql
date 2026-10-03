@@ -7,7 +7,31 @@ priv struct Tx {
   base : @store.Db
   mut view : @store.Db
   temp_at_begin : @store.Db
-  savepoints : Map[String, (@store.Db, @store.Db)]
+  /// Savepoints, innermost last: (name, view, temp database).
+  savepoints : Array[(String, @store.Db, @store.Db)]
+  /// Name of the outermost BEGIN TRANSACTION (matched case-sensitively).
+  name : String?
+}
+
+///|
+/// The innermost savepoint named `name` under the database collation
+/// (CI_AS here: 'casename' finds CaseName; trailing spaces are ignored).
+/// An empty name never matches (captured: 6401 state 2).
+fn Tx::savepoint_index(self : Tx, name : String) -> Int? {
+  if name == "" {
+    return None
+  }
+  for i = self.savepoints.length() - 1; i >= 0; i = i - 1 {
+    if @types.compare_strings(
+        self.savepoints[i].0,
+        name,
+        @types.default_collation,
+      ) ==
+      0 {
+      return Some(i)
+    }
+  }
+  None
 }
 
 ///|
@@ -55,7 +79,7 @@ fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
 
 ///|
 /// Begins an explicit transaction (outermost BEGIN TRAN).
-fn Session::begin_tx(self : Session) -> Unit {
+fn Session::begin_tx(self : Session, name? : String? = None) -> Unit {
   if self.tx is None {
     let db = self.server.get_db(self.rt.database)
     self.tx = Some({
@@ -63,7 +87,8 @@ fn Session::begin_tx(self : Session) -> Unit {
       base: db,
       view: db,
       temp_at_begin: self.temp,
-      savepoints: Map([]),
+      savepoints: [],
+      name,
     })
   }
 }
@@ -79,10 +104,10 @@ fn Session::refresh_tx(self : Session) -> Unit {
     return
   }
   guard tx.view.rebase(tx.base, current) is Some(view) else { return }
-  let savepoints = Map([])
-  for k, sp in tx.savepoints {
-    match sp.0.rebase(tx.base, current) {
-      Some(v) => savepoints[k] = (v, sp.1)
+  let savepoints = []
+  for sp in tx.savepoints {
+    match sp.1.rebase(tx.base, current) {
+      Some(v) => savepoints.push((sp.0, v, sp.2))
       None => return
     }
   }
@@ -301,25 +326,54 @@ fn doomed_error() -> @types.SqlError {
 fn Session::abort_transaction(self : Session) -> Unit {
   if self.rt.trancount > 0 {
     let d = self.tx_descriptor()
+    // the implicit transaction of a trigger's statement ends silently
+    // (captured: gaps-triggers #029, #037)
+    let implicit = self.implicit_tx
     self.rollback_tx()
     self.rt.trancount = 0
     self.rt.xact_state = 0
-    self.out.push(EnvChange(RollbackTransaction(d)))
+    if !implicit {
+      self.out.push(EnvChange(RollbackTransaction(d)))
+    }
   }
 }
 
 ///|
-/// Savepoint name of ROLLBACK/SAVE (identifier or variable); None for the
-/// whole transaction.
-fn Session::savepoint_name(self : Session, name : @ast.Expr?) -> String? raise {
+/// Transaction or savepoint name of BEGIN/ROLLBACK/SAVE (identifier or
+/// variable); None without a name or for a NULL variable (captured:
+/// msduck-runs/savepoint length run): identifiers over 32 characters are
+/// 103, variables are cut to 32 and must be character strings (3914).
+fn Session::tran_name(self : Session, name : @ast.Expr?) -> String? raise {
   match name {
     None => None
-    Some({ kind: Column([id]), .. }) => Some(id.name)
-    Some(e) =>
-      match self.eval(e) {
-        (String(s), _) => Some(s)
+    Some({ kind: Column([id]), .. }) => {
+      if id.name.length() > 32 {
+        self.cur_cmd = 253
+        raise @types.sql_error(
+          103,
+          "The identifier that starts with '\{id.name}' is too long. Maximum length is 32.",
+          state=2,
+          severity=15,
+        )
+      }
+      Some(id.name)
+    }
+    Some(e) => {
+      let (v, ty) = self.eval(e)
+      guard ty is (Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _)) else {
+        raise @types.sql_error(
+          3914,
+          "The data type \"\{ty.base_name()}\" is invalid for transaction names or savepoint names. Allowed data types are char, varchar, nchar, varchar(max), nvarchar, and nvarchar(max).",
+          state=0,
+        )
+      }
+      match v {
+        String(s) if s.length() > 32 =>
+          Some(s.unsafe_substring(start=0, end=32))
+        String(s) => Some(s)
         _ => None
       }
+    }
   }
 }
 

@@ -190,3 +190,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   match without a catch-all into error 0011 partial_match under the repo's
   warning settings, so `moon check` lists exactly the places to extend.
   `String::trim_end(chars=" ")` returns a StringView (`.to_owned()` it).
+- 2026-10-04: `module` is reserved for future use (warning 0035, also as a
+  struct field or labelled argument) and `var` is a parse error as a local
+  name (`let var = ...` reads as the deprecated `var x =` form). Name them
+  `owner`, `proc_name`, `vname`.

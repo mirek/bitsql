@@ -153,7 +153,8 @@ fn Session::run_triggers(
       base: pre,
       view: current,
       temp_at_begin: self.temp,
-      savepoints: Map([]),
+      savepoints: [],
+      name: None,
     })
     self.server.set_db(self.rt.database, pre)
     self.implicit_tx = true
@@ -215,6 +216,9 @@ fn Session::run_triggers(
     match failure {
       Some(e) => {
         finish()
+        if e is (Caught(_, _, _, _) | AbortBatch) {
+          self.trigger_unwind = true
+        }
         raise e
       }
       None => ()

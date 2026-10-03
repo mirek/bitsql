@@ -1,7 +1,11 @@
 ///|
 /// Raised inside TRY: the error was already completed; CATCH takes over.
+/// Fields: error, line, procedure (ERROR_PROCEDURE()), and the nesting
+/// level below which a TRY may catch it: a compile error is caught only by
+/// a TRY of a calling scope (captured: msduck try-binding-error,
+/// gaps-procedures #061).
 priv suberror Caught {
-  Caught(@types.SqlError, Int) // error, line
+  Caught(@types.SqlError, Int, String?, Int)
 }
 
 ///|
@@ -20,6 +24,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.cur_cmd = 253
   self.ddl_cmd = 0
   self.uncatchable = false
+  self.error_line = None
+  self.error_module = None
   self.throwing = false
   self.stmt_error = 0
   self.rt.next_row()
@@ -45,19 +51,63 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     None
   } catch {
     @types.SqlError(..) as e => Some(e)
+    // An error leaving a trigger: the firing statement completes like a
+    // caught statement (count 0) when a TRY catches it, and is terminated
+    // (3621) when it ends the batch, except after THROW (captured:
+    // gaps-triggers #033, #037, #029).
+    Caught(_, _, _, _) as c if self.trigger_unwind => {
+      self.trigger_unwind = false
+      let rows = self.cur_cmd >= 195 && self.cur_cmd <= 197
+      if self.cur_cmd != 253 {
+        self.done(self.cur_cmd, count=if rows { Some(0L) } else { None })
+      }
+      raise c
+    }
+    AbortBatch if self.trigger_unwind => {
+      self.trigger_unwind = false
+      let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
+        self.cur_cmd == 279
+      if dml && !self.throwing {
+        self.out.push(
+          Message({
+            number: 3621,
+            state: 0,
+            class: 0,
+            message: "The statement has been terminated.",
+            procedure: "",
+            line,
+          }),
+        )
+      }
+      raise AbortBatch
+    }
     other => raise other
   }
   // statement-duration locks (and all locks in autocommit) end here
   self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
   guard failure is Some(e) else {
     // a successful statement sets @@ERROR to 0, or to 50000 for
-    // RAISERROR ... WITH SETERROR (stmt_error)
-    if !(s.kind is (If(_, _, _) | While(_, _) | Block(_))) {
+    // RAISERROR ... WITH SETERROR (stmt_error); after EXEC it is the
+    // module's last @@ERROR (captured: gaps-procedures #101)
+    if !(s.kind
+      is (If(_, _, _) | While(_, _) | Block(_) | Exec(_) | ExecString(_))) {
       self.rt.error = self.stmt_error
     }
     return
   }
-  let line = udf_error_line(e, line)
+  let line = match self.error_line {
+    Some(l) => l
+    None => udf_error_line(e, line)
+  }
+  let owner = self.module_name()
+  // a module's own errors decide its return status (EXEC errors belong to
+  // the callee; captured: proc/return-status)
+  if e.severity() > 10 && !(s.kind is (Exec(_) | ExecString(_))) {
+    let f = self.frame()
+    if e.severity() > f.worst {
+      f.worst = e.severity()
+    }
+  }
   // statement-level rollback: discard the failed statement's writes
   self.temp = snap_temp
   self.tvars = snap_tvars
@@ -73,12 +123,15 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // (XACT_STATE() = -1); outside TRY it is rolled back and the batch ends.
   // RAISERROR never honors XACT_ABORT (THROW does)
   let raiserror = self.cur_cmd == 246 && !self.throwing
-  if self.xact_abort && !raiserror && e.severity() > 10 && self.rt.trancount > 0 {
-    if self.try_depth > 0 {
-      self.rt.xact_state = -1
-    } else {
-      self.abort_transaction()
-    }
+  // batch-aborting conversion errors roll back (or doom) the transaction
+  // even without XACT_ABORT (captured: savepoint errors/catch runs)
+  let conversion_abort = [241, 245, 295, 8114].contains(e.number())
+  let xact_rollback = (
+      (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
+    ) &&
+    self.rt.trancount > 0
+  if xact_rollback && self.try_depth > 0 {
+    self.rt.xact_state = -1
   }
   // compile errors (raised while binding, before the statement runs) are
   // not caught by TRY in the same scope (captured: msduck try-binding-error)
@@ -112,7 +165,18 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     if e.number() == 1205 {
       self.abort_transaction()
     }
-    raise Caught(e, line)
+    raise Caught(e, line, owner, max_nest_level + 1)
+  }
+  // a compile error that the TRY of its own scope cannot catch is caught by
+  // a TRY of a calling scope: the module ends and that CATCH runs
+  if self.uncatchable &&
+    self.try_base > 0 &&
+    e.severity() > 10 &&
+    e.severity() < 20 &&
+    e.number() != @types.EMU_WORK_BUDGET {
+    self.pending.clear()
+    self.trailing.clear()
+    raise Caught(e, line, owner, self.rt.nest_level)
   }
   // A DML statement failing at run time ends with 3621 "The statement has
   // been terminated." unless the error ends the batch (captured:
@@ -144,35 +208,58 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.deferred.clear()
   self.message(e, line)
   // a deadlock victim's transaction is rolled back after the error
-  // (captured order: ERROR, ENVCHANGE; locking/deadlock-two-tables)
-  if e.number() == 1205 {
+  // (captured order: ERROR, ENVCHANGE; locking/deadlock-two-tables), and so
+  // is the transaction under XACT_ABORT (captured: proc/xact-abort)
+  if e.number() == 1205 || (xact_rollback && self.try_depth == 0) {
     self.abort_transaction()
   }
   self.flush_trailing(line)
-  // an uncaught THROW completes with 253, not 246 (captured: msduck
-  // nocount-completions)
-  // a batch-ending conversion error in an assignment (DECLARE/SET/SELECT
-  // @v =, no result set sent) completes with 253, not 193 (captured:
-  // datestrings/implicit#009, #030-#035)
-  let assignment_abort = ends_batch &&
-    self.cur_cmd == 193 &&
-    [241, 245, 295].contains(e.number()) &&
-    !self.out[mark:].iter().any(x => x is ResultSet(_))
+  // A batch-ending error completes with 253 unless the statement had sent
+  // a result set: uncaught THROW, assignments, IF conditions, PRINT,
+  // transaction statements under XACT_ABORT (captured: msduck
+  // nocount-completions, datestrings/implicit#009, savepoint abort run)
+  let result_started = self.out[mark:].iter().any(x => x is ResultSet(_))
+  let cmd = if self.throwing || (ends_batch && !result_started) {
+    253
+  } else {
+    self.cur_cmd
+  }
+  // Inside a module an aborting error sends no completion of its own: a
+  // compile-time error ends the module (AbortScope), any other ends the
+  // whole batch, whose outermost level completes it (captured:
+  // gaps-procedures #057, #060, proc/abort-tokens, gaps-triggers #029).
+  if ends_batch && self.rt.nest_level > 0 {
+    if scope_abort(
+        e,
+        self.cur_cmd,
+        self.throwing,
+        self.xact_abort && !raiserror,
+      ) {
+      raise AbortScope
+    }
+    self.abort_cmd = Some(cmd)
+    raise AbortBatch
+  }
   // an XML parse error in an RPC request has no DONEINPROC: DONEPROC
   // follows the ERROR (captured: xml/rpc#001)
   if !(self.rpc && e.number() >= 9400 && e.number() < 9500) {
-    self.done(
-      if self.throwing || assignment_abort {
-        253
-      } else {
-        self.cur_cmd
-      },
-      error=true,
-    )
+    self.done(cmd, error=true)
   }
-  if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort && !raiserror) {
+  if ends_batch {
     raise AbortBatch
   }
+}
+
+///|
+/// An aborting error that ends only the current module: a compile-time
+/// (cmd 253) error that no other rule makes batch-aborting.
+fn scope_abort(
+  e : @types.SqlError,
+  cmd : Int,
+  throwing : Bool,
+  xact_abort : Bool,
+) -> Bool {
+  cmd == 253 && !aborts_batch(e, 0, throwing, xact_abort)
 }
 
 ///|
@@ -410,26 +497,39 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
           let (v, ty) = self.eval(x)
           match @types.cast(v, ty, Int) {
             Int(i) => Some(i)
-            _ => Some(0)
+            _ => {
+              // captured: gaps-procedures #025 (INFO before the DONEINPROC)
+              let name = self.module_name().unwrap_or("")
+              self.info(
+                282,
+                1,
+                "The '\{name}' procedure attempted to return a status of NULL, which is not allowed. A status of 0 will be returned instead.",
+                s.span.line,
+              )
+              Some(0)
+            }
           }
         }
         None => None
       }
-      // Bare RETURN completes with 219; RETURN <expr> completes like an
-      // assignment (193, count 1) (captured: smoke/proc-return-output,
-      // msduck catch-return-rpc).
+      // Bare RETURN completes with 219 and resets @@ROWCOUNT; RETURN <expr>
+      // completes like an assignment (193, count 1) (captured:
+      // smoke/proc-return-output, msduck catch-return-rpc, gaps-procedures
+      // #031).
       if status is Some(_) {
         self.rt.rowcount = 1
         self.done(193, count=Some(1L))
       } else {
+        self.rt.rowcount = 0
         self.done(219)
       }
       raise Return(status)
     }
     TryCatch(body, handler) => self.exec_try(body, handler)
-    BeginTran(..) => {
+    BeginTran(name~, ..) => {
       self.rt.rowcount = 0 // captured: traps/rowcount-reset
-      self.begin_tx()
+      let name = self.tran_name(name)
+      self.begin_tx(name~)
       self.rt.trancount += 1
       self.rt.xact_state = if self.rt.xact_state == -1 { -1 } else { 1 }
       if self.rt.trancount == 1 {
@@ -439,6 +539,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     Commit(..) => {
       self.rt.rowcount = 0 // captured: traps/rowcount-reset
+      self.cur_cmd = 213
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           3902, "The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.",
@@ -461,30 +562,42 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     Rollback(name~) => {
       self.rt.rowcount = 0 // captured: traps/rowcount-reset
+      self.cur_cmd = 210
       if self.rt.trancount == 0 {
         raise @types.sql_error(
           3903, "The ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION.",
         )
       }
-      match self.savepoint_name(name) {
-        Some(sp) =>
-          match self.tx {
-            Some(tx) =>
-              match tx.savepoints.get(sp.to_lower()) {
-                Some((view, temp)) => {
-                  if self.rt.xact_state == -1 {
-                    raise doomed_error()
-                  }
-                  tx.view = view
-                  self.temp = temp
-                  self.done(210)
-                  return
-                }
-                None => ()
+      // Savepoints first (innermost, names compared under the collation;
+      // rolling back to one also removes it and later ones), then the
+      // outermost transaction's name (case-sensitive), else 6401; no name
+      // or NULL rolls back everything (captured: msduck-runs/savepoint).
+      match (self.tran_name(name), self.tx) {
+        (Some(n), Some(tx)) =>
+          match tx.savepoint_index(n) {
+            Some(i) => {
+              if self.rt.xact_state == -1 {
+                raise @types.sql_error(
+                  3931, "The current transaction cannot be committed and cannot be rolled back to a savepoint. Roll back the entire transaction.",
+                )
               }
-            None => ()
+              let (_, view, temp) = tx.savepoints[i]
+              tx.view = view
+              self.temp = temp
+              tx.savepoints.truncate(i)
+              self.done(210)
+              return
+            }
+            None =>
+              if tx.name != Some(n) {
+                raise @types.sql_error(
+                  6401,
+                  "Cannot roll back \{n}. No transaction or savepoint of that name was found.",
+                  state=if n == "" { 2 } else { 1 },
+                )
+              }
           }
-        None => ()
+        _ => ()
       }
       let d = self.tx_descriptor()
       self.rt.trancount = 0
@@ -498,17 +611,24 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     Save(name~) => {
       self.rt.rowcount = 0 // captured: traps/rowcount-reset
+      self.cur_cmd = 214
+      let name = self.tran_name(name)
       if self.rt.trancount == 0 {
+        // ends the batch (DONE 253) unless caught; a TRY completes the
+        // SAVE with 214 (captured: savepoint none/catch runs)
+        self.cur_cmd = 253
+        self.ddl_cmd = 214
         raise @types.sql_error(
-          628, "Cannot issue SAVE TRANSACTION when there is no active transaction.",
+          628,
+          "Cannot issue SAVE TRANSACTION when there is no active transaction.",
+          state=0,
         )
       }
       if self.rt.xact_state == -1 {
         raise doomed_error()
       }
-      match (self.savepoint_name(name), self.tx) {
-        (Some(sp), Some(tx)) =>
-          tx.savepoints[sp.to_lower()] = (tx.view, self.temp)
+      match (name, self.tx) {
+        (Some(sp), Some(tx)) => tx.savepoints.push((sp, tx.view, self.temp))
         _ => ()
       }
       self.done(214)
@@ -574,7 +694,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.exec_create_index(ci)
     }
     DropIndex(if_exists~, items) => self.exec_drop_index(if_exists, items)
-    Exec(e) => self.exec_proc_stmt(e)
+    Exec(e) => self.exec_proc_stmt(e, s.span.line)
     ExecString(parts) => self.exec_string(parts)
     DeclareCursor(c) => self.exec_declare_cursor(c)
     OpenCursor(name, global~) => self.exec_open_cursor(name, global)
@@ -778,7 +898,8 @@ fn Session::exec_try(
     self.exec_list(body)
     None
   } catch {
-    Caught(e, line) => Some((e, line))
+    Caught(e, line, procedure, below) if self.rt.nest_level < below =>
+      Some((e, line, procedure))
     other => {
       self.try_depth -= 1
       raise other
@@ -787,7 +908,7 @@ fn Session::exec_try(
   self.try_depth -= 1
   match caught {
     None => ()
-    Some((e, line)) => {
+    Some((e, line, procedure)) => {
       self.done(350)
       let saved = self.rt.catch_error
       self.rt.catch_error = Some({
@@ -796,7 +917,7 @@ fn Session::exec_try(
         state: e.state(),
         message: e.message(),
         line,
-        procedure: None,
+        procedure,
       })
       errdefer {
         self.rt.catch_error = saved

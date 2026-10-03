@@ -84,6 +84,9 @@ fn Parser::statement_kind(
     return Select(self.query())
   }
   if t.kind is QuotedIdent {
+    if first {
+      return Exec(self.exec_body())
+    }
     raise near(t)
   }
   if !(t.kind is Word) {
@@ -252,6 +255,16 @@ fn Parser::statement_kind(
         _ =>
           match name {
             Some(_) => Save(name~)
+            // captured: "SAVE TRANSACTION" alone is 102 near 'TRANSACTION'
+            // (msduck-runs/savepoint #042), not 156
+            None if self.peek().kind is Eof => {
+              let prev = self.toks[self.pos - 1]
+              raise syntax_error(
+                102,
+                "Incorrect syntax near '\{prev.text}'.",
+                prev.span,
+              )
+            }
             None => raise self.error()
           }
       }
@@ -276,6 +289,9 @@ fn Parser::statement_kind(
       self.pos += 1
       Use(self.any_ident())
     }
+    // A batch may start with a procedure name and its arguments, without
+    // EXEC (captured: gaps-procedures #006).
+    _ if first && !is_reserved(t.text) => Exec(self.exec_body())
     _ => raise self.error()
   }
 }
@@ -315,8 +331,22 @@ fn Parser::can_start_expr(self : Parser) -> Bool {
 }
 
 ///|
-fn Parser::tran_name(self : Parser) -> @ast.Expr? {
+fn Parser::tran_name(self : Parser) -> @ast.Expr? raise @ast.SyntaxError {
   let t = self.peek()
+  // captured: transaction and savepoint names longer than 32 characters
+  // are 103 state 2 (msduck-runs/savepoint length run)
+  if t.kind is (Word | QuotedIdent) && t.text.length() > 32 {
+    let name = tok_ident(t).name
+    if name.length() > 32 {
+      raise @ast.SyntaxError(
+        number=103,
+        severity=15,
+        state=2,
+        message="The identifier that starts with '\{name}' is too long. Maximum length is 32.",
+        span=t.span,
+      )
+    }
+  }
   match t.kind {
     Variable => {
       self.pos += 1
@@ -843,6 +873,17 @@ fn Parser::create_or_alter(
   }
   let t = self.peek()
   let u = upper(t)
+  // ALTER DATABASE (options, COLLATE, ...) is not modelled: an explicit
+  // emulator error rather than a syntax error (msduck-runs savepoint cs run)
+  if mode is Alter && u == "DATABASE" {
+    raise @ast.SyntaxError(
+      number=50100,
+      severity=16,
+      state=1,
+      message="Emulator: ALTER DATABASE is not supported.",
+      span=t.span,
+    )
+  }
   let verb = match mode {
     Create => "CREATE"
     Alter => "ALTER"
@@ -896,6 +937,9 @@ fn Parser::create_or_alter(
       })
     }
     "PROC" | "PROCEDURE" => {
+      if self.in_procedure {
+        raise near(t)
+      }
       must_be_first("CREATE/ALTER PROCEDURE")
       self.pos += 1
       let name = self.object_name()
@@ -913,7 +957,9 @@ fn Parser::create_or_alter(
         options.push("FOR REPLICATION")
       }
       self.expect_kw("AS")
+      self.in_procedure = true
       let body = self.module_body()
+      self.in_procedure = false
       let definition = self.slice(self.span_from(start))
       CreateProcedure({ mode, name, params, options, body, definition, })
     }

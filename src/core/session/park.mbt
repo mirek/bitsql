@@ -44,7 +44,8 @@ fn Session::snapshot_request(self : Session) -> RequestSnapshot {
           base: tx.base,
           view: tx.view,
           temp_at_begin: tx.temp_at_begin,
-          savepoints: copy_map(tx.savepoints),
+          savepoints: tx.savepoints.copy(),
+          name: tx.name,
         })
       None => None
     },

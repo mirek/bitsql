@@ -37,6 +37,13 @@ pub(all) suberror SyntaxError {
 } derive(Debug)
 
 ///|
+pub fn SyntaxError::severity(self : SyntaxError) -> Int {
+  match self {
+    SyntaxError(severity~, ..) => severity
+  }
+}
+
+///|
 pub fn SyntaxError::number(self : SyntaxError) -> Int {
   match self {
     SyntaxError(number~, ..) => number

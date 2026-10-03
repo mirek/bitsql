@@ -386,6 +386,52 @@ mention the correction here.
   Unverified: DIFFERENCE beyond the captured pairs, case mapping beyond
   Latin/Greek/Cyrillic, CHECKSUM of NULL columns, GREATEST nullability rule
   (non-null when every argument is non-null and converts without failure).
+- 2026-10-04 (procedures, corpus `proc/*`, msduck gaps-procedures,
+  gaps-rpc-procedures): a procedure (or EXEC string) without RETURN <value>
+  returns 10 - the highest severity of its *own* statements' errors, caught
+  or not (11 → -1 … 16 → -6, 2627 → -4, 18 → -8; max, not first or last;
+  bare RETURN after an error too); nested modules' errors and the EXEC
+  statement's own errors (2812, 266, argument errors) do not count.
+  sp_executesql returns the last @@ERROR. RETURN NULL is INFO 282 and 0.
+  Errors split three ways inside modules: statement-level (continue),
+  compile-time 208/137/syntax (end the module only: no RETURNSTATUS, `EXEC
+  @r` leaves @r, @@ERROR = error, caller continues) and batch-aborting
+  (245/241/8114 conversions, THROW, XACT_ABORT, 217: the whole batch, no
+  DONEPROC). Batch-aborting conversion errors also roll back an open
+  transaction (inside TRY: doom it, XACT_STATE() -1) without XACT_ABORT.
+  EXEC errors: 2812 state 62 (continues), 201/8145/8143/8162 line 0
+  (continue), argument conversion 8114 state 5 "Error converting data type
+  varchar to int." (state 1 in procedure RPCs; overflow too: "int to
+  tinyint"), 8144 line 0 and 119/179 end the batch; OUTPUT write-back
+  overflow 8114 state 2 ends the batch. ERROR_PROCEDURE() names the
+  procedure where the error happened (the called one for argument errors
+  and 266; NULL for 2812 and dynamic SQL); ERROR_LINE() 0 for argument
+  errors. Bare words are nvarchar arguments; DEFAULT without a default is
+  201; a batch may start with a procedure name without EXEC. @@NESTLEVEL:
+  procedure and EXEC string +1, sp_executesql text +2 (RPC too, and
+  sp_prepexec); 217 when a 33rd level is entered. SET options set in a
+  procedure, EXEC string or sp_executesql (also RPC) revert at its end.
+  @@ROWCOUNT is 0 after a bare RETURN. CREATE PROCEDURE compiles its body:
+  134 (duplicate parameter, redeclared variable), 137, 154 (USE), nested
+  CREATE PROCEDURE 156 near the keyword; ALTER / CREATE OR ALTER PROCEDURE
+  on a table 2010; DROP PROCEDURE of a table 3705, and a missing name in a
+  list (3701) does not stop the other drops. Unverified: 266 under XACT_ABORT,
+  argument-error order for mixed problems, ERROR_PROCEDURE() of 2812 inside
+  a procedure, sp_executesql 8178 status rule (1, or 8178 when an argument
+  named no parameter: two captures).
+- 2026-10-04 (savepoints, msduck-runs `savepoint`): savepoints are a stack;
+  ROLLBACK TRAN name matches the innermost savepoint under the database
+  collation (CI: 'casename' finds CaseName, trailing spaces ignored, accents
+  significant), removes it and later ones, else the outermost BEGIN TRAN
+  name compared case-sensitively, else 6401 (state 2 for an empty name;
+  statement-level, DONE 210). A NULL name variable means the whole
+  transaction; variables are cut to 32 characters, literal names over 32 are
+  103; non-character variables 3914 state 0. SAVE outside a transaction is
+  628 state 0 and ends the batch (TRY completes the SAVE with 214).
+  Savepoints survive an inner COMMIT; rolling back to one when the
+  transaction is doomed is 3931. COMMIT/ROLLBACK errors complete with their
+  own CurCmd (213/210). XACT_STATE() is 1 in a statement that also calls
+  IDENT_CURRENT outside a transaction (captured, not implemented).
 
 - 2026-10-03 (user-defined types, corpus `tabletypes/`): CREATE TYPE and
   DROP TYPE send no DONE of their own (a batch of them ends with DONE 253,

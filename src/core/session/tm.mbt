@@ -77,13 +77,15 @@ pub fn Session::run_tm(
           )
         }
         let savepoint = match self.tx {
-          Some(tx) if name != "" => tx.savepoints.get(name.to_lower())
+          Some(tx) if name != "" => tx.savepoint_index(name)
           _ => None
         }
         match (savepoint, self.tx) {
-          (Some((view, temp)), Some(tx)) => {
+          (Some(i), Some(tx)) => {
+            let (_, view, temp) = tx.savepoints[i]
             tx.view = view
             self.temp = temp
+            tx.savepoints.truncate(i)
           }
           _ => {
             let d = self.tx_descriptor()
@@ -105,7 +107,7 @@ pub fn Session::run_tm(
           )
         }
         match self.tx {
-          Some(tx) => tx.savepoints[name.to_lower()] = (tx.view, self.temp)
+          Some(tx) => tx.savepoints.push((name, tx.view, self.temp))
           None => ()
         }
       }

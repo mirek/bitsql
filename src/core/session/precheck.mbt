@@ -5,6 +5,7 @@
 fn precheck_batch(
   stmts : Array[@ast.Stmt],
   params : Map[String, @bind.VarInfo],
+  in_proc? : Bool = false,
 ) -> (@types.SqlError, Int)? {
   let declared : Set[String] = Set([])
   // declared types, for RAISERROR substitution parameter checks
@@ -42,6 +43,11 @@ fn precheck_batch(
         for v in vars {
           if v.init is Some(i) {
             expr(i, line)
+          }
+          // a procedure body is compiled at CREATE: redeclaring a variable
+          // or parameter is 134 there (captured: gaps-procedures #134)
+          if in_proc && failure is None && declared.contains(v.name.to_lower()) {
+            failure = Some((redeclared_error(v.name), line))
           }
           declared.add(v.name.to_lower())
           try
@@ -98,6 +104,18 @@ fn precheck_batch(
         }
       }
       Throw(args) => args.each(x => expr(x, line))
+      Use(_) if in_proc && failure is None =>
+        failure = Some(
+          (
+            @types.sql_error(
+              154,
+              "a USE database statement is not allowed in a procedure, function or trigger.",
+              severity=15,
+            ),
+            line,
+          ),
+        )
+      Return(Some(e)) if in_proc => expr(e, line)
       Return(Some(e)) => {
         // RETURN with a value outside a procedure (batch, sp_executesql
         // text): compile error 178 (captured: msduck raiserror-rpc)
@@ -258,4 +276,14 @@ fn raiserror_compile_error(
     }
   }
   None
+}
+
+///|
+/// 134 "The variable name '@a' has already been declared. ..." (class 15).
+fn redeclared_error(name : String) -> @types.SqlError {
+  @types.sql_error(
+    134,
+    "The variable name '\{name}' has already been declared. Variable names must be unique within a query batch or stored procedure.",
+    severity=15,
+  )
 }

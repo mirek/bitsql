@@ -168,10 +168,18 @@ priv struct Frame {
   read_only_tvps : Set[String]
   /// Table-valued parameters whose table this frame created.
   owned : Set[String]
+  /// Name of the stored procedure whose body runs in this frame
+  /// (ERROR_PROCEDURE(), message procedure names); None for batches and
+  /// dynamic SQL.
+  proc_name : String?
+  /// Highest severity (> 10) of the errors raised by this scope's own
+  /// statements, caught or not: a procedure that ends without RETURN
+  /// returns 10 - severity (captured: proc/return-status).
+  mut worst : Int
 }
 
 ///|
-fn Frame::new() -> Frame {
+fn Frame::new(proc_name? : String? = None) -> Frame {
   {
     vars: Map([]),
     values: [],
@@ -179,6 +187,8 @@ fn Frame::new() -> Frame {
     cursors: Map([]),
     read_only_tvps: Set([]),
     owned: Set([]),
+    proc_name,
+    worst: 0,
   }
 }
 
@@ -196,8 +206,15 @@ priv suberror Flow {
   Break
   Continue
   Return(Int?)
-  /// Uncaught error that ends the batch (or procedure) after it was reported.
+  /// Uncaught error that ends the batch after it was reported. Inside a
+  /// module no completion token is sent for the failed statement; the
+  /// outermost level sends `abort_cmd` (batch) or DONEPROC (RPC).
   AbortBatch
+  /// Uncaught error that ends only the current module (procedure, EXEC
+  /// string, sp_executesql text): compile-time errors such as 208 or a
+  /// syntax error in dynamic SQL. The module completes with DONEPROC /
+  /// DONEINPROC 224 and the error bit, without a return status.
+  AbortScope
 }
 
 ///|
@@ -306,6 +323,22 @@ pub struct Session {
   /// A TVP of the RPC request is being loaded (its errors are reported at
   /// line 0, followed by 3621).
   mut tvp_error : Bool
+  /// CurCmd of the batch-level DONE that completes a batch aborted inside
+  /// a module (the failed statement sends no DONEINPROC; captured:
+  /// proc/abort-tokens).
+  mut abort_cmd : Int?
+  /// Line to report for the current statement's error instead of the
+  /// statement's (0 for EXEC argument and transaction-count errors).
+  mut error_line : Int?
+  /// ERROR_PROCEDURE() for the current statement's error when it belongs
+  /// to the called procedure (EXEC argument errors, 266) rather than to
+  /// the frame that runs the statement.
+  mut error_module : String?
+  /// `try_depth` when the running module was entered: TRY blocks of
+  /// calling scopes (they catch the module's compile errors).
+  mut try_base : Int
+  /// An error is leaving a trigger towards its firing statement.
+  mut trigger_unwind : Bool
 }
 
 ///|
@@ -376,6 +409,11 @@ pub fn Session::new(
     uncatchable: false,
     session_flags: Map([]),
     tvp_error: false,
+    abort_cmd: None,
+    error_line: None,
+    error_module: None,
+    try_base: 0,
+    trigger_unwind: false,
   }
   server.live[spid] = session
   session
@@ -442,27 +480,61 @@ fn Session::done(
 }
 
 ///|
-/// End of an EXEC'd procedure: RETURNSTATUS + DONEPROC at the top level; a
-/// nested call (inside a procedure, trigger or sp_executesql text) ends with
-/// DONEINPROC 224 only (captured: proc/nested-exec-tokens).
-fn Session::proc_done(self : Session, status : Int) -> Unit {
+/// The CurCmd 224 completion of an EXEC (procedure, EXEC string,
+/// sp_executesql): DONEPROC at the top level, DONEINPROC nested. NOCOUNT
+/// drops a nested one without the error bit (captured: gaps-procedures
+/// #081). `error` marks a module ended by an error (no return status).
+fn Session::module_done(self : Session, error~ : Bool) -> Unit {
   if self.rt.nest_level > 0 {
-    self.out.push(InProcDone(cmd=224, count=None, error=false))
-  } else {
-    self.out.push(ReturnStatus(status))
-    self.out.push(ProcDone(cmd=224, count=None, error=false))
+    if self.nocount && !error {
+      return
+    }
+    self.out.push(InProcDone(cmd=224, count=None, error~))
+  } else if !self.rpc {
+    // an RPC's own DONEPROC is rendered after its items (reply/response.mbt)
+    self.out.push(ProcDone(cmd=224, count=None, error~))
   }
 }
 
 ///|
-fn Session::message(self : Session, e : @types.SqlError, line : Int) -> Unit {
+/// End of an EXEC'd procedure: RETURNSTATUS + DONEPROC at the top level; a
+/// nested call (inside a procedure, trigger or sp_executesql text) ends with
+/// DONEINPROC 224 only (captured: proc/nested-exec-tokens).
+fn Session::proc_done(self : Session, status : Int) -> Unit {
+  if self.rt.nest_level == 0 {
+    self.out.push(ReturnStatus(status))
+  }
+  self.module_done(error=false)
+}
+
+///|
+/// Name of the procedure running the current statement, for messages and
+/// ERROR_PROCEDURE() ("" in batches and dynamic SQL).
+fn Session::module_name(self : Session) -> String? {
+  match self.error_module {
+    Some(m) => Some(m)
+    None => self.frames.last().bind(f => f.proc_name)
+  }
+}
+
+///|
+fn Session::message(
+  self : Session,
+  e : @types.SqlError,
+  line : Int,
+  procedure? : String? = None,
+) -> Unit {
+  let procedure = match procedure {
+    Some(p) => p
+    None => self.module_name().unwrap_or("")
+  }
   self.out.push(
     Message({
       number: e.number(),
       state: e.state(),
       class: e.severity(),
       message: e.message(),
-      procedure: "",
+      procedure,
       line,
     }),
   )
@@ -505,13 +577,29 @@ pub fn Session::run_batch(
   self.frames.clear()
   self.frames.push(Frame::new())
   self.schema_ddl = false
-  try self.run_text(text) |> ignore catch {
-    _ => {
-      // a lock wait: discard this attempt; the engine re-runs it later
-      self.restore_request(snap)
-      self.parked = true
-      return []
+  self.abort_cmd = None
+  let parked = try {
+    self.run_text(text)
+    false
+  } catch {
+    Park => true
+    AbortBatch => {
+      // a batch aborted inside a module completes with one DONE
+      // (captured: proc/abort-tokens)
+      match self.abort_cmd {
+        Some(cmd) => self.out.push(StatementDone(cmd~, count=None, error=true))
+        None => ()
+      }
+      false
     }
+    _ => false
+  }
+  self.abort_cmd = None
+  if parked {
+    // a lock wait: discard this attempt; the engine re-runs it later
+    self.restore_request(snap)
+    self.parked = true
+    return []
   }
   self.fail_next_wait = None
   self.applock_waited = false
@@ -528,62 +616,62 @@ pub fn Session::run_batch(
 }
 
 ///|
-/// Parses and executes batch text in the current frame. Returns false when an
-/// uncaught error ended it.
-fn Session::run_text(self : Session, text : String) -> Bool raise Park {
+/// Parses and executes batch text in the current frame. Control flow and
+/// aborts propagate to the caller (AbortBatch; AbortScope or Caught inside
+/// a module). A syntax or batch compile error ends the text before it runs:
+/// at the top of a batch with DONE 253; inside a module (EXEC string,
+/// sp_executesql) it ends the module, or an enclosing TRY catches it
+/// (captured: proc/dynamic-errors).
+fn Session::run_text(self : Session, text : String) -> Unit raise {
   let stmts = @parse.parse_batch(text) catch {
     e => {
-      self.out.push(
-        Message({
-          number: e.number(),
-          state: e.state(),
-          class: 15,
-          message: e.message(),
-          procedure: "",
-          line: e.line(),
-        }),
+      let err = @types.sql_error(
+        e.number(),
+        e.message(),
+        state=e.state(),
+        severity=e.severity(),
       )
-      if !self.rpc || self.rt.nest_level > 1 {
-        self.out.push(StatementDone(cmd=253, count=None, error=true))
-      }
-      self.rt.error = e.number()
-      return false
+      self.text_error(err, e.line())
+      return
     }
   }
   // Compile-time checks that SQL Server performs for the whole batch.
   match precheck_batch(stmts, self.frame().vars) {
-    Some((e, line)) => {
-      self.message(e, line)
-      // like parse errors: a top-level RPC gets no DONE before its DONEPROC
-      // (captured: msduck raiserror-rpc 178)
-      if !self.rpc || self.rt.nest_level > 1 {
-        self.out.push(StatementDone(cmd=253, count=None, error=true))
-      }
-      self.rt.error = e.number()
-      return false
-    }
+    Some((e, line)) => self.text_error(e, line)
     None => ()
   }
   // dynamic SQL modifying a READONLY table-valued parameter: 10700 ends
   // it like a compile error, without a DONE (captured: tabletypes/
   // readonly-params, tvp-rpc)
   match readonly_target(stmts, self.frame().read_only_tvps) {
-    Some(name) => {
-      self.message(readonly_error(name), 1)
-      self.rt.error = 10700
-      return false
-    }
+    Some(name) => self.text_error(readonly_error(name), 1)
     None => ()
   }
-  try self.exec_list(stmts) catch {
-    AbortBatch => false
-    Return(_) => true
-    Break | Continue => true
-    Park => raise Park
-    _ => false
-  } noraise {
-    _ => true
+  self.exec_list(stmts) catch {
+    Return(_) if self.rt.nest_level == 0 => ()
+    Break | Continue => ()
+    e => raise e
   }
+}
+
+///|
+/// A batch-level compile error (see `run_text`).
+fn Session::text_error(
+  self : Session,
+  e : @types.SqlError,
+  line : Int,
+) -> Unit raise {
+  self.rt.error = e.number()
+  if self.rt.nest_level == 0 {
+    self.message(e, line)
+    self.out.push(StatementDone(cmd=253, count=None, error=true))
+    raise AbortBatch
+  }
+  if self.try_depth > 0 {
+    raise Caught(e, line, None, max_nest_level + 1)
+  }
+  self.message(e, line)
+  raise AbortScope
 }
 
 ///|
@@ -603,8 +691,9 @@ fn Session::end_of_request(self : Session) -> Unit {
       }),
     )
     self.abort_transaction()
+    // captured: DONE 253 with the error bit (savepoint catch run #12)
     if !self.rpc {
-      self.out.push(StatementDone(cmd=0, count=None, error=true))
+      self.out.push(StatementDone(cmd=253, count=None, error=true))
     }
   }
 }

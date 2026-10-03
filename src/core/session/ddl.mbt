@@ -1194,6 +1194,9 @@ fn Session::exec_drop(
         _ => ("trigger", 225)
       }
       self.cur_cmd = cmd
+      // a missing name does not stop the rest of the list (captured:
+      // gaps-procedures #144)
+      let mut missing : @types.SqlError? = None
       for n in names {
         let m = match self.find_module(n) {
           Some(m) if module_matches(kind, m.kind) => Some(m)
@@ -1206,8 +1209,29 @@ fn Session::exec_drop(
               self.server.procs.remove(m.name.to_lower())
             }
           }
-          None => if !if_exists { raise drop_missing(word, n) }
+          None if kind is DropProcedure && self.find_table(n) is Some(_) =>
+            // captured: gaps-procedures #143
+            raise @types.sql_error(
+              3705,
+              "Cannot use DROP PROCEDURE with '\{object_text(n)}' because '\{object_text(n)}' is a table. Use DROP TABLE.",
+            )
+          None =>
+            if !if_exists && missing is None {
+              missing = Some(drop_missing(word, n))
+            }
         }
+      }
+      // outside TRY the error does not undo the other drops: ERROR, then
+      // the statement's DONE with the error bit
+      if missing is Some(e) {
+        if self.try_depth > 0 {
+          raise e
+        }
+        self.message(e, self.stmt_line)
+        self.stmt_error = e.number()
+        self.rt.rowcount = 0
+        self.done(cmd, error=true)
+        return
       }
       self.rt.rowcount = 0
       self.done(cmd)

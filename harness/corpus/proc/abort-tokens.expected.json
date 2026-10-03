@@ -1,0 +1,548 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "50629b71a0d5daa3",
+  "steps": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "a",
+              "type": "VarChar",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["a"]]
+        },
+        {"columns":[{"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"doneInProc","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Conversion failed when converting the varchar value 'x' to data type int."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":245},
+        {"name":"DONE","status":2,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "n",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["next batch"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "a",
+              "type": "VarChar",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["a"]]
+        },
+        {"columns":[{"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}
+      ],
+      "done": [{"kind":"doneInProc","rowCount":1,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Conversion failed when converting the varchar value 'x' to data type int."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":245},
+        {"name":"DONEPROC","status":2,"curCmd":224}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"x","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":185},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":185},
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONE","status":1,"curCmd":212},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":8134},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":2,"curCmd":193}
+      ],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"tc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":186}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":0,"curCmd":186}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [
+        {
+          "number": 2627,
+          "state": 1,
+          "class": 14,
+          "lineNumber": 1,
+          "message": "Violation of PRIMARY KEY constraint 'pk_t'. Cannot insert duplicate key in object 'dbo.t'. The duplicate key value is (1)."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":185},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":185},
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONE","status":1,"curCmd":212},
+        {"name":"DONEINPROC","status":17,"curCmd":195},
+        {"name":"ERROR","number":2627},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":2,"curCmd":253}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"tc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":186}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":0,"curCmd":186}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "f",
+              "type": "VarChar",
+              "length": 5,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["first"]]
+        },
+        {
+          "columns": [
+            {"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [[99,208]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [{"number":208,"state":1,"class":16,"lineNumber":1,"message":"Invalid object name 'no_such_table'."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"ERROR","number":208},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "f",
+              "type": "VarChar",
+              "length": 5,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["first"]]
+        },
+        {
+          "columns": [
+            {
+              "name": "a",
+              "type": "VarChar",
+              "length": 11,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["outer after"]]
+        },
+        {
+          "columns": [
+            {"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"e","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [[0,0]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [{"number":208,"state":1,"class":16,"lineNumber":1,"message":"Invalid object name 'no_such_table'."}],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"ERROR","number":208},
+        {"name":"DONEINPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "f",
+              "type": "VarChar",
+              "length": 5,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["first"]]
+        }
+      ],
+      "done": [{"kind":"doneInProc","rowCount":1,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [{"number":208,"state":1,"class":16,"lineNumber":1,"message":"Invalid object name 'no_such_table'."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"ERROR","number":208},
+        {"name":"DONEPROC","status":2,"curCmd":224}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"tc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]},
+        {
+          "columns": [
+            {"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"tc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [[0,1]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [
+        {
+          "number": 266,
+          "state": 2,
+          "class": 16,
+          "lineNumber": 0,
+          "message": "Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = 0, current count = 1."
+        },
+        {
+          "number": 266,
+          "state": 2,
+          "class": 16,
+          "lineNumber": 0,
+          "message": "Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = 0, current count = 1."
+        }
+      ],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":192},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":210}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONEINPROC","status":1,"curCmd":212},
+        {"name":"ERROR","number":266},
+        {"name":"DONEINPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"ERROR","number":266},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":1,"curCmd":192},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":0,"curCmd":210}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 266,
+          "state": 2,
+          "class": 16,
+          "lineNumber": 0,
+          "message": "Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = 0, current count = 1."
+        }
+      ],
+      "info": [],
+      "returnStatus": 266,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONEINPROC","status":1,"curCmd":212},
+        {"name":"ERROR","number":266},
+        {"name":"RETURNSTATUS","value":266},
+        {"name":"DONEPROC","status":2,"curCmd":224}
+      ],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"tc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":192},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":210}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":1,"curCmd":192},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":0,"curCmd":210}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

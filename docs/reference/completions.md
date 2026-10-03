@@ -135,3 +135,64 @@ DONEINPROC 224 only, without RETURNSTATUS (captured: proc/nested-exec-tokens,
 applock/rpc-prisma). System procedures written in T-SQL (sp_getapplock,
 sp_releaseapplock) also emit the DONEINPROC tokens of their own statements:
 see `session/applock.mbt` for the captured sequences.
+
+## Procedures, EXEC strings and sp_executesql (2026-10-04)
+
+Captured: `harness/corpus/proc/*` (return-status, abort-tokens,
+exec-errors, exec-args, nest-levels, xact-abort-lines), msduck-gaps
+`gaps-procedures`, `gaps-rpc-procedures`, msduck-runs `savepoint`.
+Implemented in `session/rpc.mbt` (`run_module`, `exec_module_end`) and
+`session/interp.mbt` (`exec_one`).
+
+- **Module end.** `EXEC proc` and `EXEC (string)` at the top of a batch end
+  with RETURNSTATUS + DONEPROC 224; nested ones with DONEINPROC 224 only,
+  which NOCOUNT suppresses. `EXEC (string)` returns a status like a
+  procedure.
+- **Return status.** RETURN's value; otherwise 10 minus the highest
+  severity (> 10) of the errors the module's own statements raised, caught
+  or not (11 → -1, 14 → -4, 16 → -6, 18 → -8); errors of nested modules and
+  of the EXEC statements themselves (2812, 266, argument errors) do not
+  count. A bare RETURN after an error also gives -6. RETURN NULL sends INFO
+  282 ("The 'p' procedure attempted to return a status of NULL ...", line
+  of the RETURN) before its DONEINPROC and returns 0. sp_executesql returns
+  the last @@ERROR instead (also 266 and the number of an error that ended
+  its text).
+- **@@ERROR after EXEC** is the module's last @@ERROR (50000 after
+  `EXEC('RAISERROR(...)')`, 0 after a procedure whose last statement
+  succeeded).
+- **Errors that end only the module** (compile-time: 208, syntax errors and
+  137/178 in dynamic SQL): no completion for the failed statement, the
+  module completes with DONEPROC/DONEINPROC 224 with the error bit and no
+  RETURNSTATUS, `EXEC @r =` leaves @r unchanged, @@ERROR is the error and
+  the caller continues. sp_executesql still sends RETURNSTATUS (the error
+  number), over RPC followed by the OUTPUT parameters' *input* values.
+- **Errors that end the batch inside a module** (245/241/8114 conversions,
+  THROW, any error under XACT_ABORT, 217): no completion for the failed
+  statement and no DONEPROC/DONEINPROC of the modules it leaves; the batch
+  ends with one DONE (error bit) whose CurCmd is the failed statement's if
+  it had sent COLMETADATA (193), else 253; an RPC ends with DONEPROC 224
+  with the error bit, without RETURNSTATUS or RETURNVALUEs. Any batch-ending
+  error completes with 253 unless a result set had started (also IF
+  conditions, PRINT, COMMIT under XACT_ABORT). The rollback ENVCHANGE of
+  XACT_ABORT or a batch-ending conversion error follows the ERROR.
+- **Errors of the EXEC itself** (2812 state 62, argument errors 201/8145/
+  8143/8162, argument conversion 8114 state 5): ERROR, then DONEPROC 224
+  (nested: DONEINPROC) with the error bit; the batch continues. Argument
+  errors report line 0. 8144 (too many arguments) and 119/179 are compile
+  errors: DONE 253, batch ends. A value that does not fit an OUTPUT
+  variable is 8114 state 2 at line 0 and ends the batch.
+- **266** (line 0): procedure and EXEC string: RETURNSTATUS, ERROR,
+  DONEPROC with the error bit; sp_executesql: ERROR, RETURNSTATUS 266,
+  DONEPROC. Also for `EXEC sp_executesql N'BEGIN TRAN'` sent as RPC.
+- **TRY in a caller** catching an error inside a module: every module it
+  leaves completes with DONEPROC/DONEINPROC 224 *without* the error bit
+  (32 of them for the 217 of a 33rd level), then CATCH (350). Errors of the
+  EXEC itself under TRY: DONEPROC 224 (no error bit), then CATCH.
+- **Procedure RPC**: arguments are named or positional by wire position
+  (positional after named is allowed); validation errors (2812, 201, 8144,
+  8145, 8143, 8162, 8114 state 1) send ERROR + DONEPROC with the error bit.
+  RETURNVALUEs carry the type the client declared (bigint, nvarchar(n) with
+  truncation), named as sent ("" for positional ones), after RETURNSTATUS.
+- **sp_prepexec / sp_prepare**: RETURNSTATUS precedes the handle's
+  RETURNVALUE; a batch-aborting error discards the handle (its number is
+  reused). sp_prepare of a non-query sends DONEINPROC 193 with count 0.

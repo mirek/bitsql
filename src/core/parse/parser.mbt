@@ -4,6 +4,9 @@ priv struct Parser {
   toks : Array[@lex.Token]
   mut pos : Int
   mut depth : Int
+  /// Parsing a procedure body: CREATE PROCEDURE there is 156 near the
+  /// keyword, not 111 (captured: gaps-procedures #137).
+  mut in_procedure : Bool
 }
 
 ///|

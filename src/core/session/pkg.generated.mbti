@@ -109,6 +109,11 @@ pub struct Session {
   mut uncatchable : Bool
   session_flags : Map[String, Bool]
   mut tvp_error : Bool
+  mut abort_cmd : Int?
+  mut error_line : Int?
+  mut error_module : String?
+  mut try_base : Int
+  mut trigger_unwind : Bool
   // private fields
 }
 pub fn Session::cancel_wait(Self) -> Unit

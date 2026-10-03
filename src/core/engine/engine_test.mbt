@@ -135,7 +135,9 @@ test "render: batch error and rpc framing" {
     line: 1,
   }
   let b = @reply.render(Batch, [Message(err)], "s")
-  assert_true(@tds.hex(b).has_suffix("fd 02 00 00 00 00 00 00 00 00 00 00 00"))
+  // a batch without completions ends with DONE CurCmd 253 (captured:
+  // proc/nest-levels)
+  assert_true(@tds.hex(b).has_suffix("fd 02 00 fd 00 00 00 00 00 00 00 00 00"))
   let cols : Array[@tds.Column] = [
     { name: "a", type_info: Int4, flags: 0, user_type: 0, },
   ]

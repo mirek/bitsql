@@ -310,3 +310,10 @@ Start the host with `--database NAME` so the app's database exists at login
   steps for tables). Template strings hold T-SQL literals: double the
   single quotes inside `N'...'`. Recapture one case with
   `npm run capture -- --force "xml/<file>.cases.json#<name>"`.
+- 2026-10-04: in a hand-written `.sql` case every comment line starting
+  with `-- @` is a directive, so a description line like `-- @@NESTLEVEL …`
+  silently became a step (corpus `proc/nest-levels`). Quick oracle loop
+  before writing a case: put the steps in the corpus `.sql` format and run
+  them with `runCase(await oracleTarget(), { steps: parseSqlCase(text) })`
+  from a scratch script under `harness/out/` (not committed); one fresh
+  database per run, no expectation written.

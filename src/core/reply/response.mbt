@@ -161,7 +161,9 @@ pub fn render(
     Batch =>
       if !any_done {
         let status = if pending_error { @tds.DONE_ERROR } else { 0 }
-        @tds.write_done(w, Done, status, 0, 0)
+        // captured: a batch without completions (only comments) ends with
+        // DONE CurCmd 253 (proc/nest-levels)
+        @tds.write_done(w, Done, status, 253, 0)
       }
     Rpc => {
       let status = if pending_error { @tds.DONE_ERROR } else { 0 }

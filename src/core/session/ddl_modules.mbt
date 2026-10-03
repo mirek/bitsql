@@ -92,6 +92,16 @@ fn Session::define_module(
           state=3,
         )
       }
+    Alter | CreateOrAlter if kind is Procedure &&
+      existing is None &&
+      self.object_name_taken(db, schema, base) => {
+      // captured: gaps-procedures #129, #130 (DONE with CurCmd 222)
+      self.cur_cmd = cmd
+      raise @types.sql_error(
+        2010,
+        "Cannot perform alter on '\{base}' because it is an incompatible object type.",
+      )
+    }
     Alter =>
       if existing is None {
         raise @types.sql_error(
@@ -227,6 +237,25 @@ fn Session::exec_create_procedure(
   start : Int,
 ) -> Unit raise {
   self.check_module_params(p.params, p.body)
+  // compiled at CREATE (captured: gaps-procedures #133-#136)
+  let vars : Map[String, @bind.VarInfo] = Map([])
+  for i, prm in p.params {
+    if vars.contains(prm.name.to_lower()) {
+      raise redeclared_error(prm.name)
+    }
+    let ty = @bind.resolve_type(
+      prm.type_,
+      Declaration,
+      @types.default_collation,
+    ) catch {
+      _ => Int
+    }
+    vars[prm.name.to_lower()] = { slot: i, ty, }
+  }
+  match precheck_batch(p.body, vars, in_proc=true) {
+    Some((e, _)) => raise e
+    None => ()
+  }
   let m = self.define_module(p.mode, p.name, Procedure, 222, start)
   self.server.procs[m.name.to_lower()] = { name: m.name, def: p, }
 }

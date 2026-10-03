@@ -51,13 +51,13 @@ test "errors carry SQL Server numbers and lines" {
   inspect(
     sx("[t]"),
     content=(
-      #|Msg 102, Level 15, State 1, Line 1: Incorrect syntax near 't'.
+      #|(exec [t])
     ),
   )
   inspect(
     sx("foo"),
     content=(
-      #|Msg 102, Level 15, State 1, Line 1: Incorrect syntax near 'foo'.
+      #|(exec foo)
     ),
   )
   inspect(
