@@ -23,7 +23,7 @@ git clone --depth 1 https://github.com/mirek/mssqlite.git "$TMPDIR/mssqlite"
 - [x] Harness: msduck `scripts/lib/{compatibility,reference,reference-container}.mjs` → `harness/src/`
 - [x] Host CLI contract `--listen 127.0.0.1:0` + stderr `listening on 127.0.0.1:<port>` (msduck `tests/support/client.mjs`; harness side in `harness/src/emulator.mjs`)
 - [~] Small `reference/*.json` captures (≤ 1 MB each) → `harness/corpus/msduck/` via `harness/src/import-msduck.mjs` (clean `results` layout only: 1153 cases; other layouts and prepared entries not yet normalized)
-- [ ] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds`
+- [~] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds` (PRELOGIN 4.1, scramble, ALL_HEADERS, DONE/ENVCHANGE/RPC 4.8 done; mssqlite value.test.ts per-type vectors pending)
 - [ ] Lexer rules from mssqlite `packages/tsql/src/lex.ts` (with spans added)
 - [ ] msduck `tests/tedious.test.mjs` / `tests/compat/*` cases → harness client tests (selectively)
 - [ ] Behavior docs worth keeping in-repo → `docs/reference/` (only when a feature is being implemented; cite the source)
