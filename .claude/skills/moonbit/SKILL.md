@@ -126,3 +126,30 @@ scripts/check.sh                 # everything CI runs; must be green to push
 - 2026-10-03: a recursive-descent parser on `Array[Token]` with a `mut pos`
   and save/restore backtracking (`try { ... } catch { _ => None }`) is simple
   and fast: 10k statements parse in well under a second natively.
+- 2026-10-03: `@bigint.BigInt` `/` and `%` truncate toward zero like `Int`
+  (-7/2 = -3, -7%2 = -1, checked in a scratch test). There is no
+  `BigInt::from_double`; build exact values from the IEEE bits
+  (src/core/types/decimal.mbt `from_double_exact`).
+- 2026-10-03: `s[a:b]` on String/StringView snaps boundaries away from
+  surrogate halves; for exact UTF-16 code-unit slicing (lone surrogates are
+  valid nvarchar data) use `s.unsafe_substring(start=a, end=b)` after your own
+  bounds check. Build strings with lone surrogates via
+  `StringBuilder::write_char(unit.unsafe_to_char())`.
+- 2026-10-03: deprecated in moonc 0.10.14 (warning 0020): `String::substring`
+  (use views / `unsafe_substring`), `Char::from_int` (`Int::unsafe_to_char`),
+  `UInt64::to_int64` (`reinterpret_as_int64`), `Double::to_float`
+  (`Float::from_double`), `UInt::reinterpret_as_float`
+  (`Float::reinterpret_from_uint`), `|> fn(x) {..}` (`|> x => ..`). A
+  `fn() { .. }` lambda that raises warns 0027: write `() => expr`.
+- 2026-10-03: local closures cannot take labelled/optional parameters
+  (error 4114): make such helpers toplevel. `suberror E T` (newtype form) does
+  not parse; declare `suberror E { A; B }`. `local` is a reserved word
+  (warning 0035).
+- 2026-10-03: two enums in one package sharing constructor names (e.g.
+  `Value::Binary` and `SqlType::Binary`) are ambiguous where no type is
+  expected (error 4124); qualify as `@types.Value::Binary(..)`. Interpolating
+  an `Array[Int]` uses the deprecated Show impl (warning) and
+  `moon check --deny-warn` covers test files too.
+- 2026-10-03: big generated test tables (1–2k tuple literals) compile fine
+  and keep capture-derived tests readable; generate them with a script and
+  say so in the file header.

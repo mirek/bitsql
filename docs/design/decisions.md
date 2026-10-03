@@ -70,3 +70,20 @@ fidelity are unchanged. (execution.md updated.)
   VIEW/FUNCTION must be followed only by `;`. All of them (and CREATE SCHEMA)
   must be first in the batch (error 111). Each module node keeps its source
   text in `definition` for `sys.sql_modules`.
+
+## 2026-10-03: value types (`src/core/types`)
+
+- **`SqlType` keeps `Decimal` and `Numeric` apart** (same semantics, different
+  wire type: captures show NUMERIC operands yield NUMERICN results), and adds
+  money, float/real, char/binary, date/time and legacy datetime types beyond
+  the ir.md sketch. Character types carry a `Collation`; lengths are `Int?`
+  with `None` = max, as sketched. (ir.md sketch is superseded by the code.)
+- **`Value` is not self-describing**: conversions, arithmetic and comparison
+  take the binder's `SqlType` alongside, so length/precision/collation come
+  from metadata, never from values. Decimal = BigInt coefficient + scale;
+  datetime2 = Int64 100 ns ticks since 0001-01-01; datetimeoffset = UTC ticks
+  + offset minutes; legacy datetime = (days since 1900, 1/300 s units);
+  uniqueidentifier = 16 storage-order bytes; varchar = CP1252-only String.
+- **`SqlError` (number, severity, state, message) is the core-wide error
+  type**, defined in `src/core/types/error.mbt`.
+

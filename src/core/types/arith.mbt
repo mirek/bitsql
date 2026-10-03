@@ -118,7 +118,7 @@ fn int_arith(
     Sub => bx - by
     Mul => bx * by
     Div => {
-      // truncate toward zero (BigInt `/` floors for negative operands)
+      // truncate toward zero (on magnitudes, independent of BigInt sign rules)
       let q = big_abs(bx) / big_abs(by)
       if (x < 0L) != (y < 0L) {
         -q

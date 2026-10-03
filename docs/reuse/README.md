@@ -26,5 +26,9 @@ git clone --depth 1 https://github.com/mirek/mssqlite.git "$TMPDIR/mssqlite"
 - [~] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds` (PRELOGIN 4.1, scramble, ALL_HEADERS, DONE/ENVCHANGE/RPC 4.8 done; mssqlite value.test.ts per-type vectors pending)
 - [ ] Lexer rules from mssqlite `packages/tsql/src/lex.ts` (with spans added)
 - [ ] msduck `tests/tedious.test.mjs` / `tests/compat/*` cases → harness client tests (selectively)
+- [~] msduck captures as MoonBit test tables in `src/core/types/*_data_test.mbt`:
+      float-default-grid (subset), unicode-integer, checked-integer,
+      temporal-guid-format (us_english modern + legacy), unicode-collation;
+      decimal-division / numeric-* / guid-* / integer-overflow as hand-written asserts
 - [ ] Behavior docs worth keeping in-repo → `docs/reference/` (only when a feature is being implemented; cite the source)
 - [ ] Attention design (msduck `docs/attention-*.md`) → session/engine design
