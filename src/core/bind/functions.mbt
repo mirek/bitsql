@@ -30,22 +30,8 @@ fn arity_range(
 }
 
 ///|
-fn is_max(t : @types.SqlType) -> Bool {
-  t is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None))
-}
-
-///|
 fn nvarchar(n : Int?) -> @types.SqlType {
   NVarChar(n, @types.default_collation)
-}
-
-///|
-/// Result type of string functions that return their argument's family.
-fn string_like(t : @types.SqlType, env : Env) -> @types.SqlType {
-  match t.family() {
-    FString => t
-    _ => VarChar(Some(8000), env.collation)
-  }
 }
 
 ///|
@@ -62,181 +48,11 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
   }
   let args = call.args
   let bound = () => args.map(a => bind_expr(env, a))
-  let any_null = (bs : Array[@ir.Expr]) => bs.iter().any(b => b.nullable)
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
       // Aggregates are bound by the query binder; reaching here means the
       // query shape is not supported yet (never report SQL Server's 147).
       raise @types.not_supported("aggregate functions")
-    "LEN" => {
-      arity(name, args, 1)
-      let b = bound()
-      let ty : @types.SqlType = if is_max(b[0].ty) { BigInt } else { Int }
-      mk(Call(Len, b), ty, true)
-    }
-    "DATALENGTH" => {
-      arity(name, args, 1)
-      let b = bound()
-      let ty : @types.SqlType = if is_max(b[0].ty) { BigInt } else { Int }
-      mk(Call(DataLength, b), ty, true)
-    }
-    "UPPER" | "LOWER" | "LTRIM" | "RTRIM" | "TRIM" | "REVERSE" => {
-      let fnid : @ir.Fn = match name {
-        "UPPER" => Upper
-        "LOWER" => Lower
-        "LTRIM" => LTrim
-        "RTRIM" => RTrim
-        "TRIM" => Trim
-        _ => Reverse
-      }
-      if name == "UPPER" || name == "LOWER" || name == "REVERSE" {
-        arity(name, args, 1)
-      } else {
-        arity_range(name, args, 1, 2)
-      }
-      let b = bound()
-      mk(Call(fnid, b), string_like(b[0].ty, env), true)
-    }
-    "LEFT" | "RIGHT" => {
-      arity(name, args, 2)
-      let b = bound()
-      mk(
-        Call(if name == "LEFT" { Left } else { Right }, b),
-        string_like(b[0].ty, env),
-        true,
-      )
-    }
-    "SUBSTRING" => {
-      arity(name, args, 3)
-      let b = bound()
-      mk(Call(Substring, b), string_like(b[0].ty, env), true)
-    }
-    "REPLACE" => {
-      arity(name, args, 3)
-      let b = bound()
-      ignore(resolve_collation(env, "replace", b))
-      let ty : @types.SqlType = if is_max(b[0].ty) {
-        b[0].ty
-      } else if b.iter().any(x => x.ty.is_unicode()) {
-        nvarchar(Some(4000))
-      } else {
-        VarChar(Some(8000), env.collation)
-      }
-      mk(Call(Replace, b), ty, any_null(b))
-    }
-    "REPLICATE" => {
-      arity(name, args, 2)
-      let b = bound()
-      let ty : @types.SqlType = if is_max(b[0].ty) {
-        b[0].ty
-      } else if b[0].ty.is_unicode() {
-        nvarchar(Some(4000))
-      } else {
-        VarChar(Some(8000), env.collation)
-      }
-      mk(Call(Replicate, b), ty, true)
-    }
-    "CHARINDEX" => {
-      arity_range(name, args, 2, 3)
-      let b = bound()
-      let ty : @types.SqlType = if is_max(b[1].ty) { BigInt } else { Int }
-      mk(Call(CharIndex, b), ty, any_null(b))
-    }
-    "CONCAT" => {
-      if args.length() < 2 {
-        raise err(
-          189,
-          "The concat function requires 2 to 254 arguments.",
-          severity=15,
-        )
-      }
-      let b = bound()
-      let unicode = b.iter().any(x => x.ty.is_unicode())
-      let mut total = 0
-      let mut max = false
-      for x in b {
-        match x.ty {
-          Char(n, _)
-          | NChar(n, _)
-          | VarChar(Some(n), _)
-          | NVarChar(Some(n), _) => total += n
-          VarChar(None, _) | NVarChar(None, _) | VarBinary(None) => max = true
-          _ => total += 30
-        }
-      }
-      let cap = if unicode { 4000 } else { 8000 }
-      let n = if max || total > cap { None } else { Some(total) }
-      let ty : @types.SqlType = if unicode {
-        nvarchar(n)
-      } else {
-        VarChar(n, env.collation)
-      }
-      mk(Call(Concat, b), ty, false)
-    }
-    "SPACE" => {
-      arity(name, args, 1)
-      mk(Call(Space, bound()), VarChar(Some(8000), env.collation), true)
-    }
-    "NCHAR" => {
-      arity(name, args, 1)
-      mk(Call(Nchar, bound()), NChar(1, env.collation), true)
-    }
-    "CHAR" => {
-      arity(name, args, 1)
-      mk(Call(Char, bound()), Char(1, env.collation), true)
-    }
-    "ASCII" | "UNICODE" => {
-      arity(name, args, 1)
-      mk(
-        Call(if name == "ASCII" { Ascii } else { Unicode }, bound()),
-        Int,
-        true,
-      )
-    }
-    "ABS" | "CEILING" | "FLOOR" | "SIGN" => {
-      arity(name, args, 1)
-      let b = bound()
-      let fnid : @ir.Fn = match name {
-        "ABS" => Abs
-        "CEILING" => Ceiling
-        "FLOOR" => Floor
-        _ => Sign
-      }
-      let ty : @types.SqlType = match (fnid, b[0].ty) {
-        (Ceiling | Floor, Decimal(p, _)) => Decimal(p, 0)
-        (Ceiling | Floor, Numeric(p, _)) => Numeric(p, 0)
-        (_, TinyInt | SmallInt | Bit) => Int
-        (_, t) if t.family() == FString => Float
-        (_, t) => t
-      }
-      mk(Call(fnid, b), ty, b[0].nullable)
-    }
-    "ROUND" => {
-      arity_range(name, args, 2, 3)
-      let b = bound()
-      let ty : @types.SqlType = match b[0].ty {
-        Decimal(p, s) => Decimal(@cmp.minimum(38, p + 1), s)
-        Numeric(p, s) => Numeric(@cmp.minimum(38, p + 1), s)
-        TinyInt | SmallInt | Bit => Int
-        t if t.family() == FString => Float
-        t => t
-      }
-      mk(Call(Round, b), ty, b[0].nullable)
-    }
-    "POWER" => {
-      arity(name, args, 2)
-      let b = bound()
-      let ty : @types.SqlType = match b[0].ty {
-        TinyInt | SmallInt | Bit => Int
-        t if t.family() == FString => Float
-        t => t
-      }
-      mk(Call(Power, b), ty, true)
-    }
-    "SQRT" => {
-      arity(name, args, 1)
-      mk(Call(Sqrt, bound()), Float, true)
-    }
     "ISNULL" => {
       arity(name, args, 2)
       let b = bound()
@@ -317,7 +133,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "NEWID" => {
       arity(name, args, 0)
-      mk(Call(NewId, []), UniqueIdentifier, false)
+      mk(Call(NewId, []), UniqueIdentifier, true)
     }
     "GETDATE" | "CURRENT_TIMESTAMP" | "GETUTCDATE" => {
       arity(name, args, 0)

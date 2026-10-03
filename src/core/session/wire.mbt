@@ -163,7 +163,8 @@ pub fn wire_value(v : @types.Value) -> @tds.WireValue {
         t % @types.TICKS_PER_DAY,
         off,
       )
-    DateTime(d, u) | SmallDateTime(d, u) => DateTime(d, u)
+    DateTime(d, u) => DateTime(d, u)
+    SmallDateTime(d, m) => DateTime(d, m * 60 * 300)
     Guid(b) => Guid(b)
   }
 }
@@ -227,7 +228,7 @@ pub fn param_value(ty : @types.SqlType, w : @tds.WireValue) -> @types.Value {
     (_, DateTime2(d, t)) => DateTime2(d.to_int64() * @types.TICKS_PER_DAY + t)
     (_, DateTimeOffset(d, t, off)) =>
       DateTimeOffset(d.to_int64() * @types.TICKS_PER_DAY + t, off)
-    (SmallDateTime, DateTime(d, u)) => SmallDateTime(d, u)
+    (SmallDateTime, DateTime(d, u)) => SmallDateTime(d, u / 18000)
     (_, DateTime(d, u)) => DateTime(d, u)
     (_, Int(i)) => BigInt(i)
     (_, Float(d)) => Float(d)

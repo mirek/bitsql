@@ -1,0 +1,172 @@
+{
+  "source": "harness/gen/functions.mjs",
+  "cases": [
+    {
+      "name": "000-choose-2-a-b-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHOOSE(2, 'a', 'b', 'c') AS c0, CHOOSE(4, 'a', 'b', 'c') AS c1, CHOOSE(0, 'a', 'b') AS c2, CHOOSE(NULL, 'a', 'b') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "001-choose-1-1-2-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CHOOSE(1, 1, 2.5) AS c0, CHOOSE(2, 'a', N'bb') AS c1, CHOOSE(1, CAST('x' AS varchar(3)), CAST('yy' AS varchar(10))) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "002-choose-2-9-a-b-c",
+      "steps": [{"kind":"batch","sql":"SELECT CHOOSE(2.9, 'a', 'b', 'c') AS c0, CHOOSE('2', 'a', 'b') AS c1, CHOOSE(1, NULL, 'b') AS c2"}]
+    },
+    {"name":"003-choose-1-a-2","steps":[{"kind":"batch","sql":"SELECT CHOOSE(1, 'a', 2) AS c0"}]},
+    {"name":"004-choose-1-2-a","steps":[{"kind":"batch","sql":"SELECT CHOOSE(1, 2, 'a') AS c0"}]},
+    {"name":"005-choose-1","steps":[{"kind":"batch","sql":"SELECT CHOOSE(1) AS c0"}]},
+    {
+      "name": "006-choose-1-cast-2024-01-01-as-date-2024-02-02",
+      "steps": [{"kind":"batch","sql":"SELECT CHOOSE(1, CAST('2024-01-01' AS date), '2024-02-02') AS c0"}]
+    },
+    {
+      "name": "007-greatest-1-2-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(1, 2, 3) AS c0, LEAST(1, 2, 3) AS c1, GREATEST(1, 2.5) AS c2, LEAST(CAST(1 AS bigint), 2) AS c3"
+        }
+      ]
+    },
+    {
+      "name": "008-greatest-a-b-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST('a', 'b', 'C') AS c0, LEAST(N'a', 'B') AS c1, GREATEST(CAST('a' AS varchar(3)), CAST('bb' AS varchar(10))) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "009-greatest-1-null-3",
+      "steps": [{"kind":"batch","sql":"SELECT GREATEST(1, NULL, 3) AS c0, LEAST(NULL, NULL) AS c1, GREATEST(NULL) AS c2, LEAST(5) AS c3"}]
+    },
+    {
+      "name": "010-greatest-cast-2024-01-01-as-date-2024-05-05",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(CAST('2024-01-01' AS date), '2024-05-05') AS c0, LEAST(1.5, CAST(2 AS float)) AS c1, GREATEST(CAST(1 AS money), 2) AS c2"
+        }
+      ]
+    },
+    {"name":"011-greatest-1-a","steps":[{"kind":"batch","sql":"SELECT GREATEST(1, 'a') AS c0"}]},
+    {"name":"012-greatest-1-5","steps":[{"kind":"batch","sql":"SELECT GREATEST(1, '5') AS c0, LEAST('10', 9) AS c1"}]},
+    {
+      "name": "013-greatest-cast-1-25-as-decimal-5-2-cast-100-5-as-decimal-10-1",
+      "steps": [{"kind":"batch","sql":"SELECT GREATEST(CAST(1.25 AS decimal(5,2)), CAST(100.5 AS decimal(10,1))) AS c0"}]
+    },
+    {"name":"014-greatest-0x01-0x02","steps":[{"kind":"batch","sql":"SELECT GREATEST(0x01, 0x02) AS c0"}]},
+    {
+      "name": "015-isnumeric-123",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('123') AS c0, ISNUMERIC('12.5') AS c1, ISNUMERIC('abc') AS c2, ISNUMERIC(NULL) AS c3, ISNUMERIC('') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "016-isnumeric-12",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('$12') AS c0, ISNUMERIC('1e5') AS c1, ISNUMERIC('-') AS c2, ISNUMERIC('+') AS c3, ISNUMERIC('.') AS c4, ISNUMERIC(',') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "017-isnumeric-1-000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('1,000') AS c0, ISNUMERIC(' 12 ') AS c1, ISNUMERIC('1d2') AS c2, ISNUMERIC('0x10') AS c3, ISNUMERIC('$') AS c4, ISNUMERIC('\\') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "018-isnumeric-12",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC(12) AS c0, ISNUMERIC(1.5) AS c1, ISNUMERIC(CAST(1 AS bit)) AS c2, ISNUMERIC(CAST(1 AS money)) AS c3"
+        }
+      ]
+    },
+    {"name":"019-isnumeric-cast-2024-01-01-as-date","steps":[{"kind":"batch","sql":"SELECT ISNUMERIC(CAST('2024-01-01' AS date)) AS c0"}]},
+    {
+      "name": "020-isnumeric-1e",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('1e') AS c0, ISNUMERIC('e5') AS c1, ISNUMERIC('1.2.3') AS c2, ISNUMERIC(CHAR(9) + '1') AS c3, ISNUMERIC('£5') AS c4, ISNUMERIC('€5') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "021-isnumeric-1e-308",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISNUMERIC('1E+308') AS c0, ISNUMERIC('1E+309') AS c1, ISNUMERIC('99999999999999999999999999999999999999999') AS c2, ISNUMERIC('-$5') AS c3, ISNUMERIC('$-5') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "022-iif-1-1-a-b",
+      "steps": [{"kind":"batch","sql":"SELECT IIF(1 = 1, 'a', 'b') AS c0, IIF(NULL = 1, 1, 2) AS c1, IIF(1 = 2, 1, 2.5) AS c2"}]
+    },
+    {
+      "name": "023-nullif-1-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT NULLIF(1, 1) AS c0, NULLIF('a', 'b') AS c1, NULLIF(1, 1.0) AS c2, ISNULL(NULL, 5) AS c3, COALESCE(NULL, 2, 3) AS c4"
+        }
+      ]
+    },
+    {"name":"024-newsequentialid","steps":[{"kind":"batch","sql":"SELECT NEWSEQUENTIALID() AS c0"}]},
+    {
+      "name": "025-select-case-when-newid-is-null-then-0-else-1-end-as-c0-datal",
+      "steps": [{"kind":"batch","sql":"SELECT CASE WHEN NEWID() IS NULL THEN 0 ELSE 1 END AS c0, DATALENGTH(NEWID()) AS c1"}]
+    },
+    {
+      "name": "026-select-case-when-getdate-is-null-then-0-else-1-end-as-c0-cas",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN GETDATE() IS NULL THEN 0 ELSE 1 END AS c0, CASE WHEN SYSDATETIME() IS NULL THEN 0 ELSE 1 END AS c1"
+        }
+      ]
+    },
+    {
+      "name": "027-select-top-0-getdate-as-a-getutcdate-as-b-sysdatetime-as-c-s",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP 0 GETDATE() AS a, GETUTCDATE() AS b, SYSDATETIME() AS c, SYSUTCDATETIME() AS d, SYSDATETIMEOFFSET() AS e, CURRENT_TIMESTAMP AS f, NEWID() AS g"
+        }
+      ]
+    },
+    {
+      "name": "028-select-top-0-rand-as-a-datefirst-as-b-db-name-as-c-host-name",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP 0 RAND() AS a, @@DATEFIRST AS b, DB_NAME() AS c, HOST_NAME() AS d, SUSER_SNAME() AS e, USER_NAME() AS f"
+        }
+      ]
+    }
+  ]
+}

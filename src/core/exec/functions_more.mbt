@@ -9,9 +9,17 @@ fn call_more(
   args : Array[@ir.Expr],
   e : @ir.Expr,
 ) -> @types.Value raise @types.SqlError {
-  ignore(ctx)
-  ignore(v)
-  ignore(args)
-  ignore(e)
+  if call_date(name, v, args, e) is Some(r) {
+    return r
+  }
+  if call_string(name, v, args, e) is Some(r) {
+    return r
+  }
+  if call_math(ctx, name, v, args, e) is Some(r) {
+    return r
+  }
+  if call_misc(name, v, args, e) is Some(r) {
+    return r
+  }
   raise @types.not_supported("function \{name}")
 }

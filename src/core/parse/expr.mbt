@@ -347,12 +347,14 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
         "CASE" => self.case_expr()
         "TRIM" if next_paren && self.trim_has_from() => {
           // TRIM([LEADING|TRAILING|BOTH] [chars] FROM s) is represented as
-          // TRIM / LTRIM / RTRIM (s, chars); chars defaults to ' '.
+          // a call of TRIM / "TRIM LEADING" / "TRIM TRAILING" (s, chars);
+          // chars defaults to ' '. The two-word names cannot be written as
+          // an unquoted function name; they keep SQL Server's TRIM messages.
           self.pos += 2
           let fname = if self.eat_kw("LEADING") {
-            "LTRIM"
+            "TRIM LEADING"
           } else if self.eat_kw("TRAILING") {
-            "RTRIM"
+            "TRIM TRAILING"
           } else {
             ignore(self.eat_kw("BOTH"))
             "TRIM"
@@ -568,6 +570,7 @@ fn Parser::call(
       args.push(self.call_arg())
     }
   }
+  check_datepart(name, args)
   self.expect_punct(")")
   let within_group = if self.is_kw("WITHIN") && self.is_kw_at(1, "GROUP") {
     self.pos += 2

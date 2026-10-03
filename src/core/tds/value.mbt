@@ -157,6 +157,16 @@ pub fn write_value(
       w.i32le(d)
       w.i32le(t)
     }
+    // smalldatetime: u16 days since 1900, u16 minutes (t is in 1/300 s)
+    (DateTime4, DateTime(d, t)) => {
+      w.u16le(d)
+      w.u16le(t / 18000)
+    }
+    (DateTimeN(4), DateTime(d, t)) => {
+      w.u8(4)
+      w.u16le(d)
+      w.u16le(t / 18000)
+    }
     (Guid, Guid(b)) => {
       w.u8(16)
       w.bytes(b)

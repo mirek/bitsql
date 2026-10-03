@@ -324,6 +324,10 @@ fn conversion(
   try_ : Bool,
   style : Int?,
 ) -> @ir.Expr raise @types.SqlError {
+  // a bare NULL converts to any type (CAST(NULL AS date))
+  if a.kind is Lit(Null) && !(t is Int) {
+    return { kind: Lit(Null), ty: t, nullable: true, }
+  }
   if !@types.can_convert_explicitly(a.ty, t) {
     raise @types.explicit_conversion_error(a.ty, t)
   }
@@ -343,7 +347,7 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
     "@@OPTIONS" => int_(Options)
     "@@IDENTITY" => mk(Global(Identity), Numeric(38, 0), true)
     "@@SPID" => mk(Global(Spid), SmallInt, false)
-    "@@DATEFIRST" => mk(Global(DateFirst), TinyInt, false)
+    "@@DATEFIRST" => mk(Global(DateFirst), TinyInt, true)
     "@@TEXTSIZE" => int_(TextSize)
     "@@MAX_PRECISION" => mk(Global(MaxPrecision), TinyInt, false)
     "@@PROCID" => int_(ProcId)

@@ -33,6 +33,9 @@ pub(all) struct Runtime {
   mut count_override : Int64?
   /// Recursive CTE work tables by plan id (exec/plan.mbt `Recursive`).
   work : Map[Int, Array[Array[@types.Value]]]
+  /// RAND state (L'Ecuyer s1, s2); 0 until first use or RAND(seed).
+  mut rand_s1 : Int64
+  mut rand_s2 : Int64
   mut database : String
   spid : Int
   server_name : String
@@ -64,6 +67,8 @@ pub fn Runtime::new(
     null_eliminated: false,
     count_override: None,
     work: Map([]),
+    rand_s1: 0L,
+    rand_s2: 0L,
     database,
     spid,
     server_name,

@@ -163,6 +163,61 @@ mention the correction here.
   word-sort ('-' and '\'' ignored at primary level) for Windows collations;
   styles other than none/0/121 for temporal types.
 
+- 2026-10-03 (functions, harness/corpus/functions captures): **result
+  metadata**: nearly every built-in is nullable (flags 33) even with literal
+  arguments (LEN('abc'), UPPER('abc')); exceptions: CONCAT/CONCAT_WS (32),
+  *FROMPARTS with integer arguments (32), PI() and SIGN/CEILING/FLOOR/ROUND/
+  RADIANS over numeric literals (folded, 32; ABS/POWER/DEGREES are not), NEWID
+  is 33. Implicit-to-string lengths: bit 1, tinyint 4, smallint 6, int 12,
+  bigint 24, decimal 41, money 40, float 23, date/time types and GUID 40, bare
+  NULL 1 (0 inside CONCAT). LEFT/RIGHT/SUBSTRING take min(constant, L)
+  (at least 1); REPLICATE L*n capped at 8000 bytes, a count <= 0 types as 2
+  bytes, NULL/variable/non-integer counts 8000; SPACE(n) is varchar(n)
+  (<= 0 → 1); STUFF(L - deleted + R) for constant start/length, else 8000,
+  NULL length → nvarchar(4000); STR(x, n) varchar(n); QUOTENAME nvarchar(258);
+  SOUNDEX varchar(5); DATENAME nvarchar(30); FORMAT nvarchar(4000);
+  STRING_ESCAPE nvarchar(max); TRANSLATE/REPLACE 8000/4000. ROUND keeps
+  decimal(p,s) (overflow 8115 "numeric"), POWER(decimal(p,s)) is (38,s),
+  DEGREES/RADIANS of decimal are (38,18), bit/text/NULL arguments become float.
+- 2026-10-03 (functions): datepart errors: 9810 "The datepart X is not
+  supported by date function F for data type T." with per-function states
+  (DATEADD date/time 1, datetime 0, smalldatetime 3, tzoffset/iso_week 2;
+  DATEPART date 2, time 3, datetime tzoffset 6; DATENAME 4/5/7; DATETRUNC
+  datetime 9, smalldatetime 8, date/time cross parts 10, else 11); DATEDIFF
+  iso_week/tzoffset 9806 state 0; overflow 535 state 0 (datediff_big wording);
+  DATEADD overflow 517 states date/datetime2/datetimeoffset 3, datetime 1,
+  smalldatetime 2; unknown datepart is the *parse* error 155. DATEADD rounds:
+  datetime ms to 1/300 s (+1 ms keeps .997, +2 ms → next second),
+  smalldatetime seconds to the minute (29 down, 30 up), datetime2 ns to
+  100 ns half away from zero then to the scale. DATEDIFF week counts Sunday
+  boundaries; text arguments of DATEPART/DATEDIFF are datetimeoffset(7), of
+  DATEADD datetime; DATETRUNC of an int is 8116.
+- 2026-10-03 (functions): **RAND** is L'Ecuyer's combined generator
+  (40014 mod 2147483563, 40692 mod 2147483399, output z * 4.656613e-10) with
+  RAND(seed) setting s1 = |seed| (0 or >= 2147483563 → 12345) and s2 = 67890;
+  reproduces RAND(n) and the following RAND() values exactly. BINARY_CHECKSUM
+  is h = rotl4(h) ^ unit (varchar bytes signed, nvarchar UTF-16 units,
+  integers whole, trailing spaces dropped); CHECKSUM of integers likewise
+  (bigint as hi ^ lo), of text collation-dependent (not emulated).
+  HASHBYTES: MD2 and unknown algorithms return NULL. SOUNDEX treats H/W as
+  separators and stops at the first non-letter; DIFFERENCE fits "first letter
+  +1, then a's digits in b's: 3 / any 2-run 2 / else 1 per digit" over codes
+  built without first-letter dedupe (asymmetric; unverified beyond 26 pairs).
+- 2026-10-03 (functions): string search follows the collation:
+  LTRIM/RTRIM/TRIM sets match units equal to any substring of the set
+  (ß trimmed by 'ss', é by e+U+0301, ignorable surrogates under version-0
+  collations), REPLACE(N'straße', 'ss', 'X') is 'straXe', CHARINDEX(N'é',
+  N'cafe'+U+0301) is 4 but varchar 'straße' does not contain 'ss'. Runtime
+  negative lengths: LEFT/SUBSTRING 537 state 2 ("LEFT or SUBSTRING"), RIGHT
+  536 state 4; constant ones 536 state 6 (LEFT/RIGHT) / 8 (SUBSTRING) at
+  compile time. ISNUMERIC = float syntax (e/d exponent) or money syntax
+  (currency, sign, spaces after the sign, commas, lone '-', '.', ','). STR
+  fits decimals to the truncated integer part, keeps '-' on values rounding
+  to 0. FORMAT: .NET Framework en-US (negative currency in parentheses, double
+  from 15 significant digits, time needs escaped literals or returns NULL).
+  Unverified: DIFFERENCE beyond the captured pairs, case mapping beyond
+  Latin/Greek/Cyrillic, CHECKSUM of NULL columns, GREATEST nullability rule
+  (non-null when every argument is non-null and converts without failure).
 
 # T-SQL Language Reference
 
