@@ -202,8 +202,18 @@ pub fn eval_aggregate(
       }
     }
     Sum => {
+      let prev = ctx.rt.null_eliminated
       let vs = agg_inputs(ctx, call, rows)
-      sum_values(vs, call.arg.unwrap().ty, call.ty)
+      // an overflow stops the aggregation, so a NULL after it was never
+      // seen: no 8153 (captured: SUM over (2147483647), (1), (NULL); an
+      // overflow after a NULL is assumed to keep it, unverified)
+      sum_values(vs, call.arg.unwrap().ty, call.ty) catch {
+        @types.SqlError(number=8115, ..) as e => {
+          ctx.rt.null_eliminated = prev
+          raise e
+        }
+        e => raise e
+      }
     }
     Avg => {
       let vs = agg_inputs(ctx, call, rows)

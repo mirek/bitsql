@@ -646,7 +646,8 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
       // column 207; msduck count-null-compilation)
-      let e = if e0.number() == 8117 {
+      let e = if e0.number() == 8117 &&
+        e0.message().has_prefix("Operand data type NULL ") {
         self.count_null_error(stmts, e0)
       } else {
         e0

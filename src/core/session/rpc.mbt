@@ -180,6 +180,9 @@ fn Session::run_module(
   // scope (captured: msduck identity-insert-rpc)
   let saved_identity_insert = self.identity_insert
   let saved_scope_identity = self.rt.scope_identity
+  // SET ANSI_WARNINGS / ARITHABORT revert too (captured: msduck
+  // session-property-context, after sp_executesql N'SET … OFF')
+  let saved_flags = Map::from_array(self.session_flags.iter().to_array())
   self.frames.push(frame)
   self.rt.nest_level += levels
   self.try_base = self.try_depth
@@ -194,6 +197,10 @@ fn Session::run_module(
     self.try_base = saved.5
     self.identity_insert = saved_identity_insert
     self.rt.scope_identity = saved_scope_identity
+    self.session_flags.clear()
+    for k, v in saved_flags {
+      self.session_flags[k] = v
+    }
     // the calling EXEC statement's own state (its errors complete with 253)
     self.cur_cmd = 253
     self.ddl_cmd = 0
