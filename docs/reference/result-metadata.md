@@ -23,6 +23,11 @@ both images are nullable (flags 9) and `$action` is nvarchar(10) with flags 0.
 A constant CASE that folds to a column keeps that column's base flags
 (`CASE WHEN 1=1 THEN v ELSE 7 END` gives 9).
 
+A hidden ORDER BY key (ORDER token ordinal 0: the key is not an output alias,
+position or select-list expression) clears 0x20 on every computed column of
+that SELECT: literals report 0, nullable expressions 1; base columns keep
+8/9 (`query/order-hidden-key`).
+
 ## Types of literals
 
 | Literal | Type | Example |

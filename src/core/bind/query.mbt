@@ -1166,6 +1166,14 @@ fn bind_select_query(
     plan = limit(env, plan, top, keys, offset, fetch)
     plan = Project(plan, exprs)
   }
+  // a hidden sort key (ORDER ordinal 0) clears fComputed on every computed
+  // column: literal 32 -> 0, nullable expression 33 -> 1 (captured:
+  // query/order-hidden-key, docs/reference/result-metadata.md)
+  let result = if order.contains(0) {
+    result.map(c => { ..c, origin: derived_origin(c.origin), })
+  } else {
+    result
+  }
   { plan, columns: result, order, }
 }
 
