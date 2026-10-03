@@ -1,0 +1,349 @@
+---
+name: t-sql
+description: "Comprehensive T-SQL language reference for implementing a T-SQL engine. Covers data types, type conversion, operators, expressions, control flow, queries (SELECT, JOIN, CTE, window functions), DML statements (INSERT, UPDATE, DELETE, MERGE), DDL statements (CREATE/ALTER/DROP TABLE, INDEX, VIEW, PROCEDURE, FUNCTION, TRIGGER), built-in functions (aggregate, string, math, date/time, conversion, JSON), transactions, error handling, and session settings. Use when implementing T-SQL parsing, evaluation, query processing, or SQL Server compatibility."
+---
+
+> **Provenance.** Reference content ported from the sibling projects msduck and
+> mssqlite (same author, public domain). Notes that mention `packages/*`,
+> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
+> are field notes verified against SQL Server there, not claims about bitsql.
+> Real SQL Server captures remain the authority (docs/design/verification.md).
+
+## bitsql implementation
+
+`src/core/ast` (lexer, parser), `src/core/bind` (binder, `tsql.mbt` Semantics), `src/core/exec` (executor), `src/core/types` (values and conversions).
+
+## bitsql findings (keep current)
+
+Append dated, one-paragraph findings here whenever bitsql work confirms,
+corrects or adds to this reference: wire bytes, client behavior or SQL Server
+semantics observed in captures. Correct wrong inherited notes in place and
+mention the correction here.
+
+- _(none yet)_
+
+
+# T-SQL Language Reference
+
+Complete reference for the Transact-SQL language used by Microsoft SQL Server.
+
+Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
+
+## Reference Files
+
+- [data-types.md](data-types.md) — All data types (exact/approximate numeric, date/time, character, binary, special), storage sizes, ranges, precision/scale rules, type precedence, type synonyms
+- [type-conversion.md](type-conversion.md) — CAST/CONVERT with style codes, TRY_CAST/TRY_CONVERT, implicit/explicit conversion matrix, decimal arithmetic precision rules, truncation vs rounding behavior
+- [language-elements.md](language-elements.md) — Operators (arithmetic, comparison, logical, bitwise, string, compound, unary), operator precedence, expressions, CASE, LIKE wildcards, BETWEEN/IN/EXISTS/ALL/ANY, variables (DECLARE/SET/SELECT), control flow (IF/ELSE, WHILE, BEGIN/END, GOTO, RETURN, WAITFOR), cursors, reserved keywords, NULL and three-valued logic
+- [queries.md](queries.md) — Logical processing order, SELECT clause, FROM/JOIN types and semantics (INNER/LEFT/RIGHT/FULL/CROSS, APPLY, PIVOT), WHERE/search conditions, GROUP BY (ROLLUP/CUBE/GROUPING SETS), HAVING, ORDER BY with OFFSET/FETCH, TOP, OVER clause / window frames (ROWS vs RANGE), CTEs (recursive and non-recursive), set operations (UNION/EXCEPT/INTERSECT), subqueries, OUTPUT clause, SELECT INTO, table value constructor, hints, AT TIME ZONE
+- [functions.md](functions.md) — Aggregate functions (COUNT, SUM, AVG, MIN, MAX, STRING_AGG, STDEV, VAR), ranking/window functions (ROW_NUMBER, RANK, DENSE_RANK, NTILE, LAG, LEAD, FIRST_VALUE, LAST_VALUE, PERCENT_RANK, CUME_DIST, PERCENTILE_CONT/DISC), string functions (SUBSTRING, LEN, REPLACE, CONCAT, UPPER, LOWER, TRIM, LEFT, RIGHT, CHARINDEX, PATINDEX, REVERSE, REPLICATE, STUFF, SPACE, CHAR, NCHAR, ASCII, UNICODE), math functions (ABS, CEILING, FLOOR, ROUND, POWER, SQRT, SIGN), date/time functions (GETDATE, DATEADD, DATEDIFF, DATEPART, DATENAME, DATEFROMPARTS, FORMAT), logical functions (IIF, CHOOSE, ISNULL, COALESCE, NULLIF), system functions (NEWID, DB_NAME, OBJECT_ID, @@ERROR, @@ROWCOUNT, SCOPE_IDENTITY, @@TRANCOUNT), JSON functions (JSON_VALUE, JSON_QUERY, JSON_MODIFY, ISJSON, OPENJSON), error functions (ERROR_MESSAGE/NUMBER/SEVERITY/STATE/LINE/PROCEDURE), ISNUMERIC, ISDATE, DATALENGTH
+- [statements-ddl.md](statements-ddl.md) — CREATE/ALTER/DROP TABLE (column definitions, constraints, IDENTITY, computed columns, foreign key actions), CREATE INDEX (clustered/nonclustered, UNIQUE, filtered, INCLUDE, options), CREATE VIEW (SCHEMABINDING, CHECK OPTION, updatable views), CREATE PROCEDURE (parameters, OUTPUT, RECOMPILE), CREATE FUNCTION (scalar, inline TVF, multi-statement TVF), CREATE TRIGGER (AFTER/INSTEAD OF, DML/DDL, inserted/deleted tables), CREATE DATABASE, CREATE SCHEMA, GRANT/DENY/REVOKE permissions
+- [statements-dml.md](statements-dml.md) — INSERT (VALUES, SELECT, EXEC, DEFAULT VALUES, OUTPUT), UPDATE (SET, compound operators, FROM clause for multi-table, .WRITE for LOB), DELETE (FROM...FROM pattern, join-based), MERGE (MATCHED/NOT MATCHED, $action), TRUNCATE TABLE (vs DELETE, IDENTITY reset, restrictions), BULK INSERT (format options, constraints, triggers)
+- [transactions-and-error-handling.md](transactions-and-error-handling.md) — Transaction modes (autocommit/explicit/implicit), BEGIN/COMMIT/ROLLBACK TRANSACTION, SAVE TRANSACTION/savepoints, @@TRANCOUNT semantics, XACT_STATE(), TRY...CATCH (severity rules, error functions, uncommittable transactions), THROW vs RAISERROR, SET statements (ANSI_NULLS, QUOTED_IDENTIFIER, NOCOUNT, XACT_ABORT, IDENTITY_INSERT, TRANSACTION ISOLATION LEVEL, ARITHABORT, CONCAT_NULL_YIELDS_NULL, and more), isolation levels
+
+## Inherited notes: @mssqlite/tsql + transpile + engine implementation in mssqlite (not bitsql)
+
+The language pipeline lives in three packages:
+
+- [`packages/tsql`](../../../packages/tsql) — lexer + parser to a typed
+  AST. Its Readme lists the exact supported surface (queries with joins/
+  CTEs/set ops/window OVER, full expression precedence and predicates,
+  DML, DDL with constraints, DECLARE/SET, control flow, transactions,
+  EXEC, THROW).
+- [`packages/transpile`](../../../packages/transpile) — AST → SQLite SQL
+  with function mapping and CONVERT style support.
+- [`packages/engine`](../../../packages/engine) — interprets what SQLite
+  cannot: variables, IF/WHILE, @@TRANCOUNT nesting, sp_executesql,
+  SELECT INTO, error-number mapping. Its server-facing async execution checks
+  an AbortSignal between statements and on every interpreted loop iteration;
+  Attention is control flow, not a catchable T-SQL error.
+
+### Parsing notes discovered implementing
+
+- Reserved words must be rejected as bare identifiers (else
+  `SELECT FROM` "succeeds" selecting a column named FROM) but allowed as
+  function names directly before `(` — `LEFT(x, 1)`, `RIGHT(...)`.
+- `TOP 10 *` is ambiguous with multiplication: binary-operator parsing
+  must rewind when the right operand fails so `*` can be the select star.
+  Bare `TOP n` only takes a constant; expressions require `TOP (expr)`.
+- `CASE x WHEN …` vs `CASE WHEN …`: the optional operand parser must not
+  swallow the `WHEN` keyword as a column reference.
+- `GO` is a client-side batch separator — it never arrives over TDS and
+  is deliberately not in the grammar.
+- Statements separate on semicolons *or* juxtaposition; both appear in
+  real client traffic.
+- `@@ERROR` reads as the previous statement's error number — it resets
+  *after* the statement referencing it, and it persists across batches.
+
+### Implementation notes — later additions
+
+- TRY/CATCH parses in `beginBlockOrTransaction` (BEGIN TRAN → BEGIN TRY →
+  block, in that order); bodies terminate on the two-word `END TRY` /
+  `END CATCH`, so nested plain `BEGIN … END` blocks parse through
+  `statementRef` and never confuse the terminator scan.
+- RAISERROR takes a parenthesized argument list plus optional
+  `WITH option[, …]` (options parsed, lowercased, NOWAIT/LOG ignored).
+- Batch execution classifies failures after each top-level statement.
+  Constraint violations (515/547/2601/2627), conversion/arithmetic classes,
+  RAISERROR severity 11-19, and cursor/sequence runtime errors emit an ERROR
+  and continue; syntax/compile failures, explicit THROW, unsupported operations,
+  and severity 20+ abort. `@@ERROR` exposes the immediately prior failure and
+  `@@ROWCOUNT` is 0 after it. XACT_ABORT ON rolls back and aborts for qualifying
+  runtime errors, but—as on SQL Server—does not change RAISERROR behavior.
+  TRY/CATCH intercepts errors before this outer classification.
+  Integer CAST/CONVERT truncates numeric/decimal inputs toward zero and treats
+  empty or whitespace-only character input as zero. Other invalid text and type
+  bounds retain 245/8115; TRY variants convert either failure to NULL.
+- Integer `+ - * / %` uses checked evaluation: NULL propagates, integer division
+  truncates toward zero, zero divisors raise 8134, and inferred int/bigint bounds
+  raise 8115. SUM defaults to SQL Server's int-width accumulator; explicitly
+  casting its argument to BIGINT selects a 64-bit accumulator. Both ARITHABORT
+  OFF and ANSI_WARNINGS OFF are required to turn an arithmetic failure into NULL;
+  otherwise the error is catchable and honors XACT_ABORT. Integer AVG shares
+  the checked accumulator, truncates the quotient toward zero, ignores NULLs,
+  and retains int/bigint result width; COUNT_BIG always retains bigint metadata.
+  DECIMAL/NUMERIC uses
+  fixed-scale strings with scaled-BigInt casts and arithmetic, SQL Server
+  operator precision/scale formulas (including the precision-38 reduction
+  rules), half-away-from-zero rounding, and 8115/8134 errors.
+- Mixed known types use the SQL Server precedence table before evaluation.
+  Arithmetic, comparisons, BETWEEN, IN, simple and result CASE, set operations,
+  multi-row VALUES, and DML/MERGE target assignments share that coercion path.
+  Declared columns, variables, procedure parameters, and RPC TYPE_INFO all
+  participate; invalid conversions preserve 245/241/8114/8169/8115 and
+  incompatible pairs raise 206/402 instead of inheriting SQLite affinity.
+- String boundary functions use dedicated UDFs where SQLite differs:
+  SUBSTRING starts before one by shortening the returned prefix, negative
+  LEFT/RIGHT/SUBSTRING lengths raise 536, negative REPLICATE/SPACE counts
+  return NULL, and QUOTENAME accepts the documented delimiter pairs, doubles
+  closing delimiters, and returns NULL for input longer than 128 characters.
+  Their result descriptors follow SQL Server width rules: literal
+  SUBSTRING/LEFT/RIGHT/SPACE counts narrow widths, REPLICATE multiplies and caps
+  them at 8,000 bytes, REPLACE/TRANSLATE/STRING_AGG expose their family maximum,
+  and STUFF accounts for removed and replacement widths.
+- Under every currently supported non-SC collation, LEN, UNICODE, NCHAR,
+  SUBSTRING, LEFT, RIGHT, STUFF, and REVERSE count or manipulate UTF-16 code
+  units. Supplementary characters therefore count as two; NCHAR accepts one
+  0-65535 unit; and boundary results may contain an unpaired surrogate. A future
+  implemented `_SC` collation must switch these operations to code points.
+- LIKE uses the effective or default SQL collation for literals, columns,
+  variables, parameters, and computed expressions. Its matcher implements `%`,
+  `_`, `[abc]`, `[a-c]`, `[^...]`, literal `[`, and ESCAPE; invalid ranges and
+  malformed classes miss, while a multi-character ESCAPE raises 506.
+- Character declarations default an omitted width to 1; CAST/CONVERT default
+  it to 30. Explicit char/varchar/nchar/nvarchar conversions truncate and
+  fixed-width families pad, while assignment into table storage rejects
+  encoded overflow with error 2628. ISNULL retains its first argument's
+  family and width; COALESCE follows character precedence and widens.
+- SET NOCOUNT takes effect at statement execution time: ON suppresses the
+  affected-row value in TDS DONE-family tokens but does not change execution or
+  `@@ROWCOUNT`. A nested procedure, trigger, or dynamic batch inherits the
+  caller's setting and restores it on exit; changes within that scope govern
+  each completion produced there.
+- Built-in system procedures use the same EXEC/RPC path as user procedures.
+  Argument binding accepts positional, named, and DEFAULT values and dispatches
+  the final name component case-insensitively. The implemented administration
+  surface is `sp_help`, `sp_helptext`, `sp_columns`, `sp_tables`, `sp_who`,
+  `sp_helpdb`, `sp_spaceused`, and `sp_rename`. Metadata procedures return
+  explicitly typed SQL Server/ODBC schemas instead of relying on SQLite
+  inference. `sp_rename` does not rewrite module text or dependent references,
+  and function renames remain unsupported because runtime function registration
+  cannot be changed atomically with SQLite schema and catalog state.
+- Computed column grammar is `name AS expression [PERSISTED [NOT NULL]]` with
+  no declared type. mssqlite infers the result from referenced columns, casts,
+  numeric precision/scale, and supported scalar expressions; PERSISTED maps to
+  a STORED SQLite generated column and the default maps to VIRTUAL. Direct
+  INSERT/UPDATE raises 271 and nondeterministic generated definitions raise
+  4936. Generated columns may be indexed normally.
+- Supported COLLATE names are `SQL_Latin1_General_CP1_CI_AS` and the
+  `Latin1_General_100_{CI|CS}_{AS|AI}` plus `Latin1_General_100_BIN2` matrix.
+  Column declarations govern predicates, ORDER BY, unique constraints and
+  indexes; expression COLLATE has explicit precedence. CI folds Unicode case,
+  AI removes canonical combining marks, AS retains accents, and BIN2 uses the
+  unmodified text key. Unknown names raise 448 and conflicting implicit
+  collations raise 468.
+- Missing COLLATE clauses are coercible-default
+  `SQL_Latin1_General_CP1_CI_AS`. Predicates, joins, IN/BETWEEN, ordering,
+  grouping, DISTINCT, set operators, and uniqueness compare a shared key that
+  removes trailing U+0020 from both operands before applying Unicode case and
+  accent sensitivity. Other Unicode space characters remain significant.
+  LIKE is deliberately separate: a trailing blank in the pattern is
+  significant, while trailing source blanks may match a shorter pattern.
+  UPDATE/DELETE targets carry runtime type and collation metadata so their
+  predicates use the same rule. Text foreign keys compare the referenced
+  column's key for child validation and every referential action.
+- CREATE [OR ALTER] PROC[EDURE] owns the rest of the batch as its body
+  (MSSQL requires it to be alone in a batch); `parse()` patches the
+  statement's `definition` with the trimmed batch source for
+  sys.sql_modules. Parameters accept optional parens, defaults,
+  OUT/OUTPUT and READONLY.
+- CREATE/ALTER/CREATE OR ALTER TRIGGER also owns the rest of its batch.
+  The AST retains the table target, AFTER/FOR or INSTEAD OF timing, ordered
+  INSERT/UPDATE/DELETE event list, WITH options, NOT FOR REPLICATION, and body;
+  DROP TRIGGER supports IF EXISTS and multiple names. Runtime transition
+  tables are statement-level and read-only. Direct recursion is suppressed;
+  nested triggers otherwise share the 32-level procedure/function limit.
+- Named DECLARE CURSOR accepts LOCAL/GLOBAL, FORWARD_ONLY/SCROLL,
+  STATIC/KEYSET/DYNAMIC/FAST_FORWARD, READ_ONLY/SCROLL_LOCKS/OPTIMISTIC,
+  TYPE_WARNING and INSENSITIVE options plus optional FOR UPDATE metadata.
+  OPEN materializes a read-only static snapshot for every declared type;
+  FETCH supports NEXT/PRIOR/FIRST/LAST/ABSOLUTE/RELATIVE, either returning one
+  row or assigning an equal-width INTO list, and updates session-global
+  `@@FETCH_STATUS` (0 or -1; -2 cannot occur for snapshots). Plain,
+  FORWARD_ONLY, and FAST_FORWARD cursors allow NEXT only; DYNAMIC rejects
+  ABSOLUTE. LOCAL cursors clean up at batch/procedure/trigger scope exit,
+  while GLOBAL (the default) persists until DEALLOCATE. Cursor variables,
+  positioned UPDATE/DELETE, and live KEYSET/DYNAMIC behavior remain deferred.
+- CREATE DATABASE, DROP DATABASE [IF EXISTS], ALTER DATABASE ... MODIFY NAME,
+  and ALTER DATABASE ... SET READ_ONLY/READ_WRITE have dedicated AST nodes.
+  USE switches database-owned storage and catalogs rather than changing only a
+  label. Three-part object names retain the database component for attachment
+  resolution; four-part linked-server names remain unsupported.
+- CREATE/ALTER/DROP SEQUENCE parse integer types, START/RESTART, signed
+  INCREMENT, MINVALUE/MAXVALUE (and NO forms), CYCLE and CACHE options in any
+  order. NEXT VALUE FOR is a scalar AST node and uses a database-scoped generator;
+  values persist across restart and remain consumed after rollback. Ascending
+  sequences default to the type minimum, descending to the type maximum, and a
+  cycle wraps to the configured/type minimum or maximum rather than START.
+  Tinyint/smallint/int/bigint and decimal/numeric scale 0 (precision <= 18) are
+  supported. OVER ordering, SQL Server's context restrictions, duplicate
+  same-sequence coalescing within one result row, and sp_sequence_get_range are
+  deferred; CACHE is retained in metadata but every completed statement flushes.
+- ROWVERSION and its deprecated TIMESTAMP synonym declare the single automatic
+  version column allowed per table. It takes no length, DEFAULT, IDENTITY,
+  COLLATE, or ROWGUIDCOL clause. INSERT may omit it or name
+  it with DEFAULT; explicit values raise 273, and any UPDATE assignment raises
+  272. Every inserted or updated row receives a new database-wide big-endian
+  binary(8), including no-op updates; nullable declarations still auto-generate
+  values but expose varbinary(8) metadata. Values remain consumed after rollback,
+  survive restart, span tables/table variables/sessions, and `@@DBTS` returns
+  the latest allocated value without advancing it.
+- TOP parses `PERCENT` and `WITH TIES` (`top.withTies`); UPDATE/DELETE
+  accept `TOP (expr)` only, per MSSQL.
+- OUTPUT clause (`Ast.Output`) sits between the column list / SET list /
+  target and the source / FROM / WHERE. Items reuse the select-item shape
+  minus variable assignment; `OUTPUT` being a reserved word is what stops
+  the preceding expression (last SET value, INSERT column list) from
+  swallowing it. INSERT/DELETE (and inserted-only UPDATE) transpile to
+  SQLite `RETURNING` with the pseudo-table qualifier stripped; UPDATE
+  reading `deleted.` values is engine-interpreted via a temp-table
+  snapshot joined to the post-update rows. Divergences: an unaliased
+  `deleted.x, inserted.x` pair collapses to one result key (duplicate
+  column names — known engine-wide limitation, alias them), and
+  `UPDATE … FROM` combined with `OUTPUT deleted.` is rejected.
+- `Ast.TableSource` has a first-class `values` form shared by ordinary FROM,
+  joins/APPLY and MERGE USING. The parser requires its table alias and retains
+  the optional column-alias list plus raw rows. Engine resolution rejects
+  unnamed, duplicate, mismatched and unequal-width columns with
+  8155/8156/8158/8159/10709, resolves variables, and records the common
+  SQL-precedence type and nullability for every column. Transpilation coerces
+  the rows and wraps SQLite's native VALUES source in a stable named SELECT.
+- MERGE parses in `parse/dml.ts`: USING accepts a table, `(SELECT …)` or
+  the shared `(VALUES …)` source. `USING` had to
+  join the reserved-word set or it parses as the target's alias. The
+  parser requires MERGE's semicolon and reports 10713/15 when it is
+  absent. Before snapshot construction, the engine rejects repeated actions
+  with 10714/15 and a second MATCHED / BY SOURCE arm after an unconditional
+  first arm with 5324/16. The same table can still be target and source (the
+  snapshot makes it safe); multi-source matches for one target row raise
+  8672. MERGE OUTPUT supports `$action` (lexed as a
+  plain word — a leading `$` may start a word token), `inserted.` /
+  `deleted.` items and stars, and `OUTPUT … INTO`; unlike SQL Server,
+  source columns in MERGE OUTPUT are rejected (the row images are
+  assembled after the arms apply, when source pairing is gone).
+- `DECLARE @t TABLE (...)` reuses CREATE TABLE column/constraint members but
+  requires the table variable to be the only declaration in that DECLARE.
+  Object-position variables parse only in SELECT/INSERT/UPDATE/DELETE. The
+  engine gives each declaration a unique SQLite temp backing table and
+  scopes it to the declaring batch or procedure; nested procedures and
+  `sp_executesql` cannot see a caller's table variables. Backing tables are
+  dropped on normal or exceptional scope exit.
+- FROM table sources recognize function calls with aliases and positional
+  column aliases. Implemented built-ins are `STRING_SPLIT(string, separator
+  [, enable_ordinal])`, default/explicit-schema `OPENJSON(json [, path])
+  [WITH (...)]`, and `GENERATE_SERIES(start, stop [, step])`. STRING_SPLIT
+  requires constant 0/1/NULL for `enable_ordinal`, returns no rows for NULL
+  or empty input, preserves empty interior tokens, and only promises source
+  position through its bigint `ordinal` column. OPENJSON evaluates BIN2-like
+  lax/strict root and WITH-column paths, retains exact AS JSON fragments, and
+  reports SQL Server's distinct missing/wrong-kind/malformed error states.
+- CROSS/OUTER APPLY parse as left-associative join nodes without ON. The
+  transpiler supports correlated STRING_SPLIT, OPENJSON, GENERATE_SERIES,
+  VALUES, and arbitrary derived SELECT sources. Derived sources retain
+  zero/one/many-row, aggregate, predicate, TOP/ORDER, nested-alias, and star
+  semantics through the bounded typed row-packing lowering.
+- PIVOT/UNPIVOT parse as postfix table transforms with mandatory aliases.
+  PIVOT supports SUM/AVG/MIN/MAX/COUNT over a value column and requires a
+  statically known source schema; listed values become conditional aggregate
+  columns while every other input column remains a grouping key. UNPIVOT
+  expands listed columns in order, omits NULLs, preserves generated metadata,
+  and rejects duplicate names or incompatible known input types.
+- GROUP BY represents expression tuples, ROLLUP units, CUBE units, explicit
+  GROUPING SETS, and `()` independently in the AST. ROLLUP expands from the
+  full list to the empty prefix; CUBE uses all combinations; top-level items
+  combine by Cartesian product; explicit duplicate sets are not deduplicated.
+  GROUPING(expr) is valid for a grouped expression and returns tinyint 0 for
+  an active key or 1 for a subtotal placeholder.
+- FOR JSON PATH/AUTO is a SELECT-tail AST option. ROOT accepts an optional
+  string (default `root`); INCLUDE_NULL_VALUES and WITHOUT_ARRAY_WRAPPER are
+  flags and duplicate options are rejected. PATH dotted aliases create
+  nested properties. AUTO requires FROM; current execution supports one
+  source or a root plus one joined child alias.
+- FOR XML parses PATH/RAW/AUTO/EXPLICIT plus ROOT, ELEMENTS
+  [ABSENT|XSINIL], BINARY BASE64, TYPE, XMLDATA, and XMLSCHEMA. Execution
+  supports PATH and RAW: aliases may target attributes, nested elements,
+  text()/data(), or wildcard inline content; NULLs are omitted unless XSINIL
+  applies. WITH XMLNAMESPACES parses default and prefixed declarations.
+  AUTO/EXPLICIT and schema directives raise specific compatibility errors.
+- CREATE/ALTER/CREATE OR ALTER FUNCTION parses typed/defaulted parameters and
+  either a scalar RETURNS type with BEGIN/END statements or an inline
+  `RETURNS TABLE AS RETURN (SELECT ...)` body. Scalar execution allows local
+  scalar variables, SET/assignment SELECT, control flow, RETURN, defaults and
+  recursion but rejects side-effecting statements with error 443. Inline TVF
+  arguments (including DEFAULT) substitute structurally into the stored query.
+- `INSERT BULK table (column type, ...) [WITH (...)]` is the wire-protocol
+  setup statement generated by BCP/SqlBulkCopy. It is intentionally recognized
+  before the general T-SQL parser by `engine/prepareBulkLoad`, because execution
+  continues in a following TDS packet type 7 stream rather than in the SQL
+  batch. This is distinct from the user-facing `BULK INSERT ... FROM file`
+  statement, which remains outside the server's filesystem-free scope.
+
+### Not yet implemented (raise clean errors)
+
+WAITFOR, GOTO, BULK INSERT ... FROM file, source columns in MERGE OUTPUT,
+COLLATE as expression operator,
+AT TIME ZONE.
+
+`ALTER TABLE ... ALTER COLUMN` accepts declared type arguments, optional
+COLLATE, and explicit/omitted nullability (omitted means NULL). Character
+changes without COLLATE reset to the database default. The engine permits the
+SQL Server-compatible indexed variable-length widening case and otherwise
+rejects incompatible PK/index/FK/CHECK/DEFAULT/computed dependencies with
+4922 before rebuilding and converting the stored column.
+
+CROSS/OUTER APPLY retain left-to-right lateral dependencies in the source AST.
+The resolved derived source carries projection metadata so arbitrary SELECT or
+VALUES right sides can preserve aliases, stars, nullability, and wire types.
+Derived execution supports predicates, aggregates, TOP/ORDER, nesting, and
+zero/one/many rows; a non-table APPLY source that cannot be lowered raises the
+specific compatibility error 40000 rather than becoming parser error 102.
+
+### Compatibility audit findings
+
+The live TDS audit at commit `bcad53b` found additional semantic gaps tracked
+in [`todo/`](../../../todo). Unique constraints and explicit unique
+indexes now treat repeated NULL-containing tuples as duplicates, preserving
+collation keys and reporting 2627/2601 by origin. SELECT INTO now derives exact
+expression/source types, nullability, collation, and eligible identity before
+row execution. IDENTITY allocation findings from that
+audit are implemented with database-owned counters, custom signed definitions,
+rollback gaps, session IDENTITY_INSERT, and trigger-aware scope. It also
+confirmed general APPLY lowering; strict OPENJSON paths, VALUES-derived tables,
+and the audited MERGE terminator and arm validation rules are now implemented.
+The remaining result-metadata, completion-token, and runtime error-stream
+differences are indexed by [TODO.md](../../../TODO.md). Treat those individual
+briefs as the executable scope and ground-truth checklist.
+
+Result inference preserves integer nullability through catalog and scalar
+projections: proven non-null tinyint/smallint/int/bigint results use fixed TDS
+integer families, nullable results retain INTN, `@@TRANCOUNT` is non-null int,
+and `XACT_STATE()` advertises nullable smallint width.

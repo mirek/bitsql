@@ -1,0 +1,100 @@
+# Roadmap and live status
+
+Each phase ends at a gate the harness can check; the first value arrives at
+gate 3 when migrations run green. **Keep the checkboxes current**: tick an item
+in the same commit that makes it true, and add newly discovered work as
+unchecked items. The ranked failure list from the differential harness
+overrides the order inside a phase.
+
+Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]` not started.
+
+## Phase 0: project setup
+
+- [x] MoonBit module, vendored docs with rerunnable update script
+- [x] Design split into topic docs, project skills
+- [x] Reuse inventory of msduck / mssqlite (`docs/reuse/`)
+- [ ] CI workflow — deferred on purpose (too much churn); local `scripts/check.sh` is the gate
+
+## Phase 1: capture and harness
+
+- [ ] `harness/` package: tedious + mssql, connect helper (emulator or MSSQL by env)
+- [ ] Corpus format + `capture` (run against real MSSQL, store expected output)
+- [ ] `diff` runner: run corpus against emulator, compare, ranked failure list
+- [ ] Import msduck `reference/*.json` captures that fit the corpus format
+- [ ] **Blocked on access:** capture one CI run of the target app with tedious
+      debug logging; grep its SQL for `OBJECT_ID|COL_LENGTH|sys\.|INFORMATION_SCHEMA|UPDLOCK|HOLDLOCK|SERIALIZABLE`.
+      Needs the app repo path or a capture from its owner.
+- Gate: corpus checked in; harness runs it against real MSSQL.
+
+## Phase 2: TDS and the core boundary
+
+- [ ] Packet framing (reassembly across reads, split by negotiated size, EOM)
+- [ ] PRELOGIN request decode / response encode (`ENCRYPT_NOT_SUP`)
+- [ ] LOGIN7 decode; LOGINACK, ENVCHANGE (database, packet size, collation), INFO, DONE
+- [ ] SQLBatch decode (ALL_HEADERS, UTF-16LE text)
+- [ ] Token encoders: COLMETADATA, ROW/NBCROW, DONE/DONEPROC/DONEINPROC, ERROR, INFO, RETURNSTATUS, RETURNVALUE
+- [ ] RPC decode: proc id / name, params with TYPE_INFO (sp_executesql, sp_prepexec)
+- [ ] ATTENTION
+- [ ] Engine::handle + native host (TcpServer, queue, timers, event log, replay)
+- Gate: `tedious` runs `SELECT 1` and a parameterized `sp_executesql`, identical to MSSQL in the harness.
+
+## Phase 3: parser coverage, DDL and catalog
+
+- [ ] Lexer (bracket/quoted identifiers, N'' strings, comments incl. nested `/* */`, `GO` separators)
+- [ ] Expression parser, SELECT, DML, DDL, procedural statements
+- [ ] Parse the entire target codebase (needs app repo)
+- [ ] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
+- [ ] Store: persistent tables, catalog objects
+- [ ] DDL execution: tables, constraints, indexes, views, procs, triggers, functions
+- [ ] Virtual `sys.*` / `INFORMATION_SCHEMA` views the scripts touch; `OBJECT_ID`, `COL_LENGTH`, …
+- Gate: all migration scripts run green.
+
+## Phase 4: DML and access paths
+
+- [ ] Binder + IR, Semantics record for T-SQL
+- [ ] Executor: scan, filter, project, join, aggregate, sort, limit, values
+- [ ] INSERT/UPDATE/DELETE with Delta, OUTPUT, MERGE
+- [ ] Constraints: PK, unique, CHECK, FK (547), defaults, identity, computed columns
+- [ ] Index seeks on sargable predicates
+- Gate: first tests move to the emulator allowlist.
+
+## Phase 5: procedural
+
+- [ ] Scope stack, variables, temp tables, table variables
+- [ ] Procs, EXEC, return status, output params
+- [ ] Dynamic SQL (`sp_executesql`, `EXEC(@sql)`)
+- [ ] TRY/CATCH, THROW, RAISERROR, error classes, XACT_ABORT, XACT_STATE
+- [ ] Cursors (STATIC, FAST_FORWARD, LOCAL)
+- [ ] Triggers (AFTER, INSTEAD OF)
+- [ ] JSON: OPENJSON, JSON_VALUE, JSON_QUERY, ISJSON, FOR JSON
+- Gate: all non-concurrency tests on the emulator.
+
+## Phase 6: concurrency
+
+- [ ] Transactions over persistent roots; RCSI statement snapshots
+- [ ] Interval lock manager, LockSpec from hints/isolation
+- [ ] Wait-for graph, deadlock victim 1205
+- [ ] Deterministic mode + replay
+- [ ] `emulator.snapshot` / `emulator.restore`
+- Gate: the MSSQL CI job is removed; nightly cross-check remains.
+
+## Phase 7: packaging
+
+- [ ] Static-ish native binary, minimal container image, size/RAM check (< 100 MB idle)
+
+## Limiting factor
+
+For first value: phases 2–3, the protocol plus full parser coverage, because no
+test can run until `tedious` connects and migrations succeed. For the whole
+project: the breadth of transaction and error semantics in phases 5–6.
+
+## Risks
+
+| Risk | Mitigation |
+| --- | --- |
+| False greens from subtle semantic gaps | Differential harness; nightly cross-check; explicit errors for unsupported features |
+| MoonBit toolchain churn | Pre-1.0 language: async churn confined to the ~150-line host, the core uses no async; versions pinned, docs vendored with a rerunnable script |
+| Scope creep from rarely used features | Harness failure ranking drives priorities |
+| Long tail delays the RAM payoff | Allowlist routing gives speed gains early |
+| Lock behavior diverges due to access paths | Seek on sargable predicates; conservative `WholeTable` fallback |
+| Target app suite not available in this repo | Build the corpus from msduck captures + traps first; capture the app as soon as access is given |

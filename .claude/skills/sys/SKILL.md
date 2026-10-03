@@ -1,0 +1,1142 @@
+---
+name: sys
+description: "MSSQL system catalog views technical specification for implementing sys.* emulation in bitsql. Covers schema definitions, column types, relationships, built-in data, and SQLite backing-table design for all essential catalog views."
+---
+
+> **Provenance.** Reference content ported from the sibling projects msduck and
+> mssqlite (same author, public domain). Notes that mention `packages/*`,
+> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
+> are field notes verified against SQL Server there, not claims about bitsql.
+> Real SQL Server captures remain the authority (docs/design/verification.md).
+
+## bitsql implementation
+
+`src/core/store` (catalog objects) and the virtual `sys.*` / `INFORMATION_SCHEMA` views registered in the T-SQL Semantics record. There are no backing tables: views are computed from the catalog on scan. Ignore the SQLite backing-table DDL below; the column contracts and seed data are what matter.
+
+## bitsql findings (keep current)
+
+Append dated, one-paragraph findings here whenever bitsql work confirms,
+corrects or adds to this reference: wire bytes, client behavior or SQL Server
+semantics observed in captures. Correct wrong inherited notes in place and
+mention the correction here.
+
+- _(none yet)_
+
+
+# MSSQL System Catalog Views - Implementation Specification
+
+This skill provides the complete technical specification needed to implement system catalog view emulation in the mssqlite TDS server. For each view: exact column definitions, data types, relationships to other views, seed data, and the SQLite backing-table DDL.
+
+Source: `sql-docs/docs/relational-databases/system-catalog-views/`
+
+## Inherited notes: @mssqlite/catalog implementation in mssqlite (not bitsql)
+
+This spec is implemented in [`packages/catalog`](../../../packages/catalog):
+
+- **Phase 1 + 2 + the high-value phase 3 surface are done** — schemas, types (34
+  seed rows), objects, columns, tables/views/procedures views, databases,
+  indexes, index_columns, key_constraints, foreign_keys +
+  foreign_key_columns, check/default constraints, database/server
+  principals, identity_columns (+ `_extra` backing table), plus
+  `INFORMATION_SCHEMA.TABLES`, `.COLUMNS`, `.ROUTINES`, `.VIEWS`,
+  `.TABLE_CONSTRAINTS`, `.KEY_COLUMN_USAGE`, and
+  `.REFERENTIAL_CONSTRAINTS` views.
+- **Query interception is unnecessary** — instead of routing `sys.*`
+  queries (§ Architecture Overview above), the transpiler flattens
+  `sys.tables` to the literal SQLite object name `"sys.tables"`, which is
+  exactly what the catalog creates. Plain SQLite execution then serves
+  catalog queries, including joins with user tables.
+- DDL maintenance hooks (§18) are called by the engine as DDL executes;
+  drop cleanup removes child constraint objects as specified.
+- Object ids allocate from 100000001 via `sys._next_id` (§19).
+- System functions (§17): OBJECT_ID/OBJECT_NAME/SCHEMA_ID/SCHEMA_NAME/
+  TYPE_ID/TYPE_NAME/DB_ID/DB_NAME rewrite to catalog subqueries at
+  transpile time; SERVERPROPERTY/@@VERSION/@@SPID come from engine UDFs
+  and globals.
+- `sys.sql_modules` stores view, stored-procedure, user-function, and DML-trigger
+  definitions (whole batch source); the engine reloads procedures, scalar
+  (`FN`) and inline table-valued (`IF`) functions, and table-parented `TR`
+  triggers from it on server start, and
+  `OBJECT_DEFINITION()` rewrites to a subquery over it. It includes the SQL
+  Server 2019 `is_inlineable` and `inline_type` flags.
+- `sys.sequences` joins `SO` / `SEQUENCE_OBJECT` rows to the internal
+  `sys.sequence_state` backing table and exposes type ids, precision/scale,
+  start/increment/bounds, cycle/cache settings, current/exhausted state, and
+  last-used value. Numeric state is stored losslessly as decimal text and cast
+  by the view for ordinary catalog queries.
+- Rowversion/TIMESTAMP columns use system/user type id 189, max_length 8,
+  identity/computed flags 0, and default to non-null catalog metadata unless
+  explicitly declared NULL. The database-wide last allocated value is stored
+  losslessly as decimal text in the singleton internal `sys.rowversion_state`
+  table; it is surfaced by `@@DBTS`, not as a public catalog view. Result
+  metadata maps non-null rows to BIGBINARY(8) and nullable rows to
+  BIGVARBINARY(8).
+- Opaque CLR built-ins are seeded as assembly types: hierarchyid
+  `(user_type_id 128, system_type_id 240, max_length 892)`, geometry `(129,
+  240, -1)`, and geography `(130, 240, -1)`. Their columns retain distinct
+  user type ids while result metadata uses native UDT_INFO. `sql_variant` 98
+  and untyped XML 241 likewise retain their declared catalog and wire types.
+- `sys.computed_columns` joins computed `sys.columns` rows to
+  `sys.computed_columns_extra`, exposing normalized definition text,
+  `uses_database_collation`, and `is_persisted`. CREATE/ALTER/DROP maintain
+  both stores; the catalog's inferred type fields drive result metadata.
+- Common catalog procedures are implemented directly over these stores:
+  `sp_help`, `sp_helptext`, `sp_columns`, `sp_tables`, `sp_who`, `sp_helpdb`,
+  and `sp_spaceused` return SQL Server/ODBC-shaped typed result sets through
+  both EXEC and RPC. `sp_rename` keeps supported object, column, and user-index
+  names synchronized with SQLite under a savepoint; module source is retained
+  verbatim, matching SQL Server's warning that stored definitions and dependent
+  references are not rewritten.
+- `sys.default_constraints` is a derived view that inherits all
+  `sys.objects` columns and joins `parent_column_id`, expression `definition`,
+  and `is_system_named` from `sys.default_constraints_extra`.
+- `sys.dm_exec_sessions` and `sys.dm_exec_requests` are mutable backing tables:
+  session creation/login synchronizes identity, an outer engine batch inserts a
+  request before parsing so it can observe itself, completion returns the
+  session to `sleeping`, and socket close deletes both rows.
+- Not yet populated: extended properties.
+- The live differential audit still finds result-descriptor gaps even where
+  catalog values are correct: selected sysname fields can surface as
+  nvarchar(max), and `sys.columns.max_length` can surface as nullable int rather
+  than non-null smallint. The open acceptance brief is
+  [`todo/catalog-result-metadata.md`](../../../todo/catalog-result-metadata.md).
+
+### Implemented high-value view contracts
+
+All catalog-name columns read the singleton current-database context; schema
+and object names join through `sys.schemas`/`sys.objects`. Reserved ISO fields
+are present as NULL rather than omitted.
+
+| View | Complete exposed schema |
+|---|---|
+| `INFORMATION_SCHEMA.VIEWS` | `TABLE_CATALOG/SCHEMA/NAME nvarchar(128)`, `VIEW_DEFINITION nvarchar(4000) NULL`, `CHECK_OPTION varchar(7)`, `IS_UPDATABLE varchar(2)` |
+| `INFORMATION_SCHEMA.TABLE_CONSTRAINTS` | `CONSTRAINT_CATALOG/SCHEMA/NAME`, `TABLE_CATALOG/SCHEMA/NAME` as `nvarchar(128)`, `CONSTRAINT_TYPE varchar(11)`, `IS_DEFERRABLE varchar(2)`, `INITIALLY_DEFERRED varchar(2)` |
+| `INFORMATION_SCHEMA.KEY_COLUMN_USAGE` | catalog/schema/name triples for constraint and table plus `COLUMN_NAME nvarchar(128)` and `ORDINAL_POSITION int`; PK/UQ rows join key indexes and FK rows join `sys.foreign_key_columns` |
+| `INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS` | constraint and referenced-unique catalog/schema/name triples as `nvarchar(128)`, `MATCH_OPTION varchar(7)`, `UPDATE_RULE/DELETE_RULE varchar(11)`; the referenced name resolves through `key_index_id` |
+| `INFORMATION_SCHEMA.ROUTINES` | all SQL Server columns: `SPECIFIC_*`, `ROUTINE_*`, `MODULE_*`, `UDT_*`, `DATA_TYPE`, character/collation/character-set fields, numeric precision/radix/scale, datetime/interval fields, `TYPE_UDT_*`, `SCOPE_*`, `MAXIMUM_CARDINALITY`, `DTD_IDENTIFIER`, body/definition/external fields, determinism/data-access/null-call fields, SQL path/schema-level/dynamic-result/cast/invocation fields, and `CREATED`/`LAST_ALTERED`; scalar return details come from `sys.routine_metadata`, IF returns `table`, and procedure return fields are NULL |
+
+`sys.sql_modules` has `object_id int`, `definition nvarchar(max) NULL`, eight
+SQL Server option columns (`uses_ansi_nulls`, `uses_quoted_identifier`,
+`is_schema_bound`, `uses_database_collation`, `is_recompiled`,
+`null_on_null_input`, `execute_as_principal_id NULL`,
+`uses_native_compilation`) plus `is_inlineable bit` and `inline_type bit`.
+
+The minimal live DMV schemas are intentionally the commonly consumed subset:
+
+| View | Columns |
+|---|---|
+| `sys.dm_exec_sessions` | `session_id smallint`, `login_time datetime`, nullable `host_name/program_name nvarchar(128)`, nullable `host_process_id/client_version int`, nullable `client_interface_name nvarchar(32)`, `login_name nvarchar(128)`, `status nvarchar(30)`, `database_id smallint`, `open_transaction_count int`, nullable request start/end datetimes, `row_count bigint`, `prev_error int`, `original_login_name nvarchar(128)` |
+| `sys.dm_exec_requests` | `session_id smallint`, `request_id int`, `start_time datetime`, `status nvarchar(30)`, `command nvarchar(32)`, `database_id smallint`, `user_id int`, `blocking_session_id smallint`, nullable `wait_type nvarchar(60)`, `wait_time int`, `wait_resource nvarchar(256)`, `open_transaction_count int`, `percent_complete real`, `cpu_time/total_elapsed_time int`, `reads/writes/logical_reads/row_count bigint` |
+
+---
+
+## Architecture Overview
+
+MSSQL exposes database metadata through a hierarchy of catalog views in the `sys` schema. These are **read-only views** backed by internal system tables. For mssqlite emulation, we implement them as **real SQLite tables** that are populated/maintained as DDL executes, plus **SQLite views** for derived catalog views.
+
+### View Hierarchy
+
+```
+sys.objects (base: all schema-scoped objects)
+  ├── sys.tables       (type = 'U')
+  ├── sys.views        (type = 'V')
+  ├── sys.procedures   (type = 'P')
+  ├── DML triggers     (type = 'TR', parent_object_id = target table)
+  └── sys.foreign_keys (type = 'F')
+      └── sys.foreign_key_columns
+
+sys.columns (all columns of all objects)
+  ├── sys.identity_columns  (is_identity = 1)
+  └── sys.computed_columns  (is_computed = 1)
+
+sys.types       (system + user-defined types)
+sys.schemas     (database schemas)
+sys.databases   (server-level: all databases)
+sys.indexes     (indexes and heaps)
+sys.index_columns (columns in indexes)
+sys.key_constraints    (PK/UQ constraints)
+sys.check_constraints  (CHECK constraints)
+sys.default_constraints (DEFAULT constraints)
+sys.database_principals (database-level security principals)
+sys.server_principals   (server-level security principals)
+```
+
+### Query Interception Strategy
+
+When a client sends a query referencing `sys.*` views, the server must:
+1. Parse the SQL to detect `sys.` prefixed table references
+2. Route the query to the catalog backing tables instead of SQLite user tables
+3. Return results with correct TDS column metadata matching MSSQL types
+
+---
+
+## 1. sys.schemas
+
+Smallest/simplest view. Must be populated first as other views reference `schema_id`.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname (nvarchar(128)) | TEXT NOT NULL | Schema name, unique per database |
+| schema_id | int | INTEGER PRIMARY KEY | Schema ID, unique per database |
+| principal_id | int | INTEGER NOT NULL | ID of the principal that owns this schema |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.schemas] (
+  schema_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  principal_id INTEGER NOT NULL DEFAULT 1
+);
+```
+
+### Seed Data (built-in schemas)
+
+| schema_id | name | principal_id |
+|-----------|------|-------------|
+| 1 | dbo | 1 |
+| 2 | guest | 2 |
+| 3 | INFORMATION_SCHEMA | 3 |
+| 4 | sys | 4 |
+
+---
+
+## 2. sys.types
+
+All system data types. Must be populated before sys.columns.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname | TEXT NOT NULL | Type name, unique within schema |
+| system_type_id | tinyint | INTEGER NOT NULL | Internal system type ID |
+| user_type_id | int | INTEGER PRIMARY KEY | Type ID, unique per database |
+| schema_id | int | INTEGER NOT NULL | Schema (always 4=sys for system types) |
+| principal_id | int | INTEGER | Individual owner if different from schema owner; NULL for system types |
+| max_length | smallint | INTEGER NOT NULL | Max length in bytes (-1 = max types) |
+| precision | tinyint | INTEGER NOT NULL DEFAULT 0 | Max precision if numeric, else 0 |
+| scale | tinyint | INTEGER NOT NULL DEFAULT 0 | Max scale if numeric, else 0 |
+| collation_name | sysname | TEXT | Collation name for character types, NULL otherwise |
+| is_nullable | bit | INTEGER NOT NULL DEFAULT 1 | Whether type is nullable |
+| is_user_defined | bit | INTEGER NOT NULL DEFAULT 0 | 1=user-defined, 0=system type |
+| is_assembly_type | bit | INTEGER NOT NULL DEFAULT 0 | 1=CLR assembly type |
+| default_object_id | int | INTEGER NOT NULL DEFAULT 0 | Bound default object ID |
+| rule_object_id | int | INTEGER NOT NULL DEFAULT 0 | Bound rule object ID |
+| is_table_type | bit | INTEGER NOT NULL DEFAULT 0 | 1=table type |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.types] (
+  user_type_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  system_type_id INTEGER NOT NULL,
+  schema_id INTEGER NOT NULL DEFAULT 4,
+  principal_id INTEGER,
+  max_length INTEGER NOT NULL,
+  precision INTEGER NOT NULL DEFAULT 0,
+  scale INTEGER NOT NULL DEFAULT 0,
+  collation_name TEXT,
+  is_nullable INTEGER NOT NULL DEFAULT 1,
+  is_user_defined INTEGER NOT NULL DEFAULT 0,
+  is_assembly_type INTEGER NOT NULL DEFAULT 0,
+  default_object_id INTEGER NOT NULL DEFAULT 0,
+  rule_object_id INTEGER NOT NULL DEFAULT 0,
+  is_table_type INTEGER NOT NULL DEFAULT 0
+);
+```
+
+
+### Seed Data (all built-in system types)
+
+system_type_id is the key identifier used by sys.columns. user_type_id equals system_type_id for built-in types.
+
+| user_type_id | name | system_type_id | max_length | precision | scale | collation_name |
+|---|---|---|---|---|---|---|
+| 34 | image | 34 | 16 | 0 | 0 | NULL |
+| 35 | text | 35 | 16 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 36 | uniqueidentifier | 36 | 16 | 0 | 0 | NULL |
+| 40 | date | 40 | 3 | 10 | 0 | NULL |
+| 41 | time | 41 | 5 | 16 | 7 | NULL |
+| 42 | datetime2 | 42 | 8 | 27 | 7 | NULL |
+| 43 | datetimeoffset | 43 | 10 | 34 | 7 | NULL |
+| 48 | tinyint | 48 | 1 | 3 | 0 | NULL |
+| 52 | smallint | 52 | 2 | 5 | 0 | NULL |
+| 56 | int | 56 | 4 | 10 | 0 | NULL |
+| 58 | smalldatetime | 58 | 4 | 16 | 0 | NULL |
+| 59 | real | 59 | 4 | 24 | 0 | NULL |
+| 60 | money | 60 | 8 | 19 | 4 | NULL |
+| 61 | datetime | 61 | 8 | 23 | 3 | NULL |
+| 62 | float | 62 | 8 | 53 | 0 | NULL |
+| 98 | sql_variant | 98 | 8016 | 0 | 0 | NULL |
+| 99 | ntext | 99 | 16 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 104 | bit | 104 | 1 | 1 | 0 | NULL |
+| 106 | decimal | 106 | 17 | 38 | 38 | NULL |
+| 108 | numeric | 108 | 17 | 38 | 38 | NULL |
+| 122 | smallmoney | 122 | 4 | 10 | 4 | NULL |
+| 127 | bigint | 127 | 8 | 19 | 0 | NULL |
+| 128 | hierarchyid | 240 | 892 | 0 | 0 | NULL |
+| 129 | geometry | 240 | -1 | 0 | 0 | NULL |
+| 130 | geography | 240 | -1 | 0 | 0 | NULL |
+| 165 | varbinary | 165 | 8000 | 0 | 0 | NULL |
+| 167 | varchar | 167 | 8000 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 173 | binary | 173 | 8000 | 0 | 0 | NULL |
+| 175 | char | 175 | 8000 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 189 | timestamp | 189 | 8 | 0 | 0 | NULL |
+| 231 | nvarchar | 231 | 8000 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 239 | nchar | 239 | 8000 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+| 241 | xml | 241 | -1 | 0 | 0 | NULL |
+| 256 | sysname | 231 | 256 | 0 | 0 | SQL_Latin1_General_CP1_CI_AS |
+
+**Note:** `sysname` is an alias for `nvarchar(128)` — user_type_id=256, system_type_id=231 (nvarchar). It is the only built-in user-defined type (is_user_defined=0 but user_type_id != system_type_id).
+
+---
+
+## 3. sys.objects
+
+Base catalog view for all schema-scoped objects. sys.tables, sys.views, sys.procedures, sys.foreign_keys, sys.key_constraints, sys.check_constraints, and sys.default_constraints are all filtered views of sys.objects.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname | TEXT NOT NULL | Object name |
+| object_id | int | INTEGER PRIMARY KEY | Object ID, unique per database |
+| principal_id | int | INTEGER | Individual owner if different from schema owner |
+| schema_id | int | INTEGER NOT NULL | Schema containing this object |
+| parent_object_id | int | INTEGER NOT NULL DEFAULT 0 | Parent object ID (0=no parent) |
+| type | char(2) | TEXT NOT NULL | Object type code (see table below) |
+| type_desc | nvarchar(60) | TEXT NOT NULL | Object type description |
+| create_date | datetime | TEXT NOT NULL | Creation date (ISO 8601) |
+| modify_date | datetime | TEXT NOT NULL | Last modification date |
+| is_ms_shipped | bit | INTEGER NOT NULL DEFAULT 0 | 1=system object |
+| is_published | bit | INTEGER NOT NULL DEFAULT 0 | Published for replication |
+| is_schema_published | bit | INTEGER NOT NULL DEFAULT 0 | Schema published |
+
+### Object Type Codes
+
+| type | type_desc | Description |
+|------|-----------|-------------|
+| U | USER_TABLE | User table |
+| V | VIEW | View |
+| P | SQL_STORED_PROCEDURE | Stored procedure |
+| FN | SQL_SCALAR_FUNCTION | Scalar function |
+| IF | SQL_INLINE_TABLE_VALUED_FUNCTION | Inline TVF |
+| TF | SQL_TABLE_VALUED_FUNCTION | Table-valued function |
+| S | SYSTEM_TABLE | System base table |
+| IT | INTERNAL_TABLE | Internal table |
+| PK | PRIMARY_KEY_CONSTRAINT | Primary key constraint |
+| UQ | UNIQUE_CONSTRAINT | Unique constraint |
+| F | FOREIGN_KEY_CONSTRAINT | Foreign key constraint |
+| C | CHECK_CONSTRAINT | Check constraint |
+| D | DEFAULT_CONSTRAINT | Default constraint |
+| TR | SQL_TRIGGER | DML trigger |
+| SQ | SERVICE_QUEUE | Service queue |
+| SN | SYNONYM | Synonym |
+| SO | SEQUENCE_OBJECT | Sequence |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.objects] (
+  object_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  principal_id INTEGER,
+  schema_id INTEGER NOT NULL DEFAULT 1,
+  parent_object_id INTEGER NOT NULL DEFAULT 0,
+  type TEXT NOT NULL,
+  type_desc TEXT NOT NULL,
+  create_date TEXT NOT NULL DEFAULT (datetime('now')),
+  modify_date TEXT NOT NULL DEFAULT (datetime('now')),
+  is_ms_shipped INTEGER NOT NULL DEFAULT 0,
+  is_published INTEGER NOT NULL DEFAULT 0,
+  is_schema_published INTEGER NOT NULL DEFAULT 0
+);
+```
+
+### Derived Views (SQLite views over sys.objects)
+
+```sql
+-- sys.tables: objects WHERE type = 'U'
+CREATE VIEW IF NOT EXISTS [sys.tables] AS
+SELECT o.*,
+  0 AS lob_data_space_id,
+  0 AS filestream_data_space_id,
+  0 AS max_column_id_used,
+  0 AS lock_on_bulk_load,
+  1 AS uses_ansi_nulls,
+  0 AS is_replicated,
+  0 AS has_replication_filter,
+  0 AS is_merge_published,
+  0 AS is_sync_tran_subscribed,
+  0 AS has_unchecked_assembly_data,
+  0 AS text_in_row_limit,
+  0 AS large_value_types_out_of_row,
+  0 AS is_tracked_by_cdc,
+  0 AS lock_escalation,
+  'TABLE' AS lock_escalation_desc,
+  0 AS is_filetable,
+  0 AS is_memory_optimized,
+  0 AS durability,
+  'SCHEMA_AND_DATA' AS durability_desc,
+  0 AS temporal_type,
+  'NON_TEMPORAL_TABLE' AS temporal_type_desc,
+  NULL AS history_table_id,
+  0 AS is_remote_data_archive_enabled,
+  0 AS is_external,
+  0 AS is_node,
+  0 AS is_edge
+FROM [sys.objects] o WHERE o.type = 'U';
+
+-- sys.views: objects WHERE type = 'V'
+CREATE VIEW IF NOT EXISTS [sys.views] AS
+SELECT o.*,
+  0 AS is_date_correlation_view,
+  0 AS is_tracked_by_cdc,
+  0 AS has_snapshot_definition,
+  0 AS has_opaque_metadata,
+  0 AS has_unchecked_assembly_data,
+  0 AS with_check_option,
+  0 AS is_replicated
+FROM [sys.objects] o WHERE o.type = 'V';
+```
+
+---
+
+## 4. sys.columns
+
+One row per column for every object that has columns (tables, views, TVFs).
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| object_id | int | INTEGER NOT NULL | ID of the owning object |
+| name | sysname | TEXT NOT NULL | Column name, unique within object |
+| column_id | int | INTEGER NOT NULL | Column ordinal (1-based, may have gaps) |
+| system_type_id | tinyint | INTEGER NOT NULL | System type ID (→ sys.types) |
+| user_type_id | int | INTEGER NOT NULL | User type ID (→ sys.types) |
+| max_length | smallint | INTEGER NOT NULL | Max length in bytes (-1 for max types) |
+| precision | tinyint | INTEGER NOT NULL DEFAULT 0 | Precision if numeric |
+| scale | tinyint | INTEGER NOT NULL DEFAULT 0 | Scale if numeric |
+| collation_name | sysname | TEXT | Collation for character types |
+| is_nullable | bit | INTEGER NOT NULL DEFAULT 1 | 1=nullable |
+| is_ansi_padded | bit | INTEGER NOT NULL DEFAULT 0 | ANSI padding behavior |
+| is_rowguidcol | bit | INTEGER NOT NULL DEFAULT 0 | ROWGUIDCOL |
+| is_identity | bit | INTEGER NOT NULL DEFAULT 0 | Identity column |
+| is_computed | bit | INTEGER NOT NULL DEFAULT 0 | Computed column |
+| is_filestream | bit | INTEGER NOT NULL DEFAULT 0 | FILESTREAM column |
+| is_replicated | bit | INTEGER NOT NULL DEFAULT 0 | Replicated |
+| is_non_sql_subscribed | bit | INTEGER NOT NULL DEFAULT 0 | Non-SQL subscriber |
+| is_merge_published | bit | INTEGER NOT NULL DEFAULT 0 | Merge published |
+| is_dts_replicated | bit | INTEGER NOT NULL DEFAULT 0 | SSIS replicated |
+| is_xml_document | bit | INTEGER NOT NULL DEFAULT 0 | Complete XML document |
+| xml_collection_id | int | INTEGER NOT NULL DEFAULT 0 | XML schema collection ID |
+| default_object_id | int | INTEGER NOT NULL DEFAULT 0 | Default object ID |
+| rule_object_id | int | INTEGER NOT NULL DEFAULT 0 | Rule object ID |
+| is_sparse | bit | INTEGER NOT NULL DEFAULT 0 | Sparse column |
+| is_column_set | bit | INTEGER NOT NULL DEFAULT 0 | Column set |
+| generated_always_type | tinyint | INTEGER NOT NULL DEFAULT 0 | 0=NOT_APPLICABLE |
+| generated_always_type_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'NOT_APPLICABLE' | Description |
+| is_hidden | bit | INTEGER NOT NULL DEFAULT 0 | Hidden column |
+| is_masked | bit | INTEGER NOT NULL DEFAULT 0 | Dynamic data masked |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.columns] (
+  object_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  column_id INTEGER NOT NULL,
+  system_type_id INTEGER NOT NULL,
+  user_type_id INTEGER NOT NULL,
+  max_length INTEGER NOT NULL,
+  precision INTEGER NOT NULL DEFAULT 0,
+  scale INTEGER NOT NULL DEFAULT 0,
+  collation_name TEXT,
+  is_nullable INTEGER NOT NULL DEFAULT 1,
+  is_ansi_padded INTEGER NOT NULL DEFAULT 0,
+  is_rowguidcol INTEGER NOT NULL DEFAULT 0,
+  is_identity INTEGER NOT NULL DEFAULT 0,
+  is_computed INTEGER NOT NULL DEFAULT 0,
+  is_filestream INTEGER NOT NULL DEFAULT 0,
+  is_replicated INTEGER NOT NULL DEFAULT 0,
+  is_non_sql_subscribed INTEGER NOT NULL DEFAULT 0,
+  is_merge_published INTEGER NOT NULL DEFAULT 0,
+  is_dts_replicated INTEGER NOT NULL DEFAULT 0,
+  is_xml_document INTEGER NOT NULL DEFAULT 0,
+  xml_collection_id INTEGER NOT NULL DEFAULT 0,
+  default_object_id INTEGER NOT NULL DEFAULT 0,
+  rule_object_id INTEGER NOT NULL DEFAULT 0,
+  is_sparse INTEGER NOT NULL DEFAULT 0,
+  is_column_set INTEGER NOT NULL DEFAULT 0,
+  generated_always_type INTEGER NOT NULL DEFAULT 0,
+  generated_always_type_desc TEXT NOT NULL DEFAULT 'NOT_APPLICABLE',
+  is_hidden INTEGER NOT NULL DEFAULT 0,
+  is_masked INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (object_id, column_id)
+);
+```
+
+### Column Type Mapping: SQL Type → sys.columns Fields
+
+When a user creates a table, each column's SQL type declaration maps to sys.columns fields:
+
+| SQL Declaration | system_type_id | max_length | precision | scale |
+|-----------------|---------------|------------|-----------|-------|
+| tinyint | 48 | 1 | 3 | 0 |
+| smallint | 52 | 2 | 5 | 0 |
+| int | 56 | 4 | 10 | 0 |
+| bigint | 127 | 8 | 19 | 0 |
+| bit | 104 | 1 | 1 | 0 |
+| decimal(p,s) | 106 | 5/9/13/17† | p | s |
+| numeric(p,s) | 108 | 5/9/13/17† | p | s |
+| money | 60 | 8 | 19 | 4 |
+| smallmoney | 122 | 4 | 10 | 4 |
+| float | 62 | 8 | 53 | 0 |
+| real | 59 | 4 | 24 | 0 |
+| date | 40 | 3 | 10 | 0 |
+| time(n) | 41 | 3/4/5‡ | 8-16 | n |
+| datetime | 61 | 8 | 23 | 3 |
+| smalldatetime | 58 | 4 | 16 | 0 |
+| datetime2(n) | 42 | 6/7/8‡ | 19-27 | n |
+| datetimeoffset(n) | 43 | 8/9/10‡ | 26-34 | n |
+| char(n) | 175 | n | 0 | 0 |
+| varchar(n) | 167 | n | 0 | 0 |
+| varchar(max) | 167 | -1 | 0 | 0 |
+| nchar(n) | 239 | 2*n | 0 | 0 |
+| nvarchar(n) | 231 | 2*n | 0 | 0 |
+| nvarchar(max) | 231 | -1 | 0 | 0 |
+| binary(n) | 173 | n | 0 | 0 |
+| varbinary(n) | 165 | n | 0 | 0 |
+| varbinary(max) | 165 | -1 | 0 | 0 |
+| uniqueidentifier | 36 | 16 | 0 | 0 |
+| xml | 241 | -1 | 0 | 0 |
+| sql_variant | 98 | 8016 | 0 | 0 |
+| hierarchyid | 240 (user 128) | 892 | 0 | 0 |
+| geometry | 240 (user 129) | -1 | 0 | 0 |
+| geography | 240 (user 130) | -1 | 0 | 0 |
+
+† decimal/numeric max_length: 5 (p 1-9), 9 (p 10-19), 13 (p 20-28), 17 (p 29-38)
+‡ time max_length: 3 (n 0-2), 4 (n 3-4), 5 (n 5-7); datetime2: 6 (n<3), 7 (n 3-4), 8 (n 5-7); datetimeoffset: 8 (n 0-2), 9 (n 3-4), 10 (n 5-7)
+
+---
+
+## 5. sys.indexes
+
+One row per index or heap per tabular object.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| object_id | int | INTEGER NOT NULL | Owning object ID |
+| name | sysname | TEXT | Index name (NULL for heap) |
+| index_id | int | INTEGER NOT NULL | 0=heap, 1=clustered, >1=nonclustered |
+| type | tinyint | INTEGER NOT NULL | 0=Heap, 1=Clustered, 2=Nonclustered |
+| type_desc | nvarchar(60) | TEXT NOT NULL | HEAP/CLUSTERED/NONCLUSTERED |
+| is_unique | bit | INTEGER NOT NULL DEFAULT 0 | 1=unique |
+| data_space_id | int | INTEGER NOT NULL DEFAULT 1 | Filegroup ID |
+| ignore_dup_key | bit | INTEGER NOT NULL DEFAULT 0 | IGNORE_DUP_KEY setting |
+| is_primary_key | bit | INTEGER NOT NULL DEFAULT 0 | Part of PK constraint |
+| is_unique_constraint | bit | INTEGER NOT NULL DEFAULT 0 | Part of UNIQUE constraint |
+| fill_factor | tinyint | INTEGER NOT NULL DEFAULT 0 | Fill factor percentage |
+| is_padded | bit | INTEGER NOT NULL DEFAULT 0 | PADINDEX setting |
+| is_disabled | bit | INTEGER NOT NULL DEFAULT 0 | Index disabled |
+| is_hypothetical | bit | INTEGER NOT NULL DEFAULT 0 | Hypothetical index |
+| allow_row_locks | bit | INTEGER NOT NULL DEFAULT 1 | Row locks allowed |
+| allow_page_locks | bit | INTEGER NOT NULL DEFAULT 1 | Page locks allowed |
+| has_filter | bit | INTEGER NOT NULL DEFAULT 0 | Filtered index |
+| filter_definition | nvarchar(max) | TEXT | Filter expression |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.indexes] (
+  object_id INTEGER NOT NULL,
+  name TEXT,
+  index_id INTEGER NOT NULL,
+  type INTEGER NOT NULL DEFAULT 0,
+  type_desc TEXT NOT NULL DEFAULT 'HEAP',
+  is_unique INTEGER NOT NULL DEFAULT 0,
+  data_space_id INTEGER NOT NULL DEFAULT 1,
+  ignore_dup_key INTEGER NOT NULL DEFAULT 0,
+  is_primary_key INTEGER NOT NULL DEFAULT 0,
+  is_unique_constraint INTEGER NOT NULL DEFAULT 0,
+  fill_factor INTEGER NOT NULL DEFAULT 0,
+  is_padded INTEGER NOT NULL DEFAULT 0,
+  is_disabled INTEGER NOT NULL DEFAULT 0,
+  is_hypothetical INTEGER NOT NULL DEFAULT 0,
+  allow_row_locks INTEGER NOT NULL DEFAULT 1,
+  allow_page_locks INTEGER NOT NULL DEFAULT 1,
+  has_filter INTEGER NOT NULL DEFAULT 0,
+  filter_definition TEXT,
+  PRIMARY KEY (object_id, index_id)
+);
+```
+
+---
+
+## 6. sys.index_columns
+
+One row per column that is part of an index.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| object_id | int | INTEGER NOT NULL | Object containing the index |
+| index_id | int | INTEGER NOT NULL | Index ID |
+| index_column_id | int | INTEGER NOT NULL | Column ordinal within index (1-based) |
+| column_id | int | INTEGER NOT NULL | Column ID in the object (0=RID in nonclustered) |
+| key_ordinal | tinyint | INTEGER NOT NULL DEFAULT 0 | Ordinal in key columns (0=not a key) |
+| partition_ordinal | tinyint | INTEGER NOT NULL DEFAULT 0 | Ordinal in partitioning columns |
+| is_descending_key | bit | INTEGER NOT NULL DEFAULT 0 | 1=descending sort |
+| is_included_column | bit | INTEGER NOT NULL DEFAULT 0 | 1=included (non-key) column |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.index_columns] (
+  object_id INTEGER NOT NULL,
+  index_id INTEGER NOT NULL,
+  index_column_id INTEGER NOT NULL,
+  column_id INTEGER NOT NULL,
+  key_ordinal INTEGER NOT NULL DEFAULT 0,
+  partition_ordinal INTEGER NOT NULL DEFAULT 0,
+  is_descending_key INTEGER NOT NULL DEFAULT 0,
+  is_included_column INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (object_id, index_id, index_column_id)
+);
+```
+
+---
+
+## 7. sys.foreign_keys
+
+Inherits from sys.objects (type='F') with additional FK-specific columns.
+
+### Additional Columns (beyond sys.objects)
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| referenced_object_id | int | INTEGER NOT NULL | Referenced (parent) table object_id |
+| key_index_id | int | INTEGER NOT NULL | Index ID in the referenced table |
+| is_disabled | bit | INTEGER NOT NULL DEFAULT 0 | FK disabled |
+| is_not_for_replication | bit | INTEGER NOT NULL DEFAULT 0 | NOT FOR REPLICATION |
+| is_not_trusted | bit | INTEGER NOT NULL DEFAULT 0 | Not verified by system |
+| delete_referential_action | tinyint | INTEGER NOT NULL DEFAULT 0 | 0=NO_ACTION, 1=CASCADE, 2=SET_NULL, 3=SET_DEFAULT |
+| delete_referential_action_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'NO_ACTION' | Description |
+| update_referential_action | tinyint | INTEGER NOT NULL DEFAULT 0 | 0=NO_ACTION, 1=CASCADE, 2=SET_NULL, 3=SET_DEFAULT |
+| update_referential_action_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'NO_ACTION' | Description |
+| is_system_named | bit | INTEGER NOT NULL DEFAULT 0 | 1=system-generated name |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.foreign_keys] (
+  object_id INTEGER PRIMARY KEY,  -- same as sys.objects.object_id
+  referenced_object_id INTEGER NOT NULL,
+  key_index_id INTEGER NOT NULL DEFAULT 0,
+  is_disabled INTEGER NOT NULL DEFAULT 0,
+  is_not_for_replication INTEGER NOT NULL DEFAULT 0,
+  is_not_trusted INTEGER NOT NULL DEFAULT 0,
+  delete_referential_action INTEGER NOT NULL DEFAULT 0,
+  delete_referential_action_desc TEXT NOT NULL DEFAULT 'NO_ACTION',
+  update_referential_action INTEGER NOT NULL DEFAULT 0,
+  update_referential_action_desc TEXT NOT NULL DEFAULT 'NO_ACTION',
+  is_system_named INTEGER NOT NULL DEFAULT 0
+);
+```
+
+---
+
+## 8. sys.foreign_key_columns
+
+One row per column mapping in a foreign key constraint.
+
+### Column Definition
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| constraint_object_id | int | INTEGER NOT NULL | FK constraint object_id |
+| constraint_column_id | int | INTEGER NOT NULL | Column ordinal in the FK (1-based) |
+| parent_object_id | int | INTEGER NOT NULL | Referencing table object_id |
+| parent_column_id | int | INTEGER NOT NULL | Referencing column ID |
+| referenced_object_id | int | INTEGER NOT NULL | Referenced table object_id |
+| referenced_column_id | int | INTEGER NOT NULL | Referenced column ID |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.foreign_key_columns] (
+  constraint_object_id INTEGER NOT NULL,
+  constraint_column_id INTEGER NOT NULL,
+  parent_object_id INTEGER NOT NULL,
+  parent_column_id INTEGER NOT NULL,
+  referenced_object_id INTEGER NOT NULL,
+  referenced_column_id INTEGER NOT NULL,
+  PRIMARY KEY (constraint_object_id, constraint_column_id)
+);
+```
+
+---
+
+## 9. sys.key_constraints
+
+Inherits from sys.objects (type='PK' or 'UQ'). One row per PRIMARY KEY or UNIQUE constraint.
+
+### Additional Columns
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| unique_index_id | int | INTEGER NOT NULL | Index ID for the backing unique index |
+| is_system_named | bit | INTEGER NOT NULL DEFAULT 0 | 1=system-generated name |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.key_constraints] (
+  object_id INTEGER PRIMARY KEY,  -- same as sys.objects.object_id
+  unique_index_id INTEGER NOT NULL,
+  is_system_named INTEGER NOT NULL DEFAULT 0
+);
+```
+
+---
+
+## 10. sys.check_constraints
+
+Inherits from sys.objects (type='C'). One row per CHECK constraint.
+
+### Additional Columns
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| is_disabled | bit | INTEGER NOT NULL DEFAULT 0 | Constraint disabled |
+| is_not_for_replication | bit | INTEGER NOT NULL DEFAULT 0 | NOT FOR REPLICATION |
+| is_not_trusted | bit | INTEGER NOT NULL DEFAULT 0 | Not verified |
+| parent_column_id | int | INTEGER NOT NULL DEFAULT 0 | 0=table-level, else column ID |
+| definition | nvarchar(max) | TEXT | SQL expression |
+| uses_database_collation | bit | INTEGER NOT NULL DEFAULT 0 | Depends on DB collation |
+| is_system_named | bit | INTEGER NOT NULL DEFAULT 0 | System-generated name |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.check_constraints] (
+  object_id INTEGER PRIMARY KEY,
+  is_disabled INTEGER NOT NULL DEFAULT 0,
+  is_not_for_replication INTEGER NOT NULL DEFAULT 0,
+  is_not_trusted INTEGER NOT NULL DEFAULT 0,
+  parent_column_id INTEGER NOT NULL DEFAULT 0,
+  definition TEXT,
+  uses_database_collation INTEGER NOT NULL DEFAULT 0,
+  is_system_named INTEGER NOT NULL DEFAULT 0
+);
+```
+
+---
+
+## 11. sys.default_constraints
+
+Inherits from sys.objects (type='D'). One row per DEFAULT constraint.
+
+### Additional Columns
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| parent_column_id | int | INTEGER NOT NULL | Column ID this default belongs to |
+| definition | nvarchar(max) | TEXT | SQL expression for the default value |
+| is_system_named | bit | INTEGER NOT NULL DEFAULT 0 | System-generated name |
+
+### SQLite Backing Table + Derived View
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.default_constraints_extra] (
+  object_id INTEGER PRIMARY KEY,
+  parent_column_id INTEGER NOT NULL,
+  definition TEXT,
+  is_system_named INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE VIEW [sys.default_constraints] AS
+SELECT o.*, d.parent_column_id, d.definition, d.is_system_named
+FROM [sys.objects] o
+JOIN [sys.default_constraints_extra] d ON d.object_id = o.object_id
+WHERE o.type = 'D';
+```
+
+---
+
+## 12. sys.databases
+
+Server-level view. One row per database.
+
+### Column Definition (essential subset)
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname | TEXT NOT NULL | Database name |
+| database_id | int | INTEGER PRIMARY KEY | Database ID |
+| create_date | datetime | TEXT NOT NULL | Creation date |
+| compatibility_level | tinyint | INTEGER NOT NULL DEFAULT 150 | Compat level (150=SQL2019) |
+| collation_name | sysname | TEXT | Database collation |
+| user_access | tinyint | INTEGER NOT NULL DEFAULT 0 | 0=MULTI_USER |
+| user_access_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'MULTI_USER' | |
+| is_read_only | bit | INTEGER NOT NULL DEFAULT 0 | |
+| state | tinyint | INTEGER NOT NULL DEFAULT 0 | 0=ONLINE |
+| state_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'ONLINE' | |
+| recovery_model | tinyint | INTEGER NOT NULL DEFAULT 3 | 3=SIMPLE |
+| recovery_model_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'SIMPLE' | |
+| is_auto_close_on | bit | INTEGER NOT NULL DEFAULT 0 | |
+| is_auto_shrink_on | bit | INTEGER NOT NULL DEFAULT 0 | |
+| is_fulltext_enabled | bit | INTEGER NOT NULL DEFAULT 0 | |
+| is_ansi_null_default_on | bit | INTEGER NOT NULL DEFAULT 0 | |
+| is_ansi_nulls_on | bit | INTEGER NOT NULL DEFAULT 1 | |
+| is_ansi_padding_on | bit | INTEGER NOT NULL DEFAULT 1 | |
+| is_ansi_warnings_on | bit | INTEGER NOT NULL DEFAULT 1 | |
+| is_quoted_identifier_on | bit | INTEGER NOT NULL DEFAULT 1 | |
+
+### SQLite Backing Table
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.databases] (
+  database_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  create_date TEXT NOT NULL DEFAULT (datetime('now')),
+  compatibility_level INTEGER NOT NULL DEFAULT 150,
+  collation_name TEXT DEFAULT 'SQL_Latin1_General_CP1_CI_AS',
+  user_access INTEGER NOT NULL DEFAULT 0,
+  user_access_desc TEXT NOT NULL DEFAULT 'MULTI_USER',
+  is_read_only INTEGER NOT NULL DEFAULT 0,
+  state INTEGER NOT NULL DEFAULT 0,
+  state_desc TEXT NOT NULL DEFAULT 'ONLINE',
+  recovery_model INTEGER NOT NULL DEFAULT 3,
+  recovery_model_desc TEXT NOT NULL DEFAULT 'SIMPLE',
+  is_auto_close_on INTEGER NOT NULL DEFAULT 0,
+  is_auto_shrink_on INTEGER NOT NULL DEFAULT 0,
+  is_fulltext_enabled INTEGER NOT NULL DEFAULT 0,
+  is_ansi_null_default_on INTEGER NOT NULL DEFAULT 0,
+  is_ansi_nulls_on INTEGER NOT NULL DEFAULT 1,
+  is_ansi_padding_on INTEGER NOT NULL DEFAULT 1,
+  is_ansi_warnings_on INTEGER NOT NULL DEFAULT 1,
+  is_quoted_identifier_on INTEGER NOT NULL DEFAULT 1
+);
+```
+
+### Seed Data
+
+| database_id | name |
+|---|---|
+| 1 | master |
+| 2 | tempdb |
+| 3 | model |
+| 4 | msdb |
+
+The user's working database should be added dynamically (database_id=5+).
+Mssqlite keeps this server-level table mirrored in each database-owned catalog.
+The initial store also owns an internal `sys._database_files` manifest with
+`database_id`, SQL name, backing location, and an engine-owned deletion flag;
+it is an implementation table, not a SQL Server catalog surface.
+
+---
+
+## 13. sys.database_principals
+
+Database-level security principals.
+
+### Column Definition (essential subset)
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname | TEXT NOT NULL | Principal name |
+| principal_id | int | INTEGER PRIMARY KEY | |
+| type | char(1) | TEXT NOT NULL | S=SQL user, R=Database role, U=Windows user |
+| type_desc | nvarchar(60) | TEXT NOT NULL | SQL_USER, DATABASE_ROLE, WINDOWS_USER |
+| default_schema_name | sysname | TEXT | Default schema |
+| create_date | datetime | TEXT NOT NULL | |
+| modify_date | datetime | TEXT NOT NULL | |
+| owning_principal_id | int | INTEGER | Owner principal ID |
+| sid | varbinary(85) | BLOB | Security identifier |
+| is_fixed_role | bit | INTEGER NOT NULL DEFAULT 0 | Built-in fixed role |
+| authentication_type | int | INTEGER NOT NULL DEFAULT 1 | 0=NONE, 1=INSTANCE, 2=DATABASE, 3=WINDOWS |
+| authentication_type_desc | nvarchar(60) | TEXT NOT NULL DEFAULT 'INSTANCE' | |
+
+### Seed Data (built-in database principals)
+
+| principal_id | name | type | type_desc | default_schema_name | is_fixed_role |
+|---|---|---|---|---|---|
+| 0 | public | R | DATABASE_ROLE | NULL | 1 |
+| 1 | dbo | S | SQL_USER | dbo | 0 |
+| 2 | guest | S | SQL_USER | guest | 0 |
+| 3 | INFORMATION_SCHEMA | S | SQL_USER | NULL | 0 |
+| 4 | sys | S | SQL_USER | NULL | 0 |
+| 16384 | db_owner | R | DATABASE_ROLE | NULL | 1 |
+| 16385 | db_accessadmin | R | DATABASE_ROLE | NULL | 1 |
+| 16386 | db_securityadmin | R | DATABASE_ROLE | NULL | 1 |
+| 16387 | db_ddladmin | R | DATABASE_ROLE | NULL | 1 |
+| 16389 | db_backupoperator | R | DATABASE_ROLE | NULL | 1 |
+| 16390 | db_datareader | R | DATABASE_ROLE | NULL | 1 |
+| 16391 | db_datawriter | R | DATABASE_ROLE | NULL | 1 |
+| 16392 | db_denydatareader | R | DATABASE_ROLE | NULL | 1 |
+| 16393 | db_denydatawriter | R | DATABASE_ROLE | NULL | 1 |
+
+---
+
+## 14. sys.server_principals
+
+Server-level security principals.
+
+### Column Definition (essential subset)
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| name | sysname | TEXT NOT NULL | Principal name |
+| principal_id | int | INTEGER PRIMARY KEY | |
+| sid | varbinary(85) | BLOB | Security identifier |
+| type | char(1) | TEXT NOT NULL | S=SQL login, R=Server role |
+| type_desc | nvarchar(60) | TEXT NOT NULL | SQL_LOGIN, SERVER_ROLE |
+| is_disabled | int | INTEGER NOT NULL DEFAULT 0 | Login disabled |
+| create_date | datetime | TEXT NOT NULL | |
+| modify_date | datetime | TEXT NOT NULL | |
+| default_database_name | sysname | TEXT DEFAULT 'master' | |
+| default_language_name | sysname | TEXT DEFAULT 'us_english' | |
+| is_fixed_role | bit | INTEGER NOT NULL DEFAULT 0 | Built-in role |
+
+### Seed Data
+
+| principal_id | name | type | type_desc | is_fixed_role |
+|---|---|---|---|---|
+| 1 | sa | S | SQL_LOGIN | 0 |
+| 2 | public | R | SERVER_ROLE | 1 |
+| 3 | sysadmin | R | SERVER_ROLE | 1 |
+| 4 | securityadmin | R | SERVER_ROLE | 1 |
+| 5 | serveradmin | R | SERVER_ROLE | 1 |
+| 6 | setupadmin | R | SERVER_ROLE | 1 |
+| 7 | processadmin | R | SERVER_ROLE | 1 |
+| 8 | diskadmin | R | SERVER_ROLE | 1 |
+| 9 | dbcreator | R | SERVER_ROLE | 1 |
+| 10 | bulkadmin | R | SERVER_ROLE | 1 |
+
+---
+
+## 15. sys.identity_columns
+
+A view over sys.columns filtered to is_identity=1, with additional columns.
+
+### Additional Columns (beyond sys.columns)
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| seed_value | sql_variant | TEXT | Identity seed value |
+| increment_value | sql_variant | TEXT | Identity increment value |
+| last_value | sql_variant | TEXT | Last generated value |
+| is_not_for_replication | bit | INTEGER NOT NULL DEFAULT 0 | NOT FOR REPLICATION |
+
+### SQLite View
+
+```sql
+CREATE VIEW IF NOT EXISTS [sys.identity_columns] AS
+SELECT c.*, ic.seed_value, ic.increment_value, ic.last_value, ic.is_not_for_replication
+FROM [sys.columns] c
+JOIN [sys.identity_columns_extra] ic
+  ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+WHERE c.is_identity = 1;
+```
+
+Backing table for extra fields:
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.identity_columns_extra] (
+  object_id INTEGER NOT NULL,
+  column_id INTEGER NOT NULL,
+  seed_value TEXT DEFAULT '1',
+  increment_value TEXT DEFAULT '1',
+  last_value TEXT,
+  is_not_for_replication INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (object_id, column_id)
+);
+```
+
+The engine hydrates one shared allocator per row from this table. Seed,
+increment, and last values remain canonical decimal TEXT so decimal(38,0)
+definitions are exact; dirty `last_value` is written after the surrounding
+SQLite transaction ends, including after rollback, because ordinary identity
+allocation is rollback-independent.
+
+---
+
+## 16. sys.computed_columns
+
+A view over sys.columns filtered to is_computed=1, with additional columns.
+
+### Additional Columns
+
+| Column | MSSQL Type | SQLite Type | Description |
+|--------|-----------|-------------|-------------|
+| definition | nvarchar(max) | TEXT | SQL expression |
+| uses_database_collation | bit | INTEGER NOT NULL DEFAULT 0 | Depends on DB collation |
+| is_persisted | bit | INTEGER NOT NULL DEFAULT 0 | Physically stored |
+
+### SQLite View
+
+```sql
+CREATE VIEW IF NOT EXISTS [sys.computed_columns] AS
+SELECT c.*, cc.definition, cc.uses_database_collation, cc.is_persisted
+FROM [sys.columns] c
+JOIN [sys.computed_columns_extra] cc
+  ON c.object_id = cc.object_id AND c.column_id = cc.column_id
+WHERE c.is_computed = 1;
+```
+
+Backing table:
+
+```sql
+CREATE TABLE IF NOT EXISTS [sys.computed_columns_extra] (
+  object_id INTEGER NOT NULL,
+  column_id INTEGER NOT NULL,
+  definition TEXT,
+  uses_database_collation INTEGER NOT NULL DEFAULT 0,
+  is_persisted INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (object_id, column_id)
+);
+```
+
+---
+
+## 17. Common System Functions That Query Catalog
+
+These T-SQL functions must be emulated to support catalog queries:
+
+| Function | Returns | Equivalent |
+|----------|---------|------------|
+| `OBJECT_ID(name)` | int | Lookup sys.objects by name |
+| `OBJECT_NAME(id)` | sysname | Lookup sys.objects by object_id |
+| `SCHEMA_ID(name)` | int | Lookup sys.schemas by name |
+| `SCHEMA_NAME(id)` | sysname | Lookup sys.schemas by schema_id |
+| `TYPE_ID(name)` | int | Lookup sys.types by name |
+| `TYPE_NAME(id)` | sysname | Lookup sys.types by user_type_id |
+| `DB_ID(name)` | int | Lookup sys.databases by name |
+| `DB_NAME(id)` | sysname | Lookup sys.databases by database_id |
+| `COL_NAME(obj_id, col_id)` | sysname | Lookup sys.columns |
+| `COLUMNPROPERTY(obj_id, col, prop)` | int | Column metadata lookup |
+| `OBJECTPROPERTY(obj_id, prop)` | int | Object metadata lookup |
+| `@@SERVERNAME` | sysname | Server name (configurable) |
+| `@@VERSION` | nvarchar | Version string |
+| `@@SPID` | smallint | Session process ID |
+| `SERVERPROPERTY(prop)` | sql_variant | Server property lookup |
+
+---
+
+## 18. DDL → Catalog Maintenance
+
+When the server processes DDL statements, it must maintain catalog tables accordingly.
+
+### CREATE TABLE
+
+1. Insert row into `sys.objects` (type='U', generate unique object_id)
+2. For each column, insert row into `sys.columns` with correct type mapping
+3. If table has PRIMARY KEY: insert into `sys.objects` (type='PK'), `sys.key_constraints`, `sys.indexes` (index_id=1, type=1), and `sys.index_columns`
+4. If table has UNIQUE constraints: insert into `sys.objects` (type='UQ'), `sys.key_constraints`, `sys.indexes` (type=2), `sys.index_columns`
+5. If table has FOREIGN KEYs: insert into `sys.objects` (type='F'), `sys.foreign_keys`, `sys.foreign_key_columns`
+6. If table has CHECK constraints: insert into `sys.objects` (type='C'), `sys.check_constraints`
+7. If table has DEFAULT constraints: insert into `sys.objects` (type='D'), `sys.default_constraints`
+8. If column has IDENTITY: mark `is_identity=1` in sys.columns, insert into `sys.identity_columns_extra`
+9. Always insert a heap entry: `sys.indexes` (index_id=0, type=0) unless clustered PK exists
+
+### DROP TABLE
+
+1. Delete from `sys.index_columns` where object_id matches
+2. Delete from `sys.indexes` where object_id matches
+3. Delete from `sys.columns` where object_id matches
+4. Delete from `sys.foreign_key_columns` where parent_object_id or constraint_object_id matches
+5. Delete from `sys.foreign_keys` where object_id matches
+6. Delete from `sys.key_constraints` where object_id matches
+7. Delete from `sys.check_constraints` where object_id matches
+8. Delete from `sys.default_constraints` where object_id matches
+9. Delete from `sys.identity_columns_extra` where object_id matches
+10. Delete from `sys.computed_columns_extra` where object_id matches
+11. Delete from `sys.objects` where object_id matches AND all child constraint objects
+
+### ALTER TABLE ADD COLUMN
+
+1. Insert new row into `sys.columns`
+2. Update `max_column_id_used` in sys.tables logic
+
+### ALTER TABLE ALTER COLUMN
+
+1. Validate dependent indexes, keys, checks, defaults, computed columns, and
+   identity/rowversion restrictions before catalog mutation.
+2. Update the existing `sys.columns` row's system/user type ids, max_length,
+   precision, scale, collation_name, and is_nullable in place; object_id and
+   column_id must not change.
+3. Preserve identity and constraint child rows, and update the parent
+   `sys.objects.modify_date` in the same savepoint as the physical rebuild.
+
+### CREATE/DROP INDEX
+
+1. Insert/delete `sys.indexes` row
+2. Insert/delete `sys.index_columns` rows
+
+---
+
+## 19. Object ID Generation
+
+MSSQL uses arbitrary positive integers for object_id. For mssqlite:
+
+- Use a monotonically increasing counter starting at a high value (e.g., 100000001)
+- Store the counter in a metadata table: `CREATE TABLE [sys._next_id] (next_id INTEGER NOT NULL)`
+- System-predefined objects can use lower IDs (1-999)
+- Negative object_ids are reserved for system internal objects in MSSQL
+
+---
+
+## 20. TDS Column Metadata for Catalog Queries
+
+When returning results from catalog queries, each column must have correct TDS metadata. Key mappings:
+
+| sys.* Column Type | TDS Wire Type | Notes |
+|---|---|---|
+| sysname fields (name, etc.) | NVARCHAR(128) | max_length=256 (bytes), system_type_id=231 |
+| int fields (object_id, etc.) | INTN(4) | system_type_id=56 |
+| tinyint fields | INTN(1) | system_type_id=48 |
+| smallint fields | INTN(2) | system_type_id=52 |
+| bit fields | BITN | system_type_id=104 |
+| nvarchar(60) fields (type_desc) | NVARCHAR(60) | max_length=120 (bytes) |
+| nvarchar(max) fields (definition) | NVARCHAR(MAX) | max_length=-1, uses PLP |
+| datetime fields | DATETIMEN(8) | system_type_id=61 |
+| varbinary(85) fields (sid) | VARBINARY(85) | max_length=85, system_type_id=165 |
+
+---
+
+## 21. Priority Implementation Order
+
+For practical client compatibility, implement in this order:
+
+### Phase 1 - Core (required for most ORMs/tools)
+1. `sys.schemas` — needed by everything
+2. `sys.types` — needed for column metadata
+3. `sys.objects` — central catalog
+4. `sys.columns` — column metadata
+5. `sys.tables` — filtered view of objects
+6. `sys.databases` — database listing
+7. `sys.indexes` — index metadata
+
+### Phase 2 - Constraints & Security
+8. `sys.key_constraints` — PK/UQ constraints
+9. `sys.index_columns` — index column details
+10. `sys.foreign_keys` + `sys.foreign_key_columns` — FK metadata
+11. `sys.database_principals` — security context
+12. `sys.server_principals` — login context
+
+### Phase 3 - Extended Views
+13. `sys.check_constraints` — CHECK constraints
+14. `sys.default_constraints` — DEFAULT constraints
+15. `sys.identity_columns` — identity metadata
+16. `sys.computed_columns` — computed column metadata
+17. `sys.views` — view metadata
+18. System functions (OBJECT_ID, SCHEMA_NAME, etc.)

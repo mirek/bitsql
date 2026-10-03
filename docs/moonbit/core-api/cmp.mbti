@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitlang/core/cmp"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn[T : Compare] maximum(T, T) -> T
+
+pub fn[T, K : Compare] maximum_by_key(T, T, (T) -> K) -> T
+
+pub fn[T : Compare] minimum(T, T) -> T
+
+pub fn[T, K : Compare] minimum_by_key(T, T, (T) -> K) -> T
+
+pub fn[T : Compare] minmax(T, T) -> (T, T)
+
+pub fn[T, K : Compare] minmax_by_key(T, T, (T) -> K) -> (T, T)
+
+// Errors
+
+// Types and methods
+pub(all) struct Reverse[T](T) derive(Eq, Hash, @debug.Debug)
+pub fn[T : Compare] Reverse::compare(Self[T], Self[T]) -> Int
+pub fn[T : Eq] Reverse::equal(Self[T], Self[T]) -> Bool
+pub fn[T : Hash] Reverse::hash(Self[T]) -> Int
+pub impl[T : Compare] Compare for Reverse[T]
+#deprecated
+pub impl[T : Show] Show for Reverse[T]
+
+// Type aliases
+
+// Traits

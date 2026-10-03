@@ -1,0 +1,176 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitlang/core/prelude"
+
+import {
+  "moonbitlang/core/bigint",
+  "moonbitlang/core/buffer",
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+  "moonbitlang/core/lazy",
+  "moonbitlang/core/ref",
+  "moonbitlang/core/set",
+  "moonbitlang/core/string",
+}
+
+// Values
+pub fn[T] abort(String) -> T
+
+#callsite(autofill(loc))
+pub fn[T : @builtin.Eq + @debug.Debug] assert_eq(T, T, msg? : String, loc~ : @builtin.SourceLoc) -> Unit raise
+
+#callsite(autofill(loc))
+pub fn assert_false(Bool, msg? : StringView, loc~ : @builtin.SourceLoc) -> Unit raise
+
+#callsite(autofill(loc))
+pub fn[T : @builtin.Eq + @debug.Debug] assert_not_eq(T, T, msg? : String, loc~ : @builtin.SourceLoc) -> Unit raise
+
+#callsite(autofill(loc))
+pub fn assert_true(Bool, msg? : StringView, loc~ : @builtin.SourceLoc) -> Unit raise
+
+pub fn[A : @builtin.Compare] compare(A, A) -> Int
+
+pub fn[T : @debug.Debug] debug(T) -> Unit
+
+pub fn debug_assert(() -> Bool) -> Unit
+
+#callsite(autofill(args_loc, loc))
+pub fn debug_inspect(&@debug.Debug, content? : String, loc~ : @builtin.SourceLoc, args_loc~ : @builtin.ArgsLoc) -> Unit raise @builtin.InspectError
+
+#deprecated
+#callsite(autofill(loc))
+pub fn[T : @debug.Debug] dump(T, name? : String, loc~ : @builtin.SourceLoc) -> T
+
+pub fn[T : @builtin.Show] eprintln(T) -> Unit
+
+#callsite(autofill(loc))
+pub fn[T] fail(StringView, loc~ : @builtin.SourceLoc) -> T raise @builtin.Failure
+
+pub fn[T : @builtin.Hash] hash(T) -> Int
+
+pub fn[T] ignore(T) -> Unit
+
+#callsite(autofill(args_loc, loc))
+pub fn inspect(&@builtin.Show, content? : String, loc~ : @builtin.SourceLoc, args_loc~ : @builtin.ArgsLoc) -> Unit raise @builtin.InspectError
+
+#callsite(autofill(args_loc, loc))
+pub fn json_inspect(&@builtin.ToJson, content? : @builtin.Json, loc~ : @builtin.SourceLoc, args_loc~ : @builtin.ArgsLoc) -> Unit raise @builtin.InspectError
+
+#deprecated
+pub fn not(Bool) -> Bool
+
+pub let null : @builtin.Json
+
+pub fn[T] panic() -> T
+
+pub fn[T] physical_equal(T, T) -> Bool
+
+pub fn[T : @builtin.Show] println(T) -> Unit
+
+pub fn[T : @debug.Debug] repr(T) -> String
+
+#deprecated
+pub fn[T] tap(T, (T) -> Unit raise) -> T raise
+
+#deprecated
+pub fn[T, R] then(T, (T) -> R raise?) -> R raise?
+
+#deprecated
+pub fn[Self : @debug.Debug] to_repr(Self) -> @debug.Repr
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @builtin {type ArgsLoc}
+
+pub using @builtin {type Array}
+
+pub using @builtin {type ArrayView}
+
+pub using @bigint {type BigInt}
+
+pub using @buffer {type Buffer}
+
+pub using @builtin {type Failure}
+
+pub using @builtin {type Hasher}
+
+pub using @builtin {type InspectError}
+
+pub using @builtin {type Iter}
+
+pub using @builtin {type Iter2}
+
+#deprecated
+pub using @builtin {type Iter as Iterator}
+
+#deprecated
+pub using @builtin {type Iter2 as Iterator2}
+
+pub using @builtin {type Json}
+
+pub using @lazy {type Lazy}
+
+pub using @builtin {type Map}
+
+pub using @builtin {type MutArrayView}
+
+pub using @ref {type Ref}
+
+pub using @string {type Regex}
+
+pub using @debug {type Repr}
+
+pub using @set {type Set}
+
+pub using @builtin {type SnapshotError}
+
+pub using @builtin {type SourceLoc}
+
+pub using @builtin {type StringBuilder}
+
+pub using @builtin {type UninitializedArray}
+
+pub using @builtin {trait Add}
+
+pub using @builtin {trait BitAnd}
+
+pub using @builtin {trait BitOr}
+
+pub using @builtin {trait BitXOr}
+
+pub using @builtin {trait Compare}
+
+pub using @debug {trait Debug}
+
+pub using @builtin {trait Default}
+
+pub using @builtin {trait Div}
+
+pub using @builtin {trait Eq}
+
+pub using @json {trait FromJson}
+
+pub using @builtin {trait Hash}
+
+pub using @builtin {trait Logger}
+
+pub using @builtin {trait Mod}
+
+pub using @builtin {trait Mul}
+
+pub using @builtin {trait Neg}
+
+pub using @builtin {trait Shl}
+
+pub using @builtin {trait Show}
+
+pub using @builtin {trait Shr}
+
+pub using @builtin {trait Sub}
+
+pub using @builtin {trait ToJson}
+
+// Traits

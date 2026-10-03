@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitlang/core/ref"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn[T] new(T) -> Ref[T]
+
+// Errors
+
+// Types and methods
+pub(all) struct Ref[T] {
+  mut val : T
+}
+#alias(new, deprecated)
+pub fn[T] Ref::Ref(T) -> Self[T]
+pub fn[T, R] Ref::map(Self[T], (T) -> R raise?) -> Self[R] raise?
+pub fn[T, R] Ref::protect(Self[T], T, () -> R raise?) -> R raise?
+#as_free_fn
+pub fn[T] Ref::swap(Self[T], Self[T]) -> Unit
+pub fn[T] Ref::update(Self[T], (T) -> T raise?) -> Unit raise?
+#deprecated
+pub impl[X : Show] Show for Ref[X]
+pub impl[T : @debug.Debug] @debug.Debug for Ref[T]
+
+// Type aliases
+
+// Traits

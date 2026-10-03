@@ -1,0 +1,95 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitlang/core/debug"
+
+// Values
+#callsite(autofill(loc))
+pub fn[T : Eq + Debug] assert_eq(T, T, msg? : String, loc~ : SourceLoc) -> Unit raise
+
+pub fn[T : Debug] debug(T) -> Unit
+
+#alias(inspect, deprecated)
+#callsite(autofill(args_loc, loc))
+pub fn debug_inspect(&Debug, content? : String, loc~ : SourceLoc, args_loc~ : ArgsLoc) -> Unit raise InspectError
+
+#deprecated
+#callsite(autofill(loc))
+pub fn[T : Debug] dump(T, name? : String, loc~ : SourceLoc) -> T
+
+pub fn render(Repr, max_depth? : Int) -> String
+
+#alias(repr)
+pub fn[T : Debug] to_string(T) -> String
+
+// Errors
+
+// Types and methods
+type Repr
+pub fn[T : Debug] Repr::Repr(T) -> Self
+pub fn Repr::to_string(Self) -> String
+pub impl Show for Repr
+pub impl Debug for Repr
+
+// Type aliases
+
+// Traits
+pub(open) trait Debug {
+  #as_free_fn(deprecated)
+  fn to_repr(Self) -> Repr
+}
+pub impl Debug for Unit
+pub impl Debug for Bool
+pub impl Debug for Byte
+pub impl Debug for Char
+pub impl Debug for Int
+pub impl Debug for Int16
+pub impl Debug for Int64
+pub impl Debug for UInt
+pub impl Debug for UInt16
+pub impl Debug for UInt64
+pub impl Debug for Float
+pub impl Debug for Double
+pub impl Debug for String
+pub impl[T : Debug] Debug for T?
+pub impl[T : Debug, E : Debug] Debug for Result[T, E]
+pub impl[T : Debug] Debug for FixedArray[T]
+pub impl[T : Debug] Debug for ReadOnlyArray[T]
+pub impl Debug for Bytes
+pub impl Debug for ArgsLoc
+pub impl[T : Debug] Debug for Array[T]
+pub impl[T : Debug] Debug for ArrayView[T]
+pub impl Debug for BenchError
+pub impl Debug for Failure
+pub impl Debug for Hasher
+pub impl Debug for InspectError
+pub impl[A] Debug for Iter[A]
+pub impl[A, B] Debug for Iter2[A, B]
+pub impl Debug for Json
+pub impl[K : Debug, V : Debug] Debug for Map[K, V]
+pub impl[T : Debug] Debug for MutArrayView[T]
+pub impl Debug for SnapshotError
+pub impl Debug for SourceLoc
+pub impl Debug for StringBuilder
+pub impl[T] Debug for UninitializedArray[T]
+pub impl[A : Debug, B : Debug] Debug for (A, B)
+pub impl[A : Debug, B : Debug, C : Debug] Debug for (A, B, C)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug] Debug for (A, B, C, D)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug] Debug for (A, B, C, D, E)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug] Debug for (A, B, C, D, E, F)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug] Debug for (A, B, C, D, E, F, G)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug] Debug for (A, B, C, D, E, F, G, H)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug] Debug for (A, B, C, D, E, F, G, H, I)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug] Debug for (A, B, C, D, E, F, G, H, I, J)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug, R : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug, R : Debug, S : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug, R : Debug, S : Debug, T : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug, R : Debug, S : Debug, T : Debug, U : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)
+pub impl[A : Debug, B : Debug, C : Debug, D : Debug, E : Debug, F : Debug, G : Debug, H : Debug, I : Debug, J : Debug, K : Debug, L : Debug, M : Debug, N : Debug, O : Debug, P : Debug, Q : Debug, R : Debug, S : Debug, T : Debug, U : Debug, V : Debug] Debug for (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)
+pub impl Debug for BytesView
+pub impl Debug for StringView
