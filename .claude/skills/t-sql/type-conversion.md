@@ -96,7 +96,8 @@ Returns NULL on conversion failure instead of error. Still raises error for expl
 - For float: optional exponential notation (e/E with optional +/-).
 
 ### String to Date/Time
-- Depends on SET DATEFORMAT and SET LANGUAGE.
+- Depends on SET DATEFORMAT and SET LANGUAGE. Captured rules for us_english /
+  mdy: docs/reference/date-strings.md.
 - GETDATE() implicitly converts to date style 0.
 - SYSDATETIME() implicitly converts to date style 21.
 
@@ -125,7 +126,7 @@ Returns NULL on conversion failure instead of error. Still raises error for expl
 |----------|----------|
 | finite numeric/decimal/float → integer | **truncated toward zero before range checking** |
 | empty or whitespace character → integer | **zero** |
-| datetime fractional > 3 digits → datetime | **truncated** |
+| datetime2 fractional > 3 digits → datetime | **truncated** per the docs; bitsql rounds (unverified). Character strings with > 3 digits fail (241, captured) |
 | Character → shorter character | **truncated** |
 | decimal → lower precision/scale | **rounded** (by default) |
 | time(n) → lower precision | **rounded up** |

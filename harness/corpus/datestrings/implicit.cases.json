@@ -1,0 +1,197 @@
+{
+  "source": "harness/gen/datestrings.mjs",
+  "cases": [
+    {
+      "name": "000-select-1-as-v-where-cast-2024-01-02-as-d",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS v WHERE CAST('2024-01-02' AS date) = '01/02/2024'"}]
+    },
+    {
+      "name": "001-select-1-as-v-where-cast-2024-01-02-as-d",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS v WHERE CAST('2024-01-02' AS date) = '13/02/2024'"}]
+    },
+    {
+      "name": "002-declare-d-date-2024-01-02-select-case-wh",
+      "steps": [{"kind":"batch","sql":"DECLARE @d date = '2024-01-02'; SELECT CASE WHEN @d = '1/2/24' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "003-declare-d-datetime-2024-01-02-select-cas",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime = '2024-01-02'; SELECT CASE WHEN @d = 'Jan 2 2024' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "004-declare-d-datetime2-2024-01-02-22-11-sel",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime2 = '2024-01-02 22:11'; SELECT CASE WHEN @d = '1/2/2024 10:11 PM' THEN 1 ELSE 0 END AS v"}]
+    },
+    {
+      "name": "005-declare-d-smalldatetime-jan-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"DECLARE @d smalldatetime = 'Jan 2 2024 10:11PM'; SELECT @d AS v"}]
+    },
+    {
+      "name": "006-declare-d-datetimeoffset-january-2-2024-",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetimeoffset = 'January 2, 2024 10:11 PM +05:30'; SELECT CONVERT(nvarchar(40), @d, 121) AS v"}]
+    },
+    {
+      "name": "007-declare-d-time-10-11-pm-select-convert-n",
+      "steps": [{"kind":"batch","sql":"DECLARE @d time = '10:11 PM'; SELECT CONVERT(nvarchar(40), @d, 121) AS v"}]
+    },
+    {"name":"008-declare-d-datetime-13-1-2024","steps":[{"kind":"batch","sql":"DECLARE @d datetime = '13/1/2024'"}]},
+    {
+      "name": "009-declare-d-datetime-garbage-select-1-as-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime = 'garbage'; SELECT 1 AS after"}]
+    },
+    {
+      "name": "010-declare-s-varchar-20-13-1-2024-declare-d",
+      "steps": [{"kind":"batch","sql":"DECLARE @s varchar(20) = '13/1/2024'; DECLARE @d datetime = @s; SELECT 1 AS after"}]
+    },
+    {
+      "name": "011-declare-s-varchar-20-13-1-2024-select-ca",
+      "steps": [{"kind":"batch","sql":"DECLARE @s varchar(20) = '13/1/2024'; SELECT CAST(@s AS datetime) AS v"}]
+    },
+    {
+      "name": "012-declare-s-nvarchar-20-n-13-1-2024-select",
+      "steps": [{"kind":"batch","sql":"DECLARE @s nvarchar(20) = N'13/1/2024'; SELECT CAST(@s AS smalldatetime) AS v"}]
+    },
+    {
+      "name": "013-declare-s-nvarchar-20-n-x-select-cast-s-",
+      "steps": [{"kind":"batch","sql":"DECLARE @s nvarchar(20) = N'x'; SELECT CAST(@s AS smalldatetime) AS v"}]
+    },
+    {
+      "name": "014-declare-s-varchar-40-jan-2-2024-10-11-pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s varchar(40) = 'Jan 2 2024 10:11 PM'; SELECT CAST(@s AS datetime) AS a, CAST(@s AS date) AS b, CONVERT(nvarchar(40), CAST(@s AS datetime2(3)), 121) AS c"
+        }
+      ]
+    },
+    {
+      "name": "015-select-cast-x-as-datetime-as-v-select-1-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('x' AS datetime) AS v; SELECT 1 AS after"}]
+    },
+    {
+      "name": "016-select-cast-13-1-2024-as-datetime-as-v-s",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('13/1/2024' AS datetime) AS v; SELECT 2 AS after"}]
+    },
+    {
+      "name": "017-select-cast-x-as-smalldatetime-as-v-sele",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('x' AS smalldatetime) AS v; SELECT 3 AS after"}]
+    },
+    {
+      "name": "018-select-cast-13-1-2024-as-smalldatetime-a",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('13/1/2024' AS smalldatetime) AS v; SELECT 4 AS after"}]
+    },
+    {
+      "name": "019-select-cast-x-as-date-as-v-select-5-as-a",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('x' AS date) AS v; SELECT 5 AS after"}]
+    },
+    {
+      "name": "020-select-cast-2024-01-02-10-00-15-00-as-da",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('2024-01-02 10:00 +15:00' AS datetimeoffset) AS v; SELECT 6 AS after"}]
+    },
+    {
+      "name": "021-select-cast-1-2-123-as-date-as-v-select-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST('1/2/123' AS date) AS v; SELECT 7 AS after"}]
+    },
+    {
+      "name": "022-select-convert-date-12-31-2024-112-as-v-",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(date, '12/31/2024', 112) AS v; SELECT 8 AS after"}]
+    },
+    {
+      "name": "023-select-try-cast-x-as-datetime-as-a-try-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_CAST('x' AS datetime) AS a, TRY_CAST('13/1/2024' AS datetime) AS b, TRY_CAST('x' AS smalldatetime) AS c, TRY_CAST('2079-06-07' AS smalldatetime) AS d, TRY_CAST('x' AS date) AS e"
+        }
+      ]
+    },
+    {
+      "name": "024-select-try-convert-date-13-1-2024-as-a-t",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_CONVERT(date, '13/1/2024') AS a, TRY_CONVERT(date, '13/1/2024', 103) AS b, TRY_CONVERT(date, '12/31/2024', 112) AS c, TRY_CONVERT(datetime, '12/31/2024', 103) AS d"
+        }
+      ]
+    },
+    {
+      "name": "025-select-try-cast-n-jan-2-2024-as-datetime",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_CAST(N'Jan 2 2024' AS datetime) AS a, TRY_CAST('10:11 PM' AS time) AS b, TRY_CAST('2024-01-02T10:11:12+05:30' AS datetime) AS c"
+        }
+      ]
+    },
+    {
+      "name": "026-select-dateadd-day-1-jan-2-2024-as-a-dat",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATEADD(day, 1, 'Jan 2 2024') AS a, DATEADD(day, 1, '1/2/2024 10:11 PM') AS b, DATEDIFF(day, '1/1/2024', 'Feb 1 2024') AS c"
+        }
+      ]
+    },
+    {
+      "name": "027-select-datepart-month-2-mar-2024-as-a-da",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATEPART(month, '2 Mar 2024') AS a, DATENAME(month, '4/5/2024') AS b, YEAR('Jan 2 99') AS c, MONTH('12/1/2024') AS d, DAY('1.15.2024') AS e"
+        }
+      ]
+    },
+    {
+      "name": "028-select-eomonth-2-1-2024-as-a-datefrompar",
+      "steps": [{"kind":"batch","sql":"SELECT EOMONTH('2/1/2024') AS a, DATEFROMPARTS(2024, 1, 2) AS b"}]
+    },
+    {
+      "name": "029-table-compare-and-insert",
+      "steps": [
+        {
+          "kind": "batch",
+          "compare": false,
+          "sql": "CREATE TABLE t (id int NOT NULL PRIMARY KEY, d date NULL, dt datetime NULL, sdt smalldatetime NULL, d2 datetime2(3) NULL, dto datetimeoffset(0) NULL)"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT INTO t VALUES (1, '01/02/2024', 'Jan 2 2024 10:11 PM', '1/2/2024 10:11:29', '2024-01-02T10:11:12.1235', 'Jan 2 2024 10:11 PM -05:00'), (2, 'Feb 3 2024', '2/3/24', '20240203', '3 Feb 2024', '2024-02-03Z')"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id, d, dt, sdt, CONVERT(nvarchar(40), d2, 121) AS d2, CONVERT(nvarchar(40), dto, 121) AS dto FROM t ORDER BY id"
+        },
+        {"kind":"batch","sql":"SELECT id FROM t WHERE d = '01/02/2024' OR dt = 'February 3, 2024' ORDER BY id"},
+        {"kind":"batch","sql":"SELECT id FROM t WHERE d BETWEEN 'Jan 1 2024' AND '1/31/2024' ORDER BY id"},
+        {"kind":"batch","sql":"SELECT id FROM t WHERE dt > '13/1/2024'"},
+        {"kind":"batch","sql":"SELECT id FROM t WHERE d > 'garbage'"},
+        {"kind":"batch","sql":"UPDATE t SET dt = '12/31/1752' WHERE id = 1"},
+        {"kind":"batch","sql":"INSERT INTO t (id, d) VALUES (3, '2/30/2024')"}
+      ]
+    },
+    {"name":"030-declare-i-int-x-select-1-as-after","steps":[{"kind":"batch","sql":"DECLARE @i int = 'x'; SELECT 1 AS after"}]},
+    {
+      "name": "031-declare-s-varchar-10-garbage-declare-d-d",
+      "steps": [{"kind":"batch","sql":"DECLARE @s varchar(10) = 'garbage'; DECLARE @d datetime = @s; SELECT 1 AS after"}]
+    },
+    {
+      "name": "032-declare-d-datetime-set-d-garbage-select-",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime; SET @d = 'garbage'; SELECT 1 AS after"}]
+    },
+    {
+      "name": "033-declare-d-datetime-select-d-garbage-sele",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime; SELECT @d = 'garbage'; SELECT 1 AS after"}]
+    },
+    {
+      "name": "034-declare-d-date-garbage-select-1-as-after",
+      "steps": [{"kind":"batch","sql":"DECLARE @d date = 'garbage'; SELECT 1 AS after"}]
+    },
+    {
+      "name": "035-declare-d-smalldatetime-garbage-select-1",
+      "steps": [{"kind":"batch","sql":"DECLARE @d smalldatetime = 'garbage'; SELECT 1 AS after"}]
+    },
+    {
+      "name": "036-declare-d-datetime-set-d-13-1-2024-selec",
+      "steps": [{"kind":"batch","sql":"DECLARE @d datetime; SET @d = '13/1/2024'; SELECT 1 AS after"}]
+    }
+  ]
+}

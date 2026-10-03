@@ -15,8 +15,8 @@ pub const EMU_NOT_SUPPORTED : Int = 50100
 pub const EMU_CONVERSION_NOT_SUPPORTED : Int = 50101
 
 ///|
-/// A character string in a date/time format other than the ISO forms the
-/// emulator parses (month names, `/` or `.` separated, AM/PM, ...).
+/// Retired (2026-10-03): character strings in every us_english / mdy
+/// format now parse (date_parse.mbt). The number stays reserved.
 pub const EMU_DATETIME_FORMAT_NOT_SUPPORTED : Int = 50102
 
 ///|

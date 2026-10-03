@@ -144,7 +144,21 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.flush_trailing(line)
   // an uncaught THROW completes with 253, not 246 (captured: msduck
   // nocount-completions)
-  self.done(if self.throwing { 253 } else { self.cur_cmd }, error=true)
+  // a batch-ending conversion error in an assignment (DECLARE/SET/SELECT
+  // @v =, no result set sent) completes with 253, not 193 (captured:
+  // datestrings/implicit#009, #030-#035)
+  let assignment_abort = ends_batch &&
+    self.cur_cmd == 193 &&
+    [241, 245, 295].contains(e.number()) &&
+    !self.out[mark:].iter().any(x => x is ResultSet(_))
+  self.done(
+    if self.throwing || assignment_abort {
+      253
+    } else {
+      self.cur_cmd
+    },
+    error=true,
+  )
   if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort && !raiserror) {
     raise AbortBatch
   }
@@ -163,7 +177,9 @@ fn aborts_batch(
   cmd == 253 ||
   (xact_abort && e.severity() > 10) ||
   e.severity() >= 20 ||
+  n == 241 ||
   n == 245 ||
+  n == 295 ||
   n == 8114 ||
   n == 529 ||
   n == 11728 ||

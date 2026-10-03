@@ -33,7 +33,7 @@ pub fn cast(
     FFloat => to_float(v, from, to)
     FString => to_character(v, from, to, style)
     FBinary => to_binary(v, from, to, style)
-    FDate | FTime | FDateTime => to_temporal(v, from, to)
+    FDate | FTime | FDateTime => to_temporal(v, from, to, style)
     FGuid => to_guid(v, from)
     FVariant => raise internal("variant target")
   }

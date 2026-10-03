@@ -1,0 +1,455 @@
+{
+  "source": "harness/gen/datestrings.mjs",
+  "cases": [
+    {
+      "name": "000-1-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/2024') AS c0, ISDATE('01/02/2024') AS c1, ISDATE('1/2/24') AS c2, ISDATE('2024/1/2') AS c3, ISDATE('1/2024/2') AS c4, ISDATE('24/1/2') AS c5, ISDATE('1/2/024') AS c6, ISDATE('12/31/99') AS c7, ISDATE('2024/31/12') AS c8, ISDATE('0/2/2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "001-1-2-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/0') AS c0, ISDATE('2023/02/29') AS c1, ISDATE('12/31/1752') AS c2, ISDATE('12/31/9999') AS c3, ISDATE('1/1/10000') AS c4, ISDATE('1/2') AS c5, ISDATE('1/2/') AS c6, ISDATE('1/2/2024/') AS c7, ISDATE('/1/2/2024') AS c8, ISDATE('1//2/2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "002-1-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1-2-2024') AS c0, ISDATE('01-02-2024') AS c1, ISDATE('1-2-24') AS c2, ISDATE('2024-1-2') AS c3, ISDATE('1-2024-2') AS c4, ISDATE('24-1-2') AS c5, ISDATE('1-2-024') AS c6, ISDATE('12-31-99') AS c7, ISDATE('2024-31-12') AS c8, ISDATE('0-2-2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "003-1-2-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1-2-0') AS c0, ISDATE('2023-02-29') AS c1, ISDATE('12-31-1752') AS c2, ISDATE('12-31-9999') AS c3, ISDATE('1-1-10000') AS c4, ISDATE('1-2') AS c5, ISDATE('1-2-') AS c6, ISDATE('1-2-2024-') AS c7, ISDATE('-1-2-2024') AS c8, ISDATE('1--2-2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "004-1-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1.2.2024') AS c0, ISDATE('01.02.2024') AS c1, ISDATE('1.2.24') AS c2, ISDATE('2024.1.2') AS c3, ISDATE('1.2024.2') AS c4, ISDATE('24.1.2') AS c5, ISDATE('1.2.024') AS c6, ISDATE('12.31.99') AS c7, ISDATE('2024.31.12') AS c8, ISDATE('0.2.2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "005-1-2-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1.2.0') AS c0, ISDATE('2023.02.29') AS c1, ISDATE('12.31.1752') AS c2, ISDATE('12.31.9999') AS c3, ISDATE('1.1.10000') AS c4, ISDATE('1.2') AS c5, ISDATE('1.2.') AS c6, ISDATE('1.2.2024.') AS c7, ISDATE('.1.2.2024') AS c8, ISDATE('1..2.2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "006-1-2-49",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/49') AS c0, ISDATE('1/2/50') AS c1, ISDATE('1/2/00') AS c2, ISDATE('1/2/1') AS c3, ISDATE('1/2/099') AS c4, ISDATE('1/2/100') AS c5, ISDATE('1/2/123') AS c6, ISDATE('1/2/0024') AS c7, ISDATE('1/2/0999') AS c8, ISDATE('1/2/1000') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "007-1-2-00024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/00024') AS c0, ISDATE('001/02/2024') AS c1, ISDATE('1/002/2024') AS c2, ISDATE('099/1/2') AS c3, ISDATE('0001/02/03') AS c4, ISDATE('001/002/0024') AS c5, ISDATE('13/1/2024') AS c6, ISDATE('2/30/2024') AS c7, ISDATE('2/29/2024') AS c8, ISDATE('2/29/2023') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "008-12-31-1899",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('12/31/1899') AS c0, ISDATE('1/2-2024') AS c1, ISDATE('1-2/2024') AS c2, ISDATE('2024-1/2') AS c3, ISDATE('2024/01-02') AS c4, ISDATE('1 / 2 / 2024') AS c5, ISDATE('1/ 2/2024') AS c6, ISDATE('1/2 /2024') AS c7, ISDATE('1/2/2024/5') AS c8, ISDATE('1/2 2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "009-1-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1 2 2024') AS c0, ISDATE('2024-01') AS c1, ISDATE('2024/01') AS c2, ISDATE('2024-13-01') AS c3, ISDATE('2024-1-32') AS c4, ISDATE('0024-01-02') AS c5, ISDATE('1753-01-01') AS c6, ISDATE('1752-12-31') AS c7, ISDATE('0001-01-01') AS c8, ISDATE('9999-12-31') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "010-1900-01-01",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1900-01-01') AS c0, ISDATE('2079-06-06') AS c1, ISDATE('2079-06-07') AS c2, ISDATE('2024') AS c3, ISDATE('1999') AS c4, ISDATE('0001') AS c5, ISDATE('9999') AS c6, ISDATE('0999') AS c7, ISDATE('1752') AS c8, ISDATE('1900') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "011-2079",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2079') AS c0, ISDATE('2080') AS c1, ISDATE('24') AS c2, ISDATE('240') AS c3, ISDATE('24010') AS c4, ISDATE('240102') AS c5, ISDATE('240132') AS c6, ISDATE('241301') AS c7, ISDATE('491231') AS c8, ISDATE('500101') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "012-991231",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('991231') AS c0, ISDATE('000101') AS c1, ISDATE('20240102') AS c2, ISDATE('20241301') AS c3, ISDATE('20240230') AS c4, ISDATE('00010101') AS c5, ISDATE('17530101') AS c6, ISDATE('17521231') AS c7, ISDATE('2024010') AS c8, ISDATE('202401021') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "013-2024010203",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024010203') AS c0, ISDATE('20240102 10:11') AS c1, ISDATE('240102 10:11') AS c2, ISDATE('2024 10:11') AS c3, ISDATE('10:11 20240102') AS c4, ISDATE('20240102 10PM') AS c5, ISDATE('2024 10') AS c6, ISDATE('2024 2024') AS c7, ISDATE('Jan 2 2024') AS c8, ISDATE('January 2, 2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "014-january-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('January 2,2024') AS c0, ISDATE('Jan 2 ,2024') AS c1, ISDATE('January 2 , 2024') AS c2, ISDATE('2 Jan 2024') AS c3, ISDATE('2 Jan, 2024') AS c4, ISDATE('2024 Jan 2') AS c5, ISDATE('Jan 2024') AS c6, ISDATE('2024 Jan') AS c7, ISDATE('Jan 2024 2') AS c8, ISDATE('2 2024 Jan') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "015-2024-2-jan",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024 2 Jan') AS c0, ISDATE('Jan 2 24') AS c1, ISDATE('2 Jan 24') AS c2, ISDATE('24 Jan 2') AS c3, ISDATE('Jan 2 3') AS c4, ISDATE('Jan 2 024') AS c5, ISDATE('Jan 2 0024') AS c6, ISDATE('Jan 2 00024') AS c7, ISDATE('Jan 0024') AS c8, ISDATE('Jan 024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "016-jan-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('Jan 2') AS c0, ISDATE('2 January') AS c1, ISDATE('Jan 24') AS c2, ISDATE('Jan') AS c3, ISDATE('Jan Feb 2024') AS c4, ISDATE('Jan 2 2024 Feb') AS c5, ISDATE('2024 Jan 2 3') AS c6, ISDATE('1/2/2024 Jan') AS c7, ISDATE('1/2 Jan') AS c8, ISDATE('Jan 1/2') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "017-jan-02-24",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('JAN 02 24') AS c0, ISDATE('jan 2 2024') AS c1, ISDATE('JANUARY 2 2024') AS c2, ISDATE('sEpTeMbEr 30 2024') AS c3, ISDATE('Sep 30, 2024') AS c4, ISDATE('Sept 2 2024') AS c5, ISDATE('Janu 2 2024') AS c6, ISDATE('Febr 1 2024') AS c7, ISDATE('Ja 1 2024') AS c8, ISDATE('Feb 29 2023') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "018-feb-29-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('Feb 29 2024') AS c0, ISDATE('Apr 31 2024') AS c1, ISDATE('Mar 1 2024') AS c2, ISDATE('April 1 2024') AS c3, ISDATE('May 1 2024') AS c4, ISDATE('June 1 2024') AS c5, ISDATE('Jun 1 2024') AS c6, ISDATE('July 4 2024') AS c7, ISDATE('Jul 4 2024') AS c8, ISDATE('Aug 31 2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "019-august-1-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('August 1 2024') AS c0, ISDATE('Oct 1 2024') AS c1, ISDATE('October 1 2024') AS c2, ISDATE('Nov 30 2024') AS c3, ISDATE('November 1 2024') AS c4, ISDATE('Dec 31 2024') AS c5, ISDATE('December 31 2024') AS c6, ISDATE('March 1 2024') AS c7, ISDATE('February 1 2024') AS c8, ISDATE('2-Jan-2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "020-02-jan-24",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('02-JAN-24') AS c0, ISDATE('2024-Jan-02') AS c1, ISDATE('24-Jan-02') AS c2, ISDATE('02/Jan/2024') AS c3, ISDATE('2024/Jan/02') AS c4, ISDATE('2024.Jan.02') AS c5, ISDATE('02.Jan.2024') AS c6, ISDATE('2-Jan 2024') AS c7, ISDATE('2,Jan,2024') AS c8, ISDATE('Jan-2-2024') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "021-jan-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('Jan/2/2024') AS c0, ISDATE('Jan.2.2024') AS c1, ISDATE('Jan-2024') AS c2, ISDATE('2024-Jan') AS c3, ISDATE('Jan 2-2024') AS c4, ISDATE('2 Jan-2024') AS c5, ISDATE('Jan, 2 2024') AS c6, ISDATE('Jan,2,2024') AS c7, ISDATE('2, Jan 2024') AS c8, ISDATE('2024, Jan 2') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "022-jan-2024-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('Jan 2024, 2') AS c0, ISDATE('Jan 2,, 2024') AS c1, ISDATE(',Jan 2 2024') AS c2, ISDATE('Jan 2 2024,') AS c3, ISDATE('Tuesday, January 2, 2024') AS c4, ISDATE('Jan 2 1753') AS c5, ISDATE('Dec 31 1752') AS c6, ISDATE('Jun 6 2079') AS c7, ISDATE('Jun 7 2079') AS c8, ISDATE('Dec 31 9999') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "023-10-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11') AS c0, ISDATE('10:11:12') AS c1, ISDATE('10:11:12.1') AS c2, ISDATE('10:11:12.12') AS c3, ISDATE('10:11:12.123') AS c4, ISDATE('10:11:12.1234') AS c5, ISDATE('10:11:12.1234567') AS c6, ISDATE('10:11:12.12345678') AS c7, ISDATE('10:11:12.000000000') AS c8, ISDATE('10:11:12.5') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "024-10-11-12-555",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11:12.555') AS c0, ISDATE('10:11:12.999') AS c1, ISDATE('10:11:12.9999') AS c2, ISDATE('10:11:59.9999999') AS c3, ISDATE('23:59:59.997') AS c4, ISDATE('23:59:59.998') AS c5, ISDATE('23:59:59.999') AS c6, ISDATE('23:59:59.9999999') AS c7, ISDATE('23:59:59.99999999') AS c8, ISDATE('10:11:12:5') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "025-10-11-12-12",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11:12:12') AS c0, ISDATE('10:11:12:123') AS c1, ISDATE('10:11:12:999') AS c2, ISDATE('10:11:12:1234') AS c3, ISDATE('10:11:12:') AS c4, ISDATE('10:11:12.') AS c5, ISDATE('10:11:12,123') AS c6, ISDATE('10:11:12.1.2') AS c7, ISDATE('10::11') AS c8, ISDATE('10:') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "026-10",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE(':10') AS c0, ISDATE('10') AS c1, ISDATE('1:2') AS c2, ISDATE('1:2:3') AS c3, ISDATE('1:2:3.4') AS c4, ISDATE('000:10') AS c5, ISDATE('010:10') AS c6, ISDATE('10:010') AS c7, ISDATE('10:11:012') AS c8, ISDATE('10:11.5') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "027-10-60",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:60') AS c0, ISDATE('10:11:60') AS c1, ISDATE('24:00') AS c2, ISDATE('24:00:00') AS c3, ISDATE('25:00') AS c4, ISDATE('23:59') AS c5, ISDATE('10:11 PM') AS c6, ISDATE('10:11:12 PM') AS c7, ISDATE('10:11:12.123 AM') AS c8, ISDATE('10:11:12.5 PM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "028-10-11pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11PM') AS c0, ISDATE('10:11 pm') AS c1, ISDATE('10:11 Am') AS c2, ISDATE('10PM') AS c3, ISDATE('10 PM') AS c4, ISDATE('10am') AS c5, ISDATE('12 AM') AS c6, ISDATE('12 PM') AS c7, ISDATE('12:00 AM') AS c8, ISDATE('12:00 PM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "029-12-30-am",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('12:30 AM') AS c0, ISDATE('12:30 PM') AS c1, ISDATE('0 AM') AS c2, ISDATE('00 AM') AS c3, ISDATE('0 PM') AS c4, ISDATE('1 PM') AS c5, ISDATE('11 PM') AS c6, ISDATE('13 PM') AS c7, ISDATE('23 PM') AS c8, ISDATE('24 PM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "030-13-am",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('13 AM') AS c0, ISDATE('13:00 PM') AS c1, ISDATE('13:00 AM') AS c2, ISDATE('0:30 PM') AS c3, ISDATE('0:00 AM') AS c4, ISDATE('11:59:59.997 PM') AS c5, ISDATE('10 P') AS c6, ISDATE('10 A.M.') AS c7, ISDATE('PM 10:11') AS c8, ISDATE('AM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "031-10-11-am-pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11 AM PM') AS c0, ISDATE('10:11 A') AS c1, ISDATE('10:11 AMX') AS c2, ISDATE('1/2/2024 10:11') AS c3, ISDATE('1/2/2024 10:11 PM') AS c4, ISDATE('1/2/2024 10:11:12.123 PM') AS c5, ISDATE('1/2/2024 10 PM') AS c6, ISDATE('1/2/2024 10:11AM') AS c7, ISDATE('01/02/2024 10:11:12.123') AS c8, ISDATE('01-02-2024 10:11') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "032-2024-01-02-10-11-12-123",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024/01/02 10:11:12.123') AS c0, ISDATE('2024.01.02 10:11') AS c1, ISDATE('12.31.2024 23:59') AS c2, ISDATE('1-2-24 10:11 PM') AS c3, ISDATE('2024-01-02 10:11') AS c4, ISDATE('2024-01-02 10:11:12') AS c5, ISDATE('2024-01-02 10:11:12.5') AS c6, ISDATE('2024-01-02 10:11:12.555') AS c7, ISDATE('2024-01-02 10PM') AS c8, ISDATE('2024-01-02 10:11:12.1234567') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "033-1-2-2024-10-11-12-1234567",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/2024 10:11:12.1234567') AS c0, ISDATE('1/2/2024 10:11:12.9999999') AS c1, ISDATE('12/31/9999 23:59:59.997') AS c2, ISDATE('12/31/9999 23:59:59.998') AS c3, ISDATE('12/31/9999 23:59:59.9999999') AS c4, ISDATE('9999-12-31 23:59:59.999') AS c5, ISDATE('Jan 2 2024 10:11') AS c6, ISDATE('Jan 2 2024 10:11:12.123 AM') AS c7, ISDATE('Jan 2 2024 10 AM') AS c8, ISDATE('Jan 2, 2024 10:11 PM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "034-jan-2-2024-10-11pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('Jan 2,2024 10:11PM') AS c0, ISDATE('Jan 2 2024 AM') AS c1, ISDATE('10:11 1/2/2024') AS c2, ISDATE('10 PM 1/2/2024') AS c3, ISDATE('10 AM 1/2/2024') AS c4, ISDATE('10:11 Jan 2 2024') AS c5, ISDATE('Jan 2 10:11 2024') AS c6, ISDATE('Jan 10:11 2 2024') AS c7, ISDATE('1/2 10:11 /2024') AS c8, ISDATE('1/2/2024 25:00') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "035-1-2-2024-13-am",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/2024 13 AM') AS c0, ISDATE('1/2/2024 AM 10:11') AS c1, ISDATE('1/2/2024 10:11:12 AM PM') AS c2, ISDATE('1/2/2024 1/2/2024') AS c3, ISDATE('1/2/2024 10:11 10:12') AS c4, ISDATE('1/2/2024 5') AS c5, ISDATE('1/2/2024 10') AS c6, ISDATE('1/2/2024 2024') AS c7, ISDATE('10:11 5') AS c8, ISDATE('5 10:11') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "036-2024-5-10-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024 5 10:11') AS c0, ISDATE('1/2/2024,') AS c1, ISDATE('1/2/2024, 10:11') AS c2, ISDATE('1/2/2024 ,10:11') AS c3, ISDATE('10:11, 1/2/2024') AS c4, ISDATE('2 Jan 2024, 10:11') AS c5, ISDATE('Jan 2 2024 , 10:11') AS c6, ISDATE('2024-01-02 10:11 Jan') AS c7, ISDATE('1/2/2024T10:11') AS c8, ISDATE('1/2/2024x') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "037-1-2-2024-x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/2024 x') AS c0, ISDATE('x1/2/2024') AS c1, ISDATE('garbage') AS c2, ISDATE('1/2/2024 10:11 A') AS c3, ISDATE('2024-01-02T10:11:12') AS c4, ISDATE('2024-01-02T10:11:12.123') AS c5, ISDATE('2024-01-02T10:11:12.1234') AS c6, ISDATE('2024-01-02T10:11:12.1234567') AS c7, ISDATE('2024-01-02T10:11:12.12345678') AS c8, ISDATE('2024-01-02T10:11:12Z') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "038-2024-01-02t10-11-12-123z",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024-01-02T10:11:12.123Z') AS c0, ISDATE('2024-01-02T10:11:12.123456Z') AS c1, ISDATE('2024-01-02T10:11:12 Z') AS c2, ISDATE('2024-01-02T10:11:12  Z') AS c3, ISDATE('2024-01-02T10:11:12Z ') AS c4, ISDATE('2024-01-02T10:11:12z') AS c5, ISDATE('2024-01-02t10:11:12') AS c6, ISDATE('2024-01-02T10:11:12PM') AS c7, ISDATE('2024-01-02T10:11:12 PM') AS c8, ISDATE('2024-01-02T10:11:12.123 PM') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "039-2024-01-02t10-11-pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024-01-02T10:11 PM') AS c0, ISDATE('2024-01-02T10:11') AS c1, ISDATE('2024-01-02T10:11Z') AS c2, ISDATE('2024-01-02T10') AS c3, ISDATE('2024-01-02T') AS c4, ISDATE('2024-01-02 T10:11') AS c5, ISDATE('2024-01-02T1:11:12') AS c6, ISDATE('2024-01-02T10:1:12') AS c7, ISDATE('2024-1-02T10:11:12') AS c8, ISDATE('2024-01-2T10:11:12') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "040-24-01-02t10-11-12",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('24-01-02T10:11:12') AS c0, ISDATE('20240102T10:11:12') AS c1, ISDATE('2024/01/02T10:11:12') AS c2, ISDATE('2024.01.02T10:11:12') AS c3, ISDATE('2024-01-02T10:11:12:123') AS c4, ISDATE('2024-01-02T10:11:12.') AS c5, ISDATE('2024-01-02TZ') AS c6, ISDATE('2024-01-02T24:00:00') AS c7, ISDATE('0001-01-01T00:00:00') AS c8, ISDATE('9999-12-31T23:59:59.997') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "041-9999-12-31t23-59-59-9999999",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('9999-12-31T23:59:59.9999999') AS c0, ISDATE('T10:11:12') AS c1, ISDATE('T10:11') AS c2, ISDATE('T') AS c3, ISDATE('T 10:11') AS c4, ISDATE('2024T10:11:12') AS c5, ISDATE('2024-01-02T10:11:12+05:30') AS c6, ISDATE('2024-01-02T10:11:12-05:30') AS c7, ISDATE('2024-01-02T10:11:12.123+05:30') AS c8, ISDATE('2024-01-02T10:11:12+14:00') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "042-2024-01-02t10-11-12-14-00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024-01-02T10:11:12-14:00') AS c0, ISDATE('2024-01-02T10:11:12+13:59') AS c1, ISDATE('2024-01-02T10:11:12+13:60') AS c2, ISDATE('2024-01-02T10:11:12+14:01') AS c3, ISDATE('2024-01-02T10:11:12 +05:30') AS c4, ISDATE('2024-01-02T10:11:12Z+05:00') AS c5, ISDATE('2024-01-02 10:11:12 +05:30') AS c6, ISDATE('2024-01-02 10:11:12+05:30') AS c7, ISDATE('2024-01-02 10:11:12 -14:00') AS c8, ISDATE('2024-01-02 10:11:12 +14:01') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "043-2024-01-02-10-11-12-0530",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024-01-02 10:11:12+0530') AS c0, ISDATE('2024-01-02 10:11:12 +5:30') AS c1, ISDATE('2024-01-02 10:11:12 +05') AS c2, ISDATE('2024-01-02 10:11:12 +1:00') AS c3, ISDATE('2024-01-02 10:11:12 +01:0') AS c4, ISDATE('2024-01-02 10:11:12 +001:00') AS c5, ISDATE('2024-01-02 10:11:12 -00:00') AS c6, ISDATE('2024-01-02 10:11:12 + 01:00') AS c7, ISDATE('2024-01-02 10:11:12 +01:00 ') AS c8, ISDATE('2024-01-02 10:11:12 PM +01:00') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "044-2024-01-02-10-11-12-01-00-pm",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('2024-01-02 10:11:12 +01:00 PM') AS c0, ISDATE('2024-01-02 10:11:12.1234567 +01:00') AS c1, ISDATE('2024-01-02 +05:00') AS c2, ISDATE('2024-01-02 10:11:12Z') AS c3, ISDATE('2024-01-02 10:11:12 Z') AS c4, ISDATE('2024-01-02 10:11 Z') AS c5, ISDATE('2024-01-02 10:11Z') AS c6, ISDATE('1/2/2024 10:11Z') AS c7, ISDATE('1/2/2024 10:11:12 +05:30') AS c8, ISDATE('Jan 2 2024 10:11 +01:00') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "045-10-11-01-00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('10:11 +01:00') AS c0, ISDATE('10:11Z') AS c1, ISDATE('10:11:12.123Z') AS c2, ISDATE('2024-01-02Z') AS c3, ISDATE('2024-01-02 Z') AS c4, ISDATE('1/2/2024Z') AS c5, ISDATE('20240102Z') AS c6, ISDATE('Jan 2 2024Z') AS c7, ISDATE('Z') AS c8, ISDATE('2024Z') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "046-0001-01-01-00-00-01-00",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('0001-01-01 00:00 +01:00') AS c0, ISDATE('0001-01-01 00:00 -01:00') AS c1, ISDATE('9999-12-31 23:59 -01:00') AS c2, ISDATE('9999-12-31 23:59 +01:00') AS c3, ISDATE('') AS c4, ISDATE(' ') AS c5, ISDATE('   ') AS c6, ISDATE('  1/2/2024  ') AS c7, ISDATE('\t1/2/2024') AS c8, ISDATE('1/2/2024\t') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "047-1-2-2024-10-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE('1/2/2024\t10:11') AS c0, ISDATE('\t\t1/2/2024 \t ') AS c1, ISDATE('10:11\tPM') AS c2, ISDATE('Jan\t2\t2024') AS c3, ISDATE('1/2/2024\n') AS c4, ISDATE('\n1/2/2024') AS c5, ISDATE('1/2/2024\r') AS c6, ISDATE('1/2/2024\r\n10:11') AS c7, ISDATE('1/2/2024\u000b') AS c8, ISDATE('1/2/2024\f') AS c9"
+        }
+      ]
+    },
+    {
+      "name": "048-1-2-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE(' 1/2/2024') AS c0, ISDATE('1/2/2024  10:11') AS c1, ISDATE('Jan  2  2024') AS c2, ISDATE('  10:11  ') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "049-other-sources",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISDATE(N'1/2/2024') AS a, ISDATE(CAST('1/2/2024' AS char(20))) AS b, ISDATE(NULL) AS c, ISDATE(N'garbage') AS d, ISDATE(CAST(N'13/1/2024' AS nchar(12))) AS e"
+        }
+      ]
+    }
+  ]
+}

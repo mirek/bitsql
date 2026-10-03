@@ -73,11 +73,13 @@ pub fn SqlError::is_try_convertible(self : SqlError) -> Bool {
     | 245
     | 248
     | 293
+    | 295
     | 294
     | 8114
     | 8115
     | 8169
-    | 8170 => true
+    | 8170
+    | 9807 => true
     _ => false
   }
 }

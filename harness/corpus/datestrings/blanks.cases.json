@@ -1,0 +1,242 @@
+{
+  "source": "harness/gen/datestrings.mjs",
+  "cases": [
+    {"name":"0000-datetime-x","steps":[{"kind":"batch","sql":"SELECT CAST('' AS datetime) AS v"}]},
+    {"name":"0001-smalldatetime-x","steps":[{"kind":"batch","sql":"SELECT CAST('' AS smalldatetime) AS v"}]},
+    {"name":"0002-date-x","steps":[{"kind":"batch","sql":"SELECT CAST('' AS date) AS v"}]},
+    {"name":"0003-time-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('' AS time), 121) AS v"}]},
+    {"name":"0004-datetime2-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('' AS datetime2), 121) AS v"}]},
+    {"name":"0005-datetimeoffset-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('' AS datetimeoffset), 121) AS v"}]},
+    {"name":"0006-datetime-x","steps":[{"kind":"batch","sql":"SELECT CAST(' ' AS datetime) AS v"}]},
+    {"name":"0007-smalldatetime-x","steps":[{"kind":"batch","sql":"SELECT CAST(' ' AS smalldatetime) AS v"}]},
+    {"name":"0008-date-x","steps":[{"kind":"batch","sql":"SELECT CAST(' ' AS date) AS v"}]},
+    {"name":"0009-time-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' ' AS time), 121) AS v"}]},
+    {"name":"0010-datetime2-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' ' AS datetime2), 121) AS v"}]},
+    {"name":"0011-datetimeoffset-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' ' AS datetimeoffset), 121) AS v"}]},
+    {"name":"0012-datetime-x","steps":[{"kind":"batch","sql":"SELECT CAST('   ' AS datetime) AS v"}]},
+    {"name":"0013-smalldatetime-x","steps":[{"kind":"batch","sql":"SELECT CAST('   ' AS smalldatetime) AS v"}]},
+    {"name":"0014-date-x","steps":[{"kind":"batch","sql":"SELECT CAST('   ' AS date) AS v"}]},
+    {"name":"0015-time-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('   ' AS time), 121) AS v"}]},
+    {"name":"0016-datetime2-x","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('   ' AS datetime2), 121) AS v"}]},
+    {
+      "name": "0017-datetimeoffset-x",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('   ' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0018-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('  1/2/2024  ' AS datetime) AS v"}]},
+    {"name":"0019-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('  1/2/2024  ' AS smalldatetime) AS v"}]},
+    {"name":"0020-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('  1/2/2024  ' AS date) AS v"}]},
+    {"name":"0021-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  1/2/2024  ' AS time), 121) AS v"}]},
+    {
+      "name": "0022-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  1/2/2024  ' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0023-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  1/2/2024  ' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0024-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t1/2/2024' AS datetime) AS v"}]},
+    {"name":"0025-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t1/2/2024' AS smalldatetime) AS v"}]},
+    {"name":"0026-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t1/2/2024' AS date) AS v"}]},
+    {"name":"0027-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t1/2/2024' AS time), 121) AS v"}]},
+    {
+      "name": "0028-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t1/2/2024' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0029-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t1/2/2024' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0030-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t' AS datetime) AS v"}]},
+    {"name":"0031-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t' AS smalldatetime) AS v"}]},
+    {"name":"0032-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t' AS date) AS v"}]},
+    {"name":"0033-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t' AS time), 121) AS v"}]},
+    {
+      "name": "0034-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0035-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0036-datetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t10:11' AS datetime) AS v"}]},
+    {"name":"0037-smalldatetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t10:11' AS smalldatetime) AS v"}]},
+    {"name":"0038-date-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\t10:11' AS date) AS v"}]},
+    {
+      "name": "0039-time-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t10:11' AS time), 121) AS v"}]
+    },
+    {
+      "name": "0040-datetime2-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t10:11' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0041-datetimeoffset-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\t10:11' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0042-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t\t1/2/2024 \t ' AS datetime) AS v"}]},
+    {"name":"0043-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t\t1/2/2024 \t ' AS smalldatetime) AS v"}]},
+    {"name":"0044-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\t\t1/2/2024 \t ' AS date) AS v"}]},
+    {
+      "name": "0045-time-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t\t1/2/2024 \t ' AS time), 121) AS v"}]
+    },
+    {
+      "name": "0046-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t\t1/2/2024 \t ' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0047-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\t\t1/2/2024 \t ' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0048-datetime-10-11-pm","steps":[{"kind":"batch","sql":"SELECT CAST('10:11\tPM' AS datetime) AS v"}]},
+    {"name":"0049-smalldatetime-10-11-pm","steps":[{"kind":"batch","sql":"SELECT CAST('10:11\tPM' AS smalldatetime) AS v"}]},
+    {"name":"0050-date-10-11-pm","steps":[{"kind":"batch","sql":"SELECT CAST('10:11\tPM' AS date) AS v"}]},
+    {"name":"0051-time-10-11-pm","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('10:11\tPM' AS time), 121) AS v"}]},
+    {
+      "name": "0052-datetime2-10-11-pm",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('10:11\tPM' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0053-datetimeoffset-10-11-pm",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('10:11\tPM' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0054-datetime-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan\t2\t2024' AS datetime) AS v"}]},
+    {"name":"0055-smalldatetime-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan\t2\t2024' AS smalldatetime) AS v"}]},
+    {"name":"0056-date-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan\t2\t2024' AS date) AS v"}]},
+    {"name":"0057-time-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan\t2\t2024' AS time), 121) AS v"}]},
+    {
+      "name": "0058-datetime2-jan-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan\t2\t2024' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0059-datetimeoffset-jan-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan\t2\t2024' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0060-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\n' AS datetime) AS v"}]},
+    {"name":"0061-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\n' AS smalldatetime) AS v"}]},
+    {"name":"0062-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\n' AS date) AS v"}]},
+    {"name":"0063-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\n' AS time), 121) AS v"}]},
+    {
+      "name": "0064-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\n' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0065-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\n' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0066-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\n1/2/2024' AS datetime) AS v"}]},
+    {"name":"0067-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\n1/2/2024' AS smalldatetime) AS v"}]},
+    {"name":"0068-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('\n1/2/2024' AS date) AS v"}]},
+    {"name":"0069-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\n1/2/2024' AS time), 121) AS v"}]},
+    {
+      "name": "0070-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\n1/2/2024' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0071-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('\n1/2/2024' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0072-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r' AS datetime) AS v"}]},
+    {"name":"0073-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r' AS smalldatetime) AS v"}]},
+    {"name":"0074-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r' AS date) AS v"}]},
+    {"name":"0075-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r' AS time), 121) AS v"}]},
+    {
+      "name": "0076-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0077-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0078-datetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r\n10:11' AS datetime) AS v"}]},
+    {"name":"0079-smalldatetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r\n10:11' AS smalldatetime) AS v"}]},
+    {"name":"0080-date-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\r\n10:11' AS date) AS v"}]},
+    {
+      "name": "0081-time-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r\n10:11' AS time), 121) AS v"}]
+    },
+    {
+      "name": "0082-datetime2-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r\n10:11' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0083-datetimeoffset-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\r\n10:11' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0084-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\u000b' AS datetime) AS v"}]},
+    {"name":"0085-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\u000b' AS smalldatetime) AS v"}]},
+    {"name":"0086-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\u000b' AS date) AS v"}]},
+    {"name":"0087-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\u000b' AS time), 121) AS v"}]},
+    {
+      "name": "0088-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\u000b' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0089-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\u000b' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0090-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\f' AS datetime) AS v"}]},
+    {"name":"0091-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\f' AS smalldatetime) AS v"}]},
+    {"name":"0092-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024\f' AS date) AS v"}]},
+    {"name":"0093-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\f' AS time), 121) AS v"}]},
+    {
+      "name": "0094-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\f' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0095-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024\f' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0096-datetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST(' 1/2/2024' AS datetime) AS v"}]},
+    {"name":"0097-smalldatetime-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST(' 1/2/2024' AS smalldatetime) AS v"}]},
+    {"name":"0098-date-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST(' 1/2/2024' AS date) AS v"}]},
+    {"name":"0099-time-1-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' 1/2/2024' AS time), 121) AS v"}]},
+    {
+      "name": "0100-datetime2-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' 1/2/2024' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0101-datetimeoffset-1-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST(' 1/2/2024' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0102-datetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024  10:11' AS datetime) AS v"}]},
+    {"name":"0103-smalldatetime-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024  10:11' AS smalldatetime) AS v"}]},
+    {"name":"0104-date-1-2-2024-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('1/2/2024  10:11' AS date) AS v"}]},
+    {
+      "name": "0105-time-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024  10:11' AS time), 121) AS v"}]
+    },
+    {
+      "name": "0106-datetime2-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024  10:11' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0107-datetimeoffset-1-2-2024-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('1/2/2024  10:11' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0108-datetime-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan  2  2024' AS datetime) AS v"}]},
+    {"name":"0109-smalldatetime-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan  2  2024' AS smalldatetime) AS v"}]},
+    {"name":"0110-date-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CAST('Jan  2  2024' AS date) AS v"}]},
+    {"name":"0111-time-jan-2-2024","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan  2  2024' AS time), 121) AS v"}]},
+    {
+      "name": "0112-datetime2-jan-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan  2  2024' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0113-datetimeoffset-jan-2-2024",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('Jan  2  2024' AS datetimeoffset), 121) AS v"}]
+    },
+    {"name":"0114-datetime-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('  10:11  ' AS datetime) AS v"}]},
+    {"name":"0115-smalldatetime-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('  10:11  ' AS smalldatetime) AS v"}]},
+    {"name":"0116-date-10-11","steps":[{"kind":"batch","sql":"SELECT CAST('  10:11  ' AS date) AS v"}]},
+    {"name":"0117-time-10-11","steps":[{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  10:11  ' AS time), 121) AS v"}]},
+    {
+      "name": "0118-datetime2-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  10:11  ' AS datetime2), 121) AS v"}]
+    },
+    {
+      "name": "0119-datetimeoffset-10-11",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(nvarchar(40), CAST('  10:11  ' AS datetimeoffset), 121) AS v"}]
+    }
+  ]
+}

@@ -155,27 +155,67 @@ test "date/time string parsing" {
   assert_eq(cast_text("2024-13-01", Date), invalid)
   assert_eq(cast_text("24:00", Time(0)), invalid)
   assert_eq(cast_text("12:60", Time(0)), invalid)
-  assert_eq(cast_text("2024-01-02 12:00:00.12345678", DateTime2(7)), invalid)
   assert_eq(cast_text("2024-01-02 +01:00", DateTimeOffset(7)), invalid)
   assert_eq(cast_text("2024-01-02 10:00 +15:00", DateTimeOffset(7)), invalid)
   assert_eq(cast_text("hello", Date), invalid)
   assert_eq(cast_text("2024-01-02 12:00:00.1234", DateTime), invalid)
-  // formats SQL Server accepts but bitsql does not parse
-  let unsupported = "50102/1 Emulator: this date/time string format (bitsql parses ISO 8601 forms only) is not supported."
-  assert_eq(cast_text("Jan 2 2024", Date), unsupported)
-  assert_eq(cast_text("01/02/2024", Date), unsupported)
-  assert_eq(cast_text("2024.01.02", Date), unsupported)
-  assert_eq(cast_text("02-01-2024", Date), unsupported)
-  assert_eq(cast_text("12:00 PM", Time(0)), unsupported)
-  assert_eq(cast_text("12:00:00:123", Time(3)), unsupported)
-  // TRY_CAST: invalid → NULL, unsupported still raises
+  // captured (harness/corpus/datestrings): us_english / mdy forms
+  assert_eq(
+    cast_text("2024-01-02 12:00:00.12345678", DateTime2(7)),
+    "2024-01-02 12:00:00.1234568",
+  )
+  assert_eq(cast_text("Jan 2 2024", Date), "2024-01-02")
+  assert_eq(cast_text("01/02/2024", Date), "2024-01-02")
+  assert_eq(cast_text("2024.01.02", Date), "2024-01-02")
+  assert_eq(cast_text("02-01-2024", Date), "2024-02-01")
+  assert_eq(cast_text("1/2/49", Date), "2049-01-02")
+  assert_eq(cast_text("1/2/50", Date), "1950-01-02")
+  assert_eq(cast_text("12:00 PM", Time(0)), "12:00:00")
+  assert_eq(cast_text("12:00:00:123", Time(3)), "12:00:00.123")
+  assert_eq(cast_text("10:11 1/2/2024", Date), invalid)
+  assert_eq(
+    cast_text("10:11 1/2/2024", DateTime, style=121),
+    "2024-01-02 10:11:00.000",
+  )
+  let out_of_range = "242/3 The conversion of a varchar data type to a datetime data type resulted in an out-of-range value."
+  assert_eq(cast_text("13/1/2024", DateTime), out_of_range)
+  assert_eq(cast_text("1/2/123", DateTime), out_of_range)
+  assert_eq(
+    cast_text("garbage", SmallDateTime),
+    "295/3 Conversion failed when converting character string to smalldatetime data type.",
+  )
+  // TRY_CAST: invalid → NULL
   assert_eq(
     outcome(() => @types.try_cast(s("2024-02-30"), vc(), Date)),
     "ok NULL",
   )
   assert_eq(
-    outcome(() => @types.try_cast(s("Jan 2 2024"), vc(), Date)),
-    unsupported,
+    outcome(() => @types.try_cast(s("2/30/2024"), vc(), DateTime)),
+    "ok NULL",
+  )
+}
+
+///|
+/// CONVERT(ty, literal, style) rendered as CAST text.
+fn conv_text(literal : String, ty : @types.SqlType, style : Int) -> String {
+  @types.render(@types.cast(s(literal), vc(), ty, style~), ty, None) catch {
+    e => "\{e.number()}/\{e.state()} \{e.message()}"
+  }
+}
+
+///|
+test "CONVERT styles from character strings" {
+  assert_eq(conv_text("31/12/2024", Date, 103), "2024-12-31")
+  assert_eq(conv_text("31.12.2024", DateTime, 104), "Dec 31 2024 12:00AM")
+  assert_eq(conv_text("2024/12/31", Date, 111), "2024-12-31")
+  assert_eq(conv_text("20241231", Date, 112), "2024-12-31")
+  assert_eq(
+    conv_text("12/31/2024", Date, 112),
+    "9807/0 The input character string does not follow style 112, either change the input character string or use a different style.",
+  )
+  assert_eq(
+    conv_text("12/31/2024", Date, 13),
+    "50105/1 Emulator: CONVERT style 13 from character strings to date is not supported.",
   )
 }
 

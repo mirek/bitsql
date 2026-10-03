@@ -220,3 +220,9 @@ Start the host with `--database NAME` so the app's database exists at login
   dumps SQL Server's time zone behaviour for `scripts/gen-timezones.py`
   (docs/reference/at-time-zone.md). Cases reading the clock
   (sys.time_zone_info) compare only clock-independent facts.
+- 2026-10-03: `harness/gen/datestrings.mjs` generates
+  `corpus/datestrings/*.cases.json` (~3,600 one-SELECT cases: string × type,
+  ISDATE, implicit conversions, CONVERT styles). Capturing them takes about
+  an hour on the shared oracle (CREATE DATABASE per case dominates); for a
+  quick oracle-vs-emulator loop run the SQL of single-batch cases on one
+  connection to each server instead and compare rows/errors.

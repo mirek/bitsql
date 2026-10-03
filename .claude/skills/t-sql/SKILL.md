@@ -413,6 +413,22 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   violating a CHECK that references one column names it (", column 'id'.")
   and is followed by INFO 3621; bitsql's INSERT path does neither yet (only
   ALTER TABLE does).
+- 2026-10-03 (date strings, harness/corpus/datestrings, ~3,600 captured
+  cases; rules in docs/reference/date-strings.md): datetime/smalldatetime
+  use a *legacy* parser, date/time/datetime2/datetimeoffset a *new* one, and
+  they differ: legacy accepts the time anywhere (`10:11 1/2/2024`), mixed
+  separators, 3-digit parts, at most 3 fraction digits, spaces only; new
+  accepts TAB, 7+ fraction digits (rounded at the 8th), UTC offsets, 1/2/4-
+  digit years only. Legacy errors split into 241 state 1 (syntax;
+  smalldatetime 295 state 3) and 242 state 3 (invalid field, duplicated
+  part, out of range — also for `13/1/2024`); the new parser always says 241.
+  241 and 295 **abort the batch**, 242 does not. Two-digit years: 0–49 →
+  20xx. ISDATE = CAST AS datetime succeeds. CONVERT styles for strings set
+  the d/m/y order and the year width (<100 two digits, ≥100 four); 112 on
+  the new parser rejects separated dates with 9807 state 0. Correction: the
+  type-conversion.md row "datetime fractional > 3 digits → truncated" does
+  not hold for strings (241), and the old test claiming `.12345678` fails
+  for datetime2 was wrong (it rounds).
 
 Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
 

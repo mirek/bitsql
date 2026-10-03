@@ -7,49 +7,68 @@ priv struct Instant {
   days : Int?
   time : Int64?
   offset : Int?
-  fraction_digits : Int
 }
 
 ///|
-fn temporal_text_error(e : TemporalParseError) -> SqlError {
-  match e {
-    Invalid =>
-      // captured: 241 state 1
-      sql_error(
-        241, "Conversion failed when converting date and/or time from character string.",
+/// 241 state 1 (captured): any failure of the date/time/datetime2/
+/// datetimeoffset parser, and a syntax error of the datetime parser.
+fn temporal_text_error() -> SqlError {
+  sql_error(
+    241, "Conversion failed when converting date and/or time from character string.",
+  )
+}
+
+///|
+/// A character string → local civil parts for a target type: datetime and
+/// smalldatetime use SQL Server's legacy parser, the other types the new one
+/// (date_parse.mbt).
+fn parse_text(
+  s : String,
+  from : SqlType,
+  to : SqlType,
+  style : Int?,
+) -> ParsedTemporal raise SqlError {
+  let n = style.unwrap_or(0)
+  let st = match date_style(n) {
+    Some(st) => st
+    None =>
+      raise not_supported(
+        "CONVERT style \{n} from character strings to \{to.base_name()}",
+        number=EMU_STYLE_NOT_SUPPORTED,
       )
-    Unsupported =>
-      not_supported(
-        "this date/time string format (bitsql parses ISO 8601 forms only)",
-        number=EMU_DATETIME_FORMAT_NOT_SUPPORTED,
+  }
+  let legacy = to is (DateTime | SmallDateTime)
+  parse_date_string(s, if legacy { Legacy } else { Modern }, st) catch {
+    Syntax if to is SmallDateTime =>
+      // captured: 295 state 3
+      raise sql_error(
+        295,
+        "Conversion failed when converting character string to smalldatetime data type.",
+        state=3,
+      )
+    Value if legacy => raise legacy_out_of_range(from, to)
+    Syntax | Value => raise temporal_text_error()
+    StyleMismatch =>
+      // captured: 9807 state 0 for date/datetime2 under style 112
+      raise sql_error(
+        9807,
+        "The input character string does not follow style \{n}, either change the input character string or use a different style.",
+        state=0,
       )
   }
 }
 
 ///|
+/// A non-character temporal value as local civil parts.
 fn instant_of(v : Value, from : SqlType) -> Instant raise SqlError {
   match v {
-    String(s) => {
-      let p = parse_temporal(s) catch { e => raise temporal_text_error(e) }
-      let days = match p.date {
-        Some((y, m, d)) => Some(days_from_civil(y, m, d))
-        None => None
-      }
-      {
-        days,
-        time: p.time,
-        offset: p.offset,
-        fraction_digits: p.fraction_digits,
-      }
-    }
-    Date(d) => { days: Some(d), time: None, offset: None, fraction_digits: 0, }
-    Time(t) => { days: None, time: Some(t), offset: None, fraction_digits: 7, }
+    Date(d) => { days: Some(d), time: None, offset: None, }
+    Time(t) => { days: None, time: Some(t), offset: None, }
     DateTime2(x) =>
       {
         days: Some((x / TICKS_PER_DAY).to_int()),
         time: Some(x % TICKS_PER_DAY),
         offset: None,
-        fraction_digits: 7,
       }
     DateTimeOffset(utc, off) => {
       let local_ticks = utc + off.to_int64() * TICKS_PER_MINUTE
@@ -57,7 +76,6 @@ fn instant_of(v : Value, from : SqlType) -> Instant raise SqlError {
         days: Some((local_ticks / TICKS_PER_DAY).to_int()),
         time: Some(local_ticks % TICKS_PER_DAY),
         offset: Some(off),
-        fraction_digits: 7,
       }
     }
     DateTime(d, u) =>
@@ -65,14 +83,12 @@ fn instant_of(v : Value, from : SqlType) -> Instant raise SqlError {
         days: Some(d + DAYS_TO_1900),
         time: Some(datetime_units_to_ticks(u)),
         offset: None,
-        fraction_digits: 7,
       }
     SmallDateTime(d, m) =>
       {
         days: Some(d + DAYS_TO_1900),
         time: Some(m.to_int64() * TICKS_PER_MINUTE),
         offset: None,
-        fraction_digits: 0,
       }
     _ => raise internal("bad temporal source \{from.to_sql()}")
   }
@@ -93,7 +109,12 @@ fn legacy_out_of_range(from : SqlType, to : SqlType) -> SqlError {
 const MAX_TICKS : Int64 = 3_155_378_975_999_999_999L
 
 ///|
-fn to_temporal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
+fn to_temporal(
+  v : Value,
+  from : SqlType,
+  to : SqlType,
+  style : Int?,
+) -> Value raise SqlError {
   let ff = from.family()
   if ff is (FBit | FInteger | FDecimal | FMoney | FFloat) {
     return numeric_to_legacy(v, from, to)
@@ -101,7 +122,17 @@ fn to_temporal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError 
   if ff == FBinary {
     raise conversion_unsupported(from, to)
   }
-  let inst = instant_of(v, from)
+  let inst = match v {
+    String(text) => {
+      let p = parse_text(text, from, to, style)
+      let days = match p.date {
+        Some((y, m, d)) => Some(days_from_civil(y, m, d))
+        None => None
+      }
+      { days, time: p.time, offset: p.offset, }
+    }
+    _ => instant_of(v, from)
+  }
   let from_text = ff == FString
   let days = inst.days.unwrap_or(DAYS_TO_1900)
   let time = inst.time.unwrap_or(0L)
@@ -112,7 +143,7 @@ fn to_temporal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError 
       let x = round_ticks(days.to_int64() * TICKS_PER_DAY + time, s)
       if x > MAX_TICKS {
         raise if from_text {
-          temporal_text_error(Invalid)
+          temporal_text_error()
         } else {
           overflow_expression(to, state=1)
         }
@@ -134,13 +165,6 @@ fn to_temporal(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError 
       DateTimeOffset(utc, off)
     }
     DateTime | SmallDateTime => {
-      if from_text && inst.fraction_digits > 3 {
-        // legacy datetime text accepts at most 3 fraction digits
-        raise temporal_text_error(Invalid)
-      }
-      if from_text && inst.offset is Some(_) {
-        raise temporal_text_error(Invalid)
-      }
       let mut d = days
       let mut units = ticks_to_datetime_units(time).to_int()
       if units >= DATETIME_UNITS_PER_DAY {
