@@ -353,6 +353,8 @@ fn type_ids(t : @types.SqlType) -> (Int, Int, Int, Int, Int) {
     RowVersion => (189, 189, 8, 0, 0)
     // sys.types: sql_variant max_length 8016 (COLMETADATA says 8009)
     Variant => (98, 98, 8016, 0, 0)
+    // captured: xml/type (sys.columns, sys.types)
+    Xml => (241, 241, -1, 0, 0)
   }
 }
 
@@ -1118,7 +1120,8 @@ fn Session::fill_type_info(
       r["character_maximum_length"] = i(n)
       r["character_octet_length"] = i(n)
     }
-    VarBinary(None) => {
+    // captured: xml/type#058
+    VarBinary(None) | Xml => {
       r["character_maximum_length"] = i(-1)
       r["character_octet_length"] = i(-1)
     }

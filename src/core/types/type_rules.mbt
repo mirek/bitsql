@@ -12,7 +12,8 @@
 /// converted). Order from `.claude/skills/t-sql/data-types.md` §1.
 pub fn precedence(t : SqlType) -> Int {
   match t {
-    Variant => 27
+    Variant => 28
+    Xml => 27
     DateTimeOffset(_) => 26
     DateTime2(_) => 25
     DateTime => 24
@@ -87,6 +88,10 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
     // converts to nothing else implicitly (captured 257)
     (_, FVariant) => variant_can_hold(from)
     (FVariant, _) => false
+    // xml: strings and binary convert to it implicitly; it converts to
+    // nothing implicitly (captured: xml/type 257/206)
+    (FString | FBinary, FXml) => true
+    (FXml, _) | (_, FXml) => false
     (FString, FBinary) => false
     (FString, _) => true
     (f, t) if is_numeric_family(f) && is_numeric_family(t) => true
@@ -112,6 +117,7 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
   match (from.family(), to.family()) {
     // out of a variant: checked against the base type at run time
     (FVariant, _) => true
+    (FXml, FString | FBinary) => true
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
     (FBinary, FDateTime) => is_legacy_datetime(to)
@@ -134,6 +140,11 @@ pub fn explicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
 pub fn implicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
   // captured: a max type or timestamp assigned to sql_variant is 206
   if to is Variant && !(from is Variant) {
+    return type_clash_error(from, to)
+  }
+  // captured (xml/type): xml to/from a non-character type is 206
+  if (to is Xml && !(from.family() is (FString | FBinary))) ||
+    (from is Xml && !(to.family() is (FString | FBinary))) {
     return type_clash_error(from, to)
   }
   sql_error(
@@ -315,6 +326,16 @@ pub fn arith_result_type(
 ) -> SqlType raise SqlError {
   if a is Variant || b is Variant {
     raise variant_arith_error(op, a, b)
+  }
+  // captured (xml/type): xml + xml is 8117, xml + nvarchar 402
+  if a is Xml || b is Xml {
+    if a is Xml && b is Xml {
+      raise invalid_operand_error(a, op)
+    }
+    raise sql_error(
+      402,
+      "The data types \{a.clash_name()} and \{b.clash_name()} are incompatible in the \{op.name()} operator.",
+    )
   }
   let fa = a.family()
   let fb = b.family()

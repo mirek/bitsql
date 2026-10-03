@@ -243,6 +243,16 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       ctx.rt.count_override = Some(rows.length().to_int64())
       run_for_json(rows, columns, root, include_nulls, without_array_wrapper)
     }
+    ForXml(input, columns, spec, chunked~) => {
+      let rows = run(ctx, input)
+      if spec.top_level && !spec.type_ {
+        // captured: the DONE count is the number of input rows (TYPE: the
+        // one row returned)
+        ctx.rt.count_override = Some(rows.length().to_int64())
+      }
+      run_for_xml(rows, columns, spec, chunked)
+    }
+    Concat(inner) => run_concat(ctx, inner)
   }
 }
 

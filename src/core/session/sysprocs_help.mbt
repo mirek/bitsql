@@ -1409,6 +1409,20 @@ fn odbc_column(
     RowVersion => (-2, "timestamp", 8, 8, None, None, -2, None, Some(8), 45)
     Variant =>
       (-150, "sql_variant", 0, 8000, None, Some(10), -150, None, Some(8000), 39)
+    // probed on SQL Server 17.0.5005 (sp_columns of xml NULL / NOT NULL)
+    Xml =>
+      (
+        -10,
+        "xml",
+        1073741823,
+        2147483646,
+        None,
+        None,
+        -10,
+        None,
+        Some(2147483646),
+        0,
+      )
   }
 }
 

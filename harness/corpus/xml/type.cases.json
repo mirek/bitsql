@@ -1,0 +1,283 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {
+      "name": "000-select-cast-n-a-as-xml-as-x-cast-null-as-xml-as-y",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a/>' AS xml) AS x, CAST(NULL AS xml) AS y"}]
+    },
+    {
+      "name": "001-select-cast-n-xml-version-1-0-a-c-b-x-1-y-2-quot-apos-t-lt-g",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'<?xml version=\"1.0\"?><a><!-- c --><b x=''1'' y=\"2&quot;&apos;\">t&lt;&gt;&amp;&#65;&#x42;</b><![CDATA[<cd>]]><?pi data?></a>' AS xml) AS x"
+        }
+      ]
+    },
+    {
+      "name": "002-select-cast-n-a-x-b-b-a-as-xml-as-a-convert-xml-n-a-x-b-b-a-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'  <a>  x  <b> </b>  </a>  ' AS xml) AS a, CONVERT(xml, N'<a>  x  <b> </b>  </a>', 1) AS b, CONVERT(xml, N'<a> <b/> </a>', 0) AS c"
+        }
+      ]
+    },
+    {
+      "name": "003-select-cast-n-text-only-as-xml-as-a-cast-n-as-xml-as-b-cast-",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'text only' AS xml) AS a, CAST(N'' AS xml) AS b, CAST(N'<a/><b/>text' AS xml) AS c"}]
+    },
+    {
+      "name": "004-select-cast-n-a-xmlns-urn-x-xmlns-p-urn-p-p-b-p-c-1-a-as-xml",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a xmlns=\"urn:x\" xmlns:p=\"urn:p\"><p:b p:c=\"1\"/></a>' AS xml) AS x"}]
+    },
+    {
+      "name": "005-select-cast-n-a-x0d-13-nchar-13-nchar-10-n-a-as-xml-as-a-cas",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'<a>&#x0D;&#13;' + NCHAR(13) + NCHAR(10) + N'</a>' AS xml) AS a, CAST(N'<a b=\"&#x0D;&#x09;x' + NCHAR(9) + N'y' + NCHAR(10) + N'\"/>' AS xml) AS b"
+        }
+      ]
+    },
+    {
+      "name": "006-select-cast-n-a-b-lt-gt-amp-as-xml-as-a-cast-n-a-a-as-xml-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'<a b=\"&lt;&gt;&amp;''\"/>' AS xml) AS a, CAST(N'<a>\"''</a>' AS xml) AS b, CAST(N'<a b=''\"''/>' AS xml) AS c"
+        }
+      ]
+    },
+    {"name":"007-select-cast-n-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a>' AS xml) AS x"}]},
+    {"name":"008-select-cast-n-a-b-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a></b>' AS xml) AS x"}]},
+    {"name":"009-select-cast-n-a-b-1-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a b=1/>' AS xml) AS x"}]},
+    {"name":"010-select-cast-n-a-foo-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a>&foo;</a>' AS xml) AS x"}]},
+    {"name":"011-select-cast-n-a-b-1-b-2-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a b=\"1\" b=\"2\"/>' AS xml) AS x"}]},
+    {
+      "name": "012-select-cast-n-a-nchar-10-n-b-nchar-10-n-a-as-xml-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a>' + NCHAR(10) + N'<b>' + NCHAR(10) + N'</a>' AS xml) AS x"}]
+    },
+    {"name":"013-select-cast-n-p-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<p:a/>' AS xml) AS x"}]},
+    {"name":"014-select-cast-n-a-junk-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a/>junk<' AS xml) AS x"}]},
+    {"name":"015-select-cast-n-a-x-y-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a><!-- x -- y --></a>' AS xml) AS x"}]},
+    {
+      "name": "016-select-cast-a-a-as-xml-as-a-cast-0x3c613e783c2f613e-as-xml-a",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST('<a>é</a>' AS xml) AS a, CAST(0x3C613E783C2F613E AS xml) AS b, CAST(0xFFFE3C0061003E0078003C002F0061003E00 AS xml) AS c"
+        }
+      ]
+    },
+    {
+      "name": "017-select-cast-cast-n-a-x-a-as-xml-as-varbinary-max-as-b",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'<a>x</a>' AS xml) AS varbinary(max)) AS b"}]
+    },
+    {
+      "name": "018-select-cast-cast-n-a-x-a-as-xml-as-varchar-20-as-v-convert-n",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(CAST(N'<a>x</a>' AS xml) AS varchar(20)) AS v, CONVERT(nvarchar(max), CAST(N'<a>x</a>' AS xml), 1) AS n, CAST(CAST(N'<a>é</a>' AS xml) AS varchar(max)) AS e"
+        }
+      ]
+    },
+    {
+      "name": "019-select-cast-cast-n-a-x-a-as-xml-as-nvarchar-5-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'<a>x</a>' AS xml) AS nvarchar(5)) AS x"}]
+    },
+    {
+      "name": "020-select-cast-cast-n-a-x-a-as-xml-as-nvarchar-8-as-x-cast-cast",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'<a>x</a>' AS xml) AS nvarchar(8)) AS x, CAST(CAST(N'<a>x</a>' AS xml) AS char(10)) AS y"}]
+    },
+    {
+      "name": "021-select-cast-cast-n-a-1-a-as-xml-as-int-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(CAST(N'<a>1</a>' AS xml) AS int) AS x"}]
+    },
+    {"name":"022-select-cast-1-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(1 AS xml) AS x"}]},
+    {"name":"023-select-cast-getdate-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(GETDATE() AS xml) AS x"}]},
+    {"name":"024-select-try-cast-n-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT TRY_CAST(N'<a>' AS xml) AS x"}]},
+    {"name":"025-select-try-convert-xml-n-a-as-x","steps":[{"kind":"batch","sql":"SELECT TRY_CONVERT(xml, N'<a/>') AS x"}]},
+    {
+      "name": "026-declare-x-xml-n-a-select-case-when-x-x-then-1-end-as-c",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT CASE WHEN @x = @x THEN 1 END AS c"}]
+    },
+    {
+      "name": "027-declare-x-xml-n-a-select-1-as-one-where-x-n-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x <> N'<a/>'"}]
+    },
+    {
+      "name": "028-declare-x-xml-n-a-select-1-as-one-where-x-n-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x = N'<a/>'"}]
+    },
+    {
+      "name": "029-declare-x-xml-n-a-select-1-as-one-where-x-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x > @x"}]
+    },
+    {
+      "name": "030-declare-x-xml-n-a-select-1-as-one-where-x-like-n-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x LIKE N'<a/>'"}]
+    },
+    {
+      "name": "031-declare-x-xml-n-a-select-1-as-one-where-x-in-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x IN (@x)"}]
+    },
+    {
+      "name": "032-declare-x-xml-n-a-select-1-as-one-where-x-is-not-null",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT 1 AS one WHERE @x IS NOT NULL"}]
+    },
+    {
+      "name": "033-declare-x-xml-n-a-declare-s-nvarchar-max-x-select-s-as-s",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; DECLARE @s nvarchar(max) = @x; SELECT @s AS s"}]
+    },
+    {
+      "name": "034-declare-x-xml-n-a-declare-v-varchar-10-x-select-v-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; DECLARE @v varchar(10) = @x; SELECT @v AS v"}]
+    },
+    {"name":"035-declare-x-xml-n-a-declare-i-int-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; DECLARE @i int = @x"}]},
+    {"name":"036-declare-x-xml-5","steps":[{"kind":"batch","sql":"DECLARE @x xml = 5"}]},
+    {"name":"037-declare-x-xml-0x3c612f3e-select-x-as-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = 0x3C612F3E; SELECT @x AS x"}]},
+    {"name":"038-declare-x-xml-n-a-select-x-n-z-as-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT @x + N'z' AS x"}]},
+    {"name":"039-declare-x-xml-n-a-select-x-x-as-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT @x + @x AS x"}]},
+    {
+      "name": "040-declare-x-xml-n-a-select-concat-x-n-z-as-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT CONCAT(@x, N'z') AS x"}]
+    },
+    {"name":"041-declare-x-xml-n-a-select-len-x-as-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT LEN(@x) AS x"}]},
+    {"name":"042-declare-x-xml-n-a-select-upper-x-as-x","steps":[{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT UPPER(@x) AS x"}]},
+    {
+      "name": "043-declare-x-xml-n-a-select-isnull-x-n-z-as-a-coalesce-x-n-y-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a/>'; SELECT ISNULL(@x, N'<z/>') AS a, COALESCE(@x, N'<y/>') AS b, CASE WHEN 1=1 THEN @x ELSE N'<q/>' END AS c, IIF(@x IS NULL, 1, 0) AS e"
+        }
+      ]
+    },
+    {
+      "name": "044-declare-x-xml-select-isnull-x-n-z-as-a-coalesce-x-n-y-as-b-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml; SELECT ISNULL(@x, N'<z/>') AS a, COALESCE(@x, N'<y/>') AS b, @x AS c"}]
+    },
+    {
+      "name": "045-declare-x-xml-n-a-select-datalength-x-as-d",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT DATALENGTH(@x) AS d"}]
+    },
+    {
+      "name": "046-declare-x-xml-n-r-select-x-as-x-order-by-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r/>'; SELECT @x AS x ORDER BY @x"}]
+    },
+    {
+      "name": "047-declare-t-table-d-xml-select-d-from-t-order-by-d",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT d FROM @t ORDER BY d"}]
+    },
+    {
+      "name": "048-declare-t-table-d-xml-select-distinct-d-from-t",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT DISTINCT d FROM @t"}]
+    },
+    {
+      "name": "049-declare-t-table-d-xml-select-d-from-t-group-by-d",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT d FROM @t GROUP BY d"}]
+    },
+    {
+      "name": "050-declare-t-table-d-xml-select-d-from-t-union-select-d-from-t",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT d FROM @t UNION SELECT d FROM @t"}]
+    },
+    {
+      "name": "051-declare-t-table-d-xml-select-d-from-t-union-all-select-d-fro",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT d FROM @t UNION ALL SELECT d FROM @t"}]
+    },
+    {
+      "name": "052-declare-t-table-d-xml-select-max-d-as-m-from-t",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT MAX(d) AS m FROM @t"}]
+    },
+    {
+      "name": "053-declare-t-table-d-xml-select-count-d-as-n-count-as-m-from-t",
+      "steps": [{"kind":"batch","sql":"DECLARE @t TABLE (d xml); SELECT COUNT(d) AS n, COUNT(*) AS m FROM @t"}]
+    },
+    {
+      "name": "054-declare-x-xml-n-a-select-cast-x-as-sql-variant-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT CAST(@x AS sql_variant) AS v"}]
+    },
+    {
+      "name": "055-select-cast-n-a-replicate-n-x-3000-n-a-as-xml-as-big",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a>' + REPLICATE(N'x', 3000) + N'</a>' AS xml) AS big"}]
+    },
+    {
+      "name": "056-select-cast-replicate-cast-n-a-xyz-a-as-nvarchar-max-2000-as",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(REPLICATE(CAST(N'<a>xyz</a>' AS nvarchar(max)), 2000) AS xml) AS big"}]
+    },
+    {
+      "name": "057-create-table-t-id-int-d-xml-null-insert-t-values-1-n-a-1-a-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE #t (id int, d xml NULL); INSERT #t VALUES (1, N'<a>1</a>'), (2, '<b/>'); INSERT #t SELECT 3, CAST(N'<c/>' AS xml); INSERT #t (id) VALUES (4); SELECT * FROM #t ORDER BY id; UPDATE #t SET d = N'<z/>' WHERE id = 2; SELECT d FROM #t WHERE d.exist('/z') = 1"
+        }
+      ]
+    },
+    {
+      "name": "058-create-table-dbo-xt-id-int-not-null-primary-key-doc-xml-not-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.xt (id int NOT NULL PRIMARY KEY, doc xml NOT NULL); INSERT dbo.xt VALUES (1, N'<r><i>1</i></r>'); SELECT id, doc FROM dbo.xt; SELECT name, system_type_id, user_type_id, max_length, precision, scale, collation_name, is_nullable FROM sys.columns WHERE object_id = OBJECT_ID('dbo.xt') ORDER BY column_id; SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'xt' AND COLUMN_NAME = 'doc'"
+        }
+      ]
+    },
+    {
+      "name": "059-create-table-dbo-xt2-id-int-doc-xml-insert-dbo-xt2-values-1-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.xt2 (id int, doc xml); INSERT dbo.xt2 VALUES (1, N'<a>'); SELECT COUNT(*) AS n FROM dbo.xt2"
+        }
+      ]
+    },
+    {
+      "name": "060-create-table-dbo-xt3-id-int-doc-xml-default-n-d-insert-dbo-x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE dbo.xt3 (id int, doc xml DEFAULT N'<d/>'); INSERT dbo.xt3 (id) VALUES (1); SELECT id, doc FROM dbo.xt3; SELECT id, doc INTO #copy FROM dbo.xt3; SELECT doc FROM #copy"
+        }
+      ]
+    },
+    {
+      "name": "061-select-name-system-type-id-user-type-id-max-length-precision",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT name, system_type_id, user_type_id, max_length, precision, scale, collation_name, is_nullable FROM sys.types WHERE name = 'xml'"
+        }
+      ]
+    },
+    {
+      "name": "062-declare-x-xml-n-a-select-sql-variant-property-x-basetype-as-",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; SELECT SQL_VARIANT_PROPERTY(@x, 'BaseType') AS b"}]
+    },
+    {"name":"063-select-cast-n-a-as-xml-content-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a/>' AS xml(CONTENT)) AS x"}]},
+    {
+      "name": "064-declare-x-xml-n-a-print-cast-x-as-nvarchar-max-print-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a/>'; PRINT CAST(@x AS nvarchar(max)); PRINT @x"}]
+    },
+    {
+      "name": "065-select-cast-n-a-nchar-1-n-a-as-xml-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a>' + NCHAR(1) + N'</a>' AS xml) AS x"}]
+    },
+    {"name":"066-select-cast-n-a-1-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<a>&#1;</a>' AS xml) AS x"}]},
+    {"name":"067-select-cast-n-doctype-a-a-as-xml-as-x","steps":[{"kind":"batch","sql":"SELECT CAST(N'<!DOCTYPE a><a/>' AS xml) AS x"}]},
+    {
+      "name": "068-select-cast-n-xml-version-1-0-encoding-utf-8-a-as-xml-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<?xml version=\"1.0\" encoding=\"utf-8\"?><a/>' AS xml) AS x"}]
+    },
+    {
+      "name": "069-select-cast-n-a-xml-space-preserve-b-b-a-as-xml-as-x",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a xml:space=\"preserve\"> <b> </b> </a>' AS xml) AS x"}]
+    },
+    {
+      "name": "070-select-cast-n-a-x-a-as-xml-value-nvarchar-5-as-v",
+      "steps": [{"kind":"batch","sql":"SELECT CAST(N'<a>x</a>' AS xml).value('.', 'nvarchar(5)') AS v"}]
+    }
+  ]
+}

@@ -230,7 +230,23 @@ fn Parser::postfix(
 ) -> @ast.Expr raise @ast.SyntaxError {
   let mut e = e
   while true {
-    if self.eat_kw("COLLATE") {
+    if self.is_punct(".") &&
+      self.peek_at(1).kind is Word &&
+      self.is_punct_at(2, "(") &&
+      e.kind
+      is (Var(_)
+      | Paren(_)
+      | Subquery(_)
+      | Cast(_, _, ..)
+      | Convert(_, _, ..)
+      | MethodCall(_, _, _)
+      | Call(_)) {
+      // xml data type method: `@x.value(...)`, `(SELECT ...).query(...)`
+      self.pos += 1
+      let name = tok_ident(self.advance())
+      let args = self.method_args()
+      e = mk(MethodCall(e, name, args), self.span_from(start))
+    } else if self.eat_kw("COLLATE") {
       let c = self.any_ident()
       e = mk(Collate(e, c), self.span_from(start))
     } else if self.is_kw("AT") &&
@@ -473,11 +489,45 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
 fn Parser::name_expr(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
   let start = self.start()
   let name = self.object_name()
+  let n = name.parts.length()
+  if self.is_punct("(") && n >= 2 && xml_method_name(name.parts[n - 1]) {
+    // `col.value(...)`, `t.col.exist(...)`: an xml method on a column
+    let target = name.parts[0:n - 1].to_owned()
+    let tspan = { ..name.span, end: target[target.length() - 1].span.end, }
+    let args = self.method_args()
+    return mk(
+      MethodCall(mk(Column(target), tspan), name.parts[n - 1], args),
+      self.span_from(start),
+    )
+  }
   if self.is_punct("(") {
     self.call(name, start)
   } else {
     mk(Column(name.parts), name.span)
   }
+}
+
+///|
+/// The xml data type method names (case-sensitive, as in SQL Server).
+fn xml_method_name(i : @ast.Ident) -> Bool {
+  !i.quoted && i.name is ("value" | "query" | "exist" | "nodes" | "modify")
+}
+
+///|
+/// `( arg, ... )` of an xml method call.
+fn Parser::method_args(
+  self : Parser,
+) -> Array[@ast.Expr] raise @ast.SyntaxError {
+  self.expect_punct("(")
+  let args = []
+  if !self.is_punct(")") {
+    args.push(self.call_arg())
+    while self.eat_punct(",") {
+      args.push(self.call_arg())
+    }
+  }
+  self.expect_punct(")")
+  args
 }
 
 ///|

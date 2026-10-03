@@ -122,6 +122,9 @@ fn precheck_batch(
   for s in stmts {
     stmt(s)
   }
+  if failure is None {
+    failure = precheck_xml(stmts, types)
+  }
   failure
 }
 
@@ -159,6 +162,10 @@ fn query_vars(
 fn walk_expr(e : @ast.Expr, f : (@ast.Expr) -> Unit) -> Unit {
   f(e)
   match e.kind {
+    MethodCall(t, _, args) => {
+      walk_expr(t, f)
+      args.each(x => walk_expr(x, f))
+    }
     Unary(_, a)
     | Not(a)
     | Paren(a)

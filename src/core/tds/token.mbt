@@ -322,6 +322,7 @@ fn null_size(ti : TypeInfo) -> Int {
     | BigVarBinary(_)
     | BigBinary(_) => 2
     Variant(_) => 4
+    // NTEXT: a zero text pointer length
     _ => 1
   }
 }

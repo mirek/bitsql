@@ -145,6 +145,11 @@ pub(all) enum ExprKind {
   NextValueFor(ObjectName)
   /// `(expr)` kept so the binder can see explicit grouping.
   Paren(Expr)
+  /// xml data type method call `target.name(args)`: `@x.value(...)`,
+  /// `(subquery).query(...)`, `t.col.exist(...)` (the column form is
+  /// built only for the method names value/query/exist/nodes/modify; the
+  /// binder falls back to a function call when the target is no column).
+  MethodCall(Expr, Ident, Array[Expr])
 } derive(Eq, Debug)
 
 ///|

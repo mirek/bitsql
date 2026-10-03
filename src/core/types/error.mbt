@@ -80,6 +80,8 @@ pub fn SqlError::is_try_convertible(self : SqlError) -> Bool {
     | 8169
     | 8170
     | 9807 => true
+    // XML parse errors (captured: TRY_CAST(N'<a>' AS xml) is NULL)
+    n if n >= 9400 && n < 9500 => true
     _ => false
   }
 }

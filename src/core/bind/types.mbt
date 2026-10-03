@@ -104,6 +104,7 @@ pub fn resolve_type(
     "uniqueidentifier" => UniqueIdentifier
     "rowversion" | "timestamp" => RowVersion
     "sql_variant" => Variant
+    "xml" => Xml
     _ =>
       raise @types.sql_error(
         2715,

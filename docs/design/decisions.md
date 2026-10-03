@@ -238,3 +238,21 @@ binder, `Env::table_params`) and sp_executesql see the same rows. A TVP
 from the wire is loaded into a new table variable with the type's
 constraints. Synonyms are store Modules of kind SN resolved late
 (`Session::deref_synonym`) by the catalog hooks, DML targets and EXEC.
+
+## 2026-10-03: xml values as trees, FOR XML text via a column-name marker, batch precheck for xml
+
+`Value::Xml` holds a parsed tree (`@xml.Xml`: top-level nodes plus a context
+path for `nodes()` rows) rather than text, so methods navigate without
+re-parsing and a `nodes()` row can refer to its node and ancestors (`..`).
+The canonical text is produced on output. FOR XML TYPE builds the text and
+re-parses it preserving whitespace (the generated text has none that is
+insignificant). The top-level FOR XML text result is NTEXT on the wire; there
+is no SqlType for ntext, so `session/wire.mbt` maps the reserved column name
+`XML_F52E2B61-18A1-11d1-B105-00805F49916B` to NTEXT. xml methods are
+`Fn::Named("XML.VALUE" | "XML.QUERY" | "XML.EXIST")` calls (the XQuery text
+is a literal argument, compiled once and cached) and nodes() a `TableFn`, so
+the IR expression enum did not grow. SQL Server reports xml type errors when
+compiling the whole batch; bitsql binds statements one at a time, so
+`session/precheck_xml.mbt` binds the batch's table-free statements up front
+and fails the batch only for xml-related compile errors (statements over
+tables are compiled when they run, like deferred name resolution).

@@ -50,6 +50,8 @@ pub(all) enum SqlType {
   RowVersion
   /// sql_variant: values carry their base type (`Value::Variant`)
   Variant
+  /// untyped xml (values are `Value::Xml`)
+  Xml
 } derive(Debug, Eq)
 
 ///|
@@ -67,6 +69,7 @@ pub(all) enum TypeFamily {
   FDateTime
   FGuid
   FVariant
+  FXml
 } derive(Debug, Eq)
 
 ///|
@@ -84,6 +87,7 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
     DateTime2(_) | DateTimeOffset(_) | DateTime | SmallDateTime => FDateTime
     UniqueIdentifier => FGuid
     Variant => FVariant
+    Xml => FXml
   }
 }
 
@@ -143,6 +147,7 @@ pub fn SqlType::base_name(self : SqlType) -> String {
     UniqueIdentifier => "uniqueidentifier"
     RowVersion => "timestamp"
     Variant => "sql_variant"
+    Xml => "xml"
   }
 }
 

@@ -382,9 +382,17 @@ pub fn Session::run_rpc(
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
+  // a request ended by an XML parse error has no RETURNSTATUS (captured:
+  // xml/rpc#001: COLMETADATA, ERROR 9400, DONEPROC)
+  let xml_abort = match self.out.last() {
+    Some(Message(m)) => m.number >= 9400 && m.number < 9500
+    _ => false
+  }
   match result {
     Some((status, outs)) => {
-      self.out.push(ReturnStatus(status))
+      if !xml_abort {
+        self.out.push(ReturnStatus(status))
+      }
       for i, o in outs {
         let (name, ty, value, requested) = o
         if requested {

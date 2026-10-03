@@ -1,0 +1,446 @@
+{
+  "source": "harness/gen/xml.mjs",
+  "cases": [
+    {
+      "name": "000-declare-x-xml-n-a-b-1-c-t1-c-c-t2-c-a-select-x-as-x-x-value-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a b=\"1\"><c>t1</c><c>t2</c></a>'; SELECT @x AS x, @x.value('(/a/c)[2]', 'nvarchar(10)') AS v, @x.value('(/a/@b)[1]', 'int') AS b, @x.exist('/a/c') AS e, @x.query('/a/c') AS q"
+        }
+      ]
+    },
+    {
+      "name": "001-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('(/r/i)[1]', 'varchar(10)') AS v1, @x.value('(/r/i/@n)[3]', 'int') AS v2, @x.value('(/r/i[@n=\"2\"])[1]', 'nvarchar(10)') AS v3, @x.value('(//j)[1]', 'nvarchar(10)') AS v4, @x.value('(/r/i[3]/j/text())[1]', 'nvarchar(10)') AS v5"
+        }
+      ]
+    },
+    {
+      "name": "002-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('count(/r/i)', 'int') AS v6, @x.value('(/r/i)[9]', 'int') AS v7, @x.value('.', 'nvarchar(max)') AS v8, @x.value('(/r/i/@n)[1]', 'decimal(5,2)') AS v9"
+        }
+      ]
+    },
+    {
+      "name": "003-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('(/r/i[@n=2])[1]', 'varchar(5)') AS a, @x.value('(/r/i[@n>1])[1]', 'varchar(5)') AS b, @x.value('(/r/i[last()])[1]', 'varchar(5)') AS c, @x.value('(/r/*)[2]', 'varchar(5)') AS d, @x.value('(/r/i/@*)[2]', 'varchar(5)') AS e"
+        }
+      ]
+    },
+    {
+      "name": "004-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('local-name((/r/*)[1])', 'varchar(5)') AS f, @x.value('string((/r/i)[1])', 'varchar(5)') AS g, @x.value('(/r/i[. = \"b\"]/@n)[1]', 'int') AS h, @x.value('(r/i)[1]', 'varchar(5)') AS i, @x.value('(/r/i)[1]/@n', 'int') AS j"
+        }
+      ]
+    },
+    {
+      "name": "005-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('/r[1]/i[1]/@n', 'int') AS a, @x.value('(/r/i[@n != \"1\"])[1]', 'varchar(5)') AS b, @x.value('(/r/i[@n >= 2 and @n < 3])[1]', 'varchar(5)') AS c, @x.value('(/r/i[@n = 1 or @n = 3])[2]', 'varchar(5)') AS d"
+        }
+      ]
+    },
+    {
+      "name": "006-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('(/r/i[j])[1]/@n', 'int') AS a, @x.value('(/r/i[j = \"c\"])[1]/@n', 'int') AS b, @x.value('(/r/i[not(j)])[2]', 'varchar(5)') AS c, @x.value('(/r/i[position() = 2])[1]', 'varchar(5)') AS d"
+        }
+      ]
+    },
+    {
+      "name": "007-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('(/r/i/j/..)[1]/@n', 'int') AS a, @x.value('(//i)[2]', 'varchar(5)') AS b, @x.value('(/r//text())[3]', 'varchar(5)') AS c, @x.value('(/*/*)[1]', 'varchar(5)') AS d, @x.value('name((/r/i)[1])', 'varchar(5)') AS e"
+        }
+      ]
+    },
+    {
+      "name": "008-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-i-n-3-j-c-j-i-r-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i><i n=\"3\"><j>c</j></i></r>';\nSELECT @x.value('(/r/i)[1]', 'nvarchar(max)') AS a, @x.value('(/r/i)[1]', 'varchar(max)') AS b, @x.value('(/r/i/@n)[1]', 'bigint') AS c, @x.value('(/r/i/@n)[1]', 'float') AS d, @x.value('(/r/i/@n)[1]', 'bit') AS e"
+        }
+      ]
+    },
+    {
+      "name": "009-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-varchar-5",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('/r/i', 'varchar(5)') AS v"}]
+    },
+    {
+      "name": "010-declare-x-xml-n-r-i-n-1-a-i-r-select-x-value-r-i-n-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT @x.value('/r/i/@n', 'int') AS v"}]
+    },
+    {
+      "name": "011-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-1-varchar",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('/r/i[1]', 'varchar(5)') AS v"}]
+    },
+    {
+      "name": "012-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-1-xml-as-",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('(/r/i)[1]', 'xml') AS v"}]
+    },
+    {
+      "name": "013-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-1-sql-var",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('(/r/i)[1]', 'sql_variant') AS v"}]
+    },
+    {
+      "name": "014-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-1-text-as",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('(/r/i)[1]', 'text') AS v"}]
+    },
+    {
+      "name": "015-declare-x-xml-n-r-i-a-i-i-b-i-r-select-x-value-r-i-1-nosucht",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i><i>b</i></r>'; SELECT @x.value('(/r/i)[1]', 'nosuchtype') AS v"}]
+    },
+    {
+      "name": "016-declare-x-xml-n-r-i-a-i-r-select-x-value-r-i-1-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i></r>'; SELECT @x.value('(/r/i)[1]', 'int') AS v"}]
+    },
+    {
+      "name": "017-declare-x-xml-n-r-i-a-i-r-select-x-value-r-i-1-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i></r>'; SELECT @x.VALUE('(/r/i)[1]', 'int') AS v"}]
+    },
+    {
+      "name": "018-declare-x-xml-n-r-i-a-i-r-select-x-value-r-i-1-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i></r>'; SELECT @x.value('(/r/i[)[1]', 'int') AS v"}]
+    },
+    {
+      "name": "019-declare-x-xml-n-r-i-a-i-r-declare-p-nvarchar-20-n-r-i-1-sele",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i>a</i></r>'; DECLARE @p nvarchar(20) = N'(/r/i)[1]'; SELECT @x.value(@p, 'int') AS v"
+        }
+      ]
+    },
+    {
+      "name": "020-declare-x-xml-n-r-i-a-i-r-select-x-value-r-i-1-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i></r>'; SELECT @x.value('(/r/i)[1]') AS v"}]
+    },
+    {
+      "name": "021-declare-x-xml-n-r-i-a-i-r-select-x-nosuch-x-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>a</i></r>'; SELECT @x.nosuch('x') AS v"}]
+    },
+    {
+      "name": "022-declare-x-xml-select-x-value-r-i-1-int-as-v-x-exist-r-as-e-x",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml; SELECT @x.value('(/r/i)[1]', 'int') AS v, @x.exist('/r') AS e, @x.query('/r') AS q"}]
+    },
+    {
+      "name": "023-declare-i-int-1-select-i-value-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @i int = 1; SELECT @i.value('.', 'int') AS v"}]
+    },
+    {
+      "name": "024-declare-s-nvarchar-10-n-a-select-s-value-int-as-v",
+      "steps": [{"kind":"batch","sql":"DECLARE @s nvarchar(10) = N'<a/>'; SELECT @s.value('.', 'int') AS v"}]
+    },
+    {
+      "name": "025-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-r-select-x-query-r-i-n",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i></r>'; SELECT @x.query('/r/i[@n=\"2\"]') AS q1, @x.query('/r/i/text()') AS q2, @x.query('/r/x') AS q3, @x.query('.') AS q4, @x.exist('/r/i[@n=\"2\"]') AS e1, @x.exist('/r/z') AS e2"
+        }
+      ]
+    },
+    {
+      "name": "026-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-r-select-x-query-data-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i></r>'; SELECT @x.query('data(/r/i/@n)') AS q5, @x.query('string(/r[1])') AS q6, @x.query('/r/i[1]/node()') AS q7"
+        }
+      ]
+    },
+    {
+      "name": "027-declare-x-xml-n-a-b-1-t-a-select-x-query-a-b-as-q",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a b=\"1\">t</a>'; SELECT @x.query('/a/@b') AS q"}]
+    },
+    {
+      "name": "028-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-r-select-t-c-value-n-i",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i></r>'; SELECT T.c.value('@n', 'int') AS n, T.c.value('.', 'nvarchar(10)') AS v, T.c.query('.') AS q FROM @x.nodes('/r/i') AS T(c)"
+        }
+      ]
+    },
+    {
+      "name": "029-declare-x-xml-n-r-i-n-1-a-i-i-n-2-b-i-r-select-t-c-value-i-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\">b</i></r>'; SELECT T.c.value('(../i)[1]', 'nvarchar(10)') AS first, T.c.value('local-name(.)', 'nvarchar(10)') AS name, T.c.exist('.[@n = 2]') AS two FROM @x.nodes('/r/i') AS T(c)"
+        }
+      ]
+    },
+    {
+      "name": "030-declare-t-table-id-int-doc-xml-insert-t-values-1-n-r-i-x-i-i",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @t TABLE (id int, doc xml); INSERT @t VALUES (1, N'<r><i>x</i><i>y</i></r>'), (2, N'<r/>'), (3, NULL);\nSELECT t.id, n.c.value('.', 'varchar(5)') AS v FROM @t t CROSS APPLY t.doc.nodes('/r/i') n(c) ORDER BY t.id, v;\nSELECT t.id, n.c.value('.', 'varchar(5)') AS v FROM @t t OUTER APPLY t.doc.nodes('/r/i') n(c) ORDER BY t.id, v;\nSELECT id, doc.value('(/r/i)[1]', 'varchar(5)') AS a, doc.exist('/r/i') AS e, t.doc.query('/r/i[2]') AS q FROM @t t ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "031-declare-t-table-id-int-doc-xml-insert-t-values-1-n-r-i-x-i-r",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @t TABLE (id int, doc xml); INSERT @t VALUES (1, N'<r><i>x</i></r>'), (2, N'<r/>'); SELECT id FROM @t WHERE doc.exist('/r/i') = 1; SELECT id FROM @t WHERE doc.value('(/r/i)[1]', 'varchar(5)') IS NULL"
+        }
+      ]
+    },
+    {
+      "name": "032-declare-x-xml-n-r-i-n-1-a-i-r-select-t-c-from-x-nodes-r-i-t-",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT T.c FROM @x.nodes('/r/i') T(c)"}]
+    },
+    {
+      "name": "033-declare-x-xml-n-r-i-n-1-a-i-r-select-1-as-one-from-x-nodes-r",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT 1 AS one FROM @x.nodes('/r/i') T(c) WHERE T.c IS NOT NULL"
+        }
+      ]
+    },
+    {
+      "name": "034-declare-x-xml-n-r-i-n-1-a-i-r-select-t-c-value-int-as-v-from",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT T.c.value('.', 'int') AS v FROM @x.nodes('/r/i') T"}]
+    },
+    {
+      "name": "035-declare-x-xml-n-r-i-n-1-a-i-r-select-x-y-value-varchar-5-as-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT x.y.value('.', 'varchar(5)') AS v FROM @x.nodes('/r/i/@n') x(y)"
+        }
+      ]
+    },
+    {
+      "name": "036-declare-x-xml-n-r-i-n-1-a-i-i-n-2-j-b-j-j-c-j-i-r-select-i-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i><i n=\"2\"><j>b</j><j>c</j></i></r>'; SELECT i.c.value('@n', 'int') AS n, j.c.value('.', 'varchar(5)') AS v FROM @x.nodes('/r/i') i(c) CROSS APPLY i.c.nodes('j') j(c)"
+        }
+      ]
+    },
+    {
+      "name": "037-declare-x-xml-n-r-i-n-1-a-i-r-select-x-exist-r-i-n-1-as-a-x-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT @x.exist('/r/i[@n=\"1\"]') AS a, @x.exist('/r/i[@n=\"9\"]') AS b, @x.exist('/r/i/@n') AS c, @x.exist('/r/i/@m') AS d"
+        }
+      ]
+    },
+    {
+      "name": "038-declare-x-xml-n-r-i-n-1-a-i-r-select-x-value-sum-r-i-n-int-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; SELECT @x.value('sum(/r/i/@n)', 'int') AS v"}]
+    },
+    {
+      "name": "039-declare-x-xml-n-r-i-n-1-a-i-r-declare-v-int-1-select-x-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\">a</i></r>'; DECLARE @v int = 1; SELECT @x.value('(/r/i[@n=sql:variable(\"@v\")])[1]', 'varchar(5)') AS v"
+        }
+      ]
+    },
+    {
+      "name": "040-declare-x-xml-n-a-xmlns-urn-x-b-1-b-a-select-x-value-a-b-1-i",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a xmlns=\"urn:x\"><b>1</b></a>'; SELECT @x.value('(/a/b)[1]', 'int') AS plain"}]
+    },
+    {
+      "name": "041-declare-x-xml-n-a-xmlns-urn-x-b-1-b-a-select-x-value-declare",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a xmlns=\"urn:x\"><b>1</b></a>'; SELECT @x.value('declare default element namespace \"urn:x\"; (/a/b)[1]', 'int') AS ns"
+        }
+      ]
+    },
+    {
+      "name": "042-declare-x-xml-n-a-xmlns-p-urn-p-p-b-1-p-b-b-2-b-a-select-x-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a xmlns:p=\"urn:p\"><p:b>1</p:b><b>2</b></a>'; SELECT @x.value('(/a/b)[1]', 'int') AS v, @x.value('(/a/*)[1]', 'int') AS w, @x.value('local-name((/a/*)[1])', 'varchar(5)') AS n"
+        }
+      ]
+    },
+    {
+      "name": "043-declare-x-xml-n-a-b-1-b-b-2-b-a-select-x-value-a-b-1-1-int-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a><b>1</b><b>2</b></a>'; SELECT @x.value('(/a/b)[1] + 1', 'int') AS v"}]
+    },
+    {
+      "name": "044-declare-x-xml-n-a-b-1-b-a-select-x-value-a-b-1-int-as-i-x-va",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a><b> 1 </b></a>'; SELECT @x.value('(/a/b)[1]', 'int') AS i, @x.value('(/a/b)[1]', 'varchar(9)') AS v, @x.value('(/a/b)[1]', 'bit') AS bt"
+        }
+      ]
+    },
+    {
+      "name": "045-declare-x-xml-n-a-b-true-b-d-1-5e0-d-e-12-50-e-a-select-x-va",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a><b>true</b><d>1.5e0</d><e>12.50</e></a>'; SELECT @x.value('(/a/b)[1]', 'bit') AS b, @x.value('(/a/d)[1]', 'float') AS d, @x.value('(/a/e)[1]', 'decimal(5,1)') AS e, @x.value('(/a/e)[1]', 'money') AS m"
+        }
+      ]
+    },
+    {
+      "name": "046-declare-x-xml-n-a-c-2020-01-02t03-04-05-c-d-2020-01-02-d-a-s",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a><c>2020-01-02T03:04:05</c><d>2020-01-02</d></a>'; SELECT @x.value('(/a/c)[1]', 'datetime2') AS c, @x.value('(/a/d)[1]', 'date') AS d, @x.value('(/a/c)[1]', 'datetime') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "047-declare-x-xml-n-a-x-amp-y-b-lt-z-gt-b-c-p-d-a-select-x-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a>x&amp;y<b>&lt;z&gt;</b><!--c--><?p d?></a>'; SELECT @x.value('(/a)[1]', 'varchar(20)') AS a, @x.value('(/a/text())[1]', 'varchar(20)') AS b, @x.query('/a/b') AS c, @x.query('/a/comment()') AS d"
+        }
+      ]
+    },
+    {
+      "name": "048-declare-x-xml-n-a-b-12345-b-a-select-x-value-a-b-1-varchar-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<a><b>12345</b></a>'; SELECT @x.value('(/a/b)[1]', 'varchar(3)') AS v, @x.value('(/a/b)[1]', 'tinyint') AS t"
+        }
+      ]
+    },
+    {
+      "name": "049-declare-x-xml-n-a-b-12345-b-a-select-x-value-a-b-1-tinyint-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<a><b>12345</b></a>'; SELECT @x.value('(/a/b)[1]', 'tinyint') AS t"}]
+    },
+    {
+      "name": "050-select-cast-n-a-b-1-b-a-as-xml-value-a-b-1-int-as-v-cast-n-a",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(N'<a><b>1</b></a>' AS xml).value('(/a/b)[1]', 'int') AS v, CAST(N'<a><b>1</b></a>' AS xml).exist('/a') AS e"
+        }
+      ]
+    },
+    {
+      "name": "051-select-select-1-as-b-for-xml-path-a-type-value-a-b-1-int-as-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT (SELECT 1 AS b FOR XML PATH('a'), TYPE).value('(/a/b)[1]', 'int') AS v, (SELECT 1 AS b FOR XML PATH('a'), TYPE).query('/a/b') AS q"
+        }
+      ]
+    },
+    {
+      "name": "052-declare-x-xml-n-r-i-n-1-i-n-2-r-select-sum-t-c-value-n-int-a",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\"/><i n=\"2\"/></r>'; SELECT SUM(T.c.value('@n', 'int')) AS s, COUNT(*) AS n FROM @x.nodes('/r/i') T(c)"
+        }
+      ]
+    },
+    {
+      "name": "053-declare-x-xml-n-r-i-n-1-i-n-2-r-select-t-c-value-n-int-as-n-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i n=\"1\"/><i n=\"2\"/></r>'; SELECT T.c.value('@n', 'int') AS n FROM @x.nodes('/r/i') T(c) ORDER BY T.c.value('@n', 'int') DESC"
+        }
+      ]
+    },
+    {
+      "name": "054-declare-x-xml-n-r-select-x-value-r-missing-1-int-as-a-x-valu",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r/>'; SELECT @x.value('(/r/@missing)[1]', 'int') AS a, @x.value('(/r/text())[1]', 'varchar(5)') AS b, @x.value('(/r)[1]', 'varchar(5)') AS c"
+        }
+      ]
+    },
+    {
+      "name": "055-declare-x-xml-n-r-i-1-i-r-select-x-value-r-i-1-nvarchar-5-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.value('(/r/i)[1]', 'nvarchar(5)') AS v FROM (VALUES (1), (2)) t(n)"
+        }
+      ]
+    },
+    {
+      "name": "056-declare-x-xml-n-r-i-1-i-r-select-x-value-r-i-1-int-1-as-v-up",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.value('(/r/i)[1]', 'int') + 1 AS v, UPPER(@x.value('local-name(/*[1])', 'varchar(5)')) AS n"
+        }
+      ]
+    },
+    {
+      "name": "057-declare-x-xml-n-r-i-1-i-r-select-x-exist-r-i-1-as-a-x-exist-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.exist('/r/i[. = 1]') AS a, @x.exist('/r/i[. = \"1\"]') AS b, @x.exist('/r/i[. > 0]') AS c"
+        }
+      ]
+    },
+    {
+      "name": "058-declare-x-xml-n-r-i-1-i-r-select-x-value-r-i-1-int-as-v-wher",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.value('(/r/i)[1]', 'int') AS v WHERE @x.exist('/r') = 1"}]
+    },
+    {
+      "name": "059-declare-x-xml-n-r-i-1-i-r-select-x-modify-delete-r-i",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.modify('delete /r/i')"}]
+    },
+    {
+      "name": "060-declare-x-xml-n-r-i-1-i-r-set-x-modify-delete-r-i-select-x-a",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>1</i></r>'; SET @x.modify('delete /r/i'); SELECT @x AS x"}]
+    },
+    {
+      "name": "061-declare-x-xml-n-r-i-1-i-r-select-x-value-r-i-1-cast-as-xs-in",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.value('(/r/i)[1] cast as xs:int?', 'int') AS v"}]
+    },
+    {
+      "name": "062-declare-x-xml-n-r-i-1-i-r-select-x-query-for-i-in-r-i-return",
+      "steps": [{"kind":"batch","sql":"DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.query('for $i in /r/i return $i') AS q"}]
+    },
+    {
+      "name": "063-declare-x-xml-n-r-i-1-i-r-select-x-value-r-i-1-nvarchar-5-as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x xml = N'<r><i>1</i></r>'; SELECT @x.value('(/r/i)[1]', 'nvarchar(5)') AS v, @x.value('(/r/i)[1]', 'nchar(3)') AS w"
+        }
+      ]
+    }
+  ]
+}

@@ -151,14 +151,18 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     self.cur_cmd == 193 &&
     [241, 245, 295].contains(e.number()) &&
     !self.out[mark:].iter().any(x => x is ResultSet(_))
-  self.done(
-    if self.throwing || assignment_abort {
-      253
-    } else {
-      self.cur_cmd
-    },
-    error=true,
-  )
+  // an XML parse error in an RPC request has no DONEINPROC: DONEPROC
+  // follows the ERROR (captured: xml/rpc#001)
+  if !(self.rpc && e.number() >= 9400 && e.number() < 9500) {
+    self.done(
+      if self.throwing || assignment_abort {
+        253
+      } else {
+        self.cur_cmd
+      },
+      error=true,
+    )
+  }
   if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort && !raiserror) {
     raise AbortBatch
   }
@@ -184,6 +188,8 @@ fn aborts_batch(
   n == 529 ||
   n == 11728 ||
   n == 217 ||
+  // XML parse errors (captured: xml/type#059, xml/rpc#001)
+  (n >= 9400 && n < 9500) ||
   (n >= 50100 && n <= 50199)
 }
 
@@ -243,7 +249,12 @@ fn Session::assign(
     }
   }
   // compile-time in SQL Server: the error's DONE has CurCmd 253 (captured)
-  let failed = try @types.check_assign(value_expr.ty, info.ty) catch {
+  // (an untyped NULL literal is assignable to anything, xml included)
+  let failed = try {
+    if !(value_expr.kind is Lit(Null) && value_expr.ty is Int) {
+      @types.check_assign(value_expr.ty, info.ty)
+    }
+  } catch {
     e => Some(e)
   } noraise {
     _ => None
@@ -292,6 +303,13 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         self.rt.rowcount = 1
         self.done(193, count=Some(1L))
       }
+    }
+    SetVarMethod(_, m, _) => {
+      self.cur_cmd = 193
+      raise @types.not_supported(
+        "the xml \{m.name}() method",
+        number=@types.EMU_XML_NOT_SUPPORTED,
+      )
     }
     SetVar(name, op, e) => {
       self.cur_cmd = 193

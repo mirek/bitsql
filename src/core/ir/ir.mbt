@@ -10,6 +10,9 @@ pub(all) enum Origin {
   TableComputed
   SetOperation
   Aggregate
+  /// The context column of an xml `nodes()` table: usable only as a method
+  /// target or in IS [NOT] NULL (493 otherwise).
+  XmlNodes
 } derive(Debug, Eq)
 
 ///|
@@ -232,6 +235,41 @@ pub(all) enum Plan {
     include_nulls~ : Bool,
     without_array_wrapper~ : Bool
   )
+  /// FOR XML RAW/AUTO/PATH: formats the input rows (described by
+  /// `columns`) as XML. `chunked`: the top-level text form, rows of 2033
+  /// characters (none for empty text); otherwise one row with the whole
+  /// value (nvarchar(max) text, or xml with TYPE), none for no input rows.
+  ForXml(Plan, Array[ResultColumn], ForXmlSpec, chunked~ : Bool)
+  /// The first column of every input row concatenated into one row (no
+  /// rows for no input): FOR JSON in a subquery.
+  Concat(Plan)
+} derive(Debug)
+
+///|
+pub(all) enum XmlMode {
+  XmlRaw
+  XmlAuto
+  XmlPath
+} derive(Debug, Eq)
+
+///|
+/// FOR XML options, resolved by the binder.
+pub(all) struct ForXmlSpec {
+  mode : XmlMode
+  /// row element name; "" omits it (PATH('') / RAW(''))
+  row : String
+  root : String?
+  elements : Bool
+  xsinil : Bool
+  /// TYPE: the result is an xml value
+  type_ : Bool
+  /// the statement's result (DONE counts the input rows; TYPE over no rows
+  /// is one NULL row) rather than a subquery
+  top_level : Bool
+  /// AUTO: element name of each table level, and the level of each input
+  /// column
+  auto_names : Array[String]
+  auto_levels : Array[Int]
 } derive(Debug)
 
 ///|
@@ -322,6 +360,9 @@ pub(all) enum TableFn {
   OpenJsonWith(Array[OpenJsonColumn])
   /// STRING_SPLIT; args: string, separator; `ordinal` adds the column.
   StringSplit(ordinal~ : Bool)
+  /// xml `nodes()`; args: the xml value, the XQuery text, sql:variable /
+  /// sql:column values. One xml context reference per result node.
+  XmlNodes
 } derive(Debug)
 
 ///|

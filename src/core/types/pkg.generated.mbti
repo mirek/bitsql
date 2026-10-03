@@ -2,6 +2,7 @@
 package "mirek/bitsql/core/types"
 
 import {
+  "mirek/bitsql/core/xml",
   "moonbitlang/core/bigint",
   "moonbitlang/core/debug",
 }
@@ -34,6 +35,8 @@ pub const EMU_OPERATOR_NOT_SUPPORTED : Int = 50106
 pub const EMU_STYLE_NOT_SUPPORTED : Int = 50105
 
 pub const EMU_WORK_BUDGET : Int = 50108
+
+pub const EMU_XML_NOT_SUPPORTED : Int = 50109
 
 pub const MAX_DAYS : Int = 3_652_058
 
@@ -149,6 +152,8 @@ pub fn parse_int_text(String) -> @bigint.BigInt?
 
 pub fn parse_temporal(String) -> ParsedTemporal raise TemporalParseError
 
+pub fn parse_xml(String, preserve? : Bool) -> Value raise SqlError
+
 pub fn pow10(Int) -> @bigint.BigInt
 
 pub fn precedence(SqlType) -> Int
@@ -200,6 +205,8 @@ pub fn variant_arith_error(ArithOp, SqlType, SqlType, a_name? : String, b_name? 
 pub fn variant_can_hold(SqlType) -> Bool
 
 pub fn variant_data_length(Value, SqlType) -> Int
+
+pub fn xml_error(@xml.XmlError) -> SqlError
 
 // Errors
 pub(all) suberror SqlError {
@@ -313,6 +320,7 @@ pub(all) enum SqlType {
   UniqueIdentifier
   RowVersion
   Variant
+  Xml
 } derive(Eq, @debug.Debug)
 pub fn SqlType::base_name(Self) -> String
 pub fn SqlType::clash_name(Self) -> String
@@ -338,6 +346,7 @@ pub(all) enum TypeFamily {
   FDateTime
   FGuid
   FVariant
+  FXml
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Value {
@@ -360,6 +369,7 @@ pub(all) enum Value {
   SmallDateTime(Int, Int)
   Guid(Bytes)
   Variant(Value, SqlType)
+  Xml(@xml.Xml)
 } derive(Eq, @debug.Debug)
 pub fn Value::as_decimal(Self) -> Decimal?
 pub fn Value::as_int64(Self) -> Int64?

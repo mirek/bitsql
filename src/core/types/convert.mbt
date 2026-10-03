@@ -22,6 +22,9 @@ pub fn cast(
   if from is Variant || to is Variant {
     return cast_variant(v, from, to, style)
   }
+  if from is Xml || to is Xml {
+    return cast_xml(v, from, to, style)
+  }
   if v is Null {
     return Null
   }
@@ -36,6 +39,7 @@ pub fn cast(
     FDate | FTime | FDateTime => to_temporal(v, from, to, style)
     FGuid => to_guid(v, from)
     FVariant => raise internal("variant target")
+    FXml => raise internal("xml target")
   }
 }
 

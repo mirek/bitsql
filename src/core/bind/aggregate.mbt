@@ -47,13 +47,15 @@ fn agg_result_type(
     }
     (Min | Max, Some(t)) =>
       match t {
-        Bit => raise invalid_operand(t, if f is Min { "min" } else { "max" })
+        // captured: xml/type (MAX(xml) is 8117)
+        Bit | Xml =>
+          raise invalid_operand(t, if f is Min { "min" } else { "max" })
         _ => t
       }
     (StringAgg, Some(t)) =>
       match t {
         // captured: 8116 (variant/functions.sql)
-        Variant => raise bad_arg_type(t, 1, "string_agg")
+        Variant | Xml => raise bad_arg_type(t, 1, "string_agg")
         VarChar(None, _) | NVarChar(None, _) => t
         NChar(_, c) | NVarChar(_, c) => NVarChar(Some(4000), c)
         Char(_, c) | VarChar(_, c) => VarChar(Some(8000), c)

@@ -1,0 +1,90 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/xml"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn compile(String, String) -> XPath raise XmlError
+
+pub fn escape_attr(String, StringBuilder) -> Unit
+
+pub fn escape_text(String, StringBuilder) -> Unit
+
+pub fn exist(Xml, XPath, ext? : Array[Ext]) -> Bool raise XmlError
+
+pub fn is_name_char(Int) -> Bool
+
+pub fn is_name_start(Int) -> Bool
+
+pub fn nodes(Xml, XPath, ext? : Array[Ext]) -> Array[Xml] raise XmlError
+
+pub fn parse(String, preserve? : Bool) -> Xml raise XmlError
+
+pub fn query(Xml, XPath, ext? : Array[Ext]) -> Xml raise XmlError
+
+pub fn value(Xml, XPath, ext? : Array[Ext]) -> String? raise XmlError
+
+pub fn write_node(Node, StringBuilder) -> Unit
+
+pub let xml_ns : String
+
+pub let xmlns_ns : String
+
+// Errors
+pub(all) suberror XmlError {
+  Sql(Int, Int, String)
+  Unsupported(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct Attr {
+  name : QName
+  value : String
+} derive(Eq, @debug.Debug)
+pub fn Attr::is_namespace_decl(Self) -> Bool
+
+pub(all) enum Ext {
+  ExtNull
+  ExtNum(Double)
+  ExtStr(String)
+  ExtBool(Bool)
+} derive(@debug.Debug)
+
+pub(all) enum Node {
+  Element(QName, Array[Attr], Array[Node])
+  Text(String)
+  Comment(String)
+  Pi(String, String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct QName {
+  prefix : String
+  lname : String
+  ns : String
+} derive(Eq, @debug.Debug)
+pub fn QName::text(Self) -> String
+
+pub struct XPath {
+  meth : String
+  externals : Array[(Bool, String)]
+  // private fields
+} derive(@debug.Debug)
+pub fn XPath::check_query(Self) -> Unit raise XmlError
+pub fn XPath::check_singleton(Self) -> Unit raise XmlError
+pub fn XPath::externals(Self) -> Array[(Bool, String)]
+
+pub(all) struct Xml {
+  nodes : Array[Node]
+  path : Array[Int]
+  attr : Int
+} derive(Eq, @debug.Debug)
+pub fn Xml::is_ref(Self) -> Bool
+pub fn Xml::of_nodes(Array[Node]) -> Self
+pub fn Xml::to_text(Self) -> String
+pub impl Show for Xml
+
+// Type aliases
+
+// Traits

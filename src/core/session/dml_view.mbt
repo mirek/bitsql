@@ -115,8 +115,9 @@ fn leaf_qualifier(r : @ast.TableRef) -> String? {
           None => name.to_lower()
         },
       )
-    Derived(_, alias_~, ..) | TableFunc(_, _, alias_~, ..) =>
-      alias_.map(a => a.name.to_lower())
+    Derived(_, alias_~, ..)
+    | TableFunc(_, _, alias_~, ..)
+    | Nodes(_, _, alias_~, ..) => alias_.map(a => a.name.to_lower())
     Values(_, alias_~, ..) => Some(alias_.name.to_lower())
     Join(_, _, _, ..) => None
   }

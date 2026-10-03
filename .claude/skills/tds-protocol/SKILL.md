@@ -20,6 +20,16 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (FOR XML / xml, corpus `xml/`, raw dumps): the top-level FOR
+  XML text result is NTEXT (0x63), not nvarchar(max): TYPE_INFO max length
+  0x7FFFFFFE + collation + table name (1 part, "x"); each ROW value is text
+  pointer length 16 "dummy textptr\0\0\0", timestamp "dummyTS\0", u32
+  length, UTF-16LE, in 2033-character rows. xml TYPE_INFO is 0xF1 + schema
+  present 0; values are PLP with total length 0xFFFFFFFFFFFFFFFE (unknown)
+  and one chunk; a NULL xml in a row makes SQL Server use NBCROW. An XML
+  parse error in an RPC request is ERROR then DONEPROC directly (no
+  DONEINPROC, no RETURNSTATUS). The inherited note below claiming
+  NVARCHAR(MAX) for FOR XML text mode was wrong and is corrected.
 - 2026-10-03 (corpus `tm/`, BulkLoad probe): transaction manager requests
   (0x0E) are answered with ENVCHANGE 8/9/10 only when @@TRANCOUNT crosses 0,
   then DONE status 0 CurCmd 253 without a count; errors are ERROR + DONE
@@ -190,7 +200,7 @@ ordered result sets; see
 - Proven non-null tinyint, smallint, int, and bigint result columns use fixed
   INT1/INT2/INT4/INT8 TYPE_INFO with no metadata or row-value length prefix.
   Nullable results continue to use width-specific INTN.
-- FOR XML text mode uses the magic result-column name with NVARCHAR(MAX)
-  TYPE_INFO and PLP values. FOR XML TYPE uses the unnamed XML TYPE_INFO and
-  XML PLP codec. Both paths stream values beyond 8 KiB through ordinary
+- FOR XML text mode uses the magic result-column name with NTEXT TYPE_INFO
+  (corrected 2026-10-03: not NVARCHAR(MAX); see bitsql findings). FOR XML
+  TYPE uses the unnamed XML TYPE_INFO and XML PLP codec. Both paths stream values beyond 8 KiB through ordinary
   COLMETADATA/ROW framing.

@@ -60,6 +60,7 @@ fn map_expr(
     Collate(a, id) => Collate(m(a), id)
     AtTimeZone(a, b) => AtTimeZone(m(a), m(b))
     Paren(a) => Paren(m(a))
+    MethodCall(t, n, args) => MethodCall(m(t), n, args.map(m))
     other => other
   }
   { kind, span: e.span, }
