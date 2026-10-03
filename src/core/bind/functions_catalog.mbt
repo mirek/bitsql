@@ -9,6 +9,39 @@ fn bind_call_catalog(
   call : @ast.FuncCall,
 ) -> @ir.Expr? raise @types.SqlError {
   let args = call.args
+  // trigger functions (session-evaluated): UPDATE(col) takes a column name
+  match name {
+    "UPDATE" => {
+      arity(name, args, 1)
+      guard args[0].kind is Column(parts) else {
+        raise @types.sql_error(
+          102,
+          "Incorrect syntax near 'UPDATE'.",
+          severity=15,
+        )
+      }
+      let col = parts[parts.length() - 1].name
+      return Some(
+        bit_expr(
+          Call(Named(name), [
+            mk(
+              Lit(String(col)),
+              VarChar(Some(128), @types.default_collation),
+              false,
+            ),
+          ]),
+          false,
+        ),
+      )
+    }
+    "TRIGGER_NESTLEVEL" => {
+      arity_range(name, args, 0, 3)
+      return Some(
+        mk(Call(Named(name), args.map(a => bind_expr(env, a))), Int, true),
+      )
+    }
+    _ => ()
+  }
   let sysname : @types.SqlType = NVarChar(Some(128), @types.default_collation)
   let ident : @types.SqlType = Numeric(38, 0)
   let (lo, hi, ty) : (Int, Int, @types.SqlType) = match name {

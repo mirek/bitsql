@@ -16,6 +16,9 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     raise @types.not_supported("MERGE with a CTE")
   }
   let target = self.dml_target(m.target)
+  if self.has_enabled_trigger(target) {
+    raise @types.not_supported("MERGE on a table with triggers")
+  }
   if target.scope != 3 {
     self.check_writable()
   }

@@ -61,3 +61,6 @@ real system message). Keep the allocation table in
 | Streaming errors | `@exec.stream` | Rows produced before a run-time error are sent (530 after 101 rows, OPENJSON WITH conversion 245 after row 1); a Sort/aggregate above makes the error arrive before any row |
 | Recursive CTE | `Recursive` plan | Columns are nullable; 530 fires when level max+1 produces a row (MAXRECURSION 3 returns 4 rows, then the error) |
 | FOR JSON | `ForJson` plan | One nvarchar(max) column `JSON_F52E2B61-…`, text split into 2033-char rows, DONE count = number of *input* rows, no rows for empty input, floats as `5.000000000000000e-001`, `/` escaped |
+| Trigger `inserted`/`deleted` | pseudo-tables in scope 3 (session/trigger.mbt) | Scanning them returns the rows newest first (VALUES ('a'),('b') → b, a), visible through IDENTITY in an audit insert without ORDER BY | triggers/after-insert-audit |
+| RAISERROR under XACT_ABORT | `exec_one` disposition | RAISERROR never rolls back or aborts the batch under XACT_ABORT ON (implied in triggers); THROW does | triggers/rollback-in-trigger |
+| NOCOUNT inside modules | `Session::done` | DONEINPROC tokens disappear entirely under NOCOUNT inside triggers/procedures, even in a SQL batch | triggers/after-update-columns |

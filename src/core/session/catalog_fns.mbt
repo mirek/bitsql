@@ -18,6 +18,10 @@ fn Session::catalog_fn(
     }
   }
   let num = (k : Int) => arg(k).as_int64().map(x => x.to_int())
+  match self.trigger_fn(name, args) {
+    Some(v) => return Some(v)
+    None => ()
+  }
   let db = self.db_of(0)
   let r : @types.Value = match name {
     "OBJECT_ID" =>

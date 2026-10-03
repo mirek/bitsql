@@ -86,6 +86,7 @@ fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
     }
     None => ()
   }
+  self.implicit_tx = false
   self.release_locks()
 }
 
@@ -96,6 +97,7 @@ fn Session::rollback_tx(self : Session) -> Unit {
     None => ()
   }
   self.tx = None
+  self.implicit_tx = false
   self.release_locks()
 }
 
@@ -164,6 +166,10 @@ fn Session::find_table_var(self : Session, name : String) -> @store.Table? {
 fn Session::catalog(self : Session) -> @bind.Catalog {
   {
     table: name => {
+      match self.pseudo_binding(name) {
+        Some(b) => return Some(b)
+        None => ()
+      }
       match self.sys_view_binding(name) {
         Some(b) => return Some(b)
         None => ()

@@ -78,8 +78,9 @@ taken from captures before they are implemented. Add them here when found.
   DONEINPROC; every one carries MORE except the last DONE of a batch. An RPC
   ends with RETURNVALUEs, RETURNSTATUS, then DONEPROC (cmd 224).
 - **NOCOUNT ON:**
-  - In SQL batches, statement completions remain but DONE_COUNT is cleared and
-    the count is 0.
+  - In SQL batches, top-level statement completions (DONE) remain but
+    DONE_COUNT is cleared and the count is 0. Inside procedures and triggers
+    the ordinary DONEINPROCs are suppressed, as in RPCs (triggers/after-update-columns).
   - In RPCs, ordinary statement completions (assignments, PRINT, DML without
     OUTPUT, control flow) are suppressed. Result sets (even with 0 rows), DML
     OUTPUT results and error completions are kept, and the final DONEPROC and
@@ -95,3 +96,12 @@ taken from captures before they are implemented. Add them here when found.
   flags 33.
 
 DDL resets `@@ROWCOUNT` to 0 (msduck `docs/ddl-completion-reference.md`).
+
+## Triggers (corpus `triggers/`)
+
+Trigger statements complete with DONEINPROC before the firing statement's own
+DONE, whose count is the statement's rows; @@ROWCOUNT and SCOPE_IDENTITY() are
+restored after the trigger, @@IDENTITY is not. A trigger that ends the
+transaction (ROLLBACK) finishes, then the batch ends with 3609 (line of the
+firing statement) and DONE 253 + error; rolling back the implicit autocommit
+transaction sends no ENVCHANGE.

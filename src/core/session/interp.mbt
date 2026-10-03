@@ -58,7 +58,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.rt.rowcount = 0
   // XACT_ABORT ON: inside TRY the transaction becomes uncommittable
   // (XACT_STATE() = -1); outside TRY it is rolled back and the batch ends.
-  if self.xact_abort && e.severity() > 10 && self.rt.trancount > 0 {
+  // RAISERROR never honors XACT_ABORT (THROW does)
+  let raiserror = self.cur_cmd == 246 && !self.throwing
+  if self.xact_abort && !raiserror && e.severity() > 10 && self.rt.trancount > 0 {
     if self.try_depth > 0 {
       self.rt.xact_state = -1
     } else {
@@ -96,7 +98,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // an uncaught THROW completes with 253, not 246 (captured: msduck
   // nocount-completions)
   self.done(if self.throwing { 253 } else { self.cur_cmd }, error=true)
-  if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort) {
+  if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort && !raiserror) {
     raise AbortBatch
   }
 }
@@ -329,9 +331,12 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.rt.trancount -= 1
       if self.rt.trancount == 0 {
         let d = self.tx_descriptor()
+        let implicit = self.implicit_tx
         self.commit_tx()
         self.rt.xact_state = 0
-        self.out.push(EnvChange(CommitTransaction(d)))
+        if !implicit {
+          self.out.push(EnvChange(CommitTransaction(d)))
+        }
       }
       self.done(213)
     }
@@ -364,8 +369,11 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       let d = self.tx_descriptor()
       self.rt.trancount = 0
       self.rt.xact_state = 0
+      let implicit = self.implicit_tx
       self.rollback_tx()
-      self.out.push(EnvChange(RollbackTransaction(d)))
+      if !implicit {
+        self.out.push(EnvChange(RollbackTransaction(d)))
+      }
       self.done(210)
     }
     Save(name~) => {

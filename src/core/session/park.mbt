@@ -74,6 +74,7 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
   self.temp = s.temp
   self.tvars = s.tvars
   self.tx = s.tx
+  self.implicit_tx = false
   self.rt.trancount = s.trancount
   self.rt.xact_state = s.xact_state
   self.rt.error = s.error

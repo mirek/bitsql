@@ -140,7 +140,15 @@ fn Session::bind_output(
       }
     }
     let into = match clause.into {
-      None => None
+      None => {
+        if self.has_enabled_trigger(target) {
+          raise @types.sql_error(
+            334,
+            "The target table '\{target.table.name}' of the DML statement cannot have any enabled triggers if the statement contains an OUTPUT clause without INTO clause.",
+          )
+        }
+        None
+      }
       Some((r, names)) => {
         let t = self.dml_target(r)
         let idx = if names.is_empty() {

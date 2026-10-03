@@ -14,8 +14,7 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
   match r.kind {
     Table(name, alias_~, ..) =>
       match self.find_table(name) {
-        Some((scope, t)) => {
-          self.check_no_triggers(t)
+        Some((scope, t)) =>
           {
             scope,
             table: t,
@@ -29,7 +28,6 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
               None => t.name.to_lower()
             },
           }
-        }
         None => {
           if self.find_module(name) is Some({ kind: View, .. }) {
             raise @types.not_supported("INSERT/UPDATE/DELETE through a view")
@@ -430,6 +428,8 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     _ => []
   }
   let mut db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnInsert)
   let mut last_identity : Int64? = None
   for ri, src in source {
     let row = Array::make(t.columns.length(), @types.Value::Null)
@@ -483,6 +483,11 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         }
       }
     }
+    if !instead.is_empty() {
+      // INSTEAD OF: the trigger sees the rows; constraints are not checked
+      inserted_rows.push(row)
+      continue
+    }
     self.check_row(target, db, row, "INSERT")
     let rowid = self.server.rowid()
     if target.scope == 0 {
@@ -493,6 +498,14 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     db = insert_checked(target, db, rowid, row)
     inserted_rows.push(row)
   }
+  let all_columns = Array::makei(t.columns.length(), i => i)
+  if !instead.is_empty() {
+    self.run_triggers(target, instead, [], inserted_rows, all_columns, pre)
+    let n = source.length().to_int64()
+    self.rt.rowcount = n
+    self.done(195, count=Some(n))
+    return
+  }
   self.write(target.scope, db)
   let sent = self.emit_output(outputs, inserted_rows)
   if last_identity is Some(v) {
@@ -500,6 +513,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     self.rt.identity = iv
     self.rt.scope_identity = iv
   }
+  self.fire_after(target, OnInsert, [], inserted_rows, all_columns, pre)
   let n = source.length().to_int64()
   self.rt.rowcount = n
   self.done(195, count=Some(n), result_set=sent)
@@ -632,6 +646,8 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   let outputs = self.bind_output(u.output, target, true, true, extra)
   self.cur_cmd = 197
   let mut db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnUpdate)
   let images = []
   let output_rows = []
   for rec in rows {
@@ -674,11 +690,28 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
         row[i] = Binary(rowversion_bytes(self.server.dbts))
       }
     }
-    self.check_row(target, db, row, "UPDATE")
+    if instead.is_empty() {
+      self.check_row(target, db, row, "UPDATE")
+    }
     images.push((rowid, old, row))
     output_rows.push(
       old + row + (if extra.is_empty() { [] } else { full.filter(_ => true) }),
     )
+  }
+  let updated = sets.map(s => s.0)
+  if !instead.is_empty() {
+    self.run_triggers(
+      target,
+      instead,
+      images.map(x => x.1),
+      images.map(x => x.2),
+      updated,
+      pre,
+    )
+    let n = images.length().to_int64()
+    self.rt.rowcount = n
+    self.done(197, count=Some(n))
+    return
   }
   // OUTPUT rows are streamed before end-of-statement constraint checks
   let sent = self.emit_output(
@@ -702,6 +735,14 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     db = insert_checked(target, db, im.0, im.2)
   }
   self.write(target.scope, db)
+  self.fire_after(
+    target,
+    OnUpdate,
+    images.map(x => x.1),
+    images.map(x => x.2),
+    updated,
+    pre,
+  )
   let n = images.length().to_int64()
   self.rt.rowcount = n
   self.done(197, count=Some(n), result_set=sent)
@@ -808,6 +849,15 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   let outputs = self.bind_output(d.output, target, true, false, extra)
   self.cur_cmd = 196
   let mut db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnDelete)
+  if !instead.is_empty() {
+    self.run_triggers(target, instead, rows.map(r => r.1), [], [], pre)
+    let n = rows.length().to_int64()
+    self.rt.rowcount = n
+    self.done(196, count=Some(n))
+    return
+  }
   self.check_references(
     target,
     db,
@@ -827,6 +877,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     db = db.delete_row(target.table.id, r.0)
   }
   self.write(target.scope, db)
+  self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
   let n = rows.length().to_int64()
   self.rt.rowcount = n
   self.done(196, count=Some(n), result_set=sent)

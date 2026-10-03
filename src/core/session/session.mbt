@@ -199,6 +199,11 @@ pub struct Session {
   mut identity_insert : Int?
   /// GLOBAL cursors (session lifetime).
   priv cursors : Map[String, CursorState]
+  /// The transaction is the implicit one of an autocommit statement whose
+  /// triggers run (no ENVCHANGE when it ends).
+  mut implicit_tx : Bool
+  /// Running triggers, innermost last.
+  priv triggers : Array[TriggerCtx]
   /// Lock request this session waits for (when its request is parked).
   mut waiting : Int?
   /// Re-run of a deadlock victim / timed-out request: the next wait fails
@@ -252,6 +257,8 @@ pub fn Session::new(
     identity_insert: None,
     cursors: Map([]),
     prepared: Map([]),
+    triggers: [],
+    implicit_tx: false,
     waiting: None,
     fail_next_wait: None,
     parked: false,
@@ -296,7 +303,12 @@ fn Session::done(
   result_set? : Bool = false,
   error? : Bool = false,
 ) -> Unit {
-  if self.rpc && self.nocount && !result_set && !error {
+  // NOCOUNT ON drops ordinary completions inside modules (RPC requests and
+  // procedures/triggers in batches; captured: triggers/after-update-columns)
+  if (self.rpc || self.rt.nest_level > 0) &&
+    self.nocount &&
+    !result_set &&
+    !error {
     return
   }
   let count = if self.nocount { None } else { count }

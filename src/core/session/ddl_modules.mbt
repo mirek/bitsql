@@ -283,17 +283,6 @@ fn Session::exec_create_trigger(
 }
 
 ///|
-/// Triggers are registered but not executed: DML on a table with an enabled
-/// trigger must not silently skip it.
-fn Session::check_no_triggers(self : Session, t : @store.Table) -> Unit raise {
-  for m in self.db_of(0).modules() {
-    if m.kind is Trigger && m.parent == Some(t.id) && !m.disabled {
-      raise @types.not_supported("DML on a table with triggers (\{m.name})")
-    }
-  }
-}
-
-///|
 fn Session::exec_create_schema(self : Session, name : @ast.Ident) -> Unit raise {
   let db = self.db_of(0)
   if db.schema_id(name.name) is Some(_) ||

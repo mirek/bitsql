@@ -20,6 +20,16 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (triggers, corpus `triggers/`): XACT_ABORT is implied inside
+  triggers, but RAISERROR never honors XACT_ABORT (no rollback, no batch
+  abort; THROW does). In autocommit the trigger runs inside an implicit
+  transaction (@@TRANCOUNT 1); its ROLLBACK undoes the firing statement, the
+  trigger finishes, then 3609 "The transaction ended in the trigger. The batch
+  has been aborted." ends the batch, with no ENVCHANGE. OUTPUT without INTO on
+  a table with any enabled trigger is 334. INSTEAD OF INSERT's DONE count is
+  the original row count even if the trigger inserts nothing. Nested trigger
+  TRIGGER_NESTLEVEL() is 1, 2, ….
+
 - 2026-10-03: transaction semantics as implemented (partly unverified, check
   against the gaps-transactions captures): XACT_ABORT ON + error inside TRY
   dooms the transaction (XACT_STATE() = -1); writes and COMMIT then raise 3930;
