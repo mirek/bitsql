@@ -20,6 +20,14 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03 (sequences, corpus `sequence/`): NEXT VALUE FOR has the
+  sequence's type and flags 0; an unqualified default start is the type's
+  minimum (bigint: -9223372036854775808). CREATE/ALTER SEQUENCE send no DONE
+  and warn 11729 (class 0) when the cache (default 50) exceeds the values
+  left; RESTART WITH n also becomes the start value for a later bare RESTART.
+  11728 (exhausted) aborts the batch and names the sequence unqualified;
+  11703/11702/2714 quote the name as written (2714 state 8). DROP SEQUENCE is
+  CurCmd 516. Repeated references to one sequence in a row share one value.
 - 2026-10-03 (triggers, corpus `triggers/`): XACT_ABORT is implied inside
   triggers, but RAISERROR never honors XACT_ABORT (no rollback, no batch
   abort; THROW does). In autocommit the trigger runs inside an implicit

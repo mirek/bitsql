@@ -43,6 +43,7 @@ pub(all) struct Catalog {
   table : (@ast.ObjectName) -> TableBinding? raise @types.SqlError
   table_var : (String) -> TableBinding?
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
+  sequence : (@ast.ObjectName) -> (String, @types.SqlType)?
 }
 pub fn Catalog::empty() -> Self
 

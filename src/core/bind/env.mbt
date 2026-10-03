@@ -35,11 +35,18 @@ pub(all) struct Catalog {
   /// Resolves a view to its query and declared column names (bound like a
   /// derived table, in an environment of its own).
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
+  /// Resolves a sequence for NEXT VALUE FOR: (session key, type).
+  sequence : (@ast.ObjectName) -> (String, @types.SqlType)?
 }
 
 ///|
 pub fn Catalog::empty() -> Catalog {
-  { table: _ => None, table_var: _ => None, view: _ => None, }
+  {
+    table: _ => None,
+    table_var: _ => None,
+    view: _ => None,
+    sequence: _ => None,
+  }
 }
 
 ///|

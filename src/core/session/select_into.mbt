@@ -131,6 +131,16 @@ fn Session::exec_query(
   line : Int,
 ) -> Unit raise {
   self.lock_reads(q)
+  if q.body is Select(sel) {
+    check_sequence_refs(
+      sel.items.filter_map(i => {
+        match i.kind {
+          ExprItem(e, ..) => Some(e)
+          _ => None
+        }
+      }),
+    )
+  }
   let bound = @bind.bind_query(self.env(), q)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))

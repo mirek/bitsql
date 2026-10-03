@@ -31,6 +31,8 @@ pub(all) enum StmtKind {
   CreateSchema(Ident, authorization~ : Ident?)
   CreateType(CreateType)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
+  /// ALTER SEQUENCE name options (see `CreateSequence`; adds `RESTART`).
+  AlterSequence(ObjectName, Array[String])
   /// DROP TABLE / VIEW / PROCEDURE / FUNCTION / TRIGGER / SCHEMA / TYPE /
   /// SEQUENCE.
   Drop(DropKind, if_exists~ : Bool, Array[ObjectName])

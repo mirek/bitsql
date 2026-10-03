@@ -143,3 +143,77 @@ fn has_window(e : @ast.Expr) -> Bool {
 fn expr_key(e : @ast.Expr) -> String {
   e.to_sexp().to_lower()
 }
+
+///|
+/// True when a select list or predicate uses NEXT VALUE FOR (outside nested
+/// subqueries, which are checked when they bind).
+fn uses_next_value(exprs : Array[@ast.Expr]) -> Bool raise @types.SqlError {
+  let mut found = false
+  for e in exprs {
+    ignore(
+      map_expr(e, x => {
+        if x.kind is NextValueFor(_) {
+          found = true
+        }
+        None
+      }),
+    )
+  }
+  found
+}
+
+///|
+fn select_exprs(s : @ast.Select) -> Array[@ast.Expr] {
+  let out = s.items.filter_map(i => {
+    match i.kind {
+      ExprItem(e, ..) => Some(e)
+      Assign(_, _, e) => Some(e)
+      _ => None
+    }
+  })
+  match s.where_ {
+    Some(w) => out.push(w)
+    None => ()
+  }
+  out
+}
+
+///|
+fn body_uses_next_value(b : @ast.QueryBody) -> Bool raise @types.SqlError {
+  match b {
+    Select(s) => uses_next_value(select_exprs(s))
+    Nested(q) => body_uses_next_value(q.body)
+    SetOperation(_, l, r) => body_uses_next_value(l) || body_uses_next_value(r)
+  }
+}
+
+///|
+/// 11719 / 11721: contexts where NEXT VALUE FOR is not allowed (captured:
+/// sequence/errors).
+fn check_next_value_context(
+  q : @ast.Query,
+  subquery : Bool,
+) -> Unit raise @types.SqlError {
+  match q.body {
+    Select(s) if subquery && uses_next_value(select_exprs(s)) =>
+      raise @types.sql_error(
+        11719,
+        "NEXT VALUE FOR function is not allowed in check constraints, default objects, computed columns, views, user-defined functions, user-defined aggregates, user-defined table types, sub-queries, common table expressions, derived tables or return statements.",
+        severity=15,
+      )
+    Select(s) if s.distinct && uses_next_value(select_exprs(s)) =>
+      raise next_value_set_op()
+    SetOperation(_, _, _) as b if body_uses_next_value(b) =>
+      raise next_value_set_op()
+    _ => ()
+  }
+}
+
+///|
+fn next_value_set_op() -> @types.SqlError {
+  @types.sql_error(
+    11721,
+    "NEXT VALUE FOR function cannot be used directly in a statement that uses a DISTINCT, UNION, UNION ALL, EXCEPT or INTERSECT operator.",
+    severity=15,
+  )
+}

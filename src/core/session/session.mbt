@@ -24,6 +24,8 @@ pub struct Server {
   priv snapshots : Map[String, ServerSnapshot]
   /// Key-range lock manager shared by all sessions (session id = spid).
   locks : @sched.LockManager[LockKey]
+  /// Sequence generators by "database:object id" (not transactional).
+  priv seqs : Map[String, SeqState]
   /// Sessions woken by lock releases (spid), to be re-run by the engine.
   woken : Array[Int]
   /// Parked sessions chosen as deadlock victims.
@@ -57,6 +59,7 @@ pub fn Server::new() -> Server {
     dbts: 2000L,
     snapshots: Map([]),
     locks: new_lock_manager(),
+    seqs: Map([]),
     woken: [],
     victims: [],
   }

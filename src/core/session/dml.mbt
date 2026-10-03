@@ -341,6 +341,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let (source, types) : (Array[Array[@types.Value]], Array[@types.SqlType]) = match
     ins.source {
     InsertValues(rows) => {
+      for r in rows {
+        check_sequence_refs(r)
+      }
       let bound = rows.map(r => {
         r.map(e => {
           if e.kind is Default {

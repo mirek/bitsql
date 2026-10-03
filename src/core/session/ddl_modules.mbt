@@ -60,6 +60,7 @@ fn Session::define_module(
   schema_bound? : Bool = false,
   check_option? : Bool = false,
   returns? : @types.SqlType? = None,
+  done? : Bool = true,
 ) -> @store.Module raise {
   let (schema, base) = split_name(name)
   let db = self.db_of(0)
@@ -143,7 +144,9 @@ fn Session::define_module(
   }
   self.write(0, db.add_module(m))
   self.rt.rowcount = 0
-  self.done(cmd)
+  if done {
+    self.done(cmd)
+  }
   m
 }
 

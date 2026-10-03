@@ -611,6 +611,7 @@ pub(all) enum StmtKind {
   CreateSchema(Ident, authorization~ : Ident?)
   CreateType(CreateType)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
+  AlterSequence(ObjectName, Array[String])
   Drop(DropKind, if_exists~ : Bool, Array[ObjectName])
   Permission(Permission)
   Declare(Array[DeclareVar])

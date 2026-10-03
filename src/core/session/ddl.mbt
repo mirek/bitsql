@@ -913,11 +913,12 @@ fn Session::exec_drop(
       self.rt.rowcount = 0
       self.done(199)
     }
-    DropView | DropProcedure | DropFunction | DropTrigger => {
+    DropView | DropProcedure | DropFunction | DropTrigger | DropSequence => {
       let (word, cmd) = match kind {
         DropView => ("view", 208)
         DropProcedure => ("procedure", 223)
         DropFunction => ("function", 179)
+        DropSequence => ("sequence", 516)
         _ => ("trigger", 225)
       }
       self.cur_cmd = cmd
@@ -991,6 +992,7 @@ fn module_matches(kind : @ast.DropKind, m : @store.ObjectKind) -> Bool {
     (DropProcedure, Procedure) => true
     (DropFunction, ScalarFunction | InlineFunction | TableFunction) => true
     (DropTrigger, Trigger) => true
+    (DropSequence, Sequence) => true
     _ => false
   }
 }

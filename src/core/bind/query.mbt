@@ -1052,6 +1052,8 @@ fn bind_select_query(
         let origin : @ir.Origin = match b.kind {
           // also a column after constant folding (CASE WHEN 1=1 THEN col ...)
           Col(i) => full.columns[i].origin
+          // captured: NEXT VALUE FOR has flags 0 (sequence/basics)
+          Call(Named("NEXT VALUE FOR"), _) => SetOperation
           _ => Computed
         }
         exprs.push(b)
@@ -1549,6 +1551,7 @@ pub fn bind_query(
   env : Env,
   q : @ast.Query,
 ) -> BoundQuery raise @types.SqlError {
+  check_next_value_context(q, false)
   let env = { ..env, maxrecursion: max_recursion(q.options, env.maxrecursion), }
   match q.for_clause {
     None => bind_query_inner(env, q, top_level=true)
@@ -1639,6 +1642,7 @@ pub fn bind_assignment_select(
 ///|
 /// Binds a scalar/EXISTS/IN subquery in the scope of `env`.
 fn bind_subquery(env : Env, q : @ast.Query) -> BoundQuery raise @types.SqlError {
+  check_next_value_context(q, true)
   bind_query_inner(env, q)
 }
 

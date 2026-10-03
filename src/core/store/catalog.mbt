@@ -99,6 +99,8 @@ pub(all) enum ObjectKind {
   /// Multi-statement table-valued function (TF).
   TableFunction
   Trigger
+  /// SO: CREATE SEQUENCE (values live in the server, not the Db).
+  Sequence
 } derive(Debug, Eq)
 
 ///|
@@ -187,5 +189,6 @@ pub fn ObjectKind::code(self : ObjectKind) -> (String, String) {
     InlineFunction => ("IF", "SQL_INLINE_TABLE_VALUED_FUNCTION")
     TableFunction => ("TF", "SQL_TABLE_VALUED_FUNCTION")
     Trigger => ("TR", "SQL_TRIGGER")
+    Sequence => ("SO", "SEQUENCE_OBJECT")
   }
 }

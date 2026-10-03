@@ -1,0 +1,13 @@
+-- Completion tokens of CREATE/ALTER/DROP SEQUENCE; ALTER options.
+-- @step batch
+CREATE SEQUENCE dbo.q AS smallint START WITH 5 INCREMENT BY 10 MAXVALUE 100;
+SELECT NEXT VALUE FOR dbo.q AS a;
+ALTER SEQUENCE dbo.q INCREMENT BY 1 MAXVALUE 6;
+SELECT NEXT VALUE FOR dbo.q AS b;
+SELECT NEXT VALUE FOR dbo.q AS c;
+-- @step batch
+ALTER SEQUENCE dbo.missing RESTART;
+-- @step batch
+ALTER SEQUENCE dbo.q RESTART WITH 1000;
+-- @step batch
+DROP SEQUENCE IF EXISTS dbo.q, dbo.missing;

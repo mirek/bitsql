@@ -1103,39 +1103,13 @@ fn Parser::create_or_alter(
       self.pos += 1
       let name = self.object_name()
       let type_ = if self.eat_kw("AS") { Some(self.type_name()) } else { None }
-      let options = []
-      while true {
-        if self.is_kw("START") && self.is_kw_at(1, "WITH") {
-          self.pos += 2
-          options.push("START WITH " + self.signed_number())
-        } else if self.is_kw("INCREMENT") && self.is_kw_at(1, "BY") {
-          self.pos += 2
-          options.push("INCREMENT BY " + self.signed_number())
-        } else if self.is_kw("MINVALUE") || self.is_kw("MAXVALUE") {
-          let o = upper(self.advance())
-          options.push(o + " " + self.signed_number())
-        } else if self.is_kw("NO") &&
-          (
-            self.is_kw_at(1, "MINVALUE") ||
-            self.is_kw_at(1, "MAXVALUE") ||
-            self.is_kw_at(1, "CYCLE") ||
-            self.is_kw_at(1, "CACHE")
-          ) {
-          self.pos += 1
-          options.push("NO " + upper(self.advance()))
-        } else if self.eat_kw("CYCLE") {
-          options.push("CYCLE")
-        } else if self.eat_kw("CACHE") {
-          if self.peek().kind is IntNum {
-            options.push("CACHE " + self.advance().text)
-          } else {
-            options.push("CACHE")
-          }
-        } else {
-          break
-        }
-      }
+      let options = self.sequence_options()
       CreateSequence(name, type_~, options~)
+    }
+    "SEQUENCE" if mode is Alter => {
+      self.pos += 1
+      let name = self.object_name()
+      AlterSequence(name, self.sequence_options())
     }
     _ => raise self.error()
   }
@@ -1214,4 +1188,52 @@ fn Parser::raiserror_arg(
     raise self.error()
   }
   e
+}
+
+///|
+/// CREATE/ALTER SEQUENCE options, normalized to upper-case text:
+/// `START WITH n`, `RESTART [WITH n]`, `INCREMENT BY n`, `MINVALUE n`,
+/// `MAXVALUE n`, `NO MINVALUE|MAXVALUE|CYCLE|CACHE`, `CYCLE`, `CACHE [n]`.
+fn Parser::sequence_options(
+  self : Parser,
+) -> Array[String] raise @ast.SyntaxError {
+  let options = []
+  while true {
+    if self.is_kw("START") && self.is_kw_at(1, "WITH") {
+      self.pos += 2
+      options.push("START WITH " + self.signed_number())
+    } else if self.eat_kw("RESTART") {
+      if self.eat_kw("WITH") {
+        options.push("RESTART WITH " + self.signed_number())
+      } else {
+        options.push("RESTART")
+      }
+    } else if self.is_kw("INCREMENT") && self.is_kw_at(1, "BY") {
+      self.pos += 2
+      options.push("INCREMENT BY " + self.signed_number())
+    } else if self.is_kw("MINVALUE") || self.is_kw("MAXVALUE") {
+      let o = upper(self.advance())
+      options.push(o + " " + self.signed_number())
+    } else if self.is_kw("NO") &&
+      (
+        self.is_kw_at(1, "MINVALUE") ||
+        self.is_kw_at(1, "MAXVALUE") ||
+        self.is_kw_at(1, "CYCLE") ||
+        self.is_kw_at(1, "CACHE")
+      ) {
+      self.pos += 1
+      options.push("NO " + upper(self.advance()))
+    } else if self.eat_kw("CYCLE") {
+      options.push("CYCLE")
+    } else if self.eat_kw("CACHE") {
+      if self.peek().kind is IntNum {
+        options.push("CACHE " + self.advance().text)
+      } else {
+        options.push("CACHE")
+      }
+    } else {
+      break
+    }
+  }
+  options
 }

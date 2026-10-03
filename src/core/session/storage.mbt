@@ -237,6 +237,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         None => None
       }
     },
+    sequence: name => self.sequence_binding(name),
   }
 }
 

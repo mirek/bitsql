@@ -98,7 +98,7 @@ pub(all) struct Ctx {
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
   /// Session-provided functions that need the database (catalog/metadata
   /// functions). Returns None for names it does not implement.
-  ext : (String, Array[@types.Value]) -> @types.Value?
+  ext : (String, Array[@types.Value]) -> @types.Value? raise @types.SqlError
 }
 
 ///|

@@ -304,7 +304,28 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     }
     Parse(_, _, ..) => raise @types.not_supported("PARSE / TRY_PARSE")
     AtTimeZone(_, _) => raise @types.not_supported("AT TIME ZONE")
-    NextValueFor(_) => raise @types.not_supported("sequences (NEXT VALUE FOR)")
+    NextValueFor(name) =>
+      match (env.catalog.sequence)(name) {
+        // evaluated by the session (Ctx::ext); never folded
+        Some((key, ty)) =>
+          mk(
+            Call(Named("NEXT VALUE FOR"), [
+              mk(
+                Lit(String(key)),
+                VarChar(Some(128), @types.default_collation),
+                false,
+              ),
+            ]),
+            ty,
+            false,
+          )
+        None =>
+          raise @types.sql_error(
+            208,
+            "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
+            state=211,
+          )
+      }
   }
 }
 

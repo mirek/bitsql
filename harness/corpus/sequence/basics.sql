@@ -1,0 +1,11 @@
+-- CREATE SEQUENCE defaults and NEXT VALUE FOR metadata/values.
+-- @step setup
+CREATE SEQUENCE dbo.s1 START WITH 10 INCREMENT BY 5;
+CREATE SEQUENCE dbo.s_default;
+CREATE SEQUENCE dbo.s_int AS int START WITH 1;
+CREATE SEQUENCE dbo.s_dec AS decimal(10, 0) START WITH 100 INCREMENT BY -1;
+-- @step batch
+SELECT NEXT VALUE FOR dbo.s1 AS a;
+SELECT NEXT VALUE FOR dbo.s1 AS b, NEXT VALUE FOR s_int AS c;
+SELECT NEXT VALUE FOR dbo.s_default AS d;
+SELECT NEXT VALUE FOR dbo.s_dec AS e, NEXT VALUE FOR dbo.s_dec AS f;

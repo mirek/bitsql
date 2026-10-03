@@ -1,0 +1,142 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "d333a428f46c4116",
+  "steps": [
+    {
+      "sets": [
+        {"columns":[{"name":"a","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[[5]]},
+        {"columns":[{"name":"b","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[[6]]},
+        {"columns":[{"name":"c","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],"rows":[]}
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11728,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 5,
+          "message": "The sequence object 'q' has reached its minimum or maximum value. Restart the sequence object to allow new values to be generated."
+        }
+      ],
+      "info": [
+        {
+          "number": 11729,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 1,
+          "message": "The sequence object 'q' cache size is greater than the number of available values."
+        },
+        {
+          "number": 11729,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 3,
+          "message": "The sequence object 'q' cache size is greater than the number of available values."
+        }
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [
+        {"name":"INFO","number":11729},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"INFO","number":11729},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":11728},
+        {"name":"DONE","status":2,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot alter the sequence 'missing', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11703,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The start value for sequence object 'dbo.q' must be between the minimum and maximum value of the sequence object."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11703},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":516}],
+      "stream": [{"name":"DONE","status":0,"curCmd":516}],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

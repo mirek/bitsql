@@ -136,6 +136,7 @@ fn aborts_batch(
   n == 245 ||
   n == 8114 ||
   n == 529 ||
+  n == 11728 ||
   (n >= 50100 && n <= 50199)
 }
 
@@ -475,6 +476,10 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     CreateFunction(f) => self.exec_create_function(f, s.span.start)
     CreateTrigger(t) => self.exec_create_trigger(t, s.span.start)
     CreateSchema(name, ..) => self.exec_create_schema(name)
+    CreateSequence(name, type_~, options~) =>
+      self.exec_create_sequence(name, type_, options, s.span.start, s.span.line)
+    AlterSequence(name, options) =>
+      self.exec_alter_sequence(name, options, s.span.line)
     AlterTable(name, action) => {
       self.ddl_cmd = 216
       self.exec_alter_table(name, action)

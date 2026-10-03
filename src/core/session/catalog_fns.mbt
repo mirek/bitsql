@@ -8,7 +8,7 @@ fn Session::catalog_fn(
   self : Session,
   name : String,
   args : Array[@types.Value],
-) -> @types.Value? {
+) -> @types.Value? raise @types.SqlError {
   let arg = (k : Int) => if k < args.length() { args[k] } else { Null }
   let text = (k : Int) => {
     match arg(k) {
@@ -21,6 +21,9 @@ fn Session::catalog_fn(
   match self.trigger_fn(name, args) {
     Some(v) => return Some(v)
     None => ()
+  }
+  if name == "NEXT VALUE FOR" {
+    return Some(self.sequence_next(text(0).unwrap_or("")))
   }
   let db = self.db_of(0)
   let r : @types.Value = match name {

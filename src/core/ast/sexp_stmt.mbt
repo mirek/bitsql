@@ -709,6 +709,13 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       }
       self.close()
     }
+    AlterSequence(n, options) => {
+      self.s("(alter-sequence " + n.to_sexp())
+      for o in options {
+        self.atom(quote(o))
+      }
+      self.close()
+    }
     CreateSequence(n, type_~, options~) => {
       self.s("(create-sequence " + n.to_sexp())
       if type_ is Some(t) {
