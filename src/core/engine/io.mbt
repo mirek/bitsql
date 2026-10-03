@@ -43,6 +43,9 @@ pub(all) struct Config {
   /// Create a database on first login instead of failing with 4060
   /// (host `--auto-create-databases`). Off by default: faithful.
   auto_create_databases : Bool
+  /// Work units a request may use before failing with 50108 (host
+  /// `--max-request-work`).
+  max_request_work : Int64
 } derive(Debug)
 
 ///|
@@ -53,5 +56,10 @@ pub fn Config::default() -> Config {
     default_database: "master",
     databases: [],
     auto_create_databases: false,
+    max_request_work: default_max_request_work,
   }
 }
+
+///|
+/// Default work budget per request (see `Runtime::charge` in core/exec).
+pub let default_max_request_work : Int64 = 300_000_000L

@@ -22,6 +22,7 @@ pub fn Session::run_tm(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  self.rt.work_done = 0L
   self.out.clear()
   self.rpc = false
   self.frames.clear()

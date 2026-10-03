@@ -112,6 +112,7 @@ pub fn Session::run_rpc(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  self.rt.work_done = 0L
   let snap = self.snapshot_request()
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)

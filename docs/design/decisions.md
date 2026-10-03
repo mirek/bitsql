@@ -166,3 +166,16 @@ is described and checked in docs/reference/at-time-zone.md; zone-years whose
 local-time resolution the model cannot reproduce raise 50100 instead of
 guessing. sys.time_zone_info reads the server's local clock (UTC in bitsql)
 as a wall-clock time in each zone, as SQL Server does.
+
+## 2026-10-03: a work budget per request (50108)
+
+Execution is single-threaded and requests are not preempted (request
+restart cannot resume mid-statement). One runaway request, such as an
+endless WHILE or a huge cross join in a buggy test, would stall every other
+session forever, where SQL Server keeps serving them and the client's timeout
+cancels the request. Each request therefore has a deterministic work budget
+(rows filtered, join pairs, loop iterations; `Runtime::charge`), default
+300M units, host `--max-request-work N`. Exceeding it fails the request with
+Emulator error 50108, which TRY cannot catch. Deterministic counts keep
+replays identical; a wall-clock limit would not.
+

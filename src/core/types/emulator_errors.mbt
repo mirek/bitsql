@@ -38,6 +38,16 @@ pub const EMU_STYLE_NOT_SUPPORTED : Int = 50105
 pub const EMU_OPERATOR_NOT_SUPPORTED : Int = 50106
 
 ///|
+/// COMMIT found a change by another transaction to the same rows or objects
+/// that no lock prevented (e.g. DDL racing DML); see decisions.md.
+pub const EMU_CONCURRENT_CONFLICT : Int = 50107
+
+///|
+/// A request exceeded the work budget (runaway loop or join): execution is
+/// single-threaded, so one endless request would stall every session.
+pub const EMU_WORK_BUDGET : Int = 50108
+
+///|
 /// An internal invariant was violated (e.g. the binder handed the evaluator
 /// operands of incompatible families). Always a bitsql bug.
 pub const EMU_INTERNAL : Int = 50199
@@ -53,6 +63,8 @@ pub let emulator_error_table : Array[(Int, String)] = [
   (EMU_CODE_PAGE_BEST_FIT, "no exact code page mapping (best-fit)"),
   (EMU_STYLE_NOT_SUPPORTED, "CONVERT style not supported"),
   (EMU_OPERATOR_NOT_SUPPORTED, "operator on these types not supported"),
+  (EMU_CONCURRENT_CONFLICT, "unprotected concurrent change at commit"),
+  (EMU_WORK_BUDGET, "request work budget exceeded"),
   (EMU_INTERNAL, "internal invariant violated"),
 ]
 

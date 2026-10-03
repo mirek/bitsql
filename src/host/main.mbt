@@ -9,6 +9,8 @@
 ///   --database  create database NAME at startup (repeatable)
 ///   --auto-create-databases  logins to unknown databases create them
 ///               instead of failing with 4060 (not SQL Server behavior)
+///   --max-request-work N  work units per request before it fails with
+///               50108 (runaway protection; default 300000000)
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
@@ -36,6 +38,13 @@ async fn main {
     ..@engine.Config::default(),
     databases,
     auto_create_databases: args.contains("--auto-create-databases"),
+    max_request_work: match flag(args, "--max-request-work") {
+      Some(n) =>
+        @string.parse_int64(n) catch {
+          _ => @engine.default_max_request_work
+        }
+      None => @engine.default_max_request_work
+    },
   }
   let engine = @engine.Engine::new(config, seed)
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)

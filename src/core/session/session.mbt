@@ -422,6 +422,7 @@ pub fn Session::run_batch(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  self.rt.work_done = 0L
   let snap = self.snapshot_request()
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
@@ -550,4 +551,10 @@ fn Server::set_priority(self : Server, spid : Int, p : Int) -> Unit {
   } else {
     self.priorities[spid] = p
   }
+}
+
+///|
+/// Work budget per request (host `--max-request-work`).
+pub fn Session::set_work_limit(self : Session, limit : Int64) -> Unit {
+  self.rt.work_limit = limit
 }

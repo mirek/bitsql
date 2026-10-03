@@ -43,6 +43,10 @@ pub(all) struct Runtime {
   mut lock_timeout : Int
   /// @@OPTIONS bits that change: 512 NOCOUNT, 16384 XACT_ABORT.
   mut option_bits : Int
+  /// Work done by the current request (rows filtered, join pairs, loop
+  /// iterations) and its limit (`charge`).
+  mut work_done : Int64
+  mut work_limit : Int64
   spid : Int
   server_name : String
   version : String
@@ -79,6 +83,8 @@ pub fn Runtime::new(
     datefirst: 7,
     lock_timeout: -1,
     option_bits: 0,
+    work_done: 0L,
+    work_limit: default_work_limit,
     spid,
     server_name,
     version,
@@ -153,4 +159,23 @@ pub fn no_user_table(
 ///|
 pub fn Ctx::with_row(self : Ctx, row : Array[@types.Value]) -> Ctx {
   { ..self, row, }
+}
+
+///|
+/// Default request work budget: ~minutes of CPU at worst. Single-threaded
+/// execution cannot be preempted, so a runaway request would otherwise block
+/// every session (host `--max-request-work`).
+pub let default_work_limit : Int64 = 300_000_000L
+
+///|
+/// Accounts `n` units of work; past the limit the request fails with 50108
+/// (aborts the batch; TRY cannot catch it).
+pub fn Runtime::charge(self : Runtime, n : Int64) -> Unit raise @types.SqlError {
+  self.work_done += n
+  if self.work_done > self.work_limit {
+    raise @types.emulator_error(
+      @types.EMU_WORK_BUDGET,
+      "the request exceeded the work budget of \{self.work_limit} units (a runaway loop or join?); see --max-request-work",
+    )
+  }
 }

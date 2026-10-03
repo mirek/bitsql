@@ -216,6 +216,7 @@ fn Engine::on_message(
         database=self.server.database_name(db),
         seed=self.seed + conn.id.to_int64(),
       )
+      self.sessions[conn.id].set_work_limit(self.config.max_request_work)
       self.sessions[conn.id].set_login(
         login.user_name,
         login.host_name,

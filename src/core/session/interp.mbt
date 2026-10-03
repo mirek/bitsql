@@ -72,7 +72,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   // compile errors (raised while binding, before the statement runs) are
   // not caught by TRY in the same scope (captured: msduck try-binding-error)
-  if self.cur_cmd == 253 && is_compile_error(e.number()) {
+  if (self.cur_cmd == 253 && is_compile_error(e.number())) ||
+    e.number() == @types.EMU_WORK_BUDGET {
     self.uncatchable = true
   }
   if self.try_depth > 0 && !self.uncatchable {
@@ -292,6 +293,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.lock_expr_reads(cond)
       let b = @bind.bind_expr(self.env(), cond)
       while true {
+        self.rt.charge(10L)
         let v = @exec.eval(self.ctx(), b)
         self.done(192)
         if !@exec.is_true(v) {

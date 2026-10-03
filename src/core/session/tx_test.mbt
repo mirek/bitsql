@@ -65,3 +65,23 @@ test "emulator.snapshot / emulator.restore isolate tests" {
   let missing = s.run_batch("SELECT * FROM extra", 0)
   assert_eq(messages(missing), [208])
 }
+
+///|
+test "a runaway loop fails with 50108 instead of blocking the server" {
+  let s = @session.Session::new(
+    @session.Server::new(),
+    spid=51,
+    database="master",
+    seed=1,
+  )
+  s.set_work_limit(10_000L)
+  let items = s.run_batch(
+    "DECLARE @i int = 0; BEGIN TRY WHILE 1 = 1 SET @i += 1 END TRY BEGIN CATCH SELECT 1 END CATCH; SELECT 2",
+    0,
+  )
+  // not caught by TRY, and the batch ends
+  assert_eq(messages(items), [50108])
+  assert_eq(row_values(items), [])
+  // the next request has a fresh budget
+  assert_eq(row_values(s.run_batch("SELECT 3", 0)), [[Int(3L)]])
+}

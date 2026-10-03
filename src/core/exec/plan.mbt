@@ -24,6 +24,7 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let right_matched = Array::make(rs.length(), false)
       for l in ls {
         let mut matched = false
+        ctx.rt.charge(rs.length().to_int64() + 1L)
         for j, r in rs {
           let row = l + r
           let ok = match on {
@@ -61,7 +62,9 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       is Some(rows) => rows
     Filter(input, pred) => {
       let out = []
-      for row in run(ctx, input) {
+      let rows = run(ctx, input)
+      ctx.rt.charge(rows.length().to_int64())
+      for row in rows {
         if is_true(eval(ctx.with_row(row), pred)) {
           out.push(row)
         }
@@ -354,6 +357,7 @@ pub fn stream(
       }
     Filter(input, pred) =>
       stream(ctx, input, row => {
+        ctx.rt.charge(1L)
         if is_true(eval(ctx.with_row(row), pred)) {
           emit(row)
         }

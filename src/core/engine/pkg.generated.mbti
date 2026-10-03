@@ -11,6 +11,8 @@ pub const UNIX_EPOCH_TICKS : Int64 = 621355968000000000
 
 pub fn decode_event_log(BytesView) -> (Int64, Array[Event]) raise @tds.TdsError
 
+pub let default_max_request_work : Int64
+
 pub fn encode_event(Event) -> Bytes
 
 pub fn encode_event_log_header(Int64) -> Bytes
@@ -24,6 +26,7 @@ pub(all) struct Config {
   default_database : String
   databases : Array[String]
   auto_create_databases : Bool
+  max_request_work : Int64
 } derive(@debug.Debug)
 pub fn Config::default() -> Self
 

@@ -16,5 +16,10 @@ Connect with tedious / mssql using `encrypt: false` (no TLS in v1). For fast
 test isolation, seed once, run `EXEC emulator.snapshot 'seed'`, then run
 `EXEC emulator.restore 'seed'` before each test.
 
+Host options: `--listen HOST:PORT`, `--database NAME` (repeatable),
+`--auto-create-databases`, `--max-request-work N` (runaway-request budget;
+a request past it fails with Emulator error 50108), `--record FILE` (event log
+for `replay`).
+
 - Design: [docs/design/](docs/design/README.md)
 - Contributing and agent guide: [CLAUDE.md](CLAUDE.md)
