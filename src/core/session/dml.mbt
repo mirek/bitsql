@@ -14,7 +14,8 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
   match r.kind {
     Table(name, alias_~, ..) =>
       match self.find_table(name) {
-        Some((scope, t)) =>
+        Some((scope, t)) => {
+          self.check_no_triggers(t)
           {
             scope,
             table: t,
@@ -28,6 +29,7 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
               None => t.name.to_lower()
             },
           }
+        }
         None =>
           raise @types.sql_error(
             208,

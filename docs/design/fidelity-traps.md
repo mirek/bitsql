@@ -28,6 +28,12 @@ new trap, add a row here *and* a corpus case.
 | Integer `%` | Checked BigInt arithmetic | `INT_MIN % -1` raises 8115 (not 0), like `INT_MIN / -1` |
 | `decimal` division | Truncating quotient at the result scale | Division truncates (2/3 → 0.66666666) while scale reduction elsewhere rounds; integer literals next to decimals are typed `decimal(digits,0)` |
 | float → text | `%.6g` over a 17-digit intermediate | Exact-value or 15/16-digit rounding misprints boundary values (1.234575 prints `1.23458`); exponent has 3 digits (`1e+006`) |
+| Catalog definitions | Normalized from the stored source text (`session/definition.mbt`) | `sys.check_constraints.definition` etc. are regenerated: `([x]>(0))`, IN lists become reversed OR chains, BETWEEN becomes `>= AND <=`, CAST becomes `CONVERT([int],...)`, function names lower-cased; storing the source text verbatim is wrong (corpus `catalog/definitions`) |
+| ORDER BY a non-projected column | Binder metadata | Changes result flags: computed expressions lose fComputed (33 → 1) and computed catalog-view columns read as plain (33 → 9) (corpus `traps/order-by-hidden-key-flags`, not implemented) |
+| DDL errors | Statement completion | Outside TRY a failed DDL statement completes with CurCmd 253 and ends the batch; inside TRY it completes with its own CurCmd (198/216/200) and CATCH runs, except compile-time 4902 and 1779/1750 which are not catchable (corpus `catalog/ddl-try`) |
+| Constraint / index errors | Two messages | 2714, 1779, 1505, 1911 are followed by 1750; 3728/3725 by 3727; each 5074 dependent by 4922; inside TRY only the last reaches ERROR_NUMBER() |
+| CREATE / DROP SCHEMA | Completion | Sends no DONE of its own (batch nor RPC); a batch with nothing else ends with DONE CurCmd 253 (corpus `catalog/schema-rpc`) |
+| ALTER COLUMN | Nullability | Omitting NULL / NOT NULL makes the column nullable again; type changes are blocked by any dependent default, check, key or index (5074) |
 | Temporal text | Per-type CAST vs CONVERT style | CAST of datetime2 is ISO but CAST of legacy datetime is `Mon dd yyyy hh:miAM`; explicit style 0 is the legacy form for every type |
 | `time(n)` from text | Rounded ticks clamped at midnight | `23:59:59.9999999` as `time(0)` is `23:59:59`, but as `datetime2(0)` it carries into the next day |
 | `datetimeoffset` range | UTC ticks + offset | Both the local and the UTC instant must lie in 0001..9999 (8114 state 31) |

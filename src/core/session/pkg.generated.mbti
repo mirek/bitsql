@@ -67,6 +67,11 @@ pub struct Session {
   mut identity_insert : Int?
   prepared : Map[Int, (String, String)]
   mut next_handle : Int
+  pending : Array[@types.SqlError]
+  trailing : Array[@types.SqlError]
+  mut schema_ddl : Bool
+  mut ddl_cmd : Int
+  mut uncatchable : Bool
   // private fields
 }
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self

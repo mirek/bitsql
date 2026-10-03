@@ -168,6 +168,31 @@ fn bind_table_ref(
         }
         None => ()
       }
+      // views: bound like a derived table, without the caller's scope
+      match (env.catalog.view)(name) {
+        Some((vq, names)) => {
+          let venv = {
+            ..Env::new(Map([]), collation=env.collation, catalog=env.catalog),
+            ids: env.ids,
+          }
+          let bq = bind_query_inner(venv, vq)
+          let a = match alias_ {
+            Some(a) => a.name
+            None => name.base()
+          }
+          // unlike derived tables, computed view columns keep fComputed
+          // (captured: catalog/view-select)
+          let cols = derived_columns(bq, a, a.to_lower(), names).mapi((i, c) => {
+            if bq.columns[i].origin is Computed {
+              { ..c, origin: Computed, }
+            } else {
+              c
+            }
+          })
+          return (bq.plan, cols)
+        }
+        None => ()
+      }
       match (env.catalog.table)(name) {
         Some(t) => {
           let q = match alias_ {

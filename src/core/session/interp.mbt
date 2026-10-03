@@ -16,6 +16,8 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
 fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.cur_cmd = 253
+  self.ddl_cmd = 0
+  self.uncatchable = false
   self.throwing = false
   self.stmt_error = 0
   let snap_temp = self.temp
@@ -61,7 +63,18 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       self.abort_transaction()
     }
   }
-  if self.try_depth > 0 && e.severity() > 10 && e.severity() < 20 {
+  if self.try_depth > 0 && !self.uncatchable {
+    self.pending.clear()
+    self.trailing.clear()
+  }
+  if self.try_depth > 0 &&
+    !self.uncatchable &&
+    e.severity() > 10 &&
+    e.severity() < 20 {
+    // caught DDL errors complete with the statement's own CurCmd
+    if self.ddl_cmd != 0 {
+      self.cur_cmd = self.ddl_cmd
+    }
     // Complete the failed statement without the error flag, then unwind
     // to the enclosing CATCH (docs/reference/completions.md).
     if self.cur_cmd != 253 {
@@ -75,7 +88,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     raise Caught(e, line)
   }
+  self.flush_pending(line)
   self.message(e, line)
+  self.flush_trailing(line)
   // an uncaught THROW completes with 253, not 246 (captured: msduck
   // nocount-completions)
   self.done(if self.throwing { 253 } else { self.cur_cmd }, error=true)
@@ -367,7 +382,10 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       }
       self.done(214)
     }
-    CreateTable(ct) => self.exec_create_table(ct)
+    CreateTable(ct) => {
+      self.ddl_cmd = 198
+      self.exec_create_table(ct)
+    }
     DeclareTable(name, body) => self.exec_declare_table(name, body)
     Drop(kind, if_exists~, names) => self.exec_drop(kind, if_exists, names)
     Insert(ins) => self.exec_insert(ins)
@@ -399,17 +417,21 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
             "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
           )
       }
-    CreateProcedure(p) => {
-      let key = p.name.base().to_lower()
-      if p.mode is Create && self.server.procs.contains(key) {
-        raise @types.sql_error(
-          2714,
-          "There is already an object named '\{p.name.base()}' in the database.",
-        )
-      }
-      self.server.procs[key] = { name: p.name.base(), def: p, }
-      self.done(203)
+    // catalog DDL (ddl*.mbt)
+    CreateProcedure(p) => self.exec_create_procedure(p, s.span.start)
+    CreateView(v) => self.exec_create_view(v, s.span.start)
+    CreateFunction(f) => self.exec_create_function(f, s.span.start)
+    CreateTrigger(t) => self.exec_create_trigger(t, s.span.start)
+    CreateSchema(name, ..) => self.exec_create_schema(name)
+    AlterTable(name, action) => {
+      self.ddl_cmd = 216
+      self.exec_alter_table(name, action)
     }
+    CreateIndex(ci) => {
+      self.ddl_cmd = 200
+      self.exec_create_index(ci)
+    }
+    DropIndex(if_exists~, items) => self.exec_drop_index(if_exists, items)
     Exec(e) => self.exec_proc_stmt(e)
     ExecString(parts) => self.exec_string(parts)
     DeclareCursor(c) => self.exec_declare_cursor(c)

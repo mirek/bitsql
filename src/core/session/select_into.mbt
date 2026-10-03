@@ -42,12 +42,15 @@ fn Session::exec_select_into(
       )
     }
     columns.push({
+      column_id: columns.length() + 1,
       name: c.name,
       ty: c.ty,
       nullable: c.nullable,
       identity: None,
       default_: None,
       default_name: None,
+      default_id: 0,
+      default_auto: false,
       computed: None,
       persisted: false,
       rowguidcol: false,
@@ -67,6 +70,8 @@ fn Session::exec_select_into(
     checks: [],
     foreign_keys: [],
     created: self.rt.now,
+    modified: self.rt.now,
+    max_column_id: columns.length(),
   }
   let mut db = self.db_of(scope).create_table(t)
   for r in rows {

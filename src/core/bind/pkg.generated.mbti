@@ -40,8 +40,9 @@ pub(all) struct BoundQuery {
 } derive(@debug.Debug)
 
 pub(all) struct Catalog {
-  table : (@ast.ObjectName) -> TableBinding?
+  table : (@ast.ObjectName) -> TableBinding? raise @types.SqlError
   table_var : (String) -> TableBinding?
+  view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
 }
 pub fn Catalog::empty() -> Self
 

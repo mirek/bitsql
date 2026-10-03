@@ -17,7 +17,7 @@ pub(all) struct ColumnRef {
 ///|
 /// A table visible to queries.
 pub(all) struct TableBinding {
-  scope : Int // 0 database, 1 session (temp tables, table variables)
+  scope : Int // 0 database, 1 session (temp tables, table variables), 2 catalog views
   id : Int
   schema : String
   name : String
@@ -27,15 +27,19 @@ pub(all) struct TableBinding {
 ///|
 /// How the binder finds tables. Provided by the session.
 pub(all) struct Catalog {
-  /// Resolves a (possibly schema-qualified) table name.
-  table : (@ast.ObjectName) -> TableBinding?
+  /// Resolves a (possibly schema-qualified) table name. May raise for
+  /// objects that exist but cannot be used (emulator limits).
+  table : (@ast.ObjectName) -> TableBinding? raise @types.SqlError
   /// Resolves a table variable `@t`.
   table_var : (String) -> TableBinding?
+  /// Resolves a view to its query and declared column names (bound like a
+  /// derived table, in an environment of its own).
+  view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
 }
 
 ///|
 pub fn Catalog::empty() -> Catalog {
-  { table: _ => None, table_var: _ => None, }
+  { table: _ => None, table_var: _ => None, view: _ => None, }
 }
 
 ///|

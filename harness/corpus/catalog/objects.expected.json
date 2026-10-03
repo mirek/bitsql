@@ -1,0 +1,688 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "565473bba7918140",
+  "steps": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "parent",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"schema_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"principal_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_ms_shipped","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_published","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_schema_published","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [
+            ["child","U ","USER_TABLE",null,1,null,false,false,false],
+            ["ck_child_qty","C ","CHECK_CONSTRAINT","child",1,null,false,false,false],
+            ["df_child_qty","D ","DEFAULT_CONSTRAINT","child",1,null,false,false,false],
+            ["f_child","FN","SQL_SCALAR_FUNCTION",null,1,null,false,false,false],
+            ["fk_child_parent","F ","FOREIGN_KEY_CONSTRAINT","child",1,null,false,false,false],
+            ["p_child","P ","SQL_STORED_PROCEDURE",null,1,null,false,false,false],
+            ["parent","U ","USER_TABLE",null,1,null,false,false,false],
+            ["pk_child","PK","PRIMARY_KEY_CONSTRAINT","child",1,null,false,false,false],
+            ["pk_parent","PK","PRIMARY_KEY_CONSTRAINT","parent",1,null,false,false,false],
+            ["tr_child","TR","SQL_TRIGGER","child",1,null,false,false,false],
+            ["uq_parent_code","UQ","UNIQUE_CONSTRAINT","parent",1,null,false,false,false],
+            ["v_child","V ","VIEW",null,1,null,false,false,false]
+          ]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"max_column_id_used","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"lob_data_space_id","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"uses_ansi_nulls","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "lock_escalation_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "durability_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "temporal_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "ledger_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"is_memory_optimized","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"text_in_row_limit","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [
+            ["child","U ",4,0,true,"TABLE","SCHEMA_AND_DATA","NON_TEMPORAL_TABLE","NON_LEDGER_TABLE",false,0],
+            ["parent","U ",3,1,true,"TABLE","SCHEMA_AND_DATA","NON_TEMPORAL_TABLE","NON_LEDGER_TABLE",false,0]
+          ]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"with_check_option","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_date_correlation_view","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"ledger_view_type","type":"IntN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "ledger_view_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"has_snapshot","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_dropped_ledger_view","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["v_child","V ",false,false,0,"NON_LEDGER_VIEW",false,false]]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"is_auto_executed","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_execution_replicated","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_repl_serializable_only","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"skips_repl_constraints","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["p_child","P ","SQL_STORED_PROCEDURE",false,false,false,false]]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "parent",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"parent_class","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "parent_class_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"is_disabled","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_instead_of_trigger","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_ms_shipped","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"is_not_for_replication","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [["tr_child","child",1,"OBJECT_OR_COLUMN","TR","SQL_TRIGGER",false,false,false,false]]
+        },
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "definition",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"uses_ansi_nulls","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"uses_quoted_identifier","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_schema_bound","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"uses_database_collation","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_recompiled","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"null_on_null_input","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"execute_as_principal_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"uses_native_compilation","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"inline_type","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"is_inlineable","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [
+            [
+              "f_child",
+              "CREATE FUNCTION dbo.f_child (@x int) RETURNS int AS BEGIN RETURN @x END",
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              null,
+              false,
+              true,
+              true
+            ],
+            ["p_child","CREATE PROCEDURE dbo.p_child AS SELECT 1 AS one",true,true,false,false,false,false,null,false,false,false],
+            [
+              "tr_child",
+              "CREATE TRIGGER dbo.tr_child ON dbo.child AFTER INSERT AS SET NOCOUNT ON",
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              null,
+              false,
+              false,
+              false
+            ],
+            ["v_child","CREATE VIEW dbo.v_child AS SELECT id, pid FROM dbo.child",true,true,false,false,false,false,null,false,false,false]
+          ]
+        },
+        {
+          "columns": [
+            {
+              "name": "ROUTINE_SCHEMA",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "ROUTINE_NAME",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "ROUTINE_TYPE",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "DATA_TYPE",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"NUMERIC_PRECISION","type":"IntN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "ROUTINE_BODY",
+              "type": "NVarChar",
+              "length": 60,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "ROUTINE_DEFINITION",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "IS_DETERMINISTIC",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "SQL_DATA_ACCESS",
+              "type": "NVarChar",
+              "length": 60,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "IS_NULL_CALL",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "SCHEMA_LEVEL_ROUTINE",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"MAX_DYNAMIC_RESULT_SETS","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [
+            [
+              "dbo",
+              "f_child",
+              "FUNCTION",
+              "int",
+              10,
+              "SQL",
+              "CREATE FUNCTION dbo.f_child (@x int) RETURNS int AS BEGIN RETURN @x END",
+              "NO",
+              "READS",
+              "NO",
+              "YES",
+              0
+            ],
+            ["dbo","p_child","PROCEDURE",null,null,"SQL","CREATE PROCEDURE dbo.p_child AS SELECT 1 AS one","NO","MODIFIES",null,"YES",-1]
+          ]
+        },
+        {
+          "columns": [
+            {
+              "name": "TABLE_NAME",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "VIEW_DEFINITION",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "CHECK_OPTION",
+              "type": "VarChar",
+              "length": 7,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "IS_UPDATABLE",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["v_child","CREATE VIEW dbo.v_child AS SELECT id, pid FROM dbo.child","NONE","NO"]]
+        },
+        {
+          "columns": [
+            {
+              "name": "TABLE_NAME",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"ORDINAL_POSITION","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "COLUMN_NAME",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "DATA_TYPE",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "IS_NULLABLE",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["v_child",1,"id","int","NO"],["v_child",2,"pid","int","NO"]]
+        },
+        {
+          "columns": [
+            {"name":"u","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"p","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"tr","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"pk","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"hi","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"hc","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"fr","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1,1,1,1,1,1,1,0,1]]
+        },
+        {
+          "columns": [
+            {"name":"same","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"wrong_type","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "sch",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "nm",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "def",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[0,null,"dbo","child","([qty]>=(0))"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":12,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":4,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":12,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":9},
+        {"name":"ORDER","columns":[1]},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":2},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":1},
+        {"name":"NBCROW","count":2},
+        {"name":"ROW","count":4},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":11},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":8},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":7},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":10},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":12},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":4},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":12},
+        {"name":"ORDER","columns":[2]},
+        {"name":"ROW","count":1},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":5},
+        {"name":"ORDER","columns":[2]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":9},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":5},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 28
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "a28826023756779a",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["id"],["xx"]]
+        }
+      ],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 15477,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 801,
+          "message": "Caution: Changing any part of an object name could break scripts and stored procedures."
+        }
+      ],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"INFO","number":15477},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"rc","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"old_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"renamed","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [[0,null,1]]
+        }
+      ],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [
+        {
+          "number": 15477,
+          "state": 1,
+          "class": 0,
+          "lineNumber": 801,
+          "message": "Caution: Changing any part of an object name could break scripts and stored procedures."
+        }
+      ],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"INFO","number":15477},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15248,
+          "state": 1,
+          "class": 11,
+          "lineNumber": 269,
+          "message": "Either the parameter @objname is ambiguous or the claimed @objtype (COLUMN) is wrong."
+        }
+      ],
+      "info": [],
+      "returnStatus": 1,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":246},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"ERROR","number":15248},
+        {"name":"DONEINPROC","status":3,"curCmd":246},
+        {"name":"RETURNSTATUS","value":1},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15225,
+          "state": 1,
+          "class": 11,
+          "lineNumber": 637,
+          "message": "No item by the name of 'nosuch' could be found in the current database '{db}', given that @itemtype was input as '(null)'."
+        }
+      ],
+      "info": [],
+      "returnStatus": 1,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":246},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"ERROR","number":15225},
+        {"name":"DONEINPROC","status":3,"curCmd":246},
+        {"name":"RETURNSTATUS","value":1},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15335,
+          "state": 1,
+          "class": 11,
+          "lineNumber": 738,
+          "message": "Error: The new name 'r' is already in use as a object name and would cause a duplicate that is not permitted."
+        }
+      ],
+      "info": [],
+      "returnStatus": 1,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":246},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"ERROR","number":15335},
+        {"name":"DONEINPROC","status":3,"curCmd":246},
+        {"name":"RETURNSTATUS","value":1},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"rc","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[1]]}],
+      "done": [
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [
+        {
+          "number": 15225,
+          "state": 1,
+          "class": 11,
+          "lineNumber": 637,
+          "message": "No item by the name of 'nosuch' could be found in the current database '{db}', given that @itemtype was input as '(null)'."
+        }
+      ],
+      "info": [],
+      "returnStatus": 1,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":246},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"ERROR","number":15225},
+        {"name":"DONEINPROC","status":3,"curCmd":246},
+        {"name":"RETURNSTATUS","value":1},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

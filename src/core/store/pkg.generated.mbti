@@ -15,18 +15,26 @@ pub fn qualified_key(String, String) -> String
 
 // Types and methods
 pub(all) struct Check {
+  id : Int
   name : String
   expr : String
   enabled : Bool
+  not_trusted : Bool
+  column_id : Int
+  auto_named : Bool
+  not_for_replication : Bool
 } derive(@debug.Debug)
 
 pub(all) struct Column {
+  column_id : Int
   name : String
   ty : @types.SqlType
   nullable : Bool
   identity : Identity?
   default_ : String?
   default_name : String?
+  default_id : Int
+  default_auto : Bool
   computed : String?
   persisted : Bool
   rowguidcol : Bool
@@ -48,11 +56,15 @@ pub fn Db::get_module(Self, Int) -> Module?
 pub fn Db::insert_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::lookup(Self, String, String) -> Int?
 pub fn Db::modules(Self) -> Array[Module]
+pub fn Db::next_schema_id(Self) -> Int
+pub fn Db::rename_module(Self, Module) -> Self
+pub fn Db::replace_table(Self, Table, Array[(Int64, Array[@types.Value])]) -> Self
 pub fn Db::row(Self, Int, Int64) -> Array[@types.Value]?
 pub fn Db::row_count(Self, Int) -> Int
 pub fn Db::rows(Self, Int) -> Array[(Int64, Array[@types.Value])]
 pub fn Db::same_table_data(Self, Self, Int) -> Bool
 pub fn Db::schema_id(Self, String) -> Int?
+pub fn Db::schema_name(Self, Int) -> String?
 pub fn Db::schema_names(Self) -> Array[(String, Int)]
 pub fn Db::seek(Self, Int, Int, lo? : Array[@types.Value], hi? : Array[@types.Value]) -> Array[Int64]
 pub fn Db::table(Self, Int) -> Table?
@@ -61,6 +73,7 @@ pub fn Db::truncate(Self, Int) -> Self
 pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
 
 pub(all) struct ForeignKey {
+  id : Int
   name : String
   columns : Array[Int]
   ref_table : Int
@@ -68,6 +81,9 @@ pub(all) struct ForeignKey {
   on_delete : RefAction
   on_update : RefAction
   enabled : Bool
+  not_trusted : Bool
+  auto_named : Bool
+  not_for_replication : Bool
 } derive(@debug.Debug)
 
 pub(all) struct Identity {
@@ -76,12 +92,17 @@ pub(all) struct Identity {
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Index {
+  index_id : Int
+  object_id : Int
   name : String
+  auto_named : Bool
   unique : Bool
   primary : Bool
   clustered : Bool
   columns : Array[(Int, Bool)]
+  included : Array[Int]
   filter : String?
+  not_null_filter : Array[Int]
   is_constraint : Bool
 } derive(@debug.Debug)
 
@@ -97,6 +118,13 @@ pub(all) struct Module {
   definition : String
   parent : Int?
   created : Int64
+  modified : Int64
+  disabled : Bool
+  instead_of : Bool
+  columns : Array[Column]
+  schema_bound : Bool
+  check_option : Bool
+  returns : @types.SqlType?
 } derive(@debug.Debug)
 
 type Node[K, V]
@@ -106,9 +134,11 @@ pub(all) enum ObjectKind {
   View
   Procedure
   ScalarFunction
+  InlineFunction
   TableFunction
   Trigger
 } derive(Eq, @debug.Debug)
+pub fn ObjectKind::code(Self) -> (String, String)
 
 pub struct PMap[K, V] {
   // private fields
@@ -142,7 +172,10 @@ pub(all) struct Table {
   checks : Array[Check]
   foreign_keys : Array[ForeignKey]
   created : Int64
+  modified : Int64
+  max_column_id : Int
 } derive(@debug.Debug)
+pub fn Table::column_by_id(Self, Int) -> Column?
 pub fn Table::column_index(Self, String) -> Int?
 pub fn Table::primary_key(Self) -> Index?
 
