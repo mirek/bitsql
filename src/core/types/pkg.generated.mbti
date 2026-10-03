@@ -1,0 +1,265 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/types"
+
+import {
+  "moonbitlang/core/bigint",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const DATETIME_UNITS_PER_DAY : Int = 25_920_000
+
+pub const DAYS_TO_1753 : Int = 639_905
+
+pub const DAYS_TO_1900 : Int = 693_595
+
+pub const DAYS_TO_2079_06_06 : Int = 758_885
+
+pub const EMU_CODE_PAGE_BEST_FIT : Int = 50104
+
+pub const EMU_COLLATION_NOT_SUPPORTED : Int = 50103
+
+pub const EMU_CONVERSION_NOT_SUPPORTED : Int = 50101
+
+pub const EMU_DATETIME_FORMAT_NOT_SUPPORTED : Int = 50102
+
+pub const EMU_INTERNAL : Int = 50199
+
+pub const EMU_NOT_SUPPORTED : Int = 50100
+
+pub const EMU_OPERATOR_NOT_SUPPORTED : Int = 50106
+
+pub const EMU_STYLE_NOT_SUPPORTED : Int = 50105
+
+pub const MAX_DAYS : Int = 3_652_058
+
+pub const TICKS_PER_DAY : Int64 = 864_000_000_000
+
+pub const TICKS_PER_MINUTE : Int64 = 600_000_000
+
+pub const TICKS_PER_SECOND : Int64 = 10_000_000
+
+pub fn civil_from_days(Int) -> (Int, Int, Int)
+
+pub fn cp1252_bytes(String) -> Bytes
+
+pub fn cp1252_decode(Int) -> Int
+
+pub fn cp1252_encode(Int) -> Int?
+
+pub fn cp1252_string(BytesView) -> String
+
+pub fn datetime_units_to_ticks(Int) -> Int64
+
+pub fn days_from_civil(Int, Int, Int) -> Int
+
+pub let default_collation : Collation
+
+pub fn emulator_error(Int, String) -> SqlError
+
+pub let emulator_error_table : Array[(Int, String)]
+
+pub fn format_date_iso(Int) -> String
+
+pub fn format_date_style0(Int) -> String
+
+pub fn format_float_general(Double, p? : Int) -> String
+
+pub fn format_float_scientific(Double, Int) -> String
+
+pub fn format_guid(Bytes) -> String
+
+pub fn format_offset(Int) -> String
+
+pub fn format_time_iso(Int64, Int) -> String
+
+pub fn format_time_style0(Int64) -> String
+
+pub fn guid_compare(Bytes, Bytes) -> Int
+
+pub fn is_valid_date(Int, Int, Int) -> Bool
+
+pub let latin1_general_100_bin2 : Collation
+
+pub let latin1_general_100_ci_as : Collation
+
+pub let latin1_general_ci_as : Collation
+
+pub fn not_supported(String, number? : Int) -> SqlError
+
+pub fn parse_float_text(String) -> Double?
+
+pub fn parse_guid(String) -> Bytes?
+
+pub fn parse_temporal(String) -> ParsedTemporal raise TemporalParseError
+
+pub fn pow10(Int) -> @bigint.BigInt
+
+pub fn require_cp1252(String) -> Unit raise SqlError
+
+pub fn round_ticks(Int64, Int) -> Int64
+
+pub fn round_time_ticks(Int64, Int) -> Int64
+
+pub fn scale_unit(Int) -> Int64
+
+pub fn sql_error(Int, String, state? : Int, severity? : Int) -> SqlError
+
+pub let sql_latin1_general_cp1_ci_as : Collation
+
+pub fn ticks_to_datetime_units(Int64) -> Int64
+
+pub fn trim_spaces(String) -> String
+
+// Errors
+pub(all) suberror SqlError {
+  SqlError(number~ : Int, severity~ : Int, state~ : Int, message~ : String)
+} derive(Eq, @debug.Debug)
+pub fn SqlError::is_try_convertible(Self) -> Bool
+pub fn SqlError::message(Self) -> String
+pub fn SqlError::number(Self) -> Int
+pub fn SqlError::severity(Self) -> Int
+pub fn SqlError::state(Self) -> Int
+pub impl Show for SqlError
+
+pub(all) suberror TemporalParseError {
+  Invalid
+  Unsupported
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct Collation {
+  name : String
+  kind : CollationKind
+  case_sensitive : Bool
+  accent_sensitive : Bool
+  kana_sensitive : Bool
+  width_sensitive : Bool
+  version : Int
+  sql_collation : Bool
+  code_page : Int
+} derive(Eq, @debug.Debug)
+pub fn Collation::parse(String) -> Self?
+
+pub(all) enum CollationKind {
+  Linguistic
+  Bin
+  Bin2
+} derive(Eq, @debug.Debug)
+
+pub struct Decimal {
+  coef : @bigint.BigInt
+  scale : Int
+} derive(Eq, @debug.Debug)
+pub fn Decimal::add(Self, Self) -> Self
+pub fn Decimal::coef(Self) -> @bigint.BigInt
+pub fn Decimal::compare(Self, Self) -> Int
+pub fn Decimal::digits(Self) -> Int
+pub fn Decimal::div(Self, Self, Int, rounding? : Rounding) -> Self
+pub fn Decimal::fits(Self, Int, Int, rounding? : Rounding) -> Bool
+pub fn Decimal::from_double_exact(Double) -> Self
+pub fn Decimal::from_int64(Int64, scale? : Int) -> Self
+pub fn Decimal::is_zero(Self) -> Bool
+pub fn Decimal::mul(Self, Self) -> Self
+pub fn Decimal::neg(Self) -> Self
+pub fn Decimal::new(@bigint.BigInt, Int) -> Self
+pub fn Decimal::parse(StringView) -> Self?
+pub fn Decimal::rem(Self, Self) -> Self
+pub fn Decimal::rescale(Self, Int, rounding? : Rounding) -> Self
+pub fn Decimal::scale(Self) -> Int
+pub fn Decimal::sign(Self) -> Int
+pub fn Decimal::sub(Self, Self) -> Self
+pub fn Decimal::to_double(Self) -> Double
+pub fn Decimal::to_string(Self) -> String
+pub fn Decimal::trunc_to_bigint(Self) -> @bigint.BigInt
+pub fn Decimal::zero() -> Self
+pub impl Show for Decimal
+
+pub(all) struct ParsedTemporal {
+  date : (Int, Int, Int)?
+  time : Int64?
+  fraction_digits : Int
+  offset : Int?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Rounding {
+  HalfAwayFromZero
+  TowardZero
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SqlType {
+  Bit
+  TinyInt
+  SmallInt
+  Int
+  BigInt
+  Decimal(Int, Int)
+  Numeric(Int, Int)
+  Money
+  SmallMoney
+  Float
+  Real
+  Char(Int, Collation)
+  VarChar(Int?, Collation)
+  NChar(Int, Collation)
+  NVarChar(Int?, Collation)
+  Binary(Int)
+  VarBinary(Int?)
+  Date
+  Time(Int)
+  DateTime2(Int)
+  DateTimeOffset(Int)
+  DateTime
+  SmallDateTime
+  UniqueIdentifier
+  RowVersion
+} derive(Eq, @debug.Debug)
+pub fn SqlType::base_name(Self) -> String
+pub fn SqlType::collation(Self) -> Collation?
+pub fn SqlType::family(Self) -> TypeFamily
+pub fn SqlType::is_unicode(Self) -> Bool
+pub fn SqlType::is_valid(Self) -> Bool
+pub fn SqlType::message_name(Self) -> String
+pub fn SqlType::precision_scale(Self) -> (Int, Int)?
+pub fn SqlType::to_sql(Self) -> String
+pub impl Show for SqlType
+
+pub(all) enum TypeFamily {
+  FBit
+  FInteger
+  FDecimal
+  FMoney
+  FFloat
+  FString
+  FBinary
+  FDate
+  FTime
+  FDateTime
+  FGuid
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Value {
+  Null
+  Bit(Bool)
+  TinyInt(Int)
+  SmallInt(Int)
+  Int(Int)
+  BigInt(Int64)
+  Decimal(Decimal)
+  Money(Int64)
+  Float(Double)
+  String(String)
+  Binary(Bytes)
+  Date(Int)
+  Time(Int64)
+  DateTime2(Int64)
+  DateTimeOffset(Int64, Int)
+  DateTime(Int, Int)
+  SmallDateTime(Int, Int)
+  Guid(Bytes)
+} derive(Eq, @debug.Debug)
+pub fn Value::is_null(Self) -> Bool
+
+// Type aliases
+
+// Traits
