@@ -105,38 +105,55 @@ pub fn format_raiserror(
       _ => false
     }
     if !valid {
-      let spec = fmt.unsafe_substring(start~, end=i)
+      // the message quotes the rest of the format string (captured:
+      // '%c|%f' for N'%c|%f')
+      let spec = fmt.unsafe_substring(start~, end=n)
       raise @types.sql_error(2787, "Invalid format specification: '\{spec}'.")
     }
     let arg = next_arg()
+    if arg is (None | Some(Null)) {
+      // NULL arguments print "(null)" ignoring width and precision (captured)
+      out.write_string("(null)")
+      continue
+    }
     let body = match (ty, arg) {
       (_, None) => "(null)"
       (_, Some(Null)) => "(null)"
       ('d' | 'i', Some(v)) => {
-        let x = v.as_int64().unwrap_or(0L)
-        let digits = x.abs().to_string()
-        let digits = if precision > digits.length() {
-          "0".repeat(@cmp.minimum(precision, 4096) - digits.length()) + digits
-        } else {
-          digits
-        }
-        let sign = if x < 0L {
-          "-"
-        } else if plus {
-          "+"
-        } else if space {
-          " "
-        } else {
+        let raw = v.as_int64().unwrap_or(0L)
+        // %hd: 16-bit
+        let x = if size_prefix { raw << 48 >> 48 } else { raw }
+        if precision == 0 && x == 0L {
+          // C semantics: %.0d of zero prints no digits (captured)
           ""
+        } else {
+          let digits = x.abs().to_string()
+          let digits = if precision > digits.length() {
+            "0".repeat(@cmp.minimum(precision, 4096) - digits.length()) + digits
+          } else {
+            digits
+          }
+          let sign = if x < 0L {
+            "-"
+          } else if plus {
+            "+"
+          } else if space {
+            " "
+          } else {
+            ""
+          }
+          sign + digits
         }
-        sign + digits
       }
       ('u', Some(v)) => {
         let x = v.as_int64().unwrap_or(0L)
-        x.to_int().reinterpret_as_uint().to_string()
+        let u = x.to_int().reinterpret_as_uint()
+        // %hu: 16-bit (captured: -1 prints 65535)
+        (if size_prefix { u & 0xFFFFU } else { u }).to_string()
       }
       ('x' | 'X' | 'o', Some(v)) => {
-        let x = v.as_int64().unwrap_or(0L).to_int().reinterpret_as_uint()
+        let x0 = v.as_int64().unwrap_or(0L).to_int().reinterpret_as_uint()
+        let x = if size_prefix { x0 & 0xFFFFU } else { x0 }
         let radix = if ty == 'o' { 8 } else { 16 }
         let s = x.to_string(radix~)
         let s = if ty == 'X' { s.to_upper() } else { s }
@@ -186,7 +203,13 @@ pub fn format_raiserror(
       out.write_string(body)
     }
   }
-  out.to_string()
+  // messages are limited to 2047 characters: 2044 + "..." (captured)
+  let msg = out.to_string()
+  if msg.length() > 2047 {
+    msg.unsafe_substring(start=0, end=2044) + "..."
+  } else {
+    msg
+  }
 }
 
 ///|

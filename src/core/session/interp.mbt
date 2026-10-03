@@ -37,7 +37,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   guard failure is Some(e) else {
     // a successful statement sets @@ERROR to 0, or to 50000 for
     // RAISERROR ... WITH SETERROR (stmt_error)
-    if !(s.kind is (If(_, _, _) | While(_, _) | Block(_) | TryCatch(_, _))) {
+    if !(s.kind is (If(_, _, _) | While(_, _) | Block(_))) {
       self.rt.error = self.stmt_error
     }
     return
@@ -76,7 +76,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     raise Caught(e, line)
   }
   self.message(e, line)
-  self.done(self.cur_cmd, error=true)
+  // an uncaught THROW completes with 253, not 246 (captured: msduck
+  // nocount-completions)
+  self.done(if self.throwing { 253 } else { self.cur_cmd }, error=true)
   if aborts_batch(e, self.cur_cmd, self.throwing, self.xact_abort) {
     raise AbortBatch
   }
@@ -498,8 +500,22 @@ fn Session::exec_raiserror(
     self.stmt_error = number
   }
   if severity <= 10 {
-    // Informational: INFO token with class 0 (captured), statement succeeds.
-    self.info(number, state, text, line)
+    // Informational: INFO token whose class is the severity, except 10 is
+    // sent as 0 (captured: msduck raiserror 9 → 9, 10 → 0).
+    self.out.push(
+      Message({
+        number,
+        state,
+        class: if severity == 10 {
+          0
+        } else {
+          severity
+        },
+        message: text,
+        procedure: "",
+        line,
+      }),
+    )
     self.rt.rowcount = 0
     self.done(246)
     return

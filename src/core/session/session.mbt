@@ -306,7 +306,9 @@ fn Session::run_text(self : Session, text : String) -> Bool {
           line: e.line(),
         }),
       )
-      self.out.push(StatementDone(cmd=253, count=None, error=true))
+      if !self.rpc || self.rt.nest_level > 1 {
+        self.out.push(StatementDone(cmd=253, count=None, error=true))
+      }
       self.rt.error = e.number()
       return false
     }
