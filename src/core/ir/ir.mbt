@@ -28,6 +28,9 @@ pub(all) enum ExprKind {
   /// Column of an enclosing query's row: (levels out, index).
   OuterCol(Int, Int)
   Cast(Expr, try_~ : Bool, style~ : Int?)
+  /// `expr COLLATE name`: the collation is in this node's type; the marker
+  /// gives the expression explicit collation coercibility.
+  Collate(Expr)
   Arith(@types.ArithOp, Expr, Expr)
   Neg(Expr)
   BitNot(Expr)

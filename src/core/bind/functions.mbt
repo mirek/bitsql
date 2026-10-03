@@ -108,6 +108,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "REPLACE" => {
       arity(name, args, 3)
       let b = bound()
+      ignore(resolve_collation(env, "replace", b))
       let ty : @types.SqlType = if is_max(b[0].ty) {
         b[0].ty
       } else if b.iter().any(x => x.ty.is_unicode()) {
@@ -233,8 +234,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "ISNULL" => {
       arity(name, args, 2)
       let b = bound()
-      let second = coerce(b[1], b[0].ty)
-      mk(Call(IsNull, [b[0], second]), b[0].ty, b[0].nullable && b[1].nullable)
+      // An untyped NULL first argument takes the second's type.
+      let first_null = b[0].kind is Lit(Null) && b[0].ty is Int
+      let ty = if first_null { b[1].ty } else { b[0].ty }
+      let first = coerce(b[0], ty)
+      let second = coerce(b[1], ty)
+      mk(Call(IsNull, [first, second]), ty, b[0].nullable && b[1].nullable)
     }
     "COALESCE" => {
       if args.length() < 2 {
@@ -262,7 +267,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       arity(name, args, 2)
       let b = bound()
       let t = @types.common_type(b[0].ty, b[1].ty)
-      let cond = compare_bound(Eq, b[0], b[1])
+      let cond = compare_bound(env, Eq, b[0], b[1])
       mk(
         Case([(cond, mk(Lit(Null), b[0].ty, true))], Some(b[0])),
         b[0].ty,

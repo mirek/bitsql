@@ -4,7 +4,8 @@
 fn is_constant(e : @ir.Expr) -> Bool {
   match e.kind {
     Lit(_) => true
-    Cast(a, ..) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) => is_constant(a)
+    Cast(a, ..) | Collate(a) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) =>
+      is_constant(a)
     Arith(_, a, b)
     | BitOp(_, a, b)
     | Concat(a, b)

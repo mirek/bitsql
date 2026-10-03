@@ -67,3 +67,14 @@ From msduck `conditional-literal-folding` and `case-constant-properties`:
 - Folded function results take the length of their value (`LEFT('abcdef',3)`
   gives varchar(3), `SPACE(3)` varchar(3)). The REPLICATE edge cases (`''`, `0`) are not understood yet.
 - Expressions over VALUES-derived columns: a non-constant CASE over them showed flags 0 (msduck conditional-literal-folding #006).
+
+## Collation precedence (bind/collation.mbt)
+
+Coercibility: `COLLATE` gives explicit, column references implicit, literals
+and variables default, and two different implicit collations combine to
+no-collation. Combining two different explicit collations, or comparing a
+no-collation value, raises 468 state 9, "Cannot resolve the collation conflict
+between "<later operand>" and "<earlier operand>" in the <equal to | replace |
+…> operation." Note the reversed operand order (msduck collation-functions).
+String-to-string CAST keeps the input's label. `ISNULL(NULL, x)` (untyped NULL
+first) takes x's type and collation.

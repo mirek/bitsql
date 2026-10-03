@@ -24,15 +24,6 @@ pub fn coerce(
 }
 
 ///|
-/// Collation of a comparison between two (already coerced) operands.
-fn cmp_collation(a : @ir.Expr, b : @ir.Expr) -> @types.Collation? {
-  match a.ty.collation() {
-    Some(c) => Some(c)
-    None => b.ty.collation()
-  }
-}
-
-///|
 /// Binds `a op b` for comparisons, converting both sides to their common type.
 fn compare(
   env : Env,
@@ -42,19 +33,22 @@ fn compare(
 ) -> @ir.Expr raise @types.SqlError {
   let a = bind_expr(env, left)
   let b = bind_expr(env, right)
-  compare_bound(op, a, b)
+  compare_bound(env, op, a, b)
 }
 
 ///|
 fn compare_bound(
+  env : Env,
   op : @ir.CmpOp,
   a : @ir.Expr,
   b : @ir.Expr,
 ) -> @ir.Expr raise @types.SqlError {
+  // collation precedence decides the comparison collation (or raises 468)
+  let coll = resolve_collation(env, cmp_op_name(op), [a, b])
   let t = @types.common_type(a.ty, b.ty)
   let a = coerce(a, t)
   let b = coerce(b, t)
-  bit_expr(Cmp(op, a, b, cmp_collation(a, b)), a.nullable || b.nullable)
+  bit_expr(Cmp(op, a, b, coll), a.nullable || b.nullable)
 }
 
 ///|
@@ -193,10 +187,11 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let a = bind_expr(env, x)
       let bs = items.map(i => bind_expr(env, i))
       let t = unify_types([a.ty] + bs.map(b => b.ty))
+      let coll = resolve_collation(env, "equal to", [a] + bs)
       let a = coerce(a, t)
       let bs = bs.map(b => coerce(b, t))
       let nullable = a.nullable || bs.iter().any(b => b.nullable)
-      bit_expr(InList(a, bs, negated~, collation=a.ty.collation()), nullable)
+      bit_expr(InList(a, bs, negated~, collation=coll), nullable)
     }
     Like(x, pattern, escape~, negated~) => {
       let a = bind_expr(env, x)
@@ -206,7 +201,13 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         None => None
       }
       bit_expr(
-        Like(a, p, escape=esc, negated~, collation=cmp_collation(a, p)),
+        Like(
+          a,
+          p,
+          escape=esc,
+          negated~,
+          collation=resolve_collation(env, "like", [a, p]),
+        ),
         a.nullable || p.nullable,
       )
     }
@@ -218,7 +219,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let branches = []
       for w in whens {
         let cond = match op {
-          Some(o) => compare_bound(Eq, o, bind_expr(env, w.0))
+          Some(o) => compare_bound(env, Eq, o, bind_expr(env, w.0))
           None => bind_expr(env, w.0)
         }
         branches.push((cond, bind_expr(env, w.1)))
@@ -270,7 +271,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
             "Expression type \{other.base_name()} is invalid for COLLATE clause.",
           )
       }
-      { ..a, ty, }
+      { kind: Collate(a), ty, nullable: a.nullable, }
     }
     Call(call) => bind_call(env, call)
     Exists(_) | Subquery(_) | InQuery(_, _, ..) | Quantified(_, _, _, _) =>

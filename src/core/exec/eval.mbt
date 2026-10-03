@@ -43,6 +43,7 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
         @types.cast(v, inner.ty, e.ty, style?)
       }
     }
+    Collate(a) => eval(ctx, a)
     Arith(op, a, b) => {
       let va = eval(ctx, a)
       let vb = eval(ctx, b)
