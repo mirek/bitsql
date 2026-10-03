@@ -70,6 +70,11 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       self.abort_transaction()
     }
   }
+  // compile errors (raised while binding, before the statement runs) are
+  // not caught by TRY in the same scope (captured: msduck try-binding-error)
+  if self.cur_cmd == 253 && is_compile_error(e.number()) {
+    self.uncatchable = true
+  }
   if self.try_depth > 0 && !self.uncatchable {
     self.pending.clear()
     self.trailing.clear()
@@ -255,10 +260,16 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Print(e) => {
       self.cur_cmd = 247
       let (v, ty) = self.eval(e)
-      let text = match
-        @types.cast(v, ty, NVarChar(Some(4000), @types.default_collation)) {
-        String(t) => t
-        _ => ""
+      // up to 8000 bytes (4000 characters of nvarchar); an empty or NULL
+      // message prints one space (captured: msduck print-unicode)
+      let limit : @types.SqlType = if ty.is_unicode() {
+        NVarChar(Some(4000), @types.default_collation)
+      } else {
+        VarChar(Some(8000), @types.default_collation)
+      }
+      let text = match @types.cast(v, ty, limit) {
+        String(t) if t != "" => t
+        _ => " "
       }
       self.info(0, 1, text, s.span.line)
       self.rt.rowcount = 0
@@ -703,4 +714,11 @@ fn Session::exec_try(
   // The construct completes with 351 whether or not CATCH ran (captured:
   // msduck control-completion-tokens #10/#11).
   self.done(351)
+}
+
+///|
+/// Binder errors SQL Server reports while compiling (or recompiling) a
+/// statement, which TRY in the same scope cannot catch.
+fn is_compile_error(n : Int) -> Bool {
+  [8117, 8116, 206, 402, 207, 4104, 209, 8120, 147, 4108, 4109].contains(n)
 }

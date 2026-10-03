@@ -116,13 +116,22 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     Unary(op, inner) => {
       let a = bind_expr(env, inner)
       match op {
-        Neg =>
+        Neg => {
+          // captured: msduck try-binding-error (-bit is a compile error)
+          if !is_untyped_null(a) &&
+            !(a.ty.family() is (FInteger | FDecimal | FMoney | FFloat)) {
+            raise err(
+              8117,
+              "Operand data type \{a.ty.base_name()} is invalid for minus operator.",
+            )
+          }
           // A negated literal stays a literal so `-2147483648` keeps its type.
           mk(
             Neg(a),
             a.ty,
             a.nullable || (may_overflow(a.ty) && !(a.kind is Lit(_))),
           )
+        }
         Plus => a
         BitNot => mk(BitNot(a), a.ty, a.nullable)
       }
