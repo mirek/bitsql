@@ -321,6 +321,10 @@ fn Session::exec_system_proc(
   return_var : String?,
 ) -> Bool raise {
   match name.base().to_lower() {
+    "sp_helpindex" => {
+      self.exec_sp_helpindex(args, return_var)
+      true
+    }
     "sp_getapplock" | "sp_releaseapplock" as p => {
       self.exec_applock_proc(p, args, return_var)
       true
