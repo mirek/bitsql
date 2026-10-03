@@ -79,13 +79,32 @@ fn short(name : String, n : Int) -> String {
 fn Session::constraint_error(
   self : Session,
   cause : @types.SqlError,
+  state? : Int,
 ) -> @types.SqlError {
   self.pending.push(cause)
-  // captured: state 1 after 2714 / 1505, state 0 after 1779 / 1911
-  let state = if cause.number() == 2714 || cause.number() == 1505 {
-    1
-  } else {
-    0
+  // captured (catalog/*, msduck gaps-constraints, gaps-keys): state 1
+  // after 2714, 1505 and the foreign key definition errors; state 0 after
+  // 1779, 1911, 1769, 1752, 1781, 8111, 1919, 1909 and a CHECK's 1764
+  let state = match state {
+    Some(s) => s
+    None =>
+      match cause.number() {
+        2714
+        | 1505
+        | 1767
+        | 1770
+        | 1773
+        | 1776
+        | 1778
+        | 1753
+        | 1761
+        | 1762
+        | 1764
+        | 1715
+        | 1765
+        | 1785 => 1
+        _ => 0
+      }
   }
   @types.sql_error(
     1750,
@@ -111,6 +130,11 @@ priv struct Builder {
   mut max_column_id : Int
   /// Lowercased constraint names created by this statement.
   names : Set[String]
+  /// CREATE TABLE (not ALTER TABLE ADD): the table is not in the catalog
+  /// yet.
+  creating : Bool
+  /// Indexes that existed before the statement (ALTER TABLE ADD).
+  base_indexes : Int
 }
 
 ///|
@@ -135,6 +159,8 @@ fn Builder::of_table(
     fks: t.foreign_keys.copy(),
     max_column_id: t.max_column_id,
     names: Set([]),
+    creating: false,
+    base_indexes: t.indexes.length(),
   }
 }
 
@@ -195,10 +221,24 @@ fn Session::claim_name(
   name : String,
 ) -> Unit raise {
   let k = name.to_lower()
+  // captured: two constraints named alike in one statement (msduck
+  // gaps-constraints definition-errors-10, gaps-keys diagnostics-6)
+  if b.names.contains(k) {
+    raise @types.sql_error(
+      8168,
+      "Cannot create, drop, enable, or disable more than one constraint, column, index, or trigger named '\{name}' in this context. Duplicate names are not allowed.",
+      state=0,
+    )
+  }
   // Temp-table and table-variable constraint names are not schema-scoped
-  // in the emulator (SQL Server makes system names unique in tempdb).
-  if b.names.contains(k) ||
-    (b.scope == 0 && self.object_name_taken(db, b.schema, name)) {
+  // in the emulator (SQL Server makes system names unique in tempdb). The
+  // table being created already owns its name (CONSTRAINT c10 in CREATE
+  // TABLE c10 is 2714).
+  if b.scope == 0 &&
+    (
+      self.object_name_taken(db, b.schema, name) ||
+      (b.creating && k == b.display.to_lower())
+    ) {
     raise self.constraint_error(
       @types.sql_error(
         2714,
@@ -221,18 +261,44 @@ fn Session::new_check(
   not_trusted : Bool,
   not_for_replication : Bool,
 ) -> @store.Check raise {
+  if expr_has_subquery(e) {
+    raise @types.sql_error(
+      1046,
+      "Subqueries are not allowed in this context. Only scalar expressions are allowed.",
+      severity=15,
+    )
+  }
+  // a table-level CHECK over exactly one column belongs to that column
+  // (parent_column_id, system name; captured: msduck gaps-constraints
+  // alter-lifecycle-8)
+  let column = match column {
+    Some(c) => Some(c)
+    None =>
+      match expr_column_names(e) {
+        [one] =>
+          match b.col_index(one) {
+            -1 => None
+            i => Some(b.columns[i])
+          }
+        _ => None
+      }
+  }
+  for n in expr_column_names(e) {
+    let i = b.col_index(n)
+    if i >= 0 && b.columns[i].computed is Some(_) && !b.columns[i].persisted {
+      raise self.constraint_error(
+        @types.sql_error(
+          1764,
+          "Computed Column '\{b.columns[i].name}' in table '\{b.display}' is invalid for use in 'CHECK CONSTRAINT' because it is not persisted.",
+        ),
+        state=0,
+      )
+    }
+  }
   let id = self.server.object_id()
   let (cname, auto) = match name {
     Some(n) => (n.name, false)
-    None =>
-      match column {
-        Some(c) =>
-          (
-            "CK__\{short(b.display, 9)}__\{short(c.name, 5)}__\{hex_id(id)}",
-            true,
-          )
-        None => ("CK__\{short(b.display, 9)}__\{hex_id(id)}", true)
-      }
+    None => (system_name("CK", b.display, column.map(c => c.name), id), true)
   }
   self.claim_name(b, db, cname)
   // a CHECK must bind against the table's columns
@@ -300,6 +366,24 @@ fn Session::add_column(
         TableDecl(_) => raise missing_type(t, 6)
       }
     (None, Some(e)) => {
+      // a computed column cannot use another one (captured: msduck
+      // gaps-computed unicode-errors-1)
+      for n in expr_column_names(e) {
+        let i = b.col_index(n)
+        if i >= 0 && b.columns[i].computed is Some(_) {
+          raise @types.sql_error(
+            1759,
+            "Computed column '\{b.columns[i].name}' in table '\{b.display}' is not allowed to be used in another computed-column definition.",
+            state=0,
+          )
+        }
+      }
+      if c.persisted && expr_nondeterministic(e) {
+        raise @types.sql_error(
+          4936,
+          "Computed column '\{c.name.name}' in table '\{b.display}' cannot be persisted because the column is non-deterministic.",
+        )
+      }
       // computed column: type of its expression over the other columns
       let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
         b.columns.map(x => @bind.ColumnRef::{
@@ -319,17 +403,15 @@ fn Session::add_column(
         "The definition for column '\{c.name.name}' must include a data type.",
       )
   }
-  let nullable = match c.nullable {
-    Some(n) => n
-    None if alias_nullable is Some(n) &&
+  let nullable = match (c.nullable, c.computed) {
+    (Some(n), _) => n
+    (None, Some(e)) => computed_nullable(e, b)
+    (None, None) if alias_nullable is Some(n) &&
       !pk_cols.contains(c.name.name.to_lower()) => n
-    None =>
-      computed is Some(_) ||
-      (
-        !pk_cols.contains(c.name.name.to_lower()) &&
-        c.identity is None &&
-        !(ty is RowVersion)
-      )
+    (None, None) =>
+      !pk_cols.contains(c.name.name.to_lower()) &&
+      c.identity is None &&
+      !(ty is RowVersion)
   }
   b.max_column_id += 1
   let column_id = b.max_column_id
@@ -363,14 +445,11 @@ fn Session::add_column(
   }
   for k in c.constraints {
     if k.kind is ColDefault(e) {
+      self.check_default(e, col)
       let id = self.server.object_id()
       let (name, auto) = match k.name {
         Some(n) => (n.name, false)
-        None =>
-          (
-            "DF__\{short(b.display, 9)}__\{short(c.name.name, 5)}__\{hex_id(id)}",
-            true,
-          )
+        None => (system_name("DF", b.display, Some(c.name.name), id), true)
       }
       self.claim_name(b, db, name)
       col = {
@@ -433,6 +512,15 @@ fn Session::add_key(
   let has_clustered = b.indexes.iter().any(i => i.clustered)
   let clustered = match clustered {
     Some(true) => {
+      // two clustered constraints in one statement (captured: msduck
+      // gaps-keys clustered-conflicts-6)
+      if b.indexes[b.base_indexes:].iter().any(i => i.clustered) {
+        raise @types.sql_error(
+          8112,
+          "Cannot add more than one clustered index for constraints on table '\{b.display}'.",
+          state=0,
+        )
+      }
       if has_clustered {
         raise self.constraint_error(
           @types.sql_error(
@@ -446,6 +534,27 @@ fn Session::add_key(
     }
     Some(false) => false
     None => primary && !has_clustered
+  }
+  let seen : Array[Int] = []
+  for c in cols {
+    let col = b.columns[c.0]
+    if seen.contains(c.0) {
+      raise self.constraint_error(
+        @types.sql_error(
+          1909,
+          "Cannot use duplicate column names in index. Column name '\{col.name}' listed more than once.",
+        ),
+      )
+    }
+    seen.push(c.0)
+    if invalid_key_type(col.ty) {
+      raise self.constraint_error(
+        @types.sql_error(
+          1919,
+          "Column '\{col.name}' in table '\{b.display}' is of a type that is invalid for use as a key column in an index.",
+        ),
+      )
+    }
   }
   if primary {
     for c in cols {
@@ -481,6 +590,9 @@ fn Session::add_key(
     included: [],
     filter: None,
     not_null_filter: [],
+    filter_terms: [],
+    fill_factor: 0,
+    ignore_dup_key: false,
     is_constraint: true,
   })
 }
@@ -510,8 +622,8 @@ fn Session::foreign_key(
   // a self-reference resolves to the table being built
   let self_ref = base.to_lower() == b.display.to_lower() &&
     schema.to_lower() == b.schema.to_lower()
-  let (ref_id, ref_cols, ref_keys) = if self_ref {
-    (b.id, b.columns.map(c => c.name), b.indexes)
+  let (ref_id, ref_cols, ref_keys, ref_types) = if self_ref {
+    (b.id, b.columns.map(c => c.name), b.indexes, b.columns.copy())
   } else {
     let found = if b.scope == 1 {
       // temp tables can reference only temp tables (and FKs on them are
@@ -527,7 +639,7 @@ fn Session::foreign_key(
       }
     }
     match found {
-      Some(t) => (t.id, t.columns.map(c => c.name), t.indexes)
+      Some(t) => (t.id, t.columns.map(c => c.name), t.indexes, t.columns)
       None =>
         raise self.constraint_error(
           @types.sql_error(
@@ -563,13 +675,22 @@ fn Session::foreign_key(
       found
     })
   }
-  if ref_columns.iter().any(i => i < 0) {
-    raise self.constraint_error(
-      @types.sql_error(
-        1770,
-        "Foreign key '\{name.map(n => n.name).unwrap_or("")}' references invalid column in referenced table '\{base}'.",
-        state=0,
-      ),
+  for j, i in ref_columns {
+    if i < 0 {
+      raise self.constraint_error(
+        @types.sql_error(
+          1770,
+          "Foreign key '\{name.map(n => n.name).unwrap_or("")}' references invalid column '\{r.columns[j].name}' in referenced table '\{base}'.",
+          state=0,
+        ),
+      )
+    }
+  }
+  if ref_columns.length() != cols.length() {
+    raise @types.sql_error(
+      8139,
+      "Number of referencing columns in foreign key differs from number of referenced columns, table '\{b.display}'.",
+      state=0,
     )
   }
   // the referenced columns must be a PRIMARY KEY or UNIQUE key
@@ -589,29 +710,118 @@ fn Session::foreign_key(
     raise self.constraint_error(
       @types.sql_error(
         1776,
-        "There are no primary or candidate keys in the referenced table '\{schema}.\{base}' that match the referencing column list in the foreign key '\{name.map(n => n.name).unwrap_or("")}'.",
+        "There are no primary or candidate keys in the referenced table '\{object_text(r.table)}' that match the referencing column list in the foreign key '\{name.map(n => n.name).unwrap_or("")}'.",
         state=0,
       ),
     )
+  }
+  let fk_label = name.map(n => n.name).unwrap_or("")
+  let on_delete = ref_action(r.on_delete)
+  let on_update = ref_action(r.on_update)
+  for j, c in cols {
+    let mine = b.columns[c]
+    let theirs = ref_types[ref_columns[j]]
+    match same_key_type(mine.ty, theirs.ty) {
+      Some(true) => ()
+      Some(false) =>
+        raise self.constraint_error(
+          @types.sql_error(
+            1753,
+            "Column '\{base}.\{theirs.name}' is not the same length or scale as referencing column '\{b.display}.\{mine.name}' in foreign key '\{fk_label}'. Columns participating in a foreign key relationship must be defined with the same length and scale.",
+            state=0,
+          ),
+        )
+      None =>
+        raise self.constraint_error(
+          @types.sql_error(
+            1778,
+            "Column '\{base}.\{theirs.name}' is not the same data type as referencing column '\{b.display}.\{mine.name}' in foreign key '\{fk_label}'.",
+            state=0,
+          ),
+        )
+    }
+  }
+  for c in cols {
+    let mine = b.columns[c]
+    if mine.computed is Some(_) {
+      if !mine.persisted {
+        raise self.constraint_error(
+          @types.sql_error(
+            1764,
+            "Computed Column '\{mine.name}' in table '\{b.display}' is invalid for use in 'FOREIGN KEY CONSTRAINT' because it is not persisted.",
+          ),
+        )
+      }
+      if !(on_update is NoAction) {
+        raise self.constraint_error(
+          @types.sql_error(
+            1715,
+            "Foreign key '\{fk_label}' creation failed. Only NO ACTION referential update action is allowed for referencing computed column '\{mine.name}'.",
+          ),
+        )
+      }
+      if !(on_delete is (NoAction | Cascade)) {
+        raise self.constraint_error(
+          @types.sql_error(
+            1765,
+            "Foreign key '\{fk_label}' creation failed. Only NO ACTION and CASCADE referential delete actions are allowed for referencing computed column '\{mine.name}'.",
+          ),
+        )
+      }
+    }
+  }
+  if on_delete is SetNull || on_update is SetNull {
+    if cols.iter().any(c => !b.columns[c].nullable) {
+      raise self.constraint_error(
+        @types.sql_error(
+          1761,
+          "Cannot create the foreign key \"\{fk_label}\" with the SET NULL referential action, because one or more referencing columns are not nullable.",
+          state=0,
+        ),
+      )
+    }
+  }
+  if on_delete is SetDefault || on_update is SetDefault {
+    if cols
+      .iter()
+      .any(c => !b.columns[c].nullable && b.columns[c].default_ is None) {
+      raise self.constraint_error(
+        @types.sql_error(
+          1762,
+          "Cannot create the foreign key \"\{fk_label}\" with the SET DEFAULT referential action, because one or more referencing not-nullable columns lack a default constraint.",
+          state=0,
+        ),
+      )
+    }
   }
   let id = self.server.object_id()
   let (fk_name, auto) = match name {
     Some(n) => (n.name, false)
     None =>
-      (
-        "FK__\{short(b.display, 9)}__\{short(b.columns[cols[0]].name, 5)}__\{hex_id(id)}",
-        true,
-      )
+      (system_name("FK", b.display, Some(b.columns[cols[0]].name), id), true)
   }
   self.claim_name(b, db, fk_name)
+  // cycles or multiple cascade paths (captured: msduck gaps-constraints
+  // cascade-paths, referential-actions-19..22)
+  if b.scope == 0 &&
+    !(on_delete is NoAction && on_update is NoAction) &&
+    cascade_conflict(db, b.id, b.fks, ref_id, on_delete, on_update) {
+    raise self.constraint_error(
+      @types.sql_error(
+        1785,
+        "Introducing FOREIGN KEY constraint '\{fk_name}' on table '\{b.display}' may cause cycles or multiple cascade paths. Specify ON DELETE NO ACTION or ON UPDATE NO ACTION, or modify other FOREIGN KEY constraints.",
+        state=0,
+      ),
+    )
+  }
   {
     id,
     name: fk_name,
     columns: cols,
     ref_table: ref_id,
     ref_columns,
-    on_delete: ref_action(r.on_delete),
-    on_update: ref_action(r.on_update),
+    on_delete,
+    on_update,
     enabled: true,
     not_trusted,
     auto_named: auto,
@@ -676,6 +886,7 @@ fn Session::add_table_constraint(
           @types.sql_error(
             1752,
             "Column '\{col.name}' in table '\{b.display}' is invalid for creating a default constraint.",
+            state=0,
           ),
         )
       }
@@ -684,14 +895,11 @@ fn Session::add_table_constraint(
           @types.sql_error(1781, "Column already has a DEFAULT bound to it."),
         )
       }
+      self.check_default(e, b.columns[i])
       let id = self.server.object_id()
       let (name, auto) = match k.name {
         Some(n) => (n.name, false)
-        None =>
-          (
-            "DF__\{short(b.display, 9)}__\{short(col.name, 5)}__\{hex_id(id)}",
-            true,
-          )
+        None => (system_name("DF", b.display, Some(col.name), id), true)
       }
       self.claim_name(b, db, name)
       b.columns[i] = {
@@ -748,6 +956,8 @@ fn Session::table_from_body(
     fks: [],
     max_column_id: 0,
     names: Set([]),
+    creating: true,
+    base_indexes: 0,
   }
   let pk_cols : Set[String] = Set([])
   // PK columns are implicitly NOT NULL.
@@ -773,19 +983,12 @@ fn Session::table_from_body(
     .fold(init=0, (a, n) => a + n) +
     body.constraints.iter().filter(k => k.kind is PrimaryKey(_, ..)).count()
   if primaries > 1 {
-    // captured: a table type is named 'schema.name', state 0, no 1750
-    if scope == 4 {
-      raise @types.sql_error(
-        8110,
-        "Cannot add multiple PRIMARY KEY constraints to table '\{schema}.\{name}'.",
-        state=0,
-      )
-    }
-    raise self.constraint_error(
-      @types.sql_error(
-        8110,
-        "Cannot add multiple PRIMARY KEY constraints to table '\{b.display}'.",
-      ),
+    // captured: a single error, state 0 (msduck gaps-keys diagnostics-2);
+    // a table type is named 'schema.name'
+    raise @types.sql_error(
+      8110,
+      "Cannot add multiple PRIMARY KEY constraints to table '\{if scope == 4 { schema + "." + name } else { b.display }}'.",
+      state=0,
     )
   }
   for c in body.columns {
@@ -818,6 +1021,9 @@ fn Session::table_from_body(
       included: [],
       filter: None,
       not_null_filter: [],
+      filter_terms: [],
+      fill_factor: 0,
+      ignore_dup_key: false,
       is_constraint: false,
     })
   }
@@ -957,7 +1163,7 @@ fn Session::exec_drop(
                   if fk.ref_table == t.id {
                     raise @types.sql_error(
                       3726,
-                      "Could not drop object '\{t.schema}.\{t.name}' because it is referenced by a FOREIGN KEY constraint.",
+                      "Could not drop object '\{object_text(n)}' because it is referenced by a FOREIGN KEY constraint.",
                     )
                   }
                 }
@@ -1061,5 +1267,304 @@ fn module_matches(kind : @ast.DropKind, m : @store.ObjectKind) -> Bool {
     (DropTrigger, Trigger) => true
     (DropSequence, Sequence) => true
     _ => false
+  }
+}
+
+///|
+/// Types that cannot be index key columns (1919): the max types.
+fn invalid_key_type(ty : @types.SqlType) -> Bool {
+  ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None))
+}
+
+///|
+/// Foreign key column type compatibility: Some(true) identical, Some(false)
+/// same type with a different length/precision/scale (1753), None a
+/// different type (1778). Captured: int vs bigint 1778, varchar(20) vs
+/// varchar(10) 1753.
+fn same_key_type(a : @types.SqlType, b : @types.SqlType) -> Bool? {
+  match (a, b) {
+    (Decimal(p, s), Decimal(q, t)) | (Numeric(p, s), Numeric(q, t)) =>
+      Some(p == q && s == t)
+    (Char(n, _), Char(m, _))
+    | (NChar(n, _), NChar(m, _))
+    | (Binary(n), Binary(m))
+    | (Time(n), Time(m))
+    | (DateTime2(n), DateTime2(m))
+    | (DateTimeOffset(n), DateTimeOffset(m)) => Some(n == m)
+    (VarChar(n, _), VarChar(m, _))
+    | (NVarChar(n, _), NVarChar(m, _))
+    | (VarBinary(n), VarBinary(m)) => Some(n == m)
+    _ => if a == b { Some(true) } else { None }
+  }
+}
+
+///|
+/// System constraint name `<kind>__<table>__<column>__<object id hex>`:
+/// at most 30 characters, so table and column share 14 (table 9 and column
+/// 5 when both are longer; the shorter one leaves its room to the other),
+/// a table-level CHECK gives the table 16 (captured: msduck gaps-catalog
+/// v2-default-naming, v2-constraint-naming).
+fn system_name(
+  kind : String,
+  table : String,
+  column : String?,
+  id : Int,
+) -> String {
+  match column {
+    None => "\{kind}__\{short(table, 16)}__\{hex_id(id)}"
+    Some(c) => {
+      let (tl, cl) = if table.length() + c.length() <= 14 {
+        (table.length(), c.length())
+      } else if table.length() <= 9 {
+        (table.length(), 14 - table.length())
+      } else if c.length() <= 5 {
+        (14 - c.length(), c.length())
+      } else {
+        (9, 5)
+      }
+      "\{kind}__\{short(table, tl)}__\{short(c, cl)}__\{hex_id(id)}"
+    }
+  }
+}
+
+///|
+/// Would a foreign key with these actions from table `child` (built with
+/// `child_fks`) to `parent` create a cycle or a second cascade path?
+/// Table-level analysis: a DELETE of a table reaches a child as a DELETE
+/// through ON DELETE CASCADE and as an UPDATE through ON DELETE SET
+/// NULL/DEFAULT; an UPDATE reaches it as an UPDATE through any ON UPDATE
+/// action; NO ACTION edges do not propagate. Reaching any table twice from
+/// one starting operation, or reaching the start table, is a conflict.
+fn cascade_conflict(
+  db : @store.Db,
+  child : Int,
+  child_fks : Array[@store.ForeignKey],
+  parent : Int,
+  on_delete : @store.RefAction,
+  on_update : @store.RefAction,
+) -> Bool {
+  // edges: parent id -> (child id, delete action, update action)
+  let edges : Map[Int, Array[(Int, @store.RefAction, @store.RefAction)]] = Map([])
+  let add = (p : Int, c : Int, d : @store.RefAction, u : @store.RefAction) => {
+    match edges.get(p) {
+      Some(xs) => xs.push((c, d, u))
+      None => edges[p] = [(c, d, u)]
+    }
+  }
+  let nodes : Array[Int] = [child, parent]
+  for t in db.tables() {
+    if !nodes.contains(t.id) {
+      nodes.push(t.id)
+    }
+    if t.id == child {
+      continue
+    }
+    for f in t.foreign_keys {
+      add(f.ref_table, t.id, f.on_delete, f.on_update)
+    }
+  }
+  for f in child_fks {
+    add(f.ref_table, child, f.on_delete, f.on_update)
+  }
+  add(parent, child, on_delete, on_update)
+  for start in nodes {
+    for deleting in [true, false] {
+      let reached : Set[Int] = Set([])
+      // (table, reached by a delete)
+      let stack : Array[(Int, Bool)] = [(start, deleting)]
+      let mut steps = 0
+      while stack.pop() is Some((t, del)) {
+        steps += 1
+        if steps > 100000 {
+          return true
+        }
+        guard edges.get(t) is Some(out) else { continue }
+        for e in out {
+          let (c, d, u) = e
+          let next : Bool? = if del {
+            match d {
+              Cascade => Some(true)
+              SetNull | SetDefault => Some(false)
+              NoAction => None
+            }
+          } else if u is NoAction {
+            None
+          } else {
+            Some(false)
+          }
+          guard next is Some(nd) else { continue }
+          if c == start || reached.contains(c) {
+            return true
+          }
+          reached.add(c)
+          stack.push((c, nd))
+        }
+      }
+    }
+  }
+  false
+}
+
+///|
+/// Does an expression contain a subquery (EXISTS, IN (SELECT ...), ...)?
+fn expr_has_subquery(e : @ast.Expr) -> Bool {
+  let mut found = false
+  walk_expr(e, x => {
+    if x.kind
+      is (Subquery(_) | Exists(_) | InQuery(_, _, ..) | Quantified(_, _, _, _)) {
+      found = true
+    }
+  })
+  found
+}
+
+///|
+/// Distinct (case-insensitive) column names an expression references, in
+/// order of appearance.
+fn expr_column_names(e : @ast.Expr) -> Array[String] {
+  let out : Array[String] = []
+  // datepart arguments (DATEADD(day, ...)) parse as column names
+  let dateparts : Array[Int] = []
+  walk_expr(e, x => {
+    if x.kind is Call(c) &&
+      c.args.length() > 0 &&
+      is_datepart_function(c.name.base()) {
+      dateparts.push(c.args[0].span.start)
+    }
+  })
+  walk_expr(e, x => {
+    if x.kind is Column(parts) && !dateparts.contains(x.span.start) {
+      let n = parts[parts.length() - 1].name
+      if !out.iter().any(y => y.to_lower() == n.to_lower()) {
+        out.push(n)
+      }
+    }
+  })
+  out
+}
+
+///|
+/// DEFAULT definitions are checked when created: no column references
+/// (128), no subqueries (1046), and the value must convert implicitly to
+/// the column type (captured: msduck gaps-constraints definition-errors-19,
+/// gaps-computed session-default-variant-1: SESSION_CONTEXT into nvarchar
+/// is 257 at CREATE TABLE).
+fn Session::check_default(
+  self : Session,
+  e : @ast.Expr,
+  col : @store.Column,
+) -> Unit raise {
+  match expr_column_names(e) {
+    [first, ..] =>
+      raise @types.sql_error(
+        128,
+        "The name \"\{first}\" is not permitted in this context. Valid expressions are constants, constant expressions, and (in some contexts) variables. Column names are not permitted.",
+        severity=15,
+      )
+    [] => ()
+  }
+  if expr_has_subquery(e) {
+    raise @types.sql_error(
+      1046,
+      "Subqueries are not allowed in this context. Only scalar expressions are allowed.",
+      severity=15,
+    )
+  }
+  if is_newsequentialid(self.slice(e.span)) {
+    return
+  }
+  // binding problems surface on use, as before; only the assignment rule
+  // is checked here
+  let bound = @bind.bind_expr(
+    @bind.Env::new(Map([]), catalog=self.catalog()),
+    e,
+  ) catch {
+    _ => return
+  }
+  @types.check_assign(bound.ty, col.ty)
+}
+
+///|
+/// Non-deterministic built-ins (PERSISTED computed columns reject them with
+/// 4936).
+fn expr_nondeterministic(e : @ast.Expr) -> Bool {
+  let mut found = false
+  walk_expr(e, x => {
+    if x.kind is Call(c) {
+      match c.name.base().to_lower() {
+        "newid"
+        | "newsequentialid"
+        | "getdate"
+        | "getutcdate"
+        | "sysdatetime"
+        | "sysutcdatetime"
+        | "sysdatetimeoffset"
+        | "current_timestamp"
+        | "rand"
+        | "host_name"
+        | "app_name"
+        | "suser_sname"
+        | "user_name"
+        | "session_context"
+        | "context_info" => found = true
+        _ => ()
+      }
+    }
+  })
+  found
+}
+
+///|
+/// Built-ins whose first argument is a datepart keyword.
+fn is_datepart_function(name : String) -> Bool {
+  match name.to_lower() {
+    "dateadd"
+    | "datediff"
+    | "datediff_big"
+    | "datepart"
+    | "datename"
+    | "datetrunc"
+    | "date_bucket" => true
+    _ => false
+  }
+}
+
+///|
+/// sys.columns.is_nullable of a computed column (captured: msduck
+/// gaps-catalog definitions-computed / v2-computed): a column reference
+/// keeps the column's nullability, a non-NULL literal is NOT NULL,
+/// ISNULL(x, y) follows y, CASE is NOT NULL when every branch (with an
+/// ELSE) is; anything else (arithmetic, CAST, COALESCE, functions) is
+/// nullable.
+fn computed_nullable(e : @ast.Expr, b : Builder) -> Bool {
+  match e.kind {
+    Paren(x) => computed_nullable(x, b)
+    Column(parts) =>
+      match b.col_index(parts[parts.length() - 1].name) {
+        -1 => true
+        i => b.columns[i].nullable
+      }
+    IntLit(_)
+    | DecimalLit(_)
+    | FloatLit(_)
+    | MoneyLit(_)
+    | StrLit(_, ..)
+    | BinaryLit(_) => false
+    Unary(Neg, x) =>
+      match x.kind {
+        IntLit(_) | DecimalLit(_) | FloatLit(_) | MoneyLit(_) => false
+        _ => true
+      }
+    Call(c) if c.name.parts.length() == 1 &&
+      c.name.base().to_lower() == "isnull" &&
+      c.args.length() == 2 => computed_nullable(c.args[1], b)
+    Case(whens~, else_~, ..) =>
+      match else_ {
+        None => true
+        Some(x) =>
+          computed_nullable(x, b) ||
+          whens.iter().any(w => computed_nullable(w.1, b))
+      }
+    _ => true
   }
 }

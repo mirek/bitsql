@@ -69,7 +69,7 @@ fn Session::check_unique_build(
   let cmp = @store.key_comparator(types, ix.columns.map(c => c.1))
   let keys = []
   for r in rows {
-    if ix.not_null_filter.iter().any(c => r.1[c] is Null) {
+    if !ix.covers(r.1) {
       continue
     }
     keys.push(ix.columns.map(c => r.1[c.0]))
@@ -252,7 +252,7 @@ fn Session::column_dependents(
   scope : Int,
   t : @store.Table,
   ord : Int,
-  _for_alter : Bool,
+  widen : Bool,
 ) -> Array[String] {
   let col = t.columns[ord]
   let name = col.name.to_lower()
@@ -267,6 +267,12 @@ fn Session::column_dependents(
   for ix in t.indexes {
     let in_key = ix.columns.iter().any(c => c.0 == ord) ||
       ix.included.contains(ord)
+    // a variable-length column may grow under its indexes and keys
+    // (captured: msduck gaps-keys alter-with-keys-11, nvarchar(10) PK
+    // column to nvarchar(20))
+    if widen {
+      continue
+    }
     if ix.is_constraint {
       if in_key {
         out.push(
@@ -509,6 +515,22 @@ fn Session::alter_drop(
       }
     }
     if !found && !if_exists {
+      // a constraint of another table (captured: msduck gaps-constraints
+      // alter-lifecycle-40)
+      if self.constraint_owner(scope, key) is Some(_) {
+        self.pending.push(
+          @types.sql_error(
+            3733,
+            "Constraint '\{ident.name}' does not belong to table '\{t.name}'.",
+            state=2,
+          ),
+        )
+        raise @types.sql_error(
+          3727,
+          "Could not drop constraint. See previous errors.",
+          state=0,
+        )
+      }
       self.pending.push(
         @types.sql_error(3728, "'\{ident.name}' is not a constraint."),
       )
@@ -558,7 +580,7 @@ fn Session::alter_column(
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL
   let nullable = nullable.unwrap_or(true)
   if ty != old.ty {
-    let deps = self.column_dependents(scope, t, ord, true)
+    let deps = self.column_dependents(scope, t, ord, widens(old.ty, ty))
     if !deps.is_empty() {
       raise self.dependents_error(deps, "ALTER COLUMN", old.name)
     }
@@ -567,7 +589,7 @@ fn Session::alter_column(
       .iter()
       .any(ix => ix.primary && ix.columns.iter().any(c => c.0 == ord)) {
       raise self.dependents_error(
-        self.column_dependents(scope, t, ord, true),
+        self.column_dependents(scope, t, ord, false),
         "ALTER COLUMN",
         old.name,
       )
@@ -628,6 +650,26 @@ fn Session::alter_check_constraints(
     let k = n.name.to_lower()
     if !t.checks.iter().any(c => c.name.to_lower() == k) &&
       !t.foreign_keys.iter().any(f => f.name.to_lower() == k) {
+      // a key or default constraint of the table (captured: msduck
+      // gaps-constraints alter-lifecycle-35)
+      if t.indexes.iter().any(ix => ix.is_constraint && ix.name.to_lower() == k) ||
+        t.columns
+        .iter()
+        .any(c => {
+          c.default_id != 0 && c.default_name.unwrap_or("").to_lower() == k
+        }) {
+        self.pending.push(
+          @types.sql_error(
+            11415,
+            "Object '\{n.name}' cannot be disabled or enabled. This action applies only to foreign key and check constraints.",
+          ),
+        )
+        raise @types.sql_error(
+          4916,
+          "Could not enable or disable the constraint. See previous errors.",
+          state=0,
+        )
+      }
       self.pending.push(
         @types.sql_error(
           4917,
@@ -721,21 +763,80 @@ fn Session::alter_triggers(
 }
 
 ///|
-/// Ordinals of `c IS NOT NULL [AND ...]` filters (None for other shapes).
-fn not_null_filter(e : @ast.Expr, t : @store.Table) -> Array[Int]? {
+/// CREATE INDEX WITH options SQL Server accepts.
+let index_options : Array[String] = [
+  "PAD_INDEX", "FILLFACTOR", "SORT_IN_TEMPDB", "IGNORE_DUP_KEY", "STATISTICS_NORECOMPUTE",
+  "STATISTICS_INCREMENTAL", "DROP_EXISTING", "ONLINE", "RESUMABLE", "MAX_DURATION",
+  "ALLOW_ROW_LOCKS", "ALLOW_PAGE_LOCKS", "OPTIMIZE_FOR_SEQUENTIAL_KEY", "MAXDOP",
+  "DATA_COMPRESSION", "XML_COMPRESSION", "COMPRESSION_DELAY",
+]
+
+///|
+/// Filter conjuncts of a filtered index: `c IS [NOT] NULL` and `c <op>
+/// constant` joined by AND (None for other shapes).
+fn Session::filter_terms(
+  self : Session,
+  e : @ast.Expr,
+  t : @store.Table,
+  out : Array[@store.FilterTerm],
+) -> Bool {
+  let col = (x : @ast.Expr) => {
+    match strip_parens(x).kind {
+      Column(parts) => t.column_index(parts[parts.length() - 1].name)
+      _ => None
+    }
+  }
+  let constant = (x : @ast.Expr, ci : Int) => {
+    if expr_column_names(x).length() > 0 || expr_has_subquery(x) {
+      return None
+    }
+    let env = @bind.Env::new(Map([]), catalog=self.catalog())
+    let v = try {
+      let bx = @bind.bind_expr(env, x)
+      let v = @exec.eval(self.ctx(), bx)
+      Some(@types.cast(v, bx.ty, t.columns[ci].ty))
+    } catch {
+      _ => None
+    }
+    v
+  }
   match e.kind {
-    Paren(x) => not_null_filter(x, t)
-    And(l, r) =>
-      match (not_null_filter(l, t), not_null_filter(r, t)) {
-        (Some(a), Some(b)) => Some(a + b)
-        _ => None
+    Paren(x) => self.filter_terms(x, t, out)
+    And(l, r) => self.filter_terms(l, t, out) && self.filter_terms(r, t, out)
+    IsNull(x, negated~) =>
+      match col(x) {
+        Some(i) => {
+          // IS NOT NULL is marked FIsNull(-1 - ordinal): the caller moves
+          // it to the not-null filter
+          out.push(FIsNull(if negated { -1 - i } else { i }))
+          true
+        }
+        None => false
       }
-    IsNull({ kind: Column(parts), .. }, negated=true) =>
-      match t.column_index(parts[parts.length() - 1].name) {
-        Some(i) => Some([i])
-        None => None
+    Compare(op, l, r) => {
+      let (ci, other, flip) = match (col(l), col(r)) {
+        (Some(i), None) => (i, r, false)
+        (None, Some(i)) => (i, l, true)
+        _ => return false
       }
-    _ => None
+      let fop : @store.FilterOp = match (op, flip) {
+        (Eq, _) => FEq
+        (Ne, _) => FNe
+        (Lt, false) | (Gt, true) => FLt
+        (Le, false) | (Ge, true) => FLe
+        (Gt, false) | (Lt, true) => FGt
+        (Ge, false) | (Le, true) => FGe
+        _ => return false
+      }
+      match constant(other, ci) {
+        Some(v) => {
+          out.push(FCompare(ci, fop, v))
+          true
+        }
+        None => false
+      }
+    }
+    _ => false
   }
 }
 
@@ -756,11 +857,74 @@ fn Session::exec_create_index(
         state=12,
       )
   }
-  if t.indexes.iter().any(ix => ix.name.to_lower() == ci.name.name.to_lower()) {
+  // WITH options (captured: msduck gaps-keys diagnostics-14..17)
+  let mut fill_factor = 0
+  let mut ignore_dup_key = false
+  let mut drop_existing = false
+  for o in ci.options {
+    let name = o.name.to_upper()
+    if !index_options.contains(name) {
+      raise @types.sql_error(
+        155,
+        "'\{o.name}' is not a recognized CREATE INDEX option.",
+        severity=15,
+      )
+    }
+    let on = o.value.map(v => v.to_upper() == "ON").unwrap_or(true)
+    match name {
+      "FILLFACTOR" => {
+        let n = parse_i64(o.value, 0L)
+        if n < 1L || n > 100L {
+          raise @types.sql_error(
+            129,
+            "Fillfactor \{n} is not a valid percentage; fillfactor must be between 1 and 100.",
+            severity=15,
+          )
+        }
+        fill_factor = n.to_int()
+      }
+      "IGNORE_DUP_KEY" => ignore_dup_key = on
+      "DROP_EXISTING" => drop_existing = on
+      _ => ()
+    }
+  }
+  if ignore_dup_key && !ci.unique {
+    raise @types.sql_error(
+      1916,
+      "CREATE INDEX options nonunique and ignore_dup_key are mutually exclusive.",
+      state=4,
+    )
+  }
+  let existing = t.indexes.search_by(ix => {
+    ix.name.to_lower() == ci.name.name.to_lower()
+  })
+  if drop_existing && existing is None {
+    raise @types.sql_error(
+      7999,
+      "Could not find any index named '\{ci.name.name}' for table '\{object_text(ci.table)}'.",
+      state=9,
+    )
+  }
+  if !drop_existing && existing is Some(_) {
     raise @types.sql_error(
       1913,
-      "The operation failed because an index or statistics with name '\{ci.name.name}' already exists on table '\{display_name(scope, t)}'.",
+      "The operation failed because an index or statistics with name '\{ci.name.name}' already exists on table '\{object_text(ci.table)}'.",
     )
+  }
+  // DROP_EXISTING rebuilds the index in place (same index_id)
+  let base = match existing {
+    Some(k) => {
+      if t.indexes[k].is_constraint {
+        raise @types.not_supported(
+          "CREATE INDEX DROP_EXISTING of a constraint index",
+        )
+      }
+      {
+        ..t,
+        indexes: t.indexes.filter(ix => ix.index_id != t.indexes[k].index_id),
+      }
+    }
+    None => t
   }
   let col = (n : @ast.Ident) => {
     match t.column_index(n.name) {
@@ -773,6 +937,21 @@ fn Session::exec_create_index(
     }
   }
   let columns = ci.columns.map(c => (col(c.name), c.desc))
+  for k, c in columns {
+    let tc = t.columns[c.0]
+    if columns[:k].iter().any(x => x.0 == c.0) {
+      raise @types.sql_error(
+        1909,
+        "Cannot use duplicate column names in index. Column name '\{tc.name}' listed more than once.",
+      )
+    }
+    if invalid_key_type(tc.ty) {
+      raise @types.sql_error(
+        1919,
+        "Column '\{tc.name}' in table '\{t.name}' is of a type that is invalid for use as a key column in an index.",
+      )
+    }
+  }
   // key columns computed in float/real must be persisted (captured:
   // traps/computed-persisted-index)
   for c in columns {
@@ -786,30 +965,47 @@ fn Session::exec_create_index(
   }
   let included = ci.included.map(col)
   let clustered = ci.clustered.unwrap_or(false)
-  if clustered && t.indexes.iter().any(ix => ix.clustered) {
+  if clustered && base.indexes.iter().any(ix => ix.clustered) {
     raise @types.sql_error(
       1902,
-      "Cannot create more than one clustered index on table '\{display_name(scope, t)}'. Drop the existing clustered index '\{t.indexes.iter().find_first(ix => ix.clustered).map(ix => ix.name).unwrap_or("")}' before creating another.",
+      "Cannot create more than one clustered index on table '\{object_text(ci.table)}'. Drop the existing clustered index '\{base.indexes.iter().find_first(ix => ix.clustered).map(ix => ix.name).unwrap_or("")}' before creating another.",
       state=3,
     )
   }
-  let (filter, nn) = match ci.where_ {
-    Some(w) =>
-      match not_null_filter(w, t) {
-        Some(cols) => (Some(self.slice(w.span)), cols)
-        None if ci.unique =>
-          raise @types.not_supported(
-            "filtered UNIQUE index with a filter other than IS NOT NULL",
-          )
-        None => (Some(self.slice(w.span)), [])
+  let (filter, nn, terms) = match ci.where_ {
+    Some(w) => {
+      for n in expr_column_names(w) {
+        if t.column_index(n) is None {
+          raise @types.sql_error(207, "Invalid column name '\{n}'.")
+        }
       }
-    None => (None, [])
+      let terms : Array[@store.FilterTerm] = []
+      if self.filter_terms(w, t, terms) {
+        // IS NOT NULL conjuncts are recorded as FIsNull(-1 - ordinal)
+        let nn = []
+        let rest = []
+        for x in terms {
+          match x {
+            FIsNull(i) if i < 0 => nn.push(-1 - i)
+            other => rest.push(other)
+          }
+        }
+        (Some(self.slice(w.span)), nn, rest)
+      } else if ci.unique {
+        raise @types.not_supported(
+          "filtered UNIQUE index with a filter other than AND of column comparisons",
+        )
+      } else {
+        // non-unique: kept as text; the index holds every row
+        (Some(self.slice(w.span)), [], [])
+      }
+    }
+    None => (None, [], [])
   }
   let ix : @store.Index = {
-    index_id: if clustered {
-      1
-    } else {
-      next_index_id(t.indexes)
+    index_id: match existing {
+      Some(k) => t.indexes[k].index_id
+      None => if clustered { 1 } else { next_index_id(t.indexes) }
     },
     object_id: 0,
     name: ci.name.name,
@@ -821,14 +1017,38 @@ fn Session::exec_create_index(
     included,
     filter,
     not_null_filter: nn,
+    filter_terms: terms,
+    fill_factor,
+    ignore_dup_key,
     is_constraint: false,
   }
   let db = self.db_of(scope)
   if ci.unique {
     self.check_unique_build(scope, t, ix, db.rows(t.id), false)
   }
-  let indexes = t.indexes.copy()
+  // maximum key length warnings (captured: msduck gaps-computed
+  // unicode-virtual-7, 1945 for an nvarchar(4000) key)
+  let key_len = columns.fold(init=0, (acc, c) => {
+    acc + type_ids(t.columns[c.0].ty).2
+  })
+  if clustered && key_len > 900 {
+    self.info(
+      1944,
+      1,
+      "Warning! The maximum key length for a clustered index is 900 bytes. The index '\{ci.name.name}' has maximum length of \{key_len} bytes. For some combination of large values, the insert/update operation will fail.",
+      self.stmt_line,
+    )
+  } else if !clustered && key_len > 1700 {
+    self.info(
+      1945,
+      1,
+      "Warning! The maximum key length for a nonclustered index is 1700 bytes. The index '\{ci.name.name}' has maximum length of \{key_len} bytes. For some combination of large values, the insert/update operation will fail.",
+      self.stmt_line,
+    )
+  }
+  let indexes = base.indexes.copy()
   indexes.push(ix)
+  indexes.sort_by((a, b) => a.index_id.compare(b.index_id))
   self.write(scope, db.alter_table({ ..t, indexes, }))
   self.rt.rowcount = 0
   self.done(200)
@@ -838,13 +1058,13 @@ fn Session::exec_create_index(
 fn Session::exec_drop_index(
   self : Session,
   if_exists : Bool,
-  items : Array[(@ast.ObjectName, @ast.ObjectName?)],
+  items : Array[(@ast.ObjectName, @ast.ObjectName?, Bool)],
 ) -> Unit raise {
   self.cur_cmd = 201
   for item in items {
     let (ixname, table) = match item {
-      (ix, Some(t)) => (ix.base(), t)
-      (n, None) => {
+      (ix, Some(t), _) => (ix.base(), t)
+      (n, None, _) => {
         // legacy `t.ix` / `schema.t.ix`
         let parts = n.parts
         if parts.length() < 2 {
@@ -882,6 +1102,14 @@ fn Session::exec_drop_index(
             state=4,
           )
         }
+        if item.2 && !ix.clustered {
+          // a compile-time error: the batch ends (CurCmd 253)
+          self.cur_cmd = 253
+          raise @types.sql_error(
+            3748,
+            "Cannot drop non-clustered index '\{object_text(table)}.\{ix.name}' using drop clustered index clause.",
+          )
+        }
         let indexes = t.indexes.filter(x => {
           x.name.to_lower() != ixname.to_lower()
         })
@@ -906,4 +1134,39 @@ fn check_columns(text : String) -> Array[String] {
     }
   })
   out
+}
+
+///|
+/// The table owning a constraint (key, CHECK, FOREIGN KEY, DEFAULT) named
+/// `key` (lowercased).
+fn Session::constraint_owner(
+  self : Session,
+  scope : Int,
+  key : String,
+) -> @store.Table? {
+  for t in self.db_of(scope).tables() {
+    if t.indexes.iter().any(ix => ix.is_constraint && ix.name.to_lower() == key) ||
+      t.checks.iter().any(c => c.name.to_lower() == key) ||
+      t.foreign_keys.iter().any(f => f.name.to_lower() == key) ||
+      t.columns
+      .iter()
+      .any(c => {
+        c.default_id != 0 && c.default_name.unwrap_or("").to_lower() == key
+      }) {
+      return Some(t)
+    }
+  }
+  None
+}
+
+///|
+/// A bounded variable-length type growing within its kind (varchar(10) to
+/// varchar(20), not to max).
+fn widens(old : @types.SqlType, new : @types.SqlType) -> Bool {
+  match (old, new) {
+    (VarChar(Some(a), c1), VarChar(Some(b), c2))
+    | (NVarChar(Some(a), c1), NVarChar(Some(b), c2)) => b >= a && c1 == c2
+    (VarBinary(Some(a)), VarBinary(Some(b))) => b >= a
+    _ => false
+  }
 }

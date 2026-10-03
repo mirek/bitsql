@@ -92,7 +92,19 @@ fn Session::bind_output(
       }
       (cols, bad)
     }
-    None => (table_columns(target.table), [])
+    None => {
+      let insertable = self.identity_insert == Some(target.table.id)
+      (
+        table_columns(target.table).map(c => {
+          if insertable && c.origin is BaseColumn(identity=true) {
+            { ..c, origin: InsertableIdentity, }
+          } else {
+            c
+          }
+        }),
+        [],
+      )
+    }
   }
   let cols : Array[@bind.ColumnRef] = []
   // In MERGE the deleted image is absent for INSERT actions and the

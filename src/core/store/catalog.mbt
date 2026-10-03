@@ -50,9 +50,69 @@ pub(all) struct Index {
   /// Filtered index of the form `c IS NOT NULL [AND ...]`: rows with NULL
   /// in any of these columns (ordinals) are not in the index.
   not_null_filter : Array[Int]
+  /// Other filter conjuncts (`c > 0`, `c IS NULL`, ...): rows failing any
+  /// are not in the index.
+  filter_terms : Array[FilterTerm]
+  /// FILLFACTOR (sys.indexes.fill_factor, 0 = default).
+  fill_factor : Int
+  /// IGNORE_DUP_KEY = ON: duplicate INSERT rows are skipped (3604).
+  ignore_dup_key : Bool
   /// Constraint (PK/UNIQUE) rather than CREATE INDEX.
   is_constraint : Bool
 } derive(Debug)
+
+///|
+/// Comparison of a filtered index conjunct.
+pub(all) enum FilterOp {
+  FEq
+  FNe
+  FLt
+  FLe
+  FGt
+  FGe
+} derive(Debug, Eq)
+
+///|
+/// One conjunct of a filtered index predicate over a column ordinal; the
+/// constant is already converted to the column type.
+pub(all) enum FilterTerm {
+  FIsNull(Int)
+  FCompare(Int, FilterOp, @types.Value)
+} derive(Debug)
+
+///|
+/// Is `row` in the (filtered) index? NULL never satisfies a comparison.
+pub fn Index::covers(self : Index, row : Array[@types.Value]) -> Bool {
+  for c in self.not_null_filter {
+    if c < row.length() && row[c] is Null {
+      return false
+    }
+  }
+  for term in self.filter_terms {
+    match term {
+      FIsNull(c) => if c < row.length() && !(row[c] is Null) { return false }
+      FCompare(c, op, v) => {
+        if c >= row.length() || row[c] is Null || v is Null {
+          return false
+        }
+        let r = @types.compare(row[c], v) catch { _ => return false }
+        guard r is Some(k) else { return false }
+        let ok = match op {
+          FEq => k == 0
+          FNe => k != 0
+          FLt => k < 0
+          FLe => k <= 0
+          FGt => k > 0
+          FGe => k >= 0
+        }
+        if !ok {
+          return false
+        }
+      }
+    }
+  }
+  true
+}
 
 ///|
 pub(all) struct Check {

@@ -360,7 +360,14 @@ fn call(
     IsNull => if v[0] is Null { v[1] } else { v[0] }
     NullIf | Iif => raise @types.not_supported("internal: rewritten function")
     ConcatWs | Str => raise @types.not_supported("CONCAT_WS / STR")
-    XactState => SmallInt(rt.xact_state)
+    XactState =>
+      SmallInt(
+        if rt.xact_state == 0 && rt.trancount == 0 && rt.stmt_reads {
+          1
+        } else {
+          rt.xact_state
+        },
+      )
     ErrorNumber =>
       match rt.catch_error {
         Some(x) => Int(x.number)

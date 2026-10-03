@@ -17,6 +17,11 @@ pub(all) struct Runtime {
   mut error : Int
   mut trancount : Int
   mut xact_state : Int
+  /// The current statement reads data or metadata (FROM, IDENT_CURRENT,
+  /// OBJECT_ID): in autocommit its own transaction is active, so
+  /// XACT_STATE() is 1 while @@TRANCOUNT is 0 (captured: msduck
+  /// identity-insert-*, session-reset, gaps-merge).
+  mut stmt_reads : Bool
   mut identity : @types.Value
   mut scope_identity : @types.Value
   mut fetch_status : Int
@@ -72,6 +77,7 @@ pub fn Runtime::new(
     error: 0,
     trancount: 0,
     xact_state: 0,
+    stmt_reads: false,
     identity: Null,
     scope_identity: Null,
     fetch_status: -1,

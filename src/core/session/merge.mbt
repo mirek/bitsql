@@ -346,7 +346,6 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       MInsert(_, _) => ()
     }
   }
-  self.check_references(target, db, removed, removed_new, "MERGE")
   for o in final_ops {
     match o {
       MUpdate(rowid, _, _, _) | MDelete(rowid, _, _) =>
@@ -366,6 +365,17 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       }
       MDelete(_, _, _) => ()
     }
+  }
+  if fk_referencing(db, t.id) {
+    let changes : Array[RowChange] = final_ops.filter_map(o => {
+      match o {
+        MUpdate(rowid, old, new, _) => Some((rowid, old, Some(new)))
+        MDelete(rowid, old, _) => Some((rowid, old, None))
+        MInsert(_, _) => None
+      }
+    })
+    db = self.cascade_actions(target.scope, t.id, db, changes, "MERGE")
+    self.check_references(target, db, removed, removed_new, "MERGE")
   }
   self.write(target.scope, db)
   // AFTER triggers fire per action clause present, even for zero rows, in

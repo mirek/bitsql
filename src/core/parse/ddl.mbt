@@ -217,7 +217,7 @@ fn Parser::table_elements(
       ignore(self.with_options())
       body.indexes.push((name, cols))
     } else {
-      body.columns.push(self.column_def())
+      body.columns.push(self.column_def(body.constraints))
     }
     if !self.eat_punct(",") {
       break
@@ -289,7 +289,14 @@ fn Parser::with_values(self : Parser) -> Bool {
 }
 
 ///|
-fn Parser::column_def(self : Parser) -> @ast.ColumnDef raise @ast.SyntaxError {
+/// A column-level PRIMARY KEY / UNIQUE with a column list
+/// (`b int CONSTRAINT pk PRIMARY KEY (a, b)`) is a table-level constraint:
+/// it goes to `table_constraints` (captured: msduck gaps-keys
+/// column-level-list).
+fn Parser::column_def(
+  self : Parser,
+  table_constraints : Array[@ast.TableConstraint],
+) -> @ast.ColumnDef raise @ast.SyntaxError {
   let start = self.start()
   let name = self.ident()
   let mut type_ = None
@@ -354,11 +361,33 @@ fn Parser::column_def(self : Parser) -> @ast.ColumnDef raise @ast.SyntaxError {
         self.pos += 1
         self.expect_kw("KEY")
         let clustered = self.clustered()
+        if self.is_punct("(") {
+          let cols = self.index_columns()
+          let options = self.with_options()
+          ignore(self.on_filegroup())
+          table_constraints.push({
+            name: cname,
+            kind: PrimaryKey(clustered~, cols, options~),
+            span: self.span_from(cstart),
+          })
+          continue
+        }
         let options = self.with_options()
         ignore(self.on_filegroup())
         ColPrimaryKey(clustered~, options~)
       } else if self.eat_kw("UNIQUE") {
         let clustered = self.clustered()
+        if self.is_punct("(") {
+          let cols = self.index_columns()
+          let options = self.with_options()
+          ignore(self.on_filegroup())
+          table_constraints.push({
+            name: cname,
+            kind: Unique(clustered~, cols, options~),
+            span: self.span_from(cstart),
+          })
+          continue
+        }
         let options = self.with_options()
         ignore(self.on_filegroup())
         ColUnique(clustered~, options~)
@@ -581,7 +610,11 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
         }
         None
       }
-      items.push((ix, table))
+      // drop options (ONLINE, MAXDOP, MOVE TO ...) apply to clustered
+      // indexes only (captured: msduck gaps-keys clustered-conflicts-8,
+      // constraints/index-options 3748)
+      let options = table is Some(_) && !self.with_options().is_empty()
+      items.push((ix, table, options))
       if !self.eat_punct(",") {
         break
       }

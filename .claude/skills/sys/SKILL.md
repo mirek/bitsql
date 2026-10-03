@@ -103,6 +103,39 @@ mention the correction here.
   default; a scalar function's return value is parameter_id 0 with an empty
   name and is_output 1. Descriptors: catalog/view-descriptors-types.sql.
 
+- 2026-10-04 (definitions, msduck gaps-catalog v2-*-definitions, corpus
+  `constraints/definition-format`): parentheses follow operator classes:
+  arithmetic operands of the same or a lower class are wrapped on either
+  side (`((1)-(2))-(3)`, `[a]/([b]*[c])`, `([a]+[b])*[c]`), comparison
+  operands only when additive or a unary minus (`([a]+[b])=[c]` but
+  `[a]*[b]>(0)`), bitwise operations wrap themselves, AND/OR wrap a left
+  operand of a lower class and a right one of the same class too (`a OR
+  (b OR c)` keeps them). Unary minus of a non-literal prints ` -[a]`
+  (leading space), of a literal `(-1)`; `-0` is `(0)`, `0001` is `(1)`,
+  `.5` is `(0.5)`. CASE without ELSE ends `then x  end` (two spaces);
+  ESCAPE is followed by a space; TRY_CONVERT/TRY_CAST print as
+  `TRY_CAST(x AS [t])`, IIF as a searched CASE, YEAR/MONTH/DAY as
+  `datepart(year,...)`, datepart arguments by canonical name (dw →
+  weekday), COLLATE as `(x) collate name`.
+- 2026-10-04 (system names, gaps-catalog v2-default-naming): DF/CK/FK
+  names are at most 30 characters: `<kind>__<table>__<column>__<id hex>`
+  where table and column share 14 characters (9 and 5 when both are
+  longer, the shorter one gives its room to the other); a table-level CHECK
+  is `CK__<table 16>__<id hex>`. A table-level CHECK over exactly one column
+  belongs to that column (parent_column_id, column-level name).
+- 2026-10-04 (computed columns): sys.columns.is_nullable of a computed
+  column: a column reference keeps its nullability, a literal is NOT NULL,
+  ISNULL(x, y) follows y, CASE with ELSE is NOT NULL when every branch is;
+  arithmetic, CAST, COALESCE and other functions are nullable.
+- 2026-10-04 (views, catalog/view-descriptors-schema): INFORMATION_SCHEMA
+  PARAMETERS (scalar function result as ordinal 0, mode OUT, IS_RESULT
+  YES; OUTPUT parameters INOUT), CHECK_CONSTRAINTS (CHECK_CLAUSE is the
+  normalized definition), CONSTRAINT_COLUMN_USAGE (key, CHECK and
+  referencing FK columns; no DEFAULTs), SCHEMATA (DEFAULT_CHARACTER_SET_NAME
+  iso_1). sys.parameters (tabletypes branch): T-SQL modules never record
+  defaults (has_default_value 0, default_value NULL). sys.indexes
+  fill_factor and ignore_dup_key follow CREATE INDEX WITH options.
+
 # MSSQL System Catalog Views - Implementation Specification
 
 This skill provides the complete technical specification needed to implement system catalog view emulation in the mssqlite TDS server. For each view: exact column definitions, data types, relationships to other views, seed data, and the SQLite backing-table DDL.

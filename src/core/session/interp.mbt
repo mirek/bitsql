@@ -15,6 +15,8 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
 /// Executes one statement and applies SQL Server's error disposition.
 fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
+  self.stmt_line = line
+  self.rt.stmt_reads = statement_reads(self.slice(s.span))
   self.cur_cmd = 253
   self.ddl_cmd = 0
   self.uncatchable = false
@@ -123,7 +125,12 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     self.throwing,
     self.xact_abort && !raiserror,
   )
-  if dml && !ends_batch && self.trailing.is_empty() {
+  // IDENTITY_INSERT errors (544, 545, 339) come without 3621 (captured:
+  // msduck identity-insert-*)
+  if dml &&
+    !ends_batch &&
+    self.trailing.is_empty() &&
+    ![544, 545, 339].contains(e.number()) {
     ignore(self.terminated(e))
   }
   let mark = @cmp.minimum(out_mark, self.out.length())
@@ -523,10 +530,12 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       match self.find_table(name) {
         Some((_, t)) => {
           if on {
+            // the name as written (captured: msduck
+            // identity-insert-name-errors, 'DbO.PLAIN')
             if t.columns.iter().all(c => c.identity is None) {
               raise @types.sql_error(
                 8106,
-                "Table '\{t.name}' does not have the identity property. Cannot perform SET operation.",
+                "Table '\{object_text(name)}' does not have the identity property. Cannot perform SET operation.",
               )
             }
             self.identity_insert = Some(t.id)
@@ -538,8 +547,9 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         }
         None =>
           raise @types.sql_error(
-            208,
-            "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
+            1088,
+            "Cannot find the object \"\{object_text(name)}\" because it does not exist or you do not have permissions.",
+            state=11,
           )
       }
     // catalog DDL (ddl*.mbt)
@@ -805,4 +815,26 @@ fn Session::exec_try(
 /// statement, which TRY in the same scope cannot catch.
 fn is_compile_error(n : Int) -> Bool {
   [8117, 8116, 206, 402, 207, 4104, 209, 8120, 147, 4108, 4109].contains(n)
+}
+
+///|
+/// Does a statement that calls XACT_STATE() also read data or metadata (a
+/// FROM clause, IDENT_CURRENT, OBJECT_ID)? Token-level, so string literals
+/// and comments do not count.
+fn statement_reads(text : String) -> Bool {
+  if !text.to_upper().contains("XACT_STATE") {
+    return false
+  }
+  let toks = @lex.lex(text) catch { _ => return false }
+  for k, t in toks {
+    if t.is_kw("FROM") {
+      return true
+    }
+    if (t.is_kw("IDENT_CURRENT") || t.is_kw("OBJECT_ID")) &&
+      k + 1 < toks.length() &&
+      toks[k + 1].is_punct("(") {
+      return true
+    }
+  }
+  false
 }

@@ -26,7 +26,8 @@ pub(all) enum StmtKind {
   AlterTable(ObjectName, AlterTableAction)
   CreateIndex(CreateIndex)
   /// `DROP INDEX ix ON t` (table Some) or legacy `DROP INDEX t.ix` (None).
-  DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?)])
+  /// Items: (index, table, has WITH options).
+  DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?, Bool)])
   CreateView(CreateView)
   CreateProcedure(CreateProcedure)
   CreateFunction(CreateFunction)

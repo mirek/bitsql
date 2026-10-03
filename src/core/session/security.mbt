@@ -88,9 +88,23 @@ fn Session::security_fn(
     "SESSION_CONTEXT" =>
       match text(0) {
         Some(k) =>
+          // keys are set case-sensitively (N'LOCKED' is another key than
+          // a read-only N'locked') but read case-insensitively, the exact
+          // spelling first (captured: msduck session-property-context#068,
+          // gaps-computed session-default-values-6)
           match self.session_context.get(k) {
             Some((v, _)) => v
-            None => Null
+            None => {
+              let lower = k.to_lower()
+              let mut found : @types.Value = Null
+              for key, entry in self.session_context {
+                if key.to_lower() == lower {
+                  found = entry.0
+                  break
+                }
+              }
+              found
+            }
           }
         None => Null
       }

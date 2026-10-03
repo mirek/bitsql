@@ -86,6 +86,29 @@ fn Session::column_env(self : Session, target : Target) -> @bind.Env {
 fn key_text(v : @types.Value, ty : @types.SqlType) -> String {
   match v {
     Null => "<NULL>"
+    // captured: GUIDs lower-case, binary as 0x + lower-case hex (msduck
+    // gaps-keys message-values)
+    Guid(_) =>
+      try
+        @types.cast(v, ty, NVarChar(Some(4000), @types.default_collation))
+      catch {
+        _ => ""
+      } noraise {
+        String(s) => s.to_lower()
+        _ => ""
+      }
+    Binary(b) => {
+      let sb = StringBuilder()
+      sb.write_string("0x")
+      for x in b {
+        let h = x.to_int().to_string(radix=16)
+        if h.length() < 2 {
+          sb.write_string("0")
+        }
+        sb.write_string(h)
+      }
+      sb.to_string()
+    }
     _ =>
       try
         @types.cast(v, ty, NVarChar(Some(4000), @types.default_collation))
@@ -188,7 +211,12 @@ fn identity_value(ty : @types.SqlType, v : Int64) -> @types.Value {
 }
 
 ///|
-/// Constraint checks for a new row image (INSERT or UPDATE).
+/// Constraint checks for a new row image (INSERT or UPDATE). `touched`
+/// limits CHECK and FOREIGN KEY constraints to those over these columns
+/// (UPDATE checks only constraints whose columns it sets, captured: a
+/// NOCHECK-violating row can still be updated elsewhere). `self_fks`
+/// false skips self-referencing foreign keys (UPDATE checks them against
+/// the statement's final state).
 fn Session::check_row(
   self : Session,
   target : Target,
@@ -196,6 +224,9 @@ fn Session::check_row(
   row : Array[@types.Value],
   verb : String,
   constraints? : Bool = true,
+  touched? : Array[Int],
+  fks? : Bool = true,
+  self_fks? : Bool = true,
 ) -> Unit raise {
   let t = target.table
   for i, c in t.columns {
@@ -212,8 +243,17 @@ fn Session::check_row(
   if !constraints {
     return
   }
+  let uses = (cols : Array[Int]) => {
+    match touched {
+      None => true
+      Some(ts) => cols.iter().any(c => ts.contains(c))
+    }
+  }
   for ck in t.checks {
     if !ck.enabled {
+      continue
+    }
+    if touched is Some(_) && !uses(check_ordinals(t, ck.expr)) {
       continue
     }
     let v = self.eval_text(target, ck.expr, row, Bit)
@@ -225,40 +265,51 @@ fn Session::check_row(
       )
     }
   }
+  if !fks {
+    return
+  }
   for fk in t.foreign_keys {
-    if !fk.enabled {
+    if !fk.enabled || !uses(fk.columns) {
+      continue
+    }
+    if fk.ref_table == t.id && !self_fks {
       continue
     }
     let key = fk.columns.map(i => row[i])
     if key.iter().any(v => v is Null) {
       continue
     }
-    let parent_db = db
-    guard parent_db.table(fk.ref_table) is Some(parent) else { continue }
-    let mut found = false
-    for kv in parent_db.rows(parent.id) {
-      let mut eq = true
-      for j, pc in fk.ref_columns {
-        let ty = parent.columns[pc].ty
-        if @types.compare(kv.1[pc], key[j], collation?=ty.collation()) !=
-          Some(0) {
-          eq = false
-          break
-        }
-      }
-      if eq {
-        found = true
-        break
-      }
-    }
-    if !found {
-      raise @types.sql_error(
-        547,
-        "The \{verb} statement conflicted with the FOREIGN KEY constraint \"\{fk.name}\". The conflict occurred in database \"\{self.rt.database}\", table \"\{parent.schema}.\{parent.name}\", column '\{parent.columns[fk.ref_columns[0]].name}'.",
-        state=0,
-      )
+    guard db.table(fk.ref_table) is Some(parent) else { continue }
+    if !fk_has_key(db, parent, fk.ref_columns, key) {
+      raise self.fk_child_error(target.scope, verb, fk, t.id, parent)
     }
   }
+}
+
+///|
+/// Ordinals of the columns a CHECK expression references.
+fn check_ordinals(t : @store.Table, expr : String) -> Array[Int] {
+  check_columns(expr).filter_map(n => t.column_index(n))
+}
+
+///|
+/// INSERT into a unique index WITH (IGNORE_DUP_KEY = ON) holding the row's
+/// key: the row is skipped with INFO 3604 (captured: msduck gaps-keys
+/// ignore-dup-key-4; UPDATE still fails with 2601).
+fn dup_key_ignored(
+  t : @store.Table,
+  db : @store.Db,
+  row : Array[@types.Value],
+) -> Bool {
+  for i, ix in t.indexes {
+    if ix.unique &&
+      ix.ignore_dup_key &&
+      ix.covers(row) &&
+      db.find_key(t.id, i, ix.columns.map(c => row[c.0])) is Some(_) {
+      return true
+    }
+  }
+  false
 }
 
 ///|
@@ -271,7 +322,8 @@ fn insert_checked(
 ) -> @store.Db raise {
   let t = target.table
   for i, ix in t.indexes {
-    if !ix.unique {
+    // rows outside a filtered index's predicate are not in it
+    if !ix.unique || !ix.covers(row) {
       continue
     }
     let key = ix.columns.map(c => row[c.0])
@@ -299,72 +351,6 @@ fn insert_checked(
 }
 
 ///|
-/// Rows of other tables referencing `target` rows being deleted or whose
-/// key changes (REFERENCE constraint, error 547). `after` is None for
-/// deletes.
-fn Session::check_references(
-  self : Session,
-  target : Target,
-  db : @store.Db,
-  before : Array[Array[@types.Value]],
-  after : Array[Array[@types.Value]?],
-  verb : String,
-) -> Unit raise {
-  let t = target.table
-  for child in db.tables() {
-    for fk in child.foreign_keys {
-      if fk.ref_table != t.id || !fk.enabled {
-        continue
-      }
-      for i, old in before {
-        let key = fk.ref_columns.map(c => old[c])
-        // key unchanged by an UPDATE: nothing to check
-        match after[i] {
-          Some(new) => {
-            let mut same = true
-            for c in fk.ref_columns {
-              if @types.compare(
-                  old[c],
-                  new[c],
-                  collation?=t.columns[c].ty.collation(),
-                ) !=
-                Some(0) {
-                same = false
-              }
-            }
-            if same {
-              continue
-            }
-          }
-          None => ()
-        }
-        for kv in db.rows(child.id) {
-          let mut eq = true
-          for j, cc in fk.columns {
-            if @types.compare(
-                kv.1[cc],
-                key[j],
-                collation?=child.columns[cc].ty.collation(),
-              ) !=
-              Some(0) {
-              eq = false
-              break
-            }
-          }
-          if eq {
-            raise @types.sql_error(
-              547,
-              "The \{verb} statement conflicted with the REFERENCE constraint \"\{fk.name}\". The conflict occurred in database \"\{self.rt.database}\", table \"\{child.schema}.\{child.name}\", column '\{child.columns[fk.columns[0]].name}'.",
-              state=0,
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
-///|
 fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise {
   self.check_writable()
   match self.find_table(name) {
@@ -375,7 +361,7 @@ fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise 
           if fk.ref_table == t.id {
             raise @types.sql_error(
               4712,
-              "Cannot truncate table '\{t.schema}.\{t.name}' because it is being referenced by a FOREIGN KEY constraint.",
+              "Cannot truncate table '\{object_text(name)}' because it is being referenced by a FOREIGN KEY constraint.",
             )
           }
         }

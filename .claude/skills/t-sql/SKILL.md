@@ -492,6 +492,75 @@ mention the correction here.
   the offset, time wraps, result precision = max(date, origin), messages
   spell "Date_Bucket" (155 is a parse error).
 
+- 2026-10-04 (foreign keys, msduck gaps-constraints, corpus
+  `constraints/`): referential actions fire for every referenced row whose
+  key a DELETE removes or an UPDATE changes, even when the value exists
+  again afterwards (a CASE swap of keys 2 and 3 sets ON UPDATE SET NULL
+  children to NULL; ON UPDATE CASCADE maps each old key to its own row's
+  new key). SET NULL/SET DEFAULT/CASCADE UPDATE propagate as updates of the
+  child (its computed columns, CHECKs over the key, unique keys and
+  further actions apply), CASCADE DELETE as deletes. NO ACTION is checked
+  against the statement's final state: `DELETE tree` of a self-referencing
+  table succeeds, a NO ACTION key swap succeeds. A SET DEFAULT whose
+  default has no parent row is 547 FOREIGN KEY naming the parent table with
+  the parent statement's verb. Self-references say "FOREIGN KEY SAME TABLE"
+  / "SAME TABLE REFERENCE"; multi-column keys name no column. NOCHECK
+  foreign keys neither act nor check. UPDATE checks only CHECK/FOREIGN KEY
+  constraints over the columns it sets (computed columns over them
+  included), so a NOCHECK-violating row stays updatable elsewhere.
+- 2026-10-04 (constraint definitions): 1785 (cycles or multiple cascade
+  paths) is a table-level analysis: a DELETE reaches a child as a DELETE
+  through ON DELETE CASCADE and as an UPDATE through ON DELETE SET
+  NULL/DEFAULT; an UPDATE reaches it through any non-NO-ACTION ON UPDATE;
+  reaching a table twice or the start table again fails, whatever columns
+  the paths use. FK checks: 1778 different type (int/bigint, char/varchar,
+  decimal/numeric), 1753 same type with another length/precision, 8139
+  column counts (no 1750), 1761 SET NULL on a NOT NULL column, 1762 SET
+  DEFAULT on a NOT NULL column without a default, 1764/1715/1765 computed
+  referencing columns. 1750 follows with state 1 after 2714, 1505 and the
+  FK errors, state 0 after 1779/1911/1769/1752/1781/8111/1919/1909 and a
+  CHECK's 1764. Duplicate constraint names in one statement are 8168 (no
+  1750); CONSTRAINT c10 inside CREATE TABLE c10 is 2714. CHECK/DEFAULT with
+  a subquery 1046 (class 15), DEFAULT with a column 128 (class 15), a
+  DEFAULT that cannot convert implicitly fails at CREATE (257 for
+  SESSION_CONTEXT into nvarchar). Computed columns: another computed column
+  1759, non-deterministic PERSISTED 4936. Messages print object names as
+  written (3726, 4712, 1776, 1902, 1913, 8101, 8106), 3733 for a constraint
+  of another table, 11415 for NOCHECK of a key/default.
+- 2026-10-04 (indexes, msduck gaps-keys, corpus `constraints/`): filtered
+  UNIQUE indexes hold only rows satisfying the filter (AND of column
+  comparisons with constants and IS [NOT] NULL are emulated); IGNORE_DUP_KEY
+  skips duplicate INSERT rows with INFO 3604 (UPDATE still 2601); options
+  155 (unknown, class 15), 1916, 129 (class 15), 7999 (DROP_EXISTING without
+  an index; with one the index keeps its id); 1909 duplicate key column,
+  1919 max-type key, 8112 two clustered constraints in one statement, 8110
+  state 0 without 1750; warnings 1945 (nonclustered key > 1700 bytes) and
+  1944 (clustered > 900). DROP INDEX … WITH (options) on a nonclustered
+  index is 3748 and ends the batch. ALTER COLUMN may widen a bounded
+  varchar/nvarchar/varbinary under its indexes and keys.
+- 2026-10-04 (IDENTITY_INSERT, msduck identity-insert-*): without a column
+  list the identity column is never a target: a value for it is 8101
+  (compile time, name as written) even while ON. 544 (OFF) and 545 (ON,
+  identity omitted, also DEFAULT VALUES) are raised when the statement
+  starts (CurCmd 195) before the source is evaluated, without 3621. DEFAULT
+  or a NULL literal for the identity column is 339 at compile time;
+  duplicate INSERT columns 264. The explicit value advances IDENT_CURRENT
+  even when a later column of the row fails (conversion, CHECK, unique),
+  not when the identity value itself fails to convert. While ON, the
+  table's identity column reports COLMETADATA flags 24 (0x10|0x08) instead
+  of 16. SET IDENTITY_INSERT inside a procedure, EXEC(@sql) or an
+  sp_executesql RPC reverts when it ends, and SCOPE_IDENTITY() of the
+  caller survives the call. A missing table is 1088 state 11.
+- 2026-10-04 (XACT_STATE, msduck identity-insert-*, session-reset,
+  gaps-merge): in autocommit, XACT_STATE() is 1 (with @@TRANCOUNT 0) when
+  the same statement reads data or metadata — a FROM clause,
+  IDENT_CURRENT, OBJECT_ID — and 0 otherwise. Unverified beyond those
+  three shapes (bitsql scans the statement's tokens).
+- 2026-10-04: SESSION_CONTEXT keys are set case-sensitively (N'LOCKED' is a
+  key distinct from a read-only N'locked') but read case-insensitively
+  (SESSION_CONTEXT(N'Tenant') finds 'tenant'); bitsql prefers the exact
+  spelling (msduck session-property-context#068, gaps-computed#071).
+
 # T-SQL Language Reference
 
 Complete reference for the Transact-SQL language used by Microsoft SQL Server.

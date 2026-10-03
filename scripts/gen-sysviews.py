@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['view-descriptors', 'view-descriptors-variant', 'view-descriptors-types']
+DESCRIPTORS = ['view-descriptors', 'view-descriptors-variant', 'view-descriptors-types', 'view-descriptors-schema']
 CORPUS = os.path.join(ROOT, 'harness/corpus/catalog')
 SEED = os.path.join(ROOT, 'scripts/sysviews-seed.json')
 OUT = os.path.join(ROOT, 'src/core/session/sysviews_data.mbt')

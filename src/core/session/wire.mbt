@@ -114,6 +114,7 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
       } else {
         0x08
       }
+    InsertableIdentity => 0x18
     Computed | TableComputed => 0x20
     SetOperation | Aggregate | XmlNodes => 0
   }

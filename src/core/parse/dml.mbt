@@ -220,7 +220,7 @@ fn Parser::merge_stmt(
   let start = self.start()
   let name = self.object_name()
   let hints = self.table_hints()
-  let alias_ = self.table_alias()
+  let alias_ = self.table_alias(merge_target=true)
   let target : @ast.TableRef = {
     kind: Table(name, alias_~, hints~),
     span: self.span_from(start),

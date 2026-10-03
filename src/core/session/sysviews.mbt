@@ -618,7 +618,8 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               ("data_space_id", i(1)),
               ("is_primary_key", b(ix.primary)),
               ("is_unique_constraint", b(ix.is_constraint && !ix.primary)),
-              ("fill_factor", TinyInt(0)),
+              ("fill_factor", TinyInt(ix.fill_factor)),
+              ("ignore_dup_key", b(ix.ignore_dup_key)),
               ("allow_row_locks", b(true)),
               ("allow_page_locks", b(true)),
               ("has_filter", b(ix.filter is Some(_))),
@@ -986,7 +987,10 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     "sys.dm_exec_sessions"
     | "sys.dm_exec_requests"
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))
-    _ => out.append(self.variant_view_rows(key))
+    _ => {
+      out.append(self.variant_view_rows(key))
+      out.append(self.param_view_rows(key))
+    }
   }
   // user-defined types, synonyms, parameters (sysviews_types.mbt)
   self.type_view_rows(key, db, out)

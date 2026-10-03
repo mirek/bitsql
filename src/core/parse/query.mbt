@@ -509,12 +509,17 @@ fn Parser::column_alias(self : Parser) -> @ast.Ident? raise @ast.SyntaxError {
 }
 
 ///|
-/// `[AS] alias` after a table source. `USING` is excluded (MERGE).
-fn Parser::table_alias(self : Parser) -> @ast.Ident? raise @ast.SyntaxError {
+/// `[AS] alias` after a table source. `USING` is a bare alias anywhere but
+/// after a MERGE target (captured: msduck gaps-identifiers using-alias-bare,
+/// `FROM using using`).
+fn Parser::table_alias(
+  self : Parser,
+  merge_target? : Bool = false,
+) -> @ast.Ident? raise @ast.SyntaxError {
   if self.eat_kw("AS") {
     return Some(self.ident())
   }
-  if self.at_ident() && !self.is_kw("USING") {
+  if self.at_ident() && !(merge_target && self.is_kw("USING")) {
     Some(self.ident())
   } else {
     None

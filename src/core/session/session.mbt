@@ -229,6 +229,8 @@ pub struct Session {
   mut text : String
   /// SET IDENTITY_INSERT target table id.
   mut identity_insert : Int?
+  /// Line of the statement being executed (INFO messages).
+  mut stmt_line : Int
   /// GLOBAL cursors (session lifetime).
   priv cursors : Map[String, CursorState]
   /// The transaction is the implicit one of an autocommit statement whose
@@ -339,6 +341,7 @@ pub fn Session::new(
     tx: None,
     text: "",
     identity_insert: None,
+    stmt_line: 1,
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],

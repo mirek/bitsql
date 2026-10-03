@@ -91,6 +91,13 @@ fn Session::run_with_params(
   }
   self.frames.push(frame)
   self.rt.nest_level += 1
+  // SET IDENTITY_INSERT inside a procedure or dynamic SQL (also an
+  // sp_executesql RPC) reverts when it ends (captured: msduck
+  // identity-insert-rpc)
+  let saved_identity_insert = self.identity_insert
+  // SCOPE_IDENTITY() is per scope: the caller's value survives the call
+  // (captured: msduck identity-insert-rpc, 110 after an RPC inserted 120)
+  let saved_scope_identity = self.rt.scope_identity
   let status = try {
     // Without RETURN, the status is the last statement's @@ERROR (0 after
     // a success; e.g. 8134 after a trailing divide by zero; msduck
@@ -102,11 +109,15 @@ fn Session::run_with_params(
     e => {
       self.frames.pop() |> ignore
       self.rt.nest_level -= 1
+      self.identity_insert = saved_identity_insert
+      self.rt.scope_identity = saved_scope_identity
       raise e
     }
   }
   self.frames.pop() |> ignore
   self.rt.nest_level -= 1
+  self.identity_insert = saved_identity_insert
+  self.rt.scope_identity = saved_scope_identity
   // TVPs loaded for this call die with it
   for k in frame.owned {
     match frame.tables.get(k) {

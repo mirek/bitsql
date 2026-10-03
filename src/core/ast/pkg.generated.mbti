@@ -612,7 +612,7 @@ pub(all) enum StmtKind {
   CreateTable(CreateTable)
   AlterTable(ObjectName, AlterTableAction)
   CreateIndex(CreateIndex)
-  DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?)])
+  DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?, Bool)])
   CreateView(CreateView)
   CreateProcedure(CreateProcedure)
   CreateFunction(CreateFunction)

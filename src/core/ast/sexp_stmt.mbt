@@ -600,6 +600,9 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
           Some(t) => self.s(" (" + it.0.to_sexp() + " " + t.to_sexp() + ")")
           None => self.atom(it.0.to_sexp())
         }
+        if it.2 {
+          self.atom("with-options")
+        }
       }
       self.close()
     }

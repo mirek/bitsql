@@ -215,6 +215,14 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
             columns: table_columns(t).map(c => {
               ..c,
               qualifier: shown.to_lower(),
+              // SET IDENTITY_INSERT ON makes the identity column updateable
+              // in result metadata
+              origin: if c.origin is BaseColumn(identity=true) &&
+                self.identity_insert == Some(t.id) {
+                InsertableIdentity
+              } else {
+                c.origin
+              },
             }),
           })
         }

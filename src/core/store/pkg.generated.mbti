@@ -80,6 +80,20 @@ pub fn Db::truncate(Self, Int) -> Self
 pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::user_types(Self) -> Array[UserType]
 
+pub(all) enum FilterOp {
+  FEq
+  FNe
+  FLt
+  FLe
+  FGt
+  FGe
+} derive(Eq, @debug.Debug)
+
+pub(all) enum FilterTerm {
+  FIsNull(Int)
+  FCompare(Int, FilterOp, @types.Value)
+} derive(@debug.Debug)
+
 pub(all) struct ForeignKey {
   id : Int
   name : String
@@ -111,8 +125,12 @@ pub(all) struct Index {
   included : Array[Int]
   filter : String?
   not_null_filter : Array[Int]
+  filter_terms : Array[FilterTerm]
+  fill_factor : Int
+  ignore_dup_key : Bool
   is_constraint : Bool
 } derive(@debug.Debug)
+pub fn Index::covers(Self, Array[@types.Value]) -> Bool
 
 pub struct IndexData {
   // private fields

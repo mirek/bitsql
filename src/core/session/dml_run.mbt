@@ -392,6 +392,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   let db = self.db_of(target.scope)
   let pre = db
   let instead = self.instead_of_trigger(target, OnUpdate)
+  let touched = touched_columns(t, sets.map(s => s.0))
   let images = []
   let evaluated = []
   {
@@ -409,6 +410,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
         full,
         row,
         instead.is_empty(),
+        touched,
       )
       if instead.is_empty() {
         let out_row = self.update_output_row(
@@ -445,6 +447,33 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     }
     None => ()
   }
+  // foreign keys against the statement's final state: rows before the
+  // first conflicting one are output
+  let has_refs = fk_referencing(db, t.id)
+  let changes : Array[RowChange] = images.map(im => (im.0, im.1, Some(im.2)))
+  if has_refs {
+    let mut fin = db
+    for im in images {
+      fin = fin.delete_row(t.id, im.0)
+    }
+    for im in images {
+      fin = insert_checked(target, fin, im.0, im.2)
+    }
+    fin = self.cascade_actions(target.scope, t.id, fin, changes, "UPDATE")
+    for k, im in images {
+      let failed = try {
+        self.check_self_references(target, fin, im.2, Some(touched), "UPDATE")
+        self.check_references(target, fin, [im.1], [Some(im.2)], "UPDATE")
+        None
+      } catch {
+        e => Some(e)
+      }
+      if failed is Some(e) {
+        self.output_send(outputs, evaluated[0:k])
+        raise e
+      }
+    }
+  }
   self.output_finish(outputs, evaluated)
   // OUTPUT INTO may have written to the same database
   let mut db = self.db_of(target.scope)
@@ -453,6 +482,9 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   for im in images {
     db = insert_checked(target, db, im.0, im.2)
+  }
+  if has_refs {
+    db = self.cascade_actions(target.scope, t.id, db, changes, "UPDATE")
   }
   self.write(target.scope, db)
   self.fire_after(
@@ -481,6 +513,7 @@ fn Session::update_row(
   full : Array[@types.Value],
   row : Array[@types.Value],
   check : Bool,
+  touched : Array[Int],
 ) -> Unit raise {
   let t = target.table
   let ctx = self.ctx().with_row(full)
@@ -521,8 +554,7 @@ fn Session::update_row(
   }
   if check {
     let db = self.db_of(target.scope)
-    self.check_row(target, db, row, "UPDATE")
-    self.check_references(target, db, [old], [Some(row)], "UPDATE")
+    self.check_row(target, db, row, "UPDATE", touched~, self_fks=false)
   }
   match view {
     Some(v) => {
@@ -592,6 +624,19 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     return
   }
   let evaluated = []
+  // references against the statement's final state (cascades applied): a
+  // self-referencing DELETE of every row succeeds
+  let has_refs = fk_referencing(db, t.id)
+  let changes : Array[RowChange] = rows.map(r => (r.0, r.1, None))
+  let fin = if has_refs {
+    let mut fin = db
+    for r in rows {
+      fin = fin.delete_row(t.id, r.0)
+    }
+    self.cascade_actions(target.scope, t.id, fin, changes, "DELETE")
+  } else {
+    db
+  }
   {
     errdefer self.output_send(outputs, evaluated[:])
     for r in rows {
@@ -600,7 +645,9 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
           r.2[src.leaf_start:src.leaf_start + v.leaf.visible].to_owned()
         None => r.1
       }
-      self.check_references(target, db, [r.1], [None], "DELETE")
+      if has_refs {
+        self.check_references(target, fin, [r.1], [None], "DELETE")
+      }
       evaluated.push(
         self.output_eval(outputs, image + extra_idx.map(i => r.2[i])),
       )
@@ -614,6 +661,9 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   db = self.db_of(target.scope)
   for r in rows {
     db = db.delete_row(t.id, r.0)
+  }
+  if has_refs {
+    db = self.cascade_actions(target.scope, t.id, db, changes, "DELETE")
   }
   self.write(target.scope, db)
   self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
@@ -661,31 +711,61 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     }
     None =>
       if ins.columns.is_empty() {
+        // without a column list the identity column is never a target,
+        // even under IDENTITY_INSERT ON (a value for it is 8101)
         let out = []
         for i, c in t.columns {
-          if (c.identity is None || identity_insert) &&
-            c.computed is None &&
-            c.ty != RowVersion {
+          if c.identity is None && c.computed is None && c.ty != RowVersion {
             out.push(i)
           }
         }
         out
       } else {
-        ins.columns.map(c => {
+        let out = []
+        for c in ins.columns {
           match t.column_index(c.name) {
-            Some(i) => i
+            Some(i) => {
+              if out.contains(i) {
+                raise @types.sql_error(
+                  264,
+                  "The column name '\{t.columns[i].name}' is specified more than once in the SET clause or column list of an INSERT. A column cannot be assigned more than one value in the same clause. Modify the clause to make sure that a column is updated only once. If this statement updates or inserts columns into a view, column aliasing can conceal the duplication in your code.",
+                )
+              }
+              out.push(i)
+            }
             None =>
               raise @types.sql_error(207, "Invalid column name '\{c.name}'.")
           }
-        })
+        }
+        out
       }
   }
+  // a value for the identity column without a column list (compile time,
+  // captured: msduck identity-insert-shapes)
+  let has_identity = t.columns.iter().any(c => c.identity is Some(_))
+  // the table name as written (captured: 'dbo.alpha', 't')
+  let written = match ins.target.kind {
+    Table(name, ..) => object_text(name)
+    _ => target.display
+  }
+  let identity_8101 = () => {
+    @types.sql_error(
+      8101,
+      "An explicit value for the identity column in table '\{written}' can only be specified when a column list is used and IDENTITY_INSERT is ON.",
+    )
+  }
+  // IDENTITY_INSERT errors are raised when the statement starts executing
+  // (DONE CurCmd 195, before the source is evaluated): 544 for an explicit
+  // value while OFF, 545 for a missing one while ON
+  let mut identity_error : @types.SqlError? = None
   for i in cols {
     let c = t.columns[i]
-    if c.identity is Some(_) && !identity_insert {
-      raise @types.sql_error(
-        544,
-        "Cannot insert explicit value for identity column in table '\{t.name}' when IDENTITY_INSERT is set to OFF.",
+    if c.identity is Some(_) && !identity_insert && identity_error is None {
+      identity_error = Some(
+        @types.sql_error(
+          544,
+          "Cannot insert explicit value for identity column in table '\{t.name}' when IDENTITY_INSERT is set to OFF.",
+        ),
       )
     }
     if c.computed is Some(_) {
@@ -695,6 +775,25 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       )
     }
   }
+  if identity_insert &&
+    view is None &&
+    identity_error is None &&
+    !cols.iter().any(i => t.columns[i].identity is Some(_)) {
+    identity_error = Some(
+      @types.sql_error(
+        545,
+        "Explicit value must be specified for identity column in table '\{t.name}' either when IDENTITY_INSERT is set to ON or when a replication user is inserting into a NOT FOR REPLICATION identity column.",
+      ),
+    )
+  }
+  let start_rows = () => {
+    self.cur_cmd = 195
+    match identity_error {
+      Some(e) => raise e
+      None => ()
+    }
+  }
+  let identity_pos = cols.search_by(i => t.columns[i].identity is Some(_))
   let mut sent = false
   // source rows with their types
   let env = match ins.source {
@@ -726,6 +825,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       })
       for r in bound {
         if r.length() != cols.length() {
+          if ins.columns.is_empty() &&
+            view is None &&
+            has_identity &&
+            r.length() == cols.length() + 1 {
+            raise identity_8101()
+          }
           if ins.columns.is_empty() {
             raise @types.sql_error(
               213, "Column name or number of supplied values does not match table definition.",
@@ -754,7 +859,22 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           }
         }
       }
-      self.cur_cmd = 195
+      // DEFAULT or a NULL literal for the identity column is a compile-time
+      // error (captured: msduck identity-insert-conversion, CurCmd 253)
+      match identity_pos {
+        Some(j) if identity_insert =>
+          for r in bound {
+            match r[j] {
+              None | Some({ kind: Lit(Null), .. }) =>
+                raise @types.sql_error(
+                  339, "DEFAULT or NULL are not allowed as explicit identity values.",
+                )
+              _ => ()
+            }
+          }
+        _ => ()
+      }
+      start_rows()
       sent = self.output_header(outputs)
       let ctx = self.ctx()
       let types = []
@@ -763,7 +883,27 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         self.rt.next_row()
         let row = []
         let tys = []
-        for e in r {
+        // under IDENTITY_INSERT the explicit identity value counts even
+        // when another column of the row then fails (captured: msduck
+        // identity-insert-errors, IDENT_CURRENT 400 after a 245 on v)
+        let early = match identity_pos {
+          Some(j) if identity_insert && r[j] is Some(b) => {
+            let v = @exec.eval(ctx, b)
+            let cv = self.to_column(target, t.columns[cols[j]], v, b.ty)
+            match cv.as_int64() {
+              Some(n) => self.bump_identity(t, n)
+              None => ()
+            }
+            Some((j, v))
+          }
+          _ => None
+        }
+        for k, e in r {
+          if early is Some((j, v)) && j == k {
+            row.push(v)
+            tys.push(e.map(b => b.ty).unwrap_or(@types.SqlType::Int))
+            continue
+          }
           match e {
             Some(b) => {
               row.push(@exec.eval(ctx, b))
@@ -792,6 +932,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     }
     InsertQuery(q) => {
       let bq = @bind.bind_query(env, q, result_columns=false)
+      if ins.columns.is_empty() &&
+        view is None &&
+        has_identity &&
+        bq.columns.length() == cols.length() + 1 {
+        raise identity_8101()
+      }
       if bq.columns.length() != cols.length() {
         raise @types.sql_error(
           120,
@@ -802,12 +948,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       for j, c in bq.columns {
         @types.check_assign(c.ty, t.columns[cols[j]].ty)
       }
-      self.cur_cmd = 195
+      start_rows()
       sent = self.output_header(outputs)
       (@exec.run(self.ctx(), bq.plan), bq.columns.map(c => c.ty))
     }
     DefaultValues => {
-      self.cur_cmd = 195
+      start_rows()
       sent = self.output_header(outputs)
       ([[]], [])
     }
@@ -831,6 +977,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let mut last_identity : Int64? = None
   let inserted_rows = []
   let evaluated = []
+  let mut dup_ignored = false
   for ri, src in source {
     self.rt.next_row()
     let row = Array::make(t.columns.length(), @types.Value::Null)
@@ -840,6 +987,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       for j, ci in cols {
         if j < src.length() {
           let is_default = ri < default_marks.length() && default_marks[ri][j]
+          // captured: msduck identity-insert-conversion (339)
+          if t.columns[ci].identity is Some(_) && (is_default || src[j] is Null) {
+            raise @types.sql_error(
+              339, "DEFAULT or NULL are not allowed as explicit identity values.",
+            )
+          }
           if !is_default {
             row[ci] = self.to_column(target, t.columns[ci], src[j], types[j])
             given[ci] = true
@@ -874,10 +1027,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           if c.identity is Some(_) && given[i] {
             match row[i].as_int64() {
               Some(v) => {
-                let cur = self.server.idents.get(t.id)
-                if cur is None || v > cur.unwrap_or(0L) {
-                  self.server.idents[t.id] = v
-                }
+                self.bump_identity(t, v)
                 last_identity = Some(v)
               }
               None => ()
@@ -887,6 +1037,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       }
       if !instead.is_empty() {
         // INSTEAD OF: the trigger sees the rows; constraints are not checked
+        inserted_rows.push(row)
         return
       }
       self.check_row(target, db, row, "INSERT")
@@ -898,6 +1049,10 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         }
         None => row
       }
+      if dup_key_ignored(t, db, row) {
+        dup_ignored = true
+        return
+      }
       let rowid = self.server.rowid()
       if target.scope == 0 {
         // X on the new key: waits for another transaction's uncommitted
@@ -906,9 +1061,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       }
       db = insert_checked(target, db, rowid, row)
       evaluated.push(self.output_eval(outputs, image))
+      inserted_rows.push(row)
     }
     step()
-    inserted_rows.push(row)
   }
   let all_columns = Array::makei(t.columns.length(), i => i)
   if !instead.is_empty() {
@@ -925,8 +1080,47 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     self.rt.identity = iv
     self.rt.scope_identity = iv
   }
+  if dup_ignored {
+    self.info(3604, 0, "Duplicate key was ignored.", self.stmt_line)
+  }
   self.fire_after(target, OnInsert, [], inserted_rows, all_columns, pre)
-  let count = source.length().to_int64()
+  let count = inserted_rows.length().to_int64()
   self.rt.rowcount = count
   self.done(195, count=Some(count), result_set=sent)
+}
+
+///|
+/// Columns an UPDATE changes: its SET columns plus the computed columns
+/// over them (a CHECK on a computed column is checked when a column it
+/// uses is set, captured: ck_t over `s AS a + b`).
+fn touched_columns(t : @store.Table, set : Array[Int]) -> Array[Int] {
+  let out = set.copy()
+  for i, c in t.columns {
+    match c.computed {
+      Some(expr) if !out.contains(i) &&
+        set.iter().any(j => expr_mentions(expr, t.columns[j].name.to_lower())) =>
+        out.push(i)
+      _ => ()
+    }
+  }
+  out
+}
+
+///|
+/// An explicit identity value (IDENTITY_INSERT ON) moves the table's
+/// identity forward when it lies beyond the current value in the
+/// increment's direction.
+fn Session::bump_identity(self : Session, t : @store.Table, v : Int64) -> Unit {
+  let increment = match
+    t.columns.iter().find_first(c => c.identity is Some(_)) {
+    Some({ identity: Some(id), .. }) => id.increment
+    _ => 1L
+  }
+  match self.server.idents.get(t.id) {
+    None => self.server.idents[t.id] = v
+    Some(cur) =>
+      if (increment >= 0L && v > cur) || (increment < 0L && v < cur) {
+        self.server.idents[t.id] = v
+      }
+  }
 }
