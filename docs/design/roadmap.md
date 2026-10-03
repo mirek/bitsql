@@ -64,17 +64,17 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
       t-sql skill findings (no MSSQL was run for this work), non-ISO date strings / DATEFORMAT / LANGUAGE, CONVERT styles beyond
       0/1/2/3-12/20-25/100-112/120/121/126/127, float style 3, decimal ↔ binary, CP1252
       best-fit, money styles beyond 0/1/2, collations other than Latin1_General/SQL_Latin1)
-- [~] Store: persistent ordered map `PMap` (AVL, explicit comparator, range seeks) done; tables, indexes, catalog objects missing
-- [ ] DDL execution: tables, constraints, indexes, views, procs, triggers, functions
+- [~] Store: `PMap` + `core/store` Db (tables, rows by rowid, unique/non-unique index maps, modules, schemas); views/procs/functions as stored modules not wired yet
+- [~] DDL execution: CREATE/DROP TABLE (columns, NULL/NOT NULL, IDENTITY, DEFAULT, computed, PK/UNIQUE/CHECK/FK incl. self-reference), temp tables, table variables, TRUNCATE, CREATE/DROP PROCEDURE (session-level). Missing: ALTER TABLE, CREATE INDEX, views, functions, triggers, schemas
 - [ ] Virtual `sys.*` / `INFORMATION_SCHEMA` views the scripts touch; `OBJECT_ID`, `COL_LENGTH`, …
 - Gate: all migration scripts run green.
 
 ## Phase 4: DML and access paths
 
-- [ ] Binder + IR, Semantics record for T-SQL
-- [ ] Executor: scan, filter, project, join, aggregate, sort, limit, values
-- [ ] INSERT/UPDATE/DELETE with Delta, OUTPUT, MERGE
-- [ ] Constraints: PK, unique, CHECK, FK (547), defaults, identity, computed columns
+- [~] Binder + IR (core/bind, core/ir) with captured metadata rules; Semantics record not extracted yet (T-SQL rules inline)
+- [~] Executor: scan, filter, project, nested-loop joins (inner/left/right/full/cross), sort, limit, distinct, union all, values. Missing: aggregate/GROUP BY, subqueries, CTEs, APPLY, window functions
+- [~] INSERT (VALUES/SELECT/DEFAULT VALUES, defaults, identity, IDENTITY_INSERT, computed, rowversion), UPDATE (compound SET, DEFAULT), DELETE, statement-level rollback. Missing: OUTPUT, UPDATE/DELETE FROM, TOP, MERGE, triggers (Delta consumers)
+- [~] Constraints: NOT NULL 515, PK/UNIQUE 2627, unique index 2601, CHECK 547, FK 547 both directions, truncation 2628, identity not rolled back. Missing: cascades, NOCHECK, messages verified against captures
 - [ ] Index seeks on sargable predicates
 - Gate: first tests move to the emulator allowlist.
 
@@ -91,7 +91,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 
 ## Phase 6: concurrency
 
-- [ ] Transactions over persistent roots; RCSI statement snapshots
+- [~] Transactions over persistent roots (BEGIN/COMMIT/ROLLBACK, ENVCHANGE 8/9/10, statement-level rollback); concurrent writers raise 50107 until the lock manager is wired
 - [~] Interval lock manager (`core/sched`: S/U/X, key intervals, whole-table fallback, FIFO + conversion priority, statement/transaction durations) done; LockSpec from hints/isolation not wired yet
 - [~] Wait-for graph + cycle detection + cheapest-victim choice in `core/sched`; engine parking/1205 not wired yet. Victim tie-break (requester) unverified against SQL Server
 - [ ] Deterministic mode + replay

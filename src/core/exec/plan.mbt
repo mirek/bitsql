@@ -7,6 +7,48 @@ pub type Row = Array[@types.Value]
 pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
   match plan {
     OneRow => [[]]
+    Scan(scope~, id~, rowid~) =>
+      (ctx.source)(scope, id).map(kv => {
+        if rowid {
+          let r = kv.1.copy()
+          r.push(BigInt(kv.0))
+          r
+        } else {
+          kv.1
+        }
+      })
+    Join(kind, left, right, on, left_width~, right_width~) => {
+      let ls = run(ctx, left)
+      let rs = run(ctx, right)
+      let out = []
+      let right_matched = Array::make(rs.length(), false)
+      for l in ls {
+        let mut matched = false
+        for j, r in rs {
+          let row = l + r
+          let ok = match on {
+            Some(p) => is_true(eval(ctx.with_row(row), p))
+            None => true
+          }
+          if ok {
+            matched = true
+            right_matched[j] = true
+            out.push(row)
+          }
+        }
+        if !matched && kind is (Left | Full) {
+          out.push(l + Array::make(right_width, @types.Value::Null))
+        }
+      }
+      if kind is (Right | Full) {
+        for j, r in rs {
+          if !right_matched[j] {
+            out.push(Array::make(left_width, @types.Value::Null) + r)
+          }
+        }
+      }
+      out
+    }
     Values(rows) => rows.map(r => r.map(e => eval(ctx, e)))
     Project(input, exprs) =>
       run(ctx, input).map(row => {

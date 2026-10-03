@@ -17,6 +17,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.cur_cmd = 253
   self.throwing = false
+  let snap_temp = self.temp
+  let snap_tx = self.tx
+  let snap_db = self.server.db
   let failure = try {
     self.exec_stmt(s)
     None
@@ -24,7 +27,19 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     @types.SqlError(..) as e => Some(e)
     other => raise other
   }
-  guard failure is Some(e) else { return }
+  guard failure is Some(e) else {
+    if self.rt.error != 0 &&
+      !(s.kind is (If(_, _, _) | While(_, _) | Block(_) | TryCatch(_, _))) {
+      self.rt.error = 0
+    }
+    return
+  }
+  // statement-level rollback: discard the failed statement's writes
+  self.temp = snap_temp
+  match snap_tx {
+    Some(_) => self.tx = snap_tx
+    None => if self.tx is None { self.server.db = snap_db }
+  }
   self.rt.error = e.number()
   self.rt.rowcount = 0
   if self.try_depth > 0 && e.severity() > 10 && e.severity() < 20 {
@@ -243,7 +258,10 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     TryCatch(body, handler) => self.exec_try(body, handler)
     BeginTran(..) => {
+      self.begin_tx()
       self.rt.trancount += 1
+      self.rt.xact_state = 1
+      self.out.push(EnvChange(BeginTransaction(self.tx_descriptor())))
       self.done(212)
     }
     Commit(..) => {
@@ -253,6 +271,12 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         )
       }
       self.rt.trancount -= 1
+      if self.rt.trancount == 0 {
+        let d = self.tx_descriptor()
+        self.commit_tx()
+        self.rt.xact_state = 0
+        self.out.push(EnvChange(CommitTransaction(d)))
+      }
       self.done(213)
     }
     Rollback(..) => {
@@ -261,9 +285,42 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
           3903, "The ROLLBACK TRANSACTION request has no corresponding BEGIN TRANSACTION.",
         )
       }
+      let d = self.tx_descriptor()
       self.rt.trancount = 0
+      self.rt.xact_state = 0
+      self.rollback_tx()
+      self.out.push(EnvChange(RollbackTransaction(d)))
       self.done(210)
     }
+    CreateTable(ct) => self.exec_create_table(ct)
+    DeclareTable(name, body) => self.exec_declare_table(name, body)
+    Drop(kind, if_exists~, names) => self.exec_drop(kind, if_exists, names)
+    Insert(ins) => self.exec_insert(ins)
+    Update(u) => self.exec_update(u)
+    Delete(d) => self.exec_delete(d)
+    Truncate(name) => self.exec_truncate(name)
+    SetIdentityInsert(name, on) =>
+      match self.find_table(name) {
+        Some((_, t)) => {
+          if on {
+            if t.columns.iter().all(c => c.identity is None) {
+              raise @types.sql_error(
+                8106,
+                "Table '\{t.name}' does not have the identity property. Cannot perform SET operation.",
+              )
+            }
+            self.identity_insert = Some(t.id)
+          } else if self.identity_insert == Some(t.id) {
+            self.identity_insert = None
+          }
+          self.done(if on { 185 } else { 186 })
+        }
+        None =>
+          raise @types.sql_error(
+            208,
+            "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
+          )
+      }
     CreateProcedure(p) => {
       let key = p.name.base().to_lower()
       if p.mode is Create && self.server.procs.contains(key) {

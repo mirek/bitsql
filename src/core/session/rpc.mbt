@@ -79,7 +79,13 @@ fn Session::run_with_params(
 
 ///|
 fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
-  { rt: self.rt, vars: frame.values, row: [], outer: [], }
+  {
+    rt: self.rt,
+    vars: frame.values,
+    row: [],
+    outer: [],
+    source: (scope, id) => self.db_of(scope).rows(id),
+  }
 }
 
 ///|

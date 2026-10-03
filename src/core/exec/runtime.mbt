@@ -75,6 +75,9 @@ pub(all) struct Ctx {
   vars : Array[@types.Value]
   row : Array[@types.Value]
   outer : Array[Array[@types.Value]] // innermost last
+  /// Table rows by (scope, id), as (rowid, row) pairs. Supplied by the
+  /// session from its current database view.
+  source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
 }
 
 ///|

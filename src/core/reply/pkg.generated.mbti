@@ -19,6 +19,7 @@ pub(all) enum Item {
   StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
   Message(SqlMessage)
   ReturnStatus(Int)
+  EnvChange(@tds.EnvChange)
   ReturnValue(ordinal~ : Int, name~ : String, type_info~ : @tds.TypeInfo, value~ : @tds.WireValue)
 } derive(@debug.Debug)
 

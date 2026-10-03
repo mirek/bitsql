@@ -59,7 +59,9 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
   let any_null = (bs : Array[@ir.Expr]) => bs.iter().any(b => b.nullable)
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
-      raise err(147, "An aggregate may not appear in this context.", state=1)
+      // Aggregates are bound by the query binder; reaching here means the
+      // query shape is not supported yet (never report SQL Server's 147).
+      raise @types.not_supported("aggregate functions")
     "LEN" => {
       arity(name, args, 1)
       let b = bound()

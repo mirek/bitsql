@@ -9,11 +9,41 @@ pub(all) struct Proc {
 /// State shared by every session of one engine (the "server").
 pub struct Server {
   procs : Map[String, Proc] // key: lowercased schema-less name
+  /// Last committed database state.
+  mut db : @store.Db
+  /// Row ids and object ids are never reused or rolled back.
+  mut next_rowid : Int64
+  mut next_object_id : Int
+  /// Last identity value per table id (not rolled back, like SQL Server).
+  idents : Map[Int, Int64]
+  /// Database-wide rowversion counter (@@DBTS).
+  mut dbts : Int64
 }
 
 ///|
 pub fn Server::new() -> Server {
-  { procs: Map([]), }
+  {
+    procs: Map([]),
+    db: @store.Db::empty(),
+    next_rowid: 1L,
+    next_object_id: 245575913,
+    idents: Map([]),
+    dbts: 2000L,
+  }
+}
+
+///|
+fn Server::rowid(self : Server) -> Int64 {
+  let r = self.next_rowid
+  self.next_rowid = r + 1L
+  r
+}
+
+///|
+fn Server::object_id(self : Server) -> Int {
+  let r = self.next_object_id
+  self.next_object_id = r + 16000057
+  r
 }
 
 ///|
@@ -21,11 +51,13 @@ pub fn Server::new() -> Server {
 priv struct Frame {
   vars : Map[String, @bind.VarInfo]
   values : Array[@types.Value]
+  /// Table variables: lowercased name → id in the session's temp database.
+  tables : Map[String, Int]
 }
 
 ///|
 fn Frame::new() -> Frame {
-  { vars: Map([]), values: [], }
+  { vars: Map([]), values: [], tables: Map([]), }
 }
 
 ///|
@@ -63,6 +95,15 @@ pub struct Session {
   mut cur_cmd : Int
   /// The current statement is THROW (uncaught THROW ends the batch).
   mut throwing : Bool
+  /// Temp tables (#t) and table variables (scope 1).
+  mut temp : @store.Db
+  /// Explicit transaction: the committed state it started from and its
+  /// private view including its own writes.
+  mut tx : (@store.Db, @store.Db)?
+  /// Text of the batch being executed (to slice definitions by span).
+  mut text : String
+  /// SET IDENTITY_INSERT target table id.
+  mut identity_insert : Int?
 }
 
 ///|
@@ -83,6 +124,10 @@ pub fn Session::new(
     try_depth: 0,
     cur_cmd: 253,
     throwing: false,
+    temp: @store.Db::empty(),
+    tx: None,
+    text: "",
+    identity_insert: None,
   }
 }
 
@@ -93,12 +138,18 @@ fn Session::frame(self : Session) -> Frame {
 
 ///|
 fn Session::env(self : Session) -> @bind.Env {
-  @bind.Env::new(self.frame().vars)
+  @bind.Env::new(self.frame().vars, catalog=self.catalog())
 }
 
 ///|
 fn Session::ctx(self : Session) -> @exec.Ctx {
-  { rt: self.rt, vars: self.frame().values, row: [], outer: [], }
+  {
+    rt: self.rt,
+    vars: self.frame().values,
+    row: [],
+    outer: [],
+    source: (scope, id) => self.db_of(scope).rows(id),
+  }
 }
 
 ///|
@@ -154,6 +205,7 @@ pub fn Session::run_batch(
 ) -> Array[@reply.Item] {
   self.rt.now = now
   self.out.clear()
+  self.text = text
   self.rpc = false
   self.frames.clear()
   self.frames.push(Frame::new())

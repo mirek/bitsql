@@ -6,6 +6,7 @@ import {
   "mirek/bitsql/core/exec",
   "mirek/bitsql/core/ir",
   "mirek/bitsql/core/reply",
+  "mirek/bitsql/core/store",
   "mirek/bitsql/core/tds",
   "mirek/bitsql/core/types",
 }
@@ -37,6 +38,11 @@ pub(all) struct Proc {
 
 pub struct Server {
   procs : Map[String, Proc]
+  mut db : @store.Db
+  mut next_rowid : Int64
+  mut next_object_id : Int
+  idents : Map[Int, Int64]
+  mut dbts : Int64
 }
 pub fn Server::new() -> Self
 
@@ -49,6 +55,10 @@ pub struct Session {
   mut try_depth : Int
   mut cur_cmd : Int
   mut throwing : Bool
+  mut temp : @store.Db
+  mut tx : (@store.Db, @store.Db)?
+  mut text : String
+  mut identity_insert : Int?
   // private fields
 }
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64) -> Self

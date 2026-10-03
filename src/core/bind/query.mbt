@@ -27,10 +27,103 @@ fn bind_from(
   if from.is_empty() {
     return (OneRow, [])
   }
-  if from.length() > 1 {
-    raise @types.not_supported("comma joins")
+  let (p0, c0) = bind_table_ref(env, from[0])
+  let mut plan : @ir.Plan = p0
+  let mut cols = c0
+  // Comma-separated FROM items are cross joins.
+  for i in 1..<from.length() {
+    let (p2, c2) = bind_table_ref(env, from[i])
+    plan = @ir.Plan::Join(
+      Cross,
+      plan,
+      p2,
+      None,
+      left_width=cols.length(),
+      right_width=c2.length(),
+    )
+    cols = cols + c2
   }
-  match from[0].kind {
+  (plan, cols)
+}
+
+///|
+fn object_text(name : @ast.ObjectName) -> String {
+  name.parts.map(p => p.name).join(".")
+}
+
+///|
+fn requalify(cols : Array[ColumnRef], q : String) -> Array[ColumnRef] {
+  cols.map(c => { ..c, qualifier: q, })
+}
+
+///|
+fn bind_table_ref(
+  env : Env,
+  r : @ast.TableRef,
+) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError {
+  match r.kind {
+    Table(name, alias_~, hints~) => {
+      ignore(hints)
+      match (env.catalog.table)(name) {
+        Some(t) => {
+          let q = match alias_ {
+            Some(a) => a.name.to_lower()
+            None => t.name.to_lower()
+          }
+          (Scan(scope=t.scope, id=t.id, rowid=false), requalify(t.columns, q))
+        }
+        None => raise err(208, "Invalid object name '\{object_text(name)}'.")
+      }
+    }
+    TableVar(name, alias_~, ..) =>
+      match (env.catalog.table_var)(name) {
+        Some(t) => {
+          let q = match alias_ {
+            Some(a) => a.name.to_lower()
+            None => name.to_lower()
+          }
+          (Scan(scope=t.scope, id=t.id, rowid=false), requalify(t.columns, q))
+        }
+        None =>
+          raise err(
+            1087,
+            "Must declare the table variable \"\{name}\".",
+            state=1,
+            severity=15,
+          )
+      }
+    Join(kind, left, right, on~, ..) => {
+      let (lp, lc) = bind_table_ref(env, left)
+      let (rp, rc) = bind_table_ref(env, right)
+      let k : @ir.JoinKind = match kind {
+        Inner => Inner
+        Left => Left
+        Right => Right
+        Full => Full
+        Cross => Cross
+        CrossApply | OuterApply => raise @types.not_supported("APPLY")
+      }
+      // outer joins make the other side's columns nullable
+      let lc2 = if k is (Right | Full) {
+        lc.map(c => { ..c, nullable: true, })
+      } else {
+        lc
+      }
+      let rc2 = if k is (Left | Full) {
+        rc.map(c => { ..c, nullable: true, })
+      } else {
+        rc
+      }
+      let cols = lc2 + rc2
+      let cond = match on {
+        Some(e) => Some(bind_expr(env.with_columns(lc + rc), e))
+        None => None
+      }
+      (
+        Join(k, lp, rp, cond, left_width=lc.length(), right_width=rc.length()),
+        cols,
+      )
+    }
     Values(rows, alias_~, columns~) => {
       let bound = rows.map(r => r.map(e => bind_expr(env, e)))
       let width = bound[0].length()
@@ -48,7 +141,6 @@ fn bind_from(
         )
       }
       let cols = []
-      let typed = bound.copy()
       for j in 0..<width {
         let t = unify_types(bound.map(r => r[j].ty))
         let nullable = bound.iter().any(r => r[j].nullable)
@@ -60,22 +152,20 @@ fn bind_from(
           origin: Computed,
         })
       }
-      let rows2 = typed.map(r => {
+      let rows2 = []
+      for r in bound {
         let out = []
         for j, e in r {
-          out.push(coerce(e, cols[j].ty)) |> ignore_raise
+          out.push(coerce(e, cols[j].ty))
         }
-        out
-      })
+        rows2.push(out)
+      }
       (Values(rows2), cols)
     }
-    _ => raise @types.not_supported("this FROM clause")
+    Derived(_, ..) => raise @types.not_supported("derived tables")
+    TableFunc(name, _, ..) =>
+      raise @types.not_supported("table-valued function \{object_text(name)}")
   }
-}
-
-///|
-fn ignore_raise(_u : Unit) -> Unit {
-  ()
 }
 
 ///|

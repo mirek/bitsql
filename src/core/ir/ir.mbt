@@ -162,6 +162,12 @@ pub(all) enum Fn {
 pub(all) enum Plan {
   /// One empty row (SELECT without FROM).
   OneRow
+  /// All rows of a table. `scope` 0 = database, 1 = session (temp tables,
+  /// table variables). With `rowid`, each row gets a trailing BigInt row id
+  /// (UPDATE/DELETE targets).
+  Scan(scope~ : Int, id~ : Int, rowid~ : Bool)
+  /// Nested-loop join; the output row is left ++ right.
+  Join(JoinKind, Plan, Plan, Expr?, left_width~ : Int, right_width~ : Int)
   Values(Array[Array[Expr]])
   Project(Plan, Array[Expr])
   Filter(Plan, Expr)
@@ -172,6 +178,15 @@ pub(all) enum Plan {
   Distinct(Plan, Array[@types.Collation?])
   UnionAll(Array[Plan])
 } derive(Debug)
+
+///|
+pub(all) enum JoinKind {
+  Inner
+  Left
+  Right
+  Full
+  Cross
+} derive(Debug, Eq)
 
 ///|
 pub(all) struct SortKey {

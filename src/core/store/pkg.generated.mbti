@@ -1,12 +1,113 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "mirek/bitsql/core/store"
 
+import {
+  "mirek/bitsql/core/types",
+  "moonbitlang/core/debug",
+}
+
 // Values
+pub fn key_comparator(Array[@types.SqlType], Array[Bool]) -> (Array[@types.Value], Array[@types.Value]) -> Int
+
+pub fn qualified_key(String, String) -> String
 
 // Errors
 
 // Types and methods
+pub(all) struct Check {
+  name : String
+  expr : String
+  enabled : Bool
+} derive(@debug.Debug)
+
+pub(all) struct Column {
+  name : String
+  ty : @types.SqlType
+  nullable : Bool
+  identity : Identity?
+  default_ : String?
+  default_name : String?
+  computed : String?
+  persisted : Bool
+  rowguidcol : Bool
+} derive(@debug.Debug)
+
+pub struct Db {
+  // private fields
+}
+pub fn Db::add_module(Self, Module) -> Self
+pub fn Db::add_schema(Self, String, Int) -> Self
+pub fn Db::alter_table(Self, Table, convert? : (Array[@types.Value]) -> Array[@types.Value]) -> Self
+pub fn Db::create_table(Self, Table) -> Self
+pub fn Db::delete_row(Self, Int, Int64) -> Self
+pub fn Db::drop_object(Self, Int) -> Self
+pub fn Db::drop_schema(Self, String) -> Self
+pub fn Db::empty() -> Self
+pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
+pub fn Db::get_module(Self, Int) -> Module?
+pub fn Db::insert_row(Self, Int, Int64, Array[@types.Value]) -> Self
+pub fn Db::lookup(Self, String, String) -> Int?
+pub fn Db::modules(Self) -> Array[Module]
+pub fn Db::row(Self, Int, Int64) -> Array[@types.Value]?
+pub fn Db::row_count(Self, Int) -> Int
+pub fn Db::rows(Self, Int) -> Array[(Int64, Array[@types.Value])]
+pub fn Db::schema_id(Self, String) -> Int?
+pub fn Db::schema_names(Self) -> Array[(String, Int)]
+pub fn Db::seek(Self, Int, Int, lo? : Array[@types.Value], hi? : Array[@types.Value]) -> Array[Int64]
+pub fn Db::table(Self, Int) -> Table?
+pub fn Db::tables(Self) -> Array[Table]
+pub fn Db::truncate(Self, Int) -> Self
+pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
+
+pub(all) struct ForeignKey {
+  name : String
+  columns : Array[Int]
+  ref_table : Int
+  ref_columns : Array[Int]
+  on_delete : RefAction
+  on_update : RefAction
+  enabled : Bool
+} derive(@debug.Debug)
+
+pub(all) struct Identity {
+  seed : Int64
+  increment : Int64
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Index {
+  name : String
+  unique : Bool
+  primary : Bool
+  clustered : Bool
+  columns : Array[(Int, Bool)]
+  filter : String?
+  is_constraint : Bool
+} derive(@debug.Debug)
+
+pub struct IndexData {
+  // private fields
+}
+
+pub(all) struct Module {
+  id : Int
+  schema : String
+  name : String
+  kind : ObjectKind
+  definition : String
+  parent : Int?
+  created : Int64
+} derive(@debug.Debug)
+
 type Node[K, V]
+
+pub(all) enum ObjectKind {
+  UserTable
+  View
+  Procedure
+  ScalarFunction
+  TableFunction
+  Trigger
+} derive(Eq, @debug.Debug)
 
 pub struct PMap[K, V] {
   // private fields
@@ -24,6 +125,32 @@ pub fn[K, V] PMap::range(Self[K, V], lo? : K, hi? : K, lo_incl? : Bool, hi_incl?
 pub fn[K, V] PMap::remove(Self[K, V], K) -> Self[K, V]
 pub fn[K, V] PMap::size(Self[K, V]) -> Int
 
+pub(all) enum RefAction {
+  NoAction
+  Cascade
+  SetNull
+  SetDefault
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Table {
+  id : Int
+  schema : String
+  name : String
+  columns : Array[Column]
+  indexes : Array[Index]
+  checks : Array[Check]
+  foreign_keys : Array[ForeignKey]
+  created : Int64
+} derive(@debug.Debug)
+pub fn Table::column_index(Self, String) -> Int?
+pub fn Table::primary_key(Self) -> Index?
+
+pub struct TableData {
+  rows : PMap[Int64, Array[@types.Value]]
+  indexes : Array[IndexData]
+}
+
 // Type aliases
+pub type Row = Array[@types.Value]
 
 // Traits

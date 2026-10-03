@@ -137,6 +137,14 @@ pub(all) enum Global {
   ProcId
 } derive(Eq, @debug.Debug)
 
+pub(all) enum JoinKind {
+  Inner
+  Left
+  Right
+  Full
+  Cross
+} derive(Eq, @debug.Debug)
+
 pub(all) enum Origin {
   BaseColumn(identity~ : Bool)
   Computed
@@ -146,6 +154,8 @@ pub(all) enum Origin {
 
 pub(all) enum Plan {
   OneRow
+  Scan(scope~ : Int, id~ : Int, rowid~ : Bool)
+  Join(JoinKind, Plan, Plan, Expr?, left_width~ : Int, right_width~ : Int)
   Values(Array[Array[Expr]])
   Project(Plan, Array[Expr])
   Filter(Plan, Expr)

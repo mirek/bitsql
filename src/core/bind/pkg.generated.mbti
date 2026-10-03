@@ -28,6 +28,12 @@ pub(all) struct BoundQuery {
   order : Array[Int]
 } derive(@debug.Debug)
 
+pub(all) struct Catalog {
+  table : (@ast.ObjectName) -> TableBinding?
+  table_var : (String) -> TableBinding?
+}
+pub fn Catalog::empty() -> Self
+
 pub(all) struct ColumnRef {
   qualifier : String
   name : String
@@ -41,9 +47,18 @@ pub(all) struct Env {
   columns : Array[ColumnRef]
   outer : Env?
   collation : @types.Collation
+  catalog : Catalog
 }
-pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation) -> Self
+pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog) -> Self
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
+
+pub(all) struct TableBinding {
+  scope : Int
+  id : Int
+  schema : String
+  name : String
+  columns : Array[ColumnRef]
+}
 
 pub(all) enum TypeContext {
   Declaration

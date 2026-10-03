@@ -24,6 +24,8 @@ pub(all) enum Item {
   StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
   Message(SqlMessage)
   ReturnStatus(Int)
+  /// Environment change (transactions, database).
+  EnvChange(@tds.EnvChange)
   ReturnValue(
     ordinal~ : Int,
     name~ : String,
@@ -112,6 +114,7 @@ pub fn render(
         }
       }
       ReturnStatus(s) => @tds.write_return_status(w, s)
+      EnvChange(e) => @tds.write_envchange(w, e)
       ReturnValue(ordinal~, name~, type_info~, value~) =>
         @tds.write_return_value(
           w,
