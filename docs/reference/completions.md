@@ -115,11 +115,17 @@ transaction sends no ENVCHANGE.
 
 ## Statement-terminating errors followed by 3621
 
-DML constraint violations (2627, 2601, 515, 2628, and assumed for 547/8152)
-and lock timeouts (1222) are followed by INFO 3621 "The statement has been
+Every run-time error of an INSERT/UPDATE/DELETE/MERGE that does not end the
+batch (constraint violations, 8134, 8115, 220, 232, 248, 512, 550, ...) and
+lock timeouts (1222) are followed by INFO 3621 "The statement has been
 terminated." (class 0) before the statement's DONE with the error bit, outside
-TRY (captured: catalog/filtered-unique, locking/same-key-insert-waits,
-locking/lock-timeout). 547 raised by ALTER TABLE ... CHECK is not.
+TRY (captured: catalog/filtered-unique, locking/lock-timeout,
+output/dml-error-completion, output/stream-errors). This includes WHERE
+errors of UPDATE/DELETE, which complete with the DML CurCmd, not 253.
+Batch-ending errors (245, any error under XACT_ABORT ON) get no 3621, and the
+DML statement completes with DONE 253, unless an OUTPUT result set was
+already started (then the DML CurCmd). 547 raised by ALTER TABLE ... CHECK
+is not followed by 3621.
 
 ## Nested EXEC
 

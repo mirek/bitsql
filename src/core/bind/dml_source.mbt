@@ -1,45 +1,126 @@
 ///|
+/// The DML target as a FROM item when it is a view, CTE or derived table:
+/// rows are the target's visible columns followed by hidden columns (the
+/// underlying row, whose base-table image starts at `base` and whose row id
+/// is at `rowid`, both relative to the leaf).
+pub(all) struct DmlLeaf {
+  plan : @ir.Plan
+  columns : Array[ColumnRef]
+  visible : Int
+  base : Int
+  rowid : Int
+}
+
+///|
+/// A bound UPDATE/DELETE source: the target occurrence spans
+/// `leaf_start .. leaf_start + leaf_width`; `base` and `rowid` are absolute.
+pub(all) struct DmlSource {
+  plan : @ir.Plan
+  columns : Array[ColumnRef]
+  leaf_start : Int
+  leaf_width : Int
+  base : Int
+  rowid : Int
+}
+
+///|
+pub fn Env::with_ctes(self : Env, ctes : Array[@ast.Cte]) -> Env {
+  with_ctes(self, ctes)
+}
+
+///|
+/// The innermost CTE visible under `name` (one-part names only).
+pub fn Env::find_cte(self : Env, name : @ast.ObjectName) -> CteDef? {
+  find_cte(self, name)
+}
+
+///|
+fn rowid_column() -> ColumnRef {
+  {
+    qualifier: "%rowid",
+    name: "%rowid",
+    ty: BigInt,
+    nullable: false,
+    origin: Computed,
+  }
+}
+
+///|
+/// The leaf of a base-table target: its columns under `q`, then the row id.
+fn base_leaf(target : TableBinding, q : String) -> DmlLeaf {
+  let cols = target.columns.map(c => { ..c, qualifier: q, })
+  let n = cols.length()
+  cols.push(rowid_column())
+  {
+    plan: Scan(scope=target.scope, id=target.id, rowid=true),
+    columns: cols,
+    visible: n,
+    base: 0,
+    rowid: n,
+  }
+}
+
+///|
+/// A view leaf under qualifier `q`: visible columns take the qualifier.
+fn requalify_leaf(leaf : DmlLeaf, q : String) -> DmlLeaf {
+  {
+    ..leaf,
+    columns: leaf.columns.mapi((i, c) => {
+      if i < leaf.visible {
+        { ..c, qualifier: q, }
+      } else {
+        c
+      }
+    }),
+  }
+}
+
+///|
 /// FROM clause of UPDATE/DELETE: like `bind_from`, but the occurrence of the
-/// DML target is scanned with row ids. Returns the plan, its visible
-/// columns (the target's row id appears as a hidden column named "%rowid"),
-/// and the positions of the target's first column and its row id.
+/// DML target is scanned with row ids (or is the given `view` leaf). A
+/// target not named in FROM is cross joined, as SQL Server does.
 pub fn bind_dml_source(
   env : Env,
   from : Array[@ast.TableRef],
   target : TableBinding,
   target_names : Array[String],
-) -> (@ir.Plan, Array[ColumnRef], Int, Int) raise @types.SqlError {
-  let found : Ref[(Int, Int)?] = Ref(None)
+  view? : DmlLeaf? = None,
+) -> DmlSource raise @types.SqlError {
+  let found : Ref[(Int, DmlLeaf)?] = Ref(None)
   fn leaf(
     r : @ast.TableRef,
     offset : Int,
   ) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError {
+    let take = (q : String) => {
+      let l = match view {
+        Some(v) => requalify_leaf(v, q)
+        None => base_leaf(target, q)
+      }
+      found.val = Some((offset, l))
+      (l.plan, l.columns)
+    }
     match r.kind {
-      Table(name, alias_~, ..) => {
+      Table(name, alias_~, ..) if found.val is None => {
         let base = name.base().to_lower()
         let q = match alias_ {
           Some(a) => a.name.to_lower()
           None => base
         }
-        if found.val is None &&
-          (
+        let hit = match view {
+          Some(_) => target_names.contains(q)
+          None =>
             target_names.contains(q) ||
             (alias_ is None && target_names.contains(base))
-          ) {
-          let cols = target.columns.map(c => { ..c, qualifier: q, })
-          found.val = Some((offset, offset + cols.length()))
-          cols.push({
-            qualifier: "%rowid",
-            name: "%rowid",
-            ty: BigInt,
-            nullable: false,
-            origin: Computed,
-          })
-          (Scan(scope=target.scope, id=target.id, rowid=true), cols)
+        }
+        if hit {
+          take(q)
         } else {
           bind_table_ref(env, r)
         }
       }
+      Derived(_, alias_=Some(a), ..) if found.val is None &&
+        view is Some(_) &&
+        target_names.contains(a.name.to_lower()) => take(a.name.to_lower())
       Join(kind, left, right, on~, ..) => {
         let (lp, lc) = leaf(left, offset)
         let (rp, rc) = leaf(right, offset + lc.length())
@@ -95,31 +176,42 @@ pub fn bind_dml_source(
     }
   }
   match found.val {
-    Some((start, rowid)) => (plan, cols, start, rowid)
+    Some((start, l)) =>
+      {
+        plan,
+        columns: cols,
+        leaf_start: start,
+        leaf_width: l.columns.length(),
+        base: start + l.base,
+        rowid: start + l.rowid,
+      }
     None => {
       // target not named in FROM: SQL Server adds it as a cross join
-      let tcols = target.columns.map(c => { ..c, qualifier: target_names[0], })
+      let l = match view {
+        Some(v) => requalify_leaf(v, target_names[0])
+        None => base_leaf(target, target_names[0])
+      }
       let start = cols.length()
-      tcols.push({
-        qualifier: "%rowid",
-        name: "%rowid",
-        ty: BigInt,
-        nullable: false,
-        origin: Computed,
-      })
-      (
+      let joined : @ir.Plan = if from.is_empty() {
+        l.plan
+      } else {
         Join(
           Cross,
           plan,
-          Scan(scope=target.scope, id=target.id, rowid=true),
+          l.plan,
           None,
-          left_width=cols.length(),
-          right_width=tcols.length(),
-        ),
-        cols + tcols,
-        start,
-        start + target.columns.length(),
-      )
+          left_width=start,
+          right_width=l.columns.length(),
+        )
+      }
+      {
+        plan: joined,
+        columns: cols + l.columns,
+        leaf_start: start,
+        leaf_width: l.columns.length(),
+        base: start + l.base,
+        rowid: start + l.rowid,
+      }
     }
   }
 }

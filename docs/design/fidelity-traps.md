@@ -17,7 +17,9 @@ new trap, add a row here *and* a corpus case.
 | JSON paths | Lax by default, `strict` prefix | Lax returns NULL where strict errors |
 | `OPENJSON` | `TableFunction` node | Default schema returns `key`, `value`, `type`; the `WITH` clause casts |
 | Computed columns | Stored `Expr` inlined by the binder | Persisted vs non-persisted affects indexability |
-| Views | Subplan inlined by the binder | Updatable-view rules are strict |
+| Views | Subplan inlined by the binder | Updatable-view rules are strict (4403/4405/4406, 404 for OUTPUT of an unmodified base table); DML through a view reaches its one modified base table, the view WHERE restricts rows and WITH CHECK OPTION cascades (550) (`traps/view-updatable-rules`, `views/*`) |
+| OUTPUT clause | COLMETADATA sent before the statement runs; rows evaluated per modified row | A run-time error still sends the (possibly partial) result set first, with the rows processed before the failing row; INSERT evaluates its whole source first. Buffering all rows and checking before emitting is a false green (`output/stream-errors`) |
+| UPDATE/DELETE ... FROM duplicates | First match per target row | Which of several matching source rows wins is plan-dependent: 2-row VALUES keeps the first, a 3-row VALUES capture kept the last. Corpus cases use equal values for duplicate matches (`output/join-targets`) |
 | User functions | Scalar: session callback per call; inline TVF: `WithParams` subplan; multi-statement TVF: `UserTable` | Errors inside a scalar/inline function report the *caller's* line and ERROR_PROCEDURE NULL; a multi-statement TVF error adds 3621; parameter defaults apply only to an explicit `DEFAULT` argument (omitting it is 313); TVF argument-count errors on a schema-qualified name report line 13 (`udf/*`) |
 | Cursors | Snapshot root plus iterator | Only `STATIC`, `FAST_FORWARD`, `LOCAL` in v1; others raise an explicit error |
 | `@@ROWCOUNT` | Session register | Reset by many statements, including `SET` options, `PRINT`, `BEGIN TRAN` and `COMMIT` |

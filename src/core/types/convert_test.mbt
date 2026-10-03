@@ -102,7 +102,9 @@ test "numeric to integer: truncation and overflow" {
   )
   inspect(
     outcome(() => @types.cast(dec("3000000000"), Numeric(10, 0), Int)),
-    content="8115/1 Arithmetic overflow error converting numeric to data type int.",
+    content=(
+      #|8115/2 Arithmetic overflow error converting expression to data type int.
+    ),
   )
   // captured: CAST(1e30 AS INT) → 232 state 3 (output-joined-runtime-errors.json)
   inspect(
@@ -115,7 +117,9 @@ test "numeric to integer: truncation and overflow" {
   )
   inspect(
     outcome(() => @types.cast(@types.BigInt(3000000000L), BigInt, Int)),
-    content="8115/1 Arithmetic overflow error converting expression to data type int.",
+    content=(
+      #|8115/2 Arithmetic overflow error converting expression to data type int.
+    ),
   )
   inspect(
     outcome(() => @types.cast(@types.Int(-1), Int, TinyInt)),

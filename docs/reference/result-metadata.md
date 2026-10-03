@@ -17,8 +17,15 @@ evidence, whenever a capture forces one.
 | 0x20 | computed | any non-column expression (32/33) |
 | none | | UNION outputs and VALUES-derived columns: 0; aggregates: 0x01 only |
 
-OUTPUT columns referencing inserted/deleted keep base-column flags; in MERGE
-both images are nullable (flags 9) and `$action` is nvarchar(10) with flags 0.
+OUTPUT columns referencing inserted/deleted keep base-column flags. In MERGE
+the deleted image is nullable when the MERGE has an INSERT action and the
+inserted image when it has a DELETE action (`dml/merge-upsert`: flags 9;
+`output/dml-error-completion`, UPDATE only: `inserted.id` Int 8); `$action` is
+nvarchar(10) with flags 0. OUTPUT of DML through a view reports the view's
+columns: computed view columns keep 0x08 (`n*2` gives IntN 9,
+`views/dml-single-table`); through a CTE or derived table computed columns
+report only nullability (`n+1` IntN 1, `5` Int 0, `output/updatable-cte`).
+Columns of other FROM sources keep their own flags (VALUES columns 0).
 
 A constant CASE that folds to a column keeps that column's base flags
 (`CASE WHEN 1=1 THEN v ELSE 7 END` gives 9).

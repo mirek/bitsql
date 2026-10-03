@@ -60,6 +60,24 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     }
     None
   }
+  // OUTPUT: deleted ++ inserted ++ source columns ++ $action
+  let action_col : @bind.ColumnRef = {
+    qualifier: "",
+    name: "$action",
+    ty: NVarChar(Some(10), @types.default_collation),
+    nullable: false,
+    origin: SetOperation,
+  }
+  let outputs = self.bind_output(
+    m.output,
+    target,
+    None,
+    true,
+    true,
+    source_cols + [action_col],
+    null_deleted=m.whens.iter().any(w => w.action is MergeInsert(..)),
+    null_inserted=m.whens.iter().any(w => w.action is MergeDelete),
+  )
   let ops : Array[MergeOp] = []
   let matched_target : Set[Int64] = Set([])
   let update_targets : Map[Int64, Int] = Map([])
@@ -150,6 +168,8 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     }
     None => ops
   }
+  let sent = self.output_header(outputs)
+  let evaluated = []
   // lock the target rows MERGE changes
   let locked = []
   for o in ops {
@@ -169,147 +189,140 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   }
   let mut db = self.db_of(target.scope)
   let final_ops = []
-  for o in ops {
-    match o {
-      MUpdate(rowid, old, _, s) => {
-        let w = match
-          pick(
-            x => {
-              if matched_target.contains(rowid) {
-                x is Matched
-              } else {
-                x is NotMatchedBySource
-              }
-            },
-            old + s,
-          ) {
-          Some(w) => w
-          None => continue
-        }
-        guard w.action is MergeUpdate(sets) else { continue }
-        let row = old.copy()
-        let ctx = self.ctx().with_row(old + s)
-        for sc in sets {
-          guard sc.target is SetColumn(parts) else {
-            raise @types.not_supported("MERGE SET @variable")
+  {
+    errdefer self.output_send(outputs, evaluated[:])
+    for o in ops {
+      match o {
+        MUpdate(rowid, old, _, s) => {
+          let w = match
+            pick(
+              x => {
+                if matched_target.contains(rowid) {
+                  x is Matched
+                } else {
+                  x is NotMatchedBySource
+                }
+              },
+              old + s,
+            ) {
+            Some(w) => w
+            None => continue
           }
-          let name = parts[parts.length() - 1].name
-          let ci = match t.column_index(name) {
-            Some(i) => i
-            None =>
-              raise @types.sql_error(207, "Invalid column name '\{name}'.")
-          }
-          let b = @bind.bind_expr(env, sc.value)
-          let v = @exec.eval(ctx, b)
-          row[ci] = self.to_column(target, t.columns[ci], v, b.ty)
-        }
-        for i, c in t.columns {
-          if c.computed is Some(expr) {
-            row[i] = self.eval_text(target, expr, row, c.ty)
-          }
-        }
-        self.check_row(target, db, row, "MERGE")
-        final_ops.push(MUpdate(rowid, old, row, s))
-      }
-      MDelete(_, _, _) => final_ops.push(o)
-      MInsert(_, s) => {
-        let w = match pick(x => x is NotMatchedByTarget, null_target + s) {
-          Some(w) => w
-          None => continue
-        }
-        guard w.action is MergeInsert(columns~, values~, default_values~) else {
-          continue
-        }
-        let row = Array::make(n, @types.Value::Null)
-        let given = Array::make(n, false)
-        if !default_values {
-          let cols = if columns.is_empty() {
-            let out = []
-            for i, c in t.columns {
-              if c.identity is None && c.computed is None && c.ty != RowVersion {
-                out.push(i)
-              }
+          guard w.action is MergeUpdate(sets) else { continue }
+          let row = old.copy()
+          let ctx = self.ctx().with_row(old + s)
+          for sc in sets {
+            guard sc.target is SetColumn(parts) else {
+              raise @types.not_supported("MERGE SET @variable")
             }
-            out
-          } else {
-            columns.map(c => {
-              match t.column_index(c.name) {
-                Some(i) => i
-                None =>
-                  raise @types.sql_error(
-                    207,
-                    "Invalid column name '\{c.name}'.",
-                  )
-              }
-            })
+            let name = parts[parts.length() - 1].name
+            let ci = match t.column_index(name) {
+              Some(i) => i
+              None =>
+                raise @types.sql_error(207, "Invalid column name '\{name}'.")
+            }
+            let b = @bind.bind_expr(env, sc.value)
+            let v = @exec.eval(ctx, b)
+            row[ci] = self.to_column(target, t.columns[ci], v, b.ty)
           }
-          let ctx = self.ctx().with_row(null_target + s)
-          for j, e in values {
-            if j < cols.length() && !(e.kind is Default) {
-              let b = @bind.bind_expr(env, e)
-              row[cols[j]] = self.to_column(
-                target,
-                t.columns[cols[j]],
-                @exec.eval(ctx, b),
-                b.ty,
-              )
-              given[cols[j]] = true
+          for i, c in t.columns {
+            if c.computed is Some(expr) {
+              row[i] = self.eval_text(target, expr, row, c.ty)
             }
           }
+          self.check_row(target, db, row, "MERGE")
+          self.merge_push(
+            final_ops,
+            evaluated,
+            outputs,
+            MUpdate(rowid, old, row, s),
+            null_target,
+          )
         }
-        for i, c in t.columns {
-          if given[i] {
+        MDelete(_, _, _) =>
+          self.merge_push(final_ops, evaluated, outputs, o, null_target)
+        MInsert(_, s) => {
+          let w = match pick(x => x is NotMatchedByTarget, null_target + s) {
+            Some(w) => w
+            None => continue
+          }
+          guard w.action is MergeInsert(columns~, values~, default_values~) else {
             continue
           }
-          match (c.identity, c.default_) {
-            (Some(id), _) => {
-              let v = self.next_identity(t, id)
-              row[i] = identity_value(c.ty, v)
-              let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
-              self.rt.identity = iv
-              self.rt.scope_identity = iv
+          let row = Array::make(n, @types.Value::Null)
+          let given = Array::make(n, false)
+          if !default_values {
+            let cols = if columns.is_empty() {
+              let out = []
+              for i, c in t.columns {
+                if c.identity is None &&
+                  c.computed is None &&
+                  c.ty != RowVersion {
+                  out.push(i)
+                }
+              }
+              out
+            } else {
+              columns.map(c => {
+                match t.column_index(c.name) {
+                  Some(i) => i
+                  None =>
+                    raise @types.sql_error(
+                      207,
+                      "Invalid column name '\{c.name}'.",
+                    )
+                }
+              })
             }
-            (_, Some(d)) if c.computed is None =>
-              row[i] = self.eval_text(target, d, row, c.ty)
-            _ => ()
+            let ctx = self.ctx().with_row(null_target + s)
+            for j, e in values {
+              if j < cols.length() && !(e.kind is Default) {
+                let b = @bind.bind_expr(env, e)
+                row[cols[j]] = self.to_column(
+                  target,
+                  t.columns[cols[j]],
+                  @exec.eval(ctx, b),
+                  b.ty,
+                )
+                given[cols[j]] = true
+              }
+            }
           }
-        }
-        for i, c in t.columns {
-          if c.computed is Some(expr) {
-            row[i] = self.eval_text(target, expr, row, c.ty)
+          for i, c in t.columns {
+            if given[i] {
+              continue
+            }
+            match (c.identity, c.default_) {
+              (Some(id), _) => {
+                let v = self.next_identity(t, id)
+                row[i] = identity_value(c.ty, v)
+                let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
+                self.rt.identity = iv
+                self.rt.scope_identity = iv
+              }
+              (_, Some(d)) if c.computed is None =>
+                row[i] = self.eval_text(target, d, row, c.ty)
+              _ => ()
+            }
           }
+          for i, c in t.columns {
+            if c.computed is Some(expr) {
+              row[i] = self.eval_text(target, expr, row, c.ty)
+            }
+          }
+          self.check_row(target, db, row, "MERGE")
+          self.merge_push(
+            final_ops,
+            evaluated,
+            outputs,
+            MInsert(row, s),
+            null_target,
+          )
         }
-        self.check_row(target, db, row, "MERGE")
-        final_ops.push(MInsert(row, s))
       }
     }
   }
-  // OUTPUT: deleted ++ inserted ++ source columns ++ $action
-  let action_col : @bind.ColumnRef = {
-    qualifier: "",
-    name: "$action",
-    ty: NVarChar(Some(10), @types.default_collation),
-    nullable: false,
-    origin: SetOperation,
-  }
-  let outputs = self.bind_output(
-    m.output,
-    target,
-    true,
-    true,
-    source_cols + [action_col],
-  )
-  let output_rows = final_ops.map(o => {
-    match o {
-      MUpdate(_, old, new, s) =>
-        old + new + s + [@types.Value::String("UPDATE")]
-      MDelete(_, old, s) =>
-        old + null_target + s + [@types.Value::String("DELETE")]
-      MInsert(new, s) =>
-        null_target + new + s + [@types.Value::String("INSERT")]
-    }
-  })
-  let sent = self.emit_output(outputs, output_rows)
+  self.output_finish(outputs, evaluated)
   db = self.db_of(target.scope)
   // apply: references, removals, then inserts with unique checks
   let removed = []
@@ -352,4 +365,28 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let count = final_ops.length().to_int64()
   self.rt.rowcount = count
   self.done(279, count=Some(count), result_set=sent)
+}
+
+///|
+/// Records a MERGE action and evaluates its OUTPUT row (streamed: rows
+/// before a failing action are still sent; captured: output/stream-errors).
+fn Session::merge_push(
+  self : Session,
+  ops : Array[MergeOp],
+  evaluated : Array[Array[Array[@types.Value]]],
+  outputs : Array[OutputSpec],
+  op : MergeOp,
+  null_target : Array[@types.Value],
+) -> Unit raise {
+  ops.push(op)
+  if outputs.is_empty() {
+    return
+  }
+  let row = match op {
+    MUpdate(_, old, new, s) => old + new + s + [@types.Value::String("UPDATE")]
+    MDelete(_, old, s) =>
+      old + null_target + s + [@types.Value::String("DELETE")]
+    MInsert(new, s) => null_target + new + s + [@types.Value::String("INSERT")]
+  }
+  evaluated.push(self.output_eval(outputs, row))
 }

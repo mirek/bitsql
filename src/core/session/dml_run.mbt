@@ -1,0 +1,934 @@
+// INSERT, UPDATE and DELETE execution. Statement shape (captures:
+// harness/corpus/output/*, views/*): bind everything (compile errors complete
+// with 253), then set the DML CurCmd and send the OUTPUT COLMETADATA, then
+// process rows one at a time. A run-time error sends the OUTPUT rows of the
+// rows processed before it.
+
+///|
+fn rowversion_bytes(v : Int64) -> Bytes {
+  Bytes::makei(8, i => (v >> (8 * (7 - i))).to_byte())
+}
+
+///|
+fn table_target(scope : Int, t : @store.Table, qualifier : String) -> Target {
+  {
+    scope,
+    table: t,
+    display: if scope == 1 {
+      t.name
+    } else {
+      t.schema + "." + t.name
+    },
+    qualifier,
+  }
+}
+
+///|
+/// UPDATE/DELETE target: a one-part name naming a FROM alias refers to that
+/// FROM item (a table, view, CTE or derived table).
+fn Session::resolve_dml_target(
+  self : Session,
+  env0 : @bind.Env,
+  r : @ast.TableRef,
+  from : Array[@ast.TableRef],
+  purpose : DmlPurpose,
+) -> (Target, ViewTarget?) raise {
+  if r.kind is Table(name, alias_=None, ..) && name.parts.length() == 1 {
+    let wanted = name.parts[0].name.to_lower()
+    for leaf in from_leaves(from) {
+      match leaf.kind {
+        Table(real, alias_=Some(a), hints~) if a.name.to_lower() == wanted =>
+          return self.resolve_named_target(
+            env0,
+            { ..leaf, kind: Table(real, alias_=Some(a), hints~), },
+            from,
+            purpose,
+          )
+        Derived(q, alias_=Some(a), columns~) if a.name.to_lower() == wanted => {
+          let v = self.view_target(env0, q, columns, a.name, KDerived, purpose)
+          return (table_target(v.scope, v.table, wanted), Some(v))
+        }
+        _ => ()
+      }
+    }
+  }
+  self.resolve_named_target(env0, r, from, purpose)
+}
+
+///|
+fn Session::resolve_named_target(
+  self : Session,
+  env0 : @bind.Env,
+  r : @ast.TableRef,
+  from : Array[@ast.TableRef],
+  purpose : DmlPurpose,
+) -> (Target, ViewTarget?) raise {
+  guard r.kind is Table(name, alias_~, ..) else {
+    return (self.dml_target(r), None)
+  }
+  let q = match alias_ {
+    Some(a) => a.name.to_lower()
+    None => name.base().to_lower()
+  }
+  match env0.find_cte(name) {
+    Some(cte) => {
+      let v = self.view_target(
+        cte.env,
+        cte.def.query,
+        cte.def.columns,
+        cte.def.name.name,
+        KCte,
+        purpose,
+      )
+      return (table_target(v.scope, v.table, q), Some(v))
+    }
+    None => ()
+  }
+  match self.find_view(name) {
+    Some((m, vq, vnames)) => {
+      let v = self.view_target(
+        self.view_env(),
+        vq,
+        vnames,
+        m.name,
+        KView(check=m.check_option),
+        purpose,
+      )
+      return (table_target(v.scope, v.table, q), Some(v))
+    }
+    None => ()
+  }
+  let target = self.dml_target(r)
+  if alias_ is Some(_) || from.is_empty() {
+    return (target, None)
+  }
+  // An unaliased target binds to an unaliased occurrence of its table in
+  // FROM, else to its only aliased occurrence; two aliased ones are 8154
+  // (captured: output/join-targets).
+  let mut unaliased = false
+  let aliased = []
+  for leaf in from_leaves(from) {
+    guard leaf.kind is Table(n, alias_=la, ..) else { continue }
+    guard self.find_table(n) is Some((sc, t2)) &&
+      sc == target.scope &&
+      t2.id == target.table.id else {
+      continue
+    }
+    match la {
+      Some(a) => aliased.push(a.name.to_lower())
+      None => unaliased = true
+    }
+  }
+  if !unaliased && aliased.length() == 1 {
+    return ({ ..target, qualifier: aliased[0], }, None)
+  }
+  if !unaliased && aliased.length() > 1 {
+    raise @types.sql_error(
+      8154,
+      "The table '\{name.parts.map(p => p.name).join(".")}' is ambiguous.",
+    )
+  }
+  (target, None)
+}
+
+///|
+fn dml_source(
+  env0 : @bind.Env,
+  target : Target,
+  view : ViewTarget?,
+  from : Array[@ast.TableRef],
+) -> @bind.DmlSource raise {
+  match view {
+    Some(v) =>
+      @bind.bind_dml_source(
+        env0,
+        from,
+        base_binding(v.scope, v.table),
+        [target.qualifier],
+        view=Some(v.leaf),
+      )
+    None =>
+      @bind.bind_dml_source(
+        env0,
+        from,
+        base_binding(target.scope, target.table),
+        [target.qualifier, target.table.name.to_lower()],
+      )
+  }
+}
+
+///|
+/// Columns of the FROM sources other than the target, as OUTPUT sees them
+/// (the target's own alias is not visible; aliases named inserted/deleted
+/// are shadowed by the pseudo-tables), with their positions in the row.
+fn output_extra(
+  src : @bind.DmlSource,
+  from : Array[@ast.TableRef],
+) -> (Array[@bind.ColumnRef], Array[Int]) {
+  let cols = []
+  let idx = []
+  if from.is_empty() {
+    return (cols, idx)
+  }
+  for i, c in src.columns {
+    if i >= src.leaf_start && i < src.leaf_start + src.leaf_width {
+      continue
+    }
+    if c.qualifier.has_prefix("%") ||
+      c.qualifier == "inserted" ||
+      c.qualifier == "deleted" {
+      continue
+    }
+    cols.push(c)
+    idx.push(i)
+  }
+  (cols, idx)
+}
+
+///|
+/// TOP of UPDATE/DELETE, bound.
+fn Session::dml_top(self : Session, top : @ast.Top?) -> @ir.Expr? raise {
+  match top {
+    Some(tp) => {
+      if tp.percent || tp.with_ties {
+        raise @types.not_supported("TOP PERCENT / WITH TIES in DML")
+      }
+      Some(@bind.coerce(@bind.bind_expr(self.env(), tp.count), BigInt))
+    }
+    None => None
+  }
+}
+
+///|
+/// Rows to modify: (rowid, base image, full source row). The WHERE is
+/// evaluated row by row; an error there is returned with the rows that
+/// qualified before it (they are processed first). A target row matched
+/// by several source rows appears once, with its first match (which match
+/// SQL Server keeps is plan-dependent: docs/design/fidelity-traps.md).
+fn Session::dml_scan(
+  self : Session,
+  src : @bind.DmlSource,
+  n : Int,
+  where_ : @ir.Expr?,
+  top : @ir.Expr?,
+) -> (Array[(Int64, Array[@types.Value], Array[@types.Value])], Error?) raise {
+  let limit = match top {
+    Some(e) => {
+      let k = @exec.eval(self.ctx(), e).as_int64().unwrap_or(0L)
+      if k < 0L {
+        raise @types.sql_error(
+          127,
+          "A TOP N or FETCH rows count value may not be negative.",
+          severity=15,
+        )
+      }
+      Some(k)
+    }
+    None => None
+  }
+  let rows = @exec.run(self.ctx(), src.plan)
+  let out = []
+  let at : Map[Int64, Int] = Map([])
+  for r in rows {
+    match where_ {
+      Some(w) => {
+        let ok = @exec.is_true(@exec.eval(self.ctx().with_row(r), w)) catch {
+          @types.SqlError(..) as e => return (out, Some(e))
+        }
+        if !ok {
+          continue
+        }
+      }
+      None => ()
+    }
+    let rowid = r[src.rowid].as_int64().unwrap_or(0L)
+    let rec = (rowid, r[src.base:src.base + n].to_owned(), r)
+    match at.get(rowid) {
+      Some(_) => ()
+      None => {
+        match limit {
+          Some(k) if out.length().to_int64() >= k => break
+          _ => ()
+        }
+        at[rowid] = out.length()
+        out.push(rec)
+      }
+    }
+  }
+  (out, None)
+}
+
+///|
+/// Applies new row images with statement-level uniqueness. On a duplicate
+/// key, also returns how many rows SQL Server processed before failing:
+/// the first row whose new key collides when rows are applied one at a
+/// time (captured: `SET id=10` outputs row 10 first, `SET id=30` nothing).
+fn unique_failure(
+  target : Target,
+  db : @store.Db,
+  images : Array[(Int64, Array[@types.Value], Array[@types.Value])],
+) -> (Int, Error)? {
+  let t = target.table
+  let mut d = db
+  for im in images {
+    d = d.delete_row(t.id, im.0)
+  }
+  let failed = for im in images {
+    d = insert_checked(target, d, im.0, im.2) catch { e => break Some(e) }
+  } nobreak {
+    None
+  }
+  guard failed is Some(whole) else { return None }
+  let mut s = db
+  for i, im in images {
+    s = s.delete_row(t.id, im.0)
+    s = insert_checked(target, s, im.0, im.2) catch { e => return Some((i, e)) }
+  }
+  Some((images.length(), whole))
+}
+
+///|
+fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
+  if u.current_of is Some(_) {
+    raise @types.not_supported("UPDATE ... WHERE CURRENT OF")
+  }
+  let env0 = self.env().with_ctes(u.ctes)
+  let set_names = []
+  for s in u.sets {
+    if s.target is SetColumn(parts) {
+      set_names.push(parts[parts.length() - 1].name.to_lower())
+    }
+  }
+  let (target, view) = self.resolve_dml_target(
+    env0,
+    u.target,
+    u.from,
+    PUpdate(set_names),
+  )
+  if target.scope != 3 {
+    self.check_writable()
+  }
+  let t = target.table
+  let n = t.columns.length()
+  let src = dml_source(env0, target, view, u.from)
+  let env = env0.with_columns(src.columns)
+  let env = if u.from.is_empty() && u.top is None {
+    let xs = []
+    for s in u.sets {
+      xs.push(s.value)
+    }
+    if u.where_ is Some(w) {
+      xs.push(w)
+    }
+    self.simple_params_env(env, target, xs)
+  } else {
+    env
+  }
+  let where_ = u.where_.map(w => @bind.bind_expr(env, w))
+  let top = self.dml_top(u.top)
+  // bind SET clauses against the full source row
+  let sets = []
+  for s in u.sets {
+    match s.target {
+      SetColumn(parts) => {
+        let name = parts[parts.length() - 1].name
+        let ci = match view {
+          Some(v) => {
+            let vi = v.result.search_by(c => {
+              c.name.to_lower() == name.to_lower()
+            })
+            match vi.map(i => v.base_of[i]) {
+              Some(Some(i)) => i
+              _ => raise @types.sql_error(207, "Invalid column name '\{name}'.")
+            }
+          }
+          None =>
+            match t.column_index(name) {
+              Some(i) => i
+              None =>
+                raise @types.sql_error(207, "Invalid column name '\{name}'.")
+            }
+        }
+        let c = t.columns[ci]
+        if c.identity is Some(_) {
+          raise @types.sql_error(
+            8102,
+            "Cannot update identity column '\{c.name}'.",
+          )
+        }
+        if c.computed is Some(_) {
+          raise @types.sql_error(
+            271,
+            "The column \"\{c.name}\" cannot be modified because it is either a computed column or is the result of a UNION operator.",
+          )
+        }
+        if @bind.has_aggregate(s.value) {
+          raise @types.sql_error(
+            157,
+            "An aggregate may not appear in the set list of an UPDATE statement.",
+            severity=15,
+          )
+        }
+        let rhs = if s.value.kind is Default {
+          None
+        } else {
+          Some(@bind.bind_expr(env, s.value))
+        }
+        if rhs is Some(b) && s.op is Assign {
+          @types.check_assign(b.ty, c.ty)
+        }
+        sets.push((ci, s.op, rhs))
+      }
+      SetVariable(_) | SetVarColumn(_, _) =>
+        raise @types.not_supported("UPDATE SET @variable")
+    }
+  }
+  let (extra, extra_idx) = output_extra(src, u.from)
+  let outputs = self.bind_output(u.output, target, view, true, true, extra)
+  self.cur_cmd = 197
+  let sent = self.output_header(outputs)
+  let (rows, deferred) = self.dml_scan(src, n, where_, top)
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
+  let db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnUpdate)
+  let images = []
+  let evaluated = []
+  {
+    errdefer self.output_send(outputs, evaluated[:])
+    for rec in rows {
+      let (rowid, old, full) = rec
+      let row = old.copy()
+      self.update_row(
+        target,
+        view,
+        src,
+        sets,
+        old,
+        full,
+        row,
+        instead.is_empty(),
+      )
+      if instead.is_empty() {
+        let out_row = self.update_output_row(
+          view, src, extra_idx, old, full, row,
+        )
+        evaluated.push(self.output_eval(outputs, out_row))
+      }
+      images.push((rowid, old, row))
+    }
+    match deferred {
+      Some(e) => raise e
+      None => ()
+    }
+  }
+  let updated = sets.map(s => s.0)
+  if !instead.is_empty() {
+    self.run_triggers(
+      target,
+      instead,
+      images.map(x => x.1),
+      images.map(x => x.2),
+      updated,
+      pre,
+    )
+    let count = images.length().to_int64()
+    self.rt.rowcount = count
+    self.done(197, count=Some(count))
+    return
+  }
+  match unique_failure(target, db, images) {
+    Some((k, e)) => {
+      self.output_send(outputs, evaluated[0:k])
+      raise e
+    }
+    None => ()
+  }
+  self.output_finish(outputs, evaluated)
+  // OUTPUT INTO may have written to the same database
+  let mut db = self.db_of(target.scope)
+  for im in images {
+    db = db.delete_row(t.id, im.0)
+  }
+  for im in images {
+    db = insert_checked(target, db, im.0, im.2)
+  }
+  self.write(target.scope, db)
+  self.fire_after(
+    target,
+    OnUpdate,
+    images.map(x => x.1),
+    images.map(x => x.2),
+    updated,
+    pre,
+  )
+  let count = images.length().to_int64()
+  self.rt.rowcount = count
+  self.done(197, count=Some(count), result_set=sent)
+}
+
+///|
+/// Computes one row's new image (into `row`) and checks it: constraints,
+/// references, WITH CHECK OPTION.
+fn Session::update_row(
+  self : Session,
+  target : Target,
+  view : ViewTarget?,
+  src : @bind.DmlSource,
+  sets : Array[(Int, @ast.AssignOp, @ir.Expr?)],
+  old : Array[@types.Value],
+  full : Array[@types.Value],
+  row : Array[@types.Value],
+  check : Bool,
+) -> Unit raise {
+  let t = target.table
+  let ctx = self.ctx().with_row(full)
+  for s in sets {
+    let (ci, op, rhs) = s
+    let c = t.columns[ci]
+    let (v, ty) = match rhs {
+      None =>
+        match c.default_ {
+          Some(d) => (self.eval_text(target, d, old, c.ty), c.ty)
+          None => (@types.Value::Null, c.ty)
+        }
+      Some(b) =>
+        match op {
+          Assign => (@exec.eval(ctx, b), b.ty)
+          _ => {
+            let aop : @types.ArithOp = match op {
+              AddAssign => Add
+              SubAssign => Sub
+              MulAssign => Mul
+              DivAssign => Div
+              _ => Mod
+            }
+            let rt = @types.arith_result_type(aop, c.ty, b.ty)
+            (@types.arith(aop, old[ci], c.ty, @exec.eval(ctx, b), b.ty), rt)
+          }
+        }
+    }
+    row[ci] = self.to_column(target, c, v, ty)
+  }
+  for i, c in t.columns {
+    if c.computed is Some(expr) {
+      row[i] = self.eval_text(target, expr, row, c.ty)
+    }
+    if c.ty is RowVersion {
+      self.server.dbts += 1L
+      row[i] = Binary(rowversion_bytes(self.server.dbts))
+    }
+  }
+  if check {
+    let db = self.db_of(target.scope)
+    self.check_row(target, db, row, "UPDATE")
+    self.check_references(target, db, [old], [Some(row)], "UPDATE")
+  }
+  match view {
+    Some(v) => {
+      let leaf_old = full[src.leaf_start:src.leaf_start + v.width()].to_owned()
+      self.view_check(v, self.view_row_of(v, Some(leaf_old), row))
+    }
+    None => ()
+  }
+}
+
+///|
+/// [deleted image] ++ [inserted image] ++ [other FROM columns] for OUTPUT.
+fn Session::update_output_row(
+  self : Session,
+  view : ViewTarget?,
+  src : @bind.DmlSource,
+  extra_idx : Array[Int],
+  old : Array[@types.Value],
+  full : Array[@types.Value],
+  row : Array[@types.Value],
+) -> Array[@types.Value] raise {
+  let images = match view {
+    Some(v) => {
+      let k = v.leaf.visible
+      let leaf_old = full[src.leaf_start:src.leaf_start + v.width()].to_owned()
+      let leaf_new = self.view_row_of(v, Some(leaf_old), row)
+      leaf_old[0:k].to_owned() + leaf_new[0:k].to_owned()
+    }
+    None => old + row
+  }
+  images + extra_idx.map(i => full[i])
+}
+
+///|
+fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
+  if d.current_of is Some(_) {
+    raise @types.not_supported("DELETE ... WHERE CURRENT OF")
+  }
+  let env0 = self.env().with_ctes(d.ctes)
+  let (target, view) = self.resolve_dml_target(env0, d.target, d.from, PDelete)
+  if target.scope != 3 {
+    self.check_writable()
+  }
+  let t = target.table
+  let src = dml_source(env0, target, view, d.from)
+  let env = env0.with_columns(src.columns)
+  let where_ = d.where_.map(w => @bind.bind_expr(env, w))
+  let top = self.dml_top(d.top)
+  let (extra, extra_idx) = output_extra(src, d.from)
+  let outputs = self.bind_output(d.output, target, view, true, false, extra)
+  self.cur_cmd = 196
+  let sent = self.output_header(outputs)
+  let (rows, deferred) = self.dml_scan(src, t.columns.length(), where_, top)
+  self.lock_rows(target, rows.map(r => (r.0, r.1)))
+  let mut db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnDelete)
+  if !instead.is_empty() {
+    match deferred {
+      Some(e) => raise e
+      None => ()
+    }
+    self.run_triggers(target, instead, rows.map(r => r.1), [], [], pre)
+    let count = rows.length().to_int64()
+    self.rt.rowcount = count
+    self.done(196, count=Some(count))
+    return
+  }
+  let evaluated = []
+  {
+    errdefer self.output_send(outputs, evaluated[:])
+    for r in rows {
+      let image = match view {
+        Some(v) =>
+          r.2[src.leaf_start:src.leaf_start + v.leaf.visible].to_owned()
+        None => r.1
+      }
+      self.check_references(target, db, [r.1], [None], "DELETE")
+      evaluated.push(
+        self.output_eval(outputs, image + extra_idx.map(i => r.2[i])),
+      )
+    }
+    match deferred {
+      Some(e) => raise e
+      None => ()
+    }
+  }
+  self.output_finish(outputs, evaluated)
+  db = self.db_of(target.scope)
+  for r in rows {
+    db = db.delete_row(t.id, r.0)
+  }
+  self.write(target.scope, db)
+  self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
+  let count = rows.length().to_int64()
+  self.rt.rowcount = count
+  self.done(196, count=Some(count), result_set=sent)
+}
+
+///|
+fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
+  if ins.top is Some(_) {
+    raise @types.not_supported("INSERT with TOP")
+  }
+  let env0 = self.env().with_ctes(ins.ctes)
+  let (target, view) = self.resolve_named_target(
+    env0,
+    ins.target,
+    [],
+    PInsert(ins.columns.map(c => c.name.to_lower())),
+  )
+  if target.scope != 3 {
+    self.check_writable()
+  }
+  let t = target.table
+  let identity_insert = self.identity_insert == Some(t.id)
+  let outputs = self.bind_output(ins.output, target, view, false, true, [])
+  // target columns
+  let cols : Array[Int] = match view {
+    Some(v) => {
+      let names = if ins.columns.is_empty() {
+        v.result.map(c => c.name.to_lower())
+      } else {
+        ins.columns.map(c => c.name.to_lower())
+      }
+      names.map(nm => {
+        match v.result.search_by(c => c.name.to_lower() == nm) {
+          Some(i) =>
+            match v.base_of[i] {
+              Some(b) => b
+              None => raise view_error(KView(check=false), 4406, v.name)
+            }
+          None => raise @types.sql_error(207, "Invalid column name '\{nm}'.")
+        }
+      })
+    }
+    None =>
+      if ins.columns.is_empty() {
+        let out = []
+        for i, c in t.columns {
+          if (c.identity is None || identity_insert) &&
+            c.computed is None &&
+            c.ty != RowVersion {
+            out.push(i)
+          }
+        }
+        out
+      } else {
+        ins.columns.map(c => {
+          match t.column_index(c.name) {
+            Some(i) => i
+            None =>
+              raise @types.sql_error(207, "Invalid column name '\{c.name}'.")
+          }
+        })
+      }
+  }
+  for i in cols {
+    let c = t.columns[i]
+    if c.identity is Some(_) && !identity_insert {
+      raise @types.sql_error(
+        544,
+        "Cannot insert explicit value for identity column in table '\{t.name}' when IDENTITY_INSERT is set to OFF.",
+      )
+    }
+    if c.computed is Some(_) {
+      raise @types.sql_error(
+        271,
+        "The column \"\{c.name}\" cannot be modified because it is either a computed column or is the result of a UNION operator.",
+      )
+    }
+  }
+  let mut sent = false
+  // source rows with their types
+  let env = match ins.source {
+    InsertValues(rows) => {
+      let all = []
+      for r in rows {
+        all.append(r)
+      }
+      self.simple_params_env(env0, target, all)
+    }
+    InsertQuery(q) =>
+      match simple_select_exprs(q) {
+        Some(xs) => self.simple_params_env(env0, target, xs)
+        None => env0
+      }
+    _ => env0
+  }
+  let (source, types) : (Array[Array[@types.Value]], Array[@types.SqlType]) = match
+    ins.source {
+    InsertValues(rows) => {
+      for r in rows {
+        check_sequence_refs(r)
+      }
+      let bound = rows.map(r => {
+        r.map(e => {
+          if e.kind is Default {
+            None
+          } else {
+            Some(@bind.bind_expr(env, e))
+          }
+        })
+      })
+      for r in bound {
+        if r.length() != cols.length() {
+          if ins.columns.is_empty() {
+            raise @types.sql_error(
+              213, "Column name or number of supplied values does not match table definition.",
+            )
+          } else if r.length() > cols.length() {
+            raise @types.sql_error(
+              110,
+              "There are more columns in the INSERT statement than values specified in the VALUES clause. The number of values in the VALUES clause must match the number of columns specified in the INSERT statement.",
+              severity=15,
+            )
+          } else {
+            raise @types.sql_error(
+              109,
+              "There are more columns in the INSERT statement than values specified in the VALUES clause. The number of values in the VALUES clause must match the number of columns specified in the INSERT statement.",
+              severity=15,
+            )
+          }
+        }
+      }
+      let bound = unify_values_rows(bound)
+      // assignment type rules are compile-time (DONE cmd 253, captured)
+      if bound.length() > 0 {
+        for j, e in bound[0] {
+          if j < cols.length() && e is Some(b) {
+            @types.check_assign(b.ty, t.columns[cols[j]].ty)
+          }
+        }
+      }
+      self.cur_cmd = 195
+      sent = self.output_header(outputs)
+      let ctx = self.ctx()
+      let types = []
+      let values = []
+      for r in bound {
+        let row = []
+        let tys = []
+        for e in r {
+          match e {
+            Some(b) => {
+              row.push(@exec.eval(ctx, b))
+              tys.push(b.ty)
+            }
+            None => {
+              row.push(@types.Value::Null)
+              tys.push(@types.SqlType::Int) // marker: DEFAULT
+            }
+          }
+        }
+        values.push(row)
+        if types.is_empty() {
+          types.append(tys)
+        }
+      }
+      // DEFAULT markers: re-evaluate below
+      (
+        values,
+        if types.is_empty() {
+          cols.map(_ => @types.SqlType::Int)
+        } else {
+          types
+        },
+      )
+    }
+    InsertQuery(q) => {
+      let bq = @bind.bind_query(env, q, result_columns=false)
+      if bq.columns.length() != cols.length() {
+        raise @types.sql_error(
+          120,
+          "The select list for the INSERT statement contains fewer items than the insert list. The number of SELECT values must match the number of INSERT columns.",
+          severity=15,
+        )
+      }
+      for j, c in bq.columns {
+        @types.check_assign(c.ty, t.columns[cols[j]].ty)
+      }
+      self.cur_cmd = 195
+      sent = self.output_header(outputs)
+      (@exec.run(self.ctx(), bq.plan), bq.columns.map(c => c.ty))
+    }
+    DefaultValues => {
+      self.cur_cmd = 195
+      sent = self.output_header(outputs)
+      ([[]], [])
+    }
+    InsertExec(_) => raise @types.not_supported("INSERT ... EXEC")
+  }
+  let default_marks = match ins.source {
+    InsertValues(rows) => rows.map(r => r.map(e => e.kind is Default))
+    _ => []
+  }
+  // assignment type rules before any row (captured: 206/257 for
+  // sql_variant columns are compile-time errors)
+  for j, ci in cols {
+    if j < types.length() &&
+      !default_marks.iter().all(m => j < m.length() && m[j]) {
+      @types.check_assign(types[j], t.columns[ci].ty)
+    }
+  }
+  let mut db = self.db_of(target.scope)
+  let pre = db
+  let instead = self.instead_of_trigger(target, OnInsert)
+  let mut last_identity : Int64? = None
+  let inserted_rows = []
+  let evaluated = []
+  for ri, src in source {
+    let row = Array::make(t.columns.length(), @types.Value::Null)
+    let step = () => {
+      errdefer self.output_send(outputs, evaluated[:])
+      let given = Array::make(t.columns.length(), false)
+      for j, ci in cols {
+        if j < src.length() {
+          let is_default = ri < default_marks.length() && default_marks[ri][j]
+          if !is_default {
+            row[ci] = self.to_column(target, t.columns[ci], src[j], types[j])
+            given[ci] = true
+          }
+        }
+      }
+      for i, c in t.columns {
+        if given[i] {
+          continue
+        }
+        match (c.identity, c.default_) {
+          (Some(id), _) if !(identity_insert && given[i]) => {
+            let v = self.next_identity(t, id)
+            row[i] = identity_value(c.ty, v)
+            last_identity = Some(v)
+          }
+          (_, Some(d)) if c.computed is None =>
+            row[i] = self.eval_text(target, d, row, c.ty)
+          _ => ()
+        }
+        if c.ty is RowVersion {
+          self.server.dbts += 1L
+          row[i] = Binary(rowversion_bytes(self.server.dbts))
+        }
+      }
+      for i, c in t.columns {
+        if c.computed is Some(expr) {
+          row[i] = self.eval_text(target, expr, row, c.ty)
+        }
+      }
+      if identity_insert {
+        for i, c in t.columns {
+          if c.identity is Some(_) && given[i] {
+            match row[i].as_int64() {
+              Some(v) => {
+                let cur = self.server.idents.get(t.id)
+                if cur is None || v > cur.unwrap_or(0L) {
+                  self.server.idents[t.id] = v
+                }
+                last_identity = Some(v)
+              }
+              None => ()
+            }
+          }
+        }
+      }
+      if !instead.is_empty() {
+        // INSTEAD OF: the trigger sees the rows; constraints are not checked
+        return
+      }
+      self.check_row(target, db, row, "INSERT")
+      let image = match view {
+        Some(v) => {
+          let leaf = self.view_row_of(v, None, row)
+          self.view_check(v, leaf)
+          leaf[0:v.leaf.visible].to_owned()
+        }
+        None => row
+      }
+      let rowid = self.server.rowid()
+      if target.scope == 0 {
+        // X on the new key: waits for another transaction's uncommitted
+        // insert of the same key, or a range lock covering it
+        self.acquire(row_resource(t, rowid, row), X, Transaction)
+      }
+      db = insert_checked(target, db, rowid, row)
+      evaluated.push(self.output_eval(outputs, image))
+    }
+    step()
+    inserted_rows.push(row)
+  }
+  let all_columns = Array::makei(t.columns.length(), i => i)
+  if !instead.is_empty() {
+    self.run_triggers(target, instead, [], inserted_rows, all_columns, pre)
+    let count = source.length().to_int64()
+    self.rt.rowcount = count
+    self.done(195, count=Some(count))
+    return
+  }
+  self.write(target.scope, db)
+  self.output_finish(outputs, evaluated)
+  if last_identity is Some(v) {
+    let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
+    self.rt.identity = iv
+    self.rt.scope_identity = iv
+  }
+  self.fire_after(target, OnInsert, [], inserted_rows, all_columns, pre)
+  let count = source.length().to_int64()
+  self.rt.rowcount = count
+  self.done(195, count=Some(count), result_set=sent)
+}
