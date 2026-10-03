@@ -175,8 +175,8 @@ regress.
 hand-written setup) batch in the whole corpus, no server needed. Replayed run
 prefixes are skipped (they are checked in their own case). Disagreements
 listed in `harness/parse-known.txt` (seeded with the msduck layout import's
-276: JSON_OBJECTAGG `k:v`, ALTER DATABASE, `precision` as a column name,
-JSON_ARRAYAGG ORDER BY, DBCC, …) are tolerated; new ones fail. Delete lines
+226: JSON_OBJECTAGG `k:v`, ALTER DATABASE, JSON_ARRAYAGG ORDER BY, DBCC,
+ALTER INDEX … DISABLE, …) are tolerated; new ones fail. Delete lines
 as the parser catches up (the test prints the ones that now agree).
 
 ## msduck import
