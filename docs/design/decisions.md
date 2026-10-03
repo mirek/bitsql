@@ -23,3 +23,30 @@ entry: what changed, why, and which page was updated.
   not in this repo yet. Its capture stays phase 1 work, blocked on access.
   (verification.md, roadmap.md)
 - **Phase 0 and phase 7** added to the roadmap for setup and packaging.
+
+## 2026-10-03: statement-restart instead of resumable operators
+
+The draft's `step` function suspends *inside* operators on `NeedLock`. Making
+every Volcano operator resumable in MoonBit is costly and error-prone.
+Instead:
+
+- Procedural code (batch, proc, trigger, dynamic SQL bodies) compiles to a flat
+  instruction list with jumps (IF/WHILE/BREAK/TRY/CATCH/GOTO/RETURN become
+  jumps). Session execution state is a stack of frames `{code, pc, variables,
+  temp objects}`, which makes it resumable at statement boundaries.
+- Each simple statement (query, DML, SET, DDL) runs atomically against a
+  snapshot of the session's transaction root. Before touching data it requests
+  the locks it needs. If any lock must wait, the statement's private changes
+  are discarded and the session parks with `pc` still on that statement. Once
+  the lock is granted, the statement restarts from scratch. Locks granted
+  before the wait are kept, as SQL Server keeps them.
+- Counters that SQL Server never rolls back (identity, sequences, rowversion,
+  NEWSEQUENTIALID) are restored from the statement-start snapshot on a
+  restart, because from the client's point of view the statement ran once.
+- Items already produced by earlier statements in the batch are kept. The
+  restarted statement's partial items are dropped.
+- Attention and time limits are checked between statements; a single
+  statement is not time-sliced in v1. `Yield` remains available for later.
+
+Effect: `NeedLock` is per statement, not per row. Deadlock detection and lock
+fidelity are unchanged. (execution.md updated.)

@@ -17,8 +17,14 @@ fn step(state : ExecState, db : DbSnapshot) -> Step
 ```
 
 Operators are Volcano-style pull iterators. Vectorization is not worth it for
-CI-sized data. Long statements yield (`Output::Yield`) after a work budget so one
-session cannot starve the others, and ATTENTION is honored between steps.
+CI-sized data.
+
+**As built (decisions.md, 2026-10-03, statement restart):** suspension happens
+at statement granularity. Procedural code compiles to a flat instruction list
+with jumps, and the session keeps a frame stack `{code, pc, variables}`. A simple
+statement runs atomically. When it needs a lock that must wait, its private
+writes are discarded and the session parks on the same `pc`; it restarts the
+statement once the lock is granted. ATTENTION is honored between statements.
 
 ## One DML delta, many consumers
 
