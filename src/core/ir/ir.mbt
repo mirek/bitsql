@@ -58,6 +58,10 @@ pub(all) enum ExprKind {
   InQuery(Expr, Plan, negated~ : Bool, collation~ : @types.Collation?)
   /// `x op ALL|ANY (subquery)`; `all` false means ANY/SOME.
   Quantified(CmpOp, Expr, Plan, all~ : Bool, collation~ : @types.Collation?)
+  /// Scalar user-defined function call: object id and arguments already
+  /// converted to the parameter types. Evaluated by the session through
+  /// `@exec.Ctx::user_fn` (the body is procedural; session/udf.mbt).
+  UserFn(Int, Array[Expr])
 } derive(Debug)
 
 ///|
@@ -207,6 +211,14 @@ pub(all) enum Plan {
   WorkTable(Int)
   /// Table-valued function rows (OPENJSON, STRING_SPLIT).
   TableFunc(TableFn, Array[Expr])
+  /// Inline table-valued function: the arguments are evaluated in the
+  /// caller's context and become the variable slots of the function's
+  /// query, which runs without the caller's rows or variables.
+  WithParams(Array[Expr], Plan)
+  /// Multi-statement table-valued function: object id and arguments; the
+  /// session runs the body and returns the table variable's rows
+  /// (`@exec.Ctx::user_table`).
+  UserTable(Int, Array[Expr])
   /// FOR JSON PATH/AUTO: formats the input rows (described by `columns`)
   /// as one JSON text, returned in rows of 2033 characters.
   ForJson(

@@ -44,6 +44,8 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
     outer: [],
     source: (_, _) => [],
     ext: (_, _) => None,
+    user_fn: @exec.no_user_fn,
+    user_table: @exec.no_user_table,
   }
   Some(@exec.eval(ctx, e)) catch {
     _ => None

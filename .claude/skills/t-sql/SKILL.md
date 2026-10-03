@@ -240,6 +240,45 @@ mention the correction here.
 # T-SQL Language Reference
 
 Complete reference for the Transact-SQL language used by Microsoft SQL Server.
+- 2026-10-03 (user functions, harness/corpus/udf/*): scalar UDF calls need
+  the schema (unqualified: 195 state 10); unknown or table-valued names are
+  4121 ("Cannot find either column "dbo" or the user-defined function or
+  aggregate "dbo.f", or the name is ambiguous."); too many / too few
+  arguments 8144 / 313 (state 2 scalar, 3 table-valued; the name as
+  written). A parameter default is used only for an explicit DEFAULT
+  argument; DEFAULT for a parameter without one is NULL. Incompatible
+  argument types are 206 state 2 at bind time, unconvertible values 245 at
+  run time after COLMETADATA. Results are nullable computed columns (33).
+  Errors inside a scalar or inline function are reported at the calling
+  statement's line with ERROR_PROCEDURE() NULL (also WITH INLINE = OFF, so
+  not an artefact of scalar UDF inlining). @@NESTLEVEL
+  inside is 1; recursion beyond 32 levels is 217 and ends the batch. A
+  multi-statement TVF error is followed by 3621; inline/scalar ones are not.
+  TVF arity errors (313/8144 state 3) and 216 ("Parameters were not supplied
+  for the function 'dbo.f'.") report line 13 when the name is
+  schema-qualified, the statement line otherwise. A scalar function in FROM
+  is 208 state 224; a TVF column alias list 317. `EXEC @r = dbo.f @x = 5`
+  runs a scalar function: DONEINPROC 193 count 1, DONEPROC 224, no
+  RETURNSTATUS. CREATE FUNCTION rejects side effects with 443 "Invalid use of
+  a side-effecting operator 'X' within a function." — state 15 for INSERT/
+  UPDATE/DELETE/MERGE on existing base tables, BEGIN/COMMIT/ROLLBACK
+  TRANSACTION, SAVEPOINT, SET OPTION ON/OFF, CREATE TABLE, TRUNCATE TABLE;
+  state 14 for PRINT, RAISERROR, THROW, EXECUTE STRING and each of BEGIN TRY/
+  END TRY/BEGIN CATCH/END CATCH; state 1 for newid/rand/newsequentialid
+  (lower case). All 443s and 444 (SELECT returning data, state 3 scalar / 2
+  TVF) are reported together in statement order. Temp tables: 2772. Last
+  statement not RETURN: 455 state 2 (a trailing BEGIN...END counts, IF/ELSE
+  does not); `RETURN` without value in a scalar function 1075, with a value
+  in a TVF 178 (both class 15). DML on a missing table and EXEC of a missing
+  procedure are accepted (deferred name resolution; the latter with INFO
+  2007).
+- 2026-10-03 (result metadata): an ORDER BY key that is not in the select
+  list (ORDER token 0) clears the computed flag on all computed columns of
+  the SELECT (literal 32 → 0, expression 33 → 1); see
+  docs/reference/result-metadata.md. Also seen while capturing: INSERT
+  violating a CHECK that references one column names it (", column 'id'.")
+  and is followed by INFO 3621; bitsql's INSERT path does neither yet (only
+  ALTER TABLE does).
 
 Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
 

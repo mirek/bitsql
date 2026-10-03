@@ -136,3 +136,20 @@ other sessions' commits as SQL Server does. SNAPSHOT keeps its start state.
 The row diff is O(changed tables' rows); a write log would make it
 O(changes) if this ever shows up in profiles.
 
+## 2026-10-03: user-defined functions run in the session
+
+Scalar UDF bodies are procedural, and exec cannot run statements, so the
+binder emits `ExprKind::UserFn(id, args)` (arguments already converted to the
+parameter types) and the executor calls back into the session through
+`Ctx::user_fn`; multi-statement TVFs are `Plan::UserTable(id, args)` fed by
+`Ctx::user_table`. The session (`session/udf.mbt`) runs the body in a frame of
+its own with a small control-flow interpreter (IF/WHILE/BREAK/CONTINUE/
+RETURN) that delegates the statements CREATE FUNCTION allows to `exec_stmt`
+and discards their tokens. Inline TVFs never reach the session at run time:
+the binder binds the stored query with the parameters as variable slots
+0..n-1 and wraps it in `Plan::WithParams(args, plan)`, which evaluates the
+arguments in the caller's context. Parsed definitions are cached per object
+id in `Server.udfs`, keyed on the definition text (ALTER replaces it).
+Anything a function cannot leave with (lock waits, control flow) becomes an
+`Emulator:` error.
+

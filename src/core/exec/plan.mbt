@@ -207,6 +207,8 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     }
     WorkTable(id) => ctx.rt.work.get(id).unwrap_or([])
     TableFunc(f, args) => run_table_fn(ctx, f, args)
+    WithParams(args, inner) => run(params_ctx(ctx, args), inner)
+    UserTable(id, args) => (ctx.user_table)(id, args.map(a => eval(ctx, a)))
     ForJson(input, columns, root~, include_nulls~, without_array_wrapper~) => {
       let rows = run(ctx, input)
       // captured: the DONE count is the number of input rows
@@ -214,6 +216,14 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       run_for_json(rows, columns, root, include_nulls, without_array_wrapper)
     }
   }
+}
+
+///|
+/// Context of an inline table-valued function's query: its parameters are
+/// the variable slots; the caller's rows are not visible.
+fn params_ctx(ctx : Ctx, args : Array[@ir.Expr]) -> Ctx raise @types.SqlError {
+  let vars = args.map(a => eval(ctx, a))
+  { ..ctx, vars, row: [], outer: [], }
 }
 
 ///|
@@ -348,6 +358,7 @@ pub fn stream(
         emit(r.map(e => eval(ctx, e)))
       }
     TableFunc(f, args) => stream_table_fn(ctx, f, args, emit)
+    WithParams(args, inner) => stream(params_ctx(ctx, args), inner, emit)
     Apply(left, right, outer~, right_width~) =>
       stream(ctx, left, l => {
         let rs = run(ctx.push_outer(l), right)

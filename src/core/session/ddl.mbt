@@ -236,7 +236,7 @@ fn Session::new_check(
   }
   self.claim_name(b, db, cname)
   // a CHECK must bind against the table's columns
-  let env = @bind.Env::new(Map([])).with_columns(
+  let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
     b.columns.map(x => @bind.ColumnRef::{
       qualifier: "",
       name: x.name,
@@ -290,7 +290,7 @@ fn Session::add_column(
     (Some(t), _) => (@bind.resolve_type(t, Declaration, collation), None)
     (None, Some(e)) => {
       // computed column: type of its expression over the other columns
-      let env = @bind.Env::new(Map([])).with_columns(
+      let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
         b.columns.map(x => @bind.ColumnRef::{
           qualifier: "",
           name: x.name,

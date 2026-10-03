@@ -60,10 +60,10 @@ fn bind_call_catalog(
     "OBJECT_DEFINITION" => (1, 1, NVarChar(None, @types.default_collation))
     "HAS_PERMS_BY_NAME" => (3, 5, Int)
     _ =>
-      // schema-qualified calls name user-defined functions, which are
-      // registered (CREATE FUNCTION) but not executed yet
+      // schema-qualified calls name user-defined functions (bind/udf.mbt);
+      // unqualified ones are built-ins only (195 otherwise, captured)
       if call.name.parts.length() > 1 {
-        raise @types.not_supported("calling user-defined functions")
+        return Some(bind_scalar_udf(env, call))
       } else {
         return None
       }

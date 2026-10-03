@@ -209,8 +209,13 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
           })
         None =>
           match self.find_module(name) {
+            // a table-valued function without its argument list (captured
+            // 216; line: udf_error_line)
             Some(m) if m.kind is (InlineFunction | TableFunction) =>
-              raise @types.not_supported("table-valued functions")
+              raise @types.sql_error(
+                216,
+                "Parameters were not supplied for the function '\{object_text(name)}'.",
+              )
             _ => None
           }
       }
@@ -224,6 +229,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         _ => None
       }
     },
+    function: name => self.find_function(name),
     table_var: name => {
       match self.find_table_var(name) {
         Some(t) =>

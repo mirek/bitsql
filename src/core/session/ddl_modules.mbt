@@ -244,6 +244,7 @@ fn Session::exec_create_function(
     InlineTable(_) => (InlineFunction, None)
     TableVariable(_, _, _) => (TableFunction, None)
   }
+  self.validate_function(f)
   ignore(
     self.define_module(
       f.mode,

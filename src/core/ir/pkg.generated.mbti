@@ -85,6 +85,7 @@ pub(all) enum ExprKind {
   Exists(Plan)
   InQuery(Expr, Plan, negated~ : Bool, collation~ : @types.Collation?)
   Quantified(CmpOp, Expr, Plan, all~ : Bool, collation~ : @types.Collation?)
+  UserFn(Int, Array[Expr])
 } derive(@debug.Debug)
 
 pub(all) enum Fn {
@@ -213,6 +214,8 @@ pub(all) enum Plan {
   Recursive(id~ : Int, Plan, Plan, max~ : Int)
   WorkTable(Int)
   TableFunc(TableFn, Array[Expr])
+  WithParams(Array[Expr], Plan)
+  UserTable(Int, Array[Expr])
   ForJson(Plan, Array[ResultColumn], root~ : String?, include_nulls~ : Bool, without_array_wrapper~ : Bool)
 } derive(@debug.Debug)
 

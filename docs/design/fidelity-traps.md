@@ -18,6 +18,7 @@ new trap, add a row here *and* a corpus case.
 | `OPENJSON` | `TableFunction` node | Default schema returns `key`, `value`, `type`; the `WITH` clause casts |
 | Computed columns | Stored `Expr` inlined by the binder | Persisted vs non-persisted affects indexability |
 | Views | Subplan inlined by the binder | Updatable-view rules are strict |
+| User functions | Scalar: session callback per call; inline TVF: `WithParams` subplan; multi-statement TVF: `UserTable` | Errors inside a scalar/inline function report the *caller's* line and ERROR_PROCEDURE NULL; a multi-statement TVF error adds 3621; parameter defaults apply only to an explicit `DEFAULT` argument (omitting it is 313); TVF argument-count errors on a schema-qualified name report line 13 (`udf/*`) |
 | Cursors | Snapshot root plus iterator | Only `STATIC`, `FAST_FORWARD`, `LOCAL` in v1; others raise an explicit error |
 | `@@ROWCOUNT` | Session register | Reset by many statements, including `SET` options, `PRINT`, `BEGIN TRAN` and `COMMIT` |
 | Result metadata | Binder-computed | COLMETADATA type/length/precision/nullability must not depend on row values; empty results still carry exact metadata. Rules: docs/reference/result-metadata.md |

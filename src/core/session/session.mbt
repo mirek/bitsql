@@ -30,6 +30,8 @@ pub struct Server {
   woken : Array[Int]
   /// Parked sessions chosen as deadlock victims.
   victims : Array[Int]
+  /// Parsed user-defined functions by object id (session/udf.mbt).
+  priv udfs : Map[Int, UdfDef]
 }
 
 ///|
@@ -62,6 +64,7 @@ pub fn Server::new() -> Server {
     seqs: Map([]),
     woken: [],
     victims: [],
+    udfs: Map([]),
   }
 }
 
@@ -299,6 +302,8 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     outer: [],
     source: (scope, id) => self.source(scope, id),
     ext: (name, args) => self.catalog_fn(name, args),
+    user_fn: (id, args) => self.call_scalar_udf(id, args),
+    user_table: (id, args) => self.call_table_udf(id, args),
   }
 }
 
