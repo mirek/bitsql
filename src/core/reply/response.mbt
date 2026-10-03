@@ -22,6 +22,10 @@ pub(all) enum Item {
   /// End of one statement. `count` is Some when DONE_COUNT applies (NOCOUNT OFF
   /// and a counting statement); `error` sets DONE_ERROR.
   StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
+  /// End of a statement inside a procedure or dynamic SQL (DONEINPROC).
+  InProcDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
+  /// End of an EXEC of a procedure or dynamic SQL inside a batch (DONEPROC).
+  ProcDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
   Message(SqlMessage)
   ReturnStatus(Int)
   /// Environment change (transactions, database).
@@ -56,7 +60,7 @@ pub fn render(
   // Index of the last StatementDone, to know which one is final in a batch.
   let mut last_done = -1
   for i, it in items {
-    if it is StatementDone(..) {
+    if it is (StatementDone(..) | ProcDone(..)) {
       last_done = i
     }
   }
@@ -112,6 +116,33 @@ pub fn render(
             @tds.write_done(w, DoneInProc, status, cmd, count.unwrap_or(0))
           }
         }
+      }
+      InProcDone(cmd~, count~, error~) => {
+        any_done = true
+        let mut status = @tds.DONE_MORE
+        if count is Some(_) {
+          status = status | @tds.DONE_COUNT
+        }
+        if error || pending_error {
+          status = status | @tds.DONE_ERROR
+        }
+        pending_error = false
+        @tds.write_done(w, DoneInProc, status, cmd, count.unwrap_or(0))
+      }
+      ProcDone(cmd~, count~, error~) => {
+        any_done = true
+        let mut status = 0
+        if count is Some(_) {
+          status = status | @tds.DONE_COUNT
+        }
+        if error || pending_error {
+          status = status | @tds.DONE_ERROR
+        }
+        pending_error = false
+        if kind is Rpc || i != last_done {
+          status = status | @tds.DONE_MORE
+        }
+        @tds.write_done(w, DoneProc, status, cmd, count.unwrap_or(0))
       }
       ReturnStatus(s) => @tds.write_return_status(w, s)
       EnvChange(e) => @tds.write_envchange(w, e)

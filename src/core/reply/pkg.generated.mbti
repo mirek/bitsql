@@ -17,6 +17,8 @@ pub(all) enum Item {
   Order(Array[Int])
   Row(Array[@tds.WireValue])
   StatementDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
+  InProcDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
+  ProcDone(cmd~ : Int, count~ : Int64?, error~ : Bool)
   Message(SqlMessage)
   ReturnStatus(Int)
   EnvChange(@tds.EnvChange)

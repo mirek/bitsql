@@ -341,6 +341,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.done(203)
     }
     Exec(e) => self.exec_proc_stmt(e)
+    ExecString(parts) => self.exec_string(parts)
     _ => raise @types.not_supported(stmt_name(s))
   }
 }

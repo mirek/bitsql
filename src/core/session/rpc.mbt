@@ -59,11 +59,11 @@ fn Session::run_with_params(
   self.frames.push(frame)
   self.rt.nest_level += 1
   let status = try {
-    if body() {
-      0
-    } else {
-      self.rt.error
-    }
+    // Without RETURN, the status is the last statement's @@ERROR (0 after
+    // a success; e.g. 8134 after a trailing divide by zero; msduck
+    // error-continuation-rpc, error-metadata).
+    ignore(body())
+    self.rt.error
   } catch {
     Return(s) => s.unwrap_or(0)
     e => {
@@ -213,10 +213,83 @@ pub fn Session::run_rpc(
 }
 
 ///|
+/// Runs dynamic SQL text in a new scope (EXEC(@sql) / sp_executesql inside
+/// a batch). Its statements complete with DONEINPROC; the EXEC itself with
+/// DONEPROC (captured: msduck error-metadata). An error inside ends only the
+/// dynamic batch.
+fn Session::exec_dynamic(
+  self : Session,
+  sql : String,
+  params : Array[@ast.Param],
+  named : Map[String, Arg],
+  positional : Array[Arg],
+) -> (Int, Array[(String, @types.SqlType, @types.Value, Bool)]) raise {
+  let saved_text = self.text
+  self.text = sql
+  let saved_try = self.try_depth
+  self.try_depth = 0
+  errdefer {
+    self.text = saved_text
+    self.try_depth = saved_try
+  }
+  let r = self.run_with_params(params, named, positional, () => {
+    self.run_text(sql)
+  })
+  self.text = saved_text
+  self.try_depth = saved_try
+  r
+}
+
+///|
+fn Session::exec_string(self : Session, parts : Array[@ast.Expr]) -> Unit raise {
+  let sb = StringBuilder()
+  for p in parts {
+    let (v, ty) = self.eval(p)
+    match @types.cast(v, ty, NVarChar(None, @types.default_collation)) {
+      String(s) => sb.write_string(s)
+      _ => ()
+    }
+  }
+  let (status, _) = self.exec_dynamic(sb.to_string(), [], Map([]), [])
+  ignore(status)
+  self.out.push(ProcDone(cmd=224, count=None, error=false))
+}
+
+///|
 /// EXEC proc statement inside a batch.
 fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   guard e.target is ExecProc(name) else {
     raise @types.not_supported("EXEC (@sql)")
+  }
+  if name.base().to_lower() == "sp_executesql" {
+    let values = e.args.map(a => {
+      let (v, ty) = self.eval(a.value)
+      (a, Arg::{ value: v, ty, output: a.output, })
+    })
+    guard values.get(0) is Some((_, { value: String(sql), .. })) else {
+      raise @types.sql_error(
+        214, "Procedure expects parameter '@statement' of type 'ntext/nchar/nvarchar'.",
+      )
+    }
+    let decls = match values.get(1) {
+      Some((_, { value: String(d), .. })) => d
+      _ => ""
+    }
+    let params = parse_param_decls(decls)
+    let named : Map[String, Arg] = Map([])
+    let positional = []
+    for i in 2..<values.length() {
+      let (a, arg) = values[i]
+      match a.name {
+        Some(n) => named[n.to_lower()] = arg
+        None => positional.push(arg)
+      }
+    }
+    let (status, outs) = self.exec_dynamic(sql, params, named, positional)
+    self.write_back_outputs(e, outs)
+    self.out.push(ReturnStatus(status))
+    self.out.push(ProcDone(cmd=224, count=None, error=false))
+    return
   }
   let proc = self.find_proc(name)
   let named : Map[String, Arg] = Map([])
@@ -243,7 +316,31 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     },
   )
   self.rpc = saved_rpc
-  // write OUTPUT arguments back to the caller's variables
+  self.write_back_outputs(e, outs)
+  match e.return_var {
+    Some(rv) =>
+      match self.frame().vars.get(rv.to_lower()) {
+        Some(info) =>
+          self.frame().values[info.slot] = @types.cast(
+            Int(status),
+            Int,
+            info.ty,
+          )
+        None => ()
+      }
+    None => ()
+  }
+  self.out.push(ReturnStatus(status))
+  self.out.push(ProcDone(cmd=224, count=None, error=false))
+}
+
+///|
+/// Copies OUTPUT parameter values back into the caller's variables.
+fn Session::write_back_outputs(
+  self : Session,
+  e : @ast.Exec,
+  outs : Array[(String, @types.SqlType, @types.Value, Bool)],
+) -> Unit raise {
   for a in e.args {
     guard a.output && a.value.kind is Var(vname) else { continue }
     let pname = match a.name {
@@ -260,19 +357,4 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
       }
     }
   }
-  match e.return_var {
-    Some(rv) =>
-      match self.frame().vars.get(rv.to_lower()) {
-        Some(info) =>
-          self.frame().values[info.slot] = @types.cast(
-            Int(status),
-            Int,
-            info.ty,
-          )
-        None => ()
-      }
-    None => ()
-  }
-  self.out.push(ReturnStatus(status))
-  self.done(224)
 }

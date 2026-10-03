@@ -170,7 +170,11 @@ fn Session::done(
     return
   }
   let count = if self.nocount { None } else { count }
-  self.out.push(StatementDone(cmd~, count~, error~))
+  if self.rt.nest_level > 0 {
+    self.out.push(InProcDone(cmd~, count~, error~))
+  } else {
+    self.out.push(StatementDone(cmd~, count~, error~))
+  }
 }
 
 ///|
