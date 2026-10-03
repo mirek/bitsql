@@ -39,6 +39,8 @@ pub const TICKS_PER_MINUTE : Int64 = 600_000_000
 
 pub const TICKS_PER_SECOND : Int64 = 10_000_000
 
+pub fn arith(ArithOp, Value, SqlType, Value, SqlType) -> Value raise SqlError
+
 pub fn arith_result_type(ArithOp, SqlType, SqlType) -> SqlType raise SqlError
 
 pub fn can_convert_explicitly(SqlType, SqlType) -> Bool
@@ -70,6 +72,8 @@ pub fn decimal_result(ArithOp, Int, Int, Int, Int) -> (Int, Int)
 pub fn decimal_union(Int, Int, Int, Int) -> (Int, Int)
 
 pub let default_collation : Collation
+
+pub fn divide_by_zero_error() -> SqlError
 
 pub fn double_to_decimal17(Double) -> Decimal
 
@@ -112,6 +116,8 @@ pub let latin1_general_100_bin2 : Collation
 pub let latin1_general_100_ci_as : Collation
 
 pub let latin1_general_ci_as : Collation
+
+pub fn negate(Value, SqlType) -> Value raise SqlError
 
 pub fn not_supported(String, number? : Int) -> SqlError
 
