@@ -726,6 +726,10 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       }
       self.close()
     }
+    CreateSynonym(n, base) => {
+      self.s("(create-synonym " + n.to_sexp() + " " + base.to_sexp())
+      self.close()
+    }
     CreateSequence(n, type_~, options~) => {
       self.s("(create-sequence " + n.to_sexp())
       if type_ is Some(t) {
@@ -748,6 +752,7 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
           DropSchema => "schema"
           DropType => "type"
           DropSequence => "sequence"
+          DropSynonym => "synonym"
           DropDatabase => "database"
         }),
       )

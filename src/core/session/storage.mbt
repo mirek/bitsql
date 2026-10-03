@@ -198,15 +198,26 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         Some(b) => return Some(b)
         None => ()
       }
-      match self.find_table(name) {
-        Some((scope, t)) =>
+      let real = self.deref_synonym(name)
+      match self.find_table(real) {
+        Some((scope, t)) => {
+          // through a synonym, columns are qualified by the synonym's name
+          let shown = if physical_equal(real, name) {
+            t.name
+          } else {
+            name.base()
+          }
           Some({
             scope,
             id: t.id,
             schema: t.schema,
-            name: t.name,
-            columns: table_columns(t),
+            name: shown,
+            columns: table_columns(t).map(c => {
+              ..c,
+              qualifier: shown.to_lower(),
+            }),
           })
+        }
         None =>
           match self.find_module(name) {
             // a table-valued function without its argument list (captured
@@ -224,12 +235,13 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       if name.base().has_prefix("#") {
         return None
       }
-      match self.find_module(name) {
+      match self.find_module(self.deref_synonym(name)) {
         Some(m) if m.kind is View => Some(view_query(m))
         _ => None
       }
     },
-    function: name => self.find_function(name),
+    function: name => self.find_function(self.deref_synonym(name)),
+    user_type: tn => self.find_user_type(tn) is Some(_),
     table_var: name => {
       match self.find_table_var(name) {
         Some(t) =>

@@ -95,30 +95,7 @@ fn Session::sp_helpindex(self : Session, name : String) -> Int {
     ),
   )
   self.out.push(Order([1]))
-  let rows = t.indexes.map(ix => {
-    let parts = [if ix.clustered { "clustered" } else { "nonclustered" }]
-    if ix.unique {
-      parts.push("unique")
-    }
-    if ix.primary {
-      parts.push("primary key")
-    } else if ix.object_id != 0 {
-      parts.push("unique key")
-    }
-    let keys = ix.columns.map(c => {
-      t.columns[c.0].name + (if c.1 { "(-)" } else { "" })
-    })
-    (ix.name, parts.join(", ") + " located on PRIMARY", keys.join(", "))
-  })
-  rows.sort_by((a, b) => {
-    (@types.compare(
-      String(a.0),
-      String(b.0),
-      collation=@types.default_collation,
-    ) catch {
-      _ => None
-    }).unwrap_or(0)
-  })
+  let rows = helpindex_rows(t)
   for r in rows {
     self.out.push(Row([Text(r.0), Text(r.1), Text(r.2)]))
   }

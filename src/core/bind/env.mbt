@@ -40,6 +40,9 @@ pub(all) struct Catalog {
   /// Resolves a user-defined function (scalar, inline or multi-statement
   /// table-valued) by name; unqualified names resolve in dbo.
   function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
+  /// True when the name is a user-defined type of the database (CAST to
+  /// it is 243 state 2 rather than state 1).
+  user_type : (@ast.TypeName) -> Bool
 }
 
 ///|
@@ -58,6 +61,10 @@ pub(all) struct UserParam {
   name : String
   ty : @types.SqlType
   default_ : @ast.Expr?
+  /// A READONLY table-valued parameter: its table type's name (for 206).
+  /// The argument must be a table variable; scalar and multi-statement
+  /// functions receive its table id as an int argument.
+  table_type : String?
 }
 
 ///|
@@ -78,6 +85,7 @@ pub fn Catalog::empty() -> Catalog {
     view: _ => None,
     sequence: _ => None,
     function: _ => None,
+    user_type: _ => false,
   }
 }
 
@@ -114,6 +122,9 @@ pub(all) struct Env {
   /// statement (8155 then 207); shared by all copies of the Env, owned by
   /// the session, which prints them before the statement's error.
   deferred : Array[@types.SqlError]
+  /// Table-valued parameters of an inline function being expanded: the
+  /// parameter name (lowercased) → the caller's table variable.
+  table_params : Map[String, TableBinding]
 }
 
 ///|
@@ -148,6 +159,17 @@ pub fn Env::new(
     from_plan: None,
     literal_params: false,
     deferred,
+    table_params: Map([]),
+  }
+}
+
+///|
+/// A table variable `@t` (or a table-valued parameter of an inline
+/// function being expanded).
+pub fn Env::table_var(self : Env, name : String) -> TableBinding? {
+  match self.table_params.get(name.to_lower()) {
+    Some(b) => Some(b)
+    None => (self.catalog.table_var)(name)
   }
 }
 

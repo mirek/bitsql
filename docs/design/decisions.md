@@ -222,3 +222,19 @@ OUTPUT images and WITH CHECK OPTION predicates are recomputed from the new
 base image with the stored `refresh` steps. Shapes outside "SELECT ... FROM
 ... WHERE" (TOP, UNION, nested WITH) and views with INSTEAD OF triggers stay
 50100.
+
+## 2026-10-03: user-defined types, table-valued parameters and synonyms
+
+The v1 scope listed TVPs and user-defined types as out of scope; both are
+now emulated because `mssql` applications send `sql.Table` parameters.
+Types live in the database value (`@store.Db` types map, own namespace,
+merged by `Db::rebase` like objects) and are not objects (no sys.objects
+row, captured). A table type keeps its type table; `DECLARE @t <type>`
+copies it into the session's table variables. READONLY parameters share the
+caller's table variable instead of copying it (they cannot be modified:
+10700 is a compile-time check), so procedures, functions (the table id is
+passed as an int argument; inline functions map the parameter in the
+binder, `Env::table_params`) and sp_executesql see the same rows. A TVP
+from the wire is loaded into a new table variable with the type's
+constraints. Synonyms are store Modules of kind SN resolved late
+(`Session::deref_synonym`) by the catalog hooks, DML targets and EXEC.

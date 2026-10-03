@@ -376,7 +376,7 @@ fn column_row(object_id : Int, c : @store.Column) -> VRow {
     ("name", s(c.name)),
     ("column_id", i(c.column_id)),
     ("system_type_id", TinyInt(st)),
-    ("user_type_id", i(ut)),
+    ("user_type_id", i(c.user_type.unwrap_or(ut))),
     ("max_length", SmallInt(len)),
     ("precision", TinyInt(p)),
     ("scale", TinyInt(sc)),
@@ -986,6 +986,8 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))
     _ => out.append(self.variant_view_rows(key))
   }
+  // user-defined types, synonyms, parameters (sysviews_types.mbt)
+  self.type_view_rows(key, db, out)
   out
 }
 

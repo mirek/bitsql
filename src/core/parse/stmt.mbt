@@ -1100,6 +1100,13 @@ fn Parser::create_or_alter(
         CreateType({ name, base: None, nullable: None, table: Some(body), })
       }
     }
+    "SYNONYM" if mode is Create => {
+      self.pos += 1
+      let name = self.object_name()
+      self.expect_kw("FOR")
+      let base = self.object_name()
+      CreateSynonym(name, base)
+    }
     "SEQUENCE" if mode is Create => {
       self.pos += 1
       let name = self.object_name()

@@ -19,6 +19,16 @@ priv struct Arg {
   value : @types.Value
   ty : @types.SqlType
   output : Bool
+  /// A table-valued argument (session/tabletypes.mbt).
+  table : TableArg?
+}
+
+///|
+/// A table-valued argument of the wrong type (206): reported at line 0 and
+/// completes the EXEC with DONEPROC, without RETURNSTATUS (captured:
+/// tabletypes/readonly-params).
+priv suberror ParamClash {
+  ParamClash(@types.SqlError)
 }
 
 ///|
@@ -30,16 +40,39 @@ fn Session::run_with_params(
   args : Map[String, Arg],
   positional : Array[Arg],
   body : () -> Bool raise,
+  check_decls? : Bool = false,
 ) -> (Int, Array[(String, @types.SqlType, @types.Value, Bool)]) raise {
   let frame = Frame::new()
   let outs = []
+  if check_decls {
+    // sp_executesql declarations: 352 / 346 end the dynamic batch like a
+    // compile error (captured: ERROR, RETURNSTATUS = the error number)
+    ignore(
+      self.check_param_decls(params) catch {
+        e => {
+          self.message(e, 1)
+          self.rt.error = e.number()
+          return (e.number(), [])
+        }
+      },
+    )
+  }
   for i, p in params {
-    let ty = @bind.resolve_type(p.type_, Declaration, @types.default_collation)
-    let slot = frame.add_var(p.name, ty)
     let arg = match args.get(p.name.to_lower()) {
       Some(a) => Some(a)
       None => positional.get(i)
     }
+    let ty = match self.decl_type(p.type_, @types.default_collation) {
+      ScalarDecl(ty, _, _) => ty
+      TableDecl(ut) => {
+        self.bind_table_param(frame, p, ut, arg) catch {
+          @types.SqlError(number=206, ..) as e => raise ParamClash(e)
+          e => raise e
+        }
+        continue
+      }
+    }
+    let slot = frame.add_var(p.name, ty)
     match arg {
       Some(a) => frame.values[slot] = @types.assign(a.value, a.ty, ty)
       None =>
@@ -74,6 +107,13 @@ fn Session::run_with_params(
   }
   self.frames.pop() |> ignore
   self.rt.nest_level -= 1
+  // TVPs loaded for this call die with it
+  for k in frame.owned {
+    match frame.tables.get(k) {
+      Some(id) => self.tvars = self.tvars.drop_object(id)
+      None => ()
+    }
+  }
   (status, outs.map(o => (o.0, o.1, frame.values[o.2], o.3)))
 }
 
@@ -94,6 +134,7 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
 
 ///|
 fn Session::find_proc(self : Session, name : @ast.ObjectName) -> Proc raise {
+  let name = self.deref_synonym(name)
   match self.server.procs.get(name.base().to_lower()) {
     Some(p) => p
     None =>
@@ -130,7 +171,19 @@ pub fn Session::run_rpc(
   let named : Map[String, Arg] = Map([])
   let wire : Array[(@tds.RpcParam, Arg)] = call.params.map(p => {
     let ty = param_type(p.type_info)
-    (p, Arg::{ value: param_value(ty, p.value), ty, output: p.by_ref, })
+    match tvp_arg(p) {
+      Some(a) => (p, a)
+      None =>
+        (
+          p,
+          Arg::{
+            value: param_value(ty, p.value),
+            ty,
+            output: p.by_ref,
+            table: None,
+          },
+        )
+    }
   })
   let result = try {
     check_variant_params(call.params)
@@ -155,9 +208,13 @@ pub fn Session::run_rpc(
           }
         }
         Some(
-          self.run_with_params(params, named, positional, () => {
-            self.run_text(sql)
-          }),
+          self.run_with_params(
+            params,
+            named,
+            positional,
+            () => self.run_text(sql),
+            check_decls=true,
+          ),
         )
       }
       "sp_reset_connection" => Some((0, []))
@@ -263,28 +320,51 @@ pub fn Session::run_rpc(
             "Could not find stored procedure '\{name}'.",
           )
         }
-        let proc = self.find_proc(on)
-        for pair in wire {
-          let (p, a) = pair
-          if p.name != "" {
-            named[p.name.to_lower()] = a
-          } else {
-            positional.push(a)
-          }
-        }
-        Some(
-          self.run_with_params(proc.def.params, named, positional, () => {
-            self.exec_list(proc.def.body) catch {
-              AbortBatch => return false
-              e => raise e
-            }
-            true
-          }),
+        // system procedures of the sp_help family (sysprocs_help.mbt)
+        let sys_status = self.rpc_help_proc(
+          on.base().to_lower(),
+          wire.map(pair => (pair.0.name, pair.1.value)),
         )
+        if sys_status is Some(status) {
+          Some((status, []))
+        } else {
+          let proc = self.find_proc(on)
+          for pair in wire {
+            let (p, a) = pair
+            if p.name != "" {
+              named[p.name.to_lower()] = a
+            } else {
+              positional.push(a)
+            }
+          }
+          Some(
+            self.run_with_params(proc.def.params, named, positional, () => {
+              self.exec_list(proc.def.body) catch {
+                AbortBatch => return false
+                e => raise e
+              }
+              true
+            }),
+          )
+        }
       }
     }
   } catch {
+    @types.SqlError(..) as e if self.tvp_error => {
+      // a TVP's rows violate its table type (captured: 2627 at line 0,
+      // then 3621)
+      self.tvp_error = false
+      self.message(e, 0)
+      self.info(3621, 0, "The statement has been terminated.", 1)
+      self.out.push(StatementDone(cmd=253, count=None, error=true))
+      None
+    }
     @types.SqlError(..) as e => {
+      self.message(e, 1)
+      self.out.push(StatementDone(cmd=253, count=None, error=true))
+      None
+    }
+    ParamClash(e) => {
       self.message(e, 1)
       self.out.push(StatementDone(cmd=253, count=None, error=true))
       None
@@ -348,9 +428,13 @@ fn Session::exec_dynamic(
     self.text = saved_text
     self.try_depth = saved_try
   }
-  let r = self.run_with_params(params, named, positional, () => {
-    self.run_text(sql)
-  })
+  let r = self.run_with_params(
+    params,
+    named,
+    positional,
+    () => self.run_text(sql),
+    check_decls=true,
+  )
   self.text = saved_text
   self.try_depth = saved_try
   r
@@ -410,10 +494,18 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
     return
   }
   if name.base().to_lower() == "sp_executesql" {
-    let values = e.args.map(a => {
-      let (v, ty) = self.eval(a.value)
-      (a, Arg::{ value: v, ty, output: a.output, })
-    })
+    let values = []
+    for a in e.args {
+      match self.table_var_arg(a.value) {
+        Some(t) => values.push((a, t))
+        None => {
+          let (v, ty) = self.eval(a.value)
+          values.push(
+            (a, Arg::{ value: v, ty, output: a.output, table: None, }),
+          )
+        }
+      }
+    }
     guard values.get(0) is Some((_, { value: String(sql), .. })) else {
       raise @types.sql_error(
         214, "Procedure expects parameter '@statement' of type 'ntext/nchar/nvarchar'.",
@@ -451,8 +543,13 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
   let named : Map[String, Arg] = Map([])
   let positional = []
   for a in e.args {
-    let (v, ty) = self.eval(a.value)
-    let arg : Arg = { value: v, ty, output: a.output, }
+    let arg : Arg = match self.table_var_arg(a.value) {
+      Some(t) => t
+      None => {
+        let (v, ty) = self.eval(a.value)
+        { value: v, ty, output: a.output, table: None, }
+      }
+    }
     match a.name {
       Some(n) => named[n.to_lower()] = arg
       None => positional.push(arg)
@@ -483,7 +580,21 @@ fn Session::exec_proc_stmt(self : Session, e : @ast.Exec) -> Unit raise {
         e => raise e
       }
       true
-    })
+    }) catch {
+      ParamClash(err) => {
+        restore_set()
+        self.rpc = saved_rpc
+        self.message(err, 0)
+        self.rt.error = err.number()
+        if self.rt.nest_level > 0 {
+          self.out.push(InProcDone(cmd=224, count=None, error=true))
+        } else {
+          self.out.push(ProcDone(cmd=224, count=None, error=true))
+        }
+        return
+      }
+      err => raise err
+    }
   }
   restore_set()
   self.rpc = saved_rpc
@@ -632,7 +743,8 @@ fn Session::check_proc_args(
     }
   }
   for k, p in params {
-    if !supplied[k] && p.default_ is None {
+    // an omitted READONLY table-valued parameter is an empty table
+    if !supplied[k] && p.default_ is None && !p.read_only {
       return fail(
         @types.sql_error(
           201,

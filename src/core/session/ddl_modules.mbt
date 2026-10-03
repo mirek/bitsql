@@ -193,6 +193,7 @@ fn Session::view_columns(
       computed: None,
       persisted: false,
       rowguidcol: false,
+      user_type: None,
     })
   }
   out
@@ -225,6 +226,7 @@ fn Session::exec_create_procedure(
   p : @ast.CreateProcedure,
   start : Int,
 ) -> Unit raise {
+  self.check_module_params(p.params, p.body)
   let m = self.define_module(p.mode, p.name, Procedure, 222, start)
   self.server.procs[m.name.to_lower()] = { name: m.name, def: p, }
 }
@@ -235,12 +237,16 @@ fn Session::exec_create_function(
   f : @ast.CreateFunction,
   start : Int,
 ) -> Unit raise {
+  self.check_module_params(
+    f.params,
+    match f.returns {
+      Scalar(_, body) | TableVariable(_, _, body) => body
+      InlineTable(_) => []
+    },
+  )
   let (kind, returns) : (@store.ObjectKind, @types.SqlType?) = match f.returns {
     Scalar(t, _) =>
-      (
-        ScalarFunction,
-        Some(@bind.resolve_type(t, Declaration, @types.default_collation)),
-      )
+      (ScalarFunction, Some(self.scalar_type(t, @types.default_collation)))
     InlineTable(_) => (InlineFunction, None)
     TableVariable(_, _, _) => (TableFunction, None)
   }
@@ -382,7 +388,7 @@ fn Session::exec_system_proc(
       self.proc_done(status)
       true
     }
-    _ => false
+    other => self.exec_help_proc(other, args, return_var)
   }
 }
 

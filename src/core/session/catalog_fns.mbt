@@ -152,6 +152,7 @@ fn Session::catalog_fn(
       }
     "TYPE_ID" =>
       match text(0) {
+        Some(n) if self.user_type_id(n) is Some(id) => Int(id)
         Some(n) => {
           let mut found : @types.Value = Null
           for r in seed_types {
@@ -165,6 +166,7 @@ fn Session::catalog_fn(
       }
     "TYPE_NAME" =>
       match num(0) {
+        Some(id) if self.db_of(0).get_type(id) is Some(ut) => String(ut.name)
         Some(id) => {
           let mut found : @types.Value = Null
           for r in seed_types {

@@ -102,6 +102,10 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     Var(name) =>
       match env.vars.get(var_name_key(name)) {
         Some(v) => mk(Var(v.slot), v.ty, true)
+        // a table variable used as a scalar (captured: tabletypes/
+        // table-variable, state 1 class 16)
+        None if env.table_var(name) is Some(_) =>
+          raise err(137, "Must declare the scalar variable \"\{name}\".")
         None =>
           raise err(
             137,
@@ -284,12 +288,12 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     }
     Cast(inner, tn, try_~) => {
       let a = bind_expr(env, inner)
-      let t = resolve_type(tn, Conversion, env.collation)
+      let t = conversion_type(env, tn)
       conversion(a, t, try_, None)
     }
     Convert(tn, inner, style~, try_~) => {
       let a = bind_expr(env, inner)
-      let t = resolve_type(tn, Conversion, env.collation)
+      let t = conversion_type(env, tn)
       let st = match style {
         None => None
         Some({ kind: IntLit(s), .. }) => Some(parse_style(s))
@@ -551,4 +555,27 @@ fn int_literal_as_numeric(
 /// Exact numeric types whose arithmetic SQL Server reports as nullable.
 fn may_overflow(t : @types.SqlType) -> Bool {
   t.family() is (FInteger | FDecimal | FMoney)
+}
+
+///|
+/// The target type of CAST/CONVERT: only system types (captured: an alias
+/// or unknown type is 243, state 2 when a user type of that name exists).
+fn conversion_type(
+  env : Env,
+  tn : @ast.TypeName,
+) -> @types.SqlType raise @types.SqlError {
+  resolve_type(tn, Conversion, env.collation) catch {
+    @types.SqlError(number=2715, ..) => {
+      let written = match tn.schema {
+        Some(s) => s.name + "." + tn.name
+        None => tn.name
+      }
+      raise err(
+        243,
+        "Type \{written} is not a defined system type.",
+        state=if (env.catalog.user_type)(tn) { 2 } else { 1 },
+      )
+    }
+    e => raise e
+  }
 }

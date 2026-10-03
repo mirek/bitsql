@@ -88,6 +88,21 @@ mention the correction here.
   the view raises 50100 until sql_variant exists.
 
 
+- 2026-10-03 (corpus `tabletypes/`): user types are sys.types rows with
+  is_user_defined 1, principal_id NULL, user_type_id from 257; table types
+  have system_type_id 243, max_length -1, is_nullable 0, is_table_type 1 and
+  a sys.table_types row (sys.types columns + type_table_object_id,
+  is_memory_optimized). The type table has sys.columns and sys.indexes rows
+  (PK name `PK__TT_<name 5>__<hex>`, random) but **no sys.objects row**;
+  OBJECT_ID of a type name is NULL; TYPE_ID accepts `dbo.T`, `T`,
+  `[dbo].[T]`. sys.synonyms = sys.objects columns + base_object_name
+  (`[dbo].[t]`, parts as written, bracket-quoted), type `SN`. sys.parameters:
+  table-valued parameters are system_type_id 243 / the type's user_type_id /
+  max_length -1 / is_readonly 1; alias parameters carry the alias
+  user_type_id; is_nullable is 1 and has_default_value 0 even with a
+  default; a scalar function's return value is parameter_id 0 with an empty
+  name and is_output 1. Descriptors: catalog/view-descriptors-types.sql.
+
 # MSSQL System Catalog Views - Implementation Specification
 
 This skill provides the complete technical specification needed to implement system catalog view emulation in the mssqlite TDS server. For each view: exact column definitions, data types, relationships to other views, seed data, and the SQLite backing-table DDL.

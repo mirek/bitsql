@@ -24,5 +24,20 @@ export function resolveType(text) {
   }
   if (scaled[base]) return { type: scaled[base], options: args[0] === undefined ? {} : { scale: Number(args[0]) } }
   if (exact[base]) return { type: exact[base], options: { precision: Number(args[0] ?? 18), scale: Number(args[1] ?? 0) } }
+  // Table-valued parameter (TYPES.TVP); the value is
+  // {"schema":"dbo","name":"IdList","columns":[{"name":"id","type":"int"}],"rows":[[1]]}.
+  if (base === 'table') return { type: TYPES.TVP, options: {} }
   throw new Error(`unsupported parameter type ${text}`)
+}
+
+// A corpus TVP value (JSON) → tedious's TVP value: column types resolved,
+// cells decoded like scalar parameter values.
+export function tvpValue(value, decodeCell) {
+  if (value === null) return null
+  const columns = value.columns.map(c => {
+    const { type, options } = resolveType(c.type)
+    return { name: c.name, type, ...options }
+  })
+  const rows = value.rows.map(row => row.map((cell, i) => cell === null ? null : decodeCell(value.columns[i].type, cell)))
+  return { ...(value.schema === undefined ? {} : { schema: value.schema }), name: value.name, columns, rows }
 }

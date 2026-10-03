@@ -163,11 +163,23 @@ priv struct Frame {
   tables : Map[String, Int]
   /// LOCAL cursors of this scope.
   cursors : Map[String, CursorState]
+  /// READONLY table-valued parameters (lowercased names); unless also in
+  /// `owned` they share the caller's table variable.
+  read_only_tvps : Set[String]
+  /// Table-valued parameters whose table this frame created.
+  owned : Set[String]
 }
 
 ///|
 fn Frame::new() -> Frame {
-  { vars: Map([]), values: [], tables: Map([]), cursors: Map([]), }
+  {
+    vars: Map([]),
+    values: [],
+    tables: Map([]),
+    cursors: Map([]),
+    read_only_tvps: Set([]),
+    owned: Set([]),
+  }
 }
 
 ///|
@@ -289,6 +301,9 @@ pub struct Session {
   /// SET options SESSIONPROPERTY reports that bitsql lets change without
   /// an emulator error (ARITHABORT): upper-cased name → ON.
   session_flags : Map[String, Bool]
+  /// A TVP of the RPC request is being loaded (its errors are reported at
+  /// line 0, followed by 3621).
+  mut tvp_error : Bool
 }
 
 ///|
@@ -357,6 +372,7 @@ pub fn Session::new(
     ddl_cmd: 0,
     uncatchable: false,
     session_flags: Map([]),
+    tvp_error: false,
   }
   server.live[spid] = session
   session
@@ -541,6 +557,17 @@ fn Session::run_text(self : Session, text : String) -> Bool raise Park {
         self.out.push(StatementDone(cmd=253, count=None, error=true))
       }
       self.rt.error = e.number()
+      return false
+    }
+    None => ()
+  }
+  // dynamic SQL modifying a READONLY table-valued parameter: 10700 ends
+  // it like a compile error, without a DONE (captured: tabletypes/
+  // readonly-params, tvp-rpc)
+  match readonly_target(stmts, self.frame().read_only_tvps) {
+    Some(name) => {
+      self.message(readonly_error(name), 1)
+      self.rt.error = 10700
       return false
     }
     None => ()

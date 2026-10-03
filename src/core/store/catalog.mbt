@@ -24,6 +24,9 @@ pub(all) struct Column {
   computed : String?
   persisted : Bool
   rowguidcol : Bool
+  /// user_type_id of an alias type the column was declared with (None:
+  /// the system type's id).
+  user_type : Int?
 } derive(Debug)
 
 ///|
@@ -101,6 +104,9 @@ pub(all) enum ObjectKind {
   Trigger
   /// SO: CREATE SEQUENCE (values live in the server, not the Db).
   Sequence
+  /// SN: CREATE SYNONYM; `definition` holds the quoted base object name
+  /// (`[dbo].[t]`, sys.synonyms.base_object_name).
+  Synonym
 } derive(Debug, Eq)
 
 ///|
@@ -190,5 +196,24 @@ pub fn ObjectKind::code(self : ObjectKind) -> (String, String) {
     TableFunction => ("TF", "SQL_TABLE_VALUED_FUNCTION")
     Trigger => ("TR", "SQL_TRIGGER")
     Sequence => ("SO", "SEQUENCE_OBJECT")
+    Synonym => ("SN", "SYNONYM")
   }
 }
+
+///|
+/// A user-defined data type (CREATE TYPE): an alias of a system type or a
+/// table type. Types live in their own namespace (sys.types), not in
+/// sys.objects.
+pub(all) struct UserType {
+  /// sys.types.user_type_id (257, 258, ... per database).
+  id : Int
+  schema : String
+  name : String
+  /// Alias types: the base type and the type text as written (`nvarchar(256)`).
+  base : @types.SqlType?
+  /// Alias types: NOT NULL unless declared NULL (sys.types.is_nullable).
+  nullable : Bool
+  /// Table types: the type table (its id is type_table_object_id).
+  table : Table?
+  created : Int64
+} derive(Debug)

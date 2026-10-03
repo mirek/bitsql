@@ -11,6 +11,9 @@ pub(all) struct RpcParam {
   default_value : Bool
   type_info : TypeInfo
   value : WireValue
+  /// Table-valued parameter (TVP_TYPE 0xF3); `type_info` is then `Null`
+  /// and `value` Null.
+  tvp : Tvp?
 } derive(Debug)
 
 ///|
@@ -63,6 +66,19 @@ pub fn decode_rpc(payload : BytesView) -> RpcRequest raise TdsError {
       }
       let name = r.b_varchar()
       let status = r.u8()
+      if !r.at_end() && r.data[r.pos].to_int() == 0xF3 {
+        r.skip(1)
+        let tvp = read_tvp(r)
+        params.push({
+          name,
+          by_ref: (status & 1) != 0,
+          default_value: (status & 2) != 0,
+          type_info: Null,
+          value: Null,
+          tvp: Some(tvp),
+        })
+        continue
+      }
       let type_info = read_type_info(r)
       let value = read_value(r, type_info)
       params.push({
@@ -71,6 +87,7 @@ pub fn decode_rpc(payload : BytesView) -> RpcRequest raise TdsError {
         default_value: (status & 2) != 0,
         type_info,
         value,
+        tvp: None,
       })
     }
     calls.push({ proc, option_flags, params, })

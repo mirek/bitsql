@@ -38,6 +38,7 @@ pub(all) struct Column {
   computed : String?
   persisted : Bool
   rowguidcol : Bool
+  user_type : Int?
 } derive(@debug.Debug)
 
 pub struct Db {
@@ -45,18 +46,23 @@ pub struct Db {
 }
 pub fn Db::add_module(Self, Module) -> Self
 pub fn Db::add_schema(Self, String, Int) -> Self
+pub fn Db::add_type(Self, UserType) -> Self
 pub fn Db::alter_table(Self, Table, convert? : (Array[@types.Value]) -> Array[@types.Value]) -> Self
 pub fn Db::create_table(Self, Table) -> Self
 pub fn Db::delete_row(Self, Int, Int64) -> Self
 pub fn Db::drop_object(Self, Int) -> Self
 pub fn Db::drop_schema(Self, String) -> Self
+pub fn Db::drop_type(Self, Int) -> Self
 pub fn Db::empty() -> Self
 pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
 pub fn Db::get_module(Self, Int) -> Module?
+pub fn Db::get_type(Self, Int) -> UserType?
 pub fn Db::insert_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::lookup(Self, String, String) -> Int?
+pub fn Db::lookup_type(Self, String, String) -> UserType?
 pub fn Db::modules(Self) -> Array[Module]
 pub fn Db::next_schema_id(Self) -> Int
+pub fn Db::next_type_id(Self) -> Int
 pub fn Db::rebase(Self, Self, Self) -> Self?
 pub fn Db::rename_module(Self, Module) -> Self
 pub fn Db::replace_table(Self, Table, Array[(Int64, Array[@types.Value])]) -> Self
@@ -72,6 +78,7 @@ pub fn Db::table(Self, Int) -> Table?
 pub fn Db::tables(Self) -> Array[Table]
 pub fn Db::truncate(Self, Int) -> Self
 pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
+pub fn Db::user_types(Self) -> Array[UserType]
 
 pub(all) struct ForeignKey {
   id : Int
@@ -139,6 +146,7 @@ pub(all) enum ObjectKind {
   TableFunction
   Trigger
   Sequence
+  Synonym
 } derive(Eq, @debug.Debug)
 pub fn ObjectKind::code(Self) -> (String, String)
 
@@ -185,6 +193,16 @@ pub struct TableData {
   rows : PMap[Int64, Array[@types.Value]]
   indexes : Array[IndexData]
 }
+
+pub(all) struct UserType {
+  id : Int
+  schema : String
+  name : String
+  base : @types.SqlType?
+  nullable : Bool
+  table : Table?
+  created : Int64
+} derive(@debug.Debug)
 
 // Type aliases
 pub type Row = Array[@types.Value]
