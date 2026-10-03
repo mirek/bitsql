@@ -199,6 +199,11 @@ fn Engine::on_message(
         database=self.server.database_name(db),
         seed=self.seed + conn.id.to_int64(),
       )
+      self.sessions[conn.id].set_login(
+        login.user_name,
+        login.host_name,
+        login.app_name,
+      )
       self.send(conn, self.login_response(db, conn.packet_size), out)
     }
     (LoggedIn, SqlBatch) => {
@@ -237,6 +242,7 @@ fn Engine::on_message(
       if self.parked.contains(conn.id) {
         self.parked.remove(conn.id)
         self.sessions[conn.id].cancel_wait()
+        out.push(CancelTimer(conn.id))
       }
       let w = @tds.Writer::new()
       @tds.write_done(w, Done, @tds.DONE_ATTN, 0, 0)

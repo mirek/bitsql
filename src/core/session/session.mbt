@@ -212,6 +212,18 @@ pub struct Session {
   mut isolation : String
   /// SET LOCK_TIMEOUT in milliseconds (-1: wait forever).
   mut lock_timeout : Int
+  /// WAITFORs passed in the current request (counted while it runs) and
+  /// completed before its last park; the re-run skips completed ones.
+  mut waits_seen : Int
+  mut waits_done : Int
+  /// The request is parked in WAITFOR (its timer completes the wait).
+  mut in_waitfor : Bool
+  /// SET CONTEXT_INFO (always 128 bytes once set).
+  mut context_info : Bytes?
+  /// LOGIN7 login, host and application names.
+  mut login : String
+  mut host_name : String
+  mut app_name : String
   /// Application locks held (sp_getapplock), by owner and resource.
   priv applocks : Map[String, AppLock]
   /// The parked request waited in sp_getapplock (its re-run returns 1).
@@ -277,6 +289,13 @@ pub fn Session::new(
     cursors: Map([]),
     prepared: Map([]),
     triggers: [],
+    context_info: None,
+    waits_seen: 0,
+    waits_done: 0,
+    in_waitfor: false,
+    login: "sa",
+    host_name: "",
+    app_name: "",
     applocks: Map([]),
     applock_waited: false,
     wait_ms: None,
@@ -395,6 +414,11 @@ pub fn Session::run_batch(
 ) -> Array[@reply.Item] {
   self.rt.now = now
   let snap = self.snapshot_request()
+  if !self.parked {
+    self.waits_done = 0 // a new request (not a re-run of a parked one)
+  }
+  self.waits_seen = 0
+  self.in_waitfor = false
   self.parked = false
   self.waiting = None
   self.wait_ms = None
@@ -414,6 +438,7 @@ pub fn Session::run_batch(
   }
   self.fail_next_wait = None
   self.applock_waited = false
+  self.waits_done = 0
   self.end_of_request()
   if self.schema_ddl &&
     !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
@@ -490,4 +515,17 @@ fn Session::end_of_request(self : Session) -> Unit {
       self.out.push(StatementDone(cmd=0, count=None, error=true))
     }
   }
+}
+
+///|
+/// Records the LOGIN7 identity (SYSTEM_USER, HOST_NAME(), APP_NAME()).
+pub fn Session::set_login(
+  self : Session,
+  login : String,
+  host_name : String,
+  app_name : String,
+) -> Unit {
+  self.login = login
+  self.host_name = host_name
+  self.app_name = app_name
 }

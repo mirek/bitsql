@@ -112,6 +112,11 @@ pub fn Session::run_rpc(
 ) -> Array[@reply.Item] {
   self.rt.now = now
   let snap = self.snapshot_request()
+  if !self.parked {
+    self.waits_done = 0 // a new request (not a re-run of a parked one)
+  }
+  self.waits_seen = 0
+  self.in_waitfor = false
   self.parked = false
   self.waiting = None
   self.wait_ms = None
@@ -293,6 +298,7 @@ pub fn Session::run_rpc(
   }
   self.fail_next_wait = None
   self.applock_waited = false
+  self.waits_done = 0
   match result {
     Some((status, outs)) => {
       self.out.push(ReturnStatus(status))

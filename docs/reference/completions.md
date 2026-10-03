@@ -40,7 +40,8 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | RETURN (bare) | 219 | no |
 | RETURN <expr> (in a procedure) | 193 | yes, 1 |
 | SET option (NOCOUNT on/off: 185/186) | 185/186 | no |
-| SET LOCK_TIMEOUT n | 249 | no |
+| SET LOCK_TIMEOUT n, SET CONTEXT_INFO x | 249 | no |
+| WAITFOR DELAY/TIME | 243 | no |
 | RAISERROR / THROW (caught) | 246 | no |
 | PRINT | 247 | no |
 | IF / WHILE condition evaluation | 192 (0xC0) | no |

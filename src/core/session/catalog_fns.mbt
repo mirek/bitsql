@@ -22,6 +22,10 @@ fn Session::catalog_fn(
     Some(v) => return Some(v)
     None => ()
   }
+  match self.security_fn(name, args) {
+    Some(v) => return Some(v)
+    None => ()
+  }
   match self.applock_fn(name, args) {
     Some(v) => return Some(v)
     None => ()

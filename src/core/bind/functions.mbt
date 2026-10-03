@@ -205,6 +205,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         None =>
           match bind_call_catalog(env, name, call) {
             Some(e) => e
+            None if bind_call_security(env, name, call) is Some(e) => e
             None =>
               raise err(
                 195,

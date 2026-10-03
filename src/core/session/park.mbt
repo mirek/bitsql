@@ -126,6 +126,8 @@ pub fn Session::make_victim(self : Session) -> Unit {
 ///|
 /// Abandons a parked request (ATTENTION, disconnect).
 pub fn Session::cancel_wait(self : Session) -> Unit {
+  self.in_waitfor = false
+  self.waits_done = 0
   match self.waiting {
     Some(r) => self.server.wake_all(self.server.locks.cancel(r))
     None => ()
@@ -164,6 +166,12 @@ pub fn Session::wait_timeout(self : Session) -> Int? {
 /// The lock timeout expired: abandon the wait; the re-run fails with 1222
 /// at the same statement.
 pub fn Session::time_out(self : Session) -> Unit {
+  if self.in_waitfor {
+    // WAITFOR elapsed: the re-run passes this wait
+    self.in_waitfor = false
+    self.waits_done += 1
+    return
+  }
   match self.waiting {
     Some(r) => self.server.wake_all(self.server.locks.cancel(r))
     None => ()

@@ -247,6 +247,27 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         match n.to_upper() {
           "NOCOUNT" => self.nocount = on
           "XACT_ABORT" => self.xact_abort = on
+          "CONTEXT_INFO" =>
+            match value {
+              ValueExpr(e) => {
+                let (v, ty) = self.eval(e)
+                let bytes = match @types.cast(v, ty, VarBinary(Some(128))) {
+                  Binary(b) => b
+                  _ => b""
+                }
+                // padded with zeros to 128 bytes (captured: misc/session-context)
+                self.context_info = Some(
+                  Bytes::makei(128, i => {
+                    if i < bytes.length() {
+                      bytes[i]
+                    } else {
+                      b'\x00'
+                    }
+                  }),
+                )
+              }
+              _ => ()
+            }
           "LOCK_TIMEOUT" =>
             match value {
               ValueExpr(e) => {
@@ -263,7 +284,9 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       }
       // captured: SET LOCK_TIMEOUT completes with 249 (locking/lock-timeout)
       self.done(
-        if names.iter().any(n => n.to_upper() == "LOCK_TIMEOUT") {
+        if names
+          .iter()
+          .any(n => n.to_upper() is ("LOCK_TIMEOUT" | "CONTEXT_INFO")) {
           249
         } else if value is Off {
           186
@@ -499,6 +522,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Fetch(f) => self.exec_fetch(f)
     CloseCursor(name, global~) => self.exec_close_cursor(name, global)
     Deallocate(name, global~) => self.exec_deallocate(name, global)
+    WaitFor(kind, e) => self.exec_waitfor(kind, e)
     _ => raise @types.not_supported(stmt_name(s))
   }
 }

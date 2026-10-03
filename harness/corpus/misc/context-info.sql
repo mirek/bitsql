@@ -1,0 +1,5 @@
+-- SET CONTEXT_INFO pads to 128 bytes; CONTEXT_INFO() is NULL before.
+-- @step batch
+SELECT CONTEXT_INFO() AS ci0;
+SET CONTEXT_INFO 0x0102;
+SELECT CONTEXT_INFO() AS ci;

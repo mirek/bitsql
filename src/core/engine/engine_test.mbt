@@ -337,3 +337,30 @@ test "SET LOCK_TIMEOUT n arms a timer; TimerFired fails the parked request with 
   // the lock holder is unaffected
   assert_eq(responded(batch(e, 1, "COMMIT")), [1])
 }
+
+///|
+test "WAITFOR DELAY parks with a timer; the re-run passes the completed wait" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  let outs = batch(
+    e, 1, "SELECT 1 AS a; WAITFOR DELAY '00:00:01.5'; SELECT 2 AS b; WAITFOR DELAY '00:00:00.25'; SELECT 3 AS c",
+  )
+  assert_eq(responded(outs), [])
+  assert_true(outs.contains(SetTimer(1, 1500)))
+  let second = e.handle(ev(TimerFired(1)))
+  assert_eq(responded(second), [])
+  assert_true(second.contains(SetTimer(1, 250)))
+  let done = e.handle(ev(TimerFired(1)))
+  assert_eq(responded(done), [1])
+  // three result sets, each sent once
+  let hex = @tds.hex(sent(done)[0].payload)
+  let mut sets = 0
+  let mut i = 0
+  while i + 2 <= hex.length() {
+    if hex.unsafe_substring(start=i, end=i + 2) == "81" && i % 3 == 0 {
+      sets += 1
+    }
+    i += 3
+  }
+  assert_eq(sets, 3)
+}

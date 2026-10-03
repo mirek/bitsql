@@ -81,6 +81,13 @@ pub struct Session {
   mut implicit_tx : Bool
   mut isolation : String
   mut lock_timeout : Int
+  mut waits_seen : Int
+  mut waits_done : Int
+  mut in_waitfor : Bool
+  mut context_info : Bytes?
+  mut login : String
+  mut host_name : String
+  mut app_name : String
   mut applock_waited : Bool
   mut wait_ms : Int?
   mut waiting : Int?
@@ -104,6 +111,7 @@ pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
 pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
+pub fn Session::set_login(Self, String, String, String) -> Unit
 pub fn Session::time_out(Self) -> Unit
 pub fn Session::wait_timeout(Self) -> Int?
 
