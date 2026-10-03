@@ -149,7 +149,7 @@ fn bind_table_ref(
           name: columns[j].name,
           ty: t,
           nullable,
-          origin: Computed,
+          origin: SetOperation,
         })
       }
       let rows2 = []
