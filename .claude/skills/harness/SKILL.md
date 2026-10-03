@@ -259,8 +259,9 @@ Start the host with `--database NAME` so the app's database exists at login
   (docs/reference/at-time-zone.md). Cases reading the clock
   (sys.time_zone_info) compare only clock-independent facts.
 - 2026-10-03: msduck capture layouts (import-msduck-layouts): 154 non-clean
-  files, 14377 entries → 12829 kept cases (4495 gaps, 8334 others); only ~60
-  genuine msduck/oracle mismatches. Lessons: (1) msduck's capture scripts,
+  files, 13875 entries (plus ~16k grid entries sampled out) → 12885 cases →
+  12829 kept (4495 gaps, 8334 others); 56 rejected (43 msduck/oracle value
+  differences, 13 nondeterministic: generated constraint names). Lessons: (1) msduck's capture scripts,
   not the fixtures, hold part of the SQL (applock batches, gaps-functions,
   identifiers, json_string setup, missing RPC params) — adapters evaluate the
   script's literal sections with `node:vm`. (2) Fixtures name the database in
