@@ -515,8 +515,7 @@ fn Session::update_row(
       row[i] = self.eval_text(target, expr, row, c.ty)
     }
     if c.ty is RowVersion {
-      self.server.dbts += 1L
-      row[i] = Binary(rowversion_bytes(self.server.dbts))
+      row[i] = self.next_rowversion()
     }
   }
   if check {
@@ -862,8 +861,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           _ => ()
         }
         if c.ty is RowVersion {
-          self.server.dbts += 1L
-          row[i] = Binary(rowversion_bytes(self.server.dbts))
+          row[i] = self.next_rowversion()
         }
       }
       for i, c in t.columns {

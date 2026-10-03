@@ -424,7 +424,8 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
       )
     "@@LANGUAGE" =>
       mk(Global(Language), NVarChar(Some(128), @types.default_collation), false)
-    "@@DBTS" => mk(Global(DbTs), VarBinary(Some(8)), false)
+    // evaluated by the session (Server.dbts)
+    "@@DBTS" => mk(Call(Named("@@DBTS"), []), VarBinary(Some(8)), false)
     _ => raise @types.not_supported("global variable \{name}")
   }
 }

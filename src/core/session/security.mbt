@@ -73,6 +73,18 @@ fn Session::security_fn(
     "APP_NAME" => String(self.app_name)
     "HOST_NAME" => String(self.host_name)
     "HOST_ID" => return None
+    "@@DBTS" => Binary(rowversion_bytes(self.server.dbts))
+    // the lowest rowversion an open transaction has assigned, else the next
+    // one (captured: traps/rowversion-modification-time)
+    "MIN_ACTIVE_ROWVERSION" => {
+      let mut low = self.server.dbts + 1L
+      for _, v in self.server.active_rv {
+        if v < low {
+          low = v
+        }
+      }
+      Binary(rowversion_bytes(low))
+    }
     "SESSION_CONTEXT" =>
       match text(0) {
         Some(k) =>

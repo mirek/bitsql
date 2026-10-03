@@ -95,6 +95,9 @@ pub fn Session::run_bulk(
         if c.computed is Some(expr) {
           row[i] = self.eval_text(target, expr, row, c.ty)
         }
+        if c.ty is RowVersion {
+          row[i] = self.next_rowversion()
+        }
       }
       self.check_row(
         target,

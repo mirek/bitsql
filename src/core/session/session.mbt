@@ -26,6 +26,9 @@ pub struct Server {
   locks : @sched.LockManager[LockKey]
   /// Sequence generators by "database:object id" (not transactional).
   priv seqs : Map[String, SeqState]
+  /// First rowversion assigned by each session's open transaction
+  /// (MIN_ACTIVE_ROWVERSION).
+  active_rv : Map[Int, Int64]
   /// NEWSEQUENTIALID() counter.
   mut seq_guid : Int64
   /// Sessions by spid (sys.dm_exec_sessions / requests / connections).
@@ -72,6 +75,7 @@ pub fn Server::new() -> Server {
     priorities,
     live: Map([]),
     seq_guid: 0L,
+    active_rv: Map([]),
     woken: [],
     victims: [],
     udfs: Map([]),
@@ -630,4 +634,15 @@ fn is_newsequentialid(text : String) -> Bool {
     s = s.unsafe_substring(start=1, end=s.length() - 1)
   }
   s == "newsequentialid()" || s == "newsequentialid("
+}
+
+///|
+/// Next rowversion value (@@DBTS + 1), remembered as the transaction's first
+/// active one (MIN_ACTIVE_ROWVERSION).
+fn Session::next_rowversion(self : Session) -> @types.Value {
+  self.server.dbts += 1L
+  if self.tx is Some(_) && !self.server.active_rv.contains(self.rt.spid) {
+    self.server.active_rv[self.rt.spid] = self.server.dbts
+  }
+  Binary(rowversion_bytes(self.server.dbts))
 }

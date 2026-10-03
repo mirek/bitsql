@@ -101,6 +101,7 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
 /// Releases this session's locks (transaction end) and records woken
 /// sessions for the engine.
 fn Session::release_locks(self : Session) -> Unit {
+  self.server.active_rv.remove(self.rt.spid)
   // transaction-owned application locks end with the transaction
   let gone = []
   for k, _ in self.applocks {

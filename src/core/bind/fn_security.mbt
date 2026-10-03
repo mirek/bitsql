@@ -26,6 +26,7 @@ fn bind_call_security(
     "DATABASE_PRINCIPAL_ID" => (0, 1, Int)
     "PERMISSIONS" => (0, 2, Int)
     "CONTEXT_INFO" => (0, 0, VarBinary(Some(128)))
+    "MIN_ACTIVE_ROWVERSION" => (0, 0, VarBinary(Some(8)))
     _ => return None
   }
   if lo == hi {
