@@ -812,6 +812,15 @@ let view_defs : Array[ViewDef] = [
       vc("DELETE_RULE", VarChar(Some(11), coll_default), true, true),
     ],
   },
+  {
+    schema: "sys",
+    name: "time_zone_info",
+    columns: [
+      vc("name", NVarChar(Some(128), coll_default), false, false),
+      vc("current_utc_offset", NVarChar(Some(6), coll_default), false, false),
+      vc("is_currently_dst", Bit, false, false),
+    ],
+  },
 ]
 
 ///|

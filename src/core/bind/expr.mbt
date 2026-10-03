@@ -324,7 +324,7 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       bit_expr(Quantified(o, a, plan, all=quant is All, collation=coll), true)
     }
     Parse(_, _, ..) => raise @types.not_supported("PARSE / TRY_PARSE")
-    AtTimeZone(_, _) => raise @types.not_supported("AT TIME ZONE")
+    AtTimeZone(x, z) => bind_at_time_zone(env, x, z)
     NextValueFor(name) =>
       match (env.catalog.sequence)(name) {
         // evaluated by the session (Ctx::ext); never folded
