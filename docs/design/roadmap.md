@@ -56,7 +56,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
   legacy `RAISERROR n 'msg'`, `SET @cursor = CURSOR ...`, TRIM(... FROM ...), JSON_OBJECT.
   Error numbers 102/156/111/319/10713 follow captures where available; trailing statements
   after CREATE VIEW/FUNCTION and the THROW-after-unterminated rule are unverified guesses.
-- [ ] Parse the entire target codebase (needs app repo)
+- [~] Parse differential over the corpus: 1707/1707 batches agree with SQL Server (`npm run parse-diff`); `parsecheck FILE...` ready for the target codebase (needs app repo)
 - [ ] Types: int family, bit, decimal, (n)varchar, datetime2, datetimeoffset, uniqueidentifier, rowversion
 - [~] Store: persistent ordered map `PMap` (AVL, explicit comparator, range seeks) done; tables, indexes, catalog objects missing
 - [ ] DDL execution: tables, constraints, indexes, views, procs, triggers, functions

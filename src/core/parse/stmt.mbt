@@ -188,9 +188,13 @@ fn Parser::statement_kind(
     "RAISERROR" => {
       self.pos += 1
       self.expect_punct("(")
-      let args = [self.scalar()]
+      // RAISERROR arguments are constants or variables only: no NULL, no
+      // signs, no expressions (msduck raiserror-arguments captures: NULL is
+      // 156, '16' as severity, 1+2, (1), +1, -@x are 102).
+      let args = [self.raiserror_arg(true, false)]
       while self.eat_punct(",") {
-        args.push(self.scalar())
+        let substitution = args.length() >= 3
+        args.push(self.raiserror_arg(substitution, substitution))
       }
       self.expect_punct(")")
       let options = []
@@ -531,6 +535,12 @@ fn Parser::begin_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
   }
   if self.eat_kw("TRY") {
     let body = self.stmt_list(at_end)
+    // An empty TRY block is error 102 near the TRY of `END TRY`
+    // (msduck try-completion-tokens capture).
+    if body.length() == 0 && self.is_kw("END") {
+      self.pos += 1
+      raise self.error()
+    }
     self.expect_kw("END")
     self.expect_kw("TRY")
     self.expect_kw("BEGIN")
@@ -1125,4 +1135,42 @@ fn Parser::module_body(
     raise self.error()
   }
   body
+}
+
+///|
+/// One RAISERROR argument: a constant (optionally negative number) or a
+/// variable. `strings_ok` allows non-integer constants (message and
+/// substitution arguments); `null_ok` allows NULL (substitution arguments
+/// only). Captured: `+1`, `-@x`, `1+2`, `(1)` are 102; NULL as message or
+/// severity is 156; `-1` is accepted everywhere.
+fn Parser::raiserror_arg(
+  self : Parser,
+  strings_ok : Bool,
+  null_ok : Bool,
+) -> @ast.Expr raise @ast.SyntaxError {
+  let start = self.start()
+  if self.is_punct("-") &&
+    self.peek_at(1).kind is (IntNum | DecimalNum | FloatNum | Money) {
+    self.pos += 1
+    let inner = self.primary()
+    if !(self.is_punct(",") || self.is_punct(")")) {
+      raise self.error()
+    }
+    return mk(Unary(Neg, inner), self.span_from(start))
+  }
+  let t = self.peek()
+  let ok = match t.kind {
+    IntNum | Variable => true
+    Str | NStr | DecimalNum | FloatNum | Money | BinaryLit => strings_ok
+    Word => null_ok && t.is_kw("NULL")
+    _ => false
+  }
+  if !ok {
+    raise self.error()
+  }
+  let e = self.primary()
+  if !(self.is_punct(",") || self.is_punct(")")) {
+    raise self.error()
+  }
+  e
 }

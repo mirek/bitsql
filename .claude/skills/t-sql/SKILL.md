@@ -20,6 +20,13 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-03: parse differential (`npm run parse-diff`) over all 1707 captured
+  corpus batches agrees with SQL Server. Fixes it forced: `TRIM([LEADING|TRAILING|BOTH]
+  chars FROM s)` (parsed as TRIM/LTRIM/RTRIM(s, chars)); RAISERROR arguments are
+  constants/variables only. Negative number literals are fine everywhere, NULL
+  only as a substitution argument (NULL message/severity = 156); `+1`, `-@x`,
+  `(1)` and `1+2` are 102. `OUTPUT *` is 102 near '*'. An empty `BEGIN TRY END TRY`
+  is 102 near 'TRY'.
 - 2026-10-03: JSON functions are *streaming*: JSON_VALUE/JSON_QUERY validate
   only up to the selected value (`{"a":1,"b":x}` with `$.a` returns `1`), but a
   missing path validates the whole document and reports 13609 instead of NULL.

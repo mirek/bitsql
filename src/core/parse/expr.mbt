@@ -345,6 +345,43 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
           mk(Null, t.span)
         }
         "CASE" => self.case_expr()
+        "TRIM" if next_paren && self.trim_has_from() => {
+          // TRIM([LEADING|TRAILING|BOTH] [chars] FROM s) is represented as
+          // TRIM / LTRIM / RTRIM (s, chars); chars defaults to ' '.
+          self.pos += 2
+          let fname = if self.eat_kw("LEADING") {
+            "LTRIM"
+          } else if self.eat_kw("TRAILING") {
+            "RTRIM"
+          } else {
+            ignore(self.eat_kw("BOTH"))
+            "TRIM"
+          }
+          let chars = if self.is_kw("FROM") {
+            mk(StrLit(" ", national=false), self.start())
+          } else {
+            self.scalar()
+          }
+          self.expect_kw("FROM")
+          let s = self.scalar()
+          self.expect_punct(")")
+          let name : @ast.ObjectName = {
+            parts: [{ name: fname, quoted: false, span: t.span, }],
+            span: t.span,
+          }
+          mk(
+            Call({
+              name,
+              args: [s, chars],
+              distinct: false,
+              star: false,
+              niladic: false,
+              within_group: [],
+              over: None,
+            }),
+            self.span_from(start),
+          )
+        }
         "CAST" | "TRY_CAST" if next_paren => {
           self.pos += 2
           let e = self.cond()
@@ -705,4 +742,30 @@ fn star_function(name : @ast.ObjectName) -> Bool {
     "COUNT" | "COUNT_BIG" | "CHECKSUM" | "BINARY_CHECKSUM" => true
     _ => false
   })
+}
+
+///|
+/// True when the TRIM call at the cursor uses the `... FROM s` form: a FROM
+/// keyword at paren depth 1 before the closing parenthesis.
+fn Parser::trim_has_from(self : Parser) -> Bool {
+  let mut depth = 0
+  let mut k = 1
+  while true {
+    let t = self.peek_at(k)
+    if t.kind is Eof {
+      return false
+    }
+    if t.is_punct("(") {
+      depth += 1
+    } else if t.is_punct(")") {
+      depth -= 1
+      if depth == 0 {
+        return false
+      }
+    } else if depth == 1 && t.is_kw("FROM") {
+      return true
+    }
+    k += 1
+  }
+  false
 }

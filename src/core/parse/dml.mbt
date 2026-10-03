@@ -25,7 +25,18 @@ fn Parser::output_clauses(
   while self.is_kw("OUTPUT") {
     let start = self.start()
     self.pos += 1
-    let items = self.select_items(false)
+    // OUTPUT needs a qualified star (inserted.* / deleted.*); a bare `*` is
+    // error 102 near '*' (msduck output-unqualified capture).
+    let items = []
+    while true {
+      if self.is_punct("*") {
+        raise self.error()
+      }
+      items.push(self.select_item(false))
+      if !self.eat_punct(",") {
+        break
+      }
+    }
     let into = if self.eat_kw("INTO") {
       let target = self.dml_target()
       let cols = if self.is_punct("(") && !self.at_query_start_at(1) {

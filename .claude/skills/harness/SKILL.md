@@ -19,6 +19,7 @@ npm run diff -- smoke traps        # emulator vs expectations, ranked failure li
 npm run diff -- --target oracle smoke   # re-verify expectations (determinism check)
 npm test                           # client tests + smoke/allowlist corpus on the emulator
 npm run oracle:stop                # remove the container
+npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
 ```
 
 ## Rules
