@@ -55,6 +55,7 @@ fn Session::exec_select_into(
       computed: None,
       persisted: false,
       rowguidcol: false,
+      user_type: None,
     })
   }
   self.cur_cmd = 194

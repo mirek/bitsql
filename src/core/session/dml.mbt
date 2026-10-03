@@ -13,7 +13,7 @@ priv struct Target {
 fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
   match r.kind {
     Table(name, alias_~, ..) =>
-      match self.find_table(name) {
+      match self.find_table(self.deref_synonym(name)) {
         Some((scope, t)) =>
           {
             scope,
@@ -25,7 +25,7 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
             },
             qualifier: match alias_ {
               Some(a) => a.name.to_lower()
-              None => t.name.to_lower()
+              None => name.base().to_lower()
             },
           }
         None => {

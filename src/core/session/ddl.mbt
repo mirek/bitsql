@@ -275,7 +275,8 @@ fn Session::add_column(
     raise @types.sql_error(
       2705,
       "Column names in each table must be unique. Column name '\{c.name.name}' in table '\{b.written}' is specified more than once.",
-      state=4,
+      // captured: state 3 in a table type
+      state=if b.scope == 4 { 3 } else { 4 },
     )
   }
   let collation = match c.collate {
@@ -286,8 +287,18 @@ fn Session::add_column(
       }
     None => @types.default_collation
   }
+  let mut alias_type : Int? = None
+  let mut alias_nullable : Bool? = None
   let (ty, computed) = match (c.type_, c.computed) {
-    (Some(t), _) => (@bind.resolve_type(t, Declaration, collation), None)
+    (Some(t), _) =>
+      match self.decl_type(t, collation) {
+        ScalarDecl(ty, ut, n) => {
+          alias_type = ut
+          alias_nullable = n
+          (ty, None)
+        }
+        TableDecl(_) => raise missing_type(t, 6)
+      }
     (None, Some(e)) => {
       // computed column: type of its expression over the other columns
       let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
@@ -310,6 +321,8 @@ fn Session::add_column(
   }
   let nullable = match c.nullable {
     Some(n) => n
+    None if alias_nullable is Some(n) &&
+      !pk_cols.contains(c.name.name.to_lower()) => n
     None =>
       computed is Some(_) ||
       (
@@ -340,6 +353,7 @@ fn Session::add_column(
     computed,
     persisted: c.persisted,
     rowguidcol: c.rowguidcol,
+    user_type: alias_type,
   }
   if col.identity is Some(_) && b.columns.iter().any(x => x.identity is Some(_)) {
     raise @types.sql_error(
@@ -759,6 +773,14 @@ fn Session::table_from_body(
     .fold(init=0, (a, n) => a + n) +
     body.constraints.iter().filter(k => k.kind is PrimaryKey(_, ..)).count()
   if primaries > 1 {
+    // captured: a table type is named 'schema.name', state 0, no 1750
+    if scope == 4 {
+      raise @types.sql_error(
+        8110,
+        "Cannot add multiple PRIMARY KEY constraints to table '\{schema}.\{name}'.",
+        state=0,
+      )
+    }
     raise self.constraint_error(
       @types.sql_error(
         8110,
@@ -799,7 +821,50 @@ fn Session::table_from_body(
       is_constraint: false,
     })
   }
+  renumber_indexes(b, body)
   self.finish(b, name)
+}
+
+///|
+/// Index ids of a new table: the clustered index is 1, the others are
+/// numbered in reverse order of their definitions (captured with CREATE
+/// TABLE and CREATE TYPE ... AS TABLE: `PK, UNIQUE (code), INDEX ix_name`
+/// gives ix_name 2, the UNIQUE 3).
+fn renumber_indexes(b : Builder, body : @ast.TableBody) -> Unit {
+  let starts = []
+  for c in body.columns {
+    for k in c.constraints {
+      if k.kind is (ColPrimaryKey(..) | ColUnique(..)) {
+        starts.push(k.span.start)
+      }
+    }
+  }
+  for k in body.constraints {
+    if k.kind is (PrimaryKey(_, ..) | Unique(_, ..)) {
+      starts.push(k.span.start)
+    }
+  }
+  for ix in body.indexes {
+    starts.push(ix.0.span.start)
+  }
+  if starts.length() != b.indexes.length() {
+    return
+  }
+  let order = []
+  for k, ix in b.indexes {
+    if !ix.clustered {
+      order.push(k)
+    }
+  }
+  order.sort_by((x, y) => starts[y].compare(starts[x]))
+  for n, k in order {
+    b.indexes[k] = { ..b.indexes[k], index_id: 2 + n, }
+  }
+  for k, ix in b.indexes {
+    if ix.clustered {
+      b.indexes[k] = { ..ix, index_id: 1, }
+    }
+  }
 }
 
 ///|
@@ -881,6 +946,7 @@ fn Session::exec_drop(
     DropTable => {
       self.cur_cmd = 199
       for n in names {
+        self.not_a_synonym(n, "TABLE")
         match self.find_table(n) {
           Some((scope, t)) => {
             // referenced by a foreign key from another table?
@@ -981,7 +1047,8 @@ fn Session::exec_drop(
       }
       self.rt.rowcount = 0
     }
-    _ => raise @types.not_supported("DROP of this object type")
+    DropType => self.exec_drop_type(if_exists, names)
+    DropSynonym => self.exec_drop_synonym(if_exists, names)
   }
 }
 

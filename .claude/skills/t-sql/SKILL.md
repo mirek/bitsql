@@ -371,6 +371,51 @@ mention the correction here.
   Latin/Greek/Cyrillic, CHECKSUM of NULL columns, GREATEST nullability rule
   (non-null when every argument is non-null and converts without failure).
 
+- 2026-10-03 (user-defined types, corpus `tabletypes/`): CREATE TYPE and
+  DROP TYPE send no DONE of their own (a batch of them ends with DONE 253,
+  like CREATE SCHEMA); CREATE/DROP SYNONYM likewise for CREATE, DROP SYNONYM
+  is CurCmd 329. user_type_id starts at 257 per database; an alias type is
+  nullable unless declared NOT NULL and gives its columns that default
+  (sys.columns user_type_id = the alias). Errors: duplicate type 219 (name as
+  written), missing 218, DROP of a type used by a column or parameter 3732
+  naming the object, an alias of an alias 222, `FROM nvarchar(5000)` 2717
+  state 2 then 225, unknown DECLARE type 2715 **state 3** + INFO 2724 (a
+  table type as a column type is 2715 state 6), CAST to any non-system type
+  243 ("Type X is not a defined system type.", state 2 when a user type of
+  that name exists, else 1), a table variable used as a scalar 137 state 1
+  class 16, duplicate column in a table type 2705 state 3 naming the type,
+  two primary keys 8110 state 0 "'dbo.T3'" without 1750. Inline INDEX and key
+  index ids are assigned in reverse order of definition after the clustered
+  one (also CREATE TABLE).
+- 2026-10-03 (table-valued parameters): a table-typed parameter must be
+  READONLY (352, class 15) and READONLY needs a table type (346); a
+  modification of one is the compile-time 10700 (CREATE PROCEDURE/FUNCTION
+  fails; in sp_executesql text it ends the dynamic batch: ERROR,
+  RETURNSTATUS 10700, no DONE; 352 likewise). `READONLY OUTPUT` and
+  `READONLY = NULL` are 102. EXEC without the argument passes an empty
+  table; a scalar argument is 206 "Operand type clash: int is incompatible
+  with IdList" at line 0 followed by DONEPROC (error) without RETURNSTATUS.
+  A TVP row violating the type's PK is 2627 at line 0 (random constraint
+  name), INFO 3621 at line 1, DONE 253 and no RETURNSTATUS: the procedure
+  never starts.
+- 2026-10-03 (synonyms): resolved when used: a synonym of a missing object
+  is created and fails later with 5313 "Synonym 'dbo.snone' refers to an
+  invalid object." (SELECT and INSERT); `SELECT s.v FROM s` qualifies by the
+  synonym name; CREATE SYNONYM over an existing name is 2714 **state 8**
+  naming 'dbo.s' (CurCmd 170); DROP TABLE of a synonym and DROP SYNONYM of a
+  table are 3705 ("Cannot use DROP TABLE with 'dbo.s' because 'dbo.s' is a
+  synonym. Use DROP SYNONYM.").
+- 2026-10-03 (sp_help family, corpus `sysprocs/`): sp_help, sp_helptext and
+  sp_fkeys run with NOCOUNT ON (DONEINPROC 193 without counts), sp_columns,
+  sp_tables, sp_pkeys and sp_who without (internal DONEINPROC 192/193
+  sequences that depend on whether the object was found and on
+  @table_owner). sp_help prints INFO 0 messages with a single space and
+  internal line numbers between its result sets; 15472/15469/15470/15647
+  name the object as passed. sp_helptext splits only at CR LF (a lone CR or
+  LF stays in the line) and every 255 characters. sp_columns reports ODBC 2
+  types (nvarchar(max) is `ntext` -10, datetime2 is -9) and an
+  SS_DATA_TYPE that depends on nullability (int 56 / 38, bigint 63 / 108).
+
 # T-SQL Language Reference
 
 Complete reference for the Transact-SQL language used by Microsoft SQL Server.

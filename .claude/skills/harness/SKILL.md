@@ -68,6 +68,7 @@ Strings naming the case database (messages, `DB_NAME()` values) are rewritten
 to `{db}` so both modes compare. Choose with `--isolation database|process`.
 Caveat: in process mode the word `master` is rewritten too.
 
+
 ## Writing a case
 
 Hand-written cases are `harness/corpus/<area>/<name>.sql`:
@@ -110,6 +111,13 @@ SELECT @out = n FROM t WHERE id = @id
   commit [name]`, `tm rollback [name]`, `tm save name`: TDS transaction
   manager requests, as tedious `beginTransaction` and mssql `Transaction`
   send them (corpus `tm/`).
+- Table-valued parameters: `-- @param @ids table = {"schema":"dbo","name":
+  "IdList","columns":[{"name":"id","type":"int"}],"rows":[[1],[2]]}` (tedious
+  TYPES.TVP; cells decode like scalar parameter values of the column type).
+- `-- @mask sets/0/rows/*/3` inside a step replaces the captured values at
+  that path (`*` = every index) with `"{masked}"` on every target: for
+  values that read the clock or a spid (sp_help's Created_datetime, sp_who's
+  spid). Masks are part of the case hash.
 - Client flows that are not corpus-shaped (mssql pools, PreparedStatement,
   bulk load) live in `harness/test/*.test.mjs`; pin their expectations to a
   capture made with the same calls against the oracle (see

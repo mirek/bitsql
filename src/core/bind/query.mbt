@@ -218,7 +218,7 @@ fn bind_table_ref(
       }
     }
     TableVar(name, alias_~, ..) =>
-      match (env.catalog.table_var)(name) {
+      match env.table_var(name) {
         Some(t) => {
           let q = match alias_ {
             Some(a) => a.name.to_lower()

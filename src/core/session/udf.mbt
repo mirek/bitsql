@@ -64,13 +64,15 @@ fn Session::function_def(
     )
   }
   let params : Array[@bind.UserParam] = def.params.map(p => {
-    name: p.name,
-    ty: @bind.resolve_type(p.type_, Declaration, @types.default_collation),
-    default_: p.default_,
+    match self.decl_type(p.type_, @types.default_collation) {
+      ScalarDecl(ty, _, _) =>
+        { name: p.name, ty, default_: p.default_, table_type: None, }
+      TableDecl(ut) =>
+        { name: p.name, ty: Int, default_: None, table_type: Some(ut.name), }
+    }
   })
   let kind : @bind.UserFunctionKind = match def.returns {
-    Scalar(t, _) =>
-      Scalar(@bind.resolve_type(t, Declaration, @types.default_collation))
+    Scalar(t, _) => Scalar(self.scalar_type(t, @types.default_collation))
     InlineTable(q) => Inline(q)
     TableVariable(_, body, _) => {
       // the declared return table, built like DECLARE @t TABLE (unsaved);
@@ -136,6 +138,16 @@ fn[T] Session::in_function(
   }
   let frame = Frame::new()
   for i, p in d.info.params {
+    if p.table_type is Some(_) {
+      // a READONLY table-valued parameter: the caller's table variable id
+      let key = p.name.to_lower()
+      frame.read_only_tvps.add(key)
+      match args.get(i) {
+        Some(Int(id)) => frame.tables[key] = id
+        _ => ()
+      }
+      continue
+    }
     let slot = frame.add_var(p.name, p.ty)
     frame.values[slot] = args.get(i).unwrap_or(Null)
   }
@@ -158,8 +170,10 @@ fn[T] Session::in_function(
     ignore(self.frames.pop())
     self.rt.nest_level -= 1
     // the frame's table variables die with it
-    for _, id in frame.tables {
-      self.tvars = self.tvars.drop_object(id)
+    for k, id in frame.tables {
+      if !frame.read_only_tvps.contains(k) || frame.owned.contains(k) {
+        self.tvars = self.tvars.drop_object(id)
+      }
     }
     self.out.truncate(mark)
     self.cur_cmd = saved_cmd

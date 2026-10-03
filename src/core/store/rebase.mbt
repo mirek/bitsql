@@ -95,13 +95,29 @@ pub fn Db::rebase(self : Db, base : Db, onto : Db) -> Db? {
   let schemas = merge3(base.schemas, self.schemas, onto.schemas, same=(a, b) => {
     a == b
   })
+  let types = merge3(base.types, self.types, onto.types)
+  let type_names = merge3(base.type_names, self.type_names, onto.type_names, same=(
+    a,
+    b,
+  ) => a == b)
+  guard types is Some(types) && type_names is Some(type_names) else {
+    return None
+  }
   guard names is Some(names) &&
     tables is Some(tables) &&
     modules is Some(modules) &&
     schemas is Some(schemas) else {
     return None
   }
-  let mut out : Db = { names, tables, data: onto.data, modules, schemas, }
+  let mut out : Db = {
+    names,
+    tables,
+    data: onto.data,
+    modules,
+    schemas,
+    types,
+    type_names,
+  }
   for ch in base.data.changes(self.data) {
     let (id, old, new) = ch
     let current = onto.data.get(id)

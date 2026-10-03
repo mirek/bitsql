@@ -265,12 +265,15 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       // DECLARE, however many variables are initialized
       let mut initialized = false
       for v in vars {
-        let ty = @bind.resolve_type(
-          v.type_,
-          Declaration,
-          @types.default_collation,
-        )
-        let existing = self.frame().vars.contains(v.name.to_lower())
+        let ty = match self.declared_var_type(v.name, v.type_) {
+          ScalarDecl(ty, _, _) => ty
+          TableDecl(ut) => {
+            self.declare_typed_table(v.name, ut)
+            continue
+          }
+        }
+        let existing = self.frame().vars.contains(v.name.to_lower()) ||
+          self.frame().tables.contains(v.name.to_lower())
         if existing {
           raise @types.sql_error(
             134,
@@ -527,6 +530,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     CreateFunction(f) => self.exec_create_function(f, s.span.start)
     CreateTrigger(t) => self.exec_create_trigger(t, s.span.start)
     CreateSchema(name, ..) => self.exec_create_schema(name)
+    CreateType(ct) => self.exec_create_type(ct)
+    CreateSynonym(name, base) => self.exec_create_synonym(name, base)
     CreateSequence(name, type_~, options~) =>
       self.exec_create_sequence(name, type_, options, s.span.start, s.span.line)
     InsertBulk(name, _, options) => self.exec_insert_bulk(name, options)

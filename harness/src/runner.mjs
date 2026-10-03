@@ -48,6 +48,23 @@ export async function emulatorTarget({ isolation, log } = {}) {
   }
 }
 
+// `-- @mask a/*/b` paths: the values there become "{masked}".
+export function applyMasks(result, masks) {
+  if (!masks?.length) return result
+  const walk = (node, parts) => {
+    if (node === null || typeof node !== 'object') return
+    const [head, ...rest] = parts
+    const keys = head === '*' ? Object.keys(node) : [head]
+    for (const k of keys) {
+      if (!(k in node)) continue
+      if (rest.length) walk(node[k], rest)
+      else node[k] = '{masked}'
+    }
+  }
+  for (const m of masks) walk(result, m.split('/'))
+  return result
+}
+
 // Time an async step gets to reach the server and start (and block) before
 // the next step is sent.
 const ASYNC_SETTLE_MS = 500
@@ -77,10 +94,10 @@ async function runSteps(config, steps) {
       const connection = await conn(id)
       if (step.async) {
         result.steps.push(null)
-        pending.set(id, { index, promise: capture(connection, step) })
+        pending.set(id, { index, promise: capture(connection, step).then(r => applyMasks(r, step.mask)) })
         await new Promise(resolve => setTimeout(resolve, ASYNC_SETTLE_MS))
       } else {
-        result.steps.push(await capture(connection, step))
+        result.steps.push(applyMasks(await capture(connection, step), step.mask))
       }
     }
     for (const id of [...pending.keys()]) await settle(id)

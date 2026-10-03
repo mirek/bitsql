@@ -65,6 +65,8 @@ pub const STATUS_RESET_CONNECTION : Int = 0x08
 
 pub const TDS_74 : Int64 = 0x74000004
 
+pub const TVP_DEFAULT_COLUMN : Int = 0x200
+
 pub fn cp1252_decode(BytesView) -> String
 
 pub fn cp1252_encode(String) -> Bytes
@@ -96,6 +98,8 @@ pub fn nbcrow_is_smaller(ArrayView[Column], ArrayView[WireValue]) -> Bool
 pub fn negotiate_encryption_without_tls(Int?) -> Int?
 
 pub fn read_all_headers(Reader) -> Headers raise TdsError
+
+pub fn read_tvp(Reader) -> Tvp raise TdsError
 
 pub fn read_type_info(Reader) -> TypeInfo raise TdsError
 
@@ -270,6 +274,7 @@ pub(all) struct RpcParam {
   default_value : Bool
   type_info : TypeInfo
   value : WireValue
+  tvp : Tvp?
 } derive(@debug.Debug)
 
 pub(all) struct RpcRequest {
@@ -289,6 +294,20 @@ pub(all) enum TmRequest {
   Save(String)
   Unsupported(Int)
 } derive(Eq, @debug.Debug)
+
+pub(all) struct Tvp {
+  database : String
+  schema : String
+  name : String
+  columns : Array[TvpColumn]
+  rows : Array[Array[WireValue]]?
+} derive(@debug.Debug)
+
+pub(all) struct TvpColumn {
+  user_type : Int
+  flags : Int
+  type_info : TypeInfo
+} derive(@debug.Debug)
 
 pub(all) enum TypeInfo {
   Int1

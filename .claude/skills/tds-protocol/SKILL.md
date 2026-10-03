@@ -60,6 +60,19 @@ mention the correction here.
   (msduck `docs/decimal-wire.md`, captured). Implemented in `write_value`.
 
 
+- 2026-10-03 (TVP_TYPE 0xF3, tedious lib/data-types/tvp.js, corpus
+  `tabletypes/tvp-rpc`): tedious writes `F3`, DbName `00`, OwningSchema and
+  TypeName as B_VARCHAR (schema empty for `new sql.Table('IdList')`), the
+  column count, per column UserType 0, Flags 0, TYPE_INFO and an empty
+  ColName, TVP_END `00`, then `01` + one value per column per row (RPC value
+  encoding, PLP for max types) and `00`. A NULL table is `FF FF 00 00`
+  (count 0xFFFF, metadata end, rows end); tedious's declaration for
+  sp_executesql is `dbo.IdList readonly`. No ORDER_UNIQUE /
+  COLUMN_ORDERING tokens and no fDefault columns from tedious. The value of
+  RPC TYPE_INFO for the parameter is the TVP header itself: bitsql keeps it
+  in `RpcParam.tvp` (src/core/tds/tvp.mbt, tests in tvp_test.mbt from
+  MS-TDS example 4.14).
+
 # TDS Protocol Reference
 
 Complete reference for the Tabular Data Stream (TDS) protocol used by Microsoft SQL Server. Based on the MS-TDS open specification and SQL Server documentation.

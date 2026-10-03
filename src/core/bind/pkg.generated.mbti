@@ -45,6 +45,7 @@ pub(all) struct Catalog {
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
   sequence : (@ast.ObjectName) -> (String, @types.SqlType)?
   function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
+  user_type : (@ast.TypeName) -> Bool
 }
 pub fn Catalog::empty() -> Self
 
@@ -93,9 +94,11 @@ pub(all) struct Env {
   from_plan : @ir.Plan?
   literal_params : Bool
   deferred : Array[@types.SqlError]
+  table_params : Map[String, TableBinding]
 }
 pub fn Env::find_cte(Self, @ast.ObjectName) -> CteDef?
 pub fn Env::new(Map[String, VarInfo], collation? : @types.Collation, catalog? : Catalog, deferred? : Array[@types.SqlError]) -> Self
+pub fn Env::table_var(Self, String) -> TableBinding?
 pub fn Env::with_columns(Self, Array[ColumnRef]) -> Self
 pub fn Env::with_ctes(Self, Array[@ast.Cte]) -> Self
 
@@ -128,6 +131,7 @@ pub(all) struct UserParam {
   name : String
   ty : @types.SqlType
   default_ : @ast.Expr?
+  table_type : String?
 }
 
 pub(all) struct VarInfo {

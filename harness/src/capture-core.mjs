@@ -11,7 +11,7 @@
 //   stream: the compact token sequence (ROW runs collapsed), bitsql only
 import { Request, ISOLATION_LEVEL } from 'tedious'
 import { isDeepStrictEqual } from 'node:util'
-import { resolveType } from './types.mjs'
+import { resolveType, tvpValue } from './types.mjs'
 
 const messageFields = m => ({ number: m.number, state: m.state, class: m.class, lineNumber: m.lineNumber, message: m.message })
 export const columnFields = c => ({ name: c.colName, type: c.type.name, length: c.dataLength ?? null, precision: c.precision ?? null, scale: c.scale ?? null, flags: c.flags, collation: canonical(c.collation ?? null) })
@@ -106,6 +106,7 @@ export function capture(connection, step, { rowLimit = 100000 } = {}) {
 function decodeParamValue(typeText, value) {
   if (value === null) return null
   const base = typeText.toLowerCase().replace(/\(.*$/, '').trim()
+  if (base === 'table') return tvpValue(value, decodeParamValue)
   if (['binary', 'varbinary', 'image'].includes(base)) return Buffer.from(String(value).replace(/^0x/i, ''), 'hex')
   if (['date', 'datetime', 'datetime2', 'smalldatetime', 'datetimeoffset', 'time'].includes(base) && typeof value === 'string') {
     if (base === 'time') return new Date(`1970-01-01T${value}Z`)

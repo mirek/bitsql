@@ -33,6 +33,8 @@ pub(all) enum StmtKind {
   CreateTrigger(CreateTrigger)
   CreateSchema(Ident, authorization~ : Ident?)
   CreateType(CreateType)
+  /// `CREATE SYNONYM name FOR base_object`.
+  CreateSynonym(ObjectName, ObjectName)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
   /// ALTER SEQUENCE name options (see `CreateSequence`; adds `RESTART`).
   AlterSequence(ObjectName, Array[String])
@@ -90,6 +92,7 @@ pub(all) enum DropKind {
   DropSchema
   DropType
   DropSequence
+  DropSynonym
   DropDatabase
 } derive(Eq, Debug)
 

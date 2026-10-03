@@ -35,6 +35,13 @@ fn bind_user_args(
   let out = []
   for i, p in f.params {
     let a = args[i]
+    if p.table_type is Some(tn) {
+      // a READONLY table-valued parameter takes a table variable; the
+      // function receives its table id
+      let t = table_arg(env, a, tn)
+      out.push(mk(Lit(Int(t.id)), Int, false))
+      continue
+    }
     let bound = if a.kind is Default {
       match p.default_ {
         Some(d) => bind_expr(Env::new(Map([]), collation=env.collation), d)
@@ -47,6 +54,29 @@ fn bind_user_args(
     out.push(convert_arg(bound, p.ty))
   }
   out
+}
+
+///|
+/// The table variable passed for a table-valued parameter of type `tn`;
+/// anything else is 206 (captured for procedures: "Operand type clash: int
+/// is incompatible with IdList").
+fn table_arg(
+  env : Env,
+  a : @ast.Expr,
+  tn : String,
+) -> TableBinding raise @types.SqlError {
+  if a.kind is Var(name) {
+    match env.table_var(name) {
+      Some(t) => return t
+      None => ()
+    }
+  }
+  let b = bind_expr(env, a)
+  raise err(
+    206,
+    "Operand type clash: \{b.ty.clash_name()} is incompatible with \{tn}",
+    state=2,
+  )
 }
 
 ///|
@@ -128,13 +158,23 @@ fn bind_user_tvf(
         )
       }
       let vars : Map[String, VarInfo] = Map([])
+      let table_params : Map[String, TableBinding] = Map([])
       for i, p in f.params {
-        vars[p.name.to_lower()] = { slot: i, ty: p.ty, }
+        match p.table_type {
+          Some(tn) =>
+            table_params[p.name.to_lower()] = table_arg(
+              plan_env(env),
+              args[i],
+              tn,
+            )
+          None => vars[p.name.to_lower()] = { slot: i, ty: p.ty, }
+        }
       }
       let fenv = {
         ..Env::new(vars, collation=env.collation, catalog=env.catalog),
         ids: env.ids,
         nest: env.nest + 1,
+        table_params,
       }
       let bq = bind_query_inner(fenv, query)
       // like views, computed columns keep fComputed (captured: a * 2 is

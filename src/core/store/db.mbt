@@ -24,6 +24,8 @@ pub struct Db {
   priv data : PMap[Int, TableData]
   priv modules : PMap[Int, Module]
   priv schemas : PMap[String, (String, Int)] // lowercased name → (name, id)
+  priv types : PMap[Int, UserType] // user_type_id → type
+  priv type_names : PMap[String, Int] // "schema.name" lowercased → id
 }
 
 ///|
@@ -72,6 +74,62 @@ pub fn Db::empty() -> Db {
     data: PMap::empty(int_cmp),
     modules: PMap::empty(int_cmp),
     schemas,
+    types: PMap::empty(int_cmp),
+    type_names: PMap::empty(str_cmp),
+  }
+}
+
+///|
+/// A user-defined type by schema and name.
+pub fn Db::lookup_type(self : Db, schema : String, name : String) -> UserType? {
+  match self.type_names.get(qualified_key(schema, name)) {
+    Some(id) => self.types.get(id)
+    None => None
+  }
+}
+
+///|
+pub fn Db::get_type(self : Db, id : Int) -> UserType? {
+  self.types.get(id)
+}
+
+///|
+/// User-defined types ordered by user_type_id.
+pub fn Db::user_types(self : Db) -> Array[UserType] {
+  self.types.iter().map(kv => kv.1).collect()
+}
+
+///|
+/// Next user_type_id (SQL Server starts at 257, after sysname's 256).
+pub fn Db::next_type_id(self : Db) -> Int {
+  let mut m = 256
+  for kv in self.types.iter() {
+    if kv.0 > m {
+      m = kv.0
+    }
+  }
+  m + 1
+}
+
+///|
+pub fn Db::add_type(self : Db, t : UserType) -> Db {
+  {
+    ..self,
+    types: self.types.add(t.id, t),
+    type_names: self.type_names.add(qualified_key(t.schema, t.name), t.id),
+  }
+}
+
+///|
+pub fn Db::drop_type(self : Db, id : Int) -> Db {
+  match self.types.get(id) {
+    Some(t) =>
+      {
+        ..self,
+        types: self.types.remove(id),
+        type_names: self.type_names.remove(qualified_key(t.schema, t.name)),
+      }
+    None => self
   }
 }
 

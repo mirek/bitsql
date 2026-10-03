@@ -210,6 +210,7 @@ pub(all) enum DropKind {
   DropSchema
   DropType
   DropSequence
+  DropSynonym
   DropDatabase
 } derive(Eq, @debug.Debug)
 
@@ -611,6 +612,7 @@ pub(all) enum StmtKind {
   CreateTrigger(CreateTrigger)
   CreateSchema(Ident, authorization~ : Ident?)
   CreateType(CreateType)
+  CreateSynonym(ObjectName, ObjectName)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
   AlterSequence(ObjectName, Array[String])
   Drop(DropKind, if_exists~ : Bool, Array[ObjectName])

@@ -47,6 +47,16 @@ mention the correction here.
 (`packages/server/src/server.test.ts`). It exercises the full stack the
 same way real applications do.
 
+- 2026-10-03 (harness test/mssql-tvp.test.mjs): mssql `request.input('ids',
+  table)` with an `sql.Table('dbo.IdList')` (or `sql.TVP`) sends TYPES.TVP;
+  `execute('dbo.pick')` is an RPC by name, `query()` sp_executesql with the
+  declaration `@ids dbo.IdList readonly`. `rowsAffected` of a procedure
+  ending in `RETURN (SELECT COUNT(*) FROM @ids)` has two entries (the
+  subquery counts). tedious cannot send NULL TVPs through mssql (its
+  declaration reads `value.schema`) nor sql_variant TVP columns. Corpus
+  steps take TVPs as `-- @param @ids table = {"schema":"dbo","name":
+  "IdList","columns":[{"name":"id","type":"int"}],"rows":[[1]]}`.
+
 ## Connection options that matter
 
 ```ts

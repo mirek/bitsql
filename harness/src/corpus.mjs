@@ -17,6 +17,9 @@
 //    `-- @step tm begin [READ_COMMITTED|SNAPSHOT|...] [name]`, `tm commit`,
 //    `tm rollback`, `tm save name`: TDS transaction manager requests
 //    (tedious beginTransaction/commitTransaction/...; mssql's Transaction).
+//    `-- @mask sets/0/rows/*/3` (inside a step): replaces the captured values
+//    at that path (`*` = every index) with "{masked}" on every target, for
+//    values that read the clock (sp_help's Created_datetime).
 //    Expected output: sibling `name.expected.json` (captured, never hand-written).
 //
 // 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
@@ -85,6 +88,12 @@ export function parseSqlCase(text) {
       continue
     }
     if (/^\s*--\s*@param\b/i.test(line)) throw new Error(`bad directive: ${line}`)
+    const mask = /^\s*--\s*@mask\s+(\S+)\s*$/i.exec(line)
+    if (mask) {
+      if (!current) throw new Error(`@mask outside a step: ${line}`)
+      ;(current.mask ??= []).push(mask[1])
+      continue
+    }
     if (!current) { if (line.trim() === '') continue; open('batch', '') }
     current.lines.push(line)
   }
@@ -106,7 +115,7 @@ export function parseSqlCase(text) {
 // Stable hash of what is executed; expectations record it so edits after a
 // capture show up as `stale`.
 export function caseHash(steps) {
-  const normal = steps.map(s => ({ kind: s.kind, sql: s.sql, params: s.params ?? [], compare: s.compare !== false }))
+  const normal = steps.map(s => ({ kind: s.kind, sql: s.sql, params: s.params ?? [], compare: s.compare !== false, ...(s.mask ? { mask: s.mask } : {}) }))
   return createHash('sha256').update(JSON.stringify(normal)).digest('hex').slice(0, 16)
 }
 

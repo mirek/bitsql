@@ -598,6 +598,7 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     "SCHEMA" => DropSchema
     "TYPE" => DropType
     "SEQUENCE" => DropSequence
+    "SYNONYM" => DropSynonym
     "DATABASE" => DropDatabase
     _ => raise self.error()
   }
@@ -658,7 +659,10 @@ fn Parser::param(self : Parser) -> @ast.Param raise @ast.SyntaxError {
     if self.eat_kw("OUTPUT") || self.eat_kw("OUT") {
       output = true
     } else if self.eat_kw("READONLY") {
+      // READONLY ends the declaration (captured: `READONLY OUTPUT` and
+      // `READONLY = NULL` are 102)
       read_only = true
+      break
     } else {
       break
     }
