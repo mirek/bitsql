@@ -151,6 +151,10 @@ pub(all) enum Fn {
   JsonValue
   JsonQuery
   IsJson
+  /// Functions implemented in the "more functions" files, dispatched by
+  /// upper-case name (bind/functions_more.mbt, exec/functions_more.mbt).
+  /// Lets function families grow without touching this enum.
+  Named(String)
 } derive(Debug, Eq)
 
 ///|

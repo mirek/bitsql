@@ -37,8 +37,8 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [~] ATTENTION: acknowledged as a separate DONE_ATTN message; real cancellation needs time-sliced execution
 - [~] Engine::handle + native host (TcpServer, queue, `--listen`, `listening on` contract), `--record` event log and `replay` tool done; timers missing
 - [x] tedious 20.3.3 connects (encrypt:false), login SET batch accepted; other SQL → `Emulator:` error via stub executor
-- [ ] Replace stub executor with parser + executor for `SELECT <literals>` and sp_executesql
-- Gate: `tedious` runs `SELECT 1` and a parameterized `sp_executesql`, identical to MSSQL in the harness.
+- [x] Stub executor replaced by parser + binder + executor (core/bind, core/exec, core/session)
+- **Gate met 2026-10-03**: `tedious` runs `SELECT 1` and a parameterized `sp_executesql`, identical to MSSQL in the harness (smoke/select-1, smoke/rpc-*).
 
 ## Phase 3: parser coverage, DDL and catalog
 

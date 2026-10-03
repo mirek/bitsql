@@ -416,6 +416,7 @@ fn call(
         _ => raise @types.not_supported("JSON_QUERY on non-character input")
       }
     }
+    Named(name) => call_more(ctx, name, v, args, e)
     IsJson =>
       match v[0] {
         Null => Null
