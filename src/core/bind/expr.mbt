@@ -294,12 +294,12 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       mk(Subquery(plan), c.ty, true)
     }
     InQuery(x, q, negated~) => {
-      let (a, plan, coll) = compare_with_subquery(env, x, q)
+      let (a, plan, coll) = compare_with_subquery(env, Eq, x, q)
       bit_expr(InQuery(a, plan, negated~, collation=coll), true)
     }
     Quantified(op, quant, x, q) => {
-      let (a, plan, coll) = compare_with_subquery(env, x, q)
       let (o, _) = cmp_op(op)
+      let (a, plan, coll) = compare_with_subquery(env, o, x, q)
       bit_expr(Quantified(o, a, plan, all=quant is All, collation=coll), true)
     }
     Parse(_, _, ..) => raise @types.not_supported("PARSE / TRY_PARSE")
@@ -435,6 +435,7 @@ fn single_column(
 /// common type.
 fn compare_with_subquery(
   env : Env,
+  op : @ir.CmpOp,
   x : @ast.Expr,
   q : @ast.Query,
 ) -> (@ir.Expr, @ir.Plan, @types.Collation?) raise @types.SqlError {
@@ -447,10 +448,10 @@ fn compare_with_subquery(
   } else {
     Project(plan, [coerce(mk(Col(0), c.ty, c.nullable), t)])
   }
-  let coll = match a.ty.collation() {
-    Some(c) => Some(c)
-    None => t.collation()
-  }
+  let coll = resolve_collation(env, cmp_op_name(op), [
+    a,
+    mk(Col(0), c.ty, c.nullable),
+  ])
   (a, plan, coll)
 }
 
