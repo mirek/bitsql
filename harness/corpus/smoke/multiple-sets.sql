@@ -1,0 +1,1 @@
+SELECT 1 AS a; SELECT N'two' AS b, CAST(NULL AS int) AS c

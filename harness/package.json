@@ -1,0 +1,20 @@
+{
+  "name": "bitsql-harness",
+  "private": true,
+  "type": "module",
+  "description": "tedious/mssql client harness and differential corpus runner for bitsql",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node src/test.mjs",
+    "capture": "node src/capture.mjs",
+    "diff": "node src/diff.mjs",
+    "oracle:start": "node src/oracle.mjs start",
+    "oracle:stop": "node src/oracle.mjs stop",
+    "oracle:status": "node src/oracle.mjs status",
+    "import:msduck": "node src/import-msduck.mjs"
+  },
+  "dependencies": {
+    "mssql": "12.7.2",
+    "tedious": "20.3.3"
+  }
+}

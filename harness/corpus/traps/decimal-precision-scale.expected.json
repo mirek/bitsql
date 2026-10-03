@@ -1,0 +1,86 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "8e7d7c850f95000e",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"mul","type":"DecimalN","length":17,"precision":16,"scale":5,"flags":33,"collation":null},
+            {"name":"mul_overflow_scale","type":"DecimalN","length":17,"precision":38,"scale":6,"flags":33,"collation":null},
+            {"name":"div","type":"DecimalN","length":17,"precision":17,"scale":8,"flags":33,"collation":null},
+            {"name":"div_38","type":"DecimalN","length":17,"precision":38,"scale":6,"flags":33,"collation":null},
+            {"name":"add_mixed","type":"DecimalN","length":17,"precision":13,"scale":4,"flags":33,"collation":null},
+            {"name":"cast_int_truncates","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cast_neg_int_truncates","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cast_decimal_rounds","type":"DecimalN","length":17,"precision":4,"scale":2,"flags":33,"collation":null},
+            {"name":"cast_neg_decimal_rounds","type":"DecimalN","length":17,"precision":4,"scale":2,"flags":33,"collation":null},
+            {"name":"round_half","type":"NumericN","length":17,"precision":2,"scale":1,"flags":32,"collation":null},
+            {"name":"int_div","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"neg_int_div","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"neg_mod","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[3.375,1,3.33333333,0.333333,11,2,-2,1.01,-1.01,3,3,-3,-1]]
+        },
+        {
+          "columns": [
+            {"name":"mul_p","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"mul_s","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[16,5]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":13},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

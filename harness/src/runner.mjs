@@ -1,0 +1,116 @@
+// Runs corpus cases against a target (oracle or emulator) in isolation,
+// ported from msduck runCase + isolatedReference.
+//
+// Isolation modes:
+//   database  CREATE DATABASE [bitsql_case_<random>] on an admin connection,
+//             run the case connected to it, DROP it afterwards (oracle default,
+//             and the emulator default with BITSQL_ADDR).
+//   process   spawn a fresh emulator process per case and run in master
+//             (default when the harness spawns the emulator itself).
+// Database names inside strings become `{db}` so both modes compare equal.
+import { randomBytes } from 'node:crypto'
+import { capture, canonical, replaceDatabaseName } from './capture-core.mjs'
+import { caseHash } from './corpus.mjs'
+import { connect, close, withDatabase } from './client.mjs'
+import { startOracle } from './oracle.mjs'
+import { emulatorBinary, emulatorConfig, fixedAddress, probe, spawnEmulator } from './emulator.mjs'
+
+export const REUSE_PROBE = 'SELECT @@TRANCOUNT AS trancount, XACT_STATE() AS xact_state; SELECT 1 AS reusable'
+
+export async function oracleTarget({ log } = {}) {
+  const { config, image } = await startOracle({ log })
+  const admin = await connect(config)
+  const version = (await capture(admin, { kind: 'batch', sql: "SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar(64))" })).sets[0].rows[0][0]
+  await close(admin)
+  return { name: 'oracle', server: { image, version }, isolation: 'database', session: async () => ({ config, dispose: async () => {} }) }
+}
+
+export async function emulatorTarget({ isolation, log } = {}) {
+  const fixed = fixedAddress()
+  if (fixed) {
+    const error = await probe(fixed)
+    if (error) throw error
+    return { name: 'emulator', server: { addr: process.env.BITSQL_ADDR }, isolation: isolation ?? 'database', session: async () => ({ config: emulatorConfig(fixed), dispose: async () => {} }) }
+  }
+  const bin = emulatorBinary({ log })
+  // One probe server: fail fast with "server not available".
+  const first = await spawnEmulator({ bin })
+  const error = await probe(first)
+  if (error) { await first.stop(); throw error }
+  const mode = isolation ?? 'process'
+  if (mode === 'database') {
+    return { name: 'emulator', server: { bin }, isolation: mode, session: async () => ({ config: emulatorConfig(first), dispose: async () => {} }), stop: first.stop }
+  }
+  await first.stop()
+  return {
+    name: 'emulator', server: { bin }, isolation: mode,
+    session: async () => { const s = await spawnEmulator({ bin }); return { config: emulatorConfig(s), dispose: s.stop } },
+  }
+}
+
+async function runSteps(config, steps) {
+  const result = { steps: [] }
+  let connection
+  try { connection = await connect(config) }
+  catch (error) { return { connectError: error.message } }
+  try {
+    for (const step of steps) result.steps.push(await capture(connection, step))
+    result.reuse = await capture(connection, { kind: 'batch', sql: REUSE_PROBE })
+  } finally { await close(connection) }
+  return result
+}
+
+export async function runCase(target, testCase) {
+  const session = await target.session()
+  let database = 'master'
+  let admin
+  try {
+    let config = session.config
+    if (target.isolation === 'database') {
+      admin = await connect(config)
+      database = `bitsql_case_${randomBytes(6).toString('hex')}`
+      const created = await capture(admin, { kind: 'batch', sql: `CREATE DATABASE [${database}]` })
+      if (created.errors.length) return { case: caseHash(testCase.steps), isolationError: created.errors[0].message }
+      config = withDatabase(config, database)
+    }
+    const raw = await runSteps(config, testCase.steps)
+    const result = replaceDatabaseName(canonical(raw), database)
+    return { case: caseHash(testCase.steps), ...result }
+  } catch (error) {
+    return { case: caseHash(testCase.steps), transportError: error.message }
+  } finally {
+    if (admin) {
+      if (database !== 'master') {
+        // Only the freshly generated database is dropped; kick lingering sessions first.
+        await capture(admin, { kind: 'batch', sql: `IF DB_ID(N'${database}') IS NOT NULL BEGIN ALTER DATABASE [${database}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [${database}] END` })
+      }
+      await close(admin)
+    }
+    await session.dispose()
+  }
+}
+
+// Turns a run result into the stored expectation: setup steps (compare:false)
+// become null; client-side failures make the capture unusable.
+export function toExpected(testCase, result) {
+  if (result.connectError || result.transportError || result.isolationError) return { error: result.connectError ?? result.transportError ?? result.isolationError }
+  const clientError = [...result.steps, result.reuse].flatMap(s => s?.errors ?? []).find(e => e.client)
+  if (clientError) return { error: `client-side error: ${clientError.message}` }
+  return {
+    expected: {
+      case: result.case,
+      steps: result.steps.map((s, i) => testCase.steps[i].compare === false ? null : s),
+      reuse: result.reuse,
+    },
+  }
+}
+
+export async function pool(items, concurrency, work) {
+  const results = new Array(items.length)
+  let next = 0
+  const workers = Array.from({ length: Math.max(1, Math.min(concurrency, items.length)) }, async () => {
+    while (next < items.length) { const i = next++; results[i] = await work(items[i], i) }
+  })
+  await Promise.all(workers)
+  return results
+}
