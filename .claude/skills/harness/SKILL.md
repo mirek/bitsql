@@ -317,3 +317,11 @@ Start the host with `--database NAME` so the app's database exists at login
   them with `runCase(await oracleTarget(), { steps: parseSqlCase(text) })`
   from a scratch script under `harness/out/` (not committed); one fresh
   database per run, no expectation written.
+- 2026-10-04: `harness/gen/conversion.mjs` generates `corpus/conversion/*`
+  (CONVERT styles incl. Hijri, input styles, numeric storage bytes,
+  text/ntext/image, COMPRESS/DECOMPRESS, CHECKSUM, CURSOR_STATUS,
+  COLUMNS_UPDATED; 461 cases, ~8 min to capture). In `.cases.json` files use
+  `{kind: 'batch', compare: false}` for setup steps (`setup` is only a `.sql`
+  directive). A quick way to learn a rule before writing cases: a throwaway
+  node script calling `src/capture-core.mjs` `capture()` over many small
+  batches on one oracle connection (no CREATE DATABASE per case).
