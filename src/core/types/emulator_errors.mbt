@@ -72,6 +72,11 @@ pub const EMU_PARSE_CULTURE : Int = 50171
 pub const EMU_PARSE_FORMAT : Int = 50172
 
 ///|
+/// FORMAT with a real culture bitsql has no .NET culture data for, or a
+/// date in a non-Gregorian culture calendar (Hijri).
+pub const EMU_FORMAT_CULTURE : Int = 50173
+
+///|
 /// An XML or XQuery feature the emulator does not implement (FOR XML
 /// EXPLICIT, XQuery beyond the path subset, DTDs, typed xml).
 pub const EMU_XML_NOT_SUPPORTED : Int = 50109
@@ -99,6 +104,7 @@ pub let emulator_error_table : Array[(Int, String)] = [
   (EMU_DATE_BUCKET_WIDTH, "DATE_BUCKET width overflowing int32 months"),
   (EMU_PARSE_CULTURE, "PARSE culture not supported"),
   (EMU_PARSE_FORMAT, "PARSE date/time format not supported"),
+  (EMU_FORMAT_CULTURE, "FORMAT culture not supported"),
   (EMU_XML_NOT_SUPPORTED, "XML/XQuery feature not supported"),
   (EMU_INTERNAL, "internal invariant violated"),
 ]

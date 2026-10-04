@@ -961,7 +961,6 @@ fn call_string(
       }
       String(cap_text(out.to_string(), e.ty))
     }
-    "FORMAT" => format_value(v, args)
     "SOUNDEX" =>
       match str(0) {
         Some(s) => String(soundex(s))

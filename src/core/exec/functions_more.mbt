@@ -43,6 +43,9 @@ fn call_more(
   if name == "DATE_BUCKET" {
     return date_bucket(v, args, e)
   }
+  if name == "FORMAT" {
+    return format_value(ctx, v, args)
+  }
   if name == "PARSE" {
     return parse_call(v, args, e)
   }
