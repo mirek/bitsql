@@ -5,8 +5,11 @@
 //   database  CREATE DATABASE [bitsql_case_<random>] on an admin connection,
 //             run the case connected to it, DROP it afterwards (oracle default,
 //             and the emulator default with BITSQL_ADDR).
-//   process   spawn a fresh emulator process per case and run in master
-//             (default when the harness spawns the emulator itself).
+//   process   spawn a fresh emulator process per case, CREATE DATABASE in it
+//             and run there (default when the harness spawns the emulator
+//             itself). The case database is never master: SQL Server's
+//             captures ran in a user database, and master differs (recovery
+//             model, system objects, the name itself).
 // Database names inside strings become `{db}` so both modes compare equal.
 import { randomBytes } from 'node:crypto'
 import { capture, canonical, normalizeSpids, replaceDatabaseName } from './capture-core.mjs'
@@ -112,7 +115,7 @@ export async function runCase(target, testCase) {
   let admin
   try {
     let config = session.config
-    if (target.isolation === 'database') {
+    if (target.isolation === 'database' || target.isolation === 'process') {
       admin = await connect(config)
       database = `bitsql_case_${randomBytes(6).toString('hex')}`
       const created = await capture(admin, { kind: 'batch', sql: `CREATE DATABASE [${database}]` })
@@ -126,7 +129,7 @@ export async function runCase(target, testCase) {
     return { case: caseHash(testCase.steps), transportError: error.message }
   } finally {
     if (admin) {
-      if (database !== 'master') {
+      if (database !== 'master' && target.isolation === 'database') {
         // Only the freshly generated database is dropped; kick lingering sessions first.
         await capture(admin, { kind: 'batch', sql: `IF DB_ID(N'${database}') IS NOT NULL BEGIN ALTER DATABASE [${database}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [${database}] END` })
       }
