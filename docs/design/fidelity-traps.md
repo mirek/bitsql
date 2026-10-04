@@ -72,6 +72,10 @@ real system message). Keep the allocation table in
 | Streaming errors | `@exec.stream` | Rows produced before a run-time error are sent (530 after 101 rows, OPENJSON WITH conversion 245 after row 1); a Sort/aggregate above makes the error arrive before any row |
 | Recursive CTE | `Recursive` plan | Columns are nullable; 530 fires when level max+1 produces a row (MAXRECURSION 3 returns 4 rows, then the error) |
 | FOR JSON | `ForJson` plan | One nvarchar(max) column `JSON_F52E2B61-…`, text split into 2033-char rows, DONE count = number of *input* rows, no rows for empty input, floats as `5.000000000000000e-001`, `/` escaped |
+| JSON error states | `json/functions.mbt` `states` | 13608/13609/13623/13624 states depend on whether the document is a max type, not on compile vs run time; JSON run-time errors end the batch (no DONEINPROC in an RPC) |
+| JSON multi-value paths | `json/select.mbt` `select_all` | A JSON null among the values is NULL even under strict and before malformed text; candidate containers are validated entirely, text after them never; strict skips missing members inside `[*]` |
+| FOR JSON AUTO | `exec/for_json.mbt` `auto_tree` | Levels follow the select-list order of first source columns; only consecutive rows with equal source columns (collation compare) merge; expressions join the current level but never group |
+| JSON_ARRAYAGG | `bind/json_agg.mbt` | WITHIN GROUP is accepted and ignored; unordered JSON aggregates follow the scope's ordered aggregate |
 | Trigger `inserted`/`deleted` | pseudo-tables in scope 3 (session/trigger.mbt) | Scanning them returns the rows newest first (VALUES ('a'),('b') → b, a), visible through IDENTITY in an audit insert without ORDER BY | triggers/after-insert-audit |
 | RAISERROR under XACT_ABORT | `exec_one` disposition | RAISERROR never rolls back or aborts the batch under XACT_ABORT ON (implied in triggers); THROW does | triggers/rollback-in-trigger |
 | NOCOUNT inside modules | `Session::done` | DONEINPROC tokens disappear entirely under NOCOUNT inside triggers/procedures, even in a SQL batch | triggers/after-update-columns |

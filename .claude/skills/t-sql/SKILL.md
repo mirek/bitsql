@@ -203,7 +203,9 @@ mention the correction here.
   is 102 near 'TRY'.
 - 2026-10-03: JSON functions are *streaming*: JSON_VALUE/JSON_QUERY validate
   only up to the selected value (`{"a":1,"b":x}` with `$.a` returns `1`), but a
-  missing path validates the whole document and reports 13609 instead of NULL.
+  member missing from the root container validates the rest of the document
+  and reports 13609 instead of NULL (corrected 2026-10-04: a miss inside a
+  nested container or a step of the wrong kind validates nothing further).
   A root scalar document is 13609 even for `$`. 13609/13607 messages read
   "Unexpected character 'c' is found at position N." (0-based UTF-16 index,
   `'.'` at end of input). Implemented in `src/core/json`; evidence: msduck
@@ -828,6 +830,24 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   closed, 0/1 open without/with rows; 16902 state 42/43 for a bad source /
   NULL name); COLUMNS_UPDATED() is varbinary(4000): one bit per column_id - 1
   in ceil(n/8) bytes, empty for DELETE, NULL outside triggers.
+- 2026-10-04 (JSON round 3, corpus `json3/`, rules in
+  docs/reference/json.md): SQL Server 2025 parses `.*`, `[*]` and
+  `[a to b]` (`[n to n]` = `[n]`; reversed 13660/1, `last` 13660/2, lists
+  13660/5); multi-value paths validate whole candidate containers, a JSON
+  null ends them with NULL even under strict, strict skips missing members
+  inside them, strict ranges past the end are 13659. The path lexer allows
+  whitespace around every token and uses 13607 states 14/22/21/15/16/17/20.
+  13608/13609/13623/13624 states follow the document type (max vs not), and
+  every JSON run-time error ends the batch (RPC: ERROR then DONEPROC).
+  13606 is lazy (complete scalars/names inside 129 containers, containers
+  opened there). ISJSON(x, VALUE|ARRAY|OBJECT|SCALAR) (155 parse error for
+  other words, batch-level 1023 otherwise); JSON_PATH_EXISTS is 0 for any
+  invalid document. FOR JSON AUTO nests by first-column order with
+  consecutive collation-equal merging; 13600/13620 are batch compile errors.
+  JSON_ARRAYAGG/JSON_OBJECTAGG: ABSENT/NULL defaults differ, WITHIN GROUP is
+  ignored, unordered JSON aggregates follow the scope's ordered aggregate,
+  OVER gives running values. The json type is on the wire as varchar(max)
+  Latin1_General_100_BIN2_UTF8 (bitsql: not supported).
 
 Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
 

@@ -283,3 +283,18 @@ FETCH raises an Emulator error once a base table changed (no stale rows).
 Changes made by other sessions are seen through the session's normal view;
 multi-connection cursor visibility is not captured.
 
+## 2026-10-04: JSON aggregates, FOR JSON shape, JSON error aborts
+
+- **JSON_ARRAYAGG / JSON_OBJECTAGG keep their plain call name** (so every
+  "is this an aggregate" check sees them); the parser appends a marker string
+  literal (`@ast.JSON_AGG_MARKER` + `N`/`A` [+ `J`]) carrying the NULL ON
+  NULL / RETURNING clauses, and an inner ORDER BY becomes `within_group`.
+  `@ir.AggFn` gained `JsonArrayAgg` / `JsonObjectAgg`; JSON_OBJECTAGG's key
+  travels in `AggCall.separator` (window calls: the second argument).
+- **`@ir.Plan::ForJson` carries a `JsonShape`**: per-column "JSON text"
+  flags (resolved by the binder through derived tables and views) and FOR
+  JSON AUTO levels, so the executor never inspects expressions.
+- **JSON run-time errors end the batch** (`session/interp.mbt`
+  `json_aborts_batch`), and FOR JSON's 13600/13620 plus ISJSON's 1023 are
+  whole-batch compile errors (`session/precheck_json.mbt`), following the
+  precheck_xml pattern. (docs/reference/json.md)

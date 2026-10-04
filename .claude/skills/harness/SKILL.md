@@ -183,8 +183,8 @@ regress.
 hand-written setup) batch in the whole corpus, no server needed. Replayed run
 prefixes are skipped (they are checked in their own case). Disagreements
 listed in `harness/parse-known.txt` (seeded with the msduck layout import's
-226: JSON_OBJECTAGG `k:v`, ALTER DATABASE, JSON_ARRAYAGG ORDER BY, DBCC,
-ALTER INDEX … DISABLE, …) are tolerated; new ones fail. Delete lines
+226: ALTER DATABASE, DBCC, ALTER INDEX … DISABLE, …; the JSON aggregate
+entries were removed 2026-10-04) are tolerated; new ones fail. Delete lines
 as the parser catches up (the test prints the ones that now agree).
 
 ## msduck import
@@ -325,3 +325,12 @@ Start the host with `--database NAME` so the app's database exists at login
   directive). A quick way to learn a rule before writing cases: a throwaway
   node script calling `src/capture-core.mjs` `capture()` over many small
   batches on one oracle connection (no CREATE DATABASE per case).
+- 2026-10-04: a reusable oracle/emulator probe for learning rules before
+  writing cases: put batches separated by `----` lines in a file and run a
+  scratch `harness/out/probe.mjs` that calls `capture()` on one connection
+  per target (oracle in a `bitsql_probe` database, a spawned emulator) and
+  prints rows/errors (and the token stream with STREAM=1), flagging
+  differences. ~60 JSON probes ran in under a minute. `npm run
+  allowlist:sync` appends every passing case of the last report, also ones
+  that passed before; parse-known.txt entries that now agree are listed by
+  `node --test test/parse.test.mjs` and must be deleted.
