@@ -1144,6 +1144,23 @@ Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-s
   (add) / 36 (update) / 28 (drop), ends the batch and rolls back the
   transaction; ERROR_PROCEDURE() is the procedure. The string 'default'
   passed to fn_listextendedproperty is a name, not DEFAULT.
+- 2026-10-04 (corpus `backup/*`, msduck gaps-backup): BACKUP/RESTORE
+  errors are statement-level: the specific error(s) then 3013 "<BACKUP
+  DATABASE|BACKUP LOG|RESTORE DATABASE|RESTORE HEADERONLY|RESTORE
+  FILELIST|VERIFY DATABASE> is terminating abnormally." (VERIFYONLY's text
+  is VERIFY DATABASE, FILELISTONLY's RESTORE FILELIST); TRY catches only the
+  3013. CurCmd 228 BACKUP DATABASE, 235 LOG, 229 RESTORE DATABASE, 250
+  HEADERONLY, 376 FILELISTONLY, 377 VERIFYONLY (result sets DONE 230). 3021
+  state 0 in a user transaction (also before 911; HEADERONLY runs inside
+  one), 3147 state 3 tempdb, 3201 state 2 missing file, 3287 bad FILE for
+  DATABASE but 4038 (state 1, HEADERONLY 3) for the other kinds, 3154 state
+  4 before 3234 state 2, 3159 for a FULL-recovery same-family target
+  without REPLACE, 3102 (own session, dynamic USE included) / 3101 (others'
+  own database only), 1834 + 3156 (state 4) per file then 3119. Device
+  paths and MOVE logical names compare case-insensitively. RESTORE sends
+  BEGIN/COMMIT transaction ENVCHANGEs before its 3014; each 4035/3211 info
+  closes an internal DONE. A restored database keeps the source's object
+  ids.
 
 ## Reference Files
 

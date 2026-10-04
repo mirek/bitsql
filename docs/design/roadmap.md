@@ -155,6 +155,7 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [x] WAITFOR DELAY/TIME: the request parks with a host timer; its re-run passes completed waits (CurCmd 243, captured). ATTENTION cancels it. 2026-10-04: argument grammar and types (see TRY/CATCH item); a negative int delay is 50100 (SQL Server waits past the client timeout)
 - [x] Deterministic mode + replay (event log; scheduling is deterministic by construction)
 - [x] `emulator.snapshot` / `emulator.restore` (all databases, identity counters, @@DBTS, procs; O(1) via immutable Db values)
+- [x] BACKUP DATABASE / RESTORE DATABASE|HEADERONLY|FILELISTONLY|VERIFYONLY as an in-memory backup store keyed by device path (2026-10-04, corpus `backup/`, decisions.md): FORMAT/INIT/NOINIT sets, MOVE, REPLACE, FILE, STATS, captured messages and errors (3201, 3021, 3147, 3154, 3159, 3234, 1834/3156/3119, 3287, 4038, 3101, 3102), msdb backupset/backupmediaset/backupmediafamily/backupfile/restorehistory/restorefile. Missing: BACKUP LOG (FULL), DIFFERENTIAL, NORECOVERY chains, real .bak files
 - Gate: the MSSQL CI job is removed; nightly cross-check remains.
 
 ## Databases

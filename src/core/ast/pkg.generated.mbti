@@ -49,6 +49,19 @@ pub(all) enum AssignOp {
   XorAssign
 } derive(Eq, @debug.Debug)
 
+pub(all) struct BackupDevice {
+  kind : String
+  value : Expr
+} derive(Eq, @debug.Debug)
+
+pub(all) struct BackupOption {
+  name : String
+  value : Expr?
+  move_to : Expr?
+  args : Bool
+  span : Span
+} derive(Eq, @debug.Debug)
+
 pub(all) enum BinOp {
   Add
   Sub
@@ -665,8 +678,8 @@ pub(all) enum StmtKind {
   Label(Ident)
   WaitFor(String, Expr)
   Dbcc(String, Array[Expr], Array[String])
-  Backup(log~ : Bool, database~ : Expr, options~ : Array[String])
-  Restore(String)
+  Backup(log~ : Bool, database~ : Expr, devices~ : Array[BackupDevice], options~ : Array[BackupOption])
+  Restore(kind~ : String, database~ : Expr?, devices~ : Array[BackupDevice], options~ : Array[BackupOption])
   Throw(Array[Expr])
   RaisError(Array[Expr], options~ : Array[String])
   Print(Expr)

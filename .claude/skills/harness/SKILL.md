@@ -450,3 +450,13 @@ Start the host with `--database NAME` so the app's database exists at login
   take ~25-55 ms (integers ~12-28 ms; before ~350 ms); strings first
   differing at an accented character still take the element-array path
   (~120 ms at 20k).
+- 2026-10-04 (corpus `backup/`): `{db}` normalization only replaces the
+  case database name when no word character follows, so `<db>_log` (a
+  logical log file name, `…_log.ldf`) stays raw and differs per run; name
+  derived objects `DB_NAME() + N'-copy'` (normalizes to `{db}-copy`) and
+  mask values/messages that contain `<db>_log`. Server-wide state on the
+  shared oracle (msdb backup history, backup files under
+  /var/opt/mssql/data) accumulates across runs: derive paths and names from
+  DB_NAME() and filter history by them. A second session's
+  `EXEC('USE x; WAITFOR …')` as an `async` step is a usable way to have a
+  session inside another database.

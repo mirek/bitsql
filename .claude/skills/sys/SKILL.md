@@ -199,6 +199,15 @@ Source: `sql-docs/docs/relational-databases/system-catalog-views/`
   column over an identity column is is_identity 1 (sys.identity_columns
   lists it with NULL seed; not emulated). Object ids count per database
   from 1221579390 (bitsql: server-wide, not emulated).
+- 2026-10-04 (corpus `backup/clone-fixture`, `backup/media-sets`): msdb
+  backup history tables are real msdb tables (flags 8/9, identity 16 on
+  backup_set_id, media_set_id of backupmediaset, restore_history_id);
+  lsn columns numeric(25,0), sizes numeric(20,0), backupfile/restorefile
+  file_number numeric(10,0), physical_drive "C:\\" even on Linux. RESTORE
+  adds restorehistory/restorefile rows but no backupset row for a set this
+  server wrote. sys.database_files of a restored copy keeps the source's
+  logical names and the MOVEd physical paths. bitsql serves them from
+  `session/msdb_backup.mbt` (read-only).
 
 ## Inherited notes: @mssqlite/catalog implementation in mssqlite (not bitsql)
 

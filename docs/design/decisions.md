@@ -455,10 +455,8 @@ captured `tail/` cases, no regressions). Design points worth keeping:
   only the left input of CROSS/OUTER APPLY are pushed below the Apply
   (`push_filter`). Other predicate pushdown is not attempted (plan-dependent).
 - **BACKUP / RESTORE**: parsed so that file-independent errors are exact
-  (911 + 3013 for a missing database, 155 for unknown options); a BACKUP of
-  an existing database and every RESTORE are Emulator errors. Raising 3201
-  ("cannot open backup device") would claim a fact about the server's file
-  system that bitsql cannot know.
+  (911 + 3013 for a missing database, 155 for unknown options). Superseded
+  2026-10-04 by "BACKUP / RESTORE as an in-memory backup store" below.
 - **EXEC sp_prepare in T-SQL** compiles a single SELECT through the
   describe path (`describe_batch`) to send its metadata; other single
   statements are Emulator errors rather than "prepared" without a compile
@@ -582,3 +580,65 @@ server-wide object ids remain (`harness/orm/known.json`). Design points:
 - **No TDS 8 (`encrypt: strict`)**: the oracle image refuses it as well; a
   TLS ClientHello as the first bytes is malformed TDS and closes the
   connection.
+
+## 2026-10-04: BACKUP / RESTORE as an in-memory backup store
+
+Fixture cloning (`BACKUP DATABASE foo TO DISK=… WITH FORMAT, COMPRESSION`,
+`RESTORE HEADERONLY/FILELISTONLY`, `RESTORE DATABASE foo_copy … WITH
+REPLACE, MOVE …`, msdb history) was reported as unsupported. The reporter
+needs neither persistence nor Microsoft-format files. Corpus `backup/*`
+(clone-fixture, errors, media-sets) plus msduck gaps-backup.
+
+- **Backup files live in the server, keyed by the device path**
+  (`session/backup.mbt`, `Server.backups`), for the process lifetime. A
+  backup set holds the immutable `@store.Db` (O(1), like
+  `emulator.snapshot`) plus the state kept outside it: `DbOptions`
+  (recovery, collation, compatibility, files, family), identity counters,
+  sequence states and the procedures (server-wide by name; a restore
+  re-registers the backup's and drops the old target's that no other
+  database defines). The file system is never touched: a path is missing
+  (3201) exactly when no BACKUP in this process wrote it, and a BACKUP to a
+  directory that does not exist succeeds (SQL Server: 3201 state 1). Paths
+  compare case-insensitively with repeated slashes collapsed (captured).
+  `emulator.restore` does not roll back backup files or msdb history.
+- **A restored copy keeps the original's object ids** (captured: OBJECT_ID
+  equal in both). Identity counters were keyed by object id alone, which
+  ids unique per server made safe; they are now keyed by
+  `Session::ident_key` ("database:id" for database tables, the bare id for
+  temp tables and table variables). It assumes the table lives in the
+  current database (true until three-part DML).
+- **Database files and family.** `DbOptions.files` holds (logical,
+  physical) pairs once a RESTORE moved them (else `name` / `name_log` in
+  /var/opt/mssql/data); sys.database_files reads them. `DbOptions.family`
+  is a GUID assigned at the first BACKUP and carried by RESTORE; 3154 is a
+  family mismatch, 3159 an existing same-family database not in SIMPLE
+  recovery, both skipped by REPLACE. Over an existing database the files
+  stay where that database keeps them unless MOVEd; otherwise the backup's
+  paths are used and a path used by another database is 1834 + 3156 per
+  file, then 3119.
+- **Media sets as captured**: FORMAT starts a new media set; INIT keeps the
+  media set but replaces its sets; NOINIT (default) appends. Compression is
+  a media property fixed at FORMAT (appended sets inherit it); asking for
+  the other setting is an Emulator error (SQL Server's behaviour there was
+  not captured).
+- **Synthesized values.** Page counts are always a fresh empty database's
+  (360 data + 2 log pages, captured), so "Processed n pages" is exact only
+  for empty databases; durations are 0.001 s (MB/sec follows); BackupSize is
+  (pages + 9) × 8 KB as captured, compressed size equals it; LSNs come from
+  a server counter; GUIDs from the engine RNG; dates are the request time;
+  TimeZone 0. Corpus cases mask these columns and the 3014 text. STATS = n
+  prints exact multiples of n and 100 (SQL Server prints the percentages
+  it reached, e.g. 11, 20, 32 for STATS = 10; STATS = 50 matches).
+- **msdb history** (backupset, backupmediaset, backupmediafamily,
+  backupfile, restorehistory, restorefile) are read-only scope-2 virtual
+  tables (`session/msdb_backup.mbt`) with msdb's column types; RESTORE adds
+  no backupset row (captured: it references the existing one).
+- **3101 reads a session's own database**, not a USE inside dynamic SQL it
+  is running (captured: RESTORE succeeded while another session waited in
+  `EXEC('USE copy; WAITFOR …')`); `Session.outer_dbs` tracks it. 3102 does
+  use the current context, dynamic USE included (captured).
+- **Emulator errors** (50100): BACKUP LOG outside SIMPLE recovery (4208 is
+  exact), DIFFERENTIAL, ENCRYPTION, MEDIANAME, EXPIREDATE, BLOCKSIZE and
+  other unlisted options, several/URL/TAPE/logical devices, BACKUP or
+  RESTORE of master/model/msdb (tempdb is 3147), RESTORE LOG / LABELONLY /
+  REWINDONLY, NORECOVERY, STANDBY, STOPAT, PARTIAL.

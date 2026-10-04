@@ -85,17 +85,17 @@ fn Parser::backup_devices(
     let t = self.peek()
     if t.kind is Variable {
       self.pos += 1
-      out.push({ kind: "", value: mk(Var(t.text), t.span) })
+      out.push({ kind: "", value: mk(Var(t.text), t.span), })
     } else if t.kind is Word && self.is_punct_at(1, "=") {
       self.pos += 2
       let v = self.peek()
       if !(v.kind is (Str | NStr | Variable)) {
         raise self.error()
       }
-      out.push({ kind: upper(t), value: self.primary() })
+      out.push({ kind: upper(t), value: self.primary(), })
     } else {
       let id = self.ident()
-      out.push({ kind: "", value: mk(Column([id]), id.span) })
+      out.push({ kind: "", value: mk(Column([id]), id.span), })
     }
     if !self.eat_punct(",") {
       break
@@ -160,7 +160,7 @@ fn Parser::backup_options(
         }
       }
     }
-    out.push({ name, value, move_to, args, span: t.span })
+    out.push({ name, value, move_to, args, span: t.span, })
     if !self.eat_punct(",") {
       break
     }

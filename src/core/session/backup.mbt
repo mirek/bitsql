@@ -128,19 +128,14 @@ fn backup_path_key(path : String) -> String {
 fn default_db_files(name : String) -> Array[(String, String)] {
   let dir = "/var/opt/mssql/data/"
   match name.to_lower() {
-    "master" => [
-      ("master", dir + "master.mdf"),
-      ("mastlog", dir + "mastlog.ldf"),
-    ]
-    "tempdb" => [("tempdev", dir + "tempdb.mdf"), ("templog", dir + "templog.ldf")]
-    "model" => [
-      ("modeldev", dir + "model.mdf"),
-      ("modellog", dir + "modellog.ldf"),
-    ]
-    "msdb" => [
-      ("MSDBData", dir + "MSDBData.mdf"),
-      ("MSDBLog", dir + "MSDBLog.ldf"),
-    ]
+    "master" =>
+      [("master", dir + "master.mdf"), ("mastlog", dir + "mastlog.ldf")]
+    "tempdb" =>
+      [("tempdev", dir + "tempdb.mdf"), ("templog", dir + "templog.ldf")]
+    "model" =>
+      [("modeldev", dir + "model.mdf"), ("modellog", dir + "modellog.ldf")]
+    "msdb" =>
+      [("MSDBData", dir + "MSDBData.mdf"), ("MSDBLog", dir + "MSDBLog.ldf")]
     _ => [(name, dir + name + ".mdf"), (name + "_log", dir + name + "_log.ldf")]
   }
 }
@@ -229,7 +224,11 @@ fn Session::backup_string(
 
 ///|
 /// An integer option value (FILE = n, STATS = n).
-fn Session::backup_int(self : Session, e : @ast.Expr, what : String) -> Int raise {
+fn Session::backup_int(
+  self : Session,
+  e : @ast.Expr,
+  what : String,
+) -> Int raise {
   match self.eval(e) {
     (TinyInt(n) | SmallInt(n) | Int(n), _) => n
     (BigInt(n), _) if n >= 0L && n <= 2147483647L => n.to_int()
@@ -245,7 +244,7 @@ fn Session::backup_device(
   devices : Array[@ast.BackupDevice],
 ) -> String raise {
   match devices {
-    [{ kind: "DISK", value }] => self.backup_string(value, "a backup device")
+    [{ kind: "DISK", value, }] => self.backup_string(value, "a backup device")
     [{ kind: "DISK", .. }, ..] =>
       raise @types.not_supported("BACKUP/RESTORE with several devices")
     [] => raise @types.not_supported("RESTORE without FROM")
@@ -333,9 +332,9 @@ fn Session::backup_report(
 /// ENCRYPTION, MEDIANAME, EXPIREDATE, BLOCKSIZE, …) change what is stored
 /// or checked and are Emulator errors.
 let backup_supported_options : Array[String] = [
-  "FORMAT", "NOFORMAT", "INIT", "NOINIT", "NAME", "DESCRIPTION", "COMPRESSION",
-  "NO_COMPRESSION", "COPY_ONLY", "CHECKSUM", "NO_CHECKSUM", "STATS", "SKIP", "NOSKIP",
-  "REWIND", "NOREWIND", "UNLOAD", "NOUNLOAD", "BUFFERCOUNT", "MAXTRANSFERSIZE", "STOP_ON_ERROR",
+  "FORMAT", "NOFORMAT", "INIT", "NOINIT", "NAME", "DESCRIPTION", "COMPRESSION", "NO_COMPRESSION",
+  "COPY_ONLY", "CHECKSUM", "NO_CHECKSUM", "STATS", "SKIP", "NOSKIP", "REWIND", "NOREWIND",
+  "UNLOAD", "NOUNLOAD", "BUFFERCOUNT", "MAXTRANSFERSIZE", "STOP_ON_ERROR",
 ]
 
 ///|
@@ -385,8 +384,7 @@ fn Session::exec_backup(
     if opts.recovery == "SIMPLE" {
       raise self.backup_abort(what, [
         @types.sql_error(
-          4208,
-          "The statement BACKUP LOG is not allowed while the recovery model is SIMPLE. Use BACKUP DATABASE or change the recovery model using ALTER DATABASE.",
+          4208, "The statement BACKUP LOG is not allowed while the recovery model is SIMPLE. Use BACKUP DATABASE or change the recovery model using ALTER DATABASE.",
         ),
       ])
     }
@@ -415,9 +413,9 @@ fn Session::exec_backup(
       "NAME" =>
         set_name = o.value.map(v => self.backup_string(v, "a backup set name"))
       "DESCRIPTION" =>
-        description = o.value.map(v => self.backup_string(
-          v, "a backup description",
-        ))
+        description = o.value.map(v => {
+          self.backup_string(v, "a backup description")
+        })
       "COMPRESSION" => compression = Some(true)
       "NO_COMPRESSION" => compression = Some(false)
       "CHECKSUM" => checksum = true
@@ -438,7 +436,7 @@ fn Session::exec_backup(
     Some(f) => f
     None => {
       let f = self.random_guid()
-      self.server.db_options[key] = { ..opts, family: Some(f) }
+      self.server.db_options[key] = { ..opts, family: Some(f), }
       f
     }
   }
@@ -482,7 +480,7 @@ fn Session::exec_backup(
   for k, v in self.server.seqs {
     if k.has_prefix(prefix) {
       match key_id(k, prefix) {
-        Some(id) => seqs.push((id, { ..v }))
+        Some(id) => seqs.push((id, { ..v, }))
         None => ()
       }
     }
@@ -772,9 +770,11 @@ fn Session::restore_database(
   // them (by file id), else at the backup's paths (captured: RESTORE …
   // WITH REPLACE without MOVE over a restored copy kept the copy's files)
   let current = if exists { self.server.db_files(target) } else { [] }
-  let files = set.files.mapi((k, f) => match current.get(k) {
-    Some(c) => (f.0, c.1)
-    None => f
+  let files = set.files.mapi((k, f) => {
+    match current.get(k) {
+      Some(c) => (f.0, c.1)
+      None => f
+    }
   })
   for mv in moves {
     match files.search_by(f => f.0.to_lower() == mv.0.to_lower()) {
@@ -833,11 +833,13 @@ fn Session::restore_database(
         let pname = m.name.to_lower()
         let elsewhere = self.server.dbs
           .iter()
-          .any(e => e.0 != key &&
+          .any(e => {
+            e.0 != key &&
             e.1
             .modules()
             .iter()
-            .any(x => x.kind is Procedure && x.name.to_lower() == pname))
+            .any(x => x.kind is Procedure && x.name.to_lower() == pname)
+          })
         if !elsewhere {
           self.server.procs.remove(pname)
         }
@@ -877,7 +879,7 @@ fn Session::restore_database(
     self.server.seqs.remove(k)
   }
   for x in set.seqs {
-    self.server.seqs[prefix + x.0.to_string()] = { ..x.1 }
+    self.server.seqs[prefix + x.0.to_string()] = { ..x.1, }
   }
   let store = self.server.backups
   store.restores.push({
@@ -927,7 +929,9 @@ fn backup_size(set : BackupSet) -> Int64 {
 /// Flags of a backup set: 512, +16 with CHECKSUM, +1024 COPY_ONLY
 /// (captured: 512, 528, 1536, 1552).
 fn backup_flags(set : BackupSet) -> Int {
-  512 + (if set.checksum { 16 } else { 0 }) + (if set.copy_only { 1024 } else { 0 })
+  512 +
+  (if set.checksum { 16 } else { 0 }) +
+  (if set.copy_only { 1024 } else { 0 })
 }
 
 ///|
