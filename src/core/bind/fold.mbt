@@ -109,6 +109,10 @@ fn fold_arith(e : @ir.Expr) -> @ir.Expr {
   }
   match try_fold(e) {
     Some(_) if e.ty.family() == FString => e
+    // a NULL int result stays an expression: a `Lit(Null)` int reads as
+    // the untyped NULL constant (captured: NULL * 2 is int, 206 into
+    // datetimeoffset; query/derived-untyped-null)
+    Some(Null) if e.ty is Int => { ..e, nullable: true, }
     Some(v) => { kind: Lit(v), ty: e.ty, nullable: e.nullable || v is Null, }
     None => { ..e, nullable: true, }
   }

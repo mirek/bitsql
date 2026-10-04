@@ -176,6 +176,22 @@ fn bind_agg_call(
     agg_arity(name, call.args, 1)
     (Some(bind_expr(env, call.args[0])), None)
   }
+  // captured: MIN/MAX/COUNT/SUM over the NULL constant, also a derived
+  // table's NULL column, is 8117; STRING_AGG 8116 (query/derived-untyped-null)
+  if arg is Some(a) && is_untyped_null(a) && !call.distinct {
+    match f {
+      StringAgg =>
+        raise err(
+          8116, "Argument data type NULL is invalid for argument 1 of string_agg function.",
+        )
+      Count | CountBig | Sum | Avg | Min | Max =>
+        raise err(
+          8117,
+          "Operand data type NULL is invalid for \{name.to_lower()} operator.",
+        )
+      _ => ()
+    }
+  }
   // captured: MIN/MAX/COUNT/… of text, ntext or image is 8117 (COUNT
   // DISTINCT state 2); STRING_AGG is 8116
   // captured (json4/type-compare): COUNT(DISTINCT json) is 8117 state 2
