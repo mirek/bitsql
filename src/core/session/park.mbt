@@ -4,6 +4,7 @@
 priv struct RequestSnapshot {
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
+  db_ids : Map[String, Int]
   temp : @store.Db
   tvars : @store.Db
   tx : Tx?
@@ -38,20 +39,10 @@ fn Session::snapshot_request(self : Session) -> RequestSnapshot {
   {
     dbs: copy_map(self.server.dbs),
     db_names: copy_map(self.server.db_names),
+    db_ids: copy_map(self.server.db_ids),
     temp: self.temp,
     tvars: self.tvars,
-    tx: match self.tx {
-      Some(tx) =>
-        Some({
-          database: tx.database,
-          base: tx.base,
-          view: tx.view,
-          temp_at_begin: tx.temp_at_begin,
-          savepoints: tx.savepoints.copy(),
-          name: tx.name,
-        })
-      None => None
-    },
+    tx: self.tx.map(tx => tx.copy()),
     trancount: self.rt.trancount,
     xact_state: self.rt.xact_state,
     error: self.rt.error,
@@ -79,6 +70,10 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
   self.server.db_names.clear()
   for k, v in s.db_names {
     self.server.db_names[k] = v
+  }
+  self.server.db_ids.clear()
+  for k, v in s.db_ids {
+    self.server.db_ids[k] = v
   }
   self.temp = s.temp
   self.tvars = s.tvars

@@ -1373,11 +1373,14 @@ fn Session::exec_drop(
     DropTable => {
       self.cur_cmd = 199
       for n in names {
+        self.check_other_db_module(n)
         self.not_a_synonym(n, "TABLE")
         match self.find_table(n) {
           Some((scope, t)) => {
-            if scope == 0 {
-              self.check_drop_references("TABLE", n, t.schema, t.name, false)
+            if scope == 0 || scope >= OTHER_DB_SCOPE {
+              self.in_scope_database(scope, () => {
+                self.check_drop_references("TABLE", n, t.schema, t.name, false)
+              })
             }
             // referenced by a foreign key from another table?
             let db = self.db_of(scope)

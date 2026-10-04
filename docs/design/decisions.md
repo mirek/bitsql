@@ -582,3 +582,51 @@ server-wide object ids remain (`harness/orm/known.json`). Design points:
 - **No TDS 8 (`encrypt: strict`)**: the oracle image refuses it as well; a
   TLS ClientHello as the first bytes is malformed TDS and closes the
   connection.
+
+## 2026-10-04: server-wide database discovery, cross-database names
+
+- **Databases have ids on the server** (`Server.db_ids`: master 1 … msdb 4,
+  then the lowest free id from 5; unverified, the shared oracle's ids are
+  not reproducible, so cases only compare facts about ids).
+  sys.databases, DB_ID, DB_NAME and the server-level views (databases,
+  server_principals, syslanguages, time_zone_info, dm_*) list every
+  database, whatever the session database or the `db.sys.` prefix is.
+  Before, only the four system databases and the *session's* database were
+  listed, so a fixture's `IF DB_ID(N'foo') IS NOT NULL DROP DATABASE foo`
+  silently skipped the drop (compatibility report; corpus
+  `database/cross-database`). `--database` and `--auto-create-databases`
+  go through `Server::create_database` and get ids too.
+- **Three-part names reach other databases' tables** through a table scope
+  `OTHER_DB_SCOPE (100) + database_id` (session/storage.mbt): `db_of` /
+  `write` map it to that database, so reads, INSERT/UPDATE/DELETE/MERGE,
+  TRUNCATE, FK checks and key locks (object ids are server-wide) work
+  unchanged. `find_table` used to drop the database part, which resolved
+  `foo.dbo.t` in the session database: every name with a database part now
+  resolves there or nowhere (208 for a missing database, as captured).
+- **A transaction spans databases** (`Tx.parts`: one base/view per database,
+  joined at first use; savepoints and statement rollback snapshot every
+  part; COMMIT rebases every part before writing any). This also fixes
+  `USE other` inside a transaction, which used to write past the
+  transaction. Autocommit statement rollback restores every database the
+  statement changed (a copy of the database map per statement).
+- **DDL runs in the named database by switching the session database for
+  the statement** (`in_scope_database`, no ENVCHANGE): CREATE TABLE (2702
+  for a missing database), ALTER TABLE, CREATE INDEX, DROP TABLE's
+  dependency check; SELECT INTO writes the other scope directly. Another
+  database's catalog views (`db.sys.x`, `db.INFORMATION_SCHEMA.x`) and
+  OBJECT_NAME(id, db_id) are computed the same way (binding id
+  `view + (database_id + 1) * 2^20`), so DB_NAME(), TABLE_CATALOG and the
+  database collation follow. OBJECT_ID, IDENT_*, COL_LENGTH accept
+  `db.schema.t` (`name_target(other_db=true)`; other name_target callers,
+  sp_help and friends, keep refusing other databases).
+- **Not emulated (50100)**, because their bodies or semantics bind names in
+  their own database: views, functions, procedures-as-objects, synonyms and
+  sequences of another database (`check_other_db_module`), DML on another
+  database's table that has triggers or whose defaults / computed columns /
+  CHECKs call functions or sequences, and other DDL on another database's
+  objects (DROP INDEX, CREATE/DROP of modules, synonyms, sequences, types,
+  SET IDENTITY_INSERT, INSERT BULK, ALTER SCHEMA TRANSFER). CREATE VIEW /
+  PROCEDURE with any database prefix is SQL Server's 166 (batch compile
+  error, reported on line 13). Procedures are still stored server-wide by
+  name (pre-existing), so `EXEC foo.dbo.p` finds `p` whatever database
+  created it.

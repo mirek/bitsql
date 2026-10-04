@@ -72,12 +72,20 @@ fn Session::sys_view_binding(
     return None
   }
   let mut tempdb = false
+  // `db.sys.x` of another database: its id (server-level views are the
+  // same from every database)
+  let mut other : (Int, String)? = None
   if n >= 3 {
     let db = name.parts[n - 3].name.to_lower()
     if db == "tempdb" && self.rt.database.to_lower() != "tempdb" {
       tempdb = true
     } else if db != "" && db != self.rt.database.to_lower() {
-      raise @types.not_supported("catalog views of another database")
+      match self.server.database_id(db) {
+        Some(id) => other = Some((id, self.server.database_name(db)))
+        // a database that does not exist: 208 (captured: corpus
+        // database/cross-database)
+        None => return None
+      }
     }
   }
   // the files of tempdb, model and msdb are not modelled (tempdb has one
@@ -92,9 +100,21 @@ fn Session::sys_view_binding(
       // a database's catalog views report its default collation (captured:
       // settings/alter-database); server-level views keep master's
       let server_level = v.name
-        is ("databases" | "time_zone_info" | "syslanguages") ||
+        is ("databases"
+        | "time_zone_info"
+        | "syslanguages"
+        | "server_principals") ||
         v.name.has_prefix("dm_")
-      let db_coll = self.db_collation()
+      let other = if server_level { None } else { other }
+      if other is Some((_, db)) &&
+        base.to_lower() == "database_files" &&
+        db.to_lower() is ("model" | "msdb") {
+        raise @types.not_supported("sys.database_files of a system database")
+      }
+      let db_coll = match other {
+        Some((_, db)) => self.server.db_options(db).collation
+        None => self.db_collation()
+      }
       let col_type = (t : @types.SqlType) => {
         if server_level || db_coll == coll_default {
           t
@@ -107,10 +127,10 @@ fn Session::sys_view_binding(
       }
       Some({
         scope: 2,
-        id: if tempdb {
-          i + TEMPDB_VIEW_OFFSET
-        } else {
-          i
+        id: match other {
+          Some((db_id, _)) => i + (db_id + 1) * TEMPDB_VIEW_OFFSET
+          None if tempdb => i + TEMPDB_VIEW_OFFSET
+          None => i
         },
         schema: v.schema,
         name: v.name,
@@ -469,12 +489,23 @@ fn Session::sys_view_rows(
   self : Session,
   id : Int,
 ) -> Array[(Int64, Array[@types.Value])] {
-  let tempdb = id >= TEMPDB_VIEW_OFFSET
-  let id = if tempdb { id - TEMPDB_VIEW_OFFSET } else { id }
+  let k = id / TEMPDB_VIEW_OFFSET
+  let tempdb = k == 1
+  let id = id % TEMPDB_VIEW_OFFSET
   let v = view_defs[id]
   let saved = self.view_tempdb
   self.view_tempdb = tempdb
+  // another database's view: computed as from that database (DB_NAME(),
+  // TABLE_CATALOG, its collation and objects)
+  let saved_database = self.rt.database
+  if k >= 2 {
+    match self.server.database_key(k - 1) {
+      Some(key) => self.rt.database = self.server.database_name(key)
+      None => ()
+    }
+  }
   let rows = self.view_rows(v.schema.to_lower() + "." + v.name.to_lower())
+  self.rt.database = saved_database
   self.view_tempdb = saved
   if tempdb {
     for r in rows {
@@ -668,32 +699,23 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         )
       }
     "sys.databases" => {
-      let cur = self.rt.database.to_lower()
-      let mut seen = false
-      for j, r in seed_databases {
+      // server-wide: every database, in database_id order; user databases
+      // take the settings of a fresh database (the last seed row)
+      let template = seed_databases.length() - 1
+      for d in self.databases() {
+        let (n, id) = d
+        let r = seed_databases[if id <= 4 { id - 1 } else { template }]
         let m : Map[String, @types.Value] = Map([])
         for k, c in seed_database_columns {
           m[c] = r[k]
         }
-        if j < 4 {
-          if m.get("name") == Some(String(cur)) {
-            seen = true
-          }
-          match m.get("name") {
-            Some(String(n)) => self.server.db_options(n).apply_row(n, m)
-            _ => ()
-          }
-          out.push(m)
-        } else if !seen {
-          // the user database: a fresh database's settings
-          m["name"] = String(self.rt.database)
-          m["physical_database_name"] = String(self.rt.database)
-          m["database_id"] = Int(5)
-          self.server
-          .db_options(self.rt.database)
-          .apply_row(self.rt.database, m)
-          out.push(m)
+        if id > 4 {
+          m["name"] = String(n)
+          m["physical_database_name"] = String(n)
+          m["database_id"] = Int(id)
         }
+        self.server.db_options(n).apply_row(n, m)
+        out.push(m)
       }
     }
     "sys.indexes" =>

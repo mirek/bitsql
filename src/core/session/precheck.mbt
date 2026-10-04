@@ -130,6 +130,24 @@ fn precheck_batch(
   fn stmt(s : @ast.Stmt) -> Unit {
     let line = s.span.line
     match s.kind {
+      // captured (corpus database/cross-database-ddl): a database prefix on
+      // CREATE VIEW / PROCEDURE, any database, is 166 for the whole batch,
+      // reported on line 13 wherever the statement is
+      CreateView({ name, .. }) | CreateProcedure({ name, .. }) if failure
+        is None &&
+        has_database_part(name) => {
+        let what = if s.kind is CreateView(_) { "VIEW" } else { "PROCEDURE" }
+        failure = Some(
+          (
+            @types.sql_error(
+              166,
+              "'CREATE/ALTER \{what}' does not allow specifying the database name as a prefix to the object name.",
+              severity=15,
+            ),
+            13,
+          ),
+        )
+      }
       Declare(vars) =>
         for v in vars {
           if v.init is Some(i) {
@@ -815,4 +833,11 @@ fn target_hint_error(
     }
   }
   None
+}
+
+///|
+/// True when an object name has a (non-empty) database part.
+fn has_database_part(name : @ast.ObjectName) -> Bool {
+  let n = name.parts.length()
+  n >= 3 && name.parts[n - 3].name != ""
 }

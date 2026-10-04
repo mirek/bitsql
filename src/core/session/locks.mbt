@@ -165,7 +165,7 @@ fn Session::lock_rows(
   target : Target,
   rows : Array[(Int64, Array[@types.Value])],
 ) -> Unit raise {
-  if target.scope != 0 {
+  if !is_db_scope(target.scope) {
     return
   }
   self.check_snapshot_allowed()
@@ -305,11 +305,11 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
         fn visit(r : @ast.TableRef) -> Unit raise {
           match r.kind {
             Table(name, alias_~, hints~) => {
-              if self.find_table(name) is Some((0, _)) {
+              if self.find_table(name) is Some((sc, _)) && is_db_scope(sc) {
                 self.check_snapshot_allowed()
               }
               match (self.read_lock(hints), self.find_table(name)) {
-                (Some((mode, duration)), Some((0, t))) => {
+                (Some((mode, duration)), Some((sc, t))) if is_db_scope(sc) => {
                   let a = match alias_ {
                     Some(x) => x.name.to_lower()
                     None => t.name.to_lower()

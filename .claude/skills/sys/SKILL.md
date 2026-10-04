@@ -178,6 +178,16 @@ mention the correction here.
   sp_help prints Type json, Length -1, blank Prec/Scale; **sp_columns omits
   json columns**; a json column counts as LOB for lob_data_space_id.
 
+- 2026-10-04 (corpus `database/cross-database*`): sys.databases, DB_ID,
+  DB_NAME and server-level views are server-wide (`Server.db_ids`); a new
+  database reads recovery_model FULL, compatibility 170.
+  `db.sys.x` / `db.INFORMATION_SCHEMA.x` of another database are computed
+  with the session database switched (binding id `view + (db_id + 1) *
+  2^20`; TABLE_CATALOG is that database); a missing database is 208
+  `Invalid object name 'db.sys.x'`. OBJECT_ID / IDENT_CURRENT / COL_LENGTH
+  take `db.schema.t`; OBJECT_NAME(id, db_id) looks in that database. CREATE
+  VIEW/PROCEDURE with any database prefix: 166 (class 15, line 13).
+
 # MSSQL System Catalog Views - Implementation Specification
 
 This skill provides the complete technical specification needed to implement system catalog view emulation in the mssqlite TDS server. For each view: exact column definitions, data types, relationships to other views, seed data, and the SQLite backing-table DDL.
