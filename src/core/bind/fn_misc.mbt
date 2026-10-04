@@ -98,6 +98,25 @@ fn bind_misc_fn(
       }
       named(name, conv, rt, nullable~)
     }
+    // Undocumented ODBC helper that Prisma's schema introspection calls
+    // (captured, corpus orm/odbcscale): both arguments convert to tinyint
+    // (245 on text; integers out of range are 220 state 2, checked at run
+    // time), the result is a nullable int.
+    "ODBCSCALE" => {
+      arity_n(name, args, 2)
+      let x = bs()
+      named(
+        "ODBCSCALE",
+        x.map(v => {
+          if v.ty is (Int | SmallInt | BigInt) {
+            v
+          } else {
+            coerce(v, TinyInt)
+          }
+        }),
+        Int,
+      )
+    }
     "ISNUMERIC" => {
       arity_n(name, args, 1)
       let x = bs()[0]

@@ -16,6 +16,33 @@ fn tm_isolation(level : Int) -> String? {
 /// ENVCHANGE when @@TRANCOUNT crosses 0, then DONE with CurCmd 253 and no
 /// count; failures are ERROR + DONE(error). The isolation level of BEGIN
 /// stays the session's level after the transaction.
+/// A request rejected while decoding (4002, 8016): ERROR, a rollback of
+/// the open transaction, then DONE(ERROR) with curCmd 253 (captured,
+/// corpus orm/rpc-stream-errors).
+pub fn Session::stream_error(
+  self : Session,
+  number : Int,
+  state : Int,
+  message : String,
+  now : Int64,
+) -> Array[@reply.Item] {
+  self.rt.now = now
+  self.out.clear()
+  self.message(@types.sql_error(number, message, state~), 1, procedure=Some(""))
+  if self.rt.trancount > 0 {
+    let d = self.tx_descriptor()
+    self.rt.trancount = 0
+    self.rt.xact_state = 0
+    self.rollback_tx()
+    self.out.push(EnvChange(RollbackTransaction(d)))
+  }
+  self.out.push(StatementDone(cmd=253, count=None, error=true))
+  let items = self.out.copy()
+  self.out.clear()
+  items
+}
+
+///|
 pub fn Session::run_tm(
   self : Session,
   req : @tds.TmRequest,

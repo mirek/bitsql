@@ -120,7 +120,7 @@ fn Session::sys_view_binding(
           ty: col_type(c.ty),
           nullable: c.nullable,
           origin: if c.computed {
-            Computed
+            ViewComputed
           } else {
             BaseColumn(identity=false)
           },
@@ -1113,6 +1113,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     | "sys.dm_exec_requests"
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))
     "sys.dm_exec_cursors" => out.append(self.cursor_view_rows())
+    "sys.extended_properties" => out.append(self.xprop_view_rows())
     _ => {
       out.append(self.variant_view_rows(key))
       out.append(self.param_view_rows(key))

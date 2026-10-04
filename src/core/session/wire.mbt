@@ -126,7 +126,7 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
         0x08
       }
     InsertableIdentity => 0x18
-    Computed | TableComputed => 0x20
+    Computed | TableComputed | ViewComputed => 0x20
     SetOperation | Aggregate | XmlNodes => 0
   }
   let case_sensitive = match c.ty.collation() {

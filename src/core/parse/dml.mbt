@@ -76,7 +76,7 @@ fn Parser::insert_stmt(
   ignore(self.eat_kw("INTO"))
   let target = self.dml_target()
   let columns = if self.is_punct("(") && !self.at_query_start_at(1) {
-    self.paren_idents()
+    self.paren_insert_columns()
   } else {
     []
   }

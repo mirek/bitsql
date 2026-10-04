@@ -1103,6 +1103,18 @@ let view_defs : Array[ViewDef] = [
   },
   {
     schema: "sys",
+    name: "extended_properties",
+    columns: [
+      vc("class", TinyInt, false, false),
+      vc("class_desc", NVarChar(Some(60), coll_ks_ws), true, false),
+      vc("major_id", Int, false, false),
+      vc("minor_id", Int, false, false),
+      vc("name", NVarChar(Some(128), coll_default), false, false),
+      vc("value", Variant, true, false),
+    ],
+  },
+  {
+    schema: "sys",
     name: "synonyms",
     columns: [
       vc("name", NVarChar(Some(128), coll_default), false, false),

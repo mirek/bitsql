@@ -19,7 +19,10 @@ export function resolveType(text) {
   const args = match[2] === undefined ? [] : match[2].split(',').map(s => s.trim().toLowerCase())
   if (simple[base]) return { type: simple[base], options: {} }
   if (sized[base]) {
-    const length = args[0] === undefined ? undefined : args[0] === 'max' ? Infinity : Number(args[0])
+    // `varbinary('max')` passes tedious the string 'max' as the length, as
+    // knex does for every Buffer binding: tedious 20.3.3 then writes a PLP
+    // value without its terminator (a malformed RPC; SQL Server answers 4002).
+    const length = args[0] === undefined ? undefined : args[0] === 'max' ? Infinity : args[0] === "'max'" ? 'max' : Number(args[0])
     return { type: sized[base], options: length === undefined ? {} : { length } }
   }
   if (scaled[base]) return { type: scaled[base], options: args[0] === undefined ? {} : { scale: Number(args[0]) } }

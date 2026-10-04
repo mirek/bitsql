@@ -1,0 +1,65 @@
+// Prisma 7 schema for the ORM compatibility suite. The datasource URL comes
+// from prisma.config.mjs (DATABASE_URL); the client uses @prisma/adapter-mssql
+// (no query engine binary), the CLI's schema engine talks TDS itself (tiberius).
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique @db.NVarChar(120)
+  name      String    @db.NVarChar(100)
+  age       Int?
+  karma     BigInt    @default(0)
+  balance   Decimal   @default(0) @db.Decimal(10, 2)
+  score     Float?
+  active    Boolean   @default(true)
+  born      DateTime? @db.Date
+  seenAt    DateTime? @db.DateTime2
+  bio       String?   @db.NVarChar(Max)
+  avatar    Bytes?
+  token     String?   @db.UniqueIdentifier
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     Post[]
+  profile   Profile?
+
+  @@index([name, age])
+  @@map("users")
+}
+
+model Profile {
+  id      Int     @id @default(autoincrement())
+  website String? @db.NVarChar(200)
+  userId  Int     @unique
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String    @db.NVarChar(200)
+  body      String?   @db.NVarChar(Max)
+  views     Int       @default(0)
+  published Boolean   @default(false)
+  authorId  Int
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags      Tag[]     @relation("PostTags")
+
+  @@index([authorId])
+  @@map("posts")
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.NVarChar(50)
+  posts Post[] @relation("PostTags")
+
+  @@map("tags")
+}

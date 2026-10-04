@@ -164,7 +164,11 @@ fn requalify(cols : Array[ColumnRef], q : String) -> Array[ColumnRef] {
 /// flags 1, a literal 0).
 fn derived_origin(o : @ir.Origin) -> @ir.Origin {
   match o {
-    Computed | TableComputed => SetOperation
+    Computed => SetOperation
+    // a table's computed column keeps fComputed (33), a view's reads as a
+    // base column (9) (captured: corpus orm/view-computed-derived)
+    TableComputed => TableComputed
+    ViewComputed => BaseColumn(identity=false)
     other => other
   }
 }
@@ -177,7 +181,7 @@ fn derived_origin(o : @ir.Origin) -> @ir.Origin {
 /// aggregate-warning-boundaries, apply-full-join, tail/views-column-flags).
 fn module_column_origin(o : @ir.Origin) -> @ir.Origin {
   match o {
-    Computed | TableComputed => Computed
+    Computed | TableComputed | ViewComputed => ViewComputed
     SetOperation | Aggregate => BaseColumn(identity=false)
     other => other
   }
@@ -694,13 +698,17 @@ fn bind_table_function(
   }
   let in_sys = name.parts.length() == 1 ||
     (name.parts.length() == 2 && name.parts[0].name.to_lower() == "sys")
-  if in_sys && fname == "DM_EXEC_DESCRIBE_FIRST_RESULT_SET" {
+  if in_sys &&
+    (
+      fname == "DM_EXEC_DESCRIBE_FIRST_RESULT_SET" ||
+      fname == "FN_LISTEXTENDEDPROPERTY"
+    ) {
     let vals = args.map(a => {
       match try_fold(bind_expr(penv, a)) {
         Some(v) => v
         None =>
           raise @types.not_supported(
-            "sys.dm_exec_describe_first_result_set with non-constant arguments",
+            "sys.\{fname.to_lower()} with non-constant arguments",
           )
       }
     })
@@ -1721,7 +1729,8 @@ fn bind_select_query(
       match (i < exprs.length() && exprs[i].kind is Col(_), c.origin) {
         (true, TableComputed) => c
         // a view's computed column reads as a base column (33 -> 9)
-        (true, Computed) => { ..c, origin: BaseColumn(identity=false), }
+        (true, Computed | ViewComputed) =>
+          { ..c, origin: BaseColumn(identity=false), }
         _ => { ..c, origin: derived_origin(c.origin), }
       }
     })

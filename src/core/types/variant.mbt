@@ -67,6 +67,14 @@ pub fn assign(
     return Null
   }
   check_assign(from, to)
+  // an untyped NULL (typed int by the binder) assigned to a type int does
+  // not convert to explicitly (date, time, datetime2, datetimeoffset,
+  // uniqueidentifier) is NULL, not 529: `UPDATE t SET d = NULL`, TypeORM's
+  // restore() (captured: corpus orm/null-assignment). Typed sources are
+  // checked at compile time.
+  if v is Null {
+    return Null
+  }
   cast(v, from, to, dates~)
 }
 
@@ -92,6 +100,24 @@ pub fn check_assign(from : SqlType, to : SqlType) -> Unit raise SqlError {
         raise type_clash_error(from, to)
       }
     _ => ()
+  }
+}
+
+///|
+/// Compile-time type check of storing a typed (non-NULL-literal) value:
+/// `check_assign`, then a source that does not convert implicitly is 257
+/// when CAST could convert it and 206 when not (captured: `UPDATE t SET
+/// d = 1` on datetime2 is 206 state 2 before any row; corpus
+/// orm/null-assignment).
+pub fn check_store(from : SqlType, to : SqlType) -> Unit raise SqlError {
+  check_assign(from, to)
+  if from is Variant || to is Variant || can_convert_implicitly(from, to) {
+    return
+  }
+  raise if can_convert_explicitly(from, to) {
+    implicit_conversion_error(from, to)
+  } else {
+    type_clash_error(from, to)
   }
 }
 

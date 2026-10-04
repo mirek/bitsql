@@ -260,7 +260,20 @@ fn Engine::on_message(
         self.send(conn, done_only(), out)
         return
       }
-      let req = @tds.decode_rpc(msg.payload)
+      let req = @tds.decode_rpc(msg.payload) catch {
+        @tds.RpcStream(number, state, message) => {
+          let items = self.sessions[conn.id].stream_error(
+            number, state, message, now,
+          )
+          self.send(
+            conn,
+            @reply.render(Batch, items, self.config.server_name),
+            out,
+          )
+          return
+        }
+        e => raise e
+      }
       self.run_rpc(conn, req.calls, b"", now, out)
     }
     (LoggedIn, BulkLoad) => {

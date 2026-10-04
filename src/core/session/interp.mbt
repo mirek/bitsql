@@ -458,7 +458,7 @@ fn Session::assign(
   // (an untyped NULL literal is assignable to anything, xml included)
   let failed = try {
     if !(value_expr.kind is Lit(Null) && value_expr.ty is Int) {
-      @types.check_assign(value_expr.ty, info.ty)
+      @types.check_store(value_expr.ty, info.ty)
     }
   } catch {
     e => Some(e)

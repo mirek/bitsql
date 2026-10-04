@@ -261,6 +261,46 @@ fn call_misc(
       }
       best
     }
+    // captured: the scale argument for date/time, integer, money and exact
+    // numeric type ids; NULL for every other type id (corpus orm/odbcscale)
+    "ODBCSCALE" => {
+      let tiny = (x : @types.Value) => {
+        let n = match x {
+          TinyInt(n) | SmallInt(n) | Int(n) => n.to_int64()
+          BigInt(n) => n
+          _ => return None
+        }
+        if n < 0L || n > 255L {
+          raise @types.sql_error(
+            220,
+            "Arithmetic overflow error for data type tinyint, value = \{n}.",
+            state=2,
+          )
+        }
+        Some(n.to_int())
+      }
+      match (tiny(v[0]), tiny(v[1])) {
+        (Some(t), Some(s)) =>
+          match t {
+            40
+            | 41
+            | 42
+            | 43
+            | 48
+            | 52
+            | 56
+            | 58
+            | 60
+            | 61
+            | 106
+            | 108
+            | 122
+            | 127 => Int(s)
+            _ => Null
+          }
+        _ => Null
+      }
+    }
     "ISNUMERIC" =>
       match v[0] {
         Null => Int(0)

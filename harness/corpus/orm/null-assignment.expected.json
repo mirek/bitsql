@@ -1,0 +1,187 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "e4492da3b33920be",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"d","type":"DateTime2","length":null,"precision":null,"scale":7,"flags":9,"collation":null}
+          ],
+          "rows": [[3,null]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"d","type":"DateTime2","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"dt","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"dd","type":"Date","length":null,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"t","type":"Time","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"o","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"g","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "x",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"v","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [
+            [1,null,null,null,null,null,null,null,null],
+            [2,null,null,null,null,null,null,null,null],
+            [3,null,null,null,null,null,null,null,null]
+          ]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":3,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"COLMETADATA","columns":9},
+        {"name":"ORDER","columns":[1]},
+        {"name":"NBCROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 9
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"x","type":"DateTime2","length":null,"precision":null,"scale":7,"flags":33,"collation":null},
+            {"name":"g","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"o","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":33,"collation":null}
+          ],
+          "rows": [[null,null,null]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":206,"state":2,"class":16,"lineNumber":2,"message":"Operand type clash: int is incompatible with datetime2"}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":206},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":206,"state":2,"class":16,"lineNumber":1,"message":"Operand type clash: int is incompatible with datetime2"}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":206},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"doneInProc","rowCount":1,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [{"name":"DONEINPROC","status":17,"curCmd":197},{"name":"RETURNSTATUS","value":0},{"name":"DONEPROC","status":0,"curCmd":224}],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

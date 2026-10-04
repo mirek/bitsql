@@ -65,6 +65,9 @@ pub fn resolve_type(
         _ => Float
       }
     "real" => Real
+    // ISO synonym of float(53); Sequelize's DataTypes.DOUBLE (captured,
+    // corpus orm/double-precision)
+    "double precision" => Float
     "char" | "character" => Char(len.unwrap_or(default_len), collation)
     "varchar" =>
       VarChar(

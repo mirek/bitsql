@@ -296,6 +296,7 @@ fn Session::system_tvf(
   match name {
     "dm_exec_describe_first_result_set" =>
       Some((describe_columns(), self.describe_first_result_set(args)))
+    "fn_listextendedproperty" => Some(self.fn_listextendedproperty(args))
     _ => None
   }
 }

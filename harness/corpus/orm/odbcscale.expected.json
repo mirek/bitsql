@@ -1,0 +1,182 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "1bbce93d4f7b1b4b",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"system_type_id","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"s0","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"s3","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"sd","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"sn","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [
+            [34,"image",null,null,null,null],
+            [35,"text",null,null,null,null],
+            [36,"uniqueidentifier",null,null,null,null],
+            [40,"date",0,3,0,null],
+            [41,"time",0,3,7,null],
+            [42,"datetime2",0,3,7,null],
+            [43,"datetimeoffset",0,3,7,null],
+            [48,"tinyint",0,3,0,null],
+            [52,"smallint",0,3,0,null],
+            [56,"int",0,3,0,null],
+            [58,"smalldatetime",0,3,0,null],
+            [59,"real",null,null,null,null],
+            [60,"money",0,3,4,null],
+            [61,"datetime",0,3,3,null],
+            [62,"float",null,null,null,null],
+            [98,"sql_variant",null,null,null,null],
+            [99,"ntext",null,null,null,null],
+            [104,"bit",null,null,null,null],
+            [106,"decimal",0,3,38,null],
+            [108,"numeric",0,3,38,null],
+            [122,"smallmoney",0,3,4,null],
+            [127,"bigint",0,3,0,null],
+            [165,"varbinary",null,null,null,null],
+            [167,"varchar",null,null,null,null],
+            [173,"binary",null,null,null,null],
+            [175,"char",null,null,null,null],
+            [189,"timestamp",null,null,null,null],
+            [231,"nvarchar",null,null,null,null],
+            [231,"sysname",null,null,null,null],
+            [239,"nchar",null,null,null,null],
+            [240,"hierarchyid",null,null,null,null],
+            [240,"geometry",null,null,null,null],
+            [240,"geography",null,null,null,null],
+            [241,"xml",null,null,null,null]
+          ]
+        },
+        {
+          "columns": [
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"b","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"c","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[2,null,5]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":34,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":34,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":6},
+        {"name":"ORDER","columns":[1,0]},
+        {"name":"NBCROW","count":3},
+        {"name":"ROW","count":8},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":2},
+        {"name":"NBCROW","count":4},
+        {"name":"ROW","count":4},
+        {"name":"NBCROW","count":12},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 35
+    },
+    {
+      "sets": [{"columns":[{"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":220,"state":2,"class":16,"lineNumber":1,"message":"Arithmetic overflow error for data type tinyint, value = 999."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":220},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":220,"state":2,"class":16,"lineNumber":1,"message":"Arithmetic overflow error for data type tinyint, value = 300."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":220},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Conversion failed when converting the varchar value 'x' to data type tinyint."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":245},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":174,"state":1,"class":15,"lineNumber":1,"message":"The odbcscale function requires 2 argument(s)."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":174},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

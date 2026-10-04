@@ -54,6 +54,7 @@ pub fn Db::delete_row(Self, Int, Int64) -> Self
 pub fn Db::drop_object(Self, Int) -> Self
 pub fn Db::drop_schema(Self, String) -> Self
 pub fn Db::drop_type(Self, Int) -> Self
+pub fn Db::drop_xprop(Self, Int, Int, Int, String) -> Self
 pub fn Db::empty() -> Self
 pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
 pub fn Db::get_module(Self, Int) -> Module?
@@ -75,12 +76,23 @@ pub fn Db::schema_id(Self, String) -> Int?
 pub fn Db::schema_name(Self, Int) -> String?
 pub fn Db::schema_names(Self) -> Array[(String, Int)]
 pub fn Db::seek(Self, Int, Int, lo? : Array[@types.Value], hi? : Array[@types.Value]) -> Array[Int64]
+pub fn Db::set_xprop(Self, ExtendedProperty) -> Self
 pub fn Db::table(Self, Int) -> Table?
 pub fn Db::table_data(Self, Int) -> TableData?
 pub fn Db::tables(Self) -> Array[Table]
 pub fn Db::truncate(Self, Int) -> Self
 pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::user_types(Self) -> Array[UserType]
+pub fn Db::xprop(Self, Int, Int, Int, String) -> ExtendedProperty?
+pub fn Db::xprops(Self) -> Array[ExtendedProperty]
+
+pub(all) struct ExtendedProperty {
+  class : Int
+  major_id : Int
+  minor_id : Int
+  name : String
+  value : @types.Value
+} derive(Eq, @debug.Debug)
 
 pub(all) enum FilterOp {
   FEq

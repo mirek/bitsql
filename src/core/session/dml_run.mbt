@@ -428,7 +428,9 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
           Some(@bind.bind_expr(env, s.value))
         }
         if rhs is Some(b) && s.op is Assign {
-          @types.check_assign(b.ty, c.ty)
+          if !(b.kind is Lit(Null) && b.ty is Int) {
+            @types.check_store(b.ty, c.ty)
+          }
         }
         sets.push((ci, s.op, rhs))
       }
@@ -935,12 +937,23 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           }
         }
       }
+      // a column given only untyped NULLs takes any type
+      let all_null = (j : Int) => {
+        bound
+        .iter()
+        .all(r => {
+          match r.get(j) {
+            Some(Some(b)) => b.kind is Lit(Null) && b.ty is Int
+            _ => true
+          }
+        })
+      }
       let bound = unify_values_rows(bound)
       // assignment type rules are compile-time (DONE cmd 253, captured)
       if bound.length() > 0 {
         for j, e in bound[0] {
-          if j < cols.length() && e is Some(b) {
-            @types.check_assign(b.ty, t.columns[cols[j]].ty)
+          if j < cols.length() && e is Some(b) && !all_null(j) {
+            @types.check_store(b.ty, t.columns[cols[j]].ty)
           }
         }
       }
@@ -1046,7 +1059,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           }
           continue
         }
-        @types.check_assign(c.ty, t.columns[cols[j]].ty)
+        if !query_item_is_null(q, j) {
+          @types.check_store(c.ty, t.columns[cols[j]].ty)
+        }
       }
       start_rows()
       sent = self.output_header(outputs)

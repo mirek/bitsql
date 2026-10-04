@@ -12,6 +12,12 @@ pub(all) enum Origin {
   /// A table's computed column (flags as Computed; keeps 0x20 under a
   /// hidden ORDER BY key, unlike view-computed columns).
   TableComputed
+  /// A computed column of a view or catalog view (flags as Computed).
+  /// Read through a derived table, CTE or APPLY it is a base column, flags
+  /// 9 (captured: corpus orm/view-computed-derived; Sequelize's
+  /// describeTable reads INFORMATION_SCHEMA.TABLE_CONSTRAINTS.CONSTRAINT_TYPE
+  /// through a derived table).
+  ViewComputed
   SetOperation
   Aggregate
   /// The context column of an xml `nodes()` table: usable only as a method

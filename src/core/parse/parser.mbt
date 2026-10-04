@@ -307,6 +307,32 @@ fn Parser::paren_idents(
 }
 
 ///|
+/// An INSERT column list. SQL Server accepts multi-part names there and
+/// ignores every qualifier, even one naming another table (captured,
+/// corpus orm/insert-qualified-columns; Prisma's createMany writes
+/// `([dbo].[users].[email], ...)`).
+fn Parser::paren_insert_columns(
+  self : Parser,
+) -> Array[@ast.Ident] raise @ast.SyntaxError {
+  self.expect_punct("(")
+  let out = []
+  while true {
+    let mut id = self.ident()
+    let mut parts = 1
+    while parts < 4 && self.eat_punct(".") {
+      id = self.ident()
+      parts += 1
+    }
+    out.push(id)
+    if !self.eat_punct(",") {
+      break
+    }
+  }
+  self.expect_punct(")")
+  out
+}
+
+///|
 /// Upper-cased text of a word token.
 fn upper(t : @lex.Token) -> String {
   t.text.to_upper()

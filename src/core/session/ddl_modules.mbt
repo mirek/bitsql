@@ -493,6 +493,12 @@ fn Session::exec_system_proc(
       self.exec_sp_rename(args, return_var)
       true
     }
+    "sp_addextendedproperty"
+    | "sp_updateextendedproperty"
+    | "sp_dropextendedproperty" as p => {
+      self.exec_xprop_proc(p, args, return_var)
+      true
+    }
     other => self.exec_help_proc(other, args, return_var)
   }
 }

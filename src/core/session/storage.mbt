@@ -169,11 +169,17 @@ fn table_columns(t : @store.Table) -> Array[@bind.ColumnRef] {
 
 ///|
 /// Splits a (possibly qualified) object name into (schema, name); temp
-/// tables keep their '#' prefix.
+/// tables keep their '#' prefix. An empty schema part (`db..t`, TypeORM's
+/// `"db".."migrations"`) is the default schema (captured, corpus
+/// orm/empty-schema-part).
 fn split_name(name : @ast.ObjectName) -> (String, String) {
   let n = name.parts.length()
   let base = name.parts[n - 1].name
-  let schema = if n >= 2 { name.parts[n - 2].name } else { "dbo" }
+  let schema = if n >= 2 && name.parts[n - 2].name != "" {
+    name.parts[n - 2].name
+  } else {
+    "dbo"
+  }
   (schema, base)
 }
 

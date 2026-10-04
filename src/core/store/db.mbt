@@ -26,6 +26,7 @@ pub struct Db {
   priv schemas : PMap[String, (String, Int)] // lowercased name → (name, id)
   priv types : PMap[Int, UserType] // user_type_id → type
   priv type_names : PMap[String, Int] // "schema.name" lowercased → id
+  priv props : PMap[String, ExtendedProperty] // xprops.mbt
 }
 
 ///|
@@ -76,6 +77,7 @@ pub fn Db::empty() -> Db {
     schemas,
     types: PMap::empty(int_cmp),
     type_names: PMap::empty(str_cmp),
+    props: PMap::empty(str_cmp),
   }
 }
 

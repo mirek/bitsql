@@ -307,12 +307,28 @@ fn read_plp(r : Reader) -> Bytes? raise TdsError {
     return None
   }
   let out = Buffer()
+  // A PLP value without its terminator (tedious 20.3.3 with a `length:
+  // 'max'` string, as knex binds every Buffer) runs into the next parameter
+  // or past the message: SQL Server answers 4002, state 2 when the message
+  // ends at a chunk length, state 4 inside chunk data (captured, corpus
+  // orm/rpc-stream-errors).
+  let ended = (state : Int) => {
+    RpcStream(
+      4002, state, "The incoming tabular data stream (TDS) protocol stream is incorrect. The stream ended unexpectedly.",
+    )
+  }
   while true {
-    let n = r.u32le().to_int()
-    if n == 0 {
+    if r.remaining() < 4 {
+      raise ended(2)
+    }
+    let n = r.u32le()
+    if n == 0L {
       break
     }
-    out.write_bytes(r.bytes(n))
+    if n > r.remaining().to_int64() {
+      raise ended(4)
+    }
+    out.write_bytes(r.bytes(n.to_int()))
   }
   Some(out.to_bytes())
 }

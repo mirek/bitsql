@@ -1,0 +1,55 @@
+// Earlier version of schema.prisma, used only to generate the two
+// migrations under migrations/ (prisma migrate diff). Prisma 7 schema for the ORM compatibility suite. The datasource URL comes
+// from prisma.config.mjs (DATABASE_URL); the client uses @prisma/adapter-mssql
+// (no query engine binary), the CLI's schema engine talks TDS itself (tiberius).
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique @db.NVarChar(120)
+  name      String    @db.NVarChar(100)
+  age       Int?
+  karma     BigInt    @default(0)
+  balance   Decimal   @default(0) @db.Decimal(10, 2)
+  active    Boolean   @default(true)
+  born      DateTime? @db.Date
+  seenAt    DateTime? @db.DateTime2
+  bio       String?   @db.NVarChar(500)
+  avatar    Bytes?
+  token     String?   @db.UniqueIdentifier
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     Post[]
+
+  @@index([name, age])
+  @@map("users")
+}
+
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String    @db.NVarChar(200)
+  body      String?   @db.NVarChar(Max)
+  views     Int       @default(0)
+  authorId  Int
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags      Tag[]     @relation("PostTags")
+
+  @@index([authorId])
+  @@map("posts")
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.NVarChar(50)
+  posts Post[] @relation("PostTags")
+
+  @@map("tags")
+}

@@ -103,6 +103,10 @@ pub fn Db::rebase(self : Db, base : Db, onto : Db) -> Db? {
   guard types is Some(types) && type_names is Some(type_names) else {
     return None
   }
+  guard merge3(base.props, self.props, onto.props, same=(a, b) => a == b)
+    is Some(props) else {
+    return None
+  }
   guard names is Some(names) &&
     tables is Some(tables) &&
     modules is Some(modules) &&
@@ -117,6 +121,7 @@ pub fn Db::rebase(self : Db, base : Db, onto : Db) -> Db? {
     schemas,
     types,
     type_names,
+    props,
   }
   for ch in base.data.changes(self.data) {
     let (id, old, new) = ch

@@ -45,6 +45,32 @@ pub fn ProcRef::canonical_name(self : ProcRef) -> String {
 }
 
 ///|
+/// 8016 for a zero maximum length on a variable-length string or binary
+/// parameter (tedious sends an empty Buffer as varbinary with max length 0).
+/// The state names the type (captured, corpus orm/rpc-stream-errors).
+fn check_param_type_info(
+  ti : TypeInfo,
+  ordinal : Int,
+  name : String,
+) -> Unit raise TdsError {
+  let state = match ti {
+    BigVarBinary(0) => 38
+    BigBinary(0) => 39
+    BigVarChar(0, _) => 40
+    BigChar(0, _) => 41
+    NVarChar(0, _) => 42
+    NChar(0, _) => 43
+    _ => return
+  }
+  let code = ti.type_byte().to_string(radix=16).to_upper()
+  raise RpcStream(
+    8016,
+    state,
+    "The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter \{ordinal} (\"\{name}\"): Data type 0x\{code} has an invalid data length or metadata length.",
+  )
+}
+
+///|
 pub fn decode_rpc(payload : BytesView) -> RpcRequest raise TdsError {
   let r = Reader::new(payload)
   let headers = read_all_headers(r)
@@ -80,6 +106,7 @@ pub fn decode_rpc(payload : BytesView) -> RpcRequest raise TdsError {
         continue
       }
       let type_info = read_type_info(r)
+      check_param_type_info(type_info, params.length() + 1, name)
       let value = read_value(r, type_info)
       params.push({
         name,
