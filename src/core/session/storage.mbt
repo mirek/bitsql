@@ -289,6 +289,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       }
     },
     sequence: name => self.sequence_binding(name),
+    system_tvf: (name, args) => self.system_tvf(name, args),
   }
 }
 

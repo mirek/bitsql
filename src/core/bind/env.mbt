@@ -43,6 +43,13 @@ pub(all) struct Catalog {
   /// True when the name is a user-defined type of the database (CAST to
   /// it is 243 state 2 rather than state 1).
   user_type : (@ast.TypeName) -> Bool
+  /// System table-valued functions computed by the session from constant
+  /// arguments (sys.dm_exec_describe_first_result_set): lowercased name
+  /// and argument values to columns and rows; None when unknown.
+  system_tvf : (String, Array[@types.Value]) -> (
+    Array[ColumnRef],
+    Array[Array[@types.Value]],
+  )? raise @types.SqlError
 }
 
 ///|
@@ -86,6 +93,7 @@ pub fn Catalog::empty() -> Catalog {
     sequence: _ => None,
     function: _ => None,
     user_type: _ => false,
+    system_tvf: (_, _) => None,
   }
 }
 

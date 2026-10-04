@@ -548,6 +548,28 @@ fn bind_table_function(
       None => ()
     }
   }
+  let in_sys = name.parts.length() == 1 ||
+    (name.parts.length() == 2 && name.parts[0].name.to_lower() == "sys")
+  if in_sys && fname == "DM_EXEC_DESCRIBE_FIRST_RESULT_SET" {
+    let vals = args.map(a => {
+      match try_fold(bind_expr(penv, a)) {
+        Some(v) => v
+        None =>
+          raise @types.not_supported(
+            "sys.dm_exec_describe_first_result_set with non-constant arguments",
+          )
+      }
+    })
+    match (env.catalog.system_tvf)(fname.to_lower(), vals) {
+      Some((cols, rows)) => {
+        let plan : @ir.Plan = Values(
+          rows.map(r => r.mapi((j, v) => @ir.Expr::lit(v, cols[j].ty))),
+        )
+        return (plan, cols.map(c => { ..c, qualifier: q, }))
+      }
+      None => ()
+    }
+  }
   if fname != "OPENJSON" && fname != "STRING_SPLIT" {
     match bind_user_tvf(env, name, args, alias_, columns) {
       Some(r) => return r

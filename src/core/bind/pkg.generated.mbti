@@ -56,6 +56,7 @@ pub(all) struct Catalog {
   sequence : (@ast.ObjectName) -> (String, @types.SqlType)?
   function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
   user_type : (@ast.TypeName) -> Bool
+  system_tvf : (String, Array[@types.Value]) -> (Array[ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError
 }
 pub fn Catalog::empty() -> Self
 

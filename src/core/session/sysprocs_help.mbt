@@ -232,6 +232,8 @@ fn help_proc_spec(name : String) -> (Array[String], Bool)? {
         ),
       )
     "sp_who" => Some((["@loginame"], false))
+    "sp_describe_first_result_set" =>
+      Some((["@tsql", "@params", "@browse_information_mode"], false))
     _ => None
   }
 }
@@ -254,6 +256,7 @@ fn Session::help_proc_run(
     "sp_tables" => self.sp_tables(a)
     "sp_pkeys" => self.sp_pkeys(a)
     "sp_fkeys" => self.sp_fkeys(a)
+    "sp_describe_first_result_set" => self.sp_describe_first_result_set(a)
     _ => self.sp_who(a)
   }
 }
