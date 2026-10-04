@@ -154,6 +154,14 @@ pub fn invalid_operand_error(SqlType, ArithOp) -> SqlError
 
 pub fn is_valid_date(Int, Int, Int) -> Bool
 
+pub let json_collation : Collation
+
+pub fn json_type_decimal(Double) -> String?
+
+pub fn json_type_normalize(String) -> String raise SqlError
+
+pub fn json_type_to_text(String, SqlType) -> String raise SqlError
+
 pub fn language(Int) -> Language
 
 pub let languages : Array[Language]
@@ -403,6 +411,7 @@ pub(all) enum SqlType {
   RowVersion
   Variant
   Xml
+  Json
   Text(Collation)
   NText(Collation)
   Image
@@ -434,6 +443,7 @@ pub(all) enum TypeFamily {
   FGuid
   FVariant
   FXml
+  FJson
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Value {

@@ -742,7 +742,7 @@ fn bind_table_function(
           let cs : Array[ColumnRef] = []
           for c in schema {
             let ty = resolve_type(c.type_, Declaration, env.collation)
-            if c.as_json && !(ty is NVarChar(None, _)) {
+            if c.as_json && !(ty is (NVarChar(None, _) | Json)) {
               raise err(
                 13618, "AS JSON option can be specified only for column of nvarchar(max) type in WITH clause.",
               )
@@ -1009,6 +1009,9 @@ fn Grouping::add_key(
   if b.ty is Xml {
     raise xml_not_comparable()
   }
+  if b.ty is Json {
+    raise json_not_comparable(2)
+  }
   // captured: GROUP BY a text/ntext/image key is 306 state 2
   if b.ty.is_lob() {
     raise @types.lob_sort_error()
@@ -1202,7 +1205,8 @@ fn Grouping::columns(self : Grouping) -> Array[ColumnRef] {
       ty: a.ty,
       // captured: GROUPING() is a NOT NULL computed tinyint (flags 32)
       nullable: !(a.func is (Grouping(_) | GroupingId(_))),
-      origin: if a.func is (Grouping(_) | GroupingId(_)) {
+      // captured (json4): a json-typed JSON aggregate is flags 33 too
+      origin: if a.func is (Grouping(_) | GroupingId(_)) || a.ty is Json {
         Computed
       } else {
         Aggregate

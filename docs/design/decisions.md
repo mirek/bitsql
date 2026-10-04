@@ -484,3 +484,43 @@ captured `tail/` cases, no regressions). Design points worth keeping:
 - **Compatibility level in the binder** (fork C): `Catalog.compat_level`
   exists only to keep SOUNDEX's pre-110 H/W rule; behaviour of levels below
   170 is otherwise still not modelled (trap row "Compatibility level").
+
+## 2026-10-04: long tail round 5 (tail5: coordinator + three forks)
+
+- **json values are canonical text.** SQL Server stores json in a binary
+  format; bitsql keeps the text SQL Server prints back (`Value::String`
+  under `SqlType::Json`), produced once by `types/json_type.mbt` on every
+  conversion into json (CAST, assignment, INSERT/UPDATE, arguments,
+  RETURNING JSON, JSON_MODIFY/JSON_QUERY of a json document). The JSON
+  functions keep working on text; json documents only switch their error
+  states. What depends on the binary form stays an Emulator error
+  (DATALENGTH). The parser works on the UTF-8 bytes because SQL Server's
+  error positions are byte offsets.
+- **json type checks share the xml guards** (`bind/xml_methods.mbt`:
+  comparison, sort, DISTINCT, set operations, built-in arguments) and the
+  batch-level precheck (`precheck_xml.mbt` now also counts json compile
+  errors), since both types are non-comparable and their errors are batch
+  compile errors.
+- **Process isolation runs each case in its own database** (harness
+  `runner.mjs`). The six cases failing only in process mode read `master`
+  as another database; the emulator's master needed no change. Database
+  isolation and process isolation now agree, at ~20 s extra per full run.
+- **Linguistic comparison fast paths** (fork A): ASCII text past the common
+  prefix streams without building collation element arrays, and an
+  identical leading run is skipped unless it ends in a space or ignorable
+  unit (trailing-space trimming is the only contextual rule). Precomputed
+  sort keys per value were left out: they would touch every sort and group
+  operator, and the remaining slow case (first difference at a non-ASCII
+  character) is ~4x the integer cost, not 10x.
+- **Syntax error recovery** (fork B1): the parser collects several errors per
+  batch with the yacc rule SQL Server shows (three accepted tokens before
+  the next report; only 102/156/319 recover), instead of stopping at the
+  first. Named windows are expanded in the parser (`parse/window.mbt`), so
+  the binder only sees ordinary OVER clauses; `NEXT VALUE FOR … OVER` is a
+  window function (`WinFn::NextValue`).
+- **sp_prepare of DML compiles through the real executor** (fork B2):
+  `Session::compile_only` runs the statement's exec path and stops at the
+  OUTPUT header, so prepare-time errors and metadata come from the same
+  code as execution. READPAST checks run when a table is actually read
+  (`bind/readpast.mbt`), because SQL Server raises 650 at run time.
+

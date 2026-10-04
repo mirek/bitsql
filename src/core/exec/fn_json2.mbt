@@ -60,6 +60,37 @@ fn json_modify_value(
 }
 
 ///|
+/// A float value of a json-typed result is stored as decimal(38,10)
+/// (captured json4/returning: 1e29 is 8115, state 19 in the constructors,
+/// 18 in JSON_MODIFY; the JSON aggregates format the float as text and
+/// fail with 1007 instead).
+fn json_float_check(
+  v : @types.Value,
+  state : Int,
+) -> Unit raise @types.SqlError {
+  if v is Float(d) && @types.json_type_decimal(d) is None {
+    raise @types.sql_error(
+      8115,
+      "Arithmetic overflow error converting float to data type numeric.",
+      state~,
+    )
+  }
+}
+
+///|
+/// JSON errors of a json-type document use other states (captured
+/// json4/type-functions): JSON_MODIFY 13608 state 5, 13621 state 2; a
+/// strict range past the end is 13608 state 5 (not 13659).
+fn json_type_error(e : @types.SqlError) -> @types.SqlError {
+  match (e.number(), e.state()) {
+    (13608, 2) | (13659, _) =>
+      @types.sql_error(13608, @json.MISSING_MESSAGE, state=5)
+    (13621, 1) => @types.sql_error(13621, e.message(), state=2)
+    _ => e
+  }
+}
+
+///|
 fn call_json2(
   name : String,
   v : Array[@types.Value],
@@ -71,7 +102,8 @@ fn call_json2(
         String(f) => f
         _ => "N"
       }
-      let absent = flags.code_unit_at(0) == 'A'
+      let absent = flags.code_unit_at(0) is ('A' | 'a')
+      let json_result = flags.code_unit_at(0) is ('a' | 'n')
       let object = name == "JSON_OBJECT"
       let buf = StringBuilder()
       buf.write_char(if object { '{' } else { '[' })
@@ -88,6 +120,9 @@ fn call_json2(
           raise @types.sql_error(
             13638, "User error : Name parameter value in 'json_object' cannot be null",
           )
+        }
+        if json_result {
+          json_float_check(value, 19)
         }
         if !(value is Null && absent) {
           if !first {
@@ -111,7 +146,11 @@ fn call_json2(
         i += step
       }
       buf.write_char(if object { '}' } else { ']' })
-      Some(String(buf.to_string()))
+      if json_result {
+        Some(String(@types.json_type_normalize(buf.to_string())))
+      } else {
+        Some(String(buf.to_string()))
+      }
     }
     "ISJSON" =>
       match v[0] {
@@ -152,12 +191,23 @@ fn call_json2(
           )
         (String(doc), String(path)) => {
           let raw = v[3] is String("j")
+          let json_doc = args[0].ty is Json
+          if json_doc {
+            json_float_check(v[2], 18)
+          }
           let text = match v[2] {
             Null => None
             String(s) if raw => Some(s)
             other => Some(json_modify_value(other, args[2].ty))
           }
-          Some(String(json(() => @json.json_modify(doc, path, text))))
+          let out = json(() => @json.json_modify(doc, path, text)) catch {
+            e => raise if json_doc { json_type_error(e) } else { e }
+          }
+          if json_doc {
+            Some(String(@types.json_type_normalize(out)))
+          } else {
+            Some(String(out))
+          }
         }
         _ => raise @types.not_supported("JSON_MODIFY on non-character input")
       }

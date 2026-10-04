@@ -518,6 +518,8 @@ fn column_property(col : @store.Column, p : String) -> @types.Value {
       match col.ty {
         Char(n, _) | NChar(n, _) | Binary(n) => Int(n)
         VarChar(n, _) | NVarChar(n, _) | VarBinary(n) => Int(n.unwrap_or(-1))
+        // captured: json4/type-columns
+        Json => Int(-1)
         _ => Int(prec)
       }
     "scale" =>

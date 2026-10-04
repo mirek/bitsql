@@ -295,7 +295,12 @@ fn xml_compare_check(
   if a.ty is Xml && b.ty is Xml {
     raise xml_not_comparable()
   }
-  if a.ty is Xml || b.ty is Xml {
+  // captured (json4/type-compare): json = json, NULLIF, joins: 13636
+  // state 1; json against another type 402
+  if a.ty is Json && b.ty is Json {
+    raise json_not_comparable(1)
+  }
+  if a.ty is (Xml | Json) || b.ty is (Xml | Json) {
     raise err(
       402,
       "The data types \{a.ty.clash_name()} and \{b.ty.clash_name()} are incompatible in the \{op_name} operator.",
@@ -307,6 +312,16 @@ fn xml_compare_check(
 fn xml_not_comparable() -> @types.SqlError {
   err(
     305, "The XML data type cannot be compared or sorted, except when using the IS NULL operator.",
+  )
+}
+
+///|
+/// 13636: json in a comparison (state 1) or a sort / grouping key (state 2).
+fn json_not_comparable(state : Int) -> @types.SqlError {
+  err(
+    13636,
+    "The JSON data type cannot be compared or sorted, except when using the IS NULL operator.",
+    state~,
   )
 }
 
@@ -342,6 +357,10 @@ fn xml_guard(
     } noraise {
       b => b.ty
     }
+    if ty is Json {
+      json_arg_check(env, name, args, i)
+      continue
+    }
     if !(ty is Xml) {
       continue
     }
@@ -369,10 +388,67 @@ fn xml_guard(
 }
 
 ///|
+/// A json-typed argument of a built-in (captured json4/type-compare): the
+/// JSON functions, ISNULL/COALESCE/IIF/CHOOSE take it; CONCAT/CONCAT_WS
+/// report 257 to (n)varchar, GREATEST/LEAST/CHECKSUM 8116 state 4,
+/// SQL_VARIANT_PROPERTY 206, DATALENGTH (SQL Server's binary size) is an
+/// emulator error, everything else 8116.
+fn json_arg_check(
+  env : Env,
+  name : String,
+  args : Array[@ast.Expr],
+  i : Int,
+) -> Unit raise @types.SqlError {
+  match name {
+    "JSON_VALUE"
+    | "JSON_QUERY"
+    | "ISJSON"
+    | "JSON_PATH_EXISTS"
+    | "JSON_MODIFY"
+    | "NULLIF" => ()
+    // constructor names carry their clauses ("JSON_OBJECT RETURNING JSON")
+    _ if name.has_prefix("JSON_OBJECT") || name.has_prefix("JSON_ARRAY") => ()
+    "CHOOSE" if i > 0 => ()
+    "CONCAT" | "CONCAT_WS" => {
+      let unicode = args
+        .iter()
+        .any(a => {
+          (try bind_expr(env, a) catch {
+            _ => None
+          } noraise {
+            b => Some(b.ty)
+          })
+          is Some(NChar(_, _) | NVarChar(_, _) | NText(_))
+        })
+      raise @types.implicit_conversion_error(
+        Json,
+        if unicode {
+          NVarChar(Some(1), env.collation)
+        } else {
+          VarChar(Some(1), env.collation)
+        },
+      )
+    }
+    "SQL_VARIANT_PROPERTY" if i == 0 =>
+      raise @types.type_clash_error(Json, Variant)
+    "DATALENGTH" =>
+      raise @types.not_supported(
+        "DATALENGTH of json (SQL Server's internal binary size)",
+      )
+    "GREATEST" | "LEAST" | "CHECKSUM" =>
+      raise bad_arg_type(Json, i + 1, name.to_lower(), state=4)
+    // captured: the 8116 message spells TRIM as "Trim"
+    "TRIM" => raise bad_arg_type(Json, i + 1, "Trim")
+    _ => raise bad_arg_type(Json, i + 1, name.to_lower())
+  }
+}
+
+///|
 fn may_be_xml(e : @ast.Expr) -> Bool {
   match e.kind {
     Var(_) | Column(_) | Subquery(_) | Case(..) | MethodCall(_, _, _) => true
-    Cast(_, tn, ..) | Convert(tn, _, ..) => tn.name.to_lower() == "xml"
+    Cast(_, tn, ..) | Convert(tn, _, ..) =>
+      tn.name.to_lower() is ("xml" | "json")
     Paren(x) => may_be_xml(x)
     Call(_) => true
     _ => false
@@ -386,6 +462,10 @@ fn xml_sort_check(keys : Array[@ir.SortKey]) -> Unit raise @types.SqlError {
     if k.expr.ty is Xml {
       raise xml_not_comparable()
     }
+    // captured (json4/type-compare): 13636 state 2
+    if k.expr.ty is Json {
+      raise json_not_comparable(2)
+    }
   }
 }
 
@@ -394,10 +474,13 @@ fn xml_sort_check(keys : Array[@ir.SortKey]) -> Unit raise @types.SqlError {
 fn xml_distinct_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
-  if columns.iter().any(c => c.ty is Xml) {
-    raise err(
-      421, "The xml data type cannot be selected as DISTINCT because it is not comparable.",
-    )
+  for c in columns {
+    if c.ty is (Xml | Json) {
+      raise err(
+        421,
+        "The \{c.ty.base_name()} data type cannot be selected as DISTINCT because it is not comparable.",
+      )
+    }
   }
 }
 
@@ -406,9 +489,12 @@ fn xml_distinct_check(
 fn xml_set_op_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
-  if columns.iter().any(c => c.ty is Xml) {
-    raise err(
-      5335, "The data type xml cannot be used as an operand to the UNION, INTERSECT or EXCEPT operators because it is not comparable.",
-    )
+  for c in columns {
+    if c.ty is (Xml | Json) {
+      raise err(
+        5335,
+        "The data type \{c.ty.base_name()} cannot be used as an operand to the UNION, INTERSECT or EXCEPT operators because it is not comparable.",
+      )
+    }
   }
 }

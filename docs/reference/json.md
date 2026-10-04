@@ -1,4 +1,4 @@
-# JSON functions, paths, aggregates and FOR JSON (SQL Server 2025)
+# JSON functions, paths, aggregates, FOR JSON and the json type (SQL Server 2025)
 
 Rules distilled from captures on 17.0.5005.3: `harness/corpus/json3/*.sql`
 (2026-10-04), msduck `json-advanced-path`, `json-extraction-wildcard`,
@@ -172,9 +172,143 @@ WITHOUT_ARRAY_WRAPPER subquery and JSON_VALUE are strings.
   RETURNING 156; WITHIN GROUP on OBJECTAGG 102; `ORDER BY 1` 5308; nested
   aggregate 130.
 
+## The json data type (SQL Server 2025)
+
+Captures: `harness/corpus/json4/*.sql` (2026-10-04), msduck
+`json-constructors` #016-#020, `json-aggregates` #025/#037/#038/#055/#069/
+#102. Code: `types/json_type.mbt` (parser, normalizer, conversions),
+`bind/xml_methods.mbt` (`json_arg_check`, comparison checks shared with
+xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
+
+### Values and the wire
+
+- A json value is kept as its canonical text (`Value::String`). Clients
+  (TDS 7.4) receive varchar(max) with collation
+  Latin1_General_100_BIN2_UTF8 (flags byte 0x60, UTF-8 data); column flags
+  as for any other type (33 for CAST results, 9 for a nullable column, no
+  fCaseSen). sp_describe_first_result_set /
+  sys.dm_exec_describe_first_result_set report `varchar(max)` (167), that
+  collation and is_case_sensitive 1, never `json`.
+- Catalog: sys.types and sys.columns system_type_id = user_type_id = 244,
+  max_length -1, precision/scale 0, collation NULL; INFORMATION_SCHEMA
+  DATA_TYPE `json`, CHARACTER_MAXIMUM_LENGTH and OCTET_LENGTH -1, no
+  collation/character set; COLUMNPROPERTY Precision -1, COL_LENGTH -1;
+  TYPE_ID('json') 244; sp_help Type `json`, Length -1; **sp_columns leaves
+  json columns out**; a json column sets sys.tables.lob_data_space_id.
+- `json(100)` is 2716 in declarations and 291 "CAST or CONVERT: invalid
+  attributes specified for type 'json'" in CAST; `RETURNING json(n)` and
+  `RETURNING json(max)` are accepted.
+- DATALENGTH is the size of the internal binary format (43 for
+  `{"a":1}`): emulator error.
+
+### Parsing character data (CAST, assignment, INSERT/UPDATE, arguments)
+
+- The root must be an object or an array. Whitespace is space, tab, LF, CR
+  only (NBSP is an error). Output has no whitespace.
+- Duplicate member names keep the **first** member (also nested); keys are
+  compared exactly (`a` and `A` differ). Member order is kept.
+- Strings are decoded and re-escaped: `"` and `\`, `\b \f \n \r \t`,
+  other characters below U+0020 as `\u00XX` with upper-case hex, everything
+  else raw (`/`, DEL, U+0080, U+2028, non-BMP). A lone surrogate, raw or as
+  a `\u` escape, becomes U+FFFD; an escaped pair becomes the character.
+- Numbers without an exponent and with at most 38 significant digits (a
+  lone leading `0` does not count) keep their text, scale included (`1.50`,
+  `0.00`); the sign of a zero is dropped (`-0` → `0`, `-0.0` → `0.0`).
+  Numbers with an exponent, or with more digits and a fraction, go through
+  float to decimal(38,10): `1e2` → `100.0000000000`, `1e28` →
+  `9999999999999999583119736832.0000000000`, `1e-11` → `0.0000000000`.
+  More than 28 integer digits that way is 1007 state 5 "The number '1e29'
+  is out of the range for numeric representation (maximum precision 38)."
+  (the number as written); an integer of 39+ digits is 1007 state 3.
+- Malformed text is 13609 **state 9** "JSON text is not properly formatted.
+  Unexpected character 'c' is found at position N." where N is the 0-based
+  **UTF-8 byte offset** and `c` that byte read as Latin-1 (`Â` for NBSP,
+  `ï` for a lone surrogate's EF BF BD, `.` at the end). Any error inside a
+  string (unterminated, bad escape, raw control character) points at its
+  opening quote; malformed numbers (`-`, `1.`, `1e`, `01`) and literals
+  (`tru`) at their first character; a scalar root at its first character.
+- Nesting: 128 containers are fine, the 129th is 13645 "Nested level of
+  JSON document exceeds limit 128.".
+- Conversion errors happen at run time (after COLMETADATA) and end the
+  batch; TRY_CAST/TRY_CONVERT give NULL for 13609, 13645, 13639 and 13640
+  but still raise 1007. A bad procedure argument is 13609 at line 0 and
+  ends the batch (DONE 253, no DONEPROC).
+
+### Conversions and operators
+
+- Implicit: character types → json only; json → nothing (257 state 3 to
+  character types, also PRINT and CONCAT/CONCAT_WS, which name varchar when
+  no argument is Unicode; 206 to every other type, also int → json).
+  ntext/text ↔ json and everything non-character is 529 state 1. json has
+  the highest precedence: CASE, COALESCE, ISNULL, IIF, CHOOSE and UNION ALL
+  with character data give json (ISNULL stays nullable); int, sql_variant,
+  xml, datetime2, uniqueidentifier or varbinary with json are 206 ("int is
+  incompatible with json").
+- json → char/varchar/nchar/nvarchar: the text; 13640 "Conversion of one
+  or more characters from the JSON instance to target codepage 1252 will
+  result in data loss. Choose a different target collation or use
+  nvarchar." when a character has no mapping (best fit applies: U+0100 →
+  `A`); then 13639 "Target string size is too small to represent the JSON
+  instance." when it does not fit (no truncation); fixed types are padded.
+- Not comparable: json = json, <>, NULLIF, join conditions 13636 state 1
+  "The JSON data type cannot be compared or sorted, except when using the
+  IS NULL operator."; ORDER BY, GROUP BY, window PARTITION BY / ORDER BY
+  13636 state 2; DISTINCT 421; UNION / INTERSECT / EXCEPT 5335; json with
+  another type (=, >, IN, simple CASE) 402; LIKE 8116; MIN/MAX 8117 state 1,
+  COUNT(DISTINCT) 8117 state 2 (COUNT works); `+` 402 / 8117; unary minus
+  8117. These are batch compile errors.
+- Built-ins: 8116 state 1 for string functions (LEN, UPPER, SUBSTRING,
+  REPLACE, ISNUMERIC, TRIM named "Trim", STRING_AGG, HASHBYTES argument 2),
+  8116 state 4 for GREATEST/LEAST/CHECKSUM, SQL_VARIANT_PROPERTY 206. Index
+  keys: CREATE INDEX 1978 state 3 "... invalid for use as a key column in
+  an index or statistics.", a PRIMARY KEY 1919 + 1750.
+- ALTER COLUMN nvarchar → json validates every row (13609 + 3621); json →
+  nvarchar(max) is 257 without 3621.
+
+### JSON functions over json values
+
+- JSON_VALUE: nvarchar(4000) as usual. JSON_QUERY and JSON_MODIFY of a
+  json document return json; ISJSON, JSON_PATH_EXISTS and OPENJSON read the
+  normalized text.
+- Error states differ for json documents: 13608 state 5 (JSON_VALUE,
+  JSON_QUERY, JSON_MODIFY), OPENJSON path 13608 state 7, WITH column 13608
+  state 8, 13623/13624 state 2, several values under strict 13623 (VALUE) /
+  13624 (QUERY) state 2, a strict range past the end 13608 state 5 (not
+  13659), append to a non-array 13621 state 2, a strict OPENJSON path to a
+  scalar 13611 state 3 (state 1 for character documents).
+- JSON_MODIFY of a json document re-normalizes the result: a float value
+  becomes decimal(38,10) (`1e2` → `100.0000000000`; too large is 8115 state
+  18). JSON_MODIFY of character text with a json new value is 8116 for
+  argument 3.
+- FOR JSON, JSON_OBJECT, JSON_ARRAY and the JSON aggregates embed json
+  values raw; a json argument makes JSON_OBJECT / JSON_ARRAY /
+  JSON_ARRAYAGG / JSON_OBJECTAGG return json even without RETURNING JSON.
+- OPENJSON WITH (c json ...): with AS JSON a container is kept, a scalar is
+  NULL; without it, over character text every scalar value is parsed as json
+  (a number fails with 13609), over a json document only string values are
+  (other scalars and containers are NULL).
+
+### RETURNING JSON
+
+- The constructors and aggregates return json: the built text is parsed
+  and normalized (first duplicate key kept, `/` unescaped, control
+  characters `\u00XX`). Float values become decimal(38,10) (1.5 →
+  `1.5000000000`, real too); one that does not fit is 8115 state 19
+  "Arithmetic overflow error converting float to data type numeric." in the
+  constructors, while the aggregates format the float as text first and
+  fail with 1007 state 5 "The number '2.000000000000000e+028' ...". money
+  keeps four decimals, bit is true/false, dates and binary as for
+  JSON_OBJECT.
+- Windowed JSON_ARRAYAGG / JSON_OBJECTAGG stay nvarchar(max) even with
+  RETURNING JSON. A json-typed aggregate column reports flags 33 and
+  is_computed_column 1 (other aggregates 0).
+- Syntax: another type after RETURNING is 102 state 19 ("near 'RETURNING.
+  Supported Syntax is RETURNING JSON'" for JSON_OBJECT / JSON_OBJECTAGG,
+  "near 'RETURNING'" for JSON_ARRAY / JSON_ARRAYAGG); `JSON_ARRAY(RETURNING
+  JSON)` is 102 near 'JSON'.
+
 ## Not emulated
 
-The json data type (`CAST(x AS json)`, RETURNING json, json columns): the
-captures show it on the wire as varchar(max) with collation
-Latin1_General_100_BIN2_UTF8 and flags 33; bitsql raises `Emulator: the
-json data type is not supported` (never 243/2715). CLR arguments (13666).
+DATALENGTH of json values (SQL Server's binary size), CLR arguments
+(13666; hierarchyid/geometry/geography/vector are 50100, and
+`geometry::Point(...)` static method calls do not parse).

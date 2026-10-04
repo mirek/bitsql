@@ -39,7 +39,8 @@ fn stream_table_fn(
       guard text(0) is Some(doc) else { return }
       let path = if args.length() > 1 { text(1) } else { Some("$") }
       guard path is Some(path) else { return }
-      for r in json(() => @json.openjson(doc, path~)) {
+      let jt = args[0].ty is Json
+      for r in json(() => @json.openjson(doc, path~, json_type=jt)) {
         emit([
           @types.Value::String(r.key),
           match r.value {
@@ -54,7 +55,8 @@ fn stream_table_fn(
       guard text(0) is Some(doc) else { return }
       let path = if args.length() > 1 { text(1) } else { Some("$") }
       guard path is Some(path) else { return }
-      let all = json(() => @json.openjson(doc, path~))
+      let jt = args[0].ty is Json
+      let all = json(() => @json.openjson(doc, path~, json_type=jt))
       // an object selection is one row; an array gives one row per element
       // (captured: query/table-functions step 2)
       let elements = match json(() => @json.json_query(doc, path~)) {
@@ -70,10 +72,33 @@ fn stream_table_fn(
             Some(item) =>
               // scalar elements are not JSON text; only containers have paths
               if el.ty == 4 || el.ty == 5 {
-                let got = if c.as_json {
-                  json(() => @json.json_query(item, path=c.path))
+                let got = try {
+                  if c.as_json {
+                    json(() => @json.json_query(item, path=c.path))
+                  } else {
+                    json(() => @json.json_value(item, c.path))
+                  }
+                } catch {
+                  // captured (json4): strict column paths of a json
+                  // document are 13608 state 8
+                  @types.SqlError(number=13608, ..) if jt =>
+                    raise @types.sql_error(
+                      13608,
+                      @json.MISSING_MESSAGE,
+                      state=8,
+                    )
+                  e => raise e
+                }
+                // captured (json4): a json column without AS JSON over a
+                // json document parses string values only (other scalars
+                // are NULL); over character text every scalar converts
+                let got = if jt &&
+                  c.ty is Json &&
+                  !c.as_json &&
+                  json(() => @json.json_value_kind(item, c.path)) != Some(1) {
+                  None
                 } else {
-                  json(() => @json.json_value(item, c.path))
+                  got
                 }
                 match got {
                   Some(s) =>

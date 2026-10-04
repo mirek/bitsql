@@ -89,6 +89,11 @@ fn convert_arg(
   if e.ty == ty {
     return e
   }
+  // a bare NULL converts to anything (captured json4/procs: dbo.fj(NULL)
+  // for a json parameter)
+  if is_untyped_null(e) {
+    return typed_null(ty)
+  }
   if !@types.can_convert_implicitly(e.ty, ty) {
     raise @types.type_clash_error(e.ty, ty)
   }

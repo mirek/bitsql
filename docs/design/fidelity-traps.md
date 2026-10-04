@@ -15,6 +15,7 @@ new trap, add a row here *and* a corpus case.
 | `NEWSEQUENTIALID()` | Monotonic per instance | Only valid in defaults |
 | Identity | Per-table counter | Not rolled back with the transaction; gaps are expected |
 | JSON paths | Lax by default, `strict` prefix | Lax returns NULL where strict errors |
+| json data type | Canonical text (`types/json_type.mbt`) | Storing the input text is a false green: SQL Server drops whitespace, keeps the first duplicate member, re-escapes strings and turns exponent numbers into decimal(38,10) (`1e2` → `100.0000000000`); errors count UTF-8 bytes; JSON functions report other error states for json documents (`json4/*`) |
 | `OPENJSON` | `TableFunction` node | Default schema returns `key`, `value`, `type`; the `WITH` clause casts |
 | Computed columns | Stored `Expr` inlined by the binder | Persisted vs non-persisted affects indexability |
 | Views | Subplan inlined by the binder | Updatable-view rules are strict (4403/4405/4406, 404 for OUTPUT of an unmodified base table); DML through a view reaches its one modified base table, the view WHERE restricts rows and WITH CHECK OPTION cascades (550) (`traps/view-updatable-rules`, `views/*`) |

@@ -52,6 +52,9 @@ pub(all) enum SqlType {
   Variant
   /// untyped xml (values are `Value::Xml`)
   Xml
+  /// the SQL Server 2025 json type (values are `Value::String` holding the
+  /// canonical text, json_type.mbt)
+  Json
   /// deprecated LOB types (lob.mbt): text and ntext keep `Value::String`,
   /// image `Value::Binary`
   Text(Collation)
@@ -75,6 +78,7 @@ pub(all) enum TypeFamily {
   FGuid
   FVariant
   FXml
+  FJson
 } derive(Debug, Eq)
 
 ///|
@@ -98,6 +102,7 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
     UniqueIdentifier => FGuid
     Variant => FVariant
     Xml => FXml
+    Json => FJson
   }
 }
 
@@ -160,6 +165,7 @@ pub fn SqlType::base_name(self : SqlType) -> String {
     RowVersion => "timestamp"
     Variant => "sql_variant"
     Xml => "xml"
+    Json => "json"
     Text(_) => "text"
     NText(_) => "ntext"
     Image => "image"

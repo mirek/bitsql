@@ -28,18 +28,27 @@ fn json_agg_fn(
   name : String,
   call : @ast.FuncCall,
   value : @ir.Expr,
-) -> @ir.AggFn raise @types.SqlError {
+) -> @ir.AggFn {
   let (marker, _) = json_agg_parts(call)
   let clauses = marker.unwrap_or("N")
-  if clauses.contains("J") {
-    raise @types.not_supported("\{name} RETURNING json")
-  }
+  // captured (json4/returning, msduck json-aggregates#025/#055/#102): the
+  // result is the json type with RETURNING JSON or a json-typed value
+  let json = clauses.contains("J") || value.ty is Json
   let absent = clauses.has_prefix("A")
   let raw = is_json_expr(env, value)
   if name == "JSON_OBJECTAGG" {
-    JsonObjectAgg(absent~, raw~)
+    JsonObjectAgg(absent~, raw~, json~)
   } else {
-    JsonArrayAgg(absent~, raw~)
+    JsonArrayAgg(absent~, raw~, json~)
+  }
+}
+
+///|
+/// Result type of a JSON aggregate function.
+fn json_agg_type(env : Env, f : @ir.AggFn) -> @types.SqlType {
+  match f {
+    JsonArrayAgg(json=true, ..) | JsonObjectAgg(json=true, ..) => Json
+    _ => NVarChar(None, env.collation)
   }
 }
 
@@ -97,13 +106,14 @@ fn bind_json_agg(
     let k = bind_expr(env, o.expr)
     @ir.SortKey::{ expr: k, desc: o.desc, collation: k.ty.collation(), }
   })
+  let func = json_agg_fn(env, name, call, value)
   {
-    func: json_agg_fn(env, name, call, value),
+    func,
     arg: Some(value),
     separator: key,
     distinct: false,
     order,
-    ty: NVarChar(None, env.collation),
+    ty: json_agg_type(env, func),
   }
 }
 
@@ -124,7 +134,14 @@ fn bind_json_agg_window(
     Some(k) => [value, k]
     None => [value]
   }
-  (Agg(json_agg_fn(env, name, call, value), distinct=false), args)
+  // captured (json4/returning): the windowed form stays nvarchar(max) even
+  // with RETURNING JSON
+  let f : @ir.AggFn = match json_agg_fn(env, name, call, value) {
+    JsonArrayAgg(absent~, raw~, ..) => JsonArrayAgg(absent~, raw~, json=false)
+    JsonObjectAgg(absent~, raw~, ..) => JsonObjectAgg(absent~, raw~, json=false)
+    other => other
+  }
+  (Agg(f, distinct=false), args)
 }
 
 ///|

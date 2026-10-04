@@ -388,6 +388,8 @@ fn type_ids(t : @types.SqlType) -> (Int, Int, Int, Int, Int) {
     Variant => (98, 98, 8016, 0, 0)
     // captured: xml/type (sys.columns, sys.types)
     Xml => (241, 241, -1, 0, 0)
+    // captured: json4 (sys.columns, sys.types)
+    Json => (244, 244, -1, 0, 0)
     // sys.types: the 16-byte text pointer
     Text(_) => (35, 35, 16, 0, 0)
     NText(_) => (99, 99, 16, 0, 0)
@@ -1249,7 +1251,8 @@ fn Session::fill_type_info(
       r["character_octet_length"] = i(n)
     }
     // captured: xml/type#058
-    VarBinary(None) | Xml => {
+    // captured: json4 (json: -1/-1, no collation or character set)
+    VarBinary(None) | Xml | Json => {
       r["character_maximum_length"] = i(-1)
       r["character_octet_length"] = i(-1)
     }

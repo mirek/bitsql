@@ -84,6 +84,9 @@ pub fn SqlError::is_try_convertible(self : SqlError) -> Bool {
     | 8169
     | 8170
     | 9807 => true
+    // json type: malformed text, nesting, target too small, code page
+    // (captured json4: TRY_CAST is NULL; 1007 still raises)
+    13609 | 13645 | 13639 | 13640 => true
     // XML parse errors (captured: TRY_CAST(N'<a>' AS xml) is NULL)
     n if n >= 9400 && n < 9500 => true
     _ => false

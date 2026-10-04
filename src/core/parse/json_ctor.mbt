@@ -49,8 +49,8 @@ fn Parser::json_ctor(
       self.expect_kw("ON")
       self.expect_kw("NULL")
     }
-    if self.eat_kw("RETURNING") {
-      ignore(self.ident())
+    if self.is_kw("RETURNING") {
+      self.returning_json(object)
       clause = clause + " RETURNING JSON"
     }
   }
@@ -191,22 +191,7 @@ fn Parser::json_agg(
     clause = "A"
   }
   if self.is_kw("RETURNING") {
-    let r = self.advance()
-    let t = self.peek()
-    if !(t.text.to_upper() == "JSON") {
-      raise @ast.SyntaxError(
-        number=102,
-        severity=15,
-        state=19,
-        message=if object {
-          "Incorrect syntax near 'RETURNING. Supported Syntax is RETURNING JSON'."
-        } else {
-          "Incorrect syntax near 'RETURNING'."
-        },
-        span=r.span,
-      )
-    }
-    self.pos += 1
+    self.returning_json(object)
     clause = clause + "J"
   }
   self.expect_punct(")")
@@ -247,6 +232,41 @@ fn Parser::json_agg(
     }),
     self.span_from(start),
   )
+}
+
+///|
+/// `RETURNING JSON [(n | MAX)]` of the JSON constructors and aggregates
+/// (captured json4/returning: the length is accepted and ignored; another
+/// type is 102 state 19, JSON_OBJECT* with the "Supported Syntax" text).
+fn Parser::returning_json(
+  self : Parser,
+  object : Bool,
+) -> Unit raise @ast.SyntaxError {
+  let r = self.advance()
+  let t = self.peek()
+  if !(t.kind is Word && t.text.to_upper() == "JSON") {
+    raise @ast.SyntaxError(
+      number=102,
+      severity=15,
+      state=19,
+      message=if object {
+        "Incorrect syntax near 'RETURNING. Supported Syntax is RETURNING JSON'."
+      } else {
+        "Incorrect syntax near 'RETURNING'."
+      },
+      span=r.span,
+    )
+  }
+  self.pos += 1
+  if self.eat_punct("(") {
+    let n = self.peek()
+    if n.kind is IntNum || n.is_kw("MAX") {
+      self.pos += 1
+    } else {
+      raise self.error()
+    }
+    self.expect_punct(")")
+  }
 }
 
 ///|

@@ -63,12 +63,12 @@ Each case runs alone:
 
 - `database` (oracle; emulator with `BITSQL_ADDR`): `CREATE DATABASE
   [bitsql_case_<random>]`, connect to it, run, `DROP` it.
-- `process` (emulator spawned by the harness): a fresh server process per case,
-  connected to `master`.
+- `process` (emulator spawned by the harness): a fresh server process per case;
+  the case runs in a `bitsql_case_<random>` database created in it (since
+  2026-10-04; before, it ran in `master`).
 
 Strings naming the case database (messages, `DB_NAME()` values) are rewritten
 to `{db}` so both modes compare. Choose with `--isolation database|process`.
-Caveat: in process mode the word `master` is rewritten too.
 
 
 ## Writing a case
@@ -350,12 +350,12 @@ Start the host with `--database NAME` so the app's database exists at login
   dateformat.cases.json` and `language.cases.json` (SET DATEFORMAT ×
   shapes × types with TRY_CAST, 17 languages); hand-written
   `settings/*.sql` cover ALTER DATABASE, database collation, RCSI,
-  snapshot isolation and UTF-8. Two process-mode traps: (1) the emulator's
-  case database is master, which really has snapshot isolation allowed and
-  SIMPLE recovery — a case about database defaults must CREATE and USE a
-  database of its own (settings/snapshot-isolation.sql); (2) "master" in
-  emulator output is rewritten to `{db}`, so steps that print
-  "Changed database context to 'master'" must be `setup` steps.
+  snapshot isolation and UTF-8. (Corrected 2026-10-04 tail5: the
+  process-mode traps noted here, a case database that was master and
+  "master" rewritten to `{db}`, are gone; process isolation now runs each
+  case in its own database. The existing cases that CREATE and USE their
+  own database or keep "Changed database context to 'master'" in setup
+  steps still pass.)
   `ALTER DATABASE … SET READ_COMMITTED_SNAPSHOT ON` needs the database to
   itself: run it before opening `conn=2`. Quick probes without
   an expectation: `npm run probe -- file.sql [oracle|emulator|both]` prints
@@ -378,3 +378,25 @@ Start the host with `--database NAME` so the app's database exists at login
   the expanded steps of a case with its expected errors and token stream;
   `npm run probe -- out/x.sql both` remains the fastest way to learn a rule.
   Parallel forks on one oracle worked fine (captures are per case database).
+- 2026-10-04 (tail5): process isolation now creates a case database in the
+  spawned server instead of running in `master`. The six cases that failed
+  only there (gaps-catalog #107/#115/#117, sys-databases #003,
+  tedious-compat-gaps #013/#014) plus three DATABASEPROPERTYEX ones
+  (gaps-conversion #1305/#1309/#1320: master is SIMPLE, not full-text)
+  pass; no case regressed; the full run takes ~20 s longer (~1m50s). The
+  emulator's master was not wrong: those captures read `master` as
+  *another* database. Corrected: the 2026-10-04 settings note that "the
+  emulator's case database is master" no longer holds. Scratch helpers
+  worth recreating under `harness/out/`: `stepdiff.mjs <selector>` (runs a
+  case on a spawned emulator, prints every differing step with its SQL, not
+  just the first difference) and a one-connection probe that runs `----`
+  separated batches on the oracle in a fresh database. Tool trap: the agent
+  tool layer turns `\uXXXX` sequences in tool input into the characters
+  themselves (also inside heredocs); build JSON escapes in SQL with
+  `REPLACE(N'~u0041', N'~', NCHAR(92))`.
+- 2026-10-04 (tail5 fork A): `npm run bench` gained two non-ASCII ORDER BY
+  queries (`N'é' + v` shared prefix, `NCHAR(224 + id % 30) + v`). After the
+  collation fast path, ORDER BY / GROUP BY / DISTINCT over 20k ASCII strings
+  take ~25-55 ms (integers ~12-28 ms; before ~350 ms); strings first
+  differing at an accented character still take the element-array path
+  (~120 ms at 20k).

@@ -205,6 +205,13 @@ fn describe_facts(
   j : Int,
 ) -> Array[@types.Value] {
   let c = bq.columns[j]
+  // captured (json4): json is described as varchar(max)
+  // Latin1_General_100_BIN2_UTF8, the type TDS 7.4 clients receive
+  let c = if c.ty is Json {
+    { ..c, ty: VarChar(None, @types.json_collation), }
+  } else {
+    c
+  }
   let r = Array::make(35, @types.Value::Null)
   let (st, _, len, p, sc) = type_ids(c.ty)
   let base = c.origin is (BaseColumn(_) | InsertableIdentity)
@@ -239,7 +246,9 @@ fn describe_facts(
   r[21] = Bit(false)
   r[27] = Bit(identity)
   r[29] = Bit(base && !identity)
-  r[30] = Bit(!base)
+  // captured (msduck json-aggregates#037/#069): aggregates are not
+  // computed columns; a json-typed aggregate is (origin Computed)
+  r[30] = Bit(!base && !(c.origin is Aggregate))
   r[31] = Bit(false)
   if !q.order_by.is_empty() {
     for k, ord in bq.order {

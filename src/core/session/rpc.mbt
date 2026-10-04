@@ -150,6 +150,9 @@ fn Session::bind_params(
           ty,
           dates=self.rt.dates,
         ) catch {
+          // captured (json4/procs): text that is not JSON keeps its 13609
+          @types.SqlError(number=13609 | 13645 | 1007, ..) as e if ty is Json =>
+            raise e
           _ => raise arg_conversion_error(a.ty, ty, conv_state)
         }
       _ =>
@@ -1193,6 +1196,12 @@ fn Session::exec_proc_stmt(
     }
   }
   let b = self.bind_params(params, bound, owner=Some(proc.name), conv_state=5) catch {
+    // captured (json4/procs): a json argument that does not parse is a
+    // batch-level error (ERROR, DONE 253; no DONEPROC)
+    @types.SqlError(number=13609 | 13645 | 1007, ..) as err => {
+      self.error_line = Some(0)
+      raise err
+    }
     @types.SqlError(..) as err => {
       self.callee_error(err, 0, Some(proc.name))
       return

@@ -12,6 +12,10 @@
 /// converted). Order from `.claude/skills/t-sql/data-types.md` §1.
 pub fn precedence(t : SqlType) -> Int {
   match t {
+    // captured (json4): every other type converts to json in CASE /
+    // COALESCE / UNION ALL (206 "int is incompatible with json", also for
+    // sql_variant and xml)
+    Json => 29
     Variant => 28
     Xml => 27
     DateTimeOffset(_) => 26
@@ -90,6 +94,10 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
     return true
   }
   match (ff, tf) {
+    // json: only character types convert to it implicitly; it converts to
+    // nothing implicitly (captured json4: 257 to strings, 206 otherwise)
+    (FString, FJson) => true
+    (FJson, _) | (_, FJson) => false
     // sql_variant: anything it can hold converts to it implicitly; it
     // converts to nothing else implicitly (captured 257)
     (_, FVariant) => variant_can_hold(from)
@@ -129,6 +137,8 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     // out of a variant: checked against the base type at run time
     (FVariant, _) => true
     (FXml, FString | FBinary) => true
+    // captured json4: json converts explicitly to character types only
+    (FJson, FString) => true
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
     (FBinary, FDateTime) => is_legacy_datetime(to)
@@ -154,6 +164,11 @@ pub fn explicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
 pub fn implicit_conversion_error(from : SqlType, to : SqlType) -> SqlError {
   // captured: a max type or timestamp assigned to sql_variant is 206
   if to is Variant && !(from is Variant) {
+    return type_clash_error(from, to)
+  }
+  // captured (json4): json to/from a non-character type is 206
+  if (to is Json && from.family() != FString) ||
+    (from is Json && to.family() != FString) {
     return type_clash_error(from, to)
   }
   // captured (xml/type): xml to/from a non-character type is 206
@@ -341,9 +356,9 @@ pub fn arith_result_type(
   if a is Variant || b is Variant {
     raise variant_arith_error(op, a, b)
   }
-  // captured (xml/type): xml + xml is 8117, xml + nvarchar 402
-  if a is Xml || b is Xml {
-    if a is Xml && b is Xml {
+  // captured (xml/type, json4): xml + xml is 8117, xml + nvarchar 402
+  if a is (Xml | Json) || b is (Xml | Json) {
+    if a == b {
       raise invalid_operand_error(a, op)
     }
     raise sql_error(

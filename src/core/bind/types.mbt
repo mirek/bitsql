@@ -108,10 +108,23 @@ pub fn resolve_type(
     "text" => Text(collation)
     "ntext" => NText(collation)
     "image" => Image
-    // SQL Server 2025's json type (sent to clients as varchar(max) UTF-8):
-    // not emulated, and never 2715/243, which would claim it does not exist
-    "json" if t.schema is None =>
-      raise @types.not_supported("the json data type")
+    // SQL Server 2025's json type (sent to clients as varchar(max) UTF-8);
+    // captured json4: `json(100)` is 2716
+    "json" if t.schema is None || t.schema.unwrap().name.to_lower() == "sys" => {
+      if !t.args.is_empty() && ctx == Conversion {
+        raise @types.sql_error(
+          291,
+          "CAST or CONVERT: invalid attributes specified for type '\{t.name}'",
+        )
+      }
+      if !t.args.is_empty() {
+        raise @types.sql_error(
+          2716,
+          "Column, parameter, or variable #1: Cannot specify a column width on data type \{t.name}.",
+        )
+      }
+      Json
+    }
     // CLR system types exist in SQL Server but are not emulated
     "hierarchyid" | "geometry" | "geography" | "vector" if t.schema is None ||
       t.schema.unwrap().name.to_lower() == "sys" =>

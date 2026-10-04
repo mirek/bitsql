@@ -11,7 +11,12 @@
 /// "holds" another variant by copying it.
 pub fn variant_can_hold(t : SqlType) -> Bool {
   !(t
-  is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None) | RowVersion | Xml))
+  is (VarChar(None, _)
+  | NVarChar(None, _)
+  | VarBinary(None)
+  | RowVersion
+  | Xml
+  | Json))
 }
 
 ///|
@@ -70,7 +75,8 @@ pub fn assign(
 pub fn check_assign(from : SqlType, to : SqlType) -> Unit raise SqlError {
   // xml never converts implicitly to another type, and only strings and
   // binary convert to it (captured: xml/type 257/206)
-  if (from is Xml || to is Xml) && !can_convert_implicitly(from, to) {
+  if (from is (Xml | Json) || to is (Xml | Json)) &&
+    !can_convert_implicitly(from, to) {
     raise implicit_conversion_error(from, to)
   }
   // captured: INSERT of an int into text is 206 "Operand type clash: int
@@ -103,7 +109,7 @@ fn variant_rank(t : SqlType) -> Int {
     FString => 3
     FBinary => 2
     FGuid => 1
-    FVariant | FXml => 0
+    FVariant | FXml | FJson => 0
   }
 }
 
@@ -301,7 +307,7 @@ fn fixed_storage(t : SqlType) -> Int {
     VarChar(n, _) | VarBinary(n) => n.unwrap_or(0)
     NVarChar(n, _) => n.unwrap_or(0) * 2
     RowVersion => 8
-    Variant | Xml | Text(_) | NText(_) | Image => 0
+    Variant | Xml | Json | Text(_) | NText(_) | Image => 0
   }
 }
 

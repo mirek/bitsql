@@ -22,21 +22,30 @@ fn bind_json2_fn(
 ) -> @ir.Expr? raise @types.SqlError {
   let object = name.has_prefix("JSON_OBJECT")
   if object || name.has_prefix("JSON_ARRAY") {
-    if name.has_suffix(" RETURNING JSON") {
-      raise @types.not_supported("JSON_OBJECT/JSON_ARRAY RETURNING json")
-    }
+    let returning = name.has_suffix(" RETURNING JSON")
     let base = if object { "JSON_OBJECT" } else { "JSON_ARRAY" }
     // defaults: JSON_OBJECT NULL ON NULL, JSON_ARRAY ABSENT ON NULL
-    let absent = if name.has_suffix(" ABSENT ON NULL") {
+    let absent = if name.contains(" ABSENT ON NULL") {
       true
-    } else if name.has_suffix(" NULL ON NULL") {
+    } else if name.contains(" NULL ON NULL") {
       false
     } else {
       !object
     }
     let bound = call.args.map(a => bind_expr(env, a))
+    // captured (json4, msduck json-constructors#018/#019): RETURNING JSON
+    // or a json-typed value makes the result the json type (lower-case
+    // flag: the executor normalizes the text)
+    let json = returning || bound.iter().any(b => b.ty is Json)
     let flags = StringBuilder()
-    flags.write_char(if absent { 'A' } else { 'N' })
+    flags.write_char(
+      match (absent, json) {
+        (true, false) => 'A'
+        (false, false) => 'N'
+        (true, true) => 'a'
+        (false, true) => 'n'
+      },
+    )
     for i, b in bound {
       if !object || i % 2 == 1 {
         flags.write_string(json_flag(env, b))
@@ -46,7 +55,15 @@ fn bind_json2_fn(
       @ir.Expr::lit(String(flags.to_string()), nvarchar(Some(4000))),
     ]
     return Some(
-      named(base, args + bound, NVarChar(None, @types.default_collation)),
+      named(
+        base,
+        args + bound,
+        if json {
+          Json
+        } else {
+          NVarChar(None, @types.default_collation)
+        },
+      ),
     )
   }
   if name == "JSON_PATH_EXISTS" {
@@ -60,7 +77,7 @@ fn bind_json2_fn(
   let is_string = (t : @types.SqlType) => {
     t is (Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _))
   }
-  if !is_null_lit(b[0]) && !is_string(b[0].ty) {
+  if !is_null_lit(b[0]) && !is_string(b[0].ty) && !(b[0].ty is Json) {
     raise bad_arg_type(b[0].ty, 1, "json_modify")
   }
   if is_null_lit(b[1]) {
@@ -71,8 +88,10 @@ fn bind_json2_fn(
   }
   // captured: strings, exact and approximate numerics and bit; money,
   // date/time, binary, LOB, sql_variant and uniqueidentifier are 8116
+  // captured (json4): a json new value needs a json document
   let value_ok = is_null_lit(b[2]) ||
     is_string(b[2].ty) ||
+    (b[2].ty is Json && b[0].ty is Json) ||
     b[2].ty
     is (TinyInt
     | SmallInt
@@ -87,8 +106,17 @@ fn bind_json2_fn(
     raise bad_arg_type(b[2].ty, 3, "json_modify")
   }
   let flag = @ir.Expr::lit(String(json_flag(env, b[2])), nvarchar(Some(4000)))
+  // captured (json4): JSON_MODIFY of a json document returns json
   Some(
-    named("JSON_MODIFY", b + [flag], NVarChar(None, @types.default_collation)),
+    named(
+      "JSON_MODIFY",
+      b + [flag],
+      if b[0].ty is Json {
+        Json
+      } else {
+        NVarChar(None, @types.default_collation)
+      },
+    ),
   )
 }
 
@@ -122,7 +150,7 @@ fn bind_json_path_exists(
   arity("JSON_PATH_EXISTS", call.args, 2)
   let b = call.args.map(a => bind_expr(env, a))
   for i, x in b {
-    if !is_null_lit(x) && x.ty.family() != FString {
+    if !is_null_lit(x) && x.ty.family() != FString && !(i == 0 && x.ty is Json) {
       raise bad_arg_type(x.ty, i + 1, "json_path_exists")
     }
   }

@@ -24,11 +24,13 @@ pub fn json_modify(String, String, String?) -> String raise JsonError
 
 pub fn json_path_exists(String, String) -> Int raise JsonError
 
-pub fn json_query(String, path? : String, lob? : Bool) -> String? raise JsonError
+pub fn json_query(String, path? : String, lob? : Bool, json_type? : Bool) -> String? raise JsonError
 
-pub fn json_value(String, String, lob? : Bool) -> String? raise JsonError
+pub fn json_value(String, String, lob? : Bool, json_type? : Bool) -> String? raise JsonError
 
-pub fn openjson(String, path? : String) -> Array[OpenJsonRow] raise JsonError
+pub fn json_value_kind(String, String) -> Int? raise JsonError
+
+pub fn openjson(String, path? : String, json_type? : Bool) -> Array[OpenJsonRow] raise JsonError
 
 pub fn parse_path(String, allow_append? : Bool) -> Path raise JsonError
 

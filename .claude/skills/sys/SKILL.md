@@ -166,6 +166,17 @@ mention the correction here.
   uses_quoted_identifier, sys.tables.uses_ansi_nulls and OBJECTPROPERTY
   IsAnsiNullsOn / ExecIsAnsiNullsOn / IsQuotedIdentOn / ExecIsQuotedIdentOn
   report the CREATE-time settings (Exec* NULL for tables).
+- 2026-10-04 (tail5 fork B2, corpus `tail5/b2-lob-space`,
+  `b2-schema-transfer`): sys.tables.lob_data_space_id stays 1 after a LOB
+  column is dropped or narrowed, and through TRUNCATE and REBUILD; a
+  rolled-back ADD leaves 0 (`store.Table.lob_used`). ALTER SCHEMA TRANSFER
+  keeps the object_id and moves constraints and triggers with the table.
+- 2026-10-04 (json type, corpus `json4/type-columns`): sys.types already
+  had the json row (244/244, max_length -1); json columns are
+  system_type_id 244, max_length -1, precision/scale 0, collation NULL;
+  INFORMATION_SCHEMA.COLUMNS DATA_TYPE json, lengths -1, no character set;
+  sp_help prints Type json, Length -1, blank Prec/Scale; **sp_columns omits
+  json columns**; a json column counts as LOB for lob_data_space_id.
 
 # MSSQL System Catalog Views - Implementation Specification
 

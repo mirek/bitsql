@@ -157,6 +157,9 @@ fn bind_percentile(
   if !cont && key.ty is Xml {
     raise xml_not_comparable()
   }
+  if !cont && key.ty is Json {
+    raise json_not_comparable(2)
+  }
   // bit is accepted (msduck percentile-order-type); max types print as
   // varchar(max) in the message
   if cont &&

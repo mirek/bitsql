@@ -212,3 +212,15 @@ scripts/check.sh                 # everything CI runs; must be green to push
   the record literals (moon check lists them); `{ ..c, field: v }` updates
   elsewhere keep compiling and silently carry the old value of the new
   field: grep for them.
+- 2026-10-04: adding a constructor named like a builtin type (`SqlType::Json`)
+  makes a bare `Json` in an `if` branch resolve to the core `Json` enum's
+  constructor (4203 "Using constructors as higher order function"); annotate
+  the binding (`let t : @types.SqlType = if c { Json } else { … }`). A
+  `match f() catch { e => … } { arms }` does not parse as intended (the
+  arms become a block): bind `let r = f() catch { … }` first, then match.
+  Linguistic comparison (tail5 fork A): streaming over ASCII text and
+  skipping the identical leading run (one that does not end in a space or
+  an ignorable unit) made string sorts ~10x faster;
+  `types/collation_compare_wbtest.mbt` checks the fast paths against the
+  element-array comparison on ~13M string pairs (adds ~13 s to the types
+  tests).

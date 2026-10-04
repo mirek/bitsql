@@ -27,6 +27,19 @@ pub fn cast(
   if from is Xml || to is Xml {
     return cast_xml(v, from, to, style)
   }
+  if from is Json || to is Json {
+    return match (v, to) {
+      (Null, _) => Null
+      (String(s), Json) =>
+        if from is Json {
+          v
+        } else {
+          String(json_type_normalize(s))
+        }
+      (String(s), _) => String(json_type_to_text(s, to))
+      _ => raise internal("json conversion of \{from.to_sql()}")
+    }
+  }
   if v is Null {
     return Null
   }
@@ -55,6 +68,7 @@ pub fn cast(
     FGuid => to_guid(v, from)
     FVariant => raise internal("variant target")
     FXml => raise internal("xml target")
+    FJson => raise internal("json target")
   }
 }
 

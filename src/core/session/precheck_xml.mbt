@@ -60,10 +60,11 @@ fn precheck_xml(
       Print(e) =>
         check(line, env => {
           let b = @bind.bind_expr(env, e)
-          if b.ty is Xml {
-            // captured: PRINT of xml is a compile-time 257 (xml/type#064)
+          if b.ty is (Xml | Json) {
+            // captured: PRINT of xml or json is a compile-time 257
+            // (xml/type#064, json4/type-compare)
             raise @types.implicit_conversion_error(
-              Xml,
+              b.ty,
               NVarChar(Some(1), @types.default_collation),
             )
           }
@@ -91,7 +92,8 @@ fn precheck_xml(
 }
 
 ///|
-/// Compile errors of xml expressions (numbers and messages captured).
+/// Compile errors of xml and json-type expressions (numbers and messages
+/// captured: xml/, json4/).
 fn xml_compile_error(e : @types.SqlError) -> Bool {
   let m = e.message()
   match e.number() {
@@ -108,13 +110,15 @@ fn xml_compile_error(e : @types.SqlError) -> Bool {
     | 9500
     | 305
     | 421
-    | 5335 => true
+    | 5335
+    | 13636 => true
     n if n >= 6800 && n < 6900 => true
     174 =>
       m.has_prefix("The value function") ||
       m.has_prefix("The query function") ||
       m.has_prefix("The exist function")
-    402 | 8116 | 8117 | 257 | 206 | 529 => m.contains("xml")
+    402 | 8116 | 8117 | 257 | 206 | 529 =>
+      m.contains("xml") || m.contains("json")
     _ => false
   }
 }

@@ -306,8 +306,9 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         None => None
       }
       variant_like_check(a, p, esc)
-      if a.ty is Xml || p.ty is Xml {
-        raise bad_arg_type(Xml, if a.ty is Xml { 1 } else { 2 }, "like")
+      if a.ty is (Xml | Json) || p.ty is (Xml | Json) {
+        let (t, n) = if a.ty is (Xml | Json) { (a.ty, 1) } else { (p.ty, 2) }
+        raise bad_arg_type(t, n, "like")
       }
       // captured: image LIKE '%b%' is 8116 for the pattern (argument 2)
       if a.ty is Image || p.ty is Image {

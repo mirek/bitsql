@@ -870,6 +870,79 @@ mention the correction here.
   state 2. 8169 (GUID) and 289 (*FROMPARTS) end the batch. SOUNDEX reads
   code page 1252 and skips upper-case H/W (compat >= 110). CONVERT of
   date/time types to binary: storage bytes, 8152 state 17 when cut.
+- 2026-10-04 (json data type, corpus `json4/`, docs/reference/json.md
+  "The json data type"): a json value is canonical text: object/array root
+  only, no whitespace, first of duplicate members kept, strings re-escaped
+  (`\u00XX` upper-case for control characters, `/` raw, lone surrogates →
+  U+FFFD), numbers with an exponent or > 38 digits through float to
+  decimal(38,10) (`1e2` → `100.0000000000`; 1007 state 5 / 3 when out of
+  range), others kept as written. Malformed text is 13609 **state 9** with a
+  **UTF-8 byte** position (string errors at the opening quote), nesting
+  beyond 128 is 13645; both end the batch at run time and TRY_CAST makes
+  them NULL (not 1007). Implicit conversions: character → json only; json →
+  character 257, anything else ↔ json 206; json has the highest precedence
+  (CASE/COALESCE/UNION ALL with strings give json). json → (n)varchar:
+  13640 for an unmappable character (best fit applies), then 13639 when too
+  short. Not comparable: 13636 state 1 (=, NULLIF, joins) / state 2 (ORDER
+  BY, GROUP BY, window keys), 421, 5335, 402 against other types, MIN/MAX
+  8117, COUNT(DISTINCT) 8117 state 2, CREATE INDEX 1978 state 3, PK 1919.
+  JSON_QUERY/JSON_MODIFY of json return json; json documents report other
+  error states (13608 state 5, OPENJSON 7 / WITH 8, 13623/13624 state 2).
+  A json argument or RETURNING JSON makes JSON_OBJECT/JSON_ARRAY/the JSON
+  aggregates return json (float overflow 8115 state 19 in constructors, 18
+  in JSON_MODIFY, 1007 in aggregates); windowed aggregates stay nvarchar.
+  `json(n)` is 2716 (declarations) / 291 (CAST); RETURNING json(n|max) is
+  accepted. DATALENGTH is the binary size (emulator error).
+- 2026-10-04 (named windows, tail5 fork B1, corpus `tail5/b1-named-window`,
+  docs/reference/tail5-b1.md): `WINDOW w AS (…)` follows HAVING and comes
+  before ORDER BY. `OVER w` / `OVER (w …)` may add elements but never
+  repeat them (4123 state 2 in OVER, 5367 state 2 in definitions). Names
+  are case-insensitive and local to their SELECT: subqueries cannot see
+  them, the SELECT's ORDER BY can. Definitions may reference later ones.
+  Errors stop the whole batch: 5362 (state 3 without a clause, 4 for a
+  missing name, 7 inside a definition including a window naming itself),
+  16211, 5365, 5364, 5366 (ranking functions state 3, offset and value
+  functions state 2). `OVER (w)` is 102 near ')'. `WINDOW` is not reserved.
+- 2026-10-04 (NEXT VALUE FOR OVER, fork B1, corpus
+  `tail5/b1-next-value-over`): values follow the OVER order, not the
+  query's ORDER BY; the same OVER shares one value per row; a different
+  OVER, or OVER mixed with a plain reference, is 11727. 11716 PARTITION BY,
+  11718 empty OVER, 11737 frame, 11717 UPDATE/MERGE/DEFAULT (1046 first for
+  a subquery in a DEFAULT), 11720 WHERE/ORDER BY, 11739 TOP/OFFSET (plain
+  form too), 11723 plain form in a query with ORDER BY. An exhausted
+  sequence sends the rows numbered before it, then 11728. `OVER (ORDER BY
+  SUM(n) OVER ())` kills the SQL Server session (596, severity 21).
+- 2026-10-04 (parser error recovery, fork B1, corpus
+  `tail5/b1-syntax-recovery`): SQL Server reports several syntax errors per
+  batch. An error at `WITH` adds 319 at the same token (`UPDATE/INSERT/
+  MERGE @t WITH (…)` give 156 then 319; `DELETE FROM @t WITH` 319 alone).
+  Statements then restart at later tokens, and the next error is reported
+  only after three tokens were accepted (yacc): `SELECT 1 x y; SELECT 2 a
+  b` gives two 102s, `SELECT 1 x y; UPDATE` one. This closes the 2026-10-04
+  open item "several syntax errors from one statement (156 + 319)".
+- 2026-10-04 (8120/8121/8127, fork B1, corpus `tail5/b1-ungrouped-name`):
+  the column is qualified by the FROM object name as written (schema
+  included, brackets removed, original case), even when aliased; derived
+  tables use their alias. A name ambiguous among FROM sources is 209 even
+  when one copy is grouped.
+- 2026-10-04 (READPAST, hints, sp_prepare; tail5 fork B2, corpus
+  `tail5/b2-*`, docs/reference/tail5-b2.md): READPAST outside READ
+  COMMITTED/REPEATABLE READ is 650 at run time, only when the table is read
+  (after COLMETADATA; DONE 253 for DML and assignments); it ends the batch,
+  rolls back the transaction, and TRY catches it. The isolation is the
+  table hint, else the session level; SNAPSHOT fails, READ_COMMITTED_SNAPSHOT
+  passes. UPDATE/DELETE/MERGE targets ignore a READ UNCOMMITTED session,
+  UPDATE/DELETE pass a WHERE that is exactly clustered PK = constant or
+  variable. READPAST on an INSERT target is 4102 for the batch. INDEX hints
+  on views are INFO 4430 at compile time per reference, on DML targets
+  1069. `t (a, b)` gives 207s then 215 (line 13 when schema-qualified);
+  `t alias (NOLOCK, X)` 1018 or 102 near X. EXEC sp_prepare of DML,
+  assignments, SET, PRINT, CREATE TABLE or BEGIN TRAN sends DONEINPROC with
+  the statement's CurCmd (count 0 for DML and assignments); compile errors
+  give the error + 8180; DECLARE and IF prepare deferred (8182). ALTER
+  SCHEMA … TRANSFER (OBJECT::/TYPE::) keeps the object_id, moves
+  constraints and triggers, sends no DONE; errors 15151, 15530, 33144, 2710
+  at CurCmd 170.
 
 # T-SQL Language Reference
 

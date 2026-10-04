@@ -14,10 +14,10 @@ fn eval_json_agg(
   if rows.is_empty() {
     return Null
   }
-  let (object, absent, raw) = match call.func {
-    JsonObjectAgg(absent~, raw~) => (true, absent, raw)
-    JsonArrayAgg(absent~, raw~) => (false, absent, raw)
-    _ => (false, true, false)
+  let (object, absent, raw, json) = match call.func {
+    JsonObjectAgg(absent~, raw~, json~) => (true, absent, raw, json)
+    JsonArrayAgg(absent~, raw~, json~) => (false, absent, raw, json)
+    _ => (false, true, false, false)
   }
   let ordered = if call.order.is_empty() {
     rows.to_owned()
@@ -62,5 +62,9 @@ fn eval_json_agg(
     }
   }
   buf.write_char(if object { '}' } else { ']' })
-  String(buf.to_string())
+  if json {
+    String(@types.json_type_normalize(buf.to_string()))
+  } else {
+    String(buf.to_string())
+  }
 }

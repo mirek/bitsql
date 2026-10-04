@@ -607,6 +607,12 @@ fn Session::alter_column(
     None => self.scope_collation(scope)
   }
   let ty = @bind.resolve_type(type_, Declaration, collation)
+  // captured (json4/type-columns): json → nvarchar(max) is 257 (no 3621)
+  if (old.ty is Json || ty is Json) &&
+    old.ty != ty &&
+    !@types.can_convert_implicitly(old.ty, ty) {
+    raise @types.implicit_conversion_error(old.ty, ty)
+  }
   self.check_ansi_padding(ty)
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL
   let nullable = nullable.unwrap_or(true)
@@ -974,6 +980,14 @@ fn Session::exec_create_index(
       raise @types.sql_error(
         1909,
         "Cannot use duplicate column names in index. Column name '\{tc.name}' listed more than once.",
+      )
+    }
+    // captured (json4/type-compare): CREATE INDEX on json is 1978 state 3
+    if tc.ty is Json {
+      raise @types.sql_error(
+        1978,
+        "Column '\{tc.name}' in table '\{object_text(ci.table)}' is of a type that is invalid for use as a key column in an index or statistics.",
+        state=3,
       )
     }
     if invalid_key_type(tc.ty) {

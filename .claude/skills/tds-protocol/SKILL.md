@@ -100,6 +100,13 @@ mention the correction here.
   sends ENVCHANGE database, INFO 5701, ENVCHANGE SQL_COLLATION, DONE 226
   (always, also for an unchanged collation); SET LANGUAGE sends ENVCHANGE
   language (new name = the language's own name, e.g. Deutsch) and INFO 5703.
+- 2026-10-04 (json type, corpus `json4/`): SQL Server 2025 sends json
+  columns and values to TDS 7.4 clients (tedious 20.3.3 negotiates no JSON
+  feature extension) as BIGVARCHAR 0xA7 max length 0xFFFF (PLP) with the
+  collation of Latin1_General_100_BIN2_UTF8 (LCID 1033, flags byte 0x60 =
+  fUTF8 | BIN2, version 2, sort id 0; describe's tds_collation_id
+  637535241) and UTF-8 data; column flags carry no fCaseSen. bitsql maps
+  `SqlType::Json` to that TYPE_INFO in `session/wire.mbt`.
 
 
 # TDS Protocol Reference

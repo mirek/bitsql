@@ -213,6 +213,7 @@ pub fn Table::has_lob(self : Table) -> Bool {
     | NVarChar(None, _)
     | VarBinary(None)
     | Xml
+    | Json
     | Text(_)
     | NText(_)
     | Image)

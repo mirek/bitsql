@@ -28,6 +28,10 @@ fn is_json_expr(env : Env, e : @ir.Expr) -> Bool {
 
 ///|
 fn json_expr_in(e : @ir.Expr, col : (Int, Int) -> Bool) -> Bool {
+  // the json type is JSON text (captured json4/type-functions)
+  if e.ty is Json {
+    return true
+  }
   match e.kind {
     Call(JsonQuery, _) => true
     Call(Named("JSON_MODIFY" | "JSON_OBJECT" | "JSON_ARRAY"), _) => true

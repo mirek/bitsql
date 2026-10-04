@@ -12,8 +12,12 @@ priv struct States {
 }
 
 ///|
-fn states(lob : Bool) -> States {
-  if lob {
+fn states(lob : Bool, json_type : Bool) -> States {
+  // json-type documents (captured json4/type-functions): 13608 state 5,
+  // 13623/13624 state 2, several values 13623/13624 state 2
+  if json_type {
+    { doc: 1, missing: 5, scalar: 2, container: 2, many: 2, }
+  } else if lob {
     { doc: 2, missing: 2, scalar: 1, container: 1, many: 4, }
   } else {
     { doc: 1, missing: 1, scalar: 2, container: 2, many: 3, }
@@ -32,6 +36,7 @@ fn multi_hit(
   st : States,
   value : Bool,
   lob : Bool,
+  json_type : Bool,
 ) -> Hit? raise JsonError {
   let hits = match select_all(doc, p, st.doc, lob~) {
     NullHit => return None
@@ -46,6 +51,12 @@ fn multi_hit(
   }
   match hits {
     [h] if wanted(h) => Some(h)
+    [_, _, ..] if p.strict && json_type =>
+      if value {
+        raise JsonError(13623, st.many, SCALAR_MESSAGE)
+      } else {
+        raise JsonError(13624, st.many, CONTAINER_MESSAGE)
+      }
     [_, _, ..] if p.strict =>
       if value {
         raise JsonError(13608, st.missing, MISSING_MESSAGE)
@@ -64,11 +75,12 @@ pub fn json_value(
   doc : String,
   path : String,
   lob? : Bool = false,
+  json_type? : Bool = false,
 ) -> String? raise JsonError {
   let p = parse_path(path)
-  let st = states(lob)
+  let st = states(lob, json_type)
   let hit = if p.is_multi() {
-    match multi_hit(doc, p, st, true, lob) {
+    match multi_hit(doc, p, st, true, lob, json_type) {
       Some(h) => h
       None => return None
     }
@@ -109,11 +121,12 @@ pub fn json_query(
   doc : String,
   path? : String = "$",
   lob? : Bool = false,
+  json_type? : Bool = false,
 ) -> String? raise JsonError {
   let p = parse_path(path)
-  let st = states(lob)
+  let st = states(lob, json_type)
   if p.is_multi() {
-    return multi_hit(doc, p, st, false, lob).map(h => {
+    return multi_hit(doc, p, st, false, lob, json_type).map(h => {
       doc.unsafe_substring(start=h.start, end=h.end)
     })
   }
@@ -177,6 +190,17 @@ pub fn json_path_exists(doc : String, path : String) -> Int raise JsonError {
 }
 
 ///|
+/// The kind code (0 null .. 5 object) of the single value a lax path
+/// selects, or None (OPENJSON WITH json columns parse only strings).
+pub fn json_value_kind(doc : String, path : String) -> Int? raise JsonError {
+  let p = parse_path(path)
+  if p.is_multi() {
+    return None
+  }
+  select(doc, { ..p, strict: false, }, 1).map(h => h.kind.code())
+}
+
+///|
 pub(all) enum IsJsonType {
   Default // object or array
   Value
@@ -228,6 +252,7 @@ pub(all) struct OpenJsonRow {
 pub fn openjson(
   doc : String,
   path? : String = "$",
+  json_type? : Bool = false,
 ) -> Array[OpenJsonRow] raise JsonError {
   let p = parse_path(path)
   if p.is_multi() {
@@ -247,13 +272,27 @@ pub fn openjson(
   let hit = match select(doc, p, 4) {
     None =>
       if p.strict {
-        raise JsonError(13608, 3, MISSING_MESSAGE)
+        // json-type documents report state 7 (captured json4)
+        raise JsonError(13608, if json_type { 7 } else { 3 }, MISSING_MESSAGE)
       } else {
         return []
       }
     Some(h) => h
   }
   let rows = []
+  // captured (json4): a strict path to a scalar is 13611 (state 3 for a
+  // json-type document)
+  if p.strict && !(hit.kind is (Object | Array)) {
+    raise JsonError(
+      13611,
+      if json_type {
+        3
+      } else {
+        1
+      },
+      "Value referenced by JSON path is not an array or object and cannot be opened with OPENJSON.",
+    )
+  }
   guard hit.kind is (Object | Array) else { return rows }
   let s : Scanner = { text: doc, pos: hit.start + 1, doc_state: 4, }
   s.ws()

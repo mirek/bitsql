@@ -1526,7 +1526,9 @@ fn module_matches(kind : @ast.DropKind, m : @store.ObjectKind) -> Bool {
 /// Types that cannot be index key columns (1919): the max types.
 fn invalid_key_type(ty : @types.SqlType) -> Bool {
   // also text/ntext/image (captured: harness/corpus/conversion/lob-table)
-  ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None)) || ty.is_lob()
+  // json too (captured: json4/type-compare, PRIMARY KEY is 1919 + 1750)
+  ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None) | Json) ||
+  ty.is_lob()
 }
 
 ///|

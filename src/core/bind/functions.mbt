@@ -92,7 +92,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       }
       // captured: an xml result stays nullable (xml/type#043), as does
       // ISNULL(CAST(0x.. AS image), 'x') (text: not)
-      let nullable = ty is (Xml | Image) || !(known(b[0]) || known(b[1]))
+      let nullable = ty is (Xml | Json | Image) || !(known(b[0]) || known(b[1]))
       mk(Call(IsNull, [first, second]), ty, nullable)
     }
     "COALESCE" => {
@@ -234,14 +234,16 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       // captured probes: nvarchar(max) only for a max input, else
       // nvarchar(4000) (traps/json-lax-strict)
       let n = if is_max_string(b[0].ty) { None } else { Some(4000) }
-      constant_json_check(mk(Call(JsonQuery, b), nvarchar(n), true))
+      // captured (json4): JSON_QUERY of a json value returns json
+      let ty : @types.SqlType = if b[0].ty is Json { Json } else { nvarchar(n) }
+      constant_json_check(mk(Call(JsonQuery, b), ty, true))
     }
     "ISJSON" => {
       arity_range(name, args, 1, 2)
       // captured: a non-character argument (also a typed NULL) is 8116
       // (msduck isjson-coercion); text/ntext are rejected by lob_guard
       let x = bind_expr(env, args[0])
-      if !is_null_lit(x) && x.ty.family() != FString {
+      if !is_null_lit(x) && x.ty.family() != FString && !(x.ty is Json) {
         raise bad_arg_type(x.ty, 1, "isjson")
       }
       if args.length() == 2 {

@@ -427,12 +427,22 @@ fn call(
             state=8,
           )
         (Null, _) => Null
-        (String(doc), String(path)) =>
-          match
-            json(() => @json.json_value(doc, path, lob=json_lob(args[0].ty))) {
+        (String(doc), String(path)) => {
+          let r = json(() => {
+            @json.json_value(
+              doc,
+              path,
+              lob=json_lob(args[0].ty),
+              json_type=args[0].ty is Json,
+            )
+          }) catch {
+            e => raise json_doc_error(args[0].ty, e)
+          }
+          match r {
             Some(s) => String(s)
             None => Null
           }
+        }
         _ => raise @types.not_supported("JSON_VALUE on non-character input")
       }
     JsonQuery => {
@@ -445,12 +455,22 @@ fn call(
             state=8,
           )
         (Null, _) => Null
-        (String(doc), String(p)) =>
-          match
-            json(() => @json.json_query(doc, path=p, lob=json_lob(args[0].ty))) {
+        (String(doc), String(p)) => {
+          let r = json(() => {
+            @json.json_query(
+              doc,
+              path=p,
+              lob=json_lob(args[0].ty),
+              json_type=args[0].ty is Json,
+            )
+          }) catch {
+            e => raise json_doc_error(args[0].ty, e)
+          }
+          match r {
             Some(s) => String(s)
             None => Null
           }
+        }
         _ => raise @types.not_supported("JSON_QUERY on non-character input")
       }
     }
@@ -473,6 +493,16 @@ fn call(
 /// reports other error states for those; see `@json.json_value`).
 fn json_lob(t : @types.SqlType) -> Bool {
   t is (VarChar(None, _) | NVarChar(None, _))
+}
+
+///|
+/// Error states of a json-type document (`json_type_error`).
+fn json_doc_error(t : @types.SqlType, e : @types.SqlError) -> @types.SqlError {
+  if t is Json {
+    json_type_error(e)
+  } else {
+    e
+  }
 }
 
 ///|

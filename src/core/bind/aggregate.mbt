@@ -48,14 +48,14 @@ fn agg_result_type(
     (Min | Max, Some(t)) =>
       match t {
         // captured: xml/type (MAX(xml) is 8117)
-        Bit | Xml =>
+        Bit | Xml | Json =>
           raise invalid_operand(t, if f is Min { "min" } else { "max" })
         _ => t
       }
     (StringAgg, Some(t)) =>
       match t {
         // captured: 8116 (variant/functions.sql, msduck string-agg#022)
-        Variant | Xml | Binary(_) | VarBinary(_) | RowVersion =>
+        Variant | Xml | Json | Binary(_) | VarBinary(_) | RowVersion =>
           raise bad_arg_type(t, 1, "string_agg")
         VarChar(None, _) | NVarChar(None, _) => t
         NChar(_, c) | NVarChar(_, c) => NVarChar(Some(4000), c)
@@ -178,6 +178,15 @@ fn bind_agg_call(
   }
   // captured: MIN/MAX/COUNT/… of text, ntext or image is 8117 (COUNT
   // DISTINCT state 2); STRING_AGG is 8116
+  // captured (json4/type-compare): COUNT(DISTINCT json) is 8117 state 2
+  // (COUNT(json) works)
+  if arg is Some(a) && a.ty is Json && call.distinct {
+    raise err(
+      8117,
+      "Operand data type json is invalid for \{name.to_lower()} operator.",
+      state=2,
+    )
+  }
   if arg is Some(a) && a.ty.is_lob() {
     if f is StringAgg {
       raise bad_arg_type(a.ty, 1, "string_agg")
@@ -231,6 +240,12 @@ fn bind_window_call(
     let k = bind_expr(env, o.expr)
     @ir.SortKey::{ expr: k, desc: o.desc, collation: k.ty.collation(), }
   })
+  // captured (json4/type-compare): json PARTITION BY / ORDER BY keys are
+  // 13636 state 2
+  if partition.iter().any(p => p.ty is Json) ||
+    order.iter().any(k => k.expr.ty is Json) {
+    raise json_not_comparable(2)
+  }
   let needs_order = () => {
     if order.is_empty() {
       raise err(
@@ -354,7 +369,11 @@ fn bind_window_call(
     }
     "JSON_ARRAYAGG" | "JSON_OBJECTAGG" => {
       let (f, args) = bind_json_agg_window(env, name, call)
-      mk_call(f, args, NVarChar(None, env.collation))
+      let ty = match f {
+        Agg(a, ..) => json_agg_type(env, a)
+        _ => NVarChar(None, env.collation)
+      }
+      mk_call(f, args, ty)
     }
     _ =>
       match agg_fn(name) {
