@@ -39,7 +39,27 @@ mention the correction here.
   (completions: DONEINPROC per statement, RETURNSTATUS 0, final DONEPROC with
   curCmd 224); only `execSqlBatch` sends a SQL batch. `callProcedure` with an
   output param yields RETURNSTATUS before RETURNVALUE before DONEPROC.
-
+- 2026-10-04 (harness/orm, ORM compatibility suite): knex 3.3.0 binds
+  every Buffer as VarBinary with `length: 'max'` (a string); tedious
+  20.3.3 compares it numerically, declares varbinary(max) but writes the
+  PLP value without its terminator, so real SQL Server answers 4002 and
+  Buffer inserts through knex fail (`db.raw('0x..')` works). An empty
+  Buffer bound by tedious without a length declares max length 0: 8016.
+  Transaction isolation levels set by tedious's beginTransaction (knex
+  `isolationLevel`, TypeORM, Sequelize) stay on the pooled connection
+  after commit (a later snapshot-level transaction leaks 3952 into the
+  next query). Prisma 7: the client needs no engine binary (query compiler
+  + `@prisma/adapter-mssql` over `mssql`/tedious, `encrypt:false` works);
+  the CLI's schema engine is Rust/tiberius, whose `encrypt=false` still
+  means login-only TLS, so against bitsql use `encrypt=DANGER_PLAINTEXT`.
+  Prisma's CLI refuses `db push --accept-data-loss` when it detects an AI
+  agent (Claude Code); plain `db push` on an empty database works.
+  Sequelize 6 mssql: `sync({ alter: true })` emits `ALTER COLUMN ...
+  DEFAULT` for columns with a defaultValue, 156 on real SQL Server too;
+  `bulkCreate({ ignoreDuplicates })` is rejected client-side. knex mssql
+  has no onConflict() and no createSchema(). TypeORM rejects an unawaited
+  promise from startTransaction on a destroyed DataSource (crashes Node
+  without an unhandledRejection handler).
 
 # tedious Client Against mssqlite
 

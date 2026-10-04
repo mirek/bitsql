@@ -162,6 +162,24 @@ Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]`
 - [x] Multiple databases: CREATE/DROP DATABASE (203/204, 1801, 3701), USE (911), login to unknown database → 4060 + 18456 (msduck capture); host `--database NAME`, `--auto-create-databases`
 - [~] Database and session settings (2026-10-04, corpus `settings/`, docs/reference/database-settings.md): ALTER DATABASE (CurCmd 215; 448/15048/12104/102 at compile time, 5011+5069, 226) with COLLATE (database default collation for literals, variables, parameters, new columns, catalog views, savepoints, case-sensitive table names; USE sends the collation ENVCHANGE, CurCmd 226), COMPATIBILITY_LEVEL, READ_COMMITTED_SNAPSHOT (no read locks, last committed state), ALLOW_SNAPSHOT_ISOLATION (3952 otherwise), CURSOR_DEFAULT, SINGLE/RESTRICTED/MULTI_USER, READ_ONLY (3906) / READ_WRITE, RECOVERY, ANSI option defaults; CREATE DATABASE COLLATE; sys.databases and DATABASEPROPERTYEX follow; DBCC USEROPTIONS; SET DATEFORMAT (six orders, both parsers) and SET LANGUAGE (34 languages from sys.syslanguages: month/day names, date order, DATEFIRST, localized INFO 5703, sys.syslanguages, @@LANGID); UTF-8 collations (`_SC_UTF8`, `_BIN2_UTF8`: byte lengths, wire UTF-8, COLLATE code page conversion), `_SC` LEN/LEFT/RIGHT/SUBSTRING/REVERSE, UPPER/LOWER tables per collation version. Missing: localized error messages, behaviour of compatibility levels below 170, CURSOR_DEFAULT LOCAL effect on DECLARE CURSOR, RECURSIVE_TRIGGERS ON / PARAMETERIZATION FORCED (50100), MODIFY NAME / files (50100), NOLOCK dirty reads, column names under CS database collations, CHECKSUM of UTF-8 varchar
 
+## ORM and query-builder compatibility
+
+`harness/orm` (`cd harness/orm && npm test`, not in `scripts/check.sh`):
+the same workload on the oracle and on bitsql, compared step by step
+(data, error numbers/messages, logged SQL). 2026-10-04: knex 73/73,
+Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
+
+- [x] knex 3.3.0 (tedious): migrations + lock tables, schema builder (every column type, comments via extended properties, indexes, FKs, alterTable incl. rename/drop column, views, createTableLike), CRUD with `returning`, batch inserts, joins/aggregates/CTE/union, raw, transactions with savepoints and isolation levels, row-lock hints
+- [x] Sequelize 6.37.8 (tedious): sync force/alter, describeTable/showIndex/showAllSchemas/FK queries, associations with include, paranoid/timestamps, findAndCountAll, upsert (MERGE), bulkCreate, managed/unmanaged transactions with isolation levels and savepoints
+- [x] TypeORM 1.1.1 (mssql): migration generation (schema diff) and runs, synchronize, query builder, repositories with relations, pessimistic/optimistic locks, query runner DDL and introspection
+- [x] Prisma 7.10.0: CLI schema engine (tiberius; needs `encrypt=DANGER_PLAINTEXT` against bitsql) `migrate deploy`/`status`/`diff`, `db push`, `db pull`; client via `@prisma/adapter-mssql` (CRUD, nested writes, relation filters, batch and interactive transactions, raw)
+- [x] Fixed on the way (corpus `orm/`): extended properties (sp_add/update/dropextendedproperty, sys.extended_properties, sys.fn_listextendedproperty), ODBCSCALE, DOUBLE PRECISION, qualified INSERT column lists, `db..t` names, RPC 4002/8016 decode errors instead of a dropped connection, NULL assignment to date/time/guid columns (was 529), compile-time 206/257 for typed stores, view-computed column flags through derived tables, ALTER COLUMN under a DEFAULT, OBJECT_DEFINITION(0), USE inside dynamic SQL, DISTINCT output order
+- [ ] Object ids per database (SQL Server numbers every database from 1221579390; bitsql's counter is server-wide because identity counters, compiled UDFs and key-range locks are keyed by object id alone): corpus `orm/object-ids` fails on purpose
+- [ ] Identity property of view columns (sys.columns.is_identity, COLUMNPROPERTY IsIdentity, sys.identity_columns with NULL seed, IDENT_SEED of a view): corpus `orm/view-identity-columns` fails on purpose
+- [ ] TLS (Prisma's CLI with `encrypt=false` still wants login-only TLS; tedious/mssql with `encrypt:false` are fine)
+- [ ] Extended properties beyond SCHEMA / TABLE|VIEW|PROCEDURE|FUNCTION / COLUMN (database level, INDEX, CONSTRAINT, PARAMETER, TRIGGER, TYPE …: 50100), and fn_listextendedproperty with non-constant arguments (50100)
+- [ ] Plan-dependent row order of DISTINCT with OR-ed seeks (TypeORM `known.json`)
+
 ## Phase 7: packaging
 
 - [x] Native release binary 2.7 MB (libc only); `Dockerfile` on distroless/cc: **26.4 MB image, ~0.8 MB RSS idle** (2026-10-03; 10k-row table ≈ 8 MB RSS). Possible next: static musl build on scratch (~3 MB image)

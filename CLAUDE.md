@@ -24,7 +24,7 @@ the top priority: a false green is worse than an explicit "not supported" error.
 | moonbit-docs-update | refreshing `docs/moonbit/` and pinned versions when a new toolchain or async release appears |
 | implement-feature | the oracle-first workflow for any behavior |
 | knowledge-upkeep | where each new learning goes |
-| harness | TypeScript tedious harness, corpus, capture against real MSSQL, differential runs |
+| harness | TypeScript tedious harness, corpus, capture against real MSSQL, differential runs, ORM compatibility suite (`harness/orm`) |
 | tds-protocol | MS-TDS reference with annotated hex examples |
 | t-sql | T-SQL language and semantics reference |
 | sys | `sys.*` / `INFORMATION_SCHEMA` catalog contracts |

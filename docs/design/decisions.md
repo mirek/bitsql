@@ -87,7 +87,6 @@ fidelity are unchanged. (execution.md updated.)
 - **`SqlError` (number, severity, state, message) is the core-wide error
   type**, defined in `src/core/types/error.mbt`.
 
-
 ## 2026-10-03: request restart replaces statement restart (concurrency)
 
 The engine handles each request (batch or RPC) atomically and buffers its
@@ -320,7 +319,6 @@ rows into a VALUES plan with base-like column metadata, so the executor
 stays unaware of them. sp_describe_first_result_set shares the same core
 (session/describe.mbt).
 
-
 ## 2026-10-04: database options on the server, RCSI as "no read locks"
 
 ALTER DATABASE settings live in `Server.db_options` (lowercased name →
@@ -383,7 +381,6 @@ on the partition key (was a linear search per row over all partitions), and
 COUNT/COUNT_BIG/SUM over frames that grow from the partition start are
 computed as prefix aggregates with the same per-addition overflow checks
 (running SUM over 20k rows: 8.2 s → 24 ms).
-
 
 ## 2026-10-04: sort-based grouping, statement memo for subqueries, lookup indexes
 
@@ -524,3 +521,41 @@ captured `tail/` cases, no regressions). Design points worth keeping:
   code as execution. READPAST checks run when a table is actually read
   (`bind/readpast.mbt`), because SQL Server raises 650 at run time.
 
+## 2026-10-04: ORM compatibility suite (harness/orm)
+
+Corpus 20,453/20,587 → 20,465/20,601 passing (14 new `orm/` cases, two of
+them failing on purpose to document gaps; no regressions). knex, Sequelize,
+TypeORM and Prisma run the same workload against the oracle and bitsql
+(`cd harness/orm && npm test`); only plan-dependent row order and
+server-wide object ids remain (`harness/orm/known.json`). Design points:
+
+- **The suite compares what the application observes**, step by step:
+  returned values, error numbers/messages and the SQL each tool logs.
+  Logged SQL is the sharpest probe of catalog fidelity: ORMs build later
+  queries (and migrations) from earlier catalog answers, so a different
+  row order or column flag shows up as different SQL text. Client-side
+  noise (Sequelize transaction ids, savepoint names, clock values, SQL
+  Server's generated constraint suffixes, the database name) is
+  normalized in `lib/trace.mjs`, nothing else.
+- **It stays out of `scripts/check.sh`**: ~270 npm packages, a Prisma
+  schema engine binary and the oracle are needed. Every divergence is
+  reduced to a captured `harness/corpus/orm/` case, which the gate does run.
+- **Unsorted DISTINCT is sorted.** SQL Server's DISTINCT without ORDER BY
+  comes out of a sort on the select list for the small inputs ORMs read
+  (catalog queries); bitsql now sorts too instead of keeping first
+  appearance. One captured TypeORM query (DISTINCT with OR-ed seeks) keeps
+  predicate order on SQL Server: plan-dependent, listed as known.
+- **Object ids stay server-wide.** SQL Server numbers each database from
+  1221579390; bitsql's counter is shared because identity counters,
+  compiled UDFs and key-range locks are keyed by object id alone. A
+  per-database counter was tried and reverted: identity values of tables
+  in different databases collided at once. Doing it right means keying
+  those by (database, id) first (roadmap).
+- **Malformed RPCs are answered, not dropped.** Decode errors that SQL
+  Server reports (4002 truncated PLP, 8016 zero-length TYPE_INFO) are a
+  `TdsError::RpcStream` the engine turns into ERROR (+ rollback) + DONE;
+  other malformed input still closes the connection.
+- **System procedures implemented in T-SQL inside SQL Server**
+  (sp_addextendedproperty …) are emulated for results and errors only;
+  their internal DONEINPROC/ENVCHANGE streams are masked in the corpus
+  (`-- @mask tokens/stream/done/rowCount`).

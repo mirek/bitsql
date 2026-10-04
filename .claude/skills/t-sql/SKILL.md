@@ -1087,6 +1087,29 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   Latin1_General_100_BIN2_UTF8 (bitsql: not supported).
 
 Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17
+- 2026-10-04 (ORM suite, corpus `orm/`): an untyped NULL literal stores
+  into any column or variable (`SET d = NULL` on datetime2/date/time/
+  datetimeoffset/uniqueidentifier/xml/sql_variant); a typed source that
+  does not convert implicitly is a compile-time error before any row:
+  206 state 2 when CAST could not convert it either (`SET d = 1` on
+  datetime2, also via an int variable), 257 when only CAST could.
+  `SELECT DISTINCT` without ORDER BY comes out sorted on the select list
+  for small inputs (one OR-ed seek per predicate can instead keep predicate
+  order: plan-dependent). ALTER COLUMN under a DEFAULT constraint may change
+  length, precision, scale and nullability of the same type, not the type
+  or to/from (max) (5074 + 4922). USE inside EXEC()/sp_executesql lasts
+  for that scope only and sends neither ENVCHANGE nor 5701; USE of a
+  missing database (911) ends the batch. INSERT column lists accept up to
+  four-part names and ignore every qualifier. `db..t` means the default
+  schema. ODBCSCALE(type_id, scale) (undocumented, Prisma) converts both
+  arguments to tinyint (220 state 2) and returns the scale for type ids
+  40-43, 48, 52, 56, 58, 60, 61, 106, 108, 122, 127, else NULL.
+  sp_addextendedproperty and friends: a NULL @name is a RAISERROR (15600
+  class 15 line 22, batch runs on); every other failure (15600 states
+  1/2/3/11, 15135 states 4/8/9/15, 15233, 15217) is class 16 at line 37
+  (add) / 36 (update) / 28 (drop), ends the batch and rolls back the
+  transaction; ERROR_PROCEDURE() is the procedure. The string 'default'
+  passed to fn_listextendedproperty is a name, not DEFAULT.
 
 ## Reference Files
 

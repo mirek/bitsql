@@ -183,6 +183,22 @@ mention the correction here.
 This skill provides the complete technical specification needed to implement system catalog view emulation in the mssqlite TDS server. For each view: exact column definitions, data types, relationships to other views, seed data, and the SQLite backing-table DDL.
 
 Source: `sql-docs/docs/relational-databases/system-catalog-views/`
+- 2026-10-04 (corpus `orm/extended-properties`, `orm/prisma-introspection`,
+  `orm/view-computed-derived`): sys.extended_properties is class tinyint,
+  class_desc nvarchar(60) Latin1_General_CI_AS_KS_WS, major_id, minor_id,
+  name sysname, value sql_variant (keeps the argument's type: N'x' is
+  nvarchar(1)); properties vanish with their object or column.
+  sys.fn_listextendedproperty returns objtype varchar(128), objname and
+  name nvarchar(128) in Latin1_General_CI_AI, value sql_variant, for the
+  deepest level given (NULL names = all objects of that level).
+  OBJECT_DEFINITION(0) is NULL (a column's default_object_id when it has
+  no default). A view's computed column (catalog views included, e.g.
+  INFORMATION_SCHEMA.TABLE_CONSTRAINTS.CONSTRAINT_TYPE) reads with flags
+  33, but through a derived table, CTE or APPLY as a base column (9); a
+  table's computed column keeps 33 there, an expression is 1. A view
+  column over an identity column is is_identity 1 (sys.identity_columns
+  lists it with NULL seed; not emulated). Object ids count per database
+  from 1221579390 (bitsql: server-wide, not emulated).
 
 ## Inherited notes: @mssqlite/catalog implementation in mssqlite (not bitsql)
 

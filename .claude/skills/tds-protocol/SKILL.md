@@ -116,6 +116,19 @@ Complete reference for the Tabular Data Stream (TDS) protocol used by Microsoft 
 Source: [MS-TDS Specification](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tds/b46a581a-39de-4745-b076-ec4dbb7d13ec)
 
 MARS transport source: [MC-SMP Specification](https://learn.microsoft.com/en-us/openspecs/windows_protocols/MC-SMP/04c8edde-371d-4af5-bb33-a39b3948f0af)
+- 2026-10-04 (corpus `orm/rpc-stream-errors`): SQL Server rejects a
+  malformed RPC while decoding and keeps the connection: a PLP parameter
+  value without its terminator (tedious 20.3.3 with `length: 'max'` as a
+  string, which knex passes for every Buffer) is 4002 "The incoming tabular
+  data stream (TDS) protocol stream is incorrect. The stream ended
+  unexpectedly." state 2 when the message ends at a chunk length, state 4
+  inside chunk data; a zero max length in a variable-length TYPE_INFO is
+  8016 "Parameter N ("@x"): Data type 0xA5 has an invalid data length or
+  metadata length." (state 38 varbinary, 39 binary, 40 varchar, 41 char,
+  42 nvarchar, 43 nchar; N counts sp_executesql's own two parameters).
+  Both answer ERROR, then ENVCHANGE ROLLBACK_TXN if a transaction was open
+  (it is rolled back), then DONE(ERROR) with CurCmd 253 — no DONEPROC.
+  bitsql used to close the connection ("socket hang up").
 
 ## Reference Files
 

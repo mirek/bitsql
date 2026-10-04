@@ -1,6 +1,6 @@
 ---
 name: harness
-description: The bitsql TypeScript/Node test harness (harness/) — starting/stopping the real SQL Server oracle container, writing corpus cases (.sql with @step/@param directives), capturing expected output from the oracle, running the differential `diff` against the emulator and reading the ranked report, `npm test` semantics, port/container rules. Use when adding a corpus case, capturing, running or debugging differential/client tests.
+description: The bitsql TypeScript/Node test harness (harness/) — starting/stopping the real SQL Server oracle container, writing corpus cases (.sql with @step/@param directives), capturing expected output from the oracle, running the differential `diff` against the emulator and reading the ranked report, `npm test` semantics, port/container rules, and the ORM compatibility suite (harness/orm: knex, Sequelize, TypeORM, Prisma against oracle and emulator). Use when adding a corpus case, capturing, running or debugging differential/client/ORM tests.
 ---
 
 # bitsql harness
@@ -98,6 +98,8 @@ SELECT @out = n FROM t WHERE id = @id
   hex strings (`"0a0b"`), dates as ISO strings, bigint as a string. Types:
   `int`, `bigint`, `bit`, `decimal(p,s)`, `nvarchar(n|max)`, `varbinary(n)`,
   `datetime2(n)`, `datetimeoffset(n)`, `uniqueidentifier`, … (`src/types.mjs`).
+  `varbinary('max')` passes tedious the *string* `'max'` as the length,
+  as knex does: tedious 20.3.3 then sends a malformed PLP value (4002).
 - Error line numbers count from the first line of the step body.
 - Steps run on connection 1; after the last step a reuse probe runs there
   (`SELECT @@TRANCOUNT, XACT_STATE(); SELECT 1`) and is compared too.
@@ -238,6 +240,45 @@ npm run import:msduck-layouts -- --list                                         
   `bitsql-oracle-import-1..N` on 47340+ (CREATE DATABASE serializes inside one
   server; one oracle does ~2 cases/s). `--stop-oracles` removes them.
 
+## ORM compatibility suite (`harness/orm`)
+
+```bash
+cd harness && npm install                 # ../src helpers import tedious from here
+cd orm && npm install                     # knex, sequelize, typeorm, prisma (+ schema engine binary)
+npm run oracle:start                      # (in harness/) bitsql-oracle on 47314
+npm test                                  # all four workloads, oracle vs emulator, exit 1 on new divergences
+npm test -- knex typeorm                  # selected workloads
+npm test -- --only emulator prisma        # one target, print the trace (ORM_VERBOSE=1: values + SQL)
+ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
+```
+
+- Own `package.json` (pinned: knex 3.3.0, sequelize 6.37.8, typeorm 1.1.1,
+  prisma/@prisma/client/@prisma/adapter-mssql 7.10.0, tedious 20.3.3, mssql
+  12.7.2). Not in `scripts/check.sh` (heavy installs, needs the oracle).
+- Targets: `lib/targets.mjs` reuses `../src/oracle.mjs` and
+  `../src/emulator.mjs` (`BITSQL_ADDR`, `BITSQL_BIN`, or `moon build` +
+  spawn). One emulator process serves all workloads. Each workload gets a
+  fresh database `bitsql_orm_<name>` on both targets (Prisma also
+  `bitsql_orm_prisma_push`); oracle databases are dropped afterwards.
+- `workloads/<orm>.mjs` export `(target, trace) => …` and wrap every
+  observable operation in `trace.step(name, fn)`; loggers feed
+  `trace.logSql`. `lib/trace.mjs` normalizes clock values, generated
+  constraint suffixes, the database name, Sequelize transaction ids and
+  savepoint names; `lib/compare.mjs` reports the first difference per step.
+  `out/report.json` holds both traces.
+- `known.json` (`"<workload>/<step>": "reason"`) lists accepted
+  divergences (printed, not failing). Every other divergence is a bug:
+  reduce it to a corpus case under `corpus/orm/`, capture, fix.
+- Prisma: `prisma/schema.prisma` (+ `schema.v1.prisma` that produced the
+  two committed migrations via `prisma migrate diff`), `prisma.config.mjs`
+  reads `DATABASE_URL`; the client is generated into `prisma/generated`
+  (git-ignored) on first run. The CLI's schema engine is tiberius: the
+  emulator URL needs `encrypt=DANGER_PLAINTEXT`. The CLI refuses `db push
+  --accept-data-loss` under an AI agent; the workload never passes it.
+- Scratch probes for ORM questions live in `harness/orm/out/` (ignored):
+  a tedious script that logs every `execSql`/`execSqlBatch` text is the
+  quickest way to see what an ORM really sends.
+
 ## Findings
 
 - 2026-10-03: Local oracle is 17.0.5005.3; 1153 of 1158 importable msduck
@@ -367,6 +408,13 @@ Start the host with `--database NAME` so the app's database exists at login
   after executor changes: quadratic paths show up as 16x per 4x rows. The
   release build takes ~2 min; `BITSQL_BIN=` reuses a binary, `BENCH_ONLY=`
   selects queries by name.
+- 2026-10-04 (ORM suite): system procedures written in T-SQL inside SQL
+  Server (sp_addextendedproperty) emit internal DONEINPROC/ENVCHANGE
+  tokens and row counts; corpus cases mask them with `-- @mask tokens`,
+  `stream`, `done`, `rowCount` per step and still compare results and
+  errors. A case that needs a second database creates it with a fixed name
+  in a setup step and drops it at the end (orm/object-ids).
+  `npm run probe` rejects `@param` names that are not identifiers (`@0`).
 - 2026-10-04 (long tail round 4): `harness/src/dump-system-catalog.mjs`
   dumps sys.system_objects / system_columns for `scripts/gen-sysviews.py`.
   In process isolation the case database is master, so captures that read
