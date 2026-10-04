@@ -154,6 +154,11 @@ fn precheck_batch(
             line,
           ),
         )
+      Insert({ target, .. })
+      | Update({ target, .. })
+      | Delete({ target, .. })
+      | Merge({ target, .. }) if failure is None =>
+        failure = target_hint_error(target, line)
       Return(Some(e)) if in_proc => expr(e, line)
       Return(Some(e)) => {
         // RETURN with a value outside a procedure (batch, sp_executesql
@@ -325,4 +330,58 @@ fn redeclared_error(name : String) -> @types.SqlError {
     "The variable name '\{name}' has already been declared. Variable names must be unique within a query batch or stored procedure.",
     severity=15,
   )
+}
+
+///|
+/// Table hints SQL Server recognizes (anything else is 321).
+let known_table_hints : Array[String] = [
+  "NOEXPAND", "INDEX", "FORCESEEK", "FORCESCAN", "HOLDLOCK", "NOLOCK", "NOWAIT",
+  "PAGLOCK", "READCOMMITTED", "READCOMMITTEDLOCK", "READPAST", "READUNCOMMITTED",
+  "REPEATABLEREAD", "ROWLOCK", "SERIALIZABLE", "SNAPSHOT", "SPATIAL_WINDOW_MAX_CELLS",
+  "TABLOCK", "TABLOCKX", "UPDLOCK", "XLOCK", "KEEPIDENTITY", "KEEPDEFAULTS", "IGNORE_CONSTRAINTS",
+  "IGNORE_TRIGGERS", "FASTFIRSTROW",
+]
+
+///|
+/// Compile-time checks of a DML target's table hints, which fail the whole
+/// batch (captured: msduck gaps-merge #006/#007, stmts/merge-hints): an
+/// unknown hint is 321 (statement line), NOLOCK / READUNCOMMITTED on a
+/// target is 1065, which SQL Server always reports at line 15.
+fn target_hint_error(
+  target : @ast.TableRef,
+  line : Int,
+) -> (@types.SqlError, Int)? {
+  let hints = match target.kind {
+    Table(_, hints~, ..) | TableVar(_, hints~, ..) => hints
+    _ => []
+  }
+  for h in hints {
+    if !known_table_hints.contains(h.name) {
+      return Some(
+        (
+          @types.sql_error(
+            321,
+            "\"\{h.name.to_lower()}\" is not a recognized table hints option.",
+            severity=15,
+          ),
+          line,
+        ),
+      )
+    }
+  }
+  for h in hints {
+    if h.name == "NOLOCK" || h.name == "READUNCOMMITTED" {
+      return Some(
+        (
+          @types.sql_error(
+            1065,
+            "The NOLOCK and READUNCOMMITTED lock hints are not allowed for target tables of INSERT, UPDATE, DELETE or MERGE statements.",
+            severity=15,
+          ),
+          15,
+        ),
+      )
+    }
+  }
+  None
 }

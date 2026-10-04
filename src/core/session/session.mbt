@@ -339,6 +339,9 @@ pub struct Session {
   mut try_base : Int
   /// An error is leaving a trigger towards its firing statement.
   mut trigger_unwind : Bool
+  /// A trigger ended the transaction: the firing statement's failure must
+  /// not restore its snapshot (the trigger's later writes autocommitted).
+  mut tx_ended_in_trigger : Bool
 }
 
 ///|
@@ -414,6 +417,7 @@ pub fn Session::new(
     error_module: None,
     try_base: 0,
     trigger_unwind: false,
+    tx_ended_in_trigger: false,
   }
   server.live[spid] = session
   session

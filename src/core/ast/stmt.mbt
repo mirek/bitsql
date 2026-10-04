@@ -24,6 +24,9 @@ pub(all) enum StmtKind {
   InsertBulk(ObjectName, Array[(Ident, TypeName)], Array[String])
   CreateTable(CreateTable)
   AlterTable(ObjectName, AlterTableAction)
+  /// `ENABLE|DISABLE TRIGGER ALL|names ON table` (table None for `ON
+  /// DATABASE` / `ON ALL SERVER`); empty names means ALL.
+  EnableTrigger(enable~ : Bool, Array[Ident], ObjectName?)
   CreateIndex(CreateIndex)
   /// `DROP INDEX ix ON t` (table Some) or legacy `DROP INDEX t.ix` (None).
   /// Items: (index, table, has WITH options).

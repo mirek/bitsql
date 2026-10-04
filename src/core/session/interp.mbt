@@ -21,7 +21,13 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.stmt_line = line
   self.rt.stmt_reads = statement_reads(self.slice(s.span))
+  self.rt.stmt_dml = match s.kind {
+    Insert(_) | Update(_) | Delete(_) | Merge(_) => true
+    Select({ body: Select({ into: Some(_), .. }), .. }) => true
+    _ => false
+  }
   self.rt.null_eliminated = false
+  self.tx_ended_in_trigger = false
   self.cur_cmd = 253
   self.ddl_cmd = 0
   self.uncatchable = false
@@ -58,7 +64,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     // gaps-triggers #033, #037, #029).
     Caught(_, _, _, _) as c if self.trigger_unwind => {
       self.trigger_unwind = false
-      let rows = self.cur_cmd >= 195 && self.cur_cmd <= 197
+      // MERGE too (captured: gaps-triggers #137)
+      let rows = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
+        self.cur_cmd == 279
       if self.cur_cmd != 253 {
         self.done(self.cur_cmd, count=if rows { Some(0L) } else { None })
       }
@@ -68,7 +76,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       self.trigger_unwind = false
       let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
         self.cur_cmd == 279
-      if dml && !self.throwing {
+      // no 3621 after the nesting limit 217 (captured: gaps-triggers #076)
+      if dml && !self.throwing && self.rt.error != 217 {
         self.out.push(
           Message({
             number: 3621,
@@ -130,6 +139,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.tvars = snap_tvars
   match (snap_tx, self.tx, snap_view) {
     (Some(_), Some(tx), Some(v)) => tx.view = v
+    (None, None, _) if self.tx_ended_in_trigger =>
+      self.tx_ended_in_trigger = false
     (None, None, _) => self.server.set_db(snap_database, snap_db)
     _ => ()
   }
@@ -142,7 +153,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let raiserror = self.cur_cmd == 246 && !self.throwing
   // batch-aborting conversion errors roll back (or doom) the transaction
   // even without XACT_ABORT (captured: savepoint errors/catch runs)
-  let conversion_abort = [241, 245, 295, 8114].contains(e.number())
+  // and so does MERGE's 8672 (captured: gaps-merge #022: ERROR, then the
+  // rollback ENVCHANGE)
+  let conversion_abort = [241, 245, 295, 8114, 8672].contains(e.number())
   let xact_rollback = (
       (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
     ) &&
@@ -298,6 +311,7 @@ fn aborts_batch(
   n == 245 ||
   n == 295 ||
   n == 8114 ||
+  n == 8672 ||
   n == 529 ||
   n == 11728 ||
   n == 217 ||
@@ -707,6 +721,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     InsertBulk(name, _, options) => self.exec_insert_bulk(name, options)
     AlterSequence(name, options) =>
       self.exec_alter_sequence(name, options, s.span.line)
+    EnableTrigger(enable~, names, table) =>
+      self.exec_enable_trigger(enable, names, table)
     AlterTable(name, action) => {
       self.ddl_cmd = 216
       self.exec_alter_table(name, action)

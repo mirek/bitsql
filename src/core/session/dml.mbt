@@ -229,11 +229,14 @@ fn Session::check_row(
   self_fks? : Bool = true,
 ) -> Unit raise {
   let t = target.table
+  // captured: MERGE reports "UPDATE fails." for its INSERT and UPDATE
+  // actions alike (msduck gaps-merge #028, #029)
+  let fails = if verb == "MERGE" { "UPDATE" } else { verb }
   for i, c in t.columns {
     if !c.nullable && row[i] is Null {
       raise @types.sql_error(
         515,
-        "Cannot insert the value NULL into column '\{c.name}', table '\{self.full_name(target)}'; column does not allow nulls. \{verb} fails.",
+        "Cannot insert the value NULL into column '\{c.name}', table '\{self.full_name(target)}'; column does not allow nulls. \{fails} fails.",
         state=2,
       )
     }

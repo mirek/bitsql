@@ -1004,6 +1004,10 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           continue
         }
         match (c.identity, c.default_) {
+          // an INSTEAD OF INSERT trigger sees 0 for the identity column
+          // and consumes no value (captured: gaps-triggers #045)
+          (Some(_), _) if !instead.is_empty() =>
+            row[i] = identity_value(c.ty, 0L)
           (Some(id), _) if !(identity_insert && given[i]) => {
             let v = self.next_identity(t, id)
             row[i] = identity_value(c.ty, v)
