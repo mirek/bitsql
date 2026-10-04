@@ -71,6 +71,7 @@ fn Session::bind_output(
   extra : Array[@bind.ColumnRef],
   null_deleted? : Bool = false,
   null_inserted? : Bool = false,
+  trigger_check? : Bool = true,
 ) -> Array[OutputSpec] raise {
   if clauses.is_empty() {
     return []
@@ -237,7 +238,7 @@ fn Session::bind_output(
     }
     let into = match clause.into {
       None => {
-        if self.has_enabled_trigger(target) {
+        if trigger_check && self.has_enabled_trigger(target) {
           raise @types.sql_error(
             334,
             "The target table '\{target.table.name}' of the DML statement cannot have any enabled triggers if the statement contains an OUTPUT clause without INTO clause.",

@@ -22,6 +22,10 @@ pub(all) struct Runtime {
   /// XACT_STATE() is 1 while @@TRANCOUNT is 0 (captured: msduck
   /// identity-insert-*, session-reset, gaps-merge).
   mut stmt_reads : Bool
+  /// The current statement modifies data (INSERT/UPDATE/DELETE/MERGE,
+  /// SELECT INTO): @@TRANCOUNT reads one more than the open transactions,
+  /// counting autocommit as one (captured: stmts/trigger-trancount).
+  mut stmt_dml : Bool
   mut identity : @types.Value
   mut scope_identity : @types.Value
   mut fetch_status : Int
@@ -78,6 +82,7 @@ pub fn Runtime::new(
     trancount: 0,
     xact_state: 0,
     stmt_reads: false,
+    stmt_dml: false,
     identity: Null,
     scope_identity: Null,
     fetch_status: 0,

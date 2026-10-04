@@ -614,6 +614,7 @@ pub(all) enum StmtKind {
   InsertBulk(ObjectName, Array[(Ident, TypeName)], Array[String])
   CreateTable(CreateTable)
   AlterTable(ObjectName, AlterTableAction)
+  EnableTrigger(enable~ : Bool, Array[Ident], ObjectName?)
   CreateIndex(CreateIndex)
   DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?, Bool)])
   CreateView(CreateView)

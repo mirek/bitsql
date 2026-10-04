@@ -279,7 +279,14 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
   match g {
     RowCount => Int(rt.rowcount.to_int())
     Error => Int(rt.error)
-    TranCount => Int(rt.trancount)
+    TranCount =>
+      Int(
+        if rt.stmt_dml {
+          (if rt.trancount > 0 { rt.trancount } else { 1 }) + 1
+        } else {
+          rt.trancount
+        },
+      )
     Identity => rt.identity
     FetchStatus => Int(rt.fetch_status)
     Spid => SmallInt(rt.spid)

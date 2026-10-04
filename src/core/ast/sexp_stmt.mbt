@@ -485,6 +485,20 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.options_kv(t.options)
       self.close()
     }
+    EnableTrigger(enable~, names, table) => {
+      self.s(if enable { "(enable-trigger" } else { "(disable-trigger" })
+      if names.is_empty() {
+        self.atom("all")
+      }
+      for n in names {
+        self.atom(n.name)
+      }
+      match table {
+        Some(t) => self.s(" " + t.to_sexp())
+        None => self.atom("database")
+      }
+      self.close()
+    }
     AlterTable(n, action) => {
       self.s("(alter-table " + n.to_sexp() + " ")
       match action {

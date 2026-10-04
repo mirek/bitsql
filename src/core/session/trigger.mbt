@@ -5,6 +5,9 @@ priv struct TriggerCtx {
   module_id : Int
   inserted : Int
   deleted : Int
+  /// An empty copy: after a ROLLBACK inside the trigger, inserted and
+  /// deleted read no rows (captured: gaps-triggers #021 rows=0)
+  empty : Int
   /// Columns reported by UPDATE(col).
   updated : Array[Int]
   table : @store.Table
@@ -84,18 +87,21 @@ fn Session::fire_after(
   inserted : Array[Array[@types.Value]],
   updated : Array[Int],
   pre : @store.Db,
+  firing_count? : Int64 = -1L,
 ) -> Unit raise {
   let trs = self.table_triggers(target, ev).filter(x => !x.0.instead_of)
-  self.run_triggers(target, trs, deleted, inserted, updated, pre)
+  self.run_triggers(target, trs, deleted, inserted, updated, pre, firing_count~)
 }
 
 ///|
 /// Copies rows into a pseudo-table. SQL Server returns them newest first
-/// (captured: triggers/after-insert-audit).
+/// in AFTER triggers (captured: triggers/after-insert-audit) and in
+/// statement order in INSTEAD OF triggers (captured: gaps-triggers #045).
 fn Session::pseudo_table(
   self : Session,
   t : @store.Table,
   rows : Array[Array[@types.Value]],
+  in_order? : Bool = false,
 ) -> Int {
   let id = self.server.object_id()
   let pt : @store.Table = {
@@ -108,8 +114,14 @@ fn Session::pseudo_table(
     foreign_keys: [],
   }
   let mut db = self.tvars.create_table(pt)
-  for i = rows.length() - 1; i >= 0; i = i - 1 {
-    db = db.insert_row(id, self.server.rowid(), rows[i])
+  if in_order {
+    for r in rows {
+      db = db.insert_row(id, self.server.rowid(), r)
+    }
+  } else {
+    for i = rows.length() - 1; i >= 0; i = i - 1 {
+      db = db.insert_row(id, self.server.rowid(), rows[i])
+    }
   }
   self.tvars = db
   id
@@ -129,6 +141,7 @@ fn Session::run_triggers(
   inserted : Array[Array[@types.Value]],
   updated : Array[Int],
   pre : @store.Db,
+  firing_count? : Int64 = -1L,
 ) -> Unit raise {
   // RECURSIVE_TRIGGERS OFF: a trigger does not fire itself directly
   let trs = trs.filter(x => {
@@ -169,10 +182,16 @@ fn Session::run_triggers(
   let cur_cmd = self.cur_cmd
   let ddl_cmd = self.ddl_cmd
   let stmt_error = self.stmt_error
-  let finish = () => {
+  let finish = (failed : Bool) => {
     if implicit && self.tx is Some(_) {
-      self.commit_tx() catch {
-        _ => ()
+      // an error leaving the trigger undoes the autocommit statement
+      // (captured: gaps-triggers #025/#026, caught by an outer TRY)
+      if failed {
+        self.rollback_tx()
+      } else {
+        self.commit_tx() catch {
+          _ => ()
+        }
       }
       self.rt.trancount = 0
       self.rt.xact_state = 0
@@ -188,18 +207,29 @@ fn Session::run_triggers(
   }
   let mut ended = false
   for x in trs {
-    let ins = self.pseudo_table(target.table, inserted)
-    let del = self.pseudo_table(target.table, deleted)
+    let ins = self.pseudo_table(target.table, inserted, in_order=x.0.instead_of)
+    let del = self.pseudo_table(target.table, deleted, in_order=x.0.instead_of)
+    let empty = self.pseudo_table(target.table, [])
     self.triggers.push({
       module_id: x.0.id,
       inserted: ins,
       deleted: del,
+      empty,
       updated,
       table: target.table,
     })
     self.frames.push(Frame::new())
     self.rt.nest_level += 1
     self.xact_abort = true
+    // @@ROWCOUNT on entry is the firing statement's row count (captured:
+    // gaps-triggers #009 rc=2/0/1, #045 INSTEAD OF rc=2)
+    // (MERGE: its whole row count for every action's trigger, captured:
+    // gaps-triggers #112, #164)
+    self.rt.rowcount = if firing_count >= 0L {
+      firing_count
+    } else {
+      @cmp.maximum(inserted.length(), deleted.length()).to_int64()
+    }
     let failure = try {
       self.exec_list(x.1.body)
       None
@@ -210,12 +240,12 @@ fn Session::run_triggers(
     self.frames.pop() |> ignore
     self.rt.nest_level -= 1
     self.triggers.pop() |> ignore
-    self.tvars = self.tvars.drop_object(ins).drop_object(del)
+    self.tvars = self.tvars.drop_object(ins).drop_object(del).drop_object(empty)
     self.nocount = nocount
     self.rt.option_bits = option_bits
     match failure {
       Some(e) => {
-        finish()
+        finish(true)
         if e is (Caught(_, _, _, _) | AbortBatch) {
           self.trigger_unwind = true
         }
@@ -228,8 +258,11 @@ fn Session::run_triggers(
       break
     }
   }
-  finish()
+  finish(false)
   if ended {
+    // writes made after the ROLLBACK (autocommitted) survive the 3609
+    // (captured: gaps-triggers #021 'after rollback' row)
+    self.tx_ended_in_trigger = true
     self.throwing = true // completes with 253 and ends the batch
     raise @types.sql_error(
       3609, "The transaction ended in the trigger. The batch has been aborted.",
@@ -248,6 +281,7 @@ fn Session::pseudo_binding(
   }
   let n = name.parts[0].name.to_lower()
   let id = match n {
+    "inserted" | "deleted" if self.rt.trancount == 0 => c.empty
     "inserted" => c.inserted
     "deleted" => c.deleted
     _ => return None
@@ -305,4 +339,48 @@ fn Session::trigger_fn(
       }
     _ => None
   }
+}
+
+///|
+/// `ENABLE|DISABLE TRIGGER names|ALL ON table` (captured: gaps-triggers
+/// #057-#065): no completion of its own; a missing table is 1088 state 21,
+/// a trigger that is not on that table 1088 state 119.
+fn Session::exec_enable_trigger(
+  self : Session,
+  enable : Bool,
+  names : Array[@ast.Ident],
+  table : @ast.ObjectName?,
+) -> Unit raise {
+  guard table is Some(tname) else {
+    raise @types.not_supported("ENABLE/DISABLE of DDL triggers")
+  }
+  let t = match self.find_table(tname) {
+    Some((0, t)) => t
+    _ =>
+      raise @types.sql_error(
+        1088,
+        "Cannot find the object \"\{object_text(tname)}\" because it does not exist or you do not have permissions.",
+        state=21,
+      )
+  }
+  let mut db = self.db_of(0)
+  let triggers = db
+    .modules()
+    .filter(m => m.kind is Trigger && m.parent == Some(t.id))
+  for n in names {
+    if !triggers.iter().any(m => m.name.to_lower() == n.name.to_lower()) {
+      raise @types.sql_error(
+        1088,
+        "Cannot find the object \"\{n.name}\" because it does not exist or you do not have permissions.",
+        state=119,
+      )
+    }
+  }
+  for m in triggers {
+    if names.is_empty() ||
+      names.iter().any(n => n.name.to_lower() == m.name.to_lower()) {
+      db = db.add_module({ ..m, disabled: !enable, })
+    }
+  }
+  self.write(0, db)
 }

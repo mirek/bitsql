@@ -10,7 +10,7 @@ import { repoDir } from './env.mjs'
 import { loadCorpus, readExpected } from './corpus.mjs'
 
 // Errors the parser itself raises; any other captured error means SQL Server parsed the batch.
-export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 10713])
+export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 1034, 10713])
 
 function parsecheckBinary() {
   if (process.env.BITSQL_PARSECHECK) return process.env.BITSQL_PARSECHECK

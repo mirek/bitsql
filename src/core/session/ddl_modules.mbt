@@ -301,12 +301,87 @@ fn Session::exec_create_trigger(
 ) -> Unit raise {
   let t = match self.find_table(tr.table) {
     Some((0, t)) => t
-    _ =>
+    _ => {
+      // captured: an AFTER trigger on a view is state 6, a missing object
+      // state 4 (gaps-triggers #079, #095)
+      let is_view = self.find_view(tr.table) is Some(_)
+      if is_view && tr.timing is InsteadOf {
+        raise @types.not_supported("INSTEAD OF triggers on views")
+      }
       raise @types.sql_error(
         8197,
         "The object '\{object_text(tr.table)}' does not exist or is invalid for this operation.",
-        state=4,
+        state=if is_view { 6 } else { 4 },
       )
+    }
+  }
+  // definition errors complete with the statement's CurCmd 221 (captured:
+  // gaps-triggers #081, #088, #089, #049)
+  if tr.name.parts.length() >= 2 {
+    let (schema, _) = split_name(tr.name)
+    if schema.to_lower() != t.schema.to_lower() {
+      self.cur_cmd = 221
+      raise @types.sql_error(
+        2103,
+        "Cannot create trigger '\{object_text(tr.name)}' because its schema is different from the schema of the target table or view.",
+        severity=15,
+      )
+    }
+  }
+  let (_, base) = split_name(tr.name)
+  let db = self.db_of(0)
+  let existing = match db.lookup(t.schema, base) {
+    Some(id) =>
+      match db.get_module(id) {
+        Some(m) if m.kind is Trigger => Some(m)
+        _ => None
+      }
+    None => None
+  }
+  match (tr.mode, existing) {
+    (Create, _) if self.object_name_taken(db, t.schema, base) => {
+      self.cur_cmd = 221
+      raise @types.sql_error(
+        2714,
+        "There is already an object named '\{base}' in the database.",
+        state=2,
+      )
+    }
+    (Alter | CreateOrAlter, Some(m)) if m.parent != Some(t.id) => {
+      self.cur_cmd = 221
+      raise @types.sql_error(
+        2110,
+        "Cannot alter trigger '\{object_text(tr.name)}' on '\{object_text(tr.table)}' because this trigger does not belong to this object. Specify the correct trigger name or the correct target object name.",
+        severity=15,
+      )
+    }
+    _ => ()
+  }
+  if tr.timing is InsteadOf {
+    for ev in tr.events {
+      let other = db
+        .modules()
+        .iter()
+        .any(m => {
+          m.kind is Trigger &&
+          m.parent == Some(t.id) &&
+          m.instead_of &&
+          (existing is None || existing.map(e => e.id) != Some(m.id)) &&
+          (self.trigger_def(m).events.contains(ev) catch { _ => false })
+        })
+      if other {
+        let evname = match ev {
+          OnInsert => "INSERT"
+          OnUpdate => "UPDATE"
+          OnDelete => "DELETE"
+        }
+        self.cur_cmd = 221
+        raise @types.sql_error(
+          2111,
+          "Cannot create trigger '\{object_text(tr.name)}' on table '\{object_text(tr.table)}' because an INSTEAD OF \{evname} trigger already exists on this object.",
+        )
+      }
+    }
   }
   ignore(
     self.define_module(

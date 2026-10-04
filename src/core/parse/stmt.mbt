@@ -127,6 +127,29 @@ fn Parser::statement_kind(
       Truncate(self.object_name())
     }
     "CREATE" | "ALTER" => self.create_or_alter(first)
+    "ENABLE" | "DISABLE" if self.is_kw_at(1, "TRIGGER") => {
+      let enable = upper(t) == "ENABLE"
+      self.pos += 2
+      let names = if self.eat_kw("ALL") {
+        []
+      } else {
+        let ns = [self.ident()]
+        while self.eat_punct(",") {
+          ns.push(self.ident())
+        }
+        ns
+      }
+      self.expect_kw("ON")
+      let table = if self.eat_kw("DATABASE") {
+        None
+      } else if self.is_kw("ALL") && self.is_kw_at(1, "SERVER") {
+        self.pos += 2
+        None
+      } else {
+        Some(self.object_name())
+      }
+      EnableTrigger(enable~, names, table)
+    }
     "DROP" => self.drop_stmt()
     "GRANT" | "DENY" | "REVOKE" => Permission(self.permission())
     "DECLARE" => self.declare_stmt()
@@ -909,10 +932,13 @@ fn Parser::create_or_alter(
   }
   let must_be_first = fn(what : String) raise @ast.SyntaxError {
     if !first {
-      raise syntax_error(
-        111,
-        "'\{what}' must be the first statement in a query batch.",
-        start,
+      // captured: state 6 for triggers (gaps-triggers #080)
+      raise @ast.SyntaxError(
+        number=111,
+        severity=15,
+        state=if what.has_suffix("TRIGGER") { 6 } else { 1 },
+        message="'\{what}' must be the first statement in a query batch.",
+        span=start,
       )
     }
   }
@@ -1073,6 +1099,14 @@ fn Parser::create_or_alter(
           "DELETE" => OnDelete
           _ => raise self.error()
         }
+        // captured: gaps-triggers #093
+        if events.contains(ev) {
+          raise syntax_error(
+            1034,
+            "Syntax error: Duplicate specification of the action \"\{upper(e)}\" in the trigger declaration.",
+            e.span,
+          )
+        }
         self.pos += 1
         events.push(ev)
         if !self.eat_punct(",") {
@@ -1084,7 +1118,17 @@ fn Parser::create_or_alter(
         options.push("APPEND")
       }
       let not_for_replication = self.not_for_replication()
+      let as_ = self.peek()
       self.expect_kw("AS")
+      // an empty trigger body is 102 near 'AS' (not the keyword form;
+      // captured: gaps-triggers #096)
+      if self.peek().kind is Eof {
+        raise syntax_error(
+          102,
+          "Incorrect syntax near '\{as_.text}'.",
+          as_.span,
+        )
+      }
       let body = self.module_body()
       let definition = self.slice(self.span_from(start))
       CreateTrigger({
