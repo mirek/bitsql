@@ -34,6 +34,26 @@ mention the correction here.
   Non-persisted computed columns are evaluated when read, not on INSERT
   (SQL Server's INSERT of a row whose computed value fails succeeds and the
   SELECT raises 245; bitsql still raises at INSERT, open in the roadmap).
+
+- 2026-10-04 (filtered-index ALTER COLUMN): ALTER COLUMN dependents, each
+  5074 (state 1, class 16) then 4922 state 9. A column named in a filtered
+  index (or filtered statistics: "The statistics 'x' is dependent…")
+  predicate cannot be altered at all, not even to the same type and
+  nullability; an ordinary index allows growing a bounded varchar/nvarchar/
+  varbinary and NOT NULL→NULL, but blocks NULL→NOT NULL (also for INCLUDE
+  columns and UNIQUE constraints), shrinking, (max), precision and
+  collation changes; a PRIMARY KEY also blocks NOT NULL→NULL. Computed
+  columns block every ALTER COLUMN; CHECK blocks another type or
+  collation but not a new length/precision; DEFAULT only another type;
+  foreign keys (both sides) any type change incl. growing, never
+  nullability. Order: defaults, computed columns, filter predicates,
+  checks, then index/key columns in index order (a filtered index can be
+  listed twice), then FKs; DROP COLUMN uses the same order. Unverified/not
+  implemented: self-referencing FKs are listed among referencing FKs on
+  DROP COLUMN in an order not yet understood (fk of another table first).
+  Captures: corpus `catalog/alter-column-dependents`,
+  `catalog/alter-column-filtered-index`.
+
 - 2026-10-03 (FOR XML and xml, corpus `xml/`, docs/reference/xml.md):
   an untyped FOR XML subquery is nvarchar(max), with TYPE xml; no rows give
   NULL, rows without text `''`. Entities stay escaped in the STUFF idiom

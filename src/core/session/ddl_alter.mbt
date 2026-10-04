@@ -277,71 +277,110 @@ fn Session::alter_add(
 }
 
 ///|
-/// 5074 / 4922: objects that depend on a column being dropped or altered.
+/// 5074 / 4922: objects that depend on a column being dropped (`change` is
+/// None) or altered to `Some((type, nullable))`.
+///
+/// Captured (corpus catalog/alter-column-dependents*): SQL Server lists
+/// expression dependents first, by kind (defaults, computed columns,
+/// filtered index predicates, check constraints), then index and key
+/// columns in index order, then foreign keys. A filtered index whose
+/// predicate names the column is listed in both phases when the column is
+/// also a key that blocks the change.
+/// What blocks an ALTER COLUMN:
+/// - computed columns and filter predicates: always, even an ALTER that
+///   changes nothing;
+/// - a DEFAULT: another data type (a new length, precision, scale or
+///   collation of the same type is fine);
+/// - a CHECK: another data type or collation (new length/precision/scale
+///   is fine);
+/// - index keys/INCLUDE columns, PRIMARY KEY/UNIQUE: any type change other
+///   than growing a bounded varchar/nvarchar/varbinary (collation and
+///   precision changes block), NULL to NOT NULL, and NOT NULL to NULL under
+///   a PRIMARY KEY;
+/// - foreign keys (either side): any type change, growing included.
 fn Session::column_dependents(
   self : Session,
   scope : Int,
   t : @store.Table,
   ord : Int,
-  widen : Bool,
-  same_base? : Bool = false,
+  change : (@types.SqlType, Bool)?,
 ) -> Array[String] {
   let col = t.columns[ord]
   let name = col.name.to_lower()
   let mentions = (text : String) => expr_mentions(text, name)
+  let (
+    type_changed,
+    base_changed,
+    check_blocks,
+    key_type_blocks,
+    to_not_null,
+    to_null,
+  ) = match change {
+    None => (true, true, true, true, true, true)
+    Some((ty, nullable)) => {
+      let changed = ty != col.ty
+      let base = changed && !same_base_type(col.ty, ty)
+      (
+        changed,
+        base,
+        base || (changed && ty.collation() != col.ty.collation()),
+        changed && !widens(col.ty, ty),
+        col.nullable && !nullable,
+        !col.nullable && nullable,
+      )
+    }
+  }
   let out = []
-  // captured order: default constraint, indexes/keys, checks, foreign keys
-  // a DEFAULT does not block a new length, precision or scale of the same
-  // type (captured: corpus orm/alter-column-default)
-  if col.default_id != 0 && !same_base {
+  if col.default_id != 0 && base_changed {
     out.push(
       "The object '\{col.default_name.unwrap_or("")}' is dependent on column '\{col.name}'.",
     )
   }
-  for ix in t.indexes {
-    let in_key = ix.columns.iter().any(c => c.0 == ord) ||
-      ix.included.contains(ord)
-    // a variable-length column may grow under its indexes and keys
-    // (captured: msduck gaps-keys alter-with-keys-11, nvarchar(10) PK
-    // column to nvarchar(20))
-    if widen {
-      continue
-    }
-    if ix.is_constraint {
-      if in_key {
-        out.push(
-          "The object '\{ix.name}' is dependent on column '\{col.name}'.",
-        )
-      }
-    } else {
-      if in_key {
-        out.push("The index '\{ix.name}' is dependent on column '\{col.name}'.")
-      }
-      if ix.filter.map(mentions).unwrap_or(false) {
-        out.push("The index '\{ix.name}' is dependent on column '\{col.name}'.")
-      }
-    }
-  }
-  for c in t.checks {
-    if c.column_id == col.column_id || mentions(c.expr) {
-      out.push("The object '\{c.name}' is dependent on column '\{col.name}'.")
-    }
-  }
-  for f in t.foreign_keys {
-    if f.columns.contains(ord) {
-      out.push("The object '\{f.name}' is dependent on column '\{col.name}'.")
-    }
-  }
-  for other in self.db_of(scope).tables() {
-    for f in other.foreign_keys {
-      if f.ref_table == t.id && other.id != t.id && f.ref_columns.contains(ord) {
-        out.push("The object '\{f.name}' is dependent on column '\{col.name}'.")
-      }
-    }
-  }
   for c in t.columns {
     if c.computed.map(mentions).unwrap_or(false) {
       out.push("The column '\{c.name}' is dependent on column '\{col.name}'.")
+    }
+  }
+  for ix in t.indexes {
+    if !ix.is_constraint && ix.filter.map(mentions).unwrap_or(false) {
+      out.push("The index '\{ix.name}' is dependent on column '\{col.name}'.")
+    }
+  }
+  if check_blocks {
+    for c in t.checks {
+      if c.column_id == col.column_id || mentions(c.expr) {
+        out.push("The object '\{c.name}' is dependent on column '\{col.name}'.")
+      }
+    }
+  }
+  for ix in t.indexes {
+    let in_key = ix.columns.iter().any(c => c.0 == ord) ||
+      ix.included.contains(ord)
+    if !in_key || !(key_type_blocks || to_not_null || (to_null && ix.primary)) {
+      continue
+    }
+    if ix.is_constraint {
+      out.push("The object '\{ix.name}' is dependent on column '\{col.name}'.")
+    } else {
+      out.push("The index '\{ix.name}' is dependent on column '\{col.name}'.")
+    }
+  }
+  if type_changed {
+    for f in t.foreign_keys {
+      if f.columns.contains(ord) {
+        out.push("The object '\{f.name}' is dependent on column '\{col.name}'.")
+      }
+    }
+    for other in self.db_of(scope).tables() {
+      for f in other.foreign_keys {
+        if f.ref_table == t.id &&
+          other.id != t.id &&
+          f.ref_columns.contains(ord) {
+          out.push(
+            "The object '\{f.name}' is dependent on column '\{col.name}'.",
+          )
+        }
+      }
     }
   }
   out
@@ -475,7 +514,7 @@ fn Session::alter_drop(
           "ALTER TABLE DROP COLUMN failed because column '\{ident.name}' does not exist in table '\{t.name}'.",
         )
       }
-      let deps = self.column_dependents(scope, t, ord, false)
+      let deps = self.column_dependents(scope, t, ord, None)
       if !deps.is_empty() {
         raise self.dependents_error(deps, "DROP COLUMN", t.columns[ord].name)
       }
@@ -620,27 +659,9 @@ fn Session::alter_column(
   self.check_ansi_padding(ty)
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL
   let nullable = nullable.unwrap_or(true)
-  if ty != old.ty {
-    let deps = self.column_dependents(
-      scope,
-      t,
-      ord,
-      widens(old.ty, ty),
-      same_base=same_base_type(old.ty, ty),
-    )
-    if !deps.is_empty() {
-      raise self.dependents_error(deps, "ALTER COLUMN", old.name)
-    }
-  } else if nullable && !old.nullable {
-    if t.indexes
-      .iter()
-      .any(ix => ix.primary && ix.columns.iter().any(c => c.0 == ord)) {
-      raise self.dependents_error(
-        self.column_dependents(scope, t, ord, false),
-        "ALTER COLUMN",
-        old.name,
-      )
-    }
+  let deps = self.column_dependents(scope, t, ord, Some((ty, nullable)))
+  if !deps.is_empty() {
+    raise self.dependents_error(deps, "ALTER COLUMN", old.name)
   }
   let ncol = { ..old, ty, nullable, result_nullable: nullable, }
   let cols = t.columns.copy()
