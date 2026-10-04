@@ -141,7 +141,9 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     (FJson, FString) => true
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
-    (FBinary, FDateTime) => is_legacy_datetime(to)
+    // binary converts explicitly to every date/time type (captured:
+    // conversion/binary-to-date; 0x01 AS date is 241, not 529)
+    (FBinary, FDateTime | FDate | FTime) => true
     // date, time, datetime2 and datetimeoffset convert to their storage
     // bytes (captured: msduck temporal-guid-format, tail/functions-binary)
     (FDateTime, FBinary) => true

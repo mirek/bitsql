@@ -1498,3 +1498,26 @@ Result inference preserves integer nullability through catalog and scalar
 projections: proven non-null tinyint/smallint/int/bigint results use fixed TDS
 integer families, nullable results retain INTN, `@@TRANCOUNT` is non-null int,
 and `XACT_STATE()` advertises nullable smallint width.
+
+- 2026-10-04 (compatibility report round 2, corpus `constraints/`):
+  `DEFAULT NULL` / `(NULL)` / `(-NULL)` is the untyped NULL constant (any
+  column type, xml too); typed defaults are checked at CREATE/ALTER like
+  an assignment (206 no conversion, 257 explicit only: varbinary→date).
+  Binary converts *explicitly* to date/time/datetime2/datetimeoffset (bad
+  images are 241, not 529). A column definition may carry `FOREIGN KEY
+  (x) REFERENCES …`: it binds column x (any column, even one declared
+  later); two columns are 8140 "More than one key specified in column
+  level FOREIGN KEY constraint, table '<name as written>'". A column CHECK
+  naming another (known) column is 8141 "… table '<bare name>'" + 1750,
+  two column CHECKs on one column 8148; all three are batch compile errors
+  (line of the statement), except an ALTER of a table created in the same
+  batch (deferred compile, raised when it runs); an unknown name is 207
+  first. PERSISTED (4936) determinism: CONVERT between character data and
+  any date/time type is deterministic only with style 20, 21 or ≥ 100
+  except 106/107/109/113 (CAST = no style; implicit conversions and date
+  functions over strings count); CAST out of sql_variant, every `@@`
+  global, metadata/security/session/error functions (OBJECT_ID, DB_NAME,
+  USER_ID, SERVERPROPERTY, XACT_STATE…), FORMAT, DATENAME, ISDATE, PARSE,
+  COMPRESS, AT TIME ZONE and DATEPART week/weekday are nondeterministic;
+  RAND(seed), DECOMPRESS, HASHBYTES, JSON functions, DATEPART iso_week are
+  deterministic. NEWSEQUENTIALID outside a DEFAULT is 302.

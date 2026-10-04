@@ -239,6 +239,11 @@ fn Session::eval_text(
   let e = @parse.parse_expr(text)
   let env = self.column_env(target)
   let b = @bind.bind_expr(env, e)
+  // `DEFAULT (NULL)` is the untyped NULL constant: it converts to any
+  // column type (captured: ddl/default-untyped-null)
+  if b.kind is Lit(Null) && b.ty is Int {
+    return Null
+  }
   let v = @exec.eval(self.ctx().with_row(row), b)
   @types.cast(v, b.ty, ty)
 }

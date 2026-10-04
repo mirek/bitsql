@@ -43,6 +43,15 @@ pub fn cast(
   if v is Null {
     return Null
   }
+  // SQL Server reads binary as an internal date/time image whose layout
+  // is not the storage bytes (0x5B950A AS date is 1900-01-01, captured)
+  if from.family() is FBinary &&
+    (
+      to.family() is (FDate | FTime) ||
+      (to.family() is FDateTime && !is_legacy_datetime(to))
+    ) {
+    raise not_supported("conversion of binary to \{to.clash_name()}")
+  }
   match to.family() {
     FBit => to_bit(v, from)
     FInteger => to_integer(v, from, to)

@@ -866,6 +866,18 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     None => ()
   }
+  match self.precheck_constraints(stmts) {
+    Some(errors) => {
+      for i in 0..<(errors.length() - 1) {
+        self.message(errors[i].0, errors[i].1)
+      }
+      self.text_error(
+        errors[errors.length() - 1].0,
+        errors[errors.length() - 1].1,
+      )
+    }
+    None => ()
+  }
   match self.precheck_hints(stmts) {
     Err(errors) => {
       for i in 0..<(errors.length() - 1) {

@@ -352,6 +352,24 @@ fn Session::new_check(
       severity=15,
     )
   }
+  // a column CHECK naming another column (all names known): 8141, then
+  // 1750 state 0; usually a compile error (precheck_constraints), here
+  // for ALTER TABLE of a table created in the same batch (captured:
+  // constraints/inline-fk-columns)
+  if column is Some(own) {
+    let names = expr_column_names(e)
+    if names.iter().all(n => b.col_index(n) >= 0) &&
+      names.iter().any(n => n.to_lower() != own.name.to_lower()) {
+      raise self.constraint_error(
+        @types.sql_error(
+          8141,
+          "Column CHECK constraint for column '\{own.name}' references another column, table '\{b.display}'.",
+          state=0,
+        ),
+        state=0,
+      )
+    }
+  }
   // a table-level CHECK over exactly one column belongs to that column
   // (parent_column_id, system name; captured: msduck gaps-constraints
   // alter-lifecycle-8)
@@ -576,11 +594,14 @@ fn Session::add_column(
           )
         }
       }
-      if c.persisted && expr_nondeterministic(e) {
-        raise @types.sql_error(
+      let nondeterministic = () => {
+        @types.sql_error(
           4936,
           "Computed column '\{c.name.name}' in table '\{b.display}' cannot be persisted because the column is non-deterministic.",
         )
+      }
+      if c.persisted && expr_nondeterministic(e) {
+        raise nondeterministic()
       }
       // computed column: type of its expression over the other columns
       let visible = b.columns.copy()
@@ -600,6 +621,9 @@ fn Session::add_column(
         }),
       )
       let bound = @bind.bind_expr(env, e)
+      if c.persisted && bound_nondeterministic(bound) {
+        raise nondeterministic()
+      }
       (bound.ty, Some(self.slice(e.span)))
     }
     (None, None) =>
@@ -1858,37 +1882,11 @@ fn Session::check_default(
   ) catch {
     _ => return
   }
-  @types.check_assign(bound.ty, col.ty)
-}
-
-///|
-/// Non-deterministic built-ins (PERSISTED computed columns reject them with
-/// 4936).
-fn expr_nondeterministic(e : @ast.Expr) -> Bool {
-  let mut found = false
-  walk_expr(e, x => {
-    if x.kind is Call(c) {
-      match c.name.base().to_lower() {
-        "newid"
-        | "newsequentialid"
-        | "getdate"
-        | "getutcdate"
-        | "sysdatetime"
-        | "sysutcdatetime"
-        | "sysdatetimeoffset"
-        | "current_timestamp"
-        | "rand"
-        | "host_name"
-        | "app_name"
-        | "suser_sname"
-        | "user_name"
-        | "session_context"
-        | "context_info" => found = true
-        _ => ()
-      }
-    }
-  })
-  found
+  // the untyped NULL constant is assignable to every type, xml too
+  if bound.kind is Lit(Null) && bound.ty is Int {
+    return
+  }
+  @types.check_store(bound.ty, col.ty)
 }
 
 ///|

@@ -376,6 +376,10 @@ pub(all) struct TableConstraint {
   name : Ident?
   kind : TableConstraintKind
   span : Span
+  /// Written after a column definition with its own column list
+  /// (`c int CONSTRAINT fk FOREIGN KEY (c) REFERENCES …`): binds like a
+  /// table constraint, but a column-level FOREIGN KEY takes one column.
+  column_level : Bool
 } derive(Eq, Debug)
 
 ///|

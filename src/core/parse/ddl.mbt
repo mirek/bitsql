@@ -315,7 +315,7 @@ fn Parser::table_constraint(
   } else {
     raise self.error()
   }
-  { name, kind, span: self.span_from(start), }
+  { name, kind, span: self.span_from(start), column_level: false, }
 }
 
 ///|
@@ -422,6 +422,7 @@ fn Parser::column_def(
             name: cname,
             kind: PrimaryKey(clustered~, cols, options~),
             span: self.span_from(cstart),
+            column_level: true,
           })
           continue
         }
@@ -438,6 +439,7 @@ fn Parser::column_def(
             name: cname,
             kind: Unique(clustered~, cols, options~),
             span: self.span_from(cstart),
+            column_level: true,
           })
           continue
         }
@@ -454,6 +456,20 @@ fn Parser::column_def(
         if self.is_kw("FOREIGN") {
           self.pos += 1
           self.expect_kw("KEY")
+          // with its own column list it names the referencing column(s)
+          // (captured: constraints/inline-fk-columns)
+          if self.is_punct("(") {
+            let cols = self.paren_idents()
+            self.expect_kw("REFERENCES")
+            let r = self.foreign_ref()
+            table_constraints.push({
+              name: cname,
+              kind: ForeignKey(cols, r),
+              span: self.span_from(cstart),
+              column_level: true,
+            })
+            continue
+          }
         }
         self.expect_kw("REFERENCES")
         ColReferences(self.foreign_ref())
