@@ -303,6 +303,8 @@ pub struct Session {
   mut waits_done : Int
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
+  /// ATTENTION (cancellation) of a parked request (attention.mbt).
+  priv attn : Attention
   /// @@ERROR to record for the failing statement instead of the error's
   /// number (RAISERROR format errors leave 50000).
   mut error_override : Int?
@@ -482,6 +484,7 @@ pub fn Session::new(
     waiting: None,
     fail_next_wait: None,
     parked: false,
+    attn: Attention::new(),
     next_handle: 1,
     pending: [],
     trailing: [],
@@ -668,6 +671,7 @@ pub fn Session::run_batch(
   self.parked = false
   self.waiting = None
   self.wait_ms = None
+  self.attn.reset()
   self.out.clear()
   self.text = text
   self.rpc = false
@@ -693,19 +697,24 @@ pub fn Session::run_batch(
     _ => false
   }
   self.abort_cmd = None
-  if parked {
+  if parked && !self.attn.hit {
     // a lock wait: discard this attempt; the engine re-runs it later
     self.restore_request(snap)
     self.parked = true
     return []
   }
+  self.attn.cancelling = false
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
-  self.end_of_request()
-  if self.schema_ddl &&
-    !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
-    self.out.push(StatementDone(cmd=253, count=None, error=false))
+  if self.attn.hit {
+    self.finish_attention()
+  } else {
+    self.end_of_request()
+    if self.schema_ddl &&
+      !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
+      self.out.push(StatementDone(cmd=253, count=None, error=false))
+    }
   }
   self.frames.clear()
   let items = self.out.copy()

@@ -120,6 +120,20 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       }
       raise AbortBatch
     }
+    // ATTENTION cancelled a wait in this statement (attention.mbt): roll the
+    // statement back like a failed one, then unwind the request
+    Park if self.attn.hit && !self.attn.handled => {
+      self.temp = snap_temp
+      self.tvars = snap_tvars
+      match (snap_tx, self.tx, snap_view) {
+        (Some(_), Some(tx), Some(v)) => tx.view = v
+        (None, None, _) => self.server.set_db(snap_database, snap_db)
+        _ => ()
+      }
+      self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
+      self.statement_attention(out_mark, line)
+      raise Park
+    }
     other => raise other
   }
   // statement-duration locks (and all locks in autocommit) end here

@@ -123,6 +123,7 @@ pub struct Session {
   mut read_only_write : Bool
   // private fields
 }
+pub fn Session::attention(Self) -> Unit
 pub fn Session::cancel_wait(Self) -> Unit
 pub fn Session::close(Self) -> Unit
 pub fn Session::is_parked(Self) -> Bool
@@ -138,6 +139,7 @@ pub fn Session::set_work_limit(Self, Int64) -> Unit
 pub fn Session::stream_error(Self, Int, Int, String, Int64) -> Array[@reply.Item]
 pub fn Session::time_out(Self) -> Unit
 pub fn Session::wait_timeout(Self) -> Int?
+pub fn Session::was_cancelled(Self) -> Bool
 
 // Type aliases
 

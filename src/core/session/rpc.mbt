@@ -333,6 +333,7 @@ pub fn Session::run_rpc(
   self.parked = false
   self.waiting = None
   self.wait_ms = None
+  self.attn.reset()
   self.out.clear()
   self.rpc = true
   self.frames.clear()
@@ -422,14 +423,20 @@ pub fn Session::run_rpc(
     _ => false
   }
   self.abort_cmd = None
-  if self.parked {
+  if self.parked && !self.attn.hit {
     self.restore_request(snap)
     return []
   }
+  self.parked = false
+  self.attn.cancelling = false
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
-  self.end_of_request()
+  if self.attn.hit {
+    self.finish_attention()
+  } else {
+    self.end_of_request()
+  }
   self.frames.clear()
   let items = self.out.copy()
   self.out.clear()

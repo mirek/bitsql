@@ -67,6 +67,7 @@ fn Session::acquire(
   match self.server.locks.request(me, resource, mode, duration) {
     Granted => ()
     Waiting(request~) => {
+      self.cancel_at_wait(Some(request))
       match self.fail_next_wait {
         Some(n) => {
           self.fail_next_wait = None
@@ -82,7 +83,8 @@ fn Session::acquire(
       self.waiting = Some(request)
       raise Park
     }
-    Deadlock(victim~, request~) =>
+    Deadlock(victim~, request~) => {
+      self.cancel_at_wait(request)
       if victim == me {
         raise self.wait_failure(1205)
       } else if self.fail_next_wait is Some(n) {
@@ -103,6 +105,7 @@ fn Session::acquire(
         }
         raise Park
       }
+    }
   }
 }
 

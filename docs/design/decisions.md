@@ -45,7 +45,8 @@ Instead:
   restart, because from the client's point of view the statement ran once.
 - Items already produced by earlier statements in the batch are kept. The
   restarted statement's partial items are dropped.
-- Attention and time limits are checked between statements; a single
+- (2026-10-04: ATTENTION is implemented by re-running a parked request in
+  cancel mode, see the dated entry below.) Attention and time limits are checked between statements; a single
   statement is not time-sliced in v1. `Yield` remains available for later.
 
 Effect: `NeedLock` is per statement, not per row. Deadlock detection and lock
@@ -582,3 +583,22 @@ server-wide object ids remain (`harness/orm/known.json`). Design points:
 - **No TDS 8 (`encrypt: strict`)**: the oracle image refuses it as well; a
   TLS ClientHello as the first bytes is malformed TDS and closes the
   connection.
+
+## 2026-10-04: ATTENTION cancels a parked request by re-running it
+
+A request can only be "running" across events while parked (lock wait,
+application lock, WAITFOR); everything else completes inside one
+`Engine::handle` call, so an ATTENTION arriving later finds its response
+already sent and only needs DONE_ATTN. For a parked request the engine calls
+`Session::attention()` (withdraws the lock request, sets `cancelling`) and
+re-runs it from the start, as it does for deadlock victims. Completed
+WAITFORs are passed again; the first wait that would park instead raises
+`Park` with `attn.hit` set. The innermost `exec_one` rolls that statement
+back (statement level), applies XACT_ABORT, and lets `Park` unwind; the
+request then keeps its state (no request snapshot restore) and
+`finish_attention` rewrites the tail of the response to SQL Server's cancel
+completion (session/attention.mbt). The engine sends that response and then
+DONE_ATTN as its own message. Not covered: cancelling a CPU-bound request
+(no time slicing); a wait inside a trigger rolls back only the trigger's
+statement, not the firing one.
+

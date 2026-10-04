@@ -52,10 +52,13 @@ pub(all) enum RequestKind {
 /// statements end with DONE(MORE) and the last DONE is FINAL; in an RPC they
 /// end with DONEINPROC(MORE) and the call ends with DONEPROC(FINAL) after
 /// RETURNVALUE/RETURNSTATUS (MS-TDS 4.9, mssqlite respond.ts).
+/// `cancelled`: the RPC was ended by ATTENTION; its DONEPROC carries the
+/// error bit (captured).
 pub fn render(
   kind : RequestKind,
   items : Array[Item],
   server_name : String,
+  cancelled? : Bool = false,
 ) -> Bytes raise @tds.TdsError {
   let w = @tds.Writer::new(size_hint=256)
   let mut cols : Array[@tds.Column] = []
@@ -175,7 +178,7 @@ pub fn render(
         @tds.write_done(w, Done, status, 253, 0)
       }
     Rpc => {
-      let status = if pending_error { @tds.DONE_ERROR } else { 0 }
+      let status = if pending_error || cancelled { @tds.DONE_ERROR } else { 0 }
       @tds.write_done(w, DoneProc, status, @tds.CMD_EXECUTE, 0)
     }
   }

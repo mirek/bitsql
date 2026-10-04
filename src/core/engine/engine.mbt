@@ -302,15 +302,26 @@ fn Engine::on_message(
       self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
     }
     (LoggedIn, Attention) => {
-      // A parked request is abandoned; otherwise execution already
-      // finished. Acknowledge as a separate message (tedious skill).
+      // A parked request (lock wait, WAITFOR) is re-run in cancel mode: it
+      // stops at its wait and sends its own response (session/attention.mbt).
+      // Otherwise execution already finished and its response went out.
+      // Either way DONE_ATTN follows as a separate message, as SQL Server
+      // sends it (captured; tedious reads two messages after a cancel).
       if self.parked.contains(conn.id) {
-        self.parked.remove(conn.id)
-        self.sessions[conn.id].cancel_wait()
         out.push(CancelTimer(conn.id))
+        self.sessions[conn.id].attention()
+        self.rerun(conn.id, now, out)
+        if self.parked.contains(conn.id) {
+          // the re-run parked again (not expected): abandon it
+          self.parked.remove(conn.id)
+          self.sessions[conn.id].cancel_wait()
+          let w = @tds.Writer::new()
+          @tds.write_done(w, Done, @tds.DONE_ERROR, 253, 0)
+          self.send(conn, w.to_bytes(), out)
+        }
       }
       let w = @tds.Writer::new()
-      @tds.write_done(w, Done, @tds.DONE_ATTN, 0, 0)
+      @tds.write_done(w, Done, @tds.DONE_ATTN, 253, 0)
       self.send(conn, w.to_bytes(), out)
     }
     (phase, ty) =>
@@ -417,6 +428,13 @@ fn Engine::run_rpc(
       self.parked[conn.id] = ParkedRpc(calls[i:].to_owned(), w.to_bytes())
       self.arm_timeout(conn.id, out)
       return
+    }
+    if session.was_cancelled() {
+      // ATTENTION ends the request: later calls do not run
+      w.bytes(
+        @reply.render(Rpc, items, self.config.server_name, cancelled=true),
+      )
+      break
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
   }

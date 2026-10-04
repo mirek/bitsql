@@ -407,3 +407,70 @@ test "WAITFOR DELAY parks with a timer; the re-run passes the completed wait" {
   }
   assert_eq(sets, 3)
 }
+
+///|
+fn attention(e : @engine.Engine, id : Int) -> Array[@engine.Output] {
+  e.handle(ev(Received(id, @tds.frame(Attention, b""))))
+}
+
+///|
+test "ATTENTION during WAITFOR: the request's response, then DONE_ATTN" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  assert_eq(
+    responded(batch(e, 1, "SELECT 1 AS a; WAITFOR DELAY '00:00:01'; SELECT 2")),
+    [],
+  )
+  let outs = attention(e, 1)
+  assert_true(outs.contains(CancelTimer(1)))
+  let msgs = sent(outs)
+  assert_eq(msgs.length(), 2)
+  // captured: the held SELECT completion becomes DONE(ERROR, 193)
+  inspect(
+    @tds.hex(msgs[0].payload),
+    content="81 01 00 00 00 00 00 20 00 38 01 61 00 d1 01 00 00 00 fd 02 00 c1 00 00 00 00 00 00 00 00 00",
+  )
+  inspect(
+    @tds.hex(msgs[1].payload),
+    content="fd 20 00 fd 00 00 00 00 00 00 00 00 00",
+  )
+  // a stale timer does nothing; the connection is reusable
+  assert_eq(responded(e.handle(ev(TimerFired(1)))), [])
+  assert_eq(responded(batch(e, 1, "SELECT 42")), [1])
+  // idle ATTENTION: DONE_ATTN only
+  assert_eq(sent(attention(e, 1)).length(), 1)
+}
+
+///|
+test "ATTENTION during a lock wait: 3621, the transaction stays open" {
+  let e = @engine.Engine::new(@engine.Config::default(), 1)
+  connect(e, 1)
+  connect(e, 2)
+  ignore(
+    batch(
+      e, 1, "CREATE TABLE t (id int PRIMARY KEY, v int); INSERT t VALUES (1, 1)",
+    ),
+  )
+  ignore(batch(e, 1, "BEGIN TRAN; UPDATE t SET v = 2 WHERE id = 1"))
+  assert_eq(
+    responded(
+      batch(
+        e, 2, "BEGIN TRAN; INSERT t VALUES (2, 2); UPDATE t SET v = 3 WHERE id = 1",
+      ),
+    ),
+    [],
+  )
+  let msgs = sent(attention(e, 2))
+  assert_eq(msgs.length(), 2)
+  let first = @tds.hex(msgs[0].payload)
+  // INFO 3621, then the held INSERT completion as DONE(ERROR, 195)
+  assert_true(first.contains("ab "))
+  assert_true(first.has_suffix("fd 02 00 c3 00 00 00 00 00 00 00 00 00"))
+  // conn 2 keeps its transaction and its INSERT; conn 1 is unaffected
+  let check = sent(
+    batch(e, 2, "SELECT @@TRANCOUNT, (SELECT COUNT(*) FROM t WITH (NOLOCK))"),
+  )
+  assert_true(@tds.hex(check[0].payload).contains("01 00 00 00 04 02 00 00 00"))
+  assert_eq(responded(batch(e, 1, "COMMIT")), [1])
+  assert_eq(responded(batch(e, 2, "ROLLBACK")), [2])
+}
