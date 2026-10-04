@@ -442,6 +442,8 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
         }
         "JSON_OBJECT" | "JSON_ARRAY" if next_paren =>
           self.json_ctor(u == "JSON_OBJECT")
+        "JSON_OBJECTAGG" | "JSON_ARRAYAGG" if next_paren =>
+          self.json_agg(u == "JSON_OBJECTAGG")
         "NEXT" if self.is_kw_at(1, "VALUE") && self.is_kw_at(2, "FOR") => {
           self.pos += 3
           let name = self.object_name()
@@ -627,6 +629,7 @@ fn Parser::call(
     }
   }
   check_datepart(name, args)
+  check_isjson_option(name, args)
   self.expect_punct(")")
   let within_group = if self.is_kw("WITHIN") && self.is_kw_at(1, "GROUP") {
     self.pos += 2

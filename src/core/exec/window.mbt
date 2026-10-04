@@ -167,7 +167,8 @@ fn window_values(
               let agg : @ir.AggCall = {
                 func: f,
                 arg: call.args.get(0),
-                separator: None,
+                // JSON_OBJECTAGG's key
+                separator: call.args.get(1),
                 distinct,
                 order: [],
                 ty: call.ty,

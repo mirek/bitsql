@@ -71,10 +71,9 @@ fn json_plan_column(plan : @ir.Plan, j : Int) -> Bool {
 }
 
 ///|
-/// JSON_ARRAYAGG / JSON_OBJECTAGG calls (see bind/json_agg.mbt).
+/// JSON_ARRAYAGG / JSON_OBJECTAGG calls (bind/json_agg.mbt).
 fn is_json_agg(a : @ir.AggCall) -> Bool {
-  ignore(a)
-  false
+  a.func is (JsonArrayAgg(..) | JsonObjectAgg(..))
 }
 
 ///|

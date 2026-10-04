@@ -1081,7 +1081,7 @@ fn bind_select_query(
       None => None
     }
     orders = orders.map(o => g.rewrite(o))
-    plan = Aggregate(plan, g.keys, g.aggs, sets=g.sets)
+    plan = Aggregate(plan, g.keys, scope_ordered_aggs(g.aggs), sets=g.sets)
     base = env.with_source(g.columns(), plan)
     match having {
       Some(h) => plan = Filter(plan, bind_clause(base, inner, h, Having, true))

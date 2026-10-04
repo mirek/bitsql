@@ -306,6 +306,7 @@ pub fn eval_aggregate(
     Grouping(_) | GroupingId(_) => Null
     ChecksumAgg => checksum_agg(agg_inputs(ctx, call, rows))
     ApproxCountDistinct => approx_count_distinct(ctx, call, rows)
+    JsonArrayAgg(..) | JsonObjectAgg(..) => eval_json_agg(ctx, call, rows)
   }
 }
 

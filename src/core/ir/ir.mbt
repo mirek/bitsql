@@ -330,11 +330,17 @@ pub(all) enum AggFn {
   ChecksumAgg
   /// APPROX_COUNT_DISTINCT (bigint; exact for small cardinalities).
   ApproxCountDistinct
+  /// JSON_ARRAYAGG: `absent` skips NULLs; `raw` embeds the argument's JSON
+  /// text as is.
+  JsonArrayAgg(absent~ : Bool, raw~ : Bool)
+  /// JSON_OBJECTAGG: the key is the call's `separator`, the value its `arg`.
+  JsonObjectAgg(absent~ : Bool, raw~ : Bool)
 } derive(Debug, Eq)
 
 ///|
 /// An aggregate call: `arg` is None for COUNT(*); `separator` is
-/// STRING_AGG's; `order` its WITHIN GROUP keys. `ty` is the result type.
+/// STRING_AGG's (JSON_OBJECTAGG's key); `order` its WITHIN GROUP keys. `ty`
+/// is the result type.
 pub(all) struct AggCall {
   func : AggFn
   arg : Expr?

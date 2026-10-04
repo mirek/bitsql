@@ -202,3 +202,8 @@ pub(all) struct Frame {
   start : FrameBound
   end : FrameBound?
 } derive(Eq, Debug)
+
+///|
+/// Marker prefix of the clause argument the parser appends to a
+/// JSON_ARRAYAGG / JSON_OBJECTAGG call (parse/json_ctor.mbt `json_agg`).
+pub const JSON_AGG_MARKER : String = "\u{0}JSONAGG:"

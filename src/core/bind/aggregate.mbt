@@ -126,6 +126,14 @@ fn bind_agg_call(
   call : @ast.FuncCall,
 ) -> @ir.AggCall raise @types.SqlError {
   let name = call.name.base().to_upper()
+  if name is ("JSON_ARRAYAGG" | "JSON_OBJECTAGG") {
+    for a in call.args {
+      if any_expr(a, x => is_aggregate(x) || is_window(x), subqueries=true) {
+        raise nested_aggregate_error()
+      }
+    }
+    return bind_json_agg(env, name, call)
+  }
   let f = match agg_fn(name) {
     Some(f) => f
     None => raise @types.not_supported("aggregate \{name}")
@@ -336,6 +344,10 @@ fn bind_window_call(
         [v],
         v.ty,
       )
+    }
+    "JSON_ARRAYAGG" | "JSON_OBJECTAGG" => {
+      let (f, args) = bind_json_agg_window(env, name, call)
+      mk_call(f, args, NVarChar(None, env.collation))
     }
     _ =>
       match agg_fn(name) {

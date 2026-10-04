@@ -108,6 +108,10 @@ pub fn resolve_type(
     "text" => Text(collation)
     "ntext" => NText(collation)
     "image" => Image
+    // SQL Server 2025's json type (sent to clients as varchar(max) UTF-8):
+    // not emulated, and never 2715/243, which would claim it does not exist
+    "json" if t.schema is None =>
+      raise @types.not_supported("the json data type")
     _ =>
       raise @types.sql_error(
         2715,

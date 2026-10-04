@@ -53,9 +53,33 @@ fn JsonCheck::expr(self : JsonCheck, e : @ast.Expr) -> Unit {
   walk_expr(e, x => {
     match x.kind {
       Subquery(q) | Exists(q) | InQuery(_, q, ..) => self.query(q, x.span.line)
+      Call(c) if self.failure is None &&
+        c.args.length() == 2 &&
+        c.name.parts.length() == 1 &&
+        c.name.base().to_upper() == "ISJSON" =>
+        self.failure = isjson_option_error(c.args[1]).map(e => (e, x.span.line))
       _ => ()
     }
   })
+}
+
+///|
+/// ISJSON's type argument is checked for the whole batch (captured:
+/// json3/isjson-path-exists, `DECLARE @t int = 1; SELECT ISJSON(N'1', @t)`
+/// runs nothing): anything but a bare word is 1023 (an unknown word is the
+/// parser's 155).
+fn isjson_option_error(a : @ast.Expr) -> @types.SqlError? {
+  match a.kind {
+    Column([_]) => None
+    _ =>
+      Some(
+        @types.sql_error(
+          1023,
+          "Invalid parameter 2 specified for isjson.",
+          severity=15,
+        ),
+      )
+  }
 }
 
 ///|
