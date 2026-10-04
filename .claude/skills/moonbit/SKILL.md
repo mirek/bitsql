@@ -234,3 +234,16 @@ scripts/check.sh                 # everything CI runs; must be green to push
   deprecated: `trust=NoVerification`. Copy bytes into a `FixedArray[Byte]`
   with `buf.blit_from_bytes(dst_off, src, src_off, len)` (Bytes has no
   `blit_to`). `@env.set_env_var` and `@fs.tmpdir(prefix=)` exist.
+- 2026-10-04: cross-compiling native (no `moon` cross flag): moonc's generated
+  C is arch-neutral, so `moon build --target native --release --dry-run` gives
+  a cc/ar plan that can be replayed with `aarch64-linux-gnu-gcc` against the
+  linux-aarch64 release's `lib/` (prebuilt `libmoonbitrun.o`, `simdutf.o`,
+  `libbacktrace.a`). `include/` and `lib/runtime/*.c` are identical across
+  arches. Release tarballs are keyed by the **moonc** version, `+` escaped:
+  `cli.moonbitlang.com/binaries/0.10.14%2B7d59c7ec9/moonbit-linux-aarch64.tar.gz`
+  (the `moon` date version 403s). `scripts/docker-publish.sh` does all of this.
+- 2026-10-04: `errdefer` takes one expression and the parser does not extend
+  it with a trailing `catch`, so `errdefer f() catch { _ => () }` is a parse
+  error. Use a block instead: `errdefer { f() catch { _ => () } }`.
+  `--deny-warn` flags `try { … } catch { e => { cleanup; raise e } }` as
+  `fragile_catch_all`; use `errdefer` for the cleanup.

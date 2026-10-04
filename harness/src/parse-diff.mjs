@@ -3,7 +3,7 @@
 // Needs no server: runs the `parsecheck` binary over every batch/rpc step and
 // compares with the captured errors. Usage: npm run parse-diff [-- selectors]
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { repoDir } from './env.mjs'
@@ -40,7 +40,9 @@ export async function parseDiff(selectors = []) {
   const dir = mkdtempSync(join(tmpdir(), 'bitsql-parse-'))
   const input = join(dir, 'batches.json')
   writeFileSync(input, JSON.stringify(items.map(x => x.sql)))
-  const run = spawnSync(parsecheckBinary(), ['--json', input, '--all'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  let run
+  try { run = spawnSync(parsecheckBinary(), ['--json', input, '--all'], { encoding: 'utf8', maxBuffer: 1 << 28 }) }
+  finally { rmSync(dir, { recursive: true, force: true }) }
   if (run.status !== 0) throw new Error(`parsecheck failed: ${run.stderr}`)
   const lines = run.stdout.split('\n')
   const disagreements = []

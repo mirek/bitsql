@@ -2,7 +2,6 @@
 # Everything that must be green before pushing to main.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-
 echo "== moon check (native)"
 moon check --target native --deny-warn 2>&1 | tail -n 20
 echo "== core purity (all backends)"
