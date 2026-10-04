@@ -293,6 +293,7 @@ fn reserved_function(word : String) -> Bool {
 fn niladic(word : String) -> Bool {
   match word.to_upper() {
     "CURRENT_TIMESTAMP"
+    | "CURRENT_DATE"
     | "CURRENT_USER"
     | "SESSION_USER"
     | "SYSTEM_USER"

@@ -470,3 +470,15 @@ Start the host with `--database NAME` so the app's database exists at login
   everything after LOGIN7 is plaintext) and the server that logs each TDS
   packet as hex works on both targets; it can also inject raw packets (an
   idle ATTENTION `06 01 00 08 00 00 01 00`) and swallow their replies.
+- 2026-10-04 (msduck re-import): to find msduck captures newer than the
+  last import, clone msduck shallowly into the scratchpad and list
+  `git log --since=<last import> --name-only -- reference`, then compare
+  `reference/*.json` against the `source` fields of `corpus/msduck*/`.
+  Re-import changed files with `--only a,b,c --oracles 3` (~1,200 cases in
+  ~12 min); a jump in rejections means the fixture's setup changed (msduck
+  #889 recaptured gaps-unicode-predicates under the server default instead
+  of BIN2: the adapter now takes `doc.collation`). Remove the
+  `bitsql-oracle-import-*` containers afterwards. `harness/src/
+  dump-collation-weights.mjs` regenerates
+  `src/core/types/collation_weights_data.mbt` (ignorable code units,
+  accent ranks) from the oracle.

@@ -88,7 +88,7 @@ pub fn Session::run_bulk(
           None =>
             if !given[i] && c.computed is None {
               match c.default_ {
-                Some(d) => row[i] = self.eval_text(target, d, row, c.ty)
+                Some(d) => row[i] = self.eval_default(target, c, d, row)
                 None => ()
               }
             }

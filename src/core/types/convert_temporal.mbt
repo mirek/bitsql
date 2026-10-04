@@ -269,13 +269,27 @@ fn numeric_to_legacy(
   if floor.compare_int(-1_000_000) < 0 || floor.compare_int(10_000_000) > 0 {
     raise overflow
   }
-  let mut days = floor.to_int()
+  let days = floor.to_int()
   let frac = x.sub(Decimal::new(floor, 0))
-  let mut units = frac
+  let units = frac
     .mul(Decimal::from_int64(DATETIME_UNITS_PER_DAY.to_int64()))
     .rescale(0)
     .coef()
     .to_int()
+  legacy_from_units(days, units, to, overflow)
+}
+
+///|
+/// A legacy datetime of `to` from days since 1900-01-01 plus 1/300 s units
+/// (0..one day), range-checked (`overflow` when out of range).
+fn legacy_from_units(
+  days : Int,
+  units : Int,
+  to : SqlType,
+  overflow : SqlError,
+) -> Value raise SqlError {
+  let mut days = days
+  let mut units = units
   if units >= DATETIME_UNITS_PER_DAY {
     days += 1
     units -= DATETIME_UNITS_PER_DAY
@@ -297,4 +311,45 @@ fn numeric_to_legacy(
     }
     SmallDateTime(days, minutes)
   }
+}
+
+///|
+/// `+` / `-` with a datetime or smalldatetime result: both operands as
+/// datetime, then their day counts added in 1/300 s units (captured:
+/// conversion/datetime-arithmetic; `@d + @d` is 2140-…, `@d - 1.5`
+/// rounds to the 1/300 s unit, a smalldatetime result to the minute).
+fn legacy_arith(
+  op : ArithOp,
+  a : Value,
+  ta : SqlType,
+  b : Value,
+  tb : SqlType,
+  rt : SqlType,
+) -> Value raise SqlError {
+  let units = (v : Value, t : SqlType) => {
+    match cast(v, t, DateTime) {
+      DateTime(d, u) =>
+        d.to_int64() * DATETIME_UNITS_PER_DAY.to_int64() + u.to_int64()
+      _ => raise internal("legacy datetime operand")
+    }
+  }
+  let x = units(a, ta)
+  let y = units(b, tb)
+  let total = if op is Add { x + y } else { x - y }
+  let per_day = DATETIME_UNITS_PER_DAY.to_int64()
+  let mut days = total / per_day
+  let mut rest = total % per_day
+  if rest < 0L {
+    days -= 1L
+    rest += per_day
+  }
+  let overflow = sql_error(
+    8115,
+    "Arithmetic overflow error converting expression to data type \{rt.message_name()}.",
+    state=2,
+  )
+  if days < -1_000_000L || days > 10_000_000L {
+    raise overflow
+  }
+  legacy_from_units(days.to_int(), rest.to_int(), rt, overflow)
 }

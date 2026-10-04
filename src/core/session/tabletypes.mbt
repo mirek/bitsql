@@ -574,7 +574,7 @@ fn Session::load_tvp(
       let col = tvp.columns[i]
       if (col.flags & @tds.TVP_DEFAULT_COLUMN) != 0 {
         match c.default_ {
-          Some(d) => row[i] = self.eval_text(target, d, row, c.ty)
+          Some(d) => row[i] = self.eval_default(target, c, d, row)
           None => ()
         }
         continue

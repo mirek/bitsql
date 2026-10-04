@@ -386,6 +386,7 @@ fn Parser::can_start_expr(self : Parser) -> Bool {
           | "CONVERT"
           | "TRY_CONVERT"
           | "CURRENT_TIMESTAMP"
+          | "CURRENT_DATE"
           | "CURRENT_USER"
           | "SESSION_USER"
           | "SYSTEM_USER"

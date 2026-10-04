@@ -8,8 +8,9 @@
 //   for non-Unicode (varchar) data it uses SQL sort order 52/51, which differs
 //   from the Windows table mainly by *not* using "word sort" (hyphen and
 //   apostrophe compare as ordinary punctuation).
-// - `Latin1_General[_100|_140]_{CI|CS}_{AS|AI}[_KS][_WS][_SC]`: Windows
-//   collations, table version 0 (no number), 100 or 140 (treated as 100).
+// - `Latin1_General[_100]_{CI|CS}_{AS|AI}[_KS][_WS][_SC]`: Windows
+//   collations, table version 0 (no number) or 100 (there is no
+//   Latin1_General_140: 448, captured msduck default-collation).
 // - `Latin1_General[_100]_BIN` and `_BIN2`: binary (code unit) order.
 //
 // The linguistic comparison itself is an approximation; see
@@ -123,7 +124,7 @@ pub fn Collation::parse(name : String) -> Collation? {
   let mut i = 2
   let mut version = 0
   let mut version_text = ""
-  if parts[i] == "100" || parts[i] == "140" {
+  if parts[i] == "100" {
     version = 100
     version_text = "_" + parts[i]
     i += 1

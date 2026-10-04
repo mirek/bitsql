@@ -255,6 +255,44 @@
     },
     "ddl-completion": {"entries":30,"cases":30,"imported":30,"skipped":{},"rejected":{},"bytes":50604,"rejectedCases":[]},
     "decimal-unicode": {"entries":9,"cases":9,"imported":9,"skipped":{},"rejected":{},"bytes":12534,"rejectedCases":[]},
+    "default-collation": {
+      "entries": 44,
+      "cases": 44,
+      "imported": 40,
+      "skipped": {},
+      "rejected": {"msduck mismatch /errors/*/message":4},
+      "bytes": 80623,
+      "rejectedCases": [
+        {
+          "id": "019-keys-unique-nvarchar",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of UNIQUE KEY constraint 'UQ__items__40BBEA3AB6A814BF'. Cannot insert duplicate key in object 'dbo.items'. The duplicate key value is (foo).",
+          "expected": "Violation of UNIQUE KEY constraint 'UQ__items__40BBEA3A5577E5C0'. Cannot insert duplicate key in object 'dbo.items'. The duplicate key value is (foo)."
+        },
+        {
+          "id": "021-keys-nchar-and-char-keys",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__fixed__3BD0198EAF50C5FB'. Cannot insert duplicate key in object 'dbo.fixed'. The duplicate key value is (X   ).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__fixed__3BD0198E7C0CC8CC'. Cannot insert duplicate key in object 'dbo.fixed'. The duplicate key value is (X   )."
+        },
+        {
+          "id": "025-keys-composite-key",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__pairs__D86D1816FBB90506'. Cannot insert duplicate key in object 'dbo.pairs'. The duplicate key value is (K, V).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__pairs__D86D181677308223'. Cannot insert duplicate key in object 'dbo.pairs'. The duplicate key value is (K, V)."
+        },
+        {
+          "id": "038-columns-case-sensitive-keys",
+          "reason": "msduck mismatch /errors/*/message",
+          "path": "/errors/0/message",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__cskeys__3BD0198EE7F96AA7'. Cannot insert duplicate key in object 'dbo.cskeys'. The duplicate key value is (k).",
+          "expected": "Violation of PRIMARY KEY constraint 'PK__cskeys__3BD0198ED567BC14'. Cannot insert duplicate key in object 'dbo.cskeys'. The duplicate key value is (k)."
+        }
+      ]
+    },
     "distribution-reference": {"entries":16,"cases":15,"imported":15,"skipped":{"server version probe":1},"rejected":{},"bytes":14801,"rejectedCases":[]},
     "drop-index": {"entries":24,"cases":24,"imported":24,"skipped":{},"rejected":{},"bytes":84822,"rejectedCases":[]},
     "float-aggregates": {"entries":46,"cases":45,"imported":45,"skipped":{"server version probe":1},"rejected":{},"bytes":64136,"rejectedCases":[]},
@@ -409,6 +447,7 @@
       "bytes": 189223,
       "rejectedCases": []
     },
+    "openjson-isnull": {"entries":21,"cases":21,"imported":21,"skipped":{},"rejected":{},"bytes":42152,"rejectedCases":[]},
     "order-token": {
       "entries": 68,
       "cases": 65,
@@ -742,10 +781,10 @@
     "windows-1252-best-fit": {"entries":142,"cases":142,"imported":142,"skipped":{"sampled out":4},"rejected":{},"bytes":572473,"rejectedCases":[]}
   },
   "totals": {
-    "entries": 9109,
-    "cases": 8363,
-    "imported": 8334,
-    "bytes": 15630568,
+    "entries": 9174,
+    "cases": 8428,
+    "imported": 8395,
+    "bytes": 15753343,
     "skipped": {
       "sampled out (grid)": 16167,
       "exhaustive grid chunk (too large)": 251,
@@ -785,6 +824,7 @@
     "rejected": {
       "msduck mismatch /sets/*/rows/*/*": 15,
       "msduck mismatch /sets/*/rows/*/*/value": 8,
+      "msduck mismatch /errors/*/message": 4,
       "msduck mismatch /errors/*/lineNumber": 4,
       "msduck mismatch /sets/*/rows/length": 1,
       "nondeterministic sets/*/rows/*/*": 1

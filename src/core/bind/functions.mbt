@@ -97,7 +97,14 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       }
       // captured: an xml result stays nullable (xml/type#043), as does
       // ISNULL(CAST(0x.. AS image), 'x') (text: not)
-      let nullable = ty is (Xml | Json | Image) || !(known(b[0]) || known(b[1]))
+      // a replacement that may be cut to the first argument's length keeps
+      // the result nullable (captured: ISNULL(@n nvarchar(10), [key]) over
+      // OPENJSON and ISNULL(CAST(NULL AS nvarchar(5)), k nvarchar(10)) are
+      // flags 33; msduck openjson-isnull carrier-as-replacement)
+      let cut = !known(b[0]) && try_fold(b[1]) is None && truncates(b[1].ty, ty)
+      let nullable = ty is (Xml | Json | Image) ||
+        !(known(b[0]) || known(b[1])) ||
+        cut
       mk(Call(IsNull, [first, second]), ty, nullable)
     }
     "COALESCE" => {
@@ -123,11 +130,14 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         branches.push((bit_expr(IsNull(b[i], negated=true), false), b[i]))
       }
       let last = b[b.length() - 1]
-      fold_case(
-        branches,
-        Some(last),
-        t,
-        branches.iter().any(x => x.1.nullable) || last.nullable,
+      adopt_collation(
+        env,
+        fold_case(
+          branches,
+          Some(last),
+          t,
+          branches.iter().any(x => x.1.nullable) || last.nullable,
+        ),
       )
     }
     "NULLIF" => {
@@ -212,6 +222,16 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       mk(
         Call(if name == "GETUTCDATE" { GetUtcDate } else { GetDate }, []),
         DateTime,
+        false,
+      )
+    }
+    // SQL Server 2025: the session clock's date, not nullable (captured:
+    // conversion/datetime-arithmetic)
+    "CURRENT_DATE" => {
+      arity(name, args, 0)
+      mk(
+        Cast(mk(Call(GetDate, []), DateTime, false), try_=false, style=None),
+        Date,
         false,
       )
     }

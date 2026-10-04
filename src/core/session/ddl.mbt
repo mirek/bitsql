@@ -550,7 +550,14 @@ fn Session::add_column(
     Some(i) =>
       match @types.Collation::parse(i.name) {
         Some(x) => x
-        None => raise @types.unknown_collation_error(i.name)
+        // state 2 in a column definition (captured: msduck
+        // default-collation columns-unknown-name)
+        None =>
+          raise match @types.unknown_collation_error(i.name) {
+            SqlError(number=448, message~, ..) =>
+              @types.sql_error(448, message, state=2)
+            e => e
+          }
       }
     None => self.scope_collation(b.scope)
   }
@@ -631,6 +638,13 @@ fn Session::add_column(
         173,
         "The definition for column '\{c.name.name}' must include a data type.",
       )
+  }
+  // captured: msduck default-collation columns-non-character
+  if c.collate is Some(_) && c.computed is None && ty.collation() is None {
+    raise @types.sql_error(
+      447,
+      "Expression type \{ty.clash_name()} is invalid for COLLATE clause.",
+    )
   }
   let nullable = match (c.nullable, c.computed) {
     (Some(n), _) => n
@@ -1874,12 +1888,14 @@ fn Session::check_default(
   if is_newsequentialid(self.slice(e.span)) {
     return
   }
-  // binding problems surface on use, as before; only the assignment rule
-  // is checked here
+  // binding problems surface on use, as before, except type errors
+  // (captured: msduck gaps-computed session-variant-writes, ISNULL(int,
+  // SESSION_CONTEXT(..)) is 257 at CREATE TABLE)
   let bound = @bind.bind_expr(
     @bind.Env::new(Map([]), catalog=self.catalog()),
     e,
   ) catch {
+    err if err.number() is (206 | 257 | 402 | 8116 | 8117) => raise err
     _ => return
   }
   // the untyped NULL constant is assignable to every type, xml too

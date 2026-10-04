@@ -27,6 +27,12 @@ fn Session::constraint_errors(
 ) -> Array[(@types.SqlError, Int)]? {
   let line = s.span.line
   match s.kind {
+    CreateTable({ body, .. })
+    | AlterTable(_, Add(body, ..))
+    | DeclareTable(_, body) if bad_collation(body) is Some(name) =>
+      Some([
+        (@types.sql_error(448, "Invalid collation '\{name}'.", state=2), line),
+      ])
     CreateTable({ name, body, .. }) =>
       body_constraint_errors(
         body,
@@ -67,6 +73,21 @@ fn Session::constraint_errors(
       }
     _ => None
   }
+}
+
+///|
+/// A column COLLATE name SQL Server does not know: 448 state 2 for the
+/// whole batch (captured: msduck default-collation columns-unknown-name*).
+/// Real collations bitsql does not model stay the binder's Emulator error.
+fn bad_collation(body : @ast.TableBody) -> String? {
+  for c in body.columns {
+    if c.collate is Some(i) &&
+      @types.Collation::parse(i.name) is None &&
+      @types.unknown_collation_error(i.name).number() == 448 {
+      return Some(i.name)
+    }
+  }
+  None
 }
 
 ///|

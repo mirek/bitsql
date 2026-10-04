@@ -30,6 +30,9 @@ pub fn arith(
   if a is Null || b is Null {
     return Null
   }
+  if rt is (DateTime | SmallDateTime) {
+    return legacy_arith(op, a, ta, b, tb, rt)
+  }
   let fa = ta.family()
   let fb = tb.family()
   // character operand meeting a non-character one: implicit conversion

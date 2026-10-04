@@ -502,7 +502,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
                 self.rt.scope_identity = iv
               }
               (_, Some(d)) if c.computed is None =>
-                row[i] = self.eval_text(target, d, row, c.ty)
+                row[i] = self.eval_default(target, c, d, row)
               _ => ()
             }
           }

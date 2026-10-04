@@ -239,13 +239,31 @@ fn Session::eval_text(
   let e = @parse.parse_expr(text)
   let env = self.column_env(target)
   let b = @bind.bind_expr(env, e)
+  let v = @exec.eval(self.ctx().with_row(row), b)
+  @types.cast(v, b.ty, ty)
+}
+
+///|
+/// Evaluates a column's DEFAULT for a row and stores it like an assigned
+/// value: an over-long string is 2628, not silently cut (captured: msduck
+/// unicode-storage *-overflow-default).
+fn Session::eval_default(
+  self : Session,
+  target : Target,
+  col : @store.Column,
+  text : String,
+  row : Array[@types.Value],
+) -> @types.Value raise {
+  if is_newsequentialid(text) {
+    return self.server.next_sequential_guid()
+  }
+  let b = @bind.bind_expr(self.column_env(target), @parse.parse_expr(text))
   // `DEFAULT (NULL)` is the untyped NULL constant: it converts to any
-  // column type (captured: ddl/default-untyped-null)
+  // column type (captured: constraints/default-untyped-null)
   if b.kind is Lit(Null) && b.ty is Int {
     return Null
   }
-  let v = @exec.eval(self.ctx().with_row(row), b)
-  @types.cast(v, b.ty, ty)
+  self.to_column(target, col, @exec.eval(self.ctx().with_row(row), b), b.ty)
 }
 
 ///|

@@ -199,16 +199,9 @@ fn fold_case(
       }
     }
   }
-  if is_lob(ty) {
-    return {
-      kind: Case(
-        branches.map(b => (b.0, coerce(b.1, ty))),
-        els.map(x => coerce(x, ty)),
-      ),
-      ty,
-      nullable,
-    }
-  }
+  // constant conditions fold for max types too: COALESCE(NULL, m) over an
+  // nvarchar(max) column is the column (flags 9; captured: msduck
+  // openjson-isnull, constraints probes)
   let mut i = 0
   while i < branches.length() {
     let cond = branches[i].0
@@ -225,6 +218,16 @@ fn fold_case(
     return match els {
       Some(x) => pick(x)
       None => { kind: Lit(Null), ty, nullable: true, }
+    }
+  }
+  if is_lob(ty) {
+    return {
+      kind: Case(
+        branches.map(b => (b.0, coerce(b.1, ty))),
+        els.map(x => coerce(x, ty)),
+      ),
+      ty,
+      nullable,
     }
   }
   let rest = branches[i:].to_owned().map(b => (b.0, coerce(b.1, ty)))

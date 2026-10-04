@@ -384,7 +384,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let nullable = els is None ||
         branches.iter().any(b => b.1.nullable) ||
         (els is Some(x) && x.nullable)
-      fold_case(branches, els, t, nullable)
+      adopt_collation(env, fold_case(branches, els, t, nullable))
     }
     Cast(inner, tn, try_~) => {
       let a = bind_expr(env, inner)

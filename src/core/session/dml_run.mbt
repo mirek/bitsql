@@ -578,7 +578,7 @@ fn Session::update_row(
     let (v, ty) = match rhs {
       None =>
         match c.default_ {
-          Some(d) => (self.eval_text(target, d, old, c.ty), c.ty)
+          Some(d) => (self.eval_default(target, c, d, old), c.ty)
           None => (@types.Value::Null, c.ty)
         }
       Some(b) =>
@@ -1137,7 +1137,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
             last_identity = Some(v)
           }
           (_, Some(d)) if c.computed is None =>
-            row[i] = self.eval_text(target, d, row, c.ty)
+            row[i] = self.eval_default(target, c, d, row)
           _ => ()
         }
         if c.ty is RowVersion {

@@ -13,3 +13,5 @@ SELECT CAST(0x01 AS datetime2);
 SELECT CAST(0x01 AS datetimeoffset);
 -- @step batch
 DECLARE @d date = 0x01;
+-- @step batch
+DECLARE @d datetime = '2020-01-01'; SELECT @d - CAST(0x01 AS varbinary(4)) AS b;

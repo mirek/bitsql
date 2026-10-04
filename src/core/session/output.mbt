@@ -369,7 +369,7 @@ fn Session::output_into(
         if c.identity is Some(id) {
           row[i] = identity_value(c.ty, self.next_identity(target.scope, t, id))
         } else if row[i] is Null && c.default_ is Some(d) && !idx.contains(i) {
-          row[i] = self.eval_text(target, d, row, c.ty)
+          row[i] = self.eval_default(target, c, d, row)
         }
       }
       self.check_row(target, db, row, "INSERT")

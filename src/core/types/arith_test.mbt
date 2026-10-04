@@ -236,7 +236,7 @@ test "decimal result types match captured metadata" {
   }
   inspect(
     err(Add, DateTime2(7), Int),
-    content="206/2 Operand type clash: int is incompatible with datetime2",
+    content="206/2 Operand type clash: datetime2 is incompatible with int",
   )
   inspect(
     err(Sub, Date, Date),
@@ -254,9 +254,17 @@ test "decimal result types match captured metadata" {
     err(Sub, vc(), vc()),
     content="8117/1 Operand data type varchar(max) is invalid for subtract operator.",
   )
+  // captured: conversion/datetime-arithmetic
+  inspect(err(Add, DateTime, Int), content="datetime")
+  inspect(err(Sub, SmallDateTime, Decimal(5, 2)), content="smalldatetime")
+  inspect(err(Add, SmallDateTime, DateTime), content="datetime")
   inspect(
-    err(Add, DateTime, Int),
-    content="50106/1 Emulator: arithmetic on datetime and int is not supported.",
+    err(Div, DateTime, Int),
+    content="257/3 Implicit conversion from data type datetime to int is not allowed. Use the CONVERT function to run this query.",
+  )
+  inspect(
+    err(Add, DateTime, Date),
+    content="402/1 The data types datetime and date are incompatible in the add operator.",
   )
 }
 

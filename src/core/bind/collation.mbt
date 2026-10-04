@@ -104,6 +104,10 @@ fn plan_column(plan : @ir.Plan, j : Int, t : @types.SqlType) -> Coercibility {
         _ => implicit_of(t)
       }
     Values(_) => Default
+    // OPENJSON's value column has the database collation as a
+    // coercible default: COALESCE(value, key) takes key's implicit BIN2
+    // (captured: msduck openjson-isnull coalesce-mixes)
+    TableFunc(OpenJsonDefault, _) if j == 1 => Default
     Aggregate(p, keys, _, ..) =>
       if j < keys.length() {
         coercibility_in(keys[j], (depth, i, ty) => {
@@ -437,5 +441,19 @@ fn variant_collation_check(
       456,
       "Implicit conversion of \{e.ty.base_name()} value to sql_variant cannot be performed because the resulting collation is unresolved due to collation conflict between \"\{x.name}\" and \"\{y.name}\" in \{op} operator.",
     )
+  }
+}
+
+///|
+/// A CASE / COALESCE result takes the collation that wins by precedence,
+/// not the one of the branch with the widest type: COALESCE(value, key)
+/// over OPENJSON is key's implicit Latin1_General_BIN2 (captured: msduck
+/// openjson-isnull coalesce-mixes). Conflicts stay for the result column.
+fn adopt_collation(env : Env, e : @ir.Expr) -> @ir.Expr {
+  guard e.ty.collation() is Some(current) else { return e }
+  match coercibility(env, e) {
+    Explicit(c) | Implicit(c) if c != current =>
+      { ..e, ty: e.ty.with_collation(c), }
+    _ => e
   }
 }

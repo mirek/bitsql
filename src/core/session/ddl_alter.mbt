@@ -235,7 +235,7 @@ fn Session::alter_add(
         // state 0 (captured: msduck-runs alter-named-default #059)
         (None, Some(d)) if c.computed is None &&
           (!c.nullable || with_values[k - old_width]) =>
-          self.eval_text(target, d, row + [Null], c.ty) catch {
+          self.eval_default(target, c, d, row + [Null]) catch {
             @types.SqlError(..) as e => {
               self.pending.push(e)
               raise @types.sql_error(

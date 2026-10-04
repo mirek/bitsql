@@ -37,8 +37,10 @@ function stepExpect(result, completion, { keys, redact = v => v } = {}) {
   })
 }
 
-const casesAdapter = ({ redact, collation } = {}) => doc => doc.cases.map(c => {
+const casesAdapter = ({ redact, collation: fallback } = {}) => doc => doc.cases.map(c => {
   const entries = []
+  // a fixture that names its database collation was captured under it
+  const collation = doc.collation ?? fallback
   if (collation) entries.push({ name: `${c.id} database collation`, steps: [{ kind: 'batch', sql: `ALTER DATABASE CURRENT COLLATE ${collation}` }] })
   c.steps.forEach((s, i) => {
     const name = `${c.id} ${i + 1}`
@@ -91,6 +93,8 @@ export default {
   'gaps-keys': casesAdapter({ redact: v => replaceIn(v, /(__[0-9A-Za-z_]+?__)[0-9A-F]{16}/g, '$1<hash>') }),
   'gaps-rowversion_identity': casesAdapter(),
   // msduck created each database with COLLATE Latin1_General_100_BIN2.
+  // captured under Latin1_General_100_BIN2 until msduck #889, under the
+  // server default (named in the fixture) since
   'gaps-unicode-predicates': casesAdapter({ collation: 'Latin1_General_100_BIN2' }),
 
   'gaps-bulk': doc => doc.cases.map(c => ({

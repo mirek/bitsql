@@ -100,7 +100,12 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let mut failure : @types.SqlError? = None
       keyed.sort_by((a, b) => {
         for i, k in keys {
-          let c = compare_for_sort(a.0[i], b.0[i], k.collation) catch {
+          let c = compare_for_sort(
+            a.0[i],
+            b.0[i],
+            k.collation,
+            ansi=ansi_key(k),
+          ) catch {
             e => {
               failure = Some(e)
               0
@@ -431,13 +436,22 @@ fn compare_for_sort(
   a : @types.Value,
   b : @types.Value,
   collation : @types.Collation?,
+  ansi? : Bool = false,
 ) -> Int raise @types.SqlError {
   match (a, b) {
     (Null, Null) => 0
     (Null, _) => -1
     (_, Null) => 1
-    _ => @types.compare(a, b, collation?).unwrap_or(0)
+    _ => @types.compare(a, b, collation?, ansi~).unwrap_or(0)
   }
+}
+
+///|
+/// char/varchar sort keys: SQL_ collations order them with the SQL sort
+/// order (string sort: '-a' before '_'), not word sort (captured: msduck
+/// default-collation table-ordering-weights).
+fn ansi_key(k : @ir.SortKey) -> Bool {
+  k.expr.ty.family() is FString && !k.expr.ty.is_unicode()
 }
 
 ///|

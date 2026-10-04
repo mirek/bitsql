@@ -406,24 +406,24 @@ pub fn arith_result_type(
   // temporal operands
   if fa1 is (FDate | FTime | FDateTime) || fb1 is (FDate | FTime | FDateTime) {
     if is_legacy_datetime(a1) || is_legacy_datetime(b1) {
-      raise not_supported(
-        "arithmetic on \{a.base_name()} and \{b.base_name()}",
-        number=EMU_OPERATOR_NOT_SUPPORTED,
-      )
+      return legacy_arith_type(op, a, b, a1, b1)
     }
     if fa1 is (FDate | FTime | FDateTime) && fb1 is (FDate | FTime | FDateTime) {
       raise invalid_operand_error(a1, op)
     }
+    // the temporal type comes first, whatever the operand order
+    // (captured: conversion/datetime-arithmetic, `1 + date` and `date + 1`
+    // are both "date is incompatible with int")
     raise type_clash_error(
       if fa1 is (FDate | FTime | FDateTime) {
-        b1
-      } else {
         a1
+      } else {
+        b1
       },
       if fa1 is (FDate | FTime | FDateTime) {
-        a1
-      } else {
         b1
+      } else {
+        a1
       },
     )
   }
@@ -562,4 +562,52 @@ pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
     raise type_clash_error(lo, hi)
   }
   hi
+}
+
+///|
+/// `datetime`/`smalldatetime` with + or -: the other operand (number, bit,
+/// binary, character data or another legacy datetime) converts to the
+/// datetime type and the day counts add; the result is smalldatetime only
+/// when no datetime takes part. `*` and `/` are 257, `%` and every other
+/// date/time type or uniqueidentifier 402 (captured:
+/// conversion/datetime-arithmetic). `a`/`b` are the operands as written,
+/// `a1`/`b1` with character operands replaced by the other side's type.
+fn legacy_arith_type(
+  op : ArithOp,
+  a : SqlType,
+  b : SqlType,
+  a1 : SqlType,
+  b1 : SqlType,
+) -> SqlType raise SqlError {
+  let incompatible = () => {
+    sql_error(
+      402,
+      "The data types \{a.clash_name()} and \{b.clash_name()} are incompatible in the \{op.name()} operator.",
+    )
+  }
+  let (legacy, other) = if is_legacy_datetime(a1) { (a1, b1) } else { (b1, a1) }
+  match other.family() {
+    FDate | FTime | FGuid => raise incompatible()
+    FDateTime if !is_legacy_datetime(other) => raise incompatible()
+    FInteger | FDecimal | FMoney | FFloat | FBit | FBinary | FDateTime => ()
+    _ => raise incompatible()
+  }
+  match op {
+    Add | Sub =>
+      if a1 is DateTime || b1 is DateTime {
+        DateTime
+      } else {
+        SmallDateTime
+      }
+    Mod => raise incompatible()
+    Mul | Div =>
+      if is_legacy_datetime(other) {
+        raise not_supported(
+          "\{op.name()} of two \{legacy.base_name()} values",
+          number=EMU_OPERATOR_NOT_SUPPORTED,
+        )
+      } else {
+        raise implicit_conversion_error(legacy, other)
+      }
+  }
 }

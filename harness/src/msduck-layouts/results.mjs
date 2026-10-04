@@ -131,6 +131,30 @@ const adapters = {
     })),
   }],
 
+  // Same layout and projection as apply-full-join (issue #900: ISNULL /
+  // COALESCE / IIF over OPENJSON values); fresh database per case.
+  'openjson-isnull': doc => adapters['apply-full-join'](doc),
+
+  // cases: [{group, name, sql, sets:[{columns:[{name,type,length,collation}],
+  // rows}], errors:[{number,state,class,message}]}]: one batch each in one
+  // database, every table dropped after each case (independent).
+  'default-collation': doc => [{
+    id: 'run', independent: true,
+    entries: doc.cases.map(c => ({
+      name: `${c.group} ${c.name}`,
+      steps: [{
+        kind: 'batch', sql: c.sql,
+        expect: customExpect({ sets: c.sets, errors: c.errors }, a => ({
+          sets: a.sets.map(s => ({
+            columns: s.columns.map(x => ({ name: x.name, type: x.type, length: x.length ?? null, collation: x.collation ?? null })),
+            rows: s.rows,
+          })),
+          errors: a.errors.map(e => ({ number: e.number, state: e.state, class: e.class, message: e.message })),
+        })),
+      }],
+    })),
+  }],
+
   // cases: [{width, operation, left, right, sql, result}] on one connection
   // after SET ARITHABORT ON; SET ANSI_WARNINGS ON; queries are independent.
   'checked-integer': doc => [{

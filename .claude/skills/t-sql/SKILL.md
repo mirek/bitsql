@@ -1521,3 +1521,35 @@ and `XACT_STATE()` advertises nullable smallint width.
   COMPRESS, AT TIME ZONE and DATEPART week/weekday are nondeterministic;
   RAND(seed), DECOMPRESS, HASHBYTES, JSON functions, DATEPART iso_week are
   deterministic. NEWSEQUENTIALID outside a DEFAULT is 302.
+
+- 2026-10-04 (corpus `conversion/datetime-arithmetic`): `datetime` ± x
+  converts x (int, decimal, money, float, bit, binary, character data,
+  smalldatetime, datetime) to datetime and adds day counts: `@d + 1.5` is
+  +36 h, `@d + N'12:00'` +12 h, `@d + @d` 2140-…, the fraction rounds to
+  1/300 s (`+ 0.0000001` day is .010). The result is smalldatetime only
+  when no datetime takes part (rounded to the minute). Out of range is
+  8115 "…converting expression to data type datetime" at run time. `*`/`/`
+  are 257 (datetime to int), `%` 402, datetime with date/time/datetime2/
+  datetimeoffset/uniqueidentifier 402 "The data types datetime and date
+  are incompatible in the add operator". date/time/datetime2/dto with a
+  number is 206 with the temporal type first ("date is incompatible with
+  int", both operand orders). `CURRENT_DATE` (2025) is a non-nullable
+  date; `CURRENT_DATE()` is 102 near ')'.
+
+- 2026-10-04 (msduck default-collation, openjson-isnull; dumps in
+  `src/core/types/collation_weights_data.mbt`): under the version-0 tables
+  (SQL_Latin1_General_CP1_*, Latin1_General_*) 21,229 BMP code units are
+  fully ignorable (NUL, U+0640, U+200D–U+200F, U+2060…, BOM, U+FFFE/F,
+  surrogates, unknown code points) but not the soft hyphen; version 100
+  ignores the soft hyphen and ZWNJ but not the BOM or surrogates. varchar
+  under SQL_ collations ignores nothing, not even CHAR(0). Accent order is
+  the table's (á < à < ä < ā), not code point order. ORDER BY on varchar
+  under an SQL_ collation uses the SQL sort order: '-a' sorts before '_'
+  (string sort; word sort only for nvarchar). OPENJSON's `value` has a
+  coercible-default collation: COALESCE(value, key) is key's BIN2 (no
+  451). CASE/COALESCE with constant conditions fold to the column even
+  for nvarchar(max) (flags 9/1). ISNULL(@n nvarchar(10), x nvarchar(4000)
+  NOT NULL) is nullable (the replacement may be cut). There is no
+  Latin1_General_140_* (448). A column `COLLATE bad` is 448 state 2 for
+  the whole batch; `int COLLATE …` is 447 "Expression type int is invalid
+  for COLLATE clause."

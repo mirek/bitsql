@@ -9,11 +9,15 @@
 // - BIN2: code unit order (a surrogate pair sorts by its high surrogate,
 //   below U+E000). BIN: first unit, then UTF-16LE bytes.
 // - Linguistic (Windows / SQL collations on Unicode data):
-//   * NUL (U+0000) is ignorable; with the version-0 tables
-//     (SQL_Latin1_General_CP1_*, Latin1_General_* without _100) surrogate
-//     code units and U+FFFD are ignorable too (captured: all surrogates
-//     compare equal to each other and to U+FFFD); version 100 sorts
-//     surrogates after all BMP characters.
+//   * ignorable code units come from tables dumped from SQL Server
+//     (collation_weights_data.mbt, harness/src/dump-collation-weights.mjs):
+//     the version-0 tables (SQL_Latin1_General_CP1_*, Latin1_General_*
+//     without _100) ignore NUL, surrogates, U+FFFD, bidi marks, the BOM and
+//     every code point they do not know; version 100 a different set (soft
+//     hyphen, ZWNJ, ZWJ…) and sorts surrogates after all BMP characters.
+//   * accents (secondary weights) follow the tables' order, also dumped:
+//     acute < grave < dot < circumflex < diaeresis < caron < breve <
+//     macron < tilde < ring < ogonek < cedilla …
 //   * case: ASCII, Latin-1, Latin Extended-A, Greek and basic Cyrillic case
 //     pairs; lower case sorts first in CS collations ('a' < 'A', σ/ς < Σ).
 //   * accents: Latin-1 and Latin Extended-A letters decompose into base
@@ -352,7 +356,7 @@ fn compare_bin(a : String, b : String) -> Int {
 /// One collation element.
 priv struct Element {
   primary : Int // 0 = accent-only element
-  secondary : Int // accent (combining mark code point), 0 = none
+  secondary : Int // accent rank (accent_weight), 0 = none
   tertiary : Int // 0 lower / uncased, 1 variant (final sigma), 2 upper
   kana : Int // 1 = katakana form of a hiragana primary
   width : Int // 1 = fullwidth form
@@ -511,17 +515,37 @@ fn letter_primary(c : Int) -> Int {
 }
 
 ///|
-/// Does a linguistic comparison under `c` ignore this code unit (NUL, soft
-/// hyphen; surrogates and U+FFFD in version-0 tables)?
+/// Does a linguistic comparison under `c` ignore this code unit?
 pub fn collation_ignores(u : Int, c : Collation) -> Bool {
   c.kind is Linguistic && is_ignorable(u, c.version)
 }
 
 ///|
+/// Code units the sort tables ignore at every level, dumped from SQL Server
+/// (collation_ignorable.mbt): NUL; in version 0 also surrogates, U+FFFD,
+/// bidi marks, the BOM and every code point the old tables do not know
+/// (21,229 units, not the soft hyphen); in version 100 the soft hyphen,
+/// ZWNJ/ZWJ and a smaller set of unknown code points (captured: msduck
+/// default-collation weights-ignorable-*).
 fn is_ignorable(u : Int, version : Int) -> Bool {
-  u == 0 ||
-  (version == 0 && ((u >= 0xD800 && u <= 0xDFFF) || u == 0xFFFD)) ||
-  u == 0xAD // soft hyphen
+  if u < 0xAD {
+    return u == 0
+  }
+  let table = if version == 0 { ignorable_v0 } else { ignorable_v100 }
+  let mut lo = 0
+  let mut hi = table.length() - 1
+  while lo <= hi {
+    let mid = (lo + hi) / 2
+    let (a, b) = table[mid]
+    if u < a {
+      hi = mid - 1
+    } else if u > b {
+      lo = mid + 1
+    } else {
+      return true
+    }
+  }
+  false
 }
 
 ///|
@@ -754,6 +778,13 @@ fn collation_elements(
       }
     }
   }
+  // accents sort in the table's order, not by code point (captured:
+  // msduck default-collation weights-accented-letter-order: á < à < ä < ā)
+  for k, e in out {
+    if e.secondary != 0 {
+      out[k] = { ..e, secondary: accent_weight(e.secondary, version), }
+    }
+  }
   (out, ws)
 }
 
@@ -865,4 +896,17 @@ fn compare_linguistic(
     }
   }
   sign_of(wa.length() - wb.length())
+}
+
+///|
+/// Secondary weight of combining mark `mark` (U+0300..U+036F) in a sort
+/// table version (collation_weights_data.mbt); other marks keep their code
+/// point above every rank.
+fn accent_weight(mark : Int, version : Int) -> Int {
+  let table = if version == 0 { accent_rank_v0 } else { accent_rank_v100 }
+  if mark >= 0x300 && mark - 0x300 < table.length() {
+    table[mark - 0x300]
+  } else {
+    mark
+  }
 }

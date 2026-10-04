@@ -372,7 +372,7 @@ fn compare_keys(
   keys : Array[@ir.SortKey],
 ) -> Int raise @types.SqlError {
   for i, k in keys {
-    let c = compare_for_sort(a[i], b[i], k.collation)
+    let c = compare_for_sort(a[i], b[i], k.collation, ansi=ansi_key(k))
     if c != 0 {
       return if k.desc { -c } else { c }
     }

@@ -381,7 +381,7 @@ fn Session::cascade_actions(
               for c in f.columns {
                 let col = child.columns[c]
                 r[c] = match col.default_ {
-                  Some(d) => self.eval_text(target, d, kv.1, col.ty)
+                  Some(d) => self.eval_default(target, col, d, kv.1)
                   None => Null
                 }
               }

@@ -47,12 +47,12 @@
       ]
     },
     "gaps-computed": {
-      "entries": 79,
-      "cases": 79,
-      "imported": 76,
+      "entries": 140,
+      "cases": 140,
+      "imported": 137,
       "skipped": {},
       "rejected": {"msduck mismatch /result/sets/*/rows/*/*":3},
-      "bytes": 74400,
+      "bytes": 132570,
       "rejectedCases": [
         {
           "id": "047-session-defaults-10",
@@ -89,7 +89,7 @@
           "id": "083-definition-errors-35",
           "reason": "msduck mismatch /errors/*/message",
           "path": "/errors/0/message",
-          "actual": "Violation of PRIMARY KEY constraint 'PK__k__2792E7E83FCCFA0A'. Cannot insert duplicate key in object 'dbo.k'. The duplicate key value is (1, 1).",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__k__2792E7E82F5A562F'. Cannot insert duplicate key in object 'dbo.k'. The duplicate key value is (1, 1).",
           "expected": "Violation of PRIMARY KEY constraint 'PK__k__2792E7E8A5EA992D'. Cannot insert duplicate key in object 'dbo.k'. The duplicate key value is (1, 1)."
         }
       ]
@@ -234,19 +234,16 @@
     "gaps-transactions": {
       "entries": 123,
       "cases": 94,
-      "imported": 92,
+      "imported": 93,
       "skipped": {
         "multi-connection (snapshot section)": 107,
         "server version probe": 1,
         "transaction manager request": 1,
         "after an unrepresentable step (transaction manager request)": 27
       },
-      "rejected": {"nondeterministic info/length":2},
-      "bytes": 95805,
-      "rejectedCases": [
-        {"id":"025-read-committed-snapshot-setup","reason":"nondeterministic info/length"},
-        {"id":"027-read-committed-snapshot-teardown","reason":"nondeterministic info/length"}
-      ]
+      "rejected": {"msduck mismatch /info/length":1},
+      "bytes": 97083,
+      "rejectedCases": [{"id":"025-read-committed-snapshot-setup","reason":"msduck mismatch /info/length","path":"/info/length","actual":2,"expected":0}]
     },
     "gaps-triggers": {
       "entries": 174,
@@ -260,18 +257,18 @@
           "id": "040-throw-and-runtime-errors-in-triggers-14",
           "reason": "msduck mismatch /errors/*/message",
           "path": "/errors/0/message",
-          "actual": "Violation of PRIMARY KEY constraint 'PK__t5__3213E83FD280BDC4'. Cannot insert duplicate key in object 'dbo.t5'. The duplicate key value is (1).",
+          "actual": "Violation of PRIMARY KEY constraint 'PK__t5__3213E83F5061B818'. Cannot insert duplicate key in object 'dbo.t5'. The duplicate key value is (1).",
           "expected": "Violation of PRIMARY KEY constraint 'PK__t5__3213E83FEAAEEF28'. Cannot insert duplicate key in object 'dbo.t5'. The duplicate key value is (1)."
         }
       ]
     },
-    "gaps-unicode-predicates": {"entries":123,"cases":114,"imported":114,"skipped":{},"rejected":{},"bytes":130323,"rejectedCases":[]}
+    "gaps-unicode-predicates": {"entries":123,"cases":114,"imported":114,"skipped":{},"rejected":{},"bytes":130796,"rejectedCases":[]}
   },
   "totals": {
-    "entries": 4766,
-    "cases": 4522,
-    "imported": 4495,
-    "bytes": 5685506,
+    "entries": 4827,
+    "cases": 4583,
+    "imported": 4557,
+    "bytes": 5745427,
     "skipped": {
       "multi-connection (snapshot section)": 107,
       "after an unrepresentable step (bulk load (BulkLoadBCP))": 106,
@@ -292,9 +289,9 @@
       "nondeterministic sets/*/rows/*/*": 4,
       "msduck mismatch /result/sets/*/rows/*/*": 3,
       "msduck mismatch /errors/*/message": 3,
-      "nondeterministic info/length": 2,
       "msduck mismatch /errors/*/state": 1,
-      "msduck mismatch /sets/*/rows/length": 1
+      "msduck mismatch /sets/*/rows/length": 1,
+      "msduck mismatch /info/length": 1
     }
   }
 }

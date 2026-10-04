@@ -126,7 +126,11 @@ for arch in amd64 arm64; do
   digest=$(python3 -c "import json,sys; print(next(m['digest'] for m in json.load(sys.stdin)['manifests'] if m['platform']['architecture'] == sys.argv[1]))" "$arch" <<<"$base_index")
   docker pull -q --platform "linux/$arch" "$base@$digest" >/dev/null
   docker build -q --platform "linux/$arch" --build-arg "BASE=$base@$digest" \
-    --build-arg "BITSQL_BIN=$out/$arch/bitsql" -t "$repo:$version-$arch" . >/dev/null
+    --build-arg "BITSQL_BIN=$out/$arch/bitsql" \
+    --label "org.opencontainers.image.version=$version" \
+    --label "org.opencontainers.image.revision=$(git rev-parse HEAD)" \
+    --label "org.opencontainers.image.title=bitsql" \
+    -t "$repo:$version-$arch" . >/dev/null
   [[ $(docker image inspect -f '{{.Architecture}}' "$repo:$version-$arch") == "$arch" ]] ||
     { echo "image $repo:$version-$arch has the wrong architecture" >&2; exit 1; }
 done
