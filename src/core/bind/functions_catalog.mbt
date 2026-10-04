@@ -39,7 +39,7 @@ fn bind_call_catalog(
       arity(name, args, 3)
       return Some(
         mk(
-          Call(Named(name), args.map(a => bind_expr(env, a))),
+          Call(Named(name), applock_args(env, name, args, 2)),
           NVarChar(Some(32), @types.default_collation),
           true,
         ),
@@ -48,7 +48,7 @@ fn bind_call_catalog(
     "APPLOCK_TEST" => {
       arity(name, args, 4)
       return Some(
-        mk(Call(Named(name), args.map(a => bind_expr(env, a))), Int, false),
+        mk(Call(Named(name), applock_args(env, name, args, 3)), Int, false),
       )
     }
     "TRIGGER_NESTLEVEL" => {
@@ -92,4 +92,30 @@ fn bind_call_catalog(
   }
   let bound = args.map(a => bind_expr(env, a))
   Some(mk(Call(Named(name), bound), ty, true))
+}
+
+///|
+/// APPLOCK_MODE/APPLOCK_TEST arguments: the first `checked` (principal,
+/// resource, and APPLOCK_TEST's mode) must be strings; a NULL literal or
+/// another type is 8116 at compile time (captured: msduck gaps-applock
+/// #058-#061). The owner argument may be NULL (= Transaction).
+fn applock_args(
+  env : Env,
+  name : String,
+  args : Array[@ast.Expr],
+  checked : Int,
+) -> Array[@ir.Expr] raise @types.SqlError {
+  let fname = name.to_lower()
+  args.mapi((i, a) => {
+    let e = bind_expr(env, a)
+    if i < checked {
+      if is_null_lit(e) {
+        raise null_arg(i + 1, fname)
+      }
+      guard e.ty is (Char(_) | VarChar(_) | NChar(_) | NVarChar(_)) else {
+        raise bad_arg_type(e.ty, i + 1, fname)
+      }
+    }
+    e
+  })
 }

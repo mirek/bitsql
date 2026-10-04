@@ -118,6 +118,19 @@ pub fn bind_dml_source(
           bind_table_ref(env, r)
         }
       }
+      // a table variable target named by its alias or name in FROM
+      // (captured: msduck gaps-temp_tables #035)
+      TableVar(name, alias_~, ..) if found.val is None && view is None => {
+        let q = match alias_ {
+          Some(a) => a.name.to_lower()
+          None => name.to_lower()
+        }
+        if target_names.contains(q) {
+          take(q)
+        } else {
+          bind_table_ref(env, r)
+        }
+      }
       Derived(_, alias_=Some(a), ..) if found.val is None &&
         view is Some(_) &&
         target_names.contains(a.name.to_lower()) => take(a.name.to_lower())

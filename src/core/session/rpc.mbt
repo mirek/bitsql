@@ -183,6 +183,12 @@ fn Session::run_module(
   // SET ANSI_WARNINGS / ARITHABORT revert too (captured: msduck
   // session-property-context, after sp_executesql N'SET … OFF')
   let saved_flags = Map::from_array(self.session_flags.iter().to_array())
+  // local temp tables created by the module are dropped when it ends
+  // (captured: msduck gaps-temp_tables #022/#023, an sp_executesql RPC)
+  let temps_before : Set[Int] = Set([])
+  for t in self.temp.tables() {
+    temps_before.add(t.id)
+  }
   self.frames.push(frame)
   self.rt.nest_level += levels
   self.try_base = self.try_depth
@@ -208,6 +214,11 @@ fn Session::run_module(
     self.uncatchable = false
     self.error_line = None
     self.error_module = None
+    for t in self.temp.tables() {
+      if !temps_before.contains(t.id) && !t.name.has_prefix("##") {
+        self.temp = self.temp.drop_object(t.id)
+      }
+    }
     // TVPs loaded for this call die with it
     for k in frame.owned {
       match frame.tables.get(k) {

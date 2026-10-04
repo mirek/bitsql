@@ -66,19 +66,30 @@ fn Session::sys_view_binding(
   if s != "sys" && s != "information_schema" {
     return None
   }
+  let base = name.parts[n - 1].name
+  // `tempdb.sys.#t` names a temp table (2701), not a catalog view
+  if base.has_prefix("#") {
+    return None
+  }
+  let mut tempdb = false
   if n >= 3 {
     let db = name.parts[n - 3].name.to_lower()
-    if db != "" && db != self.rt.database.to_lower() {
+    if db == "tempdb" && self.rt.database.to_lower() != "tempdb" {
+      tempdb = true
+    } else if db != "" && db != self.rt.database.to_lower() {
       raise @types.not_supported("catalog views of another database")
     }
   }
-  let base = name.parts[n - 1].name
   match view_index(schema, base) {
     Some(i) => {
       let v = view_defs[i]
       Some({
         scope: 2,
-        id: i,
+        id: if tempdb {
+          i + TEMPDB_VIEW_OFFSET
+        } else {
+          i
+        },
         schema: v.schema,
         name: v.name,
         columns: v.columns.map(c => @bind.ColumnRef::{
@@ -400,18 +411,61 @@ fn column_row(object_id : Int, c : @store.Column) -> VRow {
 
 ///|
 fn Session::catalog_name(self : Session) -> @types.Value {
-  String(self.rt.database)
+  String(if self.view_tempdb { "tempdb" } else { self.rt.database })
 }
 
 ///|
-/// Rows of catalog view `id` (index into `view_defs`) from the current
-/// user-database view.
+/// Binding ids of `tempdb.sys.x` views: the view index plus this offset.
+/// Their rows describe the session's temp tables (captured: msduck
+/// gaps-temp_tables #013, corpus stmts/temp-tempdb-catalog).
+const TEMPDB_VIEW_OFFSET : Int = 1048576
+
+///|
+/// tempdb lists a local temp table under its internal name: the name padded
+/// with '_' to 116 characters plus 12 upper-case hex digits (128 in all;
+/// captured: corpus stmts/temp-tempdb-catalog). bitsql's digits are the
+/// object id; SQL Server's are an internal counter.
+fn tempdb_internal_name(name : String, id : Int) -> String {
+  guard name.has_prefix("#") && !name.has_prefix("##") && name.length() < 116 else {
+    return name
+  }
+  let hex = id.reinterpret_as_uint().to_string(radix=16).to_upper()
+  let digits = if hex.length() >= 12 {
+    hex
+  } else {
+    "0".repeat(12 - hex.length()) + hex
+  }
+  name + "_".repeat(116 - name.length()) + digits
+}
+
+///|
+/// Rows of catalog view `id` (index into `view_defs`, plus
+/// `TEMPDB_VIEW_OFFSET` for tempdb) from the current database view.
 fn Session::sys_view_rows(
   self : Session,
   id : Int,
 ) -> Array[(Int64, Array[@types.Value])] {
+  let tempdb = id >= TEMPDB_VIEW_OFFSET
+  let id = if tempdb { id - TEMPDB_VIEW_OFFSET } else { id }
   let v = view_defs[id]
+  let saved = self.view_tempdb
+  self.view_tempdb = tempdb
   let rows = self.view_rows(v.schema.to_lower() + "." + v.name.to_lower())
+  self.view_tempdb = saved
+  if tempdb {
+    for r in rows {
+      for col in ["name", "table_name"] {
+        match r.get(col) {
+          Some(String(n)) if n.has_prefix("#") =>
+            match self.temp.lookup("dbo", n) {
+              Some(tid) => r[col] = String(tempdb_internal_name(n, tid))
+              None => ()
+            }
+          _ => ()
+        }
+      }
+    }
+  }
   let out = []
   for k, r in rows {
     out.push((k.to_int64(), project_row(v, r)))
@@ -421,7 +475,7 @@ fn Session::sys_view_rows(
 
 ///|
 fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
-  let db = self.db_of(0)
+  let db = if self.view_tempdb { self.temp } else { self.db_of(0) }
   let tables = db.tables()
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
@@ -430,8 +484,12 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
       for o in user_objects(db) {
         out.push(object_row(o))
       }
-      for r in system_object_rows() {
-        out.push(r)
+      // tempdb's own system objects are not modelled (their ids could
+      // collide with temp table ids)
+      if !self.view_tempdb {
+        for r in system_object_rows() {
+          out.push(r)
+        }
       }
     }
     "sys.tables" =>

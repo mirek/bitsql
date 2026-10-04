@@ -67,6 +67,19 @@ fn object_text(name : @ast.ObjectName) -> String {
 }
 
 ///|
+/// 208 for a missing table. A temp table is named without its database
+/// and schema qualifiers, state 0 (captured: msduck gaps-temp_tables #016,
+/// #017; corpus stmts/temp-qualified-names).
+pub fn missing_object_error(name : @ast.ObjectName) -> @types.SqlError {
+  let base = name.base()
+  if base.has_prefix("#") {
+    err(208, "Invalid object name '\{base}'.", state=0)
+  } else {
+    err(208, "Invalid object name '\{object_text(name)}'.")
+  }
+}
+
+///|
 fn requalify(cols : Array[ColumnRef], q : String) -> Array[ColumnRef] {
   cols.map(c => { ..c, qualifier: q, })
 }
@@ -228,7 +241,7 @@ fn bind_table_ref(
           }
           (scan, requalify(t.columns, q))
         }
-        None => raise err(208, "Invalid object name '\{object_text(name)}'.")
+        None => raise missing_object_error(name)
       }
     }
     TableVar(name, alias_~, ..) =>
@@ -244,7 +257,9 @@ fn bind_table_ref(
           raise err(
             1087,
             "Must declare the table variable \"\{name}\".",
-            state=1,
+            // captured: state 2 in a FROM clause (msduck table-variable
+            // #014, gaps-temp_tables #033)
+            state=2,
             severity=15,
           )
       }

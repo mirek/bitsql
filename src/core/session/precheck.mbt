@@ -8,6 +8,7 @@ fn precheck_batch(
   in_proc? : Bool = false,
 ) -> (@types.SqlError, Int)? {
   let declared : Set[String] = Set([])
+  let temp_creates : Set[String] = Set([])
   // declared types, for RAISERROR substitution parameter checks
   let types : Map[String, @types.SqlType] = Map([])
   for k, v in params {
@@ -98,6 +99,25 @@ fn precheck_batch(
           }
         }
       DeclareTable(name, _) => declared.add(name.to_lower())
+      // two CREATE TABLEs of one temp table name (also ## and in other
+      // branches or after a DROP) fail the whole batch: 2714 state 1 at
+      // the second (captured: msduck gaps-temp_tables #015, corpus
+      // stmts/temp-duplicate-create)
+      CreateTable(ct) if ct.name.base().has_prefix("#") => {
+        let base = ct.name.base()
+        if failure is None && temp_creates.contains(base.to_lower()) {
+          failure = Some(
+            (
+              @types.sql_error(
+                2714,
+                "There is already an object named '\{base}' in the database.",
+              ),
+              line,
+            ),
+          )
+        }
+        temp_creates.add(base.to_lower())
+      }
       SetVar(n, _, e) => {
         check_name(n, line)
         expr(e, line)
