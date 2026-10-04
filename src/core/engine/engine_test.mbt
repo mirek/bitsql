@@ -474,3 +474,34 @@ test "ATTENTION during a lock wait: 3621, the transaction stays open" {
   assert_eq(responded(batch(e, 1, "COMMIT")), [1])
   assert_eq(responded(batch(e, 2, "ROLLBACK")), [2])
 }
+
+///|
+test "databases from --database and --auto-create-databases are server-wide" {
+  let e = @engine.Engine::new(
+    {
+      ..@engine.Config::default(),
+      databases: ["appdb"],
+      auto_create_databases: true,
+    },
+    1,
+  )
+  // connection 1 logs into a database that does not exist yet
+  ignore(e.handle(ev(Connected(1))))
+  let pre = @tds.from_hex(
+    "00 00 10 00 06 01 00 16 00 01 04 00 17 00 01 FF 0c 00 00 00 00 00 02 00",
+  )
+  ignore(e.handle(ev(Received(1, @tds.frame(Prelogin, pre)))))
+  ignore(
+    e.handle(
+      ev(
+        Received(1, @tds.frame(Login7, login7_payload("sa", "x", "fixturedb"))),
+      ),
+    ),
+  )
+  connect(e, 2)
+  // from master: both user databases are listed with distinct ids
+  let out = batch(
+    e, 2, "SELECT COUNT(*) FROM master.sys.databases WHERE name IN (N'appdb', N'fixturedb') AND database_id = DB_ID(name) AND DB_NAME(database_id) = name AND database_id > 4",
+  )
+  assert_true(@tds.hex(sent(out)[0].payload).contains("d1 04 02 00 00 00"))
+}

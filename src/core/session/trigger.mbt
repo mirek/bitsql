@@ -161,14 +161,7 @@ fn Session::run_triggers(
   let implicit = self.tx is None
   if implicit {
     let current = self.server.get_db(self.rt.database)
-    self.tx = Some({
-      database: self.rt.database.to_lower(),
-      base: pre,
-      view: current,
-      temp_at_begin: self.temp,
-      savepoints: [],
-      name: None,
-    })
+    self.tx = Some(Tx::new(self.rt.database, pre, current, self.temp, None))
     self.server.set_db(self.rt.database, pre)
     self.implicit_tx = true
     self.rt.trancount = 1

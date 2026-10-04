@@ -59,6 +59,19 @@ fn Session::catalog_fn(
               String(if name == "OBJECT_NAME" { o.name } else { schema })
             None => Null
           }
+        // another database's object (by its database_id)
+        (Some(id), _) if num(1) is Some(dbid) &&
+          self.server.database_key(dbid) is Some(key) => {
+          let saved = self.rt.database
+          self.rt.database = self.server.database_name(key)
+          let found = self.object_by_id(id)
+          self.rt.database = saved
+          match found {
+            Some((o, schema)) =>
+              String(if name == "OBJECT_NAME" { o.name } else { schema })
+            None => Null
+          }
+        }
         _ => Null
       }
     "SCHEMA_ID" =>
@@ -213,7 +226,7 @@ fn Session::catalog_fn(
     "IDENT_CURRENT" | "IDENT_SEED" | "IDENT_INCR" =>
       match text(0) {
         Some(n) =>
-          match self.resolve_table_text(n) {
+          match self.resolve_table_text(n, other_db=true) {
             Some((_, t)) =>
               match t.columns.iter().find_first(c => c.identity is Some(_)) {
                 Some({ identity: Some(idn), .. }) => {
@@ -271,12 +284,13 @@ fn Session::db_id(self : Session) -> Int {
 
 ///|
 /// (name, database_id) as sys.databases lists them.
+/// Server-wide: every database of the server, in database_id order.
 fn Session::databases(self : Session) -> Array[(String, Int)] {
-  let out = [("master", 1), ("tempdb", 2), ("model", 3), ("msdb", 4)]
-  let cur = self.rt.database.to_lower()
-  if !out.iter().any(d => d.0 == cur) {
-    out.push((self.rt.database, 5))
+  let out = []
+  for k, id in self.server.db_ids {
+    out.push((self.server.database_name(k), id))
   }
+  out.sort_by_key(d => d.1)
   out
 }
 
@@ -327,8 +341,14 @@ fn split_name_text(n : String) -> Array[String] {
 
 ///|
 /// Resolves a name string to (database scope, schema, name). None when the
-/// name designates another database or is malformed.
-fn Session::name_target(self : Session, n : String) -> (Int, String, String)? {
+/// name designates another database (unless `other_db`, which gives
+/// scope `OTHER_DB_SCOPE + database_id` for an existing one) or is
+/// malformed.
+fn Session::name_target(
+  self : Session,
+  n : String,
+  other_db? : Bool = false,
+) -> (Int, String, String)? {
   let parts = split_name_text(n)
   let k = parts.length()
   if k > 3 || parts.iter().any(p => p.length() > 128) {
@@ -342,6 +362,11 @@ fn Session::name_target(self : Session, n : String) -> (Int, String, String)? {
       return if base.has_prefix("#") { Some((1, "dbo", base)) } else { None }
     }
     if d != "" && d != self.rt.database.to_lower() {
+      if other_db && !base.has_prefix("#") {
+        return self.server
+          .database_id(d)
+          .map(id => (OTHER_DB_SCOPE + id, schema, base))
+      }
       return None
     }
   }
@@ -359,7 +384,9 @@ fn Session::resolve_object(
   n : String,
   type_ : String?,
 ) -> CatObj? {
-  guard self.name_target(n) is Some((scope, schema, base)) else { return None }
+  guard self.name_target(n, other_db=true) is Some((scope, schema, base)) else {
+    return None
+  }
   let db = self.db_of(scope)
   let want = match type_ {
     Some(t) => Some(t.trim().to_upper())
@@ -396,7 +423,7 @@ fn Session::resolve_object(
   }
   // system objects: catalog views, system procedures, functions and tables
   // (captured: msduck-runs system-all-columns, OBJECT_ID(N'sys.columns'))
-  if scope == 0 {
+  if is_db_scope(scope) {
     match system_object_named(sid, base) {
       Some(o) =>
         match want {
@@ -435,8 +462,11 @@ fn Session::object_by_id(self : Session, id : Int) -> (CatObj, String)? {
 fn Session::resolve_table_text(
   self : Session,
   n : String,
+  other_db? : Bool = false,
 ) -> (Int, @store.Table)? {
-  guard self.name_target(n) is Some((scope, schema, base)) else { return None }
+  guard self.name_target(n, other_db~) is Some((scope, schema, base)) else {
+    return None
+  }
   let db = self.db_of(scope)
   match db.lookup(schema, base) {
     Some(id) => db.table(id).map(t => (scope, t))
@@ -450,7 +480,7 @@ fn Session::resolve_columns(
   self : Session,
   n : String,
 ) -> Array[@store.Column]? {
-  match self.resolve_table_text(n) {
+  match self.resolve_table_text(n, other_db=true) {
     Some((_, t)) => Some(t.columns)
     None =>
       match self.name_target(n) {

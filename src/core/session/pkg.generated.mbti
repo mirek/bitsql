@@ -47,6 +47,7 @@ pub struct Server {
   procs : Map[String, Proc]
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
+  db_ids : Map[String, Int]
   mut next_rowid : Int64
   mut next_object_id : Int
   idents : Map[Int, Int64]
@@ -61,6 +62,7 @@ pub struct Server {
   // private fields
 }
 pub fn Server::create_database(Self, String) -> Unit
+pub fn Server::database_id(Self, String) -> Int?
 pub fn Server::database_name(Self, String) -> String
 pub fn Server::has_database(Self, String) -> Bool
 pub fn Server::new() -> Self
@@ -120,7 +122,7 @@ pub struct Session {
   mut tx_ended_in_trigger : Bool
   mut dateformat_set : Bool
   mut datefirst_set : Bool
-  mut read_only_write : Bool
+  mut read_only_write : String?
   // private fields
 }
 pub fn Session::attention(Self) -> Unit

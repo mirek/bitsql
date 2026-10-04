@@ -1,16 +1,69 @@
 ///|
-/// An explicit transaction: the committed state it started from, its private
-/// view including its own writes, the temp database at BEGIN (temp tables
-/// roll back; table variables do not) and named savepoints.
-priv struct Tx {
-  database : String
-  base : @store.Db
+/// One database's part of a transaction: the committed state it joined
+/// from and its private view including the transaction's own writes.
+priv struct TxPart {
+  mut base : @store.Db
   mut view : @store.Db
+}
+
+///|
+/// An explicit transaction: a part per database it touched (a transaction
+/// spans databases as in SQL Server: one ROLLBACK undoes the writes to all
+/// of them), the temp database at BEGIN (temp tables roll back; table
+/// variables do not) and named savepoints.
+priv struct Tx {
+  /// Lowercased database name → part; a database joins at first use.
+  parts : Map[String, TxPart]
   temp_at_begin : @store.Db
-  /// Savepoints, innermost last: (name, view, temp database).
-  savepoints : Array[(String, @store.Db, @store.Db)]
+  /// Savepoints, innermost last: (name, views, temp database).
+  savepoints : Array[(String, Map[String, @store.Db], @store.Db)]
   /// Name of the outermost BEGIN TRANSACTION (matched case-sensitively).
   name : String?
+}
+
+///|
+fn Tx::new(
+  database : String,
+  base : @store.Db,
+  view : @store.Db,
+  temp : @store.Db,
+  name : String?,
+) -> Tx {
+  let parts = Map([])
+  parts[database.to_lower()] = { base, view, }
+  { parts, temp_at_begin: temp, savepoints: [], name, }
+}
+
+///|
+/// The views of every part (statement and savepoint rollback).
+fn Tx::views(self : Tx) -> Map[String, @store.Db] {
+  let out = Map([])
+  for k, p in self.parts {
+    out[k] = p.view
+  }
+  out
+}
+
+///|
+/// Rolls the parts back to `views`; a database that joined later goes
+/// back to the state it joined from.
+fn Tx::restore(self : Tx, views : Map[String, @store.Db]) -> Unit {
+  for k, p in self.parts {
+    p.view = match views.get(k) {
+      Some(v) => v
+      None => p.base
+    }
+  }
+}
+
+///|
+/// An independent copy (request snapshots).
+fn Tx::copy(self : Tx) -> Tx {
+  let parts = Map([])
+  for k, p in self.parts {
+    parts[k] = { base: p.base, view: p.view, }
+  }
+  { ..self, parts, savepoints: self.savepoints.copy(), }
 }
 
 ///|
@@ -34,17 +87,68 @@ fn Tx::savepoint_index(
 }
 
 ///|
+/// Table scopes of database tables in another database than the session's:
+/// `OTHER_DB_SCOPE + database_id` (three-part names, `db.schema.t`).
+const OTHER_DB_SCOPE : Int = 100
+
+///|
+/// A scope of database tables (the session database or another one), as
+/// opposed to temp tables, catalog views and table variables.
+fn is_db_scope(scope : Int) -> Bool {
+  scope == 0 || scope >= OTHER_DB_SCOPE
+}
+
+///|
+/// Lowercased name of the database behind a table scope (0: the session
+/// database; `OTHER_DB_SCOPE + id`: database `id`).
+fn Session::scope_key(self : Session, scope : Int) -> String {
+  if scope >= OTHER_DB_SCOPE {
+    self.server.database_key(scope - OTHER_DB_SCOPE).unwrap_or("")
+  } else {
+    self.rt.database.to_lower()
+  }
+}
+
+///|
+/// Display name of the database behind a table scope (messages).
+fn Session::scope_database(self : Session, scope : Int) -> String {
+  match scope {
+    1 | 3 => "tempdb"
+    _ if scope >= OTHER_DB_SCOPE =>
+      self.server.database_name(self.scope_key(scope))
+    _ => self.rt.database
+  }
+}
+
+///|
+/// The transaction's part for a database, joining it at first use.
+fn Session::tx_part(self : Session, tx : Tx, key : String) -> TxPart {
+  match tx.parts.get(key) {
+    Some(p) => p
+    None => {
+      let db = self.server.get_db(key)
+      let p = { base: db, view: db, }
+      tx.parts[key] = p
+      p
+    }
+  }
+}
+
+///|
 /// Current database for a scope: 0 = user database (transaction view or last
-/// committed), 1 = session temp database (#tables), 3 = table variables.
+/// committed), 1 = session temp database (#tables), 3 = table variables,
+/// `OTHER_DB_SCOPE + id` = another database.
 fn Session::db_of(self : Session, scope : Int) -> @store.Db {
   match scope {
     1 => self.temp
     3 => self.tvars
-    _ =>
+    _ => {
+      let key = self.scope_key(scope)
       match self.tx {
-        Some(tx) if tx.database == self.rt.database.to_lower() => tx.view
-        _ => self.server.get_db(self.rt.database)
+        Some(tx) => self.tx_part(tx, key).view
+        None => self.server.get_db(key)
       }
+    }
   }
 }
 
@@ -65,17 +169,19 @@ fn Session::source(
 ///|
 /// Applies a database write for a scope (autocommit or into the transaction).
 fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
-  if scope == 0 && self.server.db_options(self.rt.database).read_only {
-    self.read_only_write = true
-  }
   match scope {
     1 => self.temp = db
     3 => self.tvars = db
-    _ =>
-      match self.tx {
-        Some(tx) if tx.database == self.rt.database.to_lower() => tx.view = db
-        _ => self.server.set_db(self.rt.database, db)
+    _ => {
+      let key = self.scope_key(scope)
+      if self.server.db_options(key).read_only {
+        self.read_only_write = Some(self.server.database_name(key))
       }
+      match self.tx {
+        Some(tx) => self.tx_part(tx, key).view = db
+        None => self.server.set_db(key, db)
+      }
+    }
   }
 }
 
@@ -84,14 +190,7 @@ fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
 fn Session::begin_tx(self : Session, name? : String? = None) -> Unit {
   if self.tx is None {
     let db = self.server.get_db(self.rt.database)
-    self.tx = Some({
-      database: self.rt.database.to_lower(),
-      base: db,
-      view: db,
-      temp_at_begin: self.temp,
-      savepoints: [],
-      name,
-    })
+    self.tx = Some(Tx::new(self.rt.database, db, db, self.temp, name))
   }
 }
 
@@ -101,36 +200,61 @@ fn Session::begin_tx(self : Session, name? : String? = None) -> Unit {
 /// newest committed state (SNAPSHOT keeps its start state).
 fn Session::refresh_tx(self : Session) -> Unit {
   guard self.tx is Some(tx) && self.isolation != "SNAPSHOT" else { return }
-  let current = self.server.get_db(tx.database)
-  if physical_equal(tx.base, current) {
-    return
-  }
-  guard tx.view.rebase(tx.base, current) is Some(view) else { return }
-  let savepoints = []
-  for sp in tx.savepoints {
-    match sp.1.rebase(tx.base, current) {
-      Some(v) => savepoints.push((sp.0, v, sp.2))
-      None => return
+  for key, part in tx.parts {
+    let current = self.server.get_db(key)
+    if physical_equal(part.base, current) {
+      continue
     }
+    guard part.view.rebase(part.base, current) is Some(view) else { return }
+    let rebased = []
+    for sp in tx.savepoints {
+      match sp.1.get(key) {
+        Some(v) =>
+          match v.rebase(part.base, current) {
+            Some(v) => rebased.push(v)
+            None => return
+          }
+        None => rebased.push(part.base)
+      }
+    }
+    for i, sp in tx.savepoints {
+      if sp.1.contains(key) {
+        sp.1[key] = rebased[i]
+      }
+    }
+    part.base = current
+    part.view = view
   }
-  self.tx = Some({ ..tx, base: current, view, savepoints, })
 }
 
 ///|
 /// Commits the outermost transaction: its changes are re-applied onto the
-/// newest committed state (Db::rebase; locks keep writers apart).
+/// newest committed state of each database (Db::rebase; locks keep writers
+/// apart). Nothing is written unless every database rebases.
 fn Session::commit_tx(self : Session) -> Unit raise @types.SqlError {
   match self.tx {
     Some(tx) => {
-      let current = self.server.get_db(tx.database)
-      match tx.view.rebase(tx.base, current) {
-        Some(db) => self.server.set_db(tx.database, db)
-        None => {
-          self.tx = None
-          self.release_locks()
-          raise @types.emulator_error(
-            50107, "Emulator: a concurrent transaction changed the same rows or objects without a lock conflict (not supported)",
-          )
+      let merged = []
+      for key, part in tx.parts {
+        if physical_equal(part.base, part.view) {
+          continue
+        }
+        let current = self.server.get_db(key)
+        match part.view.rebase(part.base, current) {
+          Some(db) => merged.push((key, db))
+          None => {
+            self.tx = None
+            self.release_locks()
+            raise @types.emulator_error(
+              50107, "Emulator: a concurrent transaction changed the same rows or objects without a lock conflict (not supported)",
+            )
+          }
+        }
+      }
+      for m in merged {
+        // a database dropped meanwhile stays dropped
+        if self.server.has_database(m.0) {
+          self.server.set_db(m.0, m.1)
         }
       }
       self.tx = None
@@ -198,19 +322,70 @@ fn Session::find_table(
       None => None
     }
   } else {
-    let db = self.db_of(0)
+    // `db.schema.t` names a table of another database (scope
+    // OTHER_DB_SCOPE + database_id); a database that does not exist finds
+    // nothing (208, captured: corpus database/cross-database)
+    guard self.name_scope(name) is Some(scope) else { return None }
+    let db = self.db_of(scope)
     match db.lookup(schema, base) {
       // a case- or binary-sensitive database collation also applies to
       // object names (captured: settings/database-collation, OBJECT_ID
       // 'AFTER_ALTER' is NULL under Latin1_General_100_CS_AS)
       Some(id) =>
         match db.table(id) {
-          Some(t) if self.same_identifier(t.name, base) => Some((0, t))
+          Some(t) if self.same_identifier(t.name, base) => Some((scope, t))
           _ => None
         }
       None => None
     }
   }
+}
+
+///|
+/// Table scope of the database a (non-temporary) object name designates:
+/// 0 for the session database or no database part, `OTHER_DB_SCOPE + id`
+/// for another database, None for a database that does not exist.
+fn Session::name_scope(self : Session, name : @ast.ObjectName) -> Int? {
+  let n = name.parts.length()
+  if n < 3 {
+    return Some(0)
+  }
+  let d = name.parts[n - 3].name
+  if d == "" || d.to_lower() == self.rt.database.to_lower() {
+    return Some(0)
+  }
+  match self.server.database_id(d) {
+    Some(id) => Some(OTHER_DB_SCOPE + id)
+    None => None
+  }
+}
+
+///|
+/// Views, functions, procedures, synonyms, sequences and types of another
+/// database are not emulated (their bodies would bind in the session's
+/// database): raises when `name` designates one, so it is never mistaken
+/// for an object of the session database.
+fn Session::check_other_db_module(
+  self : Session,
+  name : @ast.ObjectName,
+) -> Unit raise @types.SqlError {
+  guard self.name_scope(name) is Some(scope) && scope >= OTHER_DB_SCOPE else {
+    return
+  }
+  let (schema, base) = split_name(name)
+  let db = self.db_of(scope)
+  guard db.lookup(schema, base) is Some(id) && db.get_module(id) is Some(m) else {
+    return
+  }
+  let what = match m.kind {
+    View => "a view"
+    Synonym => "a synonym"
+    Procedure => "a procedure"
+    Sequence => "a sequence"
+    Trigger => "a trigger"
+    _ => "a function"
+  }
+  raise @types.not_supported("\{what} of another database")
 }
 
 ///|
@@ -241,6 +416,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         Some(b) => return Some(b)
         None => ()
       }
+      self.check_other_db_module(name)
       let real = self.deref_synonym(name)
       match self.find_table(real) {
         Some((scope, t)) => {
@@ -286,6 +462,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       if name.base().has_prefix("#") {
         return None
       }
+      self.check_other_db_module(name)
       match self.find_module(self.deref_synonym(name)) {
         Some(m) if m.kind is View => Some(view_query(m))
         _ => None
@@ -298,7 +475,10 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         None => true
       }
     },
-    function: name => self.find_function(self.deref_synonym(name)),
+    function: name => {
+      self.check_other_db_module(name)
+      self.find_function(self.deref_synonym(name))
+    },
     user_type: tn => self.find_user_type(tn) is Some(_),
     table_var: name => {
       match self.find_table_var(name) {
@@ -325,6 +505,9 @@ fn Session::find_module(
   self : Session,
   name : @ast.ObjectName,
 ) -> @store.Module? {
+  // never an object of the session database for a name of another one
+  // (`check_other_db_module` reports those)
+  guard self.name_scope(name) is Some(0) else { return None }
   let (schema, base) = split_name(name)
   let db = self.db_of(0)
   match db.lookup(schema, base) {

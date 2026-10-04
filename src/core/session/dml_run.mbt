@@ -1181,7 +1181,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         return
       }
       let rowid = self.server.rowid()
-      if target.scope == 0 {
+      if is_db_scope(target.scope) {
         // X on the new key: waits for another transaction's uncommitted
         // insert of the same key, or a range lock covering it
         self.acquire(row_resource(t, rowid, row), X, Transaction)

@@ -17,7 +17,15 @@ fn Session::exec_select_into(
     body: Select({ ..sel, into: None, }),
   })
   let (schema, base) = split_name(into)
-  let scope = if base.has_prefix("#") { 1 } else { 0 }
+  // `db.schema.t` creates the table in another database
+  let scope = if base.has_prefix("#") {
+    1
+  } else {
+    match self.name_scope(into) {
+      Some(s) => s
+      None => raise @types.not_supported("SELECT INTO a missing database")
+    }
+  }
   let db = self.db_of(scope)
   let schema = if scope == 1 { "dbo" } else { schema }
   if db.lookup(schema, base) is Some(_) {
@@ -27,7 +35,7 @@ fn Session::exec_select_into(
       state=6,
     )
   }
-  if scope == 0 && db.schema_id(schema) is None {
+  if is_db_scope(scope) && db.schema_id(schema) is None {
     raise @types.sql_error(
       2760,
       "The specified schema name \"\{schema}\" either does not exist or you do not have permission to use it.",

@@ -604,7 +604,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       MUpdate(rowid, _, new, _) => db = insert_checked(target, db, rowid, new)
       MInsert(new, _) => {
         let rowid = self.server.rowid()
-        if target.scope == 0 {
+        if is_db_scope(target.scope) {
           self.acquire(row_resource(t, rowid, new), X, Transaction)
         }
         db = insert_checked(target, db, rowid, new)
