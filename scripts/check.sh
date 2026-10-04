@@ -2,10 +2,6 @@
 # Everything that must be green before pushing to main.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# Scratch stays in the repo (gitignored ./.tmp), never /tmp: /tmp is a
-# per-user-quota tmpfs on the shared host.
-mkdir -p .tmp && export TMPDIR="$PWD/.tmp"
-
 echo "== moon check (native)"
 moon check --target native --deny-warn 2>&1 | tail -n 20
 echo "== core purity (all backends)"

@@ -43,10 +43,13 @@ the top priority: a false green is worse than an explicit "not supported" error.
 - **Shared host:** other agents run msduck servers and MSSQL containers here.
   bitsql uses ports 47300–47399 (emulator 47333, oracle MSSQL 47314, or port 0)
   and docker containers named `bitsql-*`. Never stop containers you didn't start.
-- **No `/tmp`:** scratch files, logs, probes and temp dirs go in `./.tmp`
-  (repo root, gitignored); run tools with `TMPDIR=$PWD/.tmp` (`scripts/check.sh`
-  sets it). `/tmp` is a per-user-quota tmpfs here; filling it breaks every
-  agent's shell.
+- **`/tmp` hygiene:** `/tmp` is RAM-backed (tmpfs, limited inodes, shared by
+  every agent's shell): use it for scratch, but delete what you create as soon
+  as it has served its purpose (logs, probes, tarballs, baseline worktrees,
+  temp dirs). Code that creates temp files removes them (`try/finally`), and a
+  process that needs files for its lifetime reuses one fixed path instead of a
+  fresh directory per run. A filled `/tmp` breaks every shell on the host
+  (2026-10-04: one leaked `bitsql-tls*` dir per server start exhausted it).
 - Parallel work: subagents in their own git worktrees on branches; merge to
   main when green.
 

@@ -242,3 +242,8 @@ scripts/check.sh                 # everything CI runs; must be green to push
   arches. Release tarballs are keyed by the **moonc** version, `+` escaped:
   `cli.moonbitlang.com/binaries/0.10.14%2B7d59c7ec9/moonbit-linux-aarch64.tar.gz`
   (the `moon` date version 403s). `scripts/docker-publish.sh` does all of this.
+- 2026-10-04: `errdefer` takes one expression and the parser does not extend
+  it with a trailing `catch`, so `errdefer f() catch { _ => () }` is a parse
+  error. Use a block instead: `errdefer { f() catch { _ => () } }`.
+  `--deny-warn` flags `try { … } catch { e => { cleanup; raise e } }` as
+  `fragile_catch_all`; use `errdefer` for the cleanup.
