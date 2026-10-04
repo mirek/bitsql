@@ -77,6 +77,7 @@ fn Session::exec_select_into(
     modified: self.rt.now,
     max_column_id: columns.length(),
     ansi_nulls: self.ansi_nulls(),
+    lob_used: false,
   }
   let mut db = self.db_of(scope).create_table(t)
   for r in rows {

@@ -1,0 +1,473 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "370891afaf0469ad",
+  "steps": [
+    null,
+    null,
+    null,
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"same_id","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"old_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1,null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "sch",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["CK_t1","s2","C "],["DF_t1_v","s2","D "],["p1","dbo","P "],["PK_t1","s2","PK"],["t1","s2","U "],["v1","dbo","V "]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":6,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":6,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":6},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 6
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[1,1]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"DONE","status":0,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"x","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+      "done": [{"kind":"doneInProc","rowCount":1,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot find the object 'nothere', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot alter the schema 'nosuch', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"DONE","status":0,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":15530,"state":1,"class":16,"lineNumber":1,"message":"The object with name \"t1\" already exists."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":198},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}
+      ],
+      "stream": [{"name":"DONE","status":1,"curCmd":198},{"name":"ERROR","number":15530},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"a","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]},
+        {"columns":[{"name":"b","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[2]]}
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [{"number":15530,"state":1,"class":16,"lineNumber":1,"message":"The object with name \"t1\" already exists."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":15530},
+        {"name":"DONE","status":3,"curCmd":170},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "sch",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["dbo"]]
+        },
+        {
+          "columns": [
+            {
+              "name": "sch",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["s2"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":210},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONE","status":1,"curCmd":212},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":1,"curCmd":210},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot find the object 'PK_t1', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot find the type 'nothere', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "sch",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["s2"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":33144,"state":1,"class":16,"lineNumber":1,"message":"Cannot change the schema of a temporary object."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":33144},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 2710,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "You are not the owner specified for the object 'sys' in this statement (CREATE, ALTER, TRUNCATE, UPDATE STATISTICS or BULK INSERT)."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":2710},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "m",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[15151,"Cannot find the object 'zz', because it does not exist or you do not have permission."]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":349},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":350},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":351}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":349},
+        {"name":"DONE","status":1,"curCmd":350},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":0,"curCmd":351}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 15151,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot find the xml schema collection 'x', because it does not exist or you do not have permission."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":170}],
+      "stream": [{"name":"ERROR","number":15151},{"name":"DONE","status":2,"curCmd":170}],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

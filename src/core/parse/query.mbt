@@ -900,6 +900,43 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     }
   }
   let alias_ = self.table_alias()
+  // `t alias (NOLOCK, X)` / `(NOLOCK X)`: a second hint needs WITH, 1018
+  // near it when it is a hint word, else 102; `t alias (word)` is a hint
+  // (321 when unknown) (captured: tail5/b2-hints)
+  if alias_ is Some(_) &&
+    self.is_punct("(") &&
+    self.peek_at(1).kind is Word &&
+    legacy_hint_words.contains(upper(self.peek_at(1))) &&
+    !self.is_punct_at(2, ")") {
+    let x = if self.is_punct_at(2, ",") {
+      self.peek_at(3)
+    } else {
+      self.peek_at(2)
+    }
+    if x.kind is Word && legacy_hint_words.contains(upper(x)) {
+      raise syntax_error(
+        1018,
+        "Incorrect syntax near '\{x.text}'. If this is intended as a part of a table hint, A WITH keyword and parenthesis are now required. See SQL Server Books Online for proper syntax.",
+        x.span,
+      )
+    }
+    raise near(x)
+  }
+  if alias_ is Some(_) &&
+    self.is_punct("(") &&
+    self.peek_at(1).kind is Word &&
+    self.is_punct_at(2, ")") &&
+    !legacy_hint_words.contains(upper(self.peek_at(1))) &&
+    !is_reserved(self.peek_at(1).text) {
+    let h = self.peek_at(1)
+    self.pos += 3
+    return {
+      kind: Table(name, alias_~, hints=[
+        { name: upper(h), args: [], span: h.span, },
+      ]),
+      span: self.span_from(start),
+    }
+  }
   // `t alias (NOLOCK)`: one hint without WITH (captured: tail/table-hints)
   if alias_ is Some(_) &&
     self.is_punct("(") &&

@@ -1093,6 +1093,7 @@ fn Session::finish(self : Session, b : Builder, name : String) -> @store.Table {
     modified: self.rt.now,
     max_column_id: b.max_column_id,
     ansi_nulls: self.ansi_nulls(),
+    lob_used: false,
   }
 }
 

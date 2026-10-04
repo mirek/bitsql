@@ -8,20 +8,30 @@
 /// IGNORE_CONSTRAINTS / IGNORE_TRIGGERS 8171 state 1, a missing INDEX name
 /// 308 or id 307, INDEX(0) with another index 8622 state 2, FORCESEEK
 /// without a seek predicate 8622 state 1.
+///
+/// Without a failure, the warnings to send before the batch runs: INFO
+/// 4430 per view reference with an INDEX hint (view name, line).
 fn Session::precheck_hints(
   self : Session,
   stmts : Array[@ast.Stmt],
-) -> (@types.SqlError, Int)? {
+) -> Result[Array[(String, Int)], Array[(@types.SqlError, Int)]] {
+  let warnings = []
   for phase in 1..<=2 {
-    let c : HintCheck = { session: self, phase, failure: None, }
+    let c : HintCheck = {
+      session: self,
+      phase,
+      failure: None,
+      before: [],
+      warnings,
+    }
     for s in stmts {
       c.stmt(s)
     }
-    if c.failure is Some(_) {
-      return c.failure
+    if c.failure is Some(f) {
+      return Err(c.before + [f])
     }
   }
-  None
+  Ok(warnings)
 }
 
 ///|
@@ -29,6 +39,9 @@ priv struct HintCheck {
   session : Session
   phase : Int
   mut failure : (@types.SqlError, Int)?
+  /// errors sent before `failure` (207s before 215)
+  before : Array[(@types.SqlError, Int)]
+  warnings : Array[(String, Int)]
 }
 
 ///|
@@ -160,10 +173,70 @@ fn HintCheck::from_list(
         self.table_hints(name, alias_, hints, preds, line, is_cte)
       }
       Derived(q, ..) => self.query(q, line)
+      TableFunc(name, args, openjson_with=None, columns=[], ..) if self.phase ==
+        1 => self.legacy_hints(name, args, line)
       _ => ()
     }
   }
 }
+
+///|
+/// `FROM t (a, b)` on a table or view (not a function): unless it is one
+/// legacy hint word (`t (NOLOCK)`, also bracketed), every bare word is 207
+/// "Invalid column name" and then 215, for the whole batch; 215 reports
+/// line 13 for a schema-qualified name (captured: tail/table-hints-gaps,
+/// tail5/b2-hints).
+fn HintCheck::legacy_hints(
+  self : HintCheck,
+  name : @ast.ObjectName,
+  args : Array[@ast.Expr],
+  line : Int,
+) -> Unit {
+  if self.failure is Some(_) {
+    return
+  }
+  if args is [{ kind: Column([w]), .. }] &&
+    legacy_hint_words.contains(w.name.to_upper()) {
+    return
+  }
+  let is_object = self.session.find_table(name) is Some(_) ||
+    (self.session.find_module(name) is Some(m) && m.kind is View)
+  if !is_object {
+    return
+  }
+  let words = []
+  for a in args {
+    match a.kind {
+      Column([w]) => words.push(w.name)
+      IntLit(_) | DecimalLit(_) | StrLit(_, ..) => ()
+      _ => return
+    }
+  }
+  for w in words {
+    self.before.push(
+      (@types.sql_error(207, "Invalid column name '\{w}'."), line),
+    )
+  }
+  let written = name.parts.map(p => p.name).join(".")
+  self.fail(
+    @types.sql_error(
+      215,
+      "Parameters supplied for object '\{written}' which is not a function. If the parameters are intended as a table hint, a WITH keyword is required.",
+    ),
+    if name.parts.length() > 1 {
+      13
+    } else {
+      line
+    },
+  )
+}
+
+///|
+/// Hints that may follow a table without WITH when they are the only one.
+let legacy_hint_words : Array[String] = [
+  "NOLOCK", "READUNCOMMITTED", "UPDLOCK", "REPEATABLEREAD", "SERIALIZABLE", "READCOMMITTED",
+  "TABLOCK", "TABLOCKX", "PAGLOCK", "ROWLOCK", "NOWAIT", "READPAST", "XLOCK", "HOLDLOCK",
+]
 
 ///|
 fn ast_conjuncts(e : @ast.Expr, out : Array[@ast.Expr]) -> Unit {
@@ -307,14 +380,6 @@ fn HintCheck::table_hints(
       return
     }
   }
-  if names.contains("READPAST") && iso.iter().any(c => c is ("RU" | "SR")) {
-    // 650 is raised after COLMETADATA (captured), not at compile time
-    self.fail(
-      @types.not_supported("READPAST with NOLOCK or SERIALIZABLE hints"),
-      line,
-    )
-    return
-  }
   let table = self.session.find_table(name).map(x => x.1)
   let is_view = table is None &&
     self.session.find_module(name) is Some(m) &&
@@ -336,12 +401,10 @@ fn HintCheck::table_hints(
     .map(h => h.args)
     .fold(init=[], (acc, xs) => acc + xs)
   if !index_args.is_empty() {
+    // INDEX hints on a view are ignored with INFO 4430 at compile time,
+    // once per reference, index names unchecked (captured: tail5/b2-hints)
     if is_view {
-      self.fail(
-        @types.not_supported("INDEX hints on views (warning 4430)"),
-        line,
-      )
-      return
+      self.warnings.push((base, line))
     }
     guard table is Some(t) else { return }
     let mut zero = false

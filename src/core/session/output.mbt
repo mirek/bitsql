@@ -299,13 +299,19 @@ fn Session::bind_output(
 /// before the statement runs, so a run-time error follows an empty (or
 /// partial) result set (captured: output/stream-errors). Returns true when
 /// a result set was started.
-fn Session::output_header(self : Session, specs : Array[OutputSpec]) -> Bool {
+fn Session::output_header(
+  self : Session,
+  specs : Array[OutputSpec],
+) -> Bool raise Flow {
   let mut sent = false
   for spec in specs {
     if spec.into is None {
       self.out.push(ResultSet(spec.columns.map(tds_column)))
       sent = true
     }
+  }
+  if self.compile_only {
+    raise CompiledOnly
   }
   sent
 }

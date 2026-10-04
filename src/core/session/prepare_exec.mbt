@@ -104,8 +104,10 @@ fn Session::exec_sp_prepare(
     self.set_return_var(Some(handle_var), handle)
   }
   let stmts = @parse.parse_batch(sql) catch { _ => [] }
-  // `SELEC 1` parses as a procedure call: also deferred (captured)
-  if stmts.length() != 1 || stmts[0].kind is Exec(_) {
+  // `SELEC 1` parses as a procedure call: also deferred (captured), and so
+  // are DECLARE and IF (captured: tail5/b2-prepare)
+  if stmts.length() != 1 ||
+    stmts[0].kind is (Exec(_) | Declare(_) | If(_, _, _)) {
     // deferred: compiled (and failing) at sp_execute
     assign()
     self.rt.error = 0
@@ -117,7 +119,27 @@ fn Session::exec_sp_prepare(
     return
   }
   guard first_result_query(stmts) is Some(_) else {
-    raise @types.not_supported("sp_prepare of a statement other than SELECT")
+    match self.prepare_compile(stmts[0], decls, sql) {
+      Ok((cmd, counted)) => {
+        self.out.push(
+          InProcDone(
+            cmd~,
+            count=if counted { Some(0L) } else { None },
+            error=false,
+          ),
+        )
+        assign()
+        self.rt.error = 0
+        self.set_return_var(e.return_var, 0)
+        self.proc_done(0)
+      }
+      Err(err) =>
+        self.prepare_proc_fail(
+          [err, @types.sql_error(8180, "Statement(s) could not be prepared.")],
+          e.return_var,
+        )
+    }
+    return
   }
   match self.describe_batch(sql, Some(decls), None) {
     Columns(_, bq) => {
@@ -227,4 +249,95 @@ fn Session::exec_sp_unprepare(
   self.rt.error = 0
   self.set_return_var(e.return_var, 0)
   self.proc_done(0)
+}
+
+///|
+/// sp_prepare of one statement that returns no first result set: compiles
+/// it (DML binds up to its OUTPUT header, which is sent) and returns the
+/// statement's CurCmd and whether its DONEINPROC carries a count, or the
+/// compile error. Captured (tail5/b2-prepare): INSERT 195, DELETE 196,
+/// UPDATE 197, MERGE 279 and `SET @p =` / `SELECT @p =` 193 with count 0;
+/// SET NOCOUNT ON 185, CREATE TABLE 198, BEGIN TRAN 212, PRINT 247 without.
+fn Session::prepare_compile(
+  self : Session,
+  stmt : @ast.Stmt,
+  decls : String,
+  sql : String,
+) -> Result[(Int, Bool), @types.SqlError] raise {
+  let shape : (Int, Bool) = match stmt.kind {
+    Insert(_) => (195, true)
+    Delete(_) => (196, true)
+    Update(_) => (197, true)
+    Merge(_) => (279, true)
+    SetVar(_, _, _) => (193, true)
+    Select({ body: Select({ into: None, .. }), .. }) => (193, true)
+    SetOption(names, On | Off as v) if !names
+      .iter()
+      .any(n => {
+        n.to_upper() is ("QUOTED_IDENTIFIER" | "ANSI_NULLS" | "IDENTITY_INSERT")
+      }) => (if v is Off { 186 } else { 185 }, false)
+    CreateTable(_) => (198, false)
+    BeginTran(..) => (212, false)
+    Print(_) => (247, false)
+    _ =>
+      raise @types.not_supported(
+        "sp_prepare in T-SQL of this kind of statement",
+      )
+  }
+  let params = parse_param_decls(decls) catch {
+    _ => raise @types.not_supported("sp_prepare in T-SQL with these @params")
+  }
+  let b = self.bind_params(params, [], owner=None, conv_state=5)
+  let mut failure : @types.SqlError? = None
+  let saved_text = self.text
+  self.text = sql
+  defer {
+    self.text = saved_text
+    self.compile_only = false
+  }
+  self.compile_only = true
+  ignore(
+    self.run_module(b, levels=2, () => {
+      self.compile_statement(stmt) catch {
+        CompiledOnly => ()
+        @types.SqlError(..) as err => failure = Some(err)
+        err => raise err
+      }
+    }),
+  )
+  match failure {
+    Some(err) => Err(err)
+    None => Ok(shape)
+  }
+}
+
+///|
+/// Binds (without running) a statement for `prepare_compile`.
+fn Session::compile_statement(self : Session, stmt : @ast.Stmt) -> Unit raise {
+  match stmt.kind {
+    Insert(i) => self.exec_insert(i)
+    Update(u) => self.exec_update(u)
+    Delete(d) => self.exec_delete(d)
+    Merge(m) => self.exec_merge(m)
+    SetVar(_, _, x) | Print(x) => ignore(@bind.bind_expr(self.env(), x))
+    Select({ body: Select(sel), .. } as q) => {
+      if !sel.items.iter().all(i => i.kind is Assign(_, _, _)) {
+        raise @types.sql_error(
+          141,
+          "A SELECT statement that assigns a value to a variable must not be combined with data-retrieval operations.",
+          severity=15,
+        )
+      }
+      if sel.from.is_empty() && sel.where_ is None {
+        for item in sel.items {
+          if item.kind is Assign(_, _, x) {
+            ignore(@bind.bind_expr(self.env(), x))
+          }
+        }
+      } else {
+        ignore(@bind.bind_assignment_select(self.env(), q))
+      }
+    }
+    _ => ()
+  }
 }

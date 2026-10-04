@@ -313,7 +313,10 @@ fn bind_table_ref(
             ..c,
             origin: module_column_origin(bq.columns[i].origin),
           })
-          return (bq.plan, cols)
+          return (
+            readpast_guard(hints, bq.plan, cols.length(), view=true),
+            cols,
+          )
         }
         None => ()
       }
@@ -332,7 +335,10 @@ fn bind_table_ref(
           } else {
             Scan(scope=t.scope, id=t.id, rowid=false)
           }
-          (scan, requalify(t.columns, q))
+          (
+            readpast_guard(hints, scan, t.columns.length(), view=false),
+            requalify(t.columns, q),
+          )
         }
         None => raise missing_object_error(name)
       }
@@ -511,7 +517,7 @@ fn legacy_hint_ref(
     return None
   }
   let hint = w.name.to_upper()
-  if w.quoted || !legacy_table_hints.contains(hint) {
+  if !legacy_table_hints.contains(hint) {
     return None
   }
   if (env.catalog.function)(name) is Some(_) {

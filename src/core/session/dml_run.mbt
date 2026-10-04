@@ -321,6 +321,20 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     u.from,
     PUpdate(set_names),
   )
+  if view is None {
+    // 650 completes like a run-time error of the statement (a caught one
+    // sends its DONE; captured: tail5/b2-readpast)
+    errdefer {
+      self.cur_cmd = cmd
+    }
+    self.readpast_target(
+      u.target,
+      u.from,
+      u.where_,
+      Some(target.table),
+      merge=false,
+    )
+  }
   if target.scope != 3 {
     self.check_writable()
   }
@@ -633,6 +647,20 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   let cmd = if d.current_of is Some(_) { 126 } else { 196 }
   let env0 = self.env().with_ctes(d.ctes)
   let (target, view) = self.resolve_dml_target(env0, d.target, d.from, PDelete)
+  if view is None {
+    // 650 completes like a run-time error of the statement (a caught one
+    // sends its DONE; captured: tail5/b2-readpast)
+    errdefer {
+      self.cur_cmd = cmd
+    }
+    self.readpast_target(
+      d.target,
+      d.from,
+      d.where_,
+      Some(target.table),
+      merge=false,
+    )
+  }
   if target.scope != 3 {
     self.check_writable()
   }
@@ -846,8 +874,8 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let start_rows = () => {
     self.cur_cmd = 195
     match identity_error {
-      Some(e) => raise e
-      None => ()
+      Some(e) if !self.compile_only => raise e
+      _ => ()
     }
   }
   let identity_pos = cols.search_by(i => t.columns[i].identity is Some(_))

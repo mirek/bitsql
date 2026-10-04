@@ -715,6 +715,16 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.stmts(t.body)
       self.close()
     }
+    AlterSchemaTransfer(s, cls, n) =>
+      self.s(
+        "(alter-schema-transfer " +
+        ident_text(s) +
+        " " +
+        cls +
+        " " +
+        n.to_sexp() +
+        ")",
+      )
     CreateSchema(n, authorization~) => {
       self.s("(create-schema " + ident_text(n))
       if authorization is Some(a) {

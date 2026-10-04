@@ -194,7 +194,30 @@ pub(all) struct Table {
   max_column_id : Int
   /// SET ANSI_NULLS at CREATE TABLE (sys.tables.uses_ansi_nulls).
   ansi_nulls : Bool
+  /// The table has had a LOB column (max types, xml, text, ntext, image):
+  /// sys.tables.lob_data_space_id stays 1 after it is dropped or narrowed,
+  /// also through TRUNCATE and REBUILD (captured: tail5/b2-lob-space).
+  /// Maintained by the Db writers (`Db::create_table`, `alter_table`,
+  /// `replace_table`).
+  lob_used : Bool
 } derive(Debug)
+
+///|
+/// Whether the table has a LOB column now.
+pub fn Table::has_lob(self : Table) -> Bool {
+  self.columns
+  .iter()
+  .any(c => {
+    c.ty
+    is (VarChar(None, _)
+    | NVarChar(None, _)
+    | VarBinary(None)
+    | Xml
+    | Text(_)
+    | NText(_)
+    | Image)
+  })
+}
 
 ///|
 pub fn Table::column_index(self : Table, name : String) -> Int? {

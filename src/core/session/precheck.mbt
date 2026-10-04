@@ -337,6 +337,41 @@ fn precheck_batch(
       | Delete({ target, top, .. })
       | Merge({ target, top, .. }) if failure is None => {
         failure = target_hint_error(target, line)
+        // INDEX hints on an INSERT/UPDATE/DELETE target (a view too):
+        // 1069 for the whole batch; the FROM occurrence may carry them
+        // (captured: tail5/b2-hints)
+        if failure is None &&
+          !(s.kind is Merge(_)) &&
+          target.kind is Table(_, hints~, ..) &&
+          hints.iter().any(h => h.name == "INDEX") {
+          failure = Some(
+            (
+              @types.sql_error(
+                1069,
+                "Index hints are only allowed in a FROM or OPTION clause.",
+                severity=15,
+              ),
+              line,
+            ),
+          )
+        }
+        // READPAST on an INSERT target: 4102 for the whole batch
+        // (captured: tail5/b2-readpast)
+        if failure is None &&
+          s.kind is Insert(_) &&
+          target.kind is Table(_, hints~, ..) &&
+          hints.iter().any(h => h.name == "READPAST") {
+          failure = Some(
+            (
+              @types.sql_error(
+                4102,
+                "The READPAST lock hint is only allowed on target tables of UPDATE and DELETE and on tables specified in an explicit FROM clause.",
+                severity=15,
+              ),
+              line,
+            ),
+          )
+        }
         // captured: a constant DML TOP is checked like SELECT's (msduck-runs
         // merge-top#062/#066/#070)
         if failure is None && top is Some(t) && !t.percent {

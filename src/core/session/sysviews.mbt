@@ -526,19 +526,9 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           created: t.created,
           modified: t.modified,
         })
-        let lob = t.columns
-          .iter()
-          .any(c => {
-            // captured: xml, text, ntext and image count too (tail probe)
-            c.ty
-            is (VarChar(None, _)
-            | NVarChar(None, _)
-            | VarBinary(None)
-            | Xml
-            | Text(_)
-            | NText(_)
-            | Image)
-          })
+        // captured: xml, text, ntext and image count too (tail probe); the
+        // id stays once a LOB column existed (tail5/b2-lob-space)
+        let lob = t.lob_used || t.has_lob()
         r["lob_data_space_id"] = i(if lob { 1 } else { 0 })
         r["max_column_id_used"] = i(t.max_column_id)
         r["uses_ansi_nulls"] = b(t.ansi_nulls)

@@ -44,6 +44,10 @@ pub(all) enum StmtKind {
   CreateFunction(CreateFunction)
   CreateTrigger(CreateTrigger)
   CreateSchema(Ident, authorization~ : Ident?)
+  /// `ALTER SCHEMA s TRANSFER [OBJECT:: | TYPE:: | XML SCHEMA
+  /// COLLECTION::] name`; the class is "OBJECT", "TYPE" or "XML SCHEMA
+  /// COLLECTION".
+  AlterSchemaTransfer(Ident, String, ObjectName)
   CreateType(CreateType)
   /// `CREATE SYNONYM name FOR base_object`.
   CreateSynonym(ObjectName, ObjectName)

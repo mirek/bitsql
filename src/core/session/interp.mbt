@@ -186,7 +186,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // even without XACT_ABORT (captured: savepoint errors/catch runs)
   // and so does MERGE's 8672 (captured: gaps-merge #022: ERROR, then the
   // rollback ENVCHANGE)
-  let conversion_abort = [241, 245, 295, 8114, 8169, 8672, 3952].contains(
+  let conversion_abort = [241, 245, 295, 8114, 8169, 8672, 3952, 650].contains(
       e.number(),
     ) ||
     is_identity_overflow(e)
@@ -359,6 +359,9 @@ fn aborts_batch(
   n == 241 ||
   n == 245 ||
   n == 3952 ||
+  // READPAST outside READ COMMITTED / REPEATABLE READ (captured:
+  // tail5/b2-readpast)
+  n == 650 ||
   n == 295 ||
   n == 8114 ||
   // uniqueidentifier conversion (captured: msduck guid-assignment)
@@ -844,6 +847,12 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     CreateFunction(f) => self.exec_create_function(f, s.span.start)
     CreateTrigger(t) => self.exec_create_trigger(t, s.span.start)
     CreateSchema(name, ..) => self.exec_create_schema(name)
+    AlterSchemaTransfer(schema, cls, name) => {
+      // a caught transfer error sends no DONE before CATCH (captured:
+      // tail5/b2-schema-transfer)
+      self.ddl_cmd = 253
+      self.exec_schema_transfer(schema, cls, name)
+    }
     CreateType(ct) => self.exec_create_type(ct)
     CreateSynonym(name, base) => self.exec_create_synonym(name, base)
     CreateSequence(name, type_~, options~) =>

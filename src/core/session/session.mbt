@@ -249,6 +249,8 @@ priv suberror Flow {
   /// syntax error in dynamic SQL. The module completes with DONEPROC /
   /// DONEINPROC 224 and the error bit, without a return status.
   AbortScope
+  /// A DML statement compiled for sp_prepare stops here (`compile_only`).
+  CompiledOnly
 }
 
 ///|
@@ -365,6 +367,9 @@ pub struct Session {
   /// A CREATE/DROP SCHEMA ran: those send no DONE of their own; a batch
   /// with no other completion ends with DONE cmd 253 (captured).
   mut schema_ddl : Bool
+  /// sp_prepare in T-SQL compiling a DML statement: the statement stops
+  /// with `CompiledOnly` once bound (at its OUTPUT header).
+  mut compile_only : Bool
   /// CurCmd a failed DDL statement completes with inside TRY (outside TRY
   /// it fails with 253 and ends the batch); 0 for other statements.
   mut ddl_cmd : Int
@@ -478,6 +483,7 @@ pub fn Session::new(
     pending: [],
     trailing: [],
     schema_ddl: false,
+    compile_only: false,
     ddl_cmd: 0,
     uncatchable: false,
     session_flags: Map([]),
@@ -774,8 +780,24 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     None => ()
   }
   match self.precheck_hints(stmts) {
-    Some((e, line)) => self.text_error(e, line)
-    None => ()
+    Err(errors) => {
+      for i in 0..<(errors.length() - 1) {
+        self.message(errors[i].0, errors[i].1)
+      }
+      self.text_error(
+        errors[errors.length() - 1].0,
+        errors[errors.length() - 1].1,
+      )
+    }
+    Ok(warnings) =>
+      for w in warnings {
+        self.info(
+          4430,
+          1,
+          "Warning: Index hints supplied for view '\{w.0}' will be ignored.",
+          w.1,
+        )
+      }
   }
   // dynamic SQL modifying a READONLY table-valued parameter: 10700 ends
   // it like a compile error, without a DONE (captured: tabletypes/

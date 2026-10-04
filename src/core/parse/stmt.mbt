@@ -990,6 +990,26 @@ fn Parser::create_or_alter(
     }
   }
   match u {
+    "SCHEMA" if mode is Alter => {
+      self.pos += 1
+      let schema = self.ident()
+      self.expect_kw("TRANSFER")
+      let cls = if self.is_punct_at(1, "::") &&
+        (self.is_kw("OBJECT") || self.is_kw("TYPE")) {
+        let c = upper(self.peek())
+        self.pos += 2
+        c
+      } else if self.is_kw("XML") &&
+        self.is_kw_at(1, "SCHEMA") &&
+        self.is_kw_at(2, "COLLECTION") &&
+        self.is_punct_at(3, "::") {
+        self.pos += 4
+        "XML SCHEMA COLLECTION"
+      } else {
+        "OBJECT"
+      }
+      AlterSchemaTransfer(schema, cls, self.object_name())
+    }
     "TABLE" if mode is Create => {
       self.pos += 1
       CreateTable(self.create_table())

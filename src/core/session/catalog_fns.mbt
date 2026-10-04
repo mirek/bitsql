@@ -30,6 +30,9 @@ fn Session::catalog_fn(
     Some(v) => return Some(v)
     None => ()
   }
+  if name == "%READPAST" {
+    return Some(self.readpast_check(args))
+  }
   if name == "CURSOR_STATUS" {
     return Some(self.cursor_status(args))
   }

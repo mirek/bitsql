@@ -208,9 +208,11 @@ pub(all) struct Table {
   modified : Int64
   max_column_id : Int
   ansi_nulls : Bool
+  lob_used : Bool
 } derive(@debug.Debug)
 pub fn Table::column_by_id(Self, Int) -> Column?
 pub fn Table::column_index(Self, String) -> Int?
+pub fn Table::has_lob(Self) -> Bool
 pub fn Table::primary_key(Self) -> Index?
 
 pub struct TableData {

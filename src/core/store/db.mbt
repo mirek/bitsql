@@ -268,7 +268,8 @@ fn empty_index(t : Table, ix : Index) -> IndexData {
 }
 
 ///|
-pub fn Db::create_table(self : Db, t : Table) -> Db {
+pub fn Db::create_table(self : Db, t0 : Table) -> Db {
+  let t = self.lob_mark(t0)
   let data : TableData = {
     rows: PMap::empty(i64_cmp),
     indexes: t.indexes.map(ix => empty_index(t, ix)),
@@ -286,9 +287,10 @@ pub fn Db::create_table(self : Db, t : Table) -> Db {
 /// (ALTER TABLE, CREATE INDEX). `rows` maps old rows to the new shape.
 pub fn Db::alter_table(
   self : Db,
-  t : Table,
+  t0 : Table,
   convert? : (Row) -> Row = r => r,
 ) -> Db {
+  let t = self.lob_mark(t0)
   let old = self.data.get(t.id)
   let mut rows : PMap[Int64, Row] = PMap::empty(i64_cmp)
   match old {
@@ -328,9 +330,10 @@ pub fn Db::alter_table(
 /// or drops columns), rebuilding the indexes.
 pub fn Db::replace_table(
   self : Db,
-  t : Table,
+  t0 : Table,
   rows : Array[(Int64, Row)],
 ) -> Db {
+  let t = self.lob_mark(t0)
   let mut m : PMap[Int64, Row] = PMap::empty(i64_cmp)
   for kv in rows {
     m = m.add(kv.0, kv.1)
@@ -531,5 +534,20 @@ pub fn Db::same_table_data(self : Db, other : Db, id : Int) -> Bool {
     (Some(a), Some(b)) => physical_equal(a, b)
     (None, None) => true
     _ => false
+  }
+}
+
+///|
+/// Keeps `Table::lob_used` sticky across rewrites of a table.
+fn Db::lob_mark(self : Db, t : Table) -> Table {
+  let before = match self.tables.get(t.id) {
+    Some(o) => o.lob_used
+    None => false
+  }
+  let used = t.lob_used || before || t.has_lob()
+  if used == t.lob_used {
+    t
+  } else {
+    { ..t, lob_used: used, }
   }
 }

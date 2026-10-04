@@ -19,6 +19,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     raise @types.not_supported("MERGE into a CTE")
   }
   let target = self.dml_target(m.target)
+  self.readpast_target(m.target, [], None, Some(target.table), merge=true)
   let has_insert = m.whens.iter().any(w => w.action is MergeInsert(..))
   let has_update = m.whens.iter().any(w => w.action is MergeUpdate(_))
   let has_delete = m.whens.iter().any(w => w.action is MergeDelete)
