@@ -163,7 +163,7 @@ fn bind_agg_call(
   let (arg, separator) = if call.star {
     (None, None)
   } else if f is StringAgg {
-    arity(name, call.args, 2)
+    agg_arity(name, call.args, 2)
     let x = bind_expr(env, call.args[0])
     let sep = bind_expr(env, call.args[1])
     if sep.ty is Variant && !(x.ty is Variant) {
@@ -173,7 +173,7 @@ fn bind_agg_call(
     check_aggregate_order(env, call.within_group, constants=false)
     (Some(x), Some(sep))
   } else {
-    arity(name, call.args, 1)
+    agg_arity(name, call.args, 1)
     (Some(bind_expr(env, call.args[0])), None)
   }
   // captured: MIN/MAX/COUNT/… of text, ntext or image is 8117 (COUNT
@@ -376,12 +376,16 @@ fn bind_window_call(
           )
         Some(f) => {
           if call.distinct {
-            raise @types.not_supported("DISTINCT in windowed aggregates")
+            raise err(
+              10759,
+              "Use of DISTINCT is not allowed with the OVER clause.",
+              severity=15,
+            )
           }
           let args = if call.star {
             []
           } else {
-            arity(name, call.args, 1)
+            agg_arity(name, call.args, 1)
             [bind_expr(env, call.args[0])]
           }
           let ty = agg_result_type(f, args.get(0).map(a => a.ty), env)

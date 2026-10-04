@@ -100,6 +100,11 @@ fn sum_values(
           Float(f) => acc = acc + f
           _ => ()
         }
+        // captured: 1e308 + 1e308 is 8115 even when a later value would
+        // cancel it (msduck float-aggregates #040-#044)
+        if acc.is_inf() {
+          raise @types.overflow_expression(Float)
+        }
       }
       Float(acc)
     }
@@ -160,26 +165,31 @@ fn variance(
   arg_ty : @types.SqlType,
   population : Bool,
 ) -> Double? raise @types.SqlError {
-  let xs = values.map(x => {
-    match @types.cast(x.0, arg_ty, Float) {
+  // SQL Server's one-pass formula (captured: msduck statistical-precision
+  // and statistical-transition match it bit for bit, cancellation
+  // included): (Σx² - (Σx)²/n) / (n - 1 | n) in float, a negative result
+  // read as 0, an infinite sum 8115
+  let mut sum = 0.0
+  let mut squares = 0.0
+  let mut n = 0
+  for v in values {
+    let x = match @types.cast(v.0, arg_ty, Float) {
       Float(f) => f
       _ => 0.0
     }
-  })
-  let n = xs.length()
+    sum = sum + x
+    squares = squares + x * x
+    if sum.is_inf() || squares.is_inf() {
+      raise @types.overflow_expression(Float)
+    }
+    n += 1
+  }
   if n == 0 || (n == 1 && !population) {
     return None
   }
-  let mut mean = 0.0
-  for x in xs {
-    mean = mean + x
-  }
-  mean = mean / n.to_double()
-  let mut ss = 0.0
-  for x in xs {
-    ss = ss + (x - mean) * (x - mean)
-  }
-  Some(ss / (if population { n } else { n - 1 }).to_double())
+  let nd = n.to_double()
+  let v = (squares - sum * sum / nd) / (if population { nd } else { nd - 1.0 })
+  Some(if v < 0.0 { 0.0 } else { v })
 }
 
 ///|

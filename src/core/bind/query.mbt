@@ -928,7 +928,7 @@ fn Grouping::rewrite(
         ks.push(found)
       }
       let f : @ir.AggFn = if name == "GROUPING" {
-        arity(name, call.args, 1)
+        agg_arity(name, call.args, 1)
         Grouping(ks[0])
       } else {
         GroupingId(ks)

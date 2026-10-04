@@ -14,6 +14,23 @@ fn arity(
 }
 
 ///|
+/// Aggregates name themselves in upper case (captured probes: "The SUM
+/// function requires 1 argument(s).", msduck statistical-aggregates).
+fn agg_arity(
+  name : String,
+  args : Array[@ast.Expr],
+  n : Int,
+) -> Unit raise @types.SqlError {
+  if args.length() != n {
+    raise err(
+      174,
+      "The \{name.to_upper()} function requires \{n} argument(s).",
+      severity=15,
+    )
+  }
+}
+
+///|
 fn arity_range(
   name : String,
   args : Array[@ast.Expr],
