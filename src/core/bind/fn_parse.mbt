@@ -22,7 +22,25 @@ fn bind_parse(
   if a.ty.family() != FString {
     raise bad_arg_type(a.ty, 1, "parse")
   }
-  let t = resolve_type(tn, Conversion, env.collation)
+  // captured: a user alias type is 10761 naming it as written
+  // (msduck parse-try-parse#076)
+  let t = resolve_type(tn, Conversion, env.collation) catch {
+    e =>
+      if (env.catalog.user_type)(tn) {
+        let name = match tn.schema {
+          Some(sc) => sc.name + "." + tn.name
+          None => tn.name
+        }
+        raise err(
+          10761,
+          "Invalid data type \{name} in function \{fname}.",
+          state=2,
+          severity=15,
+        )
+      } else {
+        raise e
+      }
+  }
   let ty : @types.SqlType = match t {
     TinyInt
     | SmallInt
@@ -57,7 +75,8 @@ fn bind_parse(
   let args = [
     a,
     @ir.Expr::lit(Int(if try_ { 1 } else { 0 }), Int),
-    lit_s(tn.name.to_lower()),
+    // the 9819 message names the target type (decimal reads 'numeric')
+    lit_s(ty.base_name()),
   ]
   match culture {
     Some(c) => args.push(bind_expr(env, c))

@@ -47,7 +47,7 @@ fn call_more(
     return format_value(ctx, v, args)
   }
   if name == "PARSE" {
-    return parse_call(v, args, e)
+    return parse_call(ctx, v, args, e)
   }
   if name == "AT TIME ZONE" {
     return at_time_zone(v, args, e)

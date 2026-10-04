@@ -1,5 +1,7 @@
-// Date/time text for PARSE / TRY_PARSE (.NET DateTime.Parse, en-US and
-// invariant cultures). Only shapes captured against SQL Server are modelled
+// Date/time text for PARSE / TRY_PARSE (.NET DateTime.Parse in a culture:
+// its month and day names and its short-date field order decide numeric
+// dates, captured: '01/02/2010' is 1 Feb in en-GB, '02.01.2024' 2 Jan in
+// de-DE). Only shapes captured against SQL Server are modelled
 // (harness/corpus/analytic/parse-dates.sql); every other shape is reported
 // as unsupported so the caller raises an emulator error instead of guessing.
 
@@ -12,12 +14,34 @@ priv enum ParsedDate {
   /// weekday that does not match the date): .NET rejects it
   ParsedInvalid
   ParsedUnsupported(String)
+  /// the fraction rounded past 9999-12-31 23:59:59.9999999 (.NET AddTicks
+  /// throws ArgumentOutOfRangeException)
+  ParsedOverflow
 }
 
 ///|
 priv struct DateCursor {
   s : String
   mut i : Int
+  cult : CultureData
+  /// numeric date field order of the culture's short date pattern:
+  /// 0 month-day-year, 1 day-month-year, 2 year-month-day
+  order : Int
+}
+
+///|
+fn date_order(c : CultureData) -> Int {
+  let p = c.pat_d
+  let y = p.find("y").unwrap_or(0)
+  let m = p.find("M").unwrap_or(0)
+  let d = p.find("d").unwrap_or(0)
+  if y < m && y < d {
+    2
+  } else if d < m {
+    1
+  } else {
+    0
+  }
 }
 
 ///|
@@ -77,7 +101,7 @@ fn DateCursor::word(self : DateCursor) -> String {
   let start = self.i
   while !self.eof() {
     let c = self.at()
-    if (c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) {
+    if (c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) || c >= 0xC0 {
       self.i += 1
     } else {
       break
@@ -87,32 +111,32 @@ fn DateCursor::word(self : DateCursor) -> String {
 }
 
 ///|
-let net_month_names : Array[String] = [
-  "january", "february", "march", "april", "may", "june", "july", "august", "september",
-  "october", "november", "december",
-]
-
-///|
-let net_day_names : Array[String] = [
-  "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
-]
-
-///|
-/// Month number of a full or three-letter English month name.
-fn month_of(w : String) -> Int? {
-  for i, m in net_month_names {
-    if w == m || (w.length() == 3 && m.has_prefix(w)) {
-      return Some(i + 1)
+/// Month number of a (lowercased) month name of the culture: full,
+/// abbreviated or genitive.
+fn DateCursor::month_of(self : DateCursor, w : String) -> Int? {
+  if w == "" {
+    return None
+  }
+  let c = self.cult
+  for i in 0..<12 {
+    for names in [c.months, c.months_abbr, c.months_gen, c.months_abbr_gen] {
+      if names[i].to_lower() == w {
+        return Some(i + 1)
+      }
     }
   }
   None
 }
 
 ///|
-/// 0 = Sunday … 6 = Saturday, for a full or three-letter day name.
-fn weekday_of(w : String) -> Int? {
-  for i, d in net_day_names {
-    if w == d || (w.length() == 3 && d.has_prefix(w)) {
+/// 0 = Sunday … 6 = Saturday, for a full or abbreviated day name.
+fn DateCursor::weekday_of(self : DateCursor, w : String) -> Int? {
+  if w == "" {
+    return None
+  }
+  for i in 0..<7 {
+    if self.cult.days[i].to_lower() == w ||
+      self.cult.days_abbr[i].to_lower() == w {
       return Some(i)
     }
   }
@@ -166,8 +190,23 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
       }
       return restore()
     }
+    if alen <= 2 && sep == 0x2E && self.order == 1 {
+      // d. MMMM yyyy (captured: '2. Januar 2024' in de-DE)
+      let save = self.i
+      self.i += 1
+      if self.skip_ws() {
+        guard self.month_of(self.word()) is Some(m) else { return restore() }
+        guard self.skip_ws() else { return restore() }
+        guard self.number() is Some((y, 4)) else { return restore() }
+        return Some({ year: y, month: m, day: a, })
+      }
+      self.i = save
+    }
     if alen <= 2 && (sep == 0x2F || sep == 0x2E) {
-      // M/d/yyyy, M/d/yy, M.d.yyyy
+      // M/d/yyyy, M/d/yy, M.d.yyyy (d/M/yyyy in day-first cultures)
+      if self.order == 2 {
+        return restore()
+      }
       self.i += 1
       guard self.number() is Some((d, dlen)) && dlen <= 2 else {
         return restore()
@@ -177,12 +216,15 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
         return restore()
       }
       let year = if ylen == 2 { two_digit_year(y) } else { y }
+      if self.order == 1 {
+        return Some({ year, month: d, day: a, })
+      }
       return Some({ year, month: a, day: d, })
     }
     if alen <= 2 && sep == 0x2D {
       // d-MMM-yyyy
       self.i += 1
-      guard month_of(self.word()) is Some(m) else { return restore() }
+      guard self.month_of(self.word()) is Some(m) else { return restore() }
       guard self.eat(0x2D) else { return restore() }
       guard self.number() is Some((y, 4)) else { return restore() }
       return Some({ year: y, month: m, day: a, })
@@ -190,14 +232,14 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
     if self.skip_ws() {
       if alen <= 2 {
         // d MMM yyyy
-        guard month_of(self.word()) is Some(m) else { return restore() }
+        guard self.month_of(self.word()) is Some(m) else { return restore() }
         guard self.skip_ws() else { return restore() }
         guard self.number() is Some((y, 4)) else { return restore() }
         return Some({ year: y, month: m, day: a, })
       }
       if alen == 4 {
         // yyyy MMM d
-        guard month_of(self.word()) is Some(m) else { return restore() }
+        guard self.month_of(self.word()) is Some(m) else { return restore() }
         guard self.skip_ws() else { return restore() }
         guard self.number() is Some((d, dlen)) && dlen <= 2 else {
           return restore()
@@ -208,7 +250,7 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
     return restore()
   }
   // MMMM d, yyyy / MMM d yyyy / MMMM yyyy
-  guard month_of(self.word()) is Some(m) else { return restore() }
+  guard self.month_of(self.word()) is Some(m) else { return restore() }
   guard self.skip_ws() else { return restore() }
   guard self.number() is Some((a, alen)) else { return restore() }
   if alen == 4 {
@@ -236,13 +278,14 @@ priv struct TimeParts {
 fn DateCursor::designator(self : DateCursor) -> Int {
   let save = self.i
   ignore(self.skip_ws())
-  match self.word() {
-    "am" => 1
-    "pm" => 2
-    _ => {
-      self.i = save
-      0
-    }
+  let w = self.word()
+  if w != "" && w == self.cult.am.to_lower() {
+    1
+  } else if w != "" && w == self.cult.pm.to_lower() {
+    2
+  } else {
+    self.i = save
+    0
   }
 }
 
@@ -307,7 +350,14 @@ fn DateCursor::time_part(self : DateCursor) -> TimeParts? {
 
 ///|
 /// Parses date/time text for a PARSE target type `t`.
-fn parse_net_datetime(text : String, t : @types.SqlType) -> ParsedDate {
+fn parse_net_datetime(
+  text : String,
+  t : @types.SqlType,
+  cult : CultureData,
+) -> ParsedDate {
+  if cult.calendar != 0 {
+    return ParsedUnsupported("culture \{cult.name} calendar")
+  }
   let mut has_digit = false
   let mut all_digits = true
   let s = text.trim(chars=" \t\n\r\u{0B}\u{0C}").to_owned()
@@ -322,13 +372,13 @@ fn parse_net_datetime(text : String, t : @types.SqlType) -> ParsedDate {
   if !has_digit || all_digits {
     return ParsedInvalid
   }
-  let cur : DateCursor = { s, i: 0, }
+  let cur : DateCursor = { s, i: 0, cult, order: date_order(cult), }
   // optional day name: `Monday, ` / `Mon, `
   let mut weekday : Int? = None
   if !net_digit(cur.at()) {
     let save = cur.i
     let w = cur.word()
-    match weekday_of(w) {
+    match cur.weekday_of(w) {
       Some(d) if cur.eat(0x2C) => {
         weekday = Some(d)
         ignore(cur.skip_ws())
@@ -442,7 +492,7 @@ fn parse_net_datetime(text : String, t : @types.SqlType) -> ParsedDate {
   }
   let ticks = days.to_int64() * @types.TICKS_PER_DAY + tod
   if ticks > MAX_TICKS {
-    return ParsedInvalid
+    return ParsedOverflow
   }
   ParsedOk(ticks, offset)
 }

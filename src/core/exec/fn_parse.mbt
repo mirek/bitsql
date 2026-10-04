@@ -1,16 +1,11 @@
 // PARSE / TRY_PARSE (bound in bind/fn_parse.mbt). SQL Server runs these
 // through .NET: numbers with NumberStyles.Number (integer and decimal
 // targets), Float (float/real) or Currency (money/smallmoney), dates with
-// DateTime.Parse. Numbers follow .NET's TryParseNumber state machine for
-// the en-US and invariant cultures; dates accept a captured subset and raise
-// an emulator error for any other shape. Captures:
-// harness/corpus/analytic/parse-*.sql.
-
-///|
-priv enum ParseCulture {
-  EnUs
-  Invariant
-}
+// DateTime.Parse, in the culture of the USING argument or of the session
+// language (culture.mbt). Numbers follow .NET's ParseNumber state machine
+// with the culture's signs, separators and currency symbol; dates accept a
+// captured subset and raise an emulator error for any other shape.
+// Captures: harness/corpus/analytic/parse-*.sql, msduck-runs/parse-try-parse.
 
 ///|
 /// .NET number styles used by PARSE.
@@ -41,12 +36,42 @@ fn net_digit(c : Int) -> Bool {
 }
 
 ///|
-/// .NET Number.TryParseNumber for cultures whose signs are `+`/`-`,
-/// decimal separator `.` and group separator `,`. Leading/trailing white
-/// space and the decimal point are always allowed (all PARSE styles).
-fn net_parse_number(s : String, st : NumStyle, sym : Int) -> NetNumber? {
+/// .NET MatchChars: `pat` at position `i` of `s` (a no-break space in the
+/// pattern also matches a plain space, captured: '1 234,5' parses in
+/// fr-FR, U+202F does not); the position after it, or None.
+fn match_chars(s : String, i : Int, pat : String) -> Int? {
+  if pat.length() == 0 || i + pat.length() > s.length() {
+    return None
+  }
+  for k in 0..<pat.length() {
+    let a = s.code_unit_at(i + k).to_int()
+    let p = pat.code_unit_at(k).to_int()
+    if a != p && !(p == 0xA0 && a == 0x20) {
+      return None
+    }
+  }
+  Some(i + pat.length())
+}
+
+///|
+/// .NET Number.ParseNumber over culture `c` (signs, separators, currency
+/// symbol; the currency style also accepts the number separators before
+/// the symbol). Leading/trailing white space and the decimal point are
+/// always allowed (all PARSE styles).
+fn net_parse_number(s : String, st : NumStyle, c : CultureData) -> NetNumber? {
   let n = s.length()
   let at = (i : Int) => if i < n { s.code_unit_at(i).to_int() } else { 0 }
+  let (dec_sep, group_sep) = if st.currency {
+    (c.c_dec, c.c_group)
+  } else {
+    (c.n_dec, c.n_group)
+  }
+  let mut currency_sym : String? = if st.currency {
+    Some(c.c_symbol)
+  } else {
+    None
+  }
+  let white_after_sign = c.n_neg == "- #"
   let mut i = 0
   let mut sign = false
   let mut parens = false
@@ -55,24 +80,43 @@ fn net_parse_number(s : String, st : NumStyle, sym : Int) -> NetNumber? {
   // leading: white space (not after a sign unless a currency symbol was
   // seen), sign, '(' (currency style), currency symbol
   while i < n {
-    let c = at(i)
-    if net_white(c) && (!sign || currency) {
+    let ch = at(i)
+    if net_white(ch) && (!sign || currency || white_after_sign) {
       i += 1
       continue
     }
-    if !sign && (c == 0x2B || c == 0x2D) {
+    if !sign && match_chars(s, i, "+") is Some(j) {
       sign = true
-      negative = c == 0x2D
-    } else if st.currency && !sign && c == 0x28 {
+      i = j
+      continue
+    }
+    if !sign && match_chars(s, i, c.neg_sign) is Some(j) {
+      sign = true
+      negative = true
+      i = j
+      continue
+    }
+    if st.currency && !sign && ch == 0x28 {
       sign = true
       parens = true
       negative = true
-    } else if st.currency && !currency && c == sym {
-      currency = true
-    } else {
-      break
+      i += 1
+      continue
     }
-    i += 1
+    match currency_sym {
+      Some(sym) =>
+        match match_chars(s, i, sym) {
+          Some(j) => {
+            currency = true
+            currency_sym = None
+            i = j
+            continue
+          }
+          None => ()
+        }
+      None => ()
+    }
+    break
   }
   let digits = StringBuilder()
   let mut has_digits = false
@@ -80,26 +124,53 @@ fn net_parse_number(s : String, st : NumStyle, sym : Int) -> NetNumber? {
   let mut decimal = false
   let mut scale = 0 // digits before the point (after leading zeros)
   while i < n {
-    let c = at(i)
-    if net_digit(c) {
+    let ch = at(i)
+    if net_digit(ch) {
       has_digits = true
-      if c != 0x30 || nonzero {
+      if ch != 0x30 || nonzero {
         nonzero = true
-        digits.write_char(c.unsafe_to_char())
+        digits.write_char(ch.unsafe_to_char())
         if !decimal {
           scale += 1
         }
       } else if decimal {
         scale -= 1
       }
-    } else if !decimal && c == 0x2E {
-      decimal = true
-    } else if st.thousands && has_digits && !decimal && c == 0x2C {
-      ()
-    } else {
-      break
+      i += 1
+      continue
     }
-    i += 1
+    if !decimal {
+      let m = match match_chars(s, i, dec_sep) {
+        Some(j) => Some(j)
+        None =>
+          if st.currency && !currency {
+            match_chars(s, i, c.n_dec)
+          } else {
+            None
+          }
+      }
+      if m is Some(j) {
+        decimal = true
+        i = j
+        continue
+      }
+    }
+    if st.thousands && has_digits && !decimal {
+      let m = match match_chars(s, i, group_sep) {
+        Some(j) => Some(j)
+        None =>
+          if st.currency && !currency {
+            match_chars(s, i, c.n_group)
+          } else {
+            None
+          }
+      }
+      if m is Some(j) {
+        i = j
+        continue
+      }
+    }
+    break
   }
   if !has_digits {
     return None
@@ -111,8 +182,8 @@ fn net_parse_number(s : String, st : NumStyle, sym : Int) -> NetNumber? {
     let mut neg_exp = false
     if at(i) == 0x2B {
       i += 1
-    } else if at(i) == 0x2D {
-      i += 1
+    } else if match_chars(s, i, c.neg_sign) is Some(j) {
+      i = j
       neg_exp = true
     }
     if net_digit(at(i)) && i < n {
@@ -132,22 +203,43 @@ fn net_parse_number(s : String, st : NumStyle, sym : Int) -> NetNumber? {
   }
   // trailing: white space, sign, ')', currency symbol
   while i < n {
-    let c = at(i)
-    if net_white(c) {
+    let ch = at(i)
+    if net_white(ch) {
       i += 1
       continue
     }
-    if st.trailing_sign && !sign && (c == 0x2B || c == 0x2D) {
-      sign = true
-      negative = c == 0x2D
-    } else if c == 0x29 && parens {
-      parens = false
-    } else if st.currency && !currency && c == sym {
-      currency = true
-    } else {
-      break
+    if st.trailing_sign && !sign {
+      if match_chars(s, i, "+") is Some(j) {
+        sign = true
+        i = j
+        continue
+      }
+      if match_chars(s, i, c.neg_sign) is Some(j) {
+        sign = true
+        negative = true
+        i = j
+        continue
+      }
     }
-    i += 1
+    if ch == 0x29 && parens {
+      parens = false
+      i += 1
+      continue
+    }
+    match currency_sym {
+      Some(sym) =>
+        match match_chars(s, i, sym) {
+          Some(j) => {
+            currency = true
+            currency_sym = None
+            i = j
+            continue
+          }
+          None => ()
+        }
+      None => ()
+    }
+    break
   }
   if i != n || parens {
     return None
@@ -205,38 +297,27 @@ fn parse_failed(
 }
 
 ///|
+/// The culture of the USING argument (9818 for a malformed name or NULL),
+/// or the session language's culture; and the name as 9819 prints it
+/// ('' without USING).
 fn parse_culture(
+  ctx : Ctx,
   v : Array[@types.Value],
-) -> (ParseCulture, String) raise @types.SqlError {
+) -> (CultureData, String) raise @types.SqlError {
   if v.length() < 4 {
-    return (EnUs, "")
+    return (session_culture(ctx, "PARSE", number=@types.EMU_PARSE_CULTURE), "")
   }
   let c = match v[3] {
     String(s) => s
-    Null =>
-      raise @types.sql_error(
-        9818, "The culture parameter 'NULL' provided in the function call is not supported.",
-      )
+    Null => raise culture_not_supported("NULL")
     _ => ""
   }
-  match c.to_lower() {
-    "en-us" | "en" | "en_us" => (EnUs, c)
-    "iv" => (Invariant, c)
-    "" | "invariant" =>
-      raise @types.sql_error(
-        9818,
-        "The culture parameter '\{c}' provided in the function call is not supported.",
-      )
-    _ =>
-      raise @types.not_supported(
-        "PARSE culture '\{c}'",
-        number=@types.EMU_PARSE_CULTURE,
-      )
-  }
+  (resolve_culture(c, "PARSE", number=@types.EMU_PARSE_CULTURE), c)
 }
 
 ///|
 fn parse_call(
+  ctx : Ctx,
   v : Array[@types.Value],
   _args : Array[@ir.Expr],
   e : @ir.Expr,
@@ -246,7 +327,7 @@ fn parse_call(
     String(s) => s
     _ => ""
   }
-  let (culture, culture_text) = parse_culture(v)
+  let (culture, culture_text) = parse_culture(ctx, v)
   let text = match v[0] {
     Null => return Null
     String(s) => s
@@ -254,10 +335,6 @@ fn parse_call(
   }
   let fail = () => parse_failed(try_, text, type_name, culture_text)
   let t = e.ty
-  let sym = match culture {
-    EnUs => 0x24 // $
-    Invariant => 0xA4 // ¤
-  }
   match t {
     TinyInt | SmallInt | Int | BigInt => {
       let style = {
@@ -266,7 +343,9 @@ fn parse_call(
         exponent: false,
         currency: false,
       }
-      guard net_parse_number(text, style, sym) is Some(x) else { return fail() }
+      guard net_parse_number(text, style, culture) is Some(x) else {
+        return fail()
+      }
       // a fraction must be all zeros (they were stripped)
       if x.exp < 0 || x.digits.length() + x.exp > 19 {
         return fail()
@@ -287,7 +366,9 @@ fn parse_call(
         exponent: false,
         currency: false,
       }
-      guard net_parse_number(text, style, sym) is Some(x) else { return fail() }
+      guard net_parse_number(text, style, culture) is Some(x) else {
+        return fail()
+      }
       guard net_decimal(x) is Some(d) else { return fail() }
       let r = d.rescale(s)
       if r.digits() > p {
@@ -302,7 +383,9 @@ fn parse_call(
         exponent: false,
         currency: true,
       }
-      guard net_parse_number(text, style, sym) is Some(x) else { return fail() }
+      guard net_parse_number(text, style, culture) is Some(x) else {
+        return fail()
+      }
       guard net_decimal(x) is Some(d) else { return fail() }
       let r = d.rescale(4)
       let limit = if t is Money {
@@ -323,7 +406,9 @@ fn parse_call(
         exponent: true,
         currency: false,
       }
-      guard net_parse_number(text, style, sym) is Some(x) else { return fail() }
+      guard net_parse_number(text, style, culture) is Some(x) else {
+        return fail()
+      }
       let canonical = (if x.negative { "-" } else { "" }) +
         (if x.digits == "" { "0" } else { x.digits }) +
         "e" +
@@ -343,7 +428,7 @@ fn parse_call(
       }
     }
     _ =>
-      match parse_net_datetime(text, t) {
+      match parse_net_datetime(text, t, culture) {
         ParsedOk(ticks, offset) =>
           match parse_temporal_result(ticks, offset, t) {
             Some(r) => r
@@ -353,6 +438,18 @@ fn parse_call(
             None => fail()
           }
         ParsedInvalid => fail()
+        // captured: msduck parse-try-parse#063 (ISO 8601 text, datetime2)
+        ParsedOverflow if t is DateTime2(_) && text.contains("T") =>
+          raise @types.sql_error(
+            6521,
+            "A .NET Framework error occurred during statement execution: \r\nSystem.ArgumentOutOfRangeException: The added or subtracted value results in an un-representable DateTime.\r\nParameter name: value\r\nSystem.ArgumentOutOfRangeException: \r\n   at System.DateTime.AddTicks(Int64 value)\r\n   at System.DateTimeParse.ParseISO8601(DateTimeRawInfo& raw, __DTString& str, DateTimeStyles styles, DateTimeResult& result)\r\n   at System.DateTimeParse.TryParse(String s, DateTimeFormatInfo dtfi, DateTimeStyles styles, DateTimeResult& result)\r\n   at System.DateTimeParse.Parse(String s, DateTimeFormatInfo dtfi, DateTimeStyles styles)\r\n   at System.Data.SqlServer.Internal.SqlParseIntrinsicImpl.<>c__DisplayClass14_0.<ParseDateTime2>b__0(CXVariantBase* pxvar, String strParse, CultureInfo ci)\r\n.",
+            state=2,
+          )
+        ParsedOverflow =>
+          raise @types.not_supported(
+            "PARSE of '\{text}' as \{t.to_sql()} (fraction rounding past the maximum date)",
+            number=@types.EMU_PARSE_FORMAT,
+          )
         ParsedUnsupported(why) =>
           raise @types.not_supported(
             "PARSE of '\{text}' as \{t.to_sql()} (\{why})",
