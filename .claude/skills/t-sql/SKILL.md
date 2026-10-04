@@ -20,6 +20,20 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-04 (computed forward references, corpus
+  `catalog/computed-forward-refs`): CREATE TABLE / ALTER TABLE ADD resolve
+  every column type first (2715, 2705 come before a computed column's 207),
+  then bind computed columns against all columns, whatever the declaration
+  order; sys.columns and SELECT * keep declaration order. 1759 names any
+  computed column of the statement used by another (forward, backward,
+  itself). 2715's "Column, parameter, or variable #n" is the column's
+  ordinal in the table (existing columns count under ALTER TABLE ADD; it was
+  hard-coded #1 before). A column-level CHECK, REFERENCES, NULL or NOT NULL
+  on a non-persisted computed column is 8183 for the whole batch (earlier
+  statements do not run); a table-level CHECK naming it stays 1764 + 1750.
+  Non-persisted computed columns are evaluated when read, not on INSERT
+  (SQL Server's INSERT of a row whose computed value fails succeeds and the
+  SELECT raises 245; bitsql still raises at INSERT, open in the roadmap).
 - 2026-10-03 (FOR XML and xml, corpus `xml/`, docs/reference/xml.md):
   an untyped FOR XML subquery is nvarchar(max), with TYPE xml; no rows give
   NULL, rows without text `''`. Entities stay escaped in the STUFF idiom
