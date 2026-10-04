@@ -394,6 +394,8 @@ pub(all) struct WindowCall {
   order : Array[SortKey]
   frame : WindowFrame?
   ty : @types.SqlType
+  /// IGNORE NULLS (LAG, LEAD, FIRST_VALUE, LAST_VALUE)
+  ignore_nulls : Bool
 } derive(Debug)
 
 ///|

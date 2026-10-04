@@ -111,6 +111,21 @@ fn DateCursor::word(self : DateCursor) -> String {
 }
 
 ///|
+/// Skips the date word 'de' (and following blanks) of Spanish and
+/// Portuguese cultures.
+fn DateCursor::skip_date_word(self : DateCursor) -> Unit {
+  let lang = self.cult.name.to_lower()
+  if !(lang.has_prefix("es") || lang.has_prefix("pt")) {
+    return
+  }
+  let save = self.i
+  if self.word() == "de" && self.skip_ws() {
+    return
+  }
+  self.i = save
+}
+
+///|
 /// Month number of a (lowercased) month name of the culture: full,
 /// abbreviated or genitive.
 fn DateCursor::month_of(self : DateCursor, w : String) -> Int? {
@@ -221,6 +236,23 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
       }
       return Some({ year, month: a, day: d, })
     }
+    if alen <= 2 &&
+      sep == 0x2D &&
+      self.order == 1 &&
+      self.i + 1 < self.s.length() &&
+      net_digit(self.s.code_unit_at(self.i + 1).to_int()) {
+      // d-M-yyyy in day-first cultures (captured: '23-11-2009' in nl-NL)
+      self.i += 1
+      guard self.number() is Some((m, mlen)) && mlen <= 2 else {
+        return restore()
+      }
+      guard self.eat(0x2D) else { return restore() }
+      guard self.number() is Some((y, ylen)) && (ylen == 2 || ylen == 4) else {
+        return restore()
+      }
+      let year = if ylen == 2 { two_digit_year(y) } else { y }
+      return Some({ year, month: m, day: a, })
+    }
     if alen <= 2 && sep == 0x2D {
       // d-MMM-yyyy
       self.i += 1
@@ -231,9 +263,12 @@ fn DateCursor::date_part(self : DateCursor) -> DateParts? {
     }
     if self.skip_ws() {
       if alen <= 2 {
-        // d MMM yyyy
+        // d MMM yyyy; Spanish/Portuguese write 'd de MMMM de yyyy'
+        // (captured: '23 de novembro de 2009' in pt-BR)
+        self.skip_date_word()
         guard self.month_of(self.word()) is Some(m) else { return restore() }
         guard self.skip_ws() else { return restore() }
+        self.skip_date_word()
         guard self.number() is Some((y, 4)) else { return restore() }
         return Some({ year: y, month: m, day: a, })
       }

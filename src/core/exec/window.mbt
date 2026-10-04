@@ -156,20 +156,47 @@ fn window_values(
           BigInt((b + 1).to_int64())
         }
         Lag | Lead => {
+          // captured: a NULL offset gives NULL, a negative one is 8730
+          // (functions2/offset-window)
           let off = if call.args.length() > 1 {
-            match eval(row_ctx, call.args[1]).as_int64() {
-              Some(o) if o >= 0L => o.to_int()
-              _ =>
-                raise @types.sql_error(
-                  4114, "The offset provided to LAG or LEAD must be a non-negative integer.",
-                )
+            match eval(row_ctx, call.args[1]) {
+              Null => -1
+              o =>
+                match o.as_int64() {
+                  Some(o) if o >= 0L => o.to_int()
+                  _ =>
+                    raise @types.sql_error(
+                      8730, "Offset parameter for Lag and Lead functions cannot be a negative value.",
+                    )
+                }
             }
           } else {
             1
           }
-          let target = if call.func is Lag { j - off } else { j + off }
-          if target >= 0 && target < n {
-            eval(ctx.with_row(part_rows[target]), call.args[0])
+          let step = if call.func is Lag { -1 } else { 1 }
+          let target = j + step * off
+          if off < 0 {
+            Null
+          } else if target >= 0 && target < n {
+            let value = eval(ctx.with_row(part_rows[target]), call.args[0])
+            // IGNORE NULLS: from the offset row, keep moving away from the
+            // current row to the first non-NULL value; none is NULL, not
+            // the default (captured: LAG(x, 2, -1) IGNORE NULLS)
+            if call.ignore_nulls && value is Null {
+              let mut k = target + step
+              let mut found : @types.Value = Null
+              while k >= 0 && k < n {
+                let w = eval(ctx.with_row(part_rows[k]), call.args[0])
+                if !(w is Null) {
+                  found = w
+                  break
+                }
+                k += step
+              }
+              found
+            } else {
+              value
+            }
           } else if call.args.length() > 2 {
             eval(row_ctx, call.args[2])
           } else {
@@ -179,18 +206,29 @@ fn window_values(
         FirstValue | LastValue | Agg(_, ..) => {
           let (fs, fe) = frame_bounds(row_ctx, call, j, n, peer_start, peer_end)
           match call.func {
-            FirstValue =>
-              if fs < fe {
-                eval(ctx.with_row(part_rows[fs]), call.args[0])
-              } else {
-                Null
+            // IGNORE NULLS: the first (last) non-NULL value of the frame
+            FirstValue => {
+              let mut r : @types.Value = Null
+              for k in fs..<fe {
+                r = eval(ctx.with_row(part_rows[k]), call.args[0])
+                if !call.ignore_nulls || !(r is Null) {
+                  break
+                }
               }
-            LastValue =>
-              if fs < fe {
-                eval(ctx.with_row(part_rows[fe - 1]), call.args[0])
-              } else {
-                Null
+              r
+            }
+            LastValue => {
+              let mut r : @types.Value = Null
+              let mut k = fe - 1
+              while k >= fs {
+                r = eval(ctx.with_row(part_rows[k]), call.args[0])
+                if !call.ignore_nulls || !(r is Null) {
+                  break
+                }
+                k -= 1
               }
+              r
+            }
             Agg(f, distinct~) => {
               let agg : @ir.AggCall = {
                 func: f,

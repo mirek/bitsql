@@ -92,7 +92,7 @@ fn all_units(s : String, f : (Int) -> Bool) -> Bool {
 
 ///|
 /// Well-formed culture name (subtags already split on '-'). Captured:
-/// 'xx', 'xx-XX', 'ab-123', 'ab-cd-ef', 'x-foo', 'i-klingon',
+/// 'xx', 'xx-XX', 'ab-123', 'ab-cd-ef', 'x-foo', 'i-klingon', 'a-b', 'a-bc',
 /// 'en-US-x-foo', 'de-DE-u-nu-arab' are accepted; 'x', '1', 'abcd',
 /// 'abcde', 'ab-c', 'ab-1', 'ab-12', 'ab-c1', 'ab-cdefghi', 'ab-',
 /// 'en--US', 'root' are not. Unverified beyond these shapes.
@@ -102,7 +102,7 @@ fn well_formed_culture(parts : Array[String]) -> Bool {
   }
   let first = parts[0]
   let lower = first.to_lower()
-  if lower == "x" || lower == "i" {
+  if lower.length() == 1 && all_units(lower, is_ascii_letter) {
     return parts.length() > 1 &&
       parts[1:].iter().all(p => all_units(p, is_ascii_alnum))
   }
@@ -153,8 +153,8 @@ fn find_culture(name : String) -> CultureLookup {
     }
   }
   let lang = parts[0].to_lower()
-  if lang == "x" ||
-    lang == "i" ||
+
+  if lang.length() == 1 ||
     (lang.length() == 2 && !known_languages.contains(lang)) {
     return Found(invariant_culture())
   }

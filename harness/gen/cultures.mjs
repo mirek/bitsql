@@ -4,7 +4,7 @@
 // FORMAT output, plus the list of two-letter language codes the oracle
 // knows (any other well-formed name formats like the invariant culture).
 //
-//   node gen/cultures.mjs            (needs the oracle: npm run oracle:start)
+//   node gen/cultures.mjs && moon fmt   (needs the oracle: npm run oracle:start)
 //
 // Patterns are reconstructed by formatting probe dates and mapping each
 // value back to its custom-format token (2009-01-02 03:04:05 is a Friday
@@ -123,7 +123,7 @@ async function dateData(c) {
   }
   return {
     calendar, months, monthsAbbr, monthsGen, monthsAbbrGen, days, daysAbbr, am, pm,
-    dateSep: dsep.slice(4, dsep.length - 5), timeSep: tsep.slice(2, tsep.length - 2), pats,
+    dateSep: dsep.slice(4, 4 + (dsep.length - 8) / 2), timeSep: tsep.slice(2, tsep.length - 2), pats,
   }
 }
 

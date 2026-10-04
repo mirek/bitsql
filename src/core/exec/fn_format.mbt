@@ -606,7 +606,12 @@ fn find_section(f : Array[Char], n : Int) -> Int {
 
 ///|
 /// .NET NumberToStringFormat (custom numeric format strings).
-fn custom_number(b : NumBuf, format : String, c : CultureData) -> String {
+fn custom_number(
+  b : NumBuf,
+  format : String,
+  c : CultureData,
+  literal? : Bool = false,
+) -> String {
   let f = format.to_array()
   let len = f.length()
   let mut section = find_section(
@@ -783,6 +788,11 @@ fn custom_number(b : NumBuf, format : String, c : CultureData) -> String {
   while src < len && f[src] != ';' {
     let ch = f[src]
     src += 1
+    // decimal/money quirk: placeholders print as written (see format_value)
+    if literal && ch is ('#' | '0' | '.' | ',') {
+      out.write_char(ch)
+      continue
+    }
     if adjust > 0 && ch is ('#' | '0' | '.') {
       while adjust > 0 {
         out.write_char(
@@ -1373,12 +1383,17 @@ fn format_value(
       let dt = net_date(m)
       let utc = match m.offset {
         Some(off) => {
-          let total = m.days.to_int64() * ns_per_day +
-            m.ns -
-            off.to_int64() * 60_000_000_000L
+          let shifted = m.ns - off.to_int64() * 60_000_000_000L
+          let carry = if shifted < 0L {
+            -1
+          } else if shifted >= ns_per_day {
+            1
+          } else {
+            0
+          }
           let um : Moment = {
-            days: (total / ns_per_day).to_int(),
-            ns: total % ns_per_day,
+            days: m.days + carry,
+            ns: shifted - carry.to_int64() * ns_per_day,
             offset: None,
           }
           net_date(um)
@@ -1397,10 +1412,12 @@ fn format_value(
         None =>
           match num_buf(v[0], t) {
             // captured probes: for decimal and money a custom format that
-            // starts with a quote prints as a literal, quotes removed
-            // ('a'0 is 'a0', '#'0'!' is '#0!'; int and float print 'a5')
+            // starts with a quote prints its digit placeholders as written
+            // ('a'0 is 'a0', '#'0'!' is '#0!'; int and float print 'a5'),
+            // while sections and the sign still apply ('a'0 of -5 is
+            // '-a0', "a"0;"b"0 of -5 'b0')
             Some(b) if b.kind == 1 && (f.has_prefix("'") || f.has_prefix("\"")) =>
-              Some(f.replace_all(old="'", new="").replace_all(old="\"", new=""))
+              Some(custom_number(b, f, c, literal=true))
             Some(b) => Some(custom_number(b, f, c))
             None => None
           }

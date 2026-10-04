@@ -178,6 +178,7 @@ fn bind_percentile(
     partition_collations: partition.map(x => x.ty.collation()),
     order: [{ expr: key, desc: o.desc, collation: key.ty.collation(), }],
     frame: None,
+    ignore_nulls: false,
     ty: if cont {
       Float
     } else {

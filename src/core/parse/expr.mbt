@@ -642,7 +642,24 @@ fn Parser::call(
   } else {
     []
   }
-  let over = if self.is_kw("OVER") { Some(self.over()) } else { None }
+  // `IGNORE NULLS` / `RESPECT NULLS` before OVER
+  let nulls = if (self.is_kw("IGNORE") || self.is_kw("RESPECT")) &&
+    self.is_kw_at(1, "NULLS") {
+    let ignore = self.is_kw("IGNORE")
+    self.pos += 2
+    if !self.is_kw("OVER") {
+      raise self.error()
+    }
+    Some(ignore)
+  } else {
+    None
+  }
+  let over = if self.is_kw("OVER") {
+    let o = self.over()
+    Some({ ..o, ignore_nulls: nulls.unwrap_or(false), })
+  } else {
+    None
+  }
   mk(
     Call({ name, args, distinct, star, niladic: false, within_group, over, }),
     self.span_from(start),
@@ -727,7 +744,13 @@ fn Parser::over(self : Parser) -> @ast.Over raise @ast.SyntaxError {
     None
   }
   self.expect_punct(")")
-  { partition_by, order_by, frame, span: self.span_from(start), }
+  {
+    partition_by,
+    order_by,
+    frame,
+    span: self.span_from(start),
+    ignore_nulls: false,
+  }
 }
 
 ///|

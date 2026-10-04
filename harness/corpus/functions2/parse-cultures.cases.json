@@ -1,0 +1,153 @@
+{
+  "source": "harness/gen/functions2.mjs",
+  "cases": [
+    {
+      "name": "000-try-parse-n-1-234-5-as-decimal-10-2-using-de-de",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'-1.234,5' AS decimal(10,2) USING 'de-DE') AS c0, TRY_PARSE(N'-1.234,5' AS float USING 'de-DE') AS c1, TRY_PARSE(N'-1.234,5' AS int USING 'de-DE') AS c2, TRY_PARSE(N'1.234,50 €' AS money USING 'de-DE') AS c3, TRY_PARSE(N'23.11.2009' AS date USING 'de-DE') AS c4, TRY_PARSE(N'23. November 2009' AS date USING 'de-DE') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "001-try-parse-n-1-234-5-as-decimal-10-2-using-fr-fr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1 234,5' AS decimal(10,2) USING 'fr-FR') AS c0, TRY_PARSE(N'1 234,5' AS float USING 'fr-FR') AS c1, TRY_PARSE(N'1 234,5' AS int USING 'fr-FR') AS c2, TRY_PARSE(N'1 234,50 €' AS money USING 'fr-FR') AS c3, TRY_PARSE(N'23/11/2009' AS date USING 'fr-FR') AS c4, TRY_PARSE(N'23 novembre 2009' AS date USING 'fr-FR') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "002-try-parse-n-1-234-5-as-decimal-10-2-using-en-gb",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1,234.5' AS decimal(10,2) USING 'en-GB') AS c0, TRY_PARSE(N'1,234.5' AS float USING 'en-GB') AS c1, TRY_PARSE(N'1,234.5' AS int USING 'en-GB') AS c2, TRY_PARSE(N'£1,234.50' AS money USING 'en-GB') AS c3, TRY_PARSE(N'23/11/2009' AS date USING 'en-GB') AS c4, TRY_PARSE(N'23 November 2009' AS date USING 'en-GB') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "003-try-parse-n-1-234-5-as-decimal-10-2-using-ja-jp",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1,234.5' AS decimal(10,2) USING 'ja-JP') AS c0, TRY_PARSE(N'1,234.5' AS float USING 'ja-JP') AS c1, TRY_PARSE(N'1,234.5' AS int USING 'ja-JP') AS c2, TRY_PARSE(N'¥1,235' AS money USING 'ja-JP') AS c3, TRY_PARSE(N'2009/11/23' AS date USING 'ja-JP') AS c4, TRY_PARSE(N'2009/11/23 15:04' AS date USING 'ja-JP') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "004-try-parse-n-1-234-5-as-decimal-10-2-using-es-es",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1.234,5' AS decimal(10,2) USING 'es-ES') AS c0, TRY_PARSE(N'1.234,5' AS float USING 'es-ES') AS c1, TRY_PARSE(N'1.234,5' AS int USING 'es-ES') AS c2, TRY_PARSE(N'1.234,50 €' AS money USING 'es-ES') AS c3, TRY_PARSE(N'23/11/2009' AS date USING 'es-ES') AS c4, TRY_PARSE(N'23 noviembre 2009' AS date USING 'es-ES') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "005-try-parse-n-1-234-5-as-decimal-10-2-using-it-it",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1.234,5' AS decimal(10,2) USING 'it-IT') AS c0, TRY_PARSE(N'1.234,5' AS float USING 'it-IT') AS c1, TRY_PARSE(N'1.234,5' AS int USING 'it-IT') AS c2, TRY_PARSE(N'€ 1.234,50' AS money USING 'it-IT') AS c3, TRY_PARSE(N'23/11/2009' AS date USING 'it-IT') AS c4, TRY_PARSE(N'23 novembre 2009' AS date USING 'it-IT') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "006-try-parse-n-1-234-5-as-decimal-10-2-using-nl-nl",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1.234,5' AS decimal(10,2) USING 'nl-NL') AS c0, TRY_PARSE(N'1.234,5' AS float USING 'nl-NL') AS c1, TRY_PARSE(N'1.234,5' AS int USING 'nl-NL') AS c2, TRY_PARSE(N'€ 1.234,50' AS money USING 'nl-NL') AS c3, TRY_PARSE(N'23-11-2009' AS date USING 'nl-NL') AS c4, TRY_PARSE(N'23 november 2009' AS date USING 'nl-NL') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "007-try-parse-n-1-234-5-as-decimal-10-2-using-pt-br",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1.234,5' AS decimal(10,2) USING 'pt-BR') AS c0, TRY_PARSE(N'1.234,5' AS float USING 'pt-BR') AS c1, TRY_PARSE(N'1.234,5' AS int USING 'pt-BR') AS c2, TRY_PARSE(N'R$ 1.234,50' AS money USING 'pt-BR') AS c3, TRY_PARSE(N'23/11/2009' AS date USING 'pt-BR') AS c4, TRY_PARSE(N'23 de novembro de 2009' AS date USING 'pt-BR') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "008-try-parse-n-1-234-5-as-decimal-10-2-using-ru-ru",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1 234,5' AS decimal(10,2) USING 'ru-RU') AS c0, TRY_PARSE(N'1 234,5' AS float USING 'ru-RU') AS c1, TRY_PARSE(N'1 234,5' AS int USING 'ru-RU') AS c2, TRY_PARSE(N'1 234,50 ₽' AS money USING 'ru-RU') AS c3, TRY_PARSE(N'23.11.2009' AS date USING 'ru-RU') AS c4, TRY_PARSE(N'23 ноября 2009' AS date USING 'ru-RU') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "009-try-parse-n-1-234-5-as-decimal-10-2-using-sv-se",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1 234,5' AS decimal(10,2) USING 'sv-SE') AS c0, TRY_PARSE(N'1 234,5' AS float USING 'sv-SE') AS c1, TRY_PARSE(N'1 234,5' AS int USING 'sv-SE') AS c2, TRY_PARSE(N'1 234,50 kr' AS money USING 'sv-SE') AS c3, TRY_PARSE(N'2009-11-23' AS date USING 'sv-SE') AS c4, TRY_PARSE(N'23 november 2009' AS date USING 'sv-SE') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "010-try-parse-n-1-234-5-as-decimal-10-2-using-pl-pl",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1 234,5' AS decimal(10,2) USING 'pl-PL') AS c0, TRY_PARSE(N'1 234,5' AS float USING 'pl-PL') AS c1, TRY_PARSE(N'1 234,5' AS int USING 'pl-PL') AS c2, TRY_PARSE(N'1 234,50 zł' AS money USING 'pl-PL') AS c3, TRY_PARSE(N'23.11.2009' AS date USING 'pl-PL') AS c4, TRY_PARSE(N'23 listopada 2009' AS date USING 'pl-PL') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "011-try-parse-n-1-234-5-as-decimal-10-2-using-de-ch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1''234.5' AS decimal(10,2) USING 'de-CH') AS c0, TRY_PARSE(N'1''234.5' AS float USING 'de-CH') AS c1, TRY_PARSE(N'1''234.5' AS int USING 'de-CH') AS c2, TRY_PARSE(N'CHF 1''234.50' AS money USING 'de-CH') AS c3, TRY_PARSE(N'23.11.2009' AS date USING 'de-CH') AS c4, TRY_PARSE(N'23. November 2009' AS date USING 'de-CH') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "012-try-parse-n-1-234-5-as-decimal-10-2-using-en-us",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'(1,234.5)' AS decimal(10,2) USING 'en-US') AS c0, TRY_PARSE(N'(1,234.5)' AS float USING 'en-US') AS c1, TRY_PARSE(N'(1,234.5)' AS int USING 'en-US') AS c2, TRY_PARSE(N'($1,234.50)' AS money USING 'en-US') AS c3, TRY_PARSE(N'11/23/2009' AS date USING 'en-US') AS c4, TRY_PARSE(N'November 23, 2009' AS date USING 'en-US') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "013-try-parse-n-1-234-5-as-decimal-10-2-using-iv",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1,234.5' AS decimal(10,2) USING 'iv') AS c0, TRY_PARSE(N'1,234.5' AS float USING 'iv') AS c1, TRY_PARSE(N'1,234.5' AS int USING 'iv') AS c2, TRY_PARSE(N'¤1,234.50' AS money USING 'iv') AS c3, TRY_PARSE(N'11/23/2009' AS date USING 'iv') AS c4, TRY_PARSE(N'23 November 2009' AS date USING 'iv') AS c5"
+        }
+      ]
+    },
+    {
+      "name": "014-try-parse-n-1-5-as-decimal-5-2-using-xx-xx",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_PARSE(N'1,5' AS decimal(5,2) USING 'xx-XX') AS c0, TRY_PARSE(N'1.5' AS decimal(5,2) USING 'xx-XX') AS c1, TRY_PARSE(N'1,5' AS decimal(5,2) USING 'de') AS c2, TRY_PARSE(N'1,5' AS decimal(5,2) USING 'DE-de') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "015-parse-n-1-5-as-decimal-5-2-using-deutsch",
+      "steps": [{"kind":"batch","sql":"SELECT PARSE(N'1,5' AS decimal(5,2) USING 'Deutsch') AS c0"}]
+    },
+    {"name":"016-parse-n-abc-as-int-using-de-de","steps":[{"kind":"batch","sql":"SELECT PARSE(N'abc' AS int USING 'de-DE') AS c0"}]},
+    {
+      "name": "017-parse-n-12-31-2009-as-date-using-en-gb",
+      "steps": [{"kind":"batch","sql":"SELECT PARSE(N'12/31/2009' AS date USING 'en-GB') AS c0"}]
+    },
+    {
+      "name": "018-parse-n-2009-11-23t15-04-05-99999999-as-datetime2-0",
+      "steps": [{"kind":"batch","sql":"SELECT PARSE(N'2009-11-23T15:04:05.99999999' AS datetime2(0)) AS c0"}]
+    }
+  ]
+}

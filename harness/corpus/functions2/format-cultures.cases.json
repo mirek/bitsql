@@ -1,0 +1,1432 @@
+{
+  "source": "harness/gen/functions2.mjs",
+  "cases": [
+    {
+      "name": "000-format-cast-1234567-891-as-decimal-12-3-n-iv",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'iv') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'iv') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'iv') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'iv') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'iv') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'iv') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'iv') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "001-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-iv",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'iv') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'iv') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'iv') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'iv') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'iv') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'iv') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'iv') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "002-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'iv') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'iv') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'iv') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'iv') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'iv') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "003-format-cast-1234567-891-as-decimal-12-3-n-en-us",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-US') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-US') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-US') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-US') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-US') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-US') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-US') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "004-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-US') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-US') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-US') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-US') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-US') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-US') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-US') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "005-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-US') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-US') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-US') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-US') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-US') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "006-format-cast-1234567-891-as-decimal-12-3-n-en-gb",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-GB') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-GB') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-GB') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-GB') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-GB') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-GB') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-GB') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "007-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-GB') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-GB') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-GB') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-GB') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-GB') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-GB') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-GB') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "008-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-GB') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-GB') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-GB') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-GB') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-GB') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "009-format-cast-1234567-891-as-decimal-12-3-n-de-de",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'de-DE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'de-DE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'de-DE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'de-DE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'de-DE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'de-DE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'de-DE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "010-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-de-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'de-DE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'de-DE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'de-DE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'de-DE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'de-DE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'de-DE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'de-DE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "011-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'de-DE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'de-DE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'de-DE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'de-DE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'de-DE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "012-format-cast-1234567-891-as-decimal-12-3-n-fr-fr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fr-FR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fr-FR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fr-FR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fr-FR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fr-FR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fr-FR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fr-FR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "013-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fr-FR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fr-FR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fr-FR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fr-FR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fr-FR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fr-FR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fr-FR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "014-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fr-FR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fr-FR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fr-FR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fr-FR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fr-FR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "015-format-cast-1234567-891-as-decimal-12-3-n-ja-jp",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ja-JP') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ja-JP') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ja-JP') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ja-JP') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ja-JP') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ja-JP') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ja-JP') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "016-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-ja-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'ja-JP') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'ja-JP') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'ja-JP') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'ja-JP') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'ja-JP') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'ja-JP') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'ja-JP') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "017-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'ja-JP') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'ja-JP') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'ja-JP') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'ja-JP') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'ja-JP') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "018-format-cast-1234567-891-as-decimal-12-3-n-zh-tw",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'zh-TW') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'zh-TW') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'zh-TW') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'zh-TW') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'zh-TW') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'zh-TW') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'zh-TW') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "019-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-zh-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'zh-TW') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'zh-TW') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'zh-TW') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'zh-TW') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'zh-TW') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'zh-TW') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'zh-TW') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "020-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'zh-TW') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'zh-TW') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'zh-TW') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'zh-TW') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'zh-TW') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "021-format-cast-1234567-891-as-decimal-12-3-n-zh-cn",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'zh-CN') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'zh-CN') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'zh-CN') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'zh-CN') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'zh-CN') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'zh-CN') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'zh-CN') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "022-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-zh-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'zh-CN') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'zh-CN') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'zh-CN') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'zh-CN') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'zh-CN') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'zh-CN') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'zh-CN') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "023-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'zh-CN') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'zh-CN') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'zh-CN') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'zh-CN') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'zh-CN') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "024-format-cast-1234567-891-as-decimal-12-3-n-ko-kr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ko-KR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ko-KR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ko-KR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ko-KR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ko-KR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ko-KR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ko-KR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "025-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-ko-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'ko-KR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'ko-KR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'ko-KR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'ko-KR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'ko-KR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'ko-KR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'ko-KR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "026-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'ko-KR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'ko-KR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'ko-KR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'ko-KR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'ko-KR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "027-format-cast-1234567-891-as-decimal-12-3-n-th-th",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'th-TH') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'th-TH') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'th-TH') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'th-TH') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'th-TH') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'th-TH') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'th-TH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "028-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-th-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'th-TH') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'th-TH') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'th-TH') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'th-TH') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'th-TH') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'th-TH') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'th-TH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "029-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'th-TH') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'th-TH') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'th-TH') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'th-TH') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'th-TH') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "030-format-cast-1234567-891-as-decimal-12-3-n-es-es",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'es-ES') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'es-ES') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'es-ES') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'es-ES') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'es-ES') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'es-ES') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'es-ES') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "031-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-es-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'es-ES') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'es-ES') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'es-ES') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'es-ES') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'es-ES') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'es-ES') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'es-ES') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "032-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'es-ES') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'es-ES') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'es-ES') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'es-ES') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'es-ES') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "033-format-cast-1234567-891-as-decimal-12-3-n-it-it",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'it-IT') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'it-IT') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'it-IT') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'it-IT') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'it-IT') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'it-IT') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'it-IT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "034-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-it-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'it-IT') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'it-IT') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'it-IT') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'it-IT') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'it-IT') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'it-IT') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'it-IT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "035-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'it-IT') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'it-IT') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'it-IT') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'it-IT') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'it-IT') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "036-format-cast-1234567-891-as-decimal-12-3-n-nl-nl",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'nl-NL') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'nl-NL') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'nl-NL') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'nl-NL') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'nl-NL') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'nl-NL') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'nl-NL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "037-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-nl-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'nl-NL') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'nl-NL') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'nl-NL') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'nl-NL') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'nl-NL') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'nl-NL') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'nl-NL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "038-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'nl-NL') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'nl-NL') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'nl-NL') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'nl-NL') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'nl-NL') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "039-format-cast-1234567-891-as-decimal-12-3-n-nb-no",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'nb-NO') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'nb-NO') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'nb-NO') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'nb-NO') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'nb-NO') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'nb-NO') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'nb-NO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "040-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-nb-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'nb-NO') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'nb-NO') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'nb-NO') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'nb-NO') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'nb-NO') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'nb-NO') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'nb-NO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "041-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'nb-NO') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'nb-NO') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'nb-NO') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'nb-NO') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'nb-NO') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "042-format-cast-1234567-891-as-decimal-12-3-n-nn-no",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'nn-NO') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'nn-NO') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'nn-NO') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'nn-NO') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'nn-NO') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'nn-NO') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'nn-NO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "043-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-nn-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'nn-NO') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'nn-NO') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'nn-NO') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'nn-NO') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'nn-NO') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'nn-NO') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'nn-NO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "044-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'nn-NO') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'nn-NO') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'nn-NO') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'nn-NO') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'nn-NO') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "045-format-cast-1234567-891-as-decimal-12-3-n-pt-pt",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'pt-PT') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'pt-PT') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'pt-PT') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'pt-PT') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'pt-PT') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'pt-PT') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'pt-PT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "046-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-pt-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'pt-PT') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'pt-PT') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'pt-PT') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'pt-PT') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'pt-PT') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'pt-PT') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'pt-PT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "047-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'pt-PT') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'pt-PT') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'pt-PT') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'pt-PT') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'pt-PT') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "048-format-cast-1234567-891-as-decimal-12-3-n-pt-br",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'pt-BR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'pt-BR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'pt-BR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'pt-BR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'pt-BR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'pt-BR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'pt-BR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "049-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-pt-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'pt-BR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'pt-BR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'pt-BR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'pt-BR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'pt-BR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'pt-BR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'pt-BR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "050-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'pt-BR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'pt-BR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'pt-BR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'pt-BR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'pt-BR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "051-format-cast-1234567-891-as-decimal-12-3-n-fi-fi",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fi-FI') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fi-FI') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fi-FI') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fi-FI') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fi-FI') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fi-FI') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fi-FI') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "052-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fi-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fi-FI') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fi-FI') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fi-FI') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fi-FI') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fi-FI') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fi-FI') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fi-FI') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "053-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fi-FI') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fi-FI') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fi-FI') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fi-FI') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fi-FI') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "054-format-cast-1234567-891-as-decimal-12-3-n-sv-se",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'sv-SE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'sv-SE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'sv-SE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'sv-SE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'sv-SE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'sv-SE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'sv-SE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "055-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-sv-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'sv-SE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'sv-SE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'sv-SE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'sv-SE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'sv-SE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'sv-SE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'sv-SE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "056-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'sv-SE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'sv-SE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'sv-SE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'sv-SE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'sv-SE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "057-format-cast-1234567-891-as-decimal-12-3-n-da-dk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'da-DK') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'da-DK') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'da-DK') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'da-DK') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'da-DK') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'da-DK') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'da-DK') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "058-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-da-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'da-DK') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'da-DK') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'da-DK') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'da-DK') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'da-DK') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'da-DK') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'da-DK') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "059-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'da-DK') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'da-DK') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'da-DK') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'da-DK') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'da-DK') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "060-format-cast-1234567-891-as-decimal-12-3-n-cs-cz",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'cs-CZ') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'cs-CZ') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'cs-CZ') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'cs-CZ') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'cs-CZ') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'cs-CZ') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'cs-CZ') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "061-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-cs-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'cs-CZ') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'cs-CZ') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'cs-CZ') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'cs-CZ') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'cs-CZ') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'cs-CZ') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'cs-CZ') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "062-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'cs-CZ') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'cs-CZ') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'cs-CZ') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'cs-CZ') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'cs-CZ') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "063-format-cast-1234567-891-as-decimal-12-3-n-hu-hu",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'hu-HU') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'hu-HU') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'hu-HU') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'hu-HU') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'hu-HU') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'hu-HU') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'hu-HU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "064-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-hu-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'hu-HU') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'hu-HU') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'hu-HU') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'hu-HU') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'hu-HU') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'hu-HU') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'hu-HU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "065-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'hu-HU') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'hu-HU') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'hu-HU') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'hu-HU') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'hu-HU') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "066-format-cast-1234567-891-as-decimal-12-3-n-pl-pl",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'pl-PL') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'pl-PL') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'pl-PL') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'pl-PL') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'pl-PL') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'pl-PL') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'pl-PL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "067-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-pl-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'pl-PL') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'pl-PL') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'pl-PL') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'pl-PL') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'pl-PL') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'pl-PL') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'pl-PL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "068-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'pl-PL') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'pl-PL') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'pl-PL') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'pl-PL') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'pl-PL') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "069-format-cast-1234567-891-as-decimal-12-3-n-ro-ro",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ro-RO') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ro-RO') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ro-RO') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ro-RO') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ro-RO') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ro-RO') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ro-RO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "070-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-ro-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'ro-RO') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'ro-RO') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'ro-RO') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'ro-RO') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'ro-RO') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'ro-RO') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'ro-RO') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "071-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'ro-RO') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'ro-RO') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'ro-RO') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'ro-RO') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'ro-RO') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "072-format-cast-1234567-891-as-decimal-12-3-n-hr-hr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'hr-HR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'hr-HR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'hr-HR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'hr-HR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'hr-HR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'hr-HR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'hr-HR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "073-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-hr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'hr-HR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'hr-HR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'hr-HR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'hr-HR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'hr-HR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'hr-HR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'hr-HR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "074-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'hr-HR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'hr-HR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'hr-HR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'hr-HR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'hr-HR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "075-format-cast-1234567-891-as-decimal-12-3-n-sk-sk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'sk-SK') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'sk-SK') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'sk-SK') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'sk-SK') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'sk-SK') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'sk-SK') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'sk-SK') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "076-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-sk-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'sk-SK') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'sk-SK') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'sk-SK') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'sk-SK') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'sk-SK') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'sk-SK') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'sk-SK') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "077-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'sk-SK') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'sk-SK') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'sk-SK') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'sk-SK') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'sk-SK') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "078-format-cast-1234567-891-as-decimal-12-3-n-sl-si",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'sl-SI') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'sl-SI') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'sl-SI') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'sl-SI') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'sl-SI') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'sl-SI') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'sl-SI') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "079-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-sl-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'sl-SI') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'sl-SI') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'sl-SI') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'sl-SI') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'sl-SI') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'sl-SI') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'sl-SI') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "080-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'sl-SI') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'sl-SI') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'sl-SI') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'sl-SI') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'sl-SI') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "081-format-cast-1234567-891-as-decimal-12-3-n-el-gr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'el-GR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'el-GR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'el-GR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'el-GR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'el-GR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'el-GR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'el-GR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "082-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-el-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'el-GR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'el-GR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'el-GR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'el-GR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'el-GR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'el-GR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'el-GR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "083-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'el-GR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'el-GR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'el-GR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'el-GR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'el-GR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "084-format-cast-1234567-891-as-decimal-12-3-n-bg-bg",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'bg-BG') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'bg-BG') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'bg-BG') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'bg-BG') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'bg-BG') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'bg-BG') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'bg-BG') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "085-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-bg-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'bg-BG') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'bg-BG') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'bg-BG') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'bg-BG') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'bg-BG') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'bg-BG') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'bg-BG') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "086-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'bg-BG') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'bg-BG') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'bg-BG') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'bg-BG') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'bg-BG') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "087-format-cast-1234567-891-as-decimal-12-3-n-ru-ru",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ru-RU') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ru-RU') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ru-RU') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ru-RU') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ru-RU') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ru-RU') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ru-RU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "088-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-ru-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'ru-RU') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'ru-RU') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'ru-RU') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'ru-RU') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'ru-RU') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'ru-RU') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'ru-RU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "089-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'ru-RU') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'ru-RU') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'ru-RU') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'ru-RU') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'ru-RU') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "090-format-cast-1234567-891-as-decimal-12-3-n-tr-tr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'tr-TR') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'tr-TR') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'tr-TR') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'tr-TR') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'tr-TR') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'tr-TR') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'tr-TR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "091-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-tr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'tr-TR') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'tr-TR') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'tr-TR') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'tr-TR') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'tr-TR') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'tr-TR') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'tr-TR') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "092-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'tr-TR') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'tr-TR') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'tr-TR') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'tr-TR') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'tr-TR') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "093-format-cast-1234567-891-as-decimal-12-3-n-et-ee",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'et-EE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'et-EE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'et-EE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'et-EE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'et-EE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'et-EE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'et-EE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "094-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-et-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'et-EE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'et-EE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'et-EE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'et-EE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'et-EE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'et-EE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'et-EE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "095-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'et-EE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'et-EE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'et-EE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'et-EE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'et-EE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "096-format-cast-1234567-891-as-decimal-12-3-n-lv-lv",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'lv-LV') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'lv-LV') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'lv-LV') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'lv-LV') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'lv-LV') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'lv-LV') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'lv-LV') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "097-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-lv-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'lv-LV') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'lv-LV') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'lv-LV') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'lv-LV') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'lv-LV') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'lv-LV') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'lv-LV') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "098-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'lv-LV') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'lv-LV') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'lv-LV') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'lv-LV') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'lv-LV') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "099-format-cast-1234567-891-as-decimal-12-3-n-lt-lt",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'lt-LT') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'lt-LT') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'lt-LT') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'lt-LT') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'lt-LT') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'lt-LT') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'lt-LT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "100-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-lt-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'lt-LT') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'lt-LT') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'lt-LT') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'lt-LT') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'lt-LT') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'lt-LT') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'lt-LT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "101-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'lt-LT') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'lt-LT') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'lt-LT') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'lt-LT') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'lt-LT') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "102-format-cast-1234567-891-as-decimal-12-3-n-de-at",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'de-AT') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'de-AT') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'de-AT') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'de-AT') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'de-AT') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'de-AT') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'de-AT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "103-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-de-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'de-AT') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'de-AT') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'de-AT') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'de-AT') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'de-AT') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'de-AT') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'de-AT') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "104-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'de-AT') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'de-AT') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'de-AT') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'de-AT') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'de-AT') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "105-format-cast-1234567-891-as-decimal-12-3-n-de-ch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'de-CH') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'de-CH') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'de-CH') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'de-CH') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'de-CH') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'de-CH') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'de-CH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "106-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-de-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'de-CH') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'de-CH') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'de-CH') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'de-CH') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'de-CH') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'de-CH') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'de-CH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "107-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'de-CH') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'de-CH') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'de-CH') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'de-CH') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'de-CH') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "108-format-cast-1234567-891-as-decimal-12-3-n-fr-ca",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fr-CA') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fr-CA') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fr-CA') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fr-CA') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fr-CA') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fr-CA') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fr-CA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "109-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fr-CA') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fr-CA') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fr-CA') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fr-CA') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fr-CA') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fr-CA') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fr-CA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "110-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fr-CA') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fr-CA') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fr-CA') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fr-CA') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fr-CA') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "111-format-cast-1234567-891-as-decimal-12-3-n-fr-ch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fr-CH') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fr-CH') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fr-CH') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fr-CH') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fr-CH') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fr-CH') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fr-CH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "112-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fr-CH') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fr-CH') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fr-CH') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fr-CH') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fr-CH') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fr-CH') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fr-CH') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "113-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fr-CH') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fr-CH') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fr-CH') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fr-CH') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fr-CH') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "114-format-cast-1234567-891-as-decimal-12-3-n-fr-be",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fr-BE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fr-BE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fr-BE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fr-BE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fr-BE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fr-BE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fr-BE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "115-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fr-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fr-BE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fr-BE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fr-BE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fr-BE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fr-BE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fr-BE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fr-BE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "116-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fr-BE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fr-BE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fr-BE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fr-BE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fr-BE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "117-format-cast-1234567-891-as-decimal-12-3-n-en-ca",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-CA') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-CA') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-CA') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-CA') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-CA') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-CA') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-CA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "118-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-CA') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-CA') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-CA') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-CA') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-CA') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-CA') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-CA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "119-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-CA') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-CA') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-CA') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-CA') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-CA') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "120-format-cast-1234567-891-as-decimal-12-3-n-en-au",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-AU') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-AU') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-AU') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-AU') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-AU') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-AU') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-AU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "121-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-AU') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-AU') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-AU') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-AU') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-AU') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-AU') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-AU') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "122-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-AU') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-AU') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-AU') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-AU') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-AU') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "123-format-cast-1234567-891-as-decimal-12-3-n-en-ie",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-IE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-IE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-IE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-IE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-IE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-IE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-IE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "124-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-IE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-IE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-IE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-IE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-IE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-IE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-IE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "125-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-IE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-IE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-IE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-IE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-IE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "126-format-cast-1234567-891-as-decimal-12-3-n-en-nz",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en-NZ') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en-NZ') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en-NZ') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en-NZ') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en-NZ') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en-NZ') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en-NZ') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "127-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en-NZ') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en-NZ') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en-NZ') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en-NZ') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en-NZ') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en-NZ') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en-NZ') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "128-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en-NZ') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en-NZ') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en-NZ') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en-NZ') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en-NZ') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "129-format-cast-1234567-891-as-decimal-12-3-n-es-mx",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'es-MX') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'es-MX') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'es-MX') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'es-MX') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'es-MX') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'es-MX') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'es-MX') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "130-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-es-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'es-MX') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'es-MX') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'es-MX') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'es-MX') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'es-MX') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'es-MX') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'es-MX') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "131-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'es-MX') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'es-MX') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'es-MX') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'es-MX') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'es-MX') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "132-format-cast-1234567-891-as-decimal-12-3-n-nl-be",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'nl-BE') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'nl-BE') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'nl-BE') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'nl-BE') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'nl-BE') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'nl-BE') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'nl-BE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "133-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-nl-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'nl-BE') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'nl-BE') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'nl-BE') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'nl-BE') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'nl-BE') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'nl-BE') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'nl-BE') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "134-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'nl-BE') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'nl-BE') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'nl-BE') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'nl-BE') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'nl-BE') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "135-format-cast-1234567-891-as-decimal-12-3-n-uk-ua",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'uk-UA') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'uk-UA') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'uk-UA') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'uk-UA') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'uk-UA') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'uk-UA') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'uk-UA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "136-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-uk-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'uk-UA') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'uk-UA') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'uk-UA') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'uk-UA') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'uk-UA') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'uk-UA') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'uk-UA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "137-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'uk-UA') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'uk-UA') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'uk-UA') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'uk-UA') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'uk-UA') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "138-format-cast-1234567-891-as-decimal-12-3-n-he-il",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'he-IL') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'he-IL') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'he-IL') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'he-IL') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'he-IL') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'he-IL') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'he-IL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "139-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-he-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'he-IL') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'he-IL') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'he-IL') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'he-IL') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'he-IL') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'he-IL') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'he-IL') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "140-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'he-IL') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'he-IL') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'he-IL') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'he-IL') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'he-IL') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "141-format-cast-1234567-891-as-decimal-12-3-n-hi-in",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'hi-IN') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'hi-IN') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'hi-IN') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'hi-IN') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'hi-IN') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'hi-IN') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'hi-IN') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "142-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-hi-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'hi-IN') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'hi-IN') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'hi-IN') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'hi-IN') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'hi-IN') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'hi-IN') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'hi-IN') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "143-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'hi-IN') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'hi-IN') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'hi-IN') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'hi-IN') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'hi-IN') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "144-format-cast-1234567-891-as-decimal-12-3-n-en",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'en') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'en') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'en') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'en') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'en') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'en') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'en') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "145-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-en",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'en') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'en') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'en') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'en') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'en') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'en') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'en') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "146-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'en') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'en') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'en') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'en') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'en') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "147-format-cast-1234567-891-as-decimal-12-3-n-de",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'de') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'de') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'de') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'de') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'de') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'de') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'de') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "148-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-de",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'de') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'de') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'de') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'de') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'de') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'de') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'de') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "149-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'de') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'de') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'de') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'de') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'de') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "150-format-cast-1234567-891-as-decimal-12-3-n-fr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'fr') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'fr') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'fr') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'fr') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'fr') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'fr') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'fr') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "151-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-fr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'fr') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'fr') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'fr') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'fr') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'fr') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'fr') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'fr') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "152-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'fr') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'fr') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'fr') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'fr') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'fr') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "153-format-cast-1234567-891-as-decimal-12-3-n-ja",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ja') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ja') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ja') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ja') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ja') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ja') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ja') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "154-format-cast-2009-11-23-15-04-05-0123456-as-datetime2-7-d-ja",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'd', 'ja') AS c0, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'D', 'ja') AS c1, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'f', 'ja') AS c2, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'G', 'ja') AS c3, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'M', 'ja') AS c4, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 'Y', 'ja') AS c5, FORMAT(CAST('2009-11-23 15:04:05.0123456' AS datetime2(7)), 't', 'ja') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "155-format-cast-2024-01-02-03-04-05-as-datetime2-0-dddd-d-mmmm-y",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'dddd d MMMM yyyy', 'ja') AS c0, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'MMMM', 'ja') AS c1, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'ddd, d MMM', 'ja') AS c2, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'hh:mm tt', 'ja') AS c3, FORMAT(CAST('2024-01-02 03:04:05' AS datetime2(0)), 'yyyy/MM/dd HH:mm', 'ja') AS c4"
+        }
+      ]
+    },
+    {
+      "name": "156-format-cast-1234567-891-as-decimal-12-3-n-ar-sa",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'N', 'ar-SA') AS c0, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'C', 'ar-SA') AS c1, FORMAT(CAST(-0.1234 AS decimal(6,4)), 'P1', 'ar-SA') AS c2, FORMAT(CAST(-1234567.891 AS decimal(12,3)), 'F1', 'ar-SA') AS c3, FORMAT(CAST(-1234567.891 AS decimal(12,3)), '#,##0.0#', 'ar-SA') AS c4, FORMAT(CAST(1234.5 AS float), 'E2', 'ar-SA') AS c5, FORMAT(CAST(0.5 AS decimal(3,1)), '0.0%;-0.0%', 'ar-SA') AS c6"
+        }
+      ]
+    },
+    {
+      "name": "157-format-1-5-n-xx-xx",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FORMAT(1.5, 'N', 'xx-XX') AS c0, FORMAT(1.5, 'N', 'xx') AS c1, FORMAT(1.5, 'C', 'a-bc') AS c2, FORMAT(1.5, 'N', 'EN-gb') AS c3, FORMAT(1.5, 'N', 'de_DE') AS c4"
+        }
+      ]
+    },
+    {"name":"158-format-1-5-n-x","steps":[{"kind":"batch","sql":"SELECT FORMAT(1.5, 'N', 'x') AS c0"}]},
+    {"name":"159-format-1-5-n-abcd","steps":[{"kind":"batch","sql":"SELECT FORMAT(1.5, 'N', 'abcd') AS c0"}]},
+    {"name":"160-format-1-5-n-ab-12","steps":[{"kind":"batch","sql":"SELECT FORMAT(1.5, 'N', 'ab-12') AS c0"}]},
+    {"name":"161-format-1-5-n-null","steps":[{"kind":"batch","sql":"SELECT FORMAT(1.5, 'N', NULL) AS c0"}]},
+    {"name":"162-format-1-5-n","steps":[{"kind":"batch","sql":"SELECT FORMAT(1.5, 'N', '') AS c0"}]}
+  ]
+}

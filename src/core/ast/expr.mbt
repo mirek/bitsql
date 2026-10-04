@@ -178,6 +178,9 @@ pub(all) struct Over {
   order_by : Array[OrderItem]
   frame : Frame?
   span : Span
+  /// `IGNORE NULLS` written before OVER (LAG, LEAD, FIRST_VALUE,
+  /// LAST_VALUE); `RESPECT NULLS` is the default
+  ignore_nulls : Bool
 } derive(Eq, Debug)
 
 ///|

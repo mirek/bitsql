@@ -1421,7 +1421,7 @@ fn order_key(
       raise err(
         108,
         "The ORDER BY position number -\{n} is out of range of the number of items in the select list.",
-        severity=15,
+        severity=16,
       )
     Column([name]) => {
       let lower = name.name.to_lower()

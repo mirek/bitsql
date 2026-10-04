@@ -1,0 +1,186 @@
+{
+  "source": "harness/gen/functions2.mjs",
+  "cases": [
+    {
+      "name": "000-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY 'x'"}]
+    },
+    {
+      "name": "001-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY a, NULL"}]
+    },
+    {
+      "name": "002-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY CAST(1 AS int) + 2"}]
+    },
+    {
+      "name": "003-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY -2"}]
+    },
+    {
+      "name": "004-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY (SELECT 1), a"}]
+    },
+    {
+      "name": "005-select-1-as-k-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS k, a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY k, a"}]
+    },
+    {
+      "name": "006-select-cast-null-as-int-as-k-a-from-values-3-1-n-c-1-2-n-a-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(NULL AS int) AS k, a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY 1, 2 DESC"
+        }
+      ]
+    },
+    {
+      "name": "007-select-a-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-orde",
+      "steps": [{"kind":"batch","sql":"SELECT a, a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY a"}]
+    },
+    {
+      "name": "008-select-a-as-x-b-as-x-from-values-3-1-n-c-1-2-n-a-2-1-null-t-",
+      "steps": [{"kind":"batch","sql":"SELECT a AS x, b AS x FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY x"}]
+    },
+    {
+      "name": "009-select-a-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s-order-",
+      "steps": [{"kind":"batch","sql":"SELECT *, a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY a"}]
+    },
+    {
+      "name": "010-select-a-a-as-c-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-s",
+      "steps": [{"kind":"batch","sql":"SELECT a, a AS c FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY t.a DESC"}]
+    },
+    {
+      "name": "011-select-t-b-as-bb-from-values-3-1-n-c-1-2-n-a-2-1-null-t-a-b-",
+      "steps": [{"kind":"batch","sql":"SELECT t.*, b AS bb FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY bb, a"}]
+    },
+    {
+      "name": "012-declare-k-int-1-select-a-from-values-3-1-n-c-1-2-n-a-2-1-nul",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @k int = 1; SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY a, @k"
+        }
+      ]
+    },
+    {
+      "name": "013-declare-k-int-1-select-a-from-values-3-1-n-c-1-2-n-a-2-1-nul",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @k int = 1; SELECT a FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s) ORDER BY a + @k"
+        }
+      ]
+    },
+    {
+      "name": "014-select-1-as-k-union-all-select-2-order-by-1-0",
+      "steps": [{"kind":"batch","sql":"SELECT 1 AS k UNION ALL SELECT 2 ORDER BY 1 + 0"}]
+    },
+    {
+      "name": "015-select-a-row-number-over-order-by-a-desc-as-n-from-values-3-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT a, ROW_NUMBER() OVER (ORDER BY a DESC) AS n FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s)"
+        }
+      ]
+    },
+    {
+      "name": "016-select-a-sum-a-over-partition-by-b-as-s-from-values-3-1-n-c-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT a, SUM(a) OVER (PARTITION BY b) AS s FROM (VALUES (3, 1, N'c'), (1, 2, N'a'), (2, 1, NULL)) t(a, b, s)"
+        }
+      ]
+    },
+    {"name":"017-select-1e-308-as-a-4e-320-as-b-0e400-as-c","steps":[{"kind":"batch","sql":"SELECT 1e-308 AS a, -4e-320 AS b, 0e400 AS c"}]},
+    {"name":"018-select-1-as-a-select-2e308-as-b","steps":[{"kind":"batch","sql":"SELECT 1 AS a; SELECT 2e308 AS b"}]},
+    {"name":"019-select-1-as-a-if-1-0-select-1e-310-as-b","steps":[{"kind":"batch","sql":"SELECT 1 AS a; IF 1 = 0 SELECT 1e-310 AS b"}]},
+    {
+      "name": "020-select-cast-char-9-1-5-as-float-as-a-cast-n-n-2-5-as-float-a",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(CHAR(9) + '1.5' AS float) AS a, CAST(N' ' + N'2.5' AS float) AS b, CAST('3.5' + CHAR(0) + 'x' AS float) AS c"
+        }
+      ]
+    },
+    {"name":"021-select-cast-1-5-char-9-as-float-as-a","steps":[{"kind":"batch","sql":"SELECT CAST('1.5' + CHAR(9) AS float) AS a"}]},
+    {"name":"022-select-cast-1e400-as-float-as-a","steps":[{"kind":"batch","sql":"SELECT CAST('1e400' AS float) AS a"}]},
+    {
+      "name": "023-greatest-1-5-2-25-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(1.5, 2.25, 3) AS c0, GREATEST(2.5, CAST(1 AS decimal(3,1))) AS c1, LEAST(CAST(1 AS numeric(4,1)), CAST(2 AS decimal(5,2))) AS c2, GREATEST(1e0, 2) AS c3, GREATEST(1e0, 2.5) AS c4"
+        }
+      ]
+    },
+    {
+      "name": "024-greatest-cast-n-a-as-nvarchar-max-n-b",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT GREATEST(CAST(N'a' AS nvarchar(max)), N'b') AS c0, LEAST(CAST(0x01 AS varbinary(max)), 0x02) AS c1, GREATEST(CAST('a' AS varchar(max))) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "025-datalength-least-replicate-cast-a-as-varchar-max-8001-b",
+      "steps": [{"kind":"batch","sql":"SELECT DATALENGTH(LEAST(REPLICATE(CAST('a' AS varchar(max)), 8001), 'b')) AS c0"}]
+    },
+    {
+      "name": "026-greatest-cast-a-as-xml-cast-b-as-xml",
+      "steps": [{"kind":"batch","sql":"SELECT GREATEST(CAST('<a/>' AS xml), CAST('<b/>' AS xml)) AS c0"}]
+    },
+    {
+      "name": "027-greatest-a-collate-latin1-general-cs-as-b-collate-latin1-gen",
+      "steps": [{"kind":"batch","sql":"SELECT GREATEST('a' COLLATE Latin1_General_CS_AS, 'B' COLLATE Latin1_General_BIN) AS c0"}]
+    },
+    {
+      "name": "028-concat-cast-0x41-as-image-cast-a-as-xml",
+      "steps": [{"kind":"batch","sql":"SELECT CONCAT(CAST(0x41 AS image), CAST('<a/>' AS xml)) AS c0"}]
+    },
+    {"name":"029-concat-x-cast-a-as-xml-n-y","steps":[{"kind":"batch","sql":"SELECT CONCAT('x', CAST('<a/>' AS xml), N'y') AS c0"}]},
+    {
+      "name": "030-concat-ws-n-cast-1-as-sql-variant-cast-a-as-xml",
+      "steps": [{"kind":"batch","sql":"SELECT CONCAT_WS(N',', CAST(1 AS sql_variant), CAST('<a/>' AS xml)) AS c0"}]
+    },
+    {
+      "name": "031-concat-cast-0x414243-as-varbinary-3-n",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CONCAT(CAST(0x414243 AS varbinary(3)), N'') AS c0, CONCAT_WS(N'-', CAST(0x4100 AS binary(2)), 0x42) AS c1, CONCAT(0x41, '') AS c2, TRANSLATE(CAST(0x4142 AS binary(4)), N'A', N'Z') AS c3"
+        }
+      ]
+    },
+    {
+      "name": "032-convert-varchar-max-cast-null-as-image",
+      "steps": [{"kind":"batch","sql":"SELECT CONVERT(varchar(max), CAST(NULL AS image)) AS c0"}]
+    },
+    {
+      "name": "033-switchoffset-cast-2024-01-01-10-00-00-00-as-datetimeoffset-c",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT SWITCHOFFSET(CAST('2024-01-01 10:00 +00:00' AS datetimeoffset), CAST(-90.9 AS decimal(5,1))) AS c0, TODATETIMEOFFSET(CAST('2024-01-01 10:00' AS datetime2), CAST(59.5 AS money)) AS c1, SWITCHOFFSET(CAST('2024-01-01 10:00 +00:00' AS datetimeoffset), CAST(1e0 AS float)) AS c2"
+        }
+      ]
+    },
+    {
+      "name": "034-switchoffset-cast-2024-01-01-10-00-00-00-as-datetimeoffset-0",
+      "steps": [{"kind":"batch","sql":"SELECT SWITCHOFFSET(CAST('2024-01-01 10:00 +00:00' AS datetimeoffset), ' +01:00') AS c0"}]
+    },
+    {
+      "name": "035-switchoffset-cast-2024-01-01-10-00-00-00-as-datetimeoffset-9",
+      "steps": [{"kind":"batch","sql":"SELECT SWITCHOFFSET(CAST('2024-01-01 10:00 +00:00' AS datetimeoffset), 900) AS c0"}]
+    },
+    {
+      "name": "036-todatetimeoffset-cast-9999-12-31-23-00-as-datetime2-01-30",
+      "steps": [{"kind":"batch","sql":"SELECT TODATETIMEOFFSET(CAST('9999-12-31 23:00' AS datetime2), '-01:30') AS c0"}]
+    },
+    {"name":"037-cot-1","steps":[{"kind":"batch","sql":"SELECT COT(1) AS c0, COT(-2.5) AS c1, COT(0.001) AS c2, COT(10) AS c3"}]}
+  ]
+}

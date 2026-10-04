@@ -1,0 +1,149 @@
+{
+  "source": "harness/gen/functions2.mjs",
+  "cases": [
+    {
+      "name": "000-select-id-lag-x-ignore-nulls-over-order-by-id-as-a-lead-x-ig",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, LAG(x) IGNORE NULLS OVER (ORDER BY id) AS a, LEAD(x) IGNORE NULLS OVER (ORDER BY id) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "001-select-id-first-value-x-ignore-nulls-over-order-by-id-as-a-l",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, FIRST_VALUE(x) IGNORE NULLS OVER (ORDER BY id) AS a, LAST_VALUE(x) IGNORE NULLS OVER (ORDER BY id) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "002-select-id-first-value-x-ignore-nulls-over-partition-by-g-ord",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, FIRST_VALUE(x) IGNORE NULLS OVER (PARTITION BY g ORDER BY id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS a, LAST_VALUE(x) RESPECT NULLS OVER (PARTITION BY g ORDER BY id ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "003-select-id-lag-x-2-1-ignore-nulls-over-order-by-id-as-a-lead-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, LAG(x, 2, -1) IGNORE NULLS OVER (ORDER BY id) AS a, LEAD(x, 2, -1) IGNORE NULLS OVER (PARTITION BY g ORDER BY id) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "004-select-id-lag-x-0-over-order-by-id-as-a-lead-x-10-99-over-or",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, LAG(x, 0) OVER (ORDER BY id) AS a, LEAD(x, 10, 99) OVER (ORDER BY id) AS b, LAG(x, NULL) OVER (ORDER BY id) AS c FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "005-select-lag-x-1-over-order-by-id-from-values-1-null-a-2-10-a-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LAG(x, -1) OVER (ORDER BY id) FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    },
+    {
+      "name": "006-select-id-lag-x-1-2-5-over-order-by-id-as-a-lag-g-1-zzz-over",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, LAG(x, 1, 2.5) OVER (ORDER BY id) AS a, LAG(g, 1, 'zzz') OVER (ORDER BY id) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "007-select-lag-x-1-a-over-order-by-id-from-values-1-null-a-2-10-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LAG(x, 1, 'a') OVER (ORDER BY id) FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    },
+    {
+      "name": "008-declare-o-int-2-select-id-lag-x-o-over-order-by-id-as-a-lead",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @o int = 2; SELECT id, LAG(x, @o) OVER (ORDER BY id) AS a, LEAD(x, @o + 1, @o) OVER (ORDER BY id) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "009-select-id-lag-x-id-3-over-order-by-id-as-a-from-values-1-nul",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, LAG(x, id % 3) OVER (ORDER BY id) AS a FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "010-select-id-first-value-x-over-order-by-id-rows-between-1-foll",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, FIRST_VALUE(x) OVER (ORDER BY id ROWS BETWEEN 1 FOLLOWING AND 2 FOLLOWING) AS a, LAST_VALUE(x) OVER (ORDER BY id) AS b, LAST_VALUE(x) OVER (ORDER BY g) AS c FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "011-select-id-first-value-id-over-partition-by-g-order-by-x-desc",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, FIRST_VALUE(id) OVER (PARTITION BY g ORDER BY x DESC) AS a, LAST_VALUE(id) OVER (PARTITION BY g ORDER BY x RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS b FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g) ORDER BY id"
+        }
+      ]
+    },
+    {
+      "name": "012-select-lag-x-over-from-values-1-null-a-2-10-a-3-null-b-4-20-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LAG(x) OVER () FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    },
+    {
+      "name": "013-select-first-value-x-over-partition-by-g-from-values-1-null-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT FIRST_VALUE(x) OVER (PARTITION BY g) FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    },
+    {
+      "name": "014-select-lag-x-over-order-by-id-rows-unbounded-preceding-from-",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT LAG(x) OVER (ORDER BY id ROWS UNBOUNDED PRECEDING) FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    },
+    {
+      "name": "015-select-id-x-g-lead-g-over-partition-by-g-order-by-id-as-a-fr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT id, x, g, LEAD(g) OVER (PARTITION BY g ORDER BY id) AS a FROM (VALUES (1, NULL, 'a'), (2, 10, 'a'), (3, NULL, 'b'), (4, 20, 'b'), (5, NULL, 'b'), (6, 30, 'a')) v(id, x, g)"
+        }
+      ]
+    }
+  ]
+}

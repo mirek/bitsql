@@ -254,6 +254,10 @@ fn bind_window_call(
       })
     }
   }
+  let ignore_nulls = over.ignore_nulls
+  if ignore_nulls && !(name is ("LAG" | "LEAD" | "FIRST_VALUE" | "LAST_VALUE")) {
+    raise @types.not_supported("IGNORE NULLS with \{name}")
+  }
   let mk_call = (f : @ir.WinFn, args : Array[@ir.Expr], ty : @types.SqlType) => @ir.WindowCall::{
     func: f,
     args,
@@ -262,6 +266,7 @@ fn bind_window_call(
     order,
     frame,
     ty,
+    ignore_nulls,
   }
   match name {
     "PERCENTILE_CONT" | "PERCENTILE_DISC" =>
