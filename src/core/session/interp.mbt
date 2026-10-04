@@ -61,8 +61,20 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let snap_db = self.server.get_db(self.rt.database)
   let snap_database = self.rt.database
   let out_mark = self.out.length()
+  self.read_only_write = false
   let failure = try {
     self.exec_stmt(s)
+    // a write to a READ_ONLY database: 3906 instead of the statement's own
+    // output, ending the batch (captured: settings/alter-database)
+    if self.read_only_write {
+      self.read_only_write = false
+      self.out.truncate(out_mark)
+      self.cur_cmd = 253
+      raise @types.sql_error(
+        3906,
+        "Failed to update database \"\{self.rt.database}\" because the database is read-only.",
+      )
+    }
     // a deferred binder error no later error reported (bound outside
     // bind_query): still an error
     if !self.deferred.is_empty() {
@@ -171,7 +183,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // even without XACT_ABORT (captured: savepoint errors/catch runs)
   // and so does MERGE's 8672 (captured: gaps-merge #022: ERROR, then the
   // rollback ENVCHANGE)
-  let conversion_abort = [241, 245, 295, 8114, 8672].contains(e.number()) ||
+  let conversion_abort = [241, 245, 295, 8114, 8672, 3952].contains(e.number()) ||
     is_identity_overflow(e)
   let xact_rollback = (
       (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
@@ -333,6 +345,7 @@ fn aborts_batch(
   e.severity() >= 20 ||
   n == 241 ||
   n == 245 ||
+  n == 3952 ||
   n == 295 ||
   n == 8114 ||
   n == 8672 ||
@@ -426,7 +439,12 @@ fn Session::assign(
     raise e
   }
   let v = @exec.eval(self.ctx(), value_expr)
-  self.frame().values[info.slot] = @types.assign(v, value_expr.ty, info.ty)
+  self.frame().values[info.slot] = @types.assign(
+    v,
+    value_expr.ty,
+    info.ty,
+    dates=self.rt.dates,
+  )
 }
 
 ///|
@@ -660,7 +678,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       // or NULL rolls back everything (captured: msduck-runs/savepoint).
       match (self.tran_name(name), self.tx) {
         (Some(n), Some(tx)) =>
-          match tx.savepoint_index(n) {
+          match tx.savepoint_index(n, self.db_collation()) {
             Some(i) => {
               if self.rt.xact_state == -1 {
                 raise @types.sql_error(
@@ -730,7 +748,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Update(u) => self.exec_update(u)
     Delete(d) => self.exec_delete(d)
     Merge(m) => self.exec_merge(m)
-    CreateDatabase(name, ..) => self.exec_create_database(name)
+    CreateDatabase(name, collate~) => self.exec_create_database(name, collate)
+    AlterDatabase(target~, action) => self.exec_alter_database(target, action)
     Use(name) => self.exec_use(name)
     Truncate(name) => self.exec_truncate(name)
     SetIdentityInsert(name, on) =>

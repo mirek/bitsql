@@ -137,12 +137,33 @@ fn Session::to_column(
     | VarBinary(Some(n)) => Some(n)
     _ => None
   }
+  // a varchar column under a UTF-8 collation holds n bytes (captured:
+  // settings/utf8, 'ééééééé' into varchar(10) is 2628 with 'ééééé')
+  let utf8 = !col.ty.is_unicode() &&
+    col.ty.collation().map(c => c.utf8()).unwrap_or(false)
   match (limit, v) {
-    (Some(n), String(s)) if from.family() == FString && rtrim(s).length() > n =>
+    (Some(n), String(s)) if utf8 &&
+      from.family() == FString &&
+      @types.utf8_length(rtrim(s)) > n =>
       raise @types.sql_error(
         2628,
-        "String or binary data would be truncated in table '\{self.full_name(target)}', column '\{col.name}'. Truncated value: '\{s.unsafe_substring(start=0, end=n)}'.",
+        "String or binary data would be truncated in table '\{self.full_name(target)}', column '\{col.name}'. Truncated value: '\{@types.utf8_prefix(s, n)}'.",
       )
+    (Some(n), String(s)) if !utf8 &&
+      from.family() == FString &&
+      rtrim(s).length() > n => {
+      // the value as the column stores it: varchar text in code page 1252
+      // with best fit (captured: msduck windows-1252-best-fit, U+2000 is
+      // shown as ' ', a surrogate half as '?')
+      let shown = match col.ty.collation() {
+        Some(c) if !col.ty.is_unicode() => @types.to_code_page(s, c)
+        _ => s
+      }
+      raise @types.sql_error(
+        2628,
+        "String or binary data would be truncated in table '\{self.full_name(target)}', column '\{col.name}'. Truncated value: '\{shown.unsafe_substring(start=0, end=n)}'.",
+      )
+    }
     (Some(n), Binary(b)) if b.length() > n =>
       raise @types.sql_error(
         2628,
@@ -150,7 +171,7 @@ fn Session::to_column(
       )
     _ => ()
   }
-  @types.assign(v, from, col.ty)
+  @types.assign(v, from, col.ty, dates=self.rt.dates)
 }
 
 ///|

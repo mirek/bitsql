@@ -577,7 +577,7 @@ fn Session::alter_column(
         Some(x) => x
         None => raise @types.unknown_collation_error(i.name)
       }
-    None => @types.default_collation
+    None => self.scope_collation(scope)
   }
   let ty = @bind.resolve_type(type_, Declaration, collation)
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL

@@ -91,6 +91,16 @@ mention the correction here.
   RPC TYPE_INFO for the parameter is the TVP header itself: bitsql keeps it
   in `RpcParam.tvp` (src/core/tds/tvp.mbt, tests in tvp_test.mbt from
   MS-TDS example 4.14).
+- 2026-10-04 (settings/utf8, alter-database): the collation flags byte has
+  fUTF8 = 0x40 (Latin1_General_100_CI_AS_SC_UTF8 flags 77 = 0x4D,
+  _BIN2_UTF8 96 = 0x60); with it, char/varchar/text values travel as UTF-8
+  (tedious reports codepage "utf-8") and RPC varchar parameters arrive in
+  UTF-8 (`tds/cp1252.mbt` char_encode/char_decode). `ALTER DATABASE CURRENT
+  COLLATE` sends ENVCHANGE SQL_COLLATION (type 7) before its DONE 215; USE
+  sends ENVCHANGE database, INFO 5701, ENVCHANGE SQL_COLLATION, DONE 226
+  (always, also for an unchanged collation); SET LANGUAGE sends ENVCHANGE
+  language (new name = the language's own name, e.g. Deutsch) and INFO 5703.
+
 
 # TDS Protocol Reference
 

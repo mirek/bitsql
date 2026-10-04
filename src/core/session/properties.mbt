@@ -35,7 +35,7 @@ fn Session::property_fn(
       Some(
         match (text(0), text(1)) {
           (Some(db), Some(p)) if self.server.has_database(db) =>
-            database_property(db, p)
+            database_property(db, p, self.server.db_options(db))
           _ => Null
         },
       )
@@ -65,39 +65,34 @@ fn Session::property_fn(
 /// Recovery (user and model FULL, others SIMPLE) and IsFulltextEnabled
 /// (user and msdb 1). IsReadCommittedSnapshotOn is not a DATABASEPROPERTYEX
 /// property (NULL on the oracle; sys.databases has the column).
-fn database_property(db : String, p : String) -> @types.Value {
+fn database_property(db : String, p : String, o : DbOptions) -> @types.Value {
   let system = db.to_lower() is ("master" | "tempdb" | "model" | "msdb")
+  let flag = (name : String) => prop_int(if o.flag(db, name) { 1 } else { 0 })
   match p.to_lower() {
-    "recovery" =>
-      prop_string(
-        if system && db.to_lower() != "model" {
-          "SIMPLE"
-        } else {
-          "FULL"
-        },
-      )
+    "recovery" => prop_string(o.recovery)
     "isfulltextenabled" =>
       prop_int(if system && db.to_lower() != "msdb" { 0 } else { 1 })
-    "collation" => prop_string(@types.default_collation.name)
-    "comparisonstyle" => prop_int(196609)
-    "isautocreatestatistics" | "isautoupdatestatistics" => prop_int(1)
-    "isansinulldefault"
-    | "isansinullsenabled"
-    | "isansipaddingenabled"
-    | "isansiwarningsenabled"
-    | "isarithmeticabortenabled"
-    | "isautoclose"
-    | "isautocreatestatisticsincremental"
-    | "isautoshrink"
-    | "isclosecursorsoncommitenabled"
+    "collation" => prop_string(o.collation.name)
+    "comparisonstyle" => prop_int(comparison_style(o.collation))
+    "isautocreatestatistics" => flag("AUTO_CREATE_STATISTICS")
+    "isautoupdatestatistics" => flag("AUTO_UPDATE_STATISTICS")
+    "isansinulldefault" => flag("ANSI_NULL_DEFAULT")
+    "isansinullsenabled" => flag("ANSI_NULLS")
+    "isansipaddingenabled" => flag("ANSI_PADDING")
+    "isansiwarningsenabled" => flag("ANSI_WARNINGS")
+    "isarithmeticabortenabled" => flag("ARITHABORT")
+    "isautoclose" => flag("AUTO_CLOSE")
+    "isautoshrink" => flag("AUTO_SHRINK")
+    "isclosecursorsoncommitenabled" => flag("CURSOR_CLOSE_ON_COMMIT")
+    "isnullconcat" => flag("CONCAT_NULL_YIELDS_NULL")
+    "isnumericroundabortenabled" => flag("NUMERIC_ROUNDABORT")
+    "isquotedidentifiersenabled" => flag("QUOTED_IDENTIFIER")
+    "islocalcursorsdefault" => prop_int(if o.local_cursors { 1 } else { 0 })
+    "isautocreatestatisticsincremental"
     | "isinstandby"
-    | "islocalcursorsdefault"
     | "ismemoryoptimizedelevatetosnapshotenabled"
     | "ismergepublished"
-    | "isnullconcat"
-    | "isnumericroundabortenabled"
     | "isparameterizationforced"
-    | "isquotedidentifiersenabled"
     | "ispublished"
     | "isrecursivetriggersenabled"
     | "issubscribed"
@@ -109,10 +104,11 @@ fn database_property(db : String, p : String) -> @types.Value {
     // 1900-01-01 00:00:00.000
     "lastgoodcheckdbtime" => Variant(DateTime(0, 0), DateTime)
     "lcid" => prop_int(1033)
-    "sqlsortorder" => prop_tinyint(52)
+    "sqlsortorder" => prop_tinyint(sql_sort_order(o.collation))
     "status" => prop_string("ONLINE")
-    "updateability" => prop_string("READ_WRITE")
-    "useraccess" => prop_string("MULTI_USER")
+    "updateability" =>
+      prop_string(if o.read_only { "READ_ONLY" } else { "READ_WRITE" })
+    "useraccess" => prop_string(o.user_access)
     "version" => prop_int(998)
     _ => Null
   }

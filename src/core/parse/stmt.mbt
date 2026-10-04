@@ -951,16 +951,9 @@ fn Parser::create_or_alter(
   }
   let t = self.peek()
   let u = upper(t)
-  // ALTER DATABASE (options, COLLATE, ...) is not modelled: an explicit
-  // emulator error rather than a syntax error (msduck-runs savepoint cs run)
   if mode is Alter && u == "DATABASE" {
-    raise @ast.SyntaxError(
-      number=50100,
-      severity=16,
-      state=1,
-      message="Emulator: ALTER DATABASE is not supported.",
-      span=t.span,
-    )
+    self.pos += 1
+    return self.alter_database()
   }
   let verb = match mode {
     Create => "CREATE"

@@ -21,6 +21,7 @@ npm test                           # client tests + smoke/allowlist corpus on th
 npm run allowlist:sync             # after a full `npm run diff`: allowlist every newly passing case
 npm run oracle:stop                # remove the container
 npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
+npm run probe -- out/x.sql oracle  # run a scratch .sql case, print columns/rows/errors/tokens (no expectation)
 ```
 
 ## Rules
@@ -344,3 +345,18 @@ Start the host with `--database NAME` so the app's database exists at login
   per case, a scratch script that runs one batch per line on one oracle
   connection (`capture()` from src/capture-core.mjs) answers dozens of
   "what does SQL Server print" questions in seconds.
+- 2026-10-04: `harness/gen/settings.mjs` generates `corpus/settings/
+  dateformat.cases.json` and `language.cases.json` (SET DATEFORMAT ×
+  shapes × types with TRY_CAST, 17 languages); hand-written
+  `settings/*.sql` cover ALTER DATABASE, database collation, RCSI,
+  snapshot isolation and UTF-8. Two process-mode traps: (1) the emulator's
+  case database is master, which really has snapshot isolation allowed and
+  SIMPLE recovery — a case about database defaults must CREATE and USE a
+  database of its own (settings/snapshot-isolation.sql); (2) "master" in
+  emulator output is rewritten to `{db}`, so steps that print
+  "Changed database context to 'master'" must be `setup` steps.
+  `ALTER DATABASE … SET READ_COMMITTED_SNAPSHOT ON` needs the database to
+  itself: run it before opening `conn=2`. Quick probes without
+  an expectation: `npm run probe -- file.sql [oracle|emulator|both]` prints
+  columns, rows, errors and the token stream per step (keep the .sql under
+  `harness/out/`, which is not committed).

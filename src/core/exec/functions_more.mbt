@@ -23,15 +23,16 @@ fn call_more(
         }
     }
     return if name == "TRY_CONVERT_STYLE" {
-      @types.try_cast(v[0], args[0].ty, e.ty, style?)
+      @types.try_cast(v[0], args[0].ty, e.ty, style?, dates=ctx.rt.dates)
     } else {
-      @types.cast(v[0], args[0].ty, e.ty, style?)
+      @types.cast(v[0], args[0].ty, e.ty, style?, dates=ctx.rt.dates)
     }
   }
-  if call_date(name, v, args, e, datefirst=ctx.rt.datefirst) is Some(r) {
+  if call_date(name, v, args, e, datefirst=ctx.rt.datefirst, dates=ctx.rt.dates)
+    is Some(r) {
     return r
   }
-  if call_string(name, v, args, e) is Some(r) {
+  if call_string(name, v, args, e, dates=ctx.rt.dates) is Some(r) {
     return r
   }
   if call_math(ctx, name, v, args, e) is Some(r) {
@@ -41,7 +42,7 @@ fn call_more(
     return r
   }
   if name == "DATE_BUCKET" {
-    return date_bucket(v, args, e)
+    return date_bucket(v, args, e, ctx.rt.dates)
   }
   if name == "FORMAT" {
     return format_value(ctx, v, args)

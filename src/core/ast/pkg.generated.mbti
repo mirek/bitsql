@@ -22,6 +22,12 @@ pub fn SyntaxError::severity(Self) -> Int
 pub fn SyntaxError::state(Self) -> Int
 
 // Types and methods
+pub(all) enum AlterDatabaseAction {
+  Collate(Ident)
+  SetOptions(Array[DatabaseOption])
+  OtherAction(String)
+} derive(Eq, @debug.Debug)
+
 pub(all) enum AlterTableAction {
   Add(TableBody, with_check~ : Bool?)
   AlterColumn(Ident, TypeName, collate~ : Ident?, nullable~ : Bool?, options~ : Array[String])
@@ -180,6 +186,12 @@ pub(all) struct Cursor {
   for_update : Bool
   update_columns : Array[Ident]
   iso : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct DatabaseOption {
+  name : String
+  value : String?
+  span : Span
 } derive(Eq, @debug.Debug)
 
 pub(all) struct DeclareVar {
@@ -666,6 +678,7 @@ pub(all) enum StmtKind {
   Deallocate(Ident, global~ : Bool)
   Use(Ident)
   CreateDatabase(Ident, collate~ : Ident?)
+  AlterDatabase(target~ : Ident?, AlterDatabaseAction)
 } derive(Eq, @debug.Debug)
 
 pub(all) struct TableBody {

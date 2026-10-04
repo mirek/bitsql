@@ -74,6 +74,7 @@ fn Session::security_fn(
     "HOST_NAME" => String(self.host_name)
     "HOST_ID" => return None
     "@@DBTS" => Binary(rowversion_bytes(self.server.dbts))
+    "@@LANGID" => SmallInt(self.rt.dates.language)
     // the lowest rowversion an open transaction has assigned, else the next
     // one (captured: traps/rowversion-modification-time)
     "MIN_ACTIVE_ROWVERSION" => {

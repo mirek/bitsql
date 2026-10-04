@@ -202,6 +202,8 @@ test "collation names" {
       }
     })
     .join(" "),
-    content="SQL_Latin1_General_CP1_CI_AS SQL_Latin1_General_CP1_CS_AS Latin1_General_CI_AS Latin1_General_100_CI_AS_KS_WS Latin1_General_100_CI_AS_SC Latin1_General_BIN Latin1_General_100_BIN2 Latin1_General_140_CS_AI - -",
+    content=(
+      #|SQL_Latin1_General_CP1_CI_AS SQL_Latin1_General_CP1_CS_AS Latin1_General_CI_AS Latin1_General_100_CI_AS_KS_WS Latin1_General_100_CI_AS_SC Latin1_General_BIN Latin1_General_100_BIN2 Latin1_General_140_CS_AI - Latin1_General_100_CI_AS_SC_UTF8
+    ),
   )
 }

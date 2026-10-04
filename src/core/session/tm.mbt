@@ -77,7 +77,8 @@ pub fn Session::run_tm(
           )
         }
         let savepoint = match self.tx {
-          Some(tx) if name != "" => tx.savepoint_index(name)
+          Some(tx) if name != "" =>
+            tx.savepoint_index(name, self.db_collation())
           _ => None
         }
         match (savepoint, self.tx) {

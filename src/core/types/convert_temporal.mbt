@@ -27,10 +27,11 @@ fn parse_text(
   from : SqlType,
   to : SqlType,
   style : Int?,
+  dates : DateSettings,
 ) -> ParsedTemporal raise SqlError {
   let n = style.unwrap_or(0)
   let legacy = to is (DateTime | SmallDateTime)
-  let st = match date_style(n, legacy) {
+  let st = match date_style(n, legacy, dates) {
     Some(st) => st
     // captured: "The style 99 is not supported for conversions from
     // nvarchar to datetime2." (state 1; TRY_CONVERT gives NULL)
@@ -86,6 +87,11 @@ fn parse_text_style(
       )
     Value if legacy => raise legacy_out_of_range(from, to)
     Syntax | Value => raise temporal_text_error()
+    NumericMonthNames =>
+      raise not_supported(
+        "date strings with space-separated numbers under SET LANGUAGE \{st.lang.alias_name}",
+        number=EMU_DATETIME_FORMAT_NOT_SUPPORTED,
+      )
     StyleMismatch =>
       // captured: 9807 state 0 for date/datetime2 under style 112
       raise sql_error(
@@ -152,6 +158,7 @@ fn to_temporal(
   from : SqlType,
   to : SqlType,
   style : Int?,
+  dates : DateSettings,
 ) -> Value raise SqlError {
   let ff = from.family()
   if ff is (FBit | FInteger | FDecimal | FMoney | FFloat) {
@@ -162,7 +169,7 @@ fn to_temporal(
   }
   let inst = match v {
     String(text) => {
-      let p = parse_text(text, from, to, style)
+      let p = parse_text(text, from, to, style, dates)
       let days = match p.date {
         Some((y, m, d)) => Some(days_from_civil(y, m, d))
         None => None

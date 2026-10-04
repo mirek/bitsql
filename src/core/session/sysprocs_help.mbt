@@ -621,7 +621,7 @@ fn Session::help_param(
   p : @ast.Param,
   order : Int,
 ) -> Array[@types.Value] raise {
-  let t = match self.decl_type(p.type_, @types.default_collation) {
+  let t = match self.decl_type(p.type_, self.db_collation()) {
     ScalarDecl(t, None, _) => t
     _ =>
       raise @types.not_supported(

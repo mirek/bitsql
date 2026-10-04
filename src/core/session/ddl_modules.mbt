@@ -275,7 +275,7 @@ fn Session::exec_create_function(
   )
   let (kind, returns) : (@store.ObjectKind, @types.SqlType?) = match f.returns {
     Scalar(t, _) =>
-      (ScalarFunction, Some(self.scalar_type(t, @types.default_collation)))
+      (ScalarFunction, Some(self.scalar_type(t, self.db_collation())))
     InlineTable(_) => (InlineFunction, None)
     TableVariable(_, _, _) => (TableFunction, None)
   }

@@ -19,6 +19,9 @@ priv struct RequestSnapshot {
   option_bits : Int
   identity_insert : Int?
   dbts : Int64
+  datefirst : Int
+  dates : @types.DateSettings
+  db_options : Map[String, DbOptions]
 }
 
 ///|
@@ -61,6 +64,9 @@ fn Session::snapshot_request(self : Session) -> RequestSnapshot {
     option_bits: self.rt.option_bits,
     identity_insert: self.identity_insert,
     dbts: self.server.dbts,
+    datefirst: self.rt.datefirst,
+    dates: self.rt.dates,
+    db_options: copy_map(self.server.db_options),
   }
 }
 
@@ -90,6 +96,12 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
   self.rt.option_bits = s.option_bits
   self.identity_insert = s.identity_insert
   self.server.dbts = s.dbts
+  self.rt.datefirst = s.datefirst
+  self.rt.dates = s.dates
+  self.server.db_options.clear()
+  for k, v in s.db_options {
+    self.server.db_options[k] = v
+  }
   self.out.clear()
   self.frames.clear()
   self.try_depth = 0
@@ -213,6 +225,7 @@ pub fn Session::reset(self : Session) -> Array[@reply.Item] {
   self.lock_timeout = -1
   self.rt.lock_timeout = -1
   self.rt.datefirst = 7
+  self.rt.dates = @types.default_date_settings
   self.rt.option_bits = 0
   self.session_flags.clear()
   self.server.set_priority(self.rt.spid, 0)

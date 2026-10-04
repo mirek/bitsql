@@ -239,3 +239,17 @@ pub fn SqlType::is_valid(self : SqlType) -> Bool {
     _ => true
   }
 }
+
+///|
+/// The same character type with another collation (other types unchanged).
+pub fn SqlType::with_collation(self : SqlType, c : Collation) -> SqlType {
+  match self {
+    Char(n, _) => Char(n, c)
+    VarChar(n, _) => VarChar(n, c)
+    NChar(n, _) => NChar(n, c)
+    NVarChar(n, _) => NVarChar(n, c)
+    Text(_) => Text(c)
+    NText(_) => NText(c)
+    t => t
+  }
+}

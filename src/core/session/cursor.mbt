@@ -563,8 +563,13 @@ fn Session::cursor_type_warning(self : Session, st : CursorState) -> Unit {
 fn Session::exec_declare_cursor(self : Session, c : @ast.Cursor) -> Unit raise {
   self.cur_cmd = 193
   let key = c.name.name.to_lower()
-  // Default scope is GLOBAL (database option CURSOR_DEFAULT = GLOBAL).
-  let is_local = c.options.contains("LOCAL")
+  // Default scope: the database option CURSOR_DEFAULT (GLOBAL unless
+  // ALTER DATABASE … SET CURSOR_DEFAULT LOCAL)
+  let is_local = c.options.contains("LOCAL") ||
+    (
+      !c.options.contains("GLOBAL") &&
+      self.server.db_options(self.rt.database).local_cursors
+    )
   let exists = if is_local {
     self.frame().cursors.contains(key)
   } else {

@@ -50,6 +50,13 @@ fn compare_bound(
   }
   // collation precedence decides the comparison collation (or raises 468)
   let coll = resolve_collation(env, cmp_op_name(op), [a, b])
+  // an untyped NULL takes the other side's type: `n = NULL` never converts
+  // n to int (captured: msduck gaps-unicode-predicates equality-18)
+  let (a, b) = match (is_untyped_null(a), is_untyped_null(b)) {
+    (false, true) => (a, typed_null(a.ty))
+    (true, false) => (typed_null(b.ty), b)
+    _ => (a, b)
+  }
   let t = @types.common_type(a.ty, b.ty)
   let a = coerce(a, t)
   let b = coerce(b, t)
@@ -264,10 +271,19 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           raise @types.lob_operator_error(a.ty, b.ty, "equal to")
         }
       }
-      let t = unify_types([a.ty] + bs.map(b => b.ty))
+      // untyped NULL items take no part in the type (captured: msduck
+      // gaps-unicode-predicates membership-4/5, n IN (N'x', NULL))
+      let typed = bs.filter(b => !is_untyped_null(b))
+      let t = unify_types([a.ty] + typed.map(b => b.ty))
       let coll = resolve_collation(env, "equal to", [a] + bs)
       let a = coerce(a, t)
-      let bs = bs.map(b => coerce(b, t))
+      let bs = bs.map(b => {
+        if is_untyped_null(b) {
+          typed_null(t)
+        } else {
+          coerce(b, t)
+        }
+      })
       let nullable = a.nullable || bs.iter().any(b => b.nullable)
       bit_expr(InList(a, bs, negated~, collation=coll), nullable)
     }
@@ -339,12 +355,12 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     }
     Cast(inner, tn, try_~) => {
       let a = bind_expr(env, inner)
-      let t = conversion_type(env, tn)
+      let t = keep_collation(a, conversion_type(env, tn))
       conversion(a, t, try_, None)
     }
     Convert(tn, inner, style~, try_~) => {
       let a = bind_expr(env, inner)
-      let t = conversion_type(env, tn)
+      let t = keep_collation(a, conversion_type(env, tn))
       let st = match style {
         None => None
         Some({ kind: IntLit(s), .. }) => Some(parse_style(s))
@@ -504,10 +520,13 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
         NVarChar(Some(128), @types.default_collation),
         true,
       )
+    // captured: nvarchar(128) nullable, @@LANGID smallint NOT NULL
+    // (settings/language)
     "@@LANGUAGE" =>
-      mk(Global(Language), NVarChar(Some(128), @types.default_collation), false)
-    // evaluated by the session (Server.dbts)
+      mk(Global(Language), NVarChar(Some(128), @types.default_collation), true)
+    // evaluated by the session (Server.dbts, the session language)
     "@@DBTS" => mk(Call(Named("@@DBTS"), []), VarBinary(Some(8)), false)
+    "@@LANGID" => mk(Call(Named("@@LANGID"), []), SmallInt, false)
     _ => raise @types.not_supported("global variable \{name}")
   }
 }
@@ -633,6 +652,18 @@ fn int_literal_as_numeric(
 /// Exact numeric types whose arithmetic SQL Server reports as nullable.
 fn may_overflow(t : @types.SqlType) -> Bool {
   t.family() is (FInteger | FDecimal | FMoney)
+}
+
+///|
+/// CAST/CONVERT of character data to a character type keeps the input's
+/// collation (SQL Server: "the output has the same collation and collation
+/// label as the input"; captured: settings/utf8, CAST(x COLLATE …_UTF8 AS
+/// varchar(20)) is UTF-8).
+fn keep_collation(a : @ir.Expr, t : @types.SqlType) -> @types.SqlType {
+  match (a.ty.collation(), t.collation()) {
+    (Some(c), Some(_)) => t.with_collation(c)
+    _ => t
+  }
 }
 
 ///|

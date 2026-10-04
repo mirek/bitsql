@@ -127,7 +127,12 @@ fn Session::exec_assignment_select(
   @exec.stream(ctx, bound.plan, row => {
     n += 1L
     for j, t in targets {
-      ctx.vars[t.0] = @types.assign(row[j], bound.columns[j].ty, t.1)
+      ctx.vars[t.0] = @types.assign(
+        row[j],
+        bound.columns[j].ty,
+        t.1,
+        dates=ctx.rt.dates,
+      )
     }
   })
   self.emit_null_warning(line)
@@ -143,11 +148,14 @@ fn Session::exec_query(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
-  self.lock_reads(q)
   let bound = @bind.bind_query(self.env(), q)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))
   self.cur_cmd = 193
+  // a lock timeout (1222) or snapshot error (3952) follows the COLMETADATA
+  // (captured: settings/rcsi, settings/snapshot-isolation); a lock wait
+  // parks the request, which discards the output anyway
+  self.lock_reads(q)
   if !bound.order.is_empty() {
     self.out.push(Order(bound.order))
   }

@@ -63,6 +63,7 @@ pub fn render(
   from : SqlType,
   style : Int?,
   target? : String = "varchar",
+  dates? : DateSettings = default_date_settings,
 ) -> String raise SqlError {
   match v {
     Null => raise internal("render of NULL")
@@ -97,7 +98,7 @@ pub fn render(
     | DateTime2(_)
     | DateTimeOffset(_, _)
     | DateTime(_, _)
-    | SmallDateTime(_, _) => render_temporal(v, from, style, target~)
+    | SmallDateTime(_, _) => render_temporal(v, from, style, target~, dates~)
     Variant(_, _) => raise internal("render of a sql_variant")
     Xml(x) => x.to_text()
   }
@@ -152,22 +153,46 @@ fn to_character(
   from : SqlType,
   to : SqlType,
   style : Int?,
+  dates : DateSettings,
 ) -> Value raise SqlError {
   let text = match v {
     String(s) => s
     Binary(b) if style.unwrap_or(0) == 0 =>
       if to.is_unicode() {
         utf16le_string(b)
+      } else if to.collation().map(c => c.utf8()).unwrap_or(false) {
+        utf8_text(b)
       } else {
         cp1252_string(b)
       }
     Binary(_) if !(style.unwrap_or(0) is (1 | 2)) =>
       raise style_not_supported(style.unwrap_or(0), from, to)
-    _ => render(v, from, style, target=to.base_name())
+    _ => render(v, from, style, target=to.base_name(), dates~)
   }
-  let text = if to.is_unicode() { text } else { to_cp1252(text) }
+  // varchar under a UTF-8 collation: capacity and padding count UTF-8
+  // bytes, a cut keeps whole characters (captured: settings/utf8)
+  let utf8 = !to.is_unicode() &&
+    to.collation().map(c => c.utf8()).unwrap_or(false)
+  let text = if to.is_unicode() {
+    text
+  } else if utf8 {
+    to_code_page(text, to.collation().unwrap_or(default_collation))
+  } else {
+    to_cp1252(text)
+  }
   let mut out = text
+  let size = (s : String) => if utf8 { utf8_length(s) } else { s.length() }
   match char_capacity(to) {
+    Some(cap) if utf8 && size(text) > cap =>
+      out = match from.family() {
+        FBit | FInteger => "*"
+        FDecimal | FMoney | FFloat => raise overflow_from(from, to)
+        FGuid =>
+          raise sql_error(
+            8170, "Insufficient result space to convert uniqueidentifier value to char.",
+          )
+        _ => utf8_prefix(text, cap)
+      }
     Some(cap) if text.length() > cap =>
       out = match from.family() {
         FBit | FInteger =>
@@ -192,8 +217,8 @@ fn to_character(
     _ => ()
   }
   match to {
-    Char(n, _) | NChar(n, _) if out.length() < n =>
-      out = out + String::make(n - out.length(), ' ')
+    Char(n, _) | NChar(n, _) if size(out) < n =>
+      out = out + String::make(n - size(out), ' ')
     _ => ()
   }
   String(out)
@@ -236,6 +261,8 @@ fn to_binary(
           (
             if from.is_unicode() {
               utf16le_bytes(s)
+            } else if from.collation().map(c => c.utf8()).unwrap_or(false) {
+              utf8_bytes(s)
             } else {
               cp1252_bytes(s)
             },

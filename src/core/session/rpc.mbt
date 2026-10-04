@@ -127,7 +127,7 @@ fn Session::bind_params(
       slots.push(-1)
       continue
     }
-    let ty = match self.decl_type(p.type_, @types.default_collation) {
+    let ty = match self.decl_type(p.type_, self.db_collation()) {
       ScalarDecl(ty, _, _) => ty
       TableDecl(ut) => {
         self.bind_table_param(frame, p, ut, arg) catch {
@@ -144,7 +144,12 @@ fn Session::bind_params(
     slots.push(slot)
     match arg {
       Some(a) =>
-        frame.values[slot] = @types.assign(a.value, a.ty, ty) catch {
+        frame.values[slot] = @types.assign(
+          a.value,
+          a.ty,
+          ty,
+          dates=self.rt.dates,
+        ) catch {
           _ => raise arg_conversion_error(a.ty, ty, conv_state)
         }
       _ =>
@@ -152,7 +157,7 @@ fn Session::bind_params(
           Some(d) => {
             let b = @bind.bind_expr(@bind.Env::new(Map([])), d)
             let v = @exec.eval(self.ctx_with(frame), b)
-            frame.values[slot] = @types.assign(v, b.ty, ty)
+            frame.values[slot] = @types.assign(v, b.ty, ty, dates=self.rt.dates)
           }
           None => ()
         }
@@ -183,6 +188,7 @@ fn Session::run_module(
     self.isolation,
     self.rt.datefirst,
     self.try_base,
+    self.rt.dates,
   )
   // SET IDENTITY_INSERT inside a procedure or dynamic SQL (also an
   // sp_executesql RPC) reverts when it ends, and SCOPE_IDENTITY() is per
@@ -212,6 +218,7 @@ fn Session::run_module(
     self.isolation = saved.3
     self.rt.datefirst = saved.4
     self.try_base = saved.5
+    self.rt.dates = saved.6
     self.identity_insert = saved_identity_insert
     self.rt.scope_identity = saved_scope_identity
     self.session_flags.clear()
@@ -305,6 +312,8 @@ pub fn Session::run_rpc(
   self.rt.now = now
   self.rt.work_done = 0L
   let snap = self.snapshot_request()
+  self.dateformat_set = false
+  self.datefirst_set = false
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
   }
@@ -476,7 +485,7 @@ fn Session::output_values(
     guard p.by_ref && index.get(i) is Some(Some(k)) else { continue }
     let from = run.types[k]
     let to = param_type(p.type_info)
-    let v = @types.assign(run.values[k], from, to) catch {
+    let v = @types.assign(run.values[k], from, to, dates=self.rt.dates) catch {
       _ => {
         self.error_line = Some(0)
         raise arg_conversion_error(from, to, 2)
@@ -1331,6 +1340,7 @@ fn Session::write_back_outputs(
           run.values[k],
           from,
           info.ty,
+          dates=self.rt.dates,
         ) catch {
           _ => {
             self.error_line = Some(0)

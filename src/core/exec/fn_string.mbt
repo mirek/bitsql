@@ -4,13 +4,20 @@
 
 ///|
 /// Text of a string argument (None for NULL).
-fn text(v : @types.Value, t : @types.SqlType) -> String? raise @types.SqlError {
+/// Dates and times convert under the session language (captured: msduck
+/// temporal-guid-format, CONCAT of a datetime under French is 'févr 28 …').
+fn text(
+  v : @types.Value,
+  t : @types.SqlType,
+  dates? : @types.DateSettings = @types.default_date_settings,
+) -> String? raise @types.SqlError {
   match v {
     Null => None
     String(s) => Some(s)
     Binary(b) => Some(@types.cp1252_string(b))
     other =>
-      match @types.cast(other, t, NVarChar(None, @types.default_collation)) {
+      match
+        @types.cast(other, t, NVarChar(None, @types.default_collation), dates~) {
         String(s) => Some(s)
         _ => None
       }
@@ -299,7 +306,14 @@ fn temporal_bytes(scale : Int, base : Int) -> Int {
 fn datalength(v : @types.Value, t : @types.SqlType) -> Int64? {
   let n = match v {
     Null => return None
-    String(s) => if t.is_unicode() { s.length() * 2 } else { s.length() }
+    String(s) =>
+      if t.is_unicode() {
+        s.length() * 2
+      } else if collation_of(t).utf8() {
+        @types.utf8_length(s)
+      } else {
+        s.length()
+      }
     Binary(b) => b.length()
     Bit(_) | TinyInt(_) => 1
     SmallInt(_) => 2
@@ -572,13 +586,24 @@ fn call_string(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  dates? : @types.DateSettings = @types.default_date_settings,
 ) -> @types.Value? raise @types.SqlError {
   let any_null = v.iter().any(x => x is Null)
-  let str = (i : Int) => text(v[i], args[i].ty)
+  let str = (i : Int) => text(v[i], args[i].ty, dates~)
   let r : @types.Value = match name {
     "LEN" =>
       match str(0) {
-        Some(s) => int_result(e.ty, rtrim_spaces(s).length().to_int64())
+        // `_SC` collations count a surrogate pair as one character
+        // (captured: settings/utf8, LEN(N'é😀') is 2)
+        Some(s) =>
+          int_result(
+            e.ty,
+            (if collation_of(args[0].ty).supplementary() {
+              code_points(rtrim_spaces(s))
+            } else {
+              rtrim_spaces(s).length()
+            }).to_int64(),
+          )
         None => Null
       }
     "DATALENGTH" =>
@@ -591,14 +616,36 @@ fn call_string(
         Some(s) =>
           String(
             match name {
+              // captured per collation version: msduck unicode-case
+              "UPPER" | "LOWER" if args[0].ty.is_unicode() ||
+                collation_of(args[0].ty).utf8() =>
+                @types.case_map(s, name == "UPPER", collation_of(args[0].ty))
               "UPPER" => map_case(s, true)
               "LOWER" => map_case(s, false)
               _ => {
                 // UTF-16 code units are reversed one by one (captured:
-                // REVERSE(N'a🦆b') swaps the surrogate halves)
+                // REVERSE(N'a🦆b') swaps the surrogate halves); `_SC`
+                // collations keep a pair together (captured: settings/utf8)
+                let sc = collation_of(args[0].ty).supplementary()
                 let out = StringBuilder()
-                for i = s.length() - 1; i >= 0; i = i - 1 {
-                  out.write_char(s.code_unit_at(i).to_int().unsafe_to_char())
+                let mut i = s.length() - 1
+                while i >= 0 {
+                  let u = s.code_unit_at(i).to_int()
+                  if sc &&
+                    u >= 0xDC00 &&
+                    u <= 0xDFFF &&
+                    i > 0 &&
+                    s.code_unit_at(i - 1).to_int() >= 0xD800 &&
+                    s.code_unit_at(i - 1).to_int() <= 0xDBFF {
+                    out.write_char(
+                      s.code_unit_at(i - 1).to_int().unsafe_to_char(),
+                    )
+                    out.write_char(u.unsafe_to_char())
+                    i -= 2
+                  } else {
+                    out.write_char(u.unsafe_to_char())
+                    i -= 1
+                  }
                 }
                 out.to_string()
               }
@@ -635,6 +682,21 @@ fn call_string(
           )
         }
       }
+      // `_SC` collations count a surrogate pair as one character
+      // (captured: settings/utf8, RIGHT(N'…😀', 1) is '😀')
+      if collation_of(args[0].ty).supplementary() {
+        let cs = text_chars(s, true)
+        let k = @cmp.minimum(n, cs.length().to_int64()).to_int()
+        return Some(
+          String(
+            if name == "LEFT" {
+              cs[:k].iter().fold(init="", (a, b) => a + b)
+            } else {
+              cs[cs.length() - k:].iter().fold(init="", (a, b) => a + b)
+            },
+          ),
+        )
+      }
       let k = @cmp.minimum(n, s.length().to_int64()).to_int()
       String(
         if name == "LEFT" {
@@ -669,6 +731,11 @@ fn call_string(
         }
         _ => {
           guard str(0) is Some(s) else { return Some(Null) }
+          if collation_of(args[0].ty).supplementary() {
+            let cs = text_chars(s, true)
+            let (a, z) = slice(cs.length())
+            return Some(String(cs[a:z].iter().fold(init="", (x, y) => x + y)))
+          }
           let (a, z) = slice(s.length())
           String(s.unsafe_substring(start=a, end=z))
         }
@@ -974,4 +1041,21 @@ fn call_string(
     _ => return None
   }
   Some(r)
+}
+
+///|
+/// Characters of a string counting a surrogate pair once.
+fn code_points(s : String) -> Int {
+  let mut n = 0
+  for i in 0..<s.length() {
+    let u = s.code_unit_at(i).to_int()
+    if !(u >= 0xDC00 &&
+      u <= 0xDFFF &&
+      i > 0 &&
+      s.code_unit_at(i - 1).to_int() >= 0xD800 &&
+      s.code_unit_at(i - 1).to_int() <= 0xDBFF) {
+      n += 1
+    }
+  }
+  n
 }

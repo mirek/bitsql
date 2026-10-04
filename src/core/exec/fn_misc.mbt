@@ -163,7 +163,12 @@ fn hash_input(v : @types.Value, t : @types.SqlType) -> Bytes? {
           }),
         )
       } else {
-        Some(@types.cp1252_bytes(s))
+        Some(
+          @types.varchar_bytes(
+            s,
+            t.collation().unwrap_or(@types.default_collation),
+          ),
+        )
       }
     _ => None
   }
@@ -192,7 +197,10 @@ fn call_misc(
               (if i % 2 == 0 { u & 0xFF } else { u >> 8 }).to_byte()
             })
           } else {
-            @types.cp1252_bytes(text)
+            @types.varchar_bytes(
+              text,
+              args[0].ty.collation().unwrap_or(@types.default_collation),
+            )
           }
           Binary(@gzip.gzip_compress(raw[:]))
         }

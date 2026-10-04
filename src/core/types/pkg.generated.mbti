@@ -62,13 +62,17 @@ pub fn arith(ArithOp, Value, SqlType, Value, SqlType) -> Value raise SqlError
 
 pub fn arith_result_type(ArithOp, SqlType, SqlType) -> SqlType raise SqlError
 
-pub fn assign(Value, SqlType, SqlType) -> Value raise SqlError
+pub fn assign(Value, SqlType, SqlType, dates? : DateSettings) -> Value raise SqlError
 
 pub fn can_convert_explicitly(SqlType, SqlType) -> Bool
 
 pub fn can_convert_implicitly(SqlType, SqlType) -> Bool
 
-pub fn cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
+pub fn case_map(String, Bool, Collation) -> String
+
+pub fn case_map_unit(Int, Bool, Int) -> Int
+
+pub fn cast(Value, SqlType, SqlType, style? : Int, dates? : DateSettings) -> Value raise SqlError
 
 pub fn check_assign(SqlType, SqlType) -> Unit raise SqlError
 
@@ -108,6 +112,8 @@ pub fn decimal_union(Int, Int, Int, Int) -> (Int, Int)
 
 pub let default_collation : Collation
 
+pub let default_date_settings : DateSettings
+
 pub fn divide_by_zero_error() -> SqlError
 
 pub fn double_to_decimal17(Double) -> Decimal
@@ -117,6 +123,8 @@ pub fn emulator_error(Int, String) -> SqlError
 pub let emulator_error_table : Array[(Int, String)]
 
 pub fn explicit_conversion_error(SqlType, SqlType) -> SqlError
+
+pub fn find_language(String) -> Language?
 
 pub fn format_date_iso(Int) -> String
 
@@ -145,6 +153,10 @@ pub fn int_value(SqlType, Int64) -> Value
 pub fn invalid_operand_error(SqlType, ArithOp) -> SqlError
 
 pub fn is_valid_date(Int, Int, Int) -> Bool
+
+pub fn language(Int) -> Language
+
+pub let languages : Array[Language]
 
 pub let latin1_general_100_bin2 : Collation
 
@@ -182,9 +194,9 @@ pub fn pow10(Int) -> @bigint.BigInt
 
 pub fn precedence(SqlType) -> Int
 
-pub fn render(Value, SqlType, Int?, target? : String) -> String raise SqlError
+pub fn render(Value, SqlType, Int?, target? : String, dates? : DateSettings) -> String raise SqlError
 
-pub fn render_temporal(Value, SqlType, Int?, target? : String) -> String raise SqlError
+pub fn render_temporal(Value, SqlType, Int?, target? : String, dates? : DateSettings) -> String raise SqlError
 
 pub fn round_ticks(Int64, Int) -> Int64
 
@@ -202,11 +214,13 @@ pub fn sql_variant_property(Value, String) -> Value
 
 pub fn ticks_to_datetime_units(Int64) -> Int64
 
+pub fn to_code_page(String, Collation) -> String
+
 pub fn to_cp1252(String) -> String
 
 pub fn trim_spaces(String) -> String
 
-pub fn try_cast(Value, SqlType, SqlType, style? : Int) -> Value raise SqlError
+pub fn try_cast(Value, SqlType, SqlType, style? : Int, dates? : DateSettings) -> Value raise SqlError
 
 pub fn type_clash_error(SqlType, SqlType) -> SqlError
 
@@ -225,6 +239,16 @@ pub fn tz_offset_at(Int, Int64) -> Int
 pub fn tz_offset_info(Int, Int64) -> (Int, Bool)
 
 pub fn unknown_collation_error(String) -> SqlError
+
+pub fn utf8_bytes(String) -> Bytes
+
+pub fn utf8_length(String) -> Int
+
+pub fn utf8_prefix(String, Int) -> String
+
+pub fn utf8_text(BytesView) -> String
+
+pub fn varchar_bytes(String, Collation) -> Bytes
 
 pub fn variant_arith_error(ArithOp, SqlType, SqlType, a_name? : String, b_name? : String) -> SqlError
 
@@ -272,11 +296,28 @@ pub(all) struct Collation {
 } derive(Eq, @debug.Debug)
 pub fn Collation::parse(String) -> Self?
 pub fn Collation::supplementary(Self) -> Bool
+pub fn Collation::utf8(Self) -> Bool
 
 pub(all) enum CollationKind {
   Linguistic
   Bin
   Bin2
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DateFormat {
+  Mdy
+  Dmy
+  Ymd
+  Ydm
+  Myd
+  Dym
+} derive(Eq, @debug.Debug)
+pub fn DateFormat::name(Self) -> String
+pub fn DateFormat::parse(String) -> Self?
+
+pub(all) struct DateSettings {
+  format : DateFormat
+  language : Int
 } derive(Eq, @debug.Debug)
 
 pub struct Decimal {
@@ -307,6 +348,20 @@ pub fn Decimal::to_string(Self) -> String
 pub fn Decimal::trunc_to_bigint(Self) -> @bigint.BigInt
 pub fn Decimal::zero() -> Self
 pub impl Show for Decimal
+
+pub(all) struct Language {
+  langid : Int
+  name : String
+  alias_name : String
+  dateformat : DateFormat
+  datefirst : Int
+  months : Array[String]
+  short_months : Array[String]
+  days : Array[String]
+  lcid : Int
+  msglangid : Int
+  changed_message : String
+}
 
 pub(all) struct ParsedTemporal {
   date : (Int, Int, Int)?
@@ -362,6 +417,7 @@ pub fn SqlType::is_valid(Self) -> Bool
 pub fn SqlType::message_name(Self) -> String
 pub fn SqlType::precision_scale(Self) -> (Int, Int)?
 pub fn SqlType::to_sql(Self) -> String
+pub fn SqlType::with_collation(Self, Collation) -> Self
 pub impl Show for SqlType
 
 pub(all) enum TypeFamily {

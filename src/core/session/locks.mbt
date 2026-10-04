@@ -115,10 +115,18 @@ fn Session::wait_failure(self : Session, n : Int) -> @types.SqlError {
     self.throwing = true // ends the batch
     deadlock_error(self.rt.spid)
   } else {
-    // statement-level; followed by 3621 (captured: locking/lock-timeout)
-    self.terminated(
-      @types.sql_error(1222, "Lock request time out period exceeded.", state=51),
+    let e = @types.sql_error(
+      1222,
+      "Lock request time out period exceeded.",
+      state=51,
     )
+    // statement-level; a DML statement is followed by 3621 (captured:
+    // locking/lock-timeout), a SELECT is not (captured: settings/rcsi)
+    if self.cur_cmd == 193 {
+      e
+    } else {
+      self.terminated(e)
+    }
   }
 }
 
@@ -160,6 +168,7 @@ fn Session::lock_rows(
   if target.scope != 0 {
     return
   }
+  self.check_snapshot_allowed()
   for r in rows {
     self.acquire(row_resource(target.table, r.0, r.1), X, Transaction)
   }
@@ -261,6 +270,9 @@ fn mentions_column(e : @ast.Expr) -> Bool {
 /// Read lock for a table reference: (mode, duration), or None (NOLOCK,
 /// READ UNCOMMITTED, SNAPSHOT). Unhinted reads take S for the statement under
 /// READ COMMITTED and for the transaction under REPEATABLE READ/SERIALIZABLE.
+/// With READ_COMMITTED_SNAPSHOT on, READ COMMITTED reads take no lock and
+/// read the last committed state (the statement-start rebase of
+/// `refresh_tx`); the READCOMMITTEDLOCK hint restores the S lock.
 fn Session::read_lock(
   self : Session,
   hints : Array[@ast.TableHint],
@@ -276,6 +288,8 @@ fn Session::read_lock(
   match self.isolation {
     "READ UNCOMMITTED" | "SNAPSHOT" => None
     "REPEATABLE READ" | "SERIALIZABLE" => Some((S, Transaction))
+    _ if names.contains("READCOMMITTEDLOCK") => Some((S, Statement))
+    _ if self.rcsi() => None
     _ => Some((S, Statement))
   }
 }
@@ -290,7 +304,10 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
       Select(sel) => {
         fn visit(r : @ast.TableRef) -> Unit raise {
           match r.kind {
-            Table(name, alias_~, hints~) =>
+            Table(name, alias_~, hints~) => {
+              if self.find_table(name) is Some((0, _)) {
+                self.check_snapshot_allowed()
+              }
               match (self.read_lock(hints), self.find_table(name)) {
                 (Some((mode, duration)), Some((0, t))) => {
                   let a = match alias_ {
@@ -307,6 +324,7 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
                 }
                 _ => ()
               }
+            }
             Join(_, l, rr, on~, ..) => {
               visit(l)
               visit(rr)

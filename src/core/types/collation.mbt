@@ -40,7 +40,8 @@ pub(all) struct Collation {
   version : Int
   /// `SQL_` legacy collation (affects non-Unicode comparison).
   sql_collation : Bool
-  /// ANSI code page for char/varchar data. Always 1252 here.
+  /// Code page of char/varchar data: 1252, or 65001 for `_UTF8`
+  /// collations.
   code_page : Int
 } derive(Debug, Eq)
 
@@ -130,10 +131,15 @@ pub fn Collation::parse(name : String) -> Collation? {
   guard i < n else { return None }
   let prefix = "Latin1_General" + version_text
   if parts[i] == "BIN" || parts[i] == "BIN2" {
-    guard i + 1 == n else { return None }
+    // `_BIN2_UTF8` (version 100 only): varchar stored as UTF-8
+    let utf8 = i + 2 == n &&
+      parts[i] == "BIN2" &&
+      parts[i + 1] == "UTF8" &&
+      version == 100
+    guard i + 1 == n || utf8 else { return None }
     let bin2 = parts[i] == "BIN2"
     return Some({
-      name: prefix + "_" + parts[i],
+      name: prefix + "_" + parts[i] + (if utf8 { "_UTF8" } else { "" }),
       kind: if bin2 {
         Bin2
       } else {
@@ -145,7 +151,11 @@ pub fn Collation::parse(name : String) -> Collation? {
       width_sensitive: true,
       version,
       sql_collation: false,
-      code_page: 1252,
+      code_page: if utf8 {
+        65001
+      } else {
+        1252
+      },
     })
   }
   guard i + 1 < n else { return None }
@@ -161,9 +171,17 @@ pub fn Collation::parse(name : String) -> Collation? {
   }
   let mut ks = false
   let mut ws = false
+  let mut sc = false
+  let mut utf8 = false
   let mut suffix = ""
   for j in (i + 2)..<n {
     match parts[j] {
+      // `_SC_UTF8` (captured: Latin1_General_100_CI_AS_UTF8 without _SC is
+      // 448 Invalid collation): varchar stored as UTF-8
+      "UTF8" if sc && j == n - 1 => {
+        utf8 = true
+        suffix = suffix + "_UTF8"
+      }
       "KS" if !ks && !ws => {
         ks = true
         suffix = suffix + "_KS"
@@ -175,7 +193,10 @@ pub fn Collation::parse(name : String) -> Collation? {
       // Supplementary-character awareness only changes built-in function
       // behaviour, not the comparison bitsql models (sorting of surrogate
       // pairs as code points is approximated by code units).
-      "SC" if version == 100 => suffix = suffix + "_SC"
+      "SC" if version == 100 && !sc => {
+        sc = true
+        suffix = suffix + "_SC"
+      }
       _ => return None
     }
   }
@@ -188,7 +209,11 @@ pub fn Collation::parse(name : String) -> Collation? {
     width_sensitive: ws,
     version,
     sql_collation: false,
-    code_page: 1252,
+    code_page: if utf8 {
+      65001
+    } else {
+      1252
+    },
   })
 }
 
@@ -205,7 +230,12 @@ pub fn Collation::supplementary(self : Collation) -> Bool {
 /// (UTF-8 varchar collations, `…_UTF8`), which are an explicit emulator
 /// error (EMU_COLLATION_NOT_SUPPORTED).
 pub fn unknown_collation_error(name : String) -> SqlError {
-  if name.to_upper().has_suffix("_UTF8") {
+  let u = name.to_upper()
+  // every valid Latin1_General / SQL_Latin1 UTF-8 collation parses
+  // (captured: Latin1_General_100_CI_AS_UTF8 is 448)
+  if u.has_suffix("_UTF8") &&
+    !u.has_prefix("LATIN1_GENERAL") &&
+    !u.has_prefix("SQL_LATIN1_GENERAL") {
     not_supported("collation \{name}", number=EMU_COLLATION_NOT_SUPPORTED)
   } else {
     sql_error(448, "Invalid collation '\{name}'.")

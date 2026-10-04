@@ -134,6 +134,7 @@ fn date_bucket(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   let t = e.ty
@@ -169,13 +170,13 @@ fn date_bucket(
   let x_val = if args[2].ty == t {
     v[2]
   } else {
-    @types.cast(v[2], args[2].ty, t)
+    @types.cast(v[2], args[2].ty, t, dates~)
   }
   let o_val : @types.Value = if v.length() > 3 && !(v[3] is Null) {
     if args[3].ty == t {
       v[3]
     } else {
-      @types.cast(v[3], args[3].ty, t)
+      @types.cast(v[3], args[3].ty, t, dates~)
     }
   } else {
     match t {

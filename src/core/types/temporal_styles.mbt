@@ -59,6 +59,7 @@ pub fn render_temporal(
   from : SqlType,
   style : Int?,
   target? : String = "varchar",
+  dates? : DateSettings = default_date_settings,
 ) -> String raise SqlError {
   let inst = instant_of(v, from)
   let days = inst.days.unwrap_or(DAYS_TO_1900)
@@ -87,7 +88,9 @@ pub fn render_temporal(
   let yy = pad2s(y % 100)
   let mm = pad2s(m)
   let dd = pad2s(d)
-  let mon = month_abbrev[m - 1]
+  // the session language's short month names (captured: settings/language
+  // styles, 'Mär  4 2024  5:06AM' under German)
+  let mon = language(dates.language).short_months[m - 1]
   let secs = time / TICKS_PER_SECOND
   let frac_ticks = time % TICKS_PER_SECOND
   let h24 = (secs / 3600L).to_int()
@@ -115,7 +118,7 @@ pub fn render_temporal(
   let n = match style {
     None =>
       return if legacy {
-        render_temporal(v, from, Some(0), target~)
+        render_temporal(v, from, Some(0), target~, dates~)
       } else if date_only {
         ymd
       } else if time_only {

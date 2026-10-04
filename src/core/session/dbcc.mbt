@@ -91,16 +91,16 @@ fn Session::exec_dbcc(
 ///|
 /// DBCC USEROPTIONS rows: settings, then the ON flags in SQL Server's order
 /// (captured on 17.0.5005.3 with every flag toggled), then the isolation
-/// level. Options bitsql pins (textsize, language, dateformat, ANSI_*) are
-/// reported at their only supported value.
+/// level. Options bitsql pins (textsize, ANSI_*) are reported at their only
+/// supported value.
 fn Session::user_options(self : Session) -> Array[(String, String)] {
   let flag = (k : String, default : Bool) => {
     self.session_flags.get(k).unwrap_or(default)
   }
   let rows : Array[(String, String)] = [
     ("textsize", "2147483647"),
-    ("language", "us_english"),
-    ("dateformat", "mdy"),
+    ("language", @types.language(self.rt.dates.language).name),
+    ("dateformat", self.rt.dates.format.name()),
     ("datefirst", self.rt.datefirst.to_string()),
     ("lock_timeout", self.lock_timeout.to_string()),
     ("quoted_identifier", "SET"),
@@ -121,7 +121,17 @@ fn Session::user_options(self : Session) -> Array[(String, String)] {
       rows.push((f.0, "SET"))
     }
   }
-  rows.push(("isolation level", self.isolation.to_lower()))
+  // READ COMMITTED under READ_COMMITTED_SNAPSHOT (captured: settings/rcsi)
+  rows.push(
+    (
+      "isolation level",
+      if self.isolation == "READ COMMITTED" && self.rcsi() {
+        "read committed snapshot"
+      } else {
+        self.isolation.to_lower()
+      },
+    ),
+  )
   rows
 }
 

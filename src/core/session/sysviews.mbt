@@ -83,6 +83,22 @@ fn Session::sys_view_binding(
   match view_index(schema, base) {
     Some(i) => {
       let v = view_defs[i]
+      // a database's catalog views report its default collation (captured:
+      // settings/alter-database); server-level views keep master's
+      let server_level = v.name
+        is ("databases" | "time_zone_info" | "syslanguages") ||
+        v.name.has_prefix("dm_")
+      let db_coll = self.db_collation()
+      let col_type = (t : @types.SqlType) => {
+        if server_level || db_coll == coll_default {
+          t
+        } else {
+          match t.collation() {
+            Some(c) if c == coll_default => t.with_collation(db_coll)
+            _ => t
+          }
+        }
+      }
       Some({
         scope: 2,
         id: if tempdb {
@@ -95,7 +111,7 @@ fn Session::sys_view_binding(
         columns: v.columns.map(c => @bind.ColumnRef::{
           qualifier: v.name.to_lower(),
           name: c.name,
-          ty: c.ty,
+          ty: col_type(c.ty),
           nullable: c.nullable,
           origin: if c.computed {
             Computed
@@ -614,6 +630,24 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         out.push(m)
       }
     "sys.time_zone_info" => out.append(time_zone_rows(self.rt.now))
+    "sys.syslanguages" =>
+      for l in @types.languages {
+        out.push(
+          vrow([
+            ("langid", SmallInt(l.langid)),
+            ("dateformat", s(l.dateformat.name())),
+            ("datefirst", TinyInt(l.datefirst)),
+            ("upgrade", i(0)),
+            ("name", s(l.name)),
+            ("alias", s(l.alias_name)),
+            ("months", s(l.months.join(","))),
+            ("shortmonths", s(l.short_months.join(","))),
+            ("days", s(l.days.join(","))),
+            ("lcid", i(l.lcid)),
+            ("msglangid", SmallInt(l.msglangid)),
+          ]),
+        )
+      }
     "sys.schemas" =>
       for sc in db.schema_names() {
         out.push(
@@ -639,12 +673,19 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           if m.get("name") == Some(String(cur)) {
             seen = true
           }
+          match m.get("name") {
+            Some(String(n)) => self.server.db_options(n).apply_row(n, m)
+            _ => ()
+          }
           out.push(m)
         } else if !seen {
           // the user database: a fresh database's settings
           m["name"] = String(self.rt.database)
           m["physical_database_name"] = String(self.rt.database)
           m["database_id"] = Int(5)
+          self.server
+          .db_options(self.rt.database)
+          .apply_row(self.rt.database, m)
           out.push(m)
         }
       }

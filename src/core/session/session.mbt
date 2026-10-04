@@ -41,6 +41,9 @@ pub struct Server {
   victims : Array[Int]
   /// Parsed user-defined functions by object id (session/udf.mbt).
   priv udfs : Map[Int, UdfDef]
+  /// ALTER DATABASE settings by lowercased database name (absent: the
+  /// defaults of `DbOptions::default`).
+  priv db_options : Map[String, DbOptions]
 }
 
 ///|
@@ -50,6 +53,7 @@ priv struct ServerSnapshot {
   idents : Map[Int, Int64]
   dbts : Int64
   procs : Map[String, Proc]
+  db_options : Map[String, DbOptions]
 }
 
 ///|
@@ -79,6 +83,7 @@ pub fn Server::new() -> Server {
     woken: [],
     victims: [],
     udfs: Map([]),
+    db_options: Map([]),
   }
 }
 
@@ -369,6 +374,14 @@ pub struct Session {
   /// A trigger ended the transaction: the firing statement's failure must
   /// not restore its snapshot (the trigger's later writes autocommitted).
   mut tx_ended_in_trigger : Bool
+  /// SET DATEFORMAT / SET DATEFIRST ran earlier in the current request: a
+  /// later SET LANGUAGE keeps them instead of applying the language's
+  /// defaults (captured: settings/language).
+  mut dateformat_set : Bool
+  mut datefirst_set : Bool
+  /// The current statement wrote to a READ_ONLY database (3906 when it
+  /// ends; session/database_options.mbt).
+  mut read_only_write : Bool
 }
 
 ///|
@@ -450,6 +463,9 @@ pub fn Session::new(
     try_base: 0,
     trigger_unwind: false,
     tx_ended_in_trigger: false,
+    dateformat_set: false,
+    datefirst_set: false,
+    read_only_write: false,
   }
   server.live[spid] = session
   session
@@ -464,6 +480,7 @@ fn Session::frame(self : Session) -> Frame {
 fn Session::env(self : Session) -> @bind.Env {
   @bind.Env::new(
     self.frame().vars,
+    collation=self.db_collation(),
     catalog=self.catalog(),
     deferred=self.deferred,
   )
@@ -604,6 +621,8 @@ pub fn Session::run_batch(
   self.rt.now = now
   self.rt.work_done = 0L
   let snap = self.snapshot_request()
+  self.dateformat_set = false
+  self.datefirst_set = false
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
   }

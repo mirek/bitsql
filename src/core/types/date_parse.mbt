@@ -1,6 +1,7 @@
-// Character string → date/time parsing as SQL Server does it under
-// SET LANGUAGE us_english / SET DATEFORMAT mdy (rules and evidence:
-// docs/reference/date-strings.md, captures harness/corpus/datestrings).
+// Character string → date/time parsing as SQL Server does it, under the
+// session's SET DATEFORMAT and SET LANGUAGE (rules and evidence:
+// docs/reference/date-strings.md, captures harness/corpus/datestrings and
+// harness/corpus/settings).
 //
 // SQL Server has two parsers:
 //
@@ -25,20 +26,19 @@ priv suberror DateParseError {
   /// the new parser under a style that accepts no separated numeric date:
   /// 9807 state 0
   StyleMismatch
+  /// numbers that may be a language's numeric month names (Japanese,
+  /// Korean, Chinese: '2024 03 04' parses there; not modelled)
+  NumericMonthNames
 }
-
-///|
-priv enum DateOrder {
-  Mdy
-  Dmy
-  Ymd
-} derive(Eq)
 
 ///|
 /// What a CONVERT style changes when parsing a character string.
 priv struct DateStyle {
-  /// order of numeric date parts
-  order : DateOrder
+  /// order of numeric date parts: SET DATEFORMAT for style 0, the style's
+  /// own (mdy, dmy or ymd) otherwise
+  order : DateFormat
+  /// month names (SET LANGUAGE)
+  lang : Language
   /// required year width in separated numeric dates: 0 any, 2 or 4
   year_digits : Int
   /// an explicit style (not 0): the new parser takes the year position from
@@ -62,6 +62,7 @@ priv struct DateStyle {
 ///|
 let default_date_style : DateStyle = {
   order: Mdy,
+  lang: languages[0],
   year_digits: 0,
   explicit: false,
   numeric: true,
@@ -85,8 +86,13 @@ let default_date_style : DateStyle = {
 ///   131 only, 130 accepts no numeric date).
 /// - Any other number: the new parser raises 9809, the legacy one behaves
 ///   like 112.
-fn date_style(style : Int, legacy : Bool) -> DateStyle? {
-  let numeric = (order : DateOrder, digits : Int) => {
+fn date_style(style : Int, legacy : Bool, dates : DateSettings) -> DateStyle? {
+  let default_date_style = {
+    ..default_date_style,
+    order: dates.format,
+    lang: language(dates.language),
+  }
+  let numeric = (order : DateFormat, digits : Int) => {
     Some({
       ..default_date_style,
       order,
@@ -193,31 +199,22 @@ priv struct Tok {
 }
 
 ///|
-let month_words : Array[(String, String)] = [
-  ("JAN", "JANUARY"),
-  ("FEB", "FEBRUARY"),
-  ("MAR", "MARCH"),
-  ("APR", "APRIL"),
-  ("MAY", "MAY"),
-  ("JUN", "JUNE"),
-  ("JUL", "JULY"),
-  ("AUG", "AUGUST"),
-  ("SEP", "SEPTEMBER"),
-  ("OCT", "OCTOBER"),
-  ("NOV", "NOVEMBER"),
-  ("DEC", "DECEMBER"),
-]
-
-///|
 fn is_letter(c : UInt16) -> Bool {
-  (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+  (c >= 'A' && c <= 'Z') ||
+  (c >= 'a' && c <= 'z') ||
+  // letters of other languages' month names (März, févr, Март, březen)
+  (c.to_int() >= 0xC0 && c.to_int() != 0xD7 && c.to_int() != 0xF7)
 }
 
 ///|
 /// Split into tokens. Whitespace is U+0020 (plus TAB for the new parser);
 /// any other character, or a word that is not a month name, AM, PM, `T` or
 /// `Z`, is a syntax error. `+` exists only for the new parser's offsets.
-fn tokenize(s : String, legacy : Bool) -> Array[Tok] raise DateParseError {
+fn tokenize(
+  s : String,
+  legacy : Bool,
+  lang : Language,
+) -> Array[Tok] raise DateParseError {
   let n = s.length()
   let out : Array[Tok] = []
   let mut i = 0
@@ -265,14 +262,9 @@ fn tokenize(s : String, legacy : Bool) -> Array[Tok] raise DateParseError {
       }
       let mut value = 0
       if kind == Month {
-        let u = w.to_upper()
-        for k, names in month_words {
-          if u == names.0 || u == names.1 {
-            value = k + 1
-          }
-        }
-        if value == 0 {
-          raise Syntax
+        match month_of_word(w, lang) {
+          Some(m) => value = m
+          None => raise Syntax
         }
       }
       out.push({ kind, start, len: i - start, value, sp, })
@@ -605,7 +597,10 @@ fn NewParser::numeric_date(
       _ => true
     }
   }
-  let ymd = if st.explicit { st.order == Ymd } else { a.len == 4 }
+  if !st.explicit {
+    return session_numeric_date(st, a, b, c)
+  }
+  let ymd = st.order == Ymd
   if ymd {
     if a.len != 4 && !(st.year_digits == 2 && a.len <= 2) {
       raise Syntax
@@ -625,6 +620,32 @@ fn NewParser::numeric_date(
       (y, new_day_or_month(a), new_day_or_month(b))
     }
   }
+}
+
+///|
+/// A numeric date under style 0 (SET DATEFORMAT), new parser: a leading
+/// 4-digit year is always y-m-d; otherwise the parts follow the date order,
+/// except that ymd with a trailing 4-digit year reads m/d/y and ydm accepts
+/// nothing else (captured: settings/dateformat).
+fn session_numeric_date(
+  st : DateStyle,
+  a : Tok,
+  b : Tok,
+  c : Tok,
+) -> (Int, Int, Int) raise DateParseError {
+  if a.len == 4 {
+    return (a.value, new_day_or_month(b), new_day_or_month(c))
+  }
+  // (year, month, day) tokens
+  let (y, m, d) = match st.order {
+    Mdy => (c, a, b)
+    Dmy => (c, b, a)
+    Ymd => if c.len == 4 { (c, a, b) } else { (a, b, c) }
+    Ydm => raise Syntax
+    Myd => (b, a, c)
+    Dym => (b, c, a)
+  }
+  (new_year(y), new_day_or_month(m), new_day_or_month(d))
 }
 
 ///|
@@ -1169,13 +1190,19 @@ fn LegacyParser::numeric_date(
   if fours > 1 {
     raise Value
   }
-  // the 4-digit part is the year; the other two keep the style's order
+  // the 4-digit part is the year, else the year stands where the date
+  // order puts it; the other two keep the order's month/day order
+  // (captured: settings/dateformat)
   let mut ypos = parts.search_by(t => t.len == 4).unwrap_or(-1)
   if ypos < 0 {
-    ypos = if st.order == Ymd { 0 } else { 2 }
+    ypos = match st.order {
+      Ymd | Ydm => 0
+      Myd | Dym => 1
+      Mdy | Dmy => 2
+    }
   }
   let others = [0, 1, 2].filter(k => k != ypos).map(k => parts[k])
-  let (m, d) = if st.order == Dmy {
+  let (m, d) = if st.order is (Dmy | Ydm | Dym) {
     (others[1].value, others[0].value)
   } else {
     (others[0].value, others[1].value)
@@ -1281,15 +1308,36 @@ fn parse_date_string(
   target : ParseTarget,
   style : DateStyle,
 ) -> ParsedTemporal raise DateParseError {
+  parse_date_tokens(text, target, style) catch {
+    Syntax | Value if numeric_month_names(style.lang) &&
+      text.iter().any(c => c == ' ') &&
+      !text.iter().any(c => is_letter(c.to_int().to_uint16())) =>
+      raise NumericMonthNames
+    e => raise e
+  }
+}
+
+///|
+/// Languages whose month names are numbers ('01'..'12').
+fn numeric_month_names(lang : Language) -> Bool {
+  lang.months[0] == "01" || lang.short_months[0] == "01"
+}
+
+///|
+fn parse_date_tokens(
+  text : String,
+  target : ParseTarget,
+  style : DateStyle,
+) -> ParsedTemporal raise DateParseError {
   match target {
     Legacy => {
       let s = trim_spaces(text)
-      let toks = tokenize(s, true)
+      let toks = tokenize(s, true, style.lang)
       { s, toks, style, }.parse()
     }
     Modern => {
       let s = trim_blank(text)
-      let toks = tokenize(s, false)
+      let toks = tokenize(s, false, style.lang)
       { s, toks, style, i: 0, }.parse()
     }
   }

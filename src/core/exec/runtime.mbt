@@ -48,6 +48,9 @@ pub(all) struct Runtime {
   mut database : String
   /// SET DATEFIRST (1 = Monday … 7 = Sunday).
   mut datefirst : Int
+  /// SET DATEFORMAT and SET LANGUAGE (string ↔ date/time conversions,
+  /// month and day names).
+  mut dates : @types.DateSettings
   /// SET LOCK_TIMEOUT (milliseconds, -1 = wait forever).
   mut lock_timeout : Int
   /// @@OPTIONS bits that change: 512 NOCOUNT, 16384 XACT_ABORT.
@@ -98,6 +101,7 @@ pub fn Runtime::new(
     rand_s2: 0L,
     database,
     datefirst: 7,
+    dates: @types.default_date_settings,
     lock_timeout: -1,
     option_bits: 0,
     work_done: 0L,

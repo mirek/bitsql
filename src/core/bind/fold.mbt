@@ -8,6 +8,9 @@ fn is_constant(e : @ir.Expr) -> Bool {
     // … and CASE WHEN 'ac' LIKE 'a_c' THEN 1 WHEN NOT ('ac' LIKE 'a_c') THEN 0
     // ELSE NULL END are nullable; msduck like-patterns)
     Not({ kind: Like(_, _, ..), .. }) => false
+    // string <-> date/time conversions depend on SET DATEFORMAT and SET
+    // LANGUAGE, which the binder does not see: evaluated at run time
+    Cast(a, ..) if session_dependent_cast(a.ty, e.ty) => false
     Cast(a, ..) | Collate(a) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) =>
       is_constant(a)
     Arith(_, a, b)
@@ -39,6 +42,17 @@ fn is_constant(e : @ir.Expr) -> Bool {
       })
     _ => false
   }
+}
+
+///|
+/// A conversion whose result depends on the session's DATEFORMAT or
+/// LANGUAGE: character data to or from a date/time type.
+fn session_dependent_cast(from : @types.SqlType, to : @types.SqlType) -> Bool {
+  let temporal = (t : @types.SqlType) => {
+    t.family() is (FDate | FTime | FDateTime)
+  }
+  (from.family() == FString && temporal(to)) ||
+  (temporal(from) && to.family() == FString)
 }
 
 ///|
@@ -137,6 +151,12 @@ fn string_len_units(t : @types.SqlType) -> Int? {
 ///|
 fn is_untyped_null(e : @ir.Expr) -> Bool {
   e.kind is Lit(Null) && e.ty is Int
+}
+
+///|
+/// A NULL literal of type `ty`.
+fn typed_null(ty : @types.SqlType) -> @ir.Expr {
+  { kind: Lit(Null), ty, nullable: true, }
 }
 
 ///|

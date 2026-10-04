@@ -1,0 +1,1216 @@
+{
+  "source": "harness/gen/settings.mjs",
+  "cases": [
+    {
+      "name": "0000-all-languages-5703",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @n sysname, @i int = 0;\nWHILE @i < 34\nBEGIN\n  SELECT @n = name FROM sys.syslanguages WHERE langid = @i;\n  SET LANGUAGE @n;\n  SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATENAME(month, '20240315') AS m, DATENAME(weekday, '20240315') AS wd;\n  SET @i += 1;\nEND"
+        }
+      ]
+    },
+    {
+      "name": "0001-syslanguages",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT langid, dateformat, datefirst, upgrade, name, alias, months, shortmonths, days, lcid, msglangid FROM sys.syslanguages ORDER BY langid"
+        }
+      ]
+    },
+    {
+      "name": "0002-us-english-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0003-us-english-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0004-us-english-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0005-us-english-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0006-british-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0007-british-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0008-british-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0009-british-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0010-german-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0011-german-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0012-german-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0013-german-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0014-french-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0015-french-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0016-french-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0017-french-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0018-japanese-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0019-japanese-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0020-japanese-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0021-japanese-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0022-spanish-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0023-spanish-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0024-spanish-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0025-spanish-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0026-italian-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0027-italian-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0028-italian-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0029-italian-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0030-dutch-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0031-dutch-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0032-dutch-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0033-dutch-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0034-swedish-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Swedish; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0035-swedish-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Swedish; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0036-swedish-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Swedish; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0037-swedish-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Swedish; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0038-russian-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0039-russian-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0040-russian-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0041-russian-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0042-polish-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Polish; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0043-polish-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Polish; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0044-polish-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Polish; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0045-polish-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Polish; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0046-portuguese-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Portuguese; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0047-portuguese-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Portuguese; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0048-portuguese-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Portuguese; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0049-portuguese-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Portuguese; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0050-brazilian-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Brazilian; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0051-brazilian-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Brazilian; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0052-brazilian-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Brazilian; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0053-brazilian-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Brazilian; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0054-danish-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Danish; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0055-danish-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Danish; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0056-danish-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Danish; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0057-danish-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Danish; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0058-czech-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0059-czech-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0060-czech-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0061-czech-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0062-arabic-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Arabic; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0063-arabic-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Arabic; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0064-arabic-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Arabic; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0065-arabic-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Arabic; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0066-simplified-chinese-settings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE N'Simplified Chinese'; SELECT @@LANGUAGE AS lang, @@LANGID AS langid, @@DATEFIRST AS datefirst, DATEPART(weekday, '20240315') AS dw, TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS datetime) AS ymd"
+        }
+      ]
+    },
+    {
+      "name": "0067-simplified-chinese-month-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE N'Simplified Chinese'; SELECT DATENAME(month, '20240115') AS m1, DATENAME(month, '20240215') AS m2, DATENAME(month, '20240315') AS m3, DATENAME(month, '20240415') AS m4, DATENAME(month, '20240515') AS m5, DATENAME(month, '20240615') AS m6, DATENAME(month, '20240715') AS m7, DATENAME(month, '20240815') AS m8, DATENAME(month, '20240915') AS m9, DATENAME(month, '20241015') AS m10, DATENAME(month, '20241115') AS m11, DATENAME(month, '20241215') AS m12"
+        }
+      ]
+    },
+    {
+      "name": "0068-simplified-chinese-day-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE N'Simplified Chinese'; SELECT DATENAME(weekday, '20240311') AS w1, DATENAME(weekday, '20240312') AS w2, DATENAME(weekday, '20240313') AS w3, DATENAME(weekday, '20240314') AS w4, DATENAME(weekday, '20240315') AS w5, DATENAME(weekday, '20240316') AS w6, DATENAME(weekday, '20240317') AS w7, DATENAME(dw, CAST('2024-03-11' AS date)) AS dw_date"
+        }
+      ]
+    },
+    {
+      "name": "0069-simplified-chinese-styles",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE N'Simplified Chinese'; SELECT CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 0) AS s0, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 100) AS s100, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 106) AS s106, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 107) AS s107, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 109) AS s109, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 113) AS s113, CONVERT(nvarchar(40), CAST('2024-03-04T05:06:07.123' AS datetime), 130) AS s130, CAST(CAST('2024-12-04T05:06:07' AS datetime) AS nvarchar(40)) AS cast_dt, CAST(CAST('2024-12-04T05:06:07' AS smalldatetime) AS nvarchar(40)) AS cast_sdt, CONVERT(nvarchar(40), CAST('2024-12-04' AS date), 106) AS date106, CONVERT(nvarchar(40), CAST('2024-12-04T05:06:07' AS datetime2(3)), 109) AS dt2_109"
+        }
+      ]
+    },
+    {
+      "name": "0070-british-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0071-british-parse-mar-4-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT TRY_CAST(N'Mar 4 2024' AS date) AS d, TRY_CAST(N'Mar 4 2024' AS datetime) AS dt, TRY_CAST(N'Mar 4 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'Mar 4 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'Mar 4 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'Mar 4 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0072-british-parse-04-03-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE British; SELECT TRY_CAST(N'04/03/2024' AS date) AS d, TRY_CAST(N'04/03/2024' AS datetime) AS dt, TRY_CAST(N'04/03/2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'04/03/2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'04/03/2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'04/03/2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0073-german-parse-4-ma-rz-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 März 2024' AS date) AS d, TRY_CAST(N'4 März 2024' AS datetime) AS dt, TRY_CAST(N'4 März 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 März 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0074-german-parse-4-ma-r-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 Mär 2024' AS date) AS d, TRY_CAST(N'4 Mär 2024' AS datetime) AS dt, TRY_CAST(N'4 Mär 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Mär 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Mär 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Mär 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0075-german-parse-4-ma-rz-2024-10-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 März 2024 10:11' AS date) AS d, TRY_CAST(N'4 März 2024 10:11' AS datetime) AS dt, TRY_CAST(N'4 März 2024 10:11' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024 10:11' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024 10:11' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 März 2024 10:11') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0076-german-parse-ma-rz-4-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'März 4 2024' AS date) AS d, TRY_CAST(N'März 4 2024' AS datetime) AS dt, TRY_CAST(N'März 4 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'März 4 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'März 4 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'März 4 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0077-german-parse-4-mai-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 Mai 2024' AS date) AS d, TRY_CAST(N'4 Mai 2024' AS datetime) AS dt, TRY_CAST(N'4 Mai 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Mai 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Mai 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Mai 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0078-german-parse-4-dezember-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 Dezember 2024' AS date) AS d, TRY_CAST(N'4 Dezember 2024' AS datetime) AS dt, TRY_CAST(N'4 Dezember 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Dezember 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Dezember 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Dezember 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0079-german-parse-4-dez-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 Dez 2024' AS date) AS d, TRY_CAST(N'4 Dez 2024' AS datetime) AS dt, TRY_CAST(N'4 Dez 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Dez 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Dez 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Dez 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0080-german-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0081-german-parse-4-mar-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 Mar 2024' AS date) AS d, TRY_CAST(N'4 Mar 2024' AS datetime) AS dt, TRY_CAST(N'4 Mar 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Mar 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0082-german-parse-4-ma-rz-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 MÄRZ 2024' AS date) AS d, TRY_CAST(N'4 MÄRZ 2024' AS datetime) AS dt, TRY_CAST(N'4 MÄRZ 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 MÄRZ 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 MÄRZ 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 MÄRZ 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0083-german-parse-4-maerz-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'4 maerz 2024' AS date) AS d, TRY_CAST(N'4 maerz 2024' AS datetime) AS dt, TRY_CAST(N'4 maerz 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 maerz 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 maerz 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 maerz 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0084-german-parse-04-03-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT TRY_CAST(N'04.03.2024' AS date) AS d, TRY_CAST(N'04.03.2024' AS datetime) AS dt, TRY_CAST(N'04.03.2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'04.03.2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'04.03.2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'04.03.2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0085-french-parse-4-mars-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 mars 2024' AS date) AS d, TRY_CAST(N'4 mars 2024' AS datetime) AS dt, TRY_CAST(N'4 mars 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 mars 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 mars 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 mars 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0086-french-parse-4-janvier-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 janvier 2024' AS date) AS d, TRY_CAST(N'4 janvier 2024' AS datetime) AS dt, TRY_CAST(N'4 janvier 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 janvier 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 janvier 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 janvier 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0087-french-parse-4-janv-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 janv 2024' AS date) AS d, TRY_CAST(N'4 janv 2024' AS datetime) AS dt, TRY_CAST(N'4 janv 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 janv 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 janv 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 janv 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0088-french-parse-4-fe-vr-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 févr 2024' AS date) AS d, TRY_CAST(N'4 févr 2024' AS datetime) AS dt, TRY_CAST(N'4 févr 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 févr 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 févr 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 févr 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0089-french-parse-4-fe-vrier-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 février 2024' AS date) AS d, TRY_CAST(N'4 février 2024' AS datetime) AS dt, TRY_CAST(N'4 février 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 février 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 février 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 février 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0090-french-parse-4-fe-vrier-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 FÉVRIER 2024' AS date) AS d, TRY_CAST(N'4 FÉVRIER 2024' AS datetime) AS dt, TRY_CAST(N'4 FÉVRIER 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 FÉVRIER 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 FÉVRIER 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 FÉVRIER 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0091-french-parse-4-aou-t-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 août 2024' AS date) AS d, TRY_CAST(N'4 août 2024' AS datetime) AS dt, TRY_CAST(N'4 août 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 août 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 août 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 août 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0092-french-parse-4-aout-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 aout 2024' AS date) AS d, TRY_CAST(N'4 aout 2024' AS datetime) AS dt, TRY_CAST(N'4 aout 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 aout 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 aout 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 aout 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0093-french-parse-4-de-cembre-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 décembre 2024' AS date) AS d, TRY_CAST(N'4 décembre 2024' AS datetime) AS dt, TRY_CAST(N'4 décembre 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 décembre 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 décembre 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 décembre 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0094-french-parse-4-de-c-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 déc 2024' AS date) AS d, TRY_CAST(N'4 déc 2024' AS datetime) AS dt, TRY_CAST(N'4 déc 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 déc 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 déc 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 déc 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0095-french-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0096-french-parse-04-03-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE French; SELECT TRY_CAST(N'04/03/2024' AS date) AS d, TRY_CAST(N'04/03/2024' AS datetime) AS dt, TRY_CAST(N'04/03/2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'04/03/2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'04/03/2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'04/03/2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0097-japanese-parse-2024-03-04",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT TRY_CAST(N'2024/03/04' AS date) AS d, TRY_CAST(N'2024/03/04' AS datetime) AS dt, TRY_CAST(N'2024/03/04' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'2024/03/04' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'2024/03/04' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'2024/03/04') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0098-japanese-parse-03-04-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT TRY_CAST(N'03/04/2024' AS date) AS d, TRY_CAST(N'03/04/2024' AS datetime) AS dt, TRY_CAST(N'03/04/2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'03/04/2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'03/04/2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'03/04/2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0099-japanese-parse-4-mar-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT TRY_CAST(N'4 Mar 2024' AS date) AS d, TRY_CAST(N'4 Mar 2024' AS datetime) AS dt, TRY_CAST(N'4 Mar 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Mar 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0100-japanese-parse-2024-03-04",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Japanese; SELECT TRY_CAST(N'2024 03 04' AS date) AS d, TRY_CAST(N'2024 03 04' AS datetime) AS dt, TRY_CAST(N'2024 03 04' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'2024 03 04' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'2024 03 04' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'2024 03 04') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0101-spanish-parse-4-marzo-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT TRY_CAST(N'4 Marzo 2024' AS date) AS d, TRY_CAST(N'4 Marzo 2024' AS datetime) AS dt, TRY_CAST(N'4 Marzo 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Marzo 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Marzo 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Marzo 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0102-spanish-parse-4-mar-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT TRY_CAST(N'4 Mar 2024' AS date) AS d, TRY_CAST(N'4 Mar 2024' AS datetime) AS dt, TRY_CAST(N'4 Mar 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Mar 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Mar 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0103-spanish-parse-4-ene-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT TRY_CAST(N'4 Ene 2024' AS date) AS d, TRY_CAST(N'4 Ene 2024' AS datetime) AS dt, TRY_CAST(N'4 Ene 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Ene 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Ene 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Ene 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0104-spanish-parse-4-enero-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT TRY_CAST(N'4 Enero 2024' AS date) AS d, TRY_CAST(N'4 Enero 2024' AS datetime) AS dt, TRY_CAST(N'4 Enero 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Enero 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Enero 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Enero 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0105-spanish-parse-4-january-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Spanish; SELECT TRY_CAST(N'4 January 2024' AS date) AS d, TRY_CAST(N'4 January 2024' AS datetime) AS dt, TRY_CAST(N'4 January 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 January 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 January 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 January 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0106-italian-parse-4-marzo-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT TRY_CAST(N'4 marzo 2024' AS date) AS d, TRY_CAST(N'4 marzo 2024' AS datetime) AS dt, TRY_CAST(N'4 marzo 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 marzo 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 marzo 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 marzo 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0107-italian-parse-4-gen-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT TRY_CAST(N'4 gen 2024' AS date) AS d, TRY_CAST(N'4 gen 2024' AS datetime) AS dt, TRY_CAST(N'4 gen 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 gen 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 gen 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 gen 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0108-italian-parse-4-gennaio-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT TRY_CAST(N'4 gennaio 2024' AS date) AS d, TRY_CAST(N'4 gennaio 2024' AS datetime) AS dt, TRY_CAST(N'4 gennaio 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 gennaio 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 gennaio 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 gennaio 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0109-italian-parse-4-january-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Italian; SELECT TRY_CAST(N'4 January 2024' AS date) AS d, TRY_CAST(N'4 January 2024' AS datetime) AS dt, TRY_CAST(N'4 January 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 January 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 January 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 January 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0110-dutch-parse-4-maart-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT TRY_CAST(N'4 maart 2024' AS date) AS d, TRY_CAST(N'4 maart 2024' AS datetime) AS dt, TRY_CAST(N'4 maart 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 maart 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 maart 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 maart 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0111-dutch-parse-4-mrt-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT TRY_CAST(N'4 mrt 2024' AS date) AS d, TRY_CAST(N'4 mrt 2024' AS datetime) AS dt, TRY_CAST(N'4 mrt 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 mrt 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 mrt 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 mrt 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0112-dutch-parse-4-mei-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT TRY_CAST(N'4 mei 2024' AS date) AS d, TRY_CAST(N'4 mei 2024' AS datetime) AS dt, TRY_CAST(N'4 mei 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 mei 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 mei 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 mei 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0113-dutch-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Dutch; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0114-russian-parse-4-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT TRY_CAST(N'4 Март 2024' AS date) AS d, TRY_CAST(N'4 Март 2024' AS datetime) AS dt, TRY_CAST(N'4 Март 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 Март 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 Март 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 Март 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0115-russian-parse-4-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT TRY_CAST(N'4 мар 2024' AS date) AS d, TRY_CAST(N'4 мар 2024' AS datetime) AS dt, TRY_CAST(N'4 мар 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 мар 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 мар 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 мар 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0116-russian-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Russian; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0117-czech-parse-4-br-ezen-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT TRY_CAST(N'4 březen 2024' AS date) AS d, TRY_CAST(N'4 březen 2024' AS datetime) AS dt, TRY_CAST(N'4 březen 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 březen 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 březen 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 březen 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0118-czech-parse-4-iii-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT TRY_CAST(N'4 III 2024' AS date) AS d, TRY_CAST(N'4 III 2024' AS datetime) AS dt, TRY_CAST(N'4 III 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 III 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 III 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 III 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0119-czech-parse-4-xii-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT TRY_CAST(N'4 XII 2024' AS date) AS d, TRY_CAST(N'4 XII 2024' AS datetime) AS dt, TRY_CAST(N'4 XII 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 XII 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 XII 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 XII 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0120-czech-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE Czech; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0121-us-english-parse-4-march-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT TRY_CAST(N'4 March 2024' AS date) AS d, TRY_CAST(N'4 March 2024' AS datetime) AS dt, TRY_CAST(N'4 March 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 March 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 March 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0122-us-english-parse-4-ma-rz-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT TRY_CAST(N'4 März 2024' AS date) AS d, TRY_CAST(N'4 März 2024' AS datetime) AS dt, TRY_CAST(N'4 März 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 März 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 März 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0123-us-english-parse-4-mars-2024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE us_english; SELECT TRY_CAST(N'4 mars 2024' AS date) AS d, TRY_CAST(N'4 mars 2024' AS datetime) AS dt, TRY_CAST(N'4 mars 2024' AS smalldatetime) AS sdt, CONVERT(nvarchar(40), TRY_CAST(N'4 mars 2024' AS datetime2(7)), 121) AS dt2, CONVERT(nvarchar(40), TRY_CAST(N'4 mars 2024' AS datetimeoffset(7)), 121) AS dto, ISDATE(N'4 mars 2024') AS isd"
+        }
+      ]
+    },
+    {
+      "name": "0124-form-set-language-deutsch-select-language-as-",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE 'Deutsch'; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0125-form-set-language-n-british-english-select-la",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE N'British English'; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0126-form-set-language-franc-ais-select-language-a",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE [Français]; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0127-form-set-language-english-select-language-as-",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE english; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0128-form-set-language-english-select-language-as-",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE ENGLISH; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0129-form-set-language-nonsense-select-language-as",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE nonsense; SELECT @@LANGUAGE AS after_error"}]
+    },
+    {
+      "name": "0130-form-declare-l-sysname-n-german-set-language-",
+      "steps": [{"kind":"batch","sql":"DECLARE @l sysname = N'German'; SET LANGUAGE @l; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0131-form-declare-l-sysname-null-set-language-l-se",
+      "steps": [{"kind":"batch","sql":"DECLARE @l sysname = NULL; SET LANGUAGE @l; SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0132-form-declare-l-sysname-n-bad-set-language-l-s",
+      "steps": [{"kind":"batch","sql":"DECLARE @l sysname = N'bad'; SET LANGUAGE @l; SELECT @@LANGUAGE AS after_error"}]
+    },
+    {
+      "name": "0133-form-set-language-german-set-dateformat-mdy-s",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SET DATEFORMAT mdy; SELECT TRY_CAST(N'03/04/2024' AS date) AS d, @@DATEFIRST AS df"}]
+    },
+    {
+      "name": "0134-form-set-dateformat-ymd-set-language-french-s",
+      "steps": [{"kind":"batch","sql":"SET DATEFORMAT ymd; SET LANGUAGE French; SELECT TRY_CAST(N'03/04/2024' AS date) AS d"}]
+    },
+    {
+      "name": "0135-form-set-datefirst-3-set-language-german-sele",
+      "steps": [{"kind":"batch","sql":"SET DATEFIRST 3; SET LANGUAGE German; SELECT @@DATEFIRST AS df"}]
+    },
+    {
+      "name": "0136-form-set-language-german-set-datefirst-7-sele",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SET DATEFIRST 7; SELECT @@DATEFIRST AS df, DATEPART(weekday, '20240315') AS dw"}]
+    },
+    {
+      "name": "0137-form-set-language-german-select-cast-x-as-int",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SELECT CAST('x' AS int) AS v"}]
+    },
+    {"name":"0138-form-set-language-german-select-1-0-as-v","steps":[{"kind":"batch","sql":"SET LANGUAGE German; SELECT 1/0 AS v"}]},
+    {
+      "name": "0139-form-set-language-french-raiserror-custom-d-1",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE French; RAISERROR('custom %d', 16, 1, 5)"}]
+    },
+    {
+      "name": "0140-form-set-language-german-exec-set-language-fr",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; EXEC('SET LANGUAGE French'); SELECT @@LANGUAGE AS lang"}]
+    },
+    {
+      "name": "0141-form-set-language-german-select-datename-mont",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT DATENAME(month, CAST('2024-03-04' AS date)) AS d, DATENAME(month, CAST('2024-03-04' AS datetimeoffset)) AS dto, FORMAT(CAST('2024-03-04' AS date), 'MMMM') AS fmt"
+        }
+      ]
+    },
+    {
+      "name": "0142-form-set-language-german-select-convert-datet",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SELECT CONVERT(datetime, '4 März 2024', 106) AS v"}]
+    },
+    {
+      "name": "0143-form-set-language-german-select-convert-datet",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SELECT CONVERT(datetime, '4 Mar 2024', 106) AS v"}]
+    },
+    {
+      "name": "0144-form-set-language-german-select-isdate-4-ma-r",
+      "steps": [{"kind":"batch","sql":"SET LANGUAGE German; SELECT ISDATE('4 März 2024') AS a, ISDATE('4 March 2024') AS b"}]
+    },
+    {
+      "name": "0145-form-set-language-german-select-from-select-t",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET LANGUAGE German; SELECT * FROM (SELECT TOP 1 1 AS x FROM sys.objects) t; DBCC USEROPTIONS WITH NO_INFOMSGS"
+        }
+      ]
+    }
+  ]
+}

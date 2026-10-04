@@ -111,10 +111,9 @@ pub fn write_value(
       Text(s) =>
         write_plp(
           w,
-          if ti is BigVarChar(_, _) {
-            cp1252_encode(s)
-          } else {
-            ucs2_bytes(s)
+          match ti {
+            BigVarChar(_, c) => char_encode(s, c)
+            _ => ucs2_bytes(s)
           },
         )
       Binary(b) => write_plp(w, b)
@@ -257,8 +256,8 @@ pub fn write_value(
       | BigBinary(_),
       Null,
     ) => w.u16le(0xFFFF)
-    (BigVarChar(_, _) | BigChar(_, _), Text(s)) => {
-      let b = cp1252_encode(s)
+    (BigVarChar(_, c) | BigChar(_, c), Text(s)) => {
+      let b = char_encode(s, c)
       w.u16le(b.length())
       w.bytes(b)
     }
@@ -274,7 +273,7 @@ pub fn write_value(
     // text pointer, an 8-byte timestamp, a 4-byte length and the data
     // (MS-TDS 2.2.5.2.4; tedious skips pointer and timestamp)
     (TextLob(_) | NTextLob(_) | ImageLob, Null) => w.u8(0)
-    (TextLob(_), Text(s)) => write_lob(w, cp1252_encode(s))
+    (TextLob(c), Text(s)) => write_lob(w, char_encode(s, c))
     (NTextLob(_), Text(s)) => write_lob(w, ucs2_bytes(s))
     (ImageLob, Binary(b)) => write_lob(w, b)
     (Variant(_), Null) => w.u32le(0)
@@ -326,7 +325,7 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
       None => Null
       Some(b) =>
         match ti {
-          BigVarChar(_, _) => Text(cp1252_decode(b))
+          BigVarChar(_, c) => Text(char_decode(b, c))
           NVarChar(_, _) => Text(Reader::new(b).ucs2(b.length() / 2))
           // xml parameters arrive as UTF-16LE (optionally with a BOM)
           Xml => Text(Reader::new(b).ucs2(b.length() / 2))
@@ -469,7 +468,7 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
       } else {
         let b = r.bytes(n.to_int())
         match ti {
-          TextLob(_) => Text(cp1252_decode(b))
+          TextLob(c) => Text(char_decode(b, c))
           NTextLob(_) => Text(Reader::new(b).ucs2(b.length() / 2))
           _ => Binary(b)
         }
@@ -487,7 +486,7 @@ pub fn read_value(r : Reader, ti : TypeInfo) -> WireValue raise TdsError {
       } else {
         let b = r.bytes(n)
         match ti {
-          BigVarChar(_, _) | BigChar(_, _) => Text(cp1252_decode(b))
+          BigVarChar(_, c) | BigChar(_, c) => Text(char_decode(b, c))
           NVarChar(_, _) | NChar(_, _) => Text(Reader::new(b).ucs2(n / 2))
           _ => Binary(b)
         }

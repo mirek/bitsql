@@ -105,7 +105,11 @@ fn cast_xml(
       let text = x.to_text()
       match to.family() {
         FString => {
-          let text = if to.is_unicode() { text } else { to_cp1252(text) }
+          let text = if to.is_unicode() {
+            text
+          } else {
+            to_code_page(text, to.collation().unwrap_or(default_collation))
+          }
           match char_capacity(to) {
             // captured: no truncation, 6354 state 10
             Some(cap) if text.length() > cap =>

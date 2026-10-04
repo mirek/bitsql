@@ -9,18 +9,20 @@
 // and are listed as unverified in .claude/skills/t-sql/SKILL.md findings.
 
 ///|
-/// CAST / CONVERT.
+/// CAST / CONVERT. `dates` are the session's DATEFORMAT and LANGUAGE
+/// (string ↔ date/time conversions).
 pub fn cast(
   v : Value,
   from : SqlType,
   to : SqlType,
   style? : Int,
+  dates? : DateSettings = default_date_settings,
 ) -> Value raise SqlError {
   if !can_convert_explicitly(from, to) {
     raise explicit_conversion_error(from, to)
   }
   if from is Variant || to is Variant {
-    return cast_variant(v, from, to, style)
+    return cast_variant(v, from, to, style, dates)
   }
   if from is Xml || to is Xml {
     return cast_xml(v, from, to, style)
@@ -37,9 +39,19 @@ pub fn cast(
     // captured: CONVERT(varchar, rowversion, 1) copies the raw bytes like
     // style 0 (msduck gaps-rowversion_identity #071)
     FString =>
-      to_character(v, from, to, if from is RowVersion { None } else { style })
+      to_character(
+        v,
+        from,
+        to,
+        if from is RowVersion {
+          None
+        } else {
+          style
+        },
+        dates,
+      )
     FBinary => to_binary(v, from, to, style)
-    FDate | FTime | FDateTime => to_temporal(v, from, to, style)
+    FDate | FTime | FDateTime => to_temporal(v, from, to, style, dates)
     FGuid => to_guid(v, from)
     FVariant => raise internal("variant target")
     FXml => raise internal("xml target")
@@ -55,8 +67,9 @@ pub fn try_cast(
   from : SqlType,
   to : SqlType,
   style? : Int,
+  dates? : DateSettings = default_date_settings,
 ) -> Value raise SqlError {
-  cast(v, from, to, style?) catch {
+  cast(v, from, to, style?, dates~) catch {
     SqlError(_) as e if e.is_try_convertible() => Null
     e => raise e
   }

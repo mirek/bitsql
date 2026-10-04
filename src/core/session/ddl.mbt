@@ -351,7 +351,7 @@ fn Session::add_column(
         Some(x) => x
         None => raise @types.unknown_collation_error(i.name)
       }
-    None => @types.default_collation
+    None => self.scope_collation(b.scope)
   }
   let mut alias_type : Int? = None
   let mut alias_nullable : Bool? = None

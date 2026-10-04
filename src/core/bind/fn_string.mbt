@@ -38,7 +38,15 @@ fn bind_string_fn(
     "UPPER" | "LOWER" | "REVERSE" => {
       arity_n(name, args, 1)
       let x = b(0)
-      named(name, [as_string_arg(x, env)], string_arg_type(x, env))
+      let ty = string_arg_type(x, env)
+      // UTF-8 varchar: case mapping may grow the bytes, so UPPER/LOWER are
+      // varchar(8 * n) up to 8000, also of char (captured: settings/utf8)
+      let ty = match ty {
+        VarChar(Some(n), c) | Char(n, c) if c.utf8() && name != "REVERSE" =>
+          @types.SqlType::VarChar(Some(@cmp.minimum(8 * n, 8000)), c)
+        t => t
+      }
+      named(name, [as_string_arg(x, env)], ty)
     }
     "LTRIM" | "RTRIM" | "TRIM" | "TRIM LEADING" | "TRIM TRAILING" => {
       let fname = if name.has_prefix("TRIM") { "TRIM" } else { name }
@@ -77,6 +85,16 @@ fn bind_string_fn(
       let base = string_arg_type(x, env)
       let len = match (arg_len(x), fold_int(n)) {
         (None, _) => None
+        // UTF-8 varchar: k characters take up to 8k bytes (captured:
+        // settings/utf8, LEFT(varchar(10) …_UTF8, 1) is varchar(8), of 2
+        // varchar(10), LEFT(varchar(100), 3) varchar(24))
+        (Some(l), Some(k)) if utf8_text_type(base) && k >= 0L =>
+          Some(
+            @cmp.maximum(
+              1,
+              @cmp.minimum(@cmp.minimum(k, l.to_int64()) * 8L, l.to_int64()).to_int(),
+            ),
+          )
         (Some(l), Some(k)) => {
           if k < 0L {
             raise err(
@@ -128,6 +146,23 @@ fn bind_string_fn(
             Some(@cmp.maximum(1, @cmp.minimum(v, l.to_int64()).to_int())),
           )
         (VarBinary(l), _) => VarBinary(l)
+        (t, Some(v)) if utf8_text_type(t) =>
+          match string_len(t) {
+            Some(l) =>
+              sized_like(
+                t,
+                Some(
+                  @cmp.maximum(
+                    1,
+                    @cmp.minimum(
+                      @cmp.minimum(v, l.to_int64()) * 8L,
+                      l.to_int64(),
+                    ).to_int(),
+                  ),
+                ),
+              )
+            None => t
+          }
         (t, Some(v)) =>
           match string_len(t) {
             Some(l) =>
@@ -566,6 +601,15 @@ fn is_base_column(e : @ir.Expr, env : Env) -> Bool {
         Some(c) => c.origin is BaseColumn(..)
         None => false
       }
+    _ => false
+  }
+}
+
+///|
+/// varchar/char under a UTF-8 collation (lengths are bytes, not characters).
+fn utf8_text_type(t : @types.SqlType) -> Bool {
+  match t {
+    VarChar(_, c) | Char(_, c) => c.utf8()
     _ => false
   }
 }

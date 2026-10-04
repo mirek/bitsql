@@ -135,6 +135,21 @@ mention the correction here.
   iso_1). sys.parameters (tabletypes branch): T-SQL modules never record
   defaults (has_default_value 0, default_value NULL). sys.indexes
   fill_factor and ignore_dup_key follow CREATE INDEX WITH options.
+- 2026-10-04 (settings, catalog/view-descriptors-settings): sys.syslanguages
+  (34 rows, server collation; langid smallint, dateformat nchar(3),
+  datefirst tinyint, upgrade int NULL, name/alias nvarchar(128), months
+  nvarchar(372), shortmonths nvarchar(132), days nvarchar(217), lcid int,
+  msglangid smallint). sys.databases settings columns follow ALTER DATABASE
+  (collation_name, compatibility_level, user_access(_desc), is_read_only,
+  snapshot_isolation_state(_desc), is_read_committed_snapshot_on,
+  recovery_model(_desc), is_local_cursor_default, is_ansi_*); master and
+  msdb have snapshot_isolation_state 1. After ALTER DATABASE COLLATE the
+  database's catalog views report and compare in the new collation (name
+  columns of sys.objects/sys.columns are Latin1_General_100_BIN2 under a
+  BIN2 database); server views (sys.databases, syslanguages, DMVs) keep the
+  server collation. DATABASEPROPERTYEX: SQLSortOrder 0 for Windows
+  collations, ComparisonStyle 0 for BIN2, IsReadCommittedSnapshotOn NULL.
+
 
 # MSSQL System Catalog Views - Implementation Specification
 

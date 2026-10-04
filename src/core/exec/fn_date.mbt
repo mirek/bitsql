@@ -68,12 +68,13 @@ fn read_type(t : @types.SqlType) -> @types.SqlType {
 fn to_read_type(
   v : @types.Value,
   t : @types.SqlType,
+  dates : @types.DateSettings,
 ) -> (@types.Value, @types.SqlType) raise @types.SqlError {
   let rt = read_type(t)
   if rt == t {
     (v, t)
   } else {
-    (@types.cast(v, t, rt), rt)
+    (@types.cast(v, t, rt, dates~), rt)
   }
 }
 
@@ -206,17 +207,6 @@ fn iso_week(days : Int) -> Int {
 }
 
 ///|
-let month_names : Array[String] = [
-  "January", "February", "March", "April", "May", "June", "July", "August", "September",
-  "October", "November", "December",
-]
-
-///|
-let day_names : Array[String] = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
-]
-
-///|
 fn pad2(n : Int) -> String {
   if n < 10 {
     "0\{n}"
@@ -239,12 +229,13 @@ fn date_part(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   datefirst : Int,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   if v[1] is Null {
     return Null
   }
-  let (x, t) = to_read_type(v[1], args[1].ty)
+  let (x, t) = to_read_type(v[1], args[1].ty, dates)
   let datename = name == "DATENAME"
   let fname = if datename { "datename" } else { "datepart" }
   match t {
@@ -280,8 +271,10 @@ fn date_part(
   if datename {
     String(
       match p {
-        "month" => month_names[mo - 1]
-        "weekday" => day_names[weekday_index(m.days)]
+        // the session language's names (captured: settings/language)
+        "month" => @types.language(dates.language).months[mo - 1]
+        "weekday" =>
+          @types.language(dates.language).days[(weekday_index(m.days) + 6) % 7]
         "tzoffset" => offset_text(m.offset.unwrap_or(0))
         _ => n.to_string()
       },
@@ -309,6 +302,7 @@ fn datediff(
   name : String,
   v : Array[@types.Value],
   args : Array[@ir.Expr],
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   if v[1] is Null || v[2] is Null {
@@ -322,8 +316,8 @@ fn datediff(
       state=0,
     )
   }
-  let (a, _) = to_read_type(v[1], args[1].ty)
-  let (b, _) = to_read_type(v[2], args[2].ty)
+  let (a, _) = to_read_type(v[1], args[1].ty, dates)
+  let (b, _) = to_read_type(v[2], args[2].ty, dates)
   guard moment(a) is Some(ma) && moment(b) is Some(mb) else { return Null }
   let (d1, n1) = utc_moment(ma)
   let (d2, n2) = utc_moment(mb)
@@ -416,6 +410,7 @@ fn dateadd(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   let t = e.ty
@@ -433,7 +428,11 @@ fn dateadd(
       raise unsupported_part(p, "dateadd", t, 3)
     _ => ()
   }
-  let x = if args[2].ty == t { v[2] } else { @types.cast(v[2], args[2].ty, t) }
+  let x = if args[2].ty == t {
+    v[2]
+  } else {
+    @types.cast(v[2], args[2].ty, t, dates~)
+  }
   let amount = add_amount(v[1])
   if amount < @bigint.BigInt::from_int(-2147483648) ||
     amount > @bigint.BigInt::from_int(2147483647) {
@@ -592,11 +591,12 @@ fn add_ticks(
 fn eomonth(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   if v[0] is Null {
     return Null
   }
-  let d = match @types.cast(v[0], args[0].ty, Date) {
+  let d = match @types.cast(v[0], args[0].ty, Date, dates~) {
     Date(d) => d
     _ => return Null
   }
@@ -818,6 +818,7 @@ fn to_offset(
   v : Array[@types.Value],
   args : Array[@ir.Expr],
   e : @ir.Expr,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   if v[0] is Null || v[1] is Null {
     return Null
@@ -848,6 +849,7 @@ fn to_offset(
         } else {
           DateTime2(7)
         },
+        dates~,
       )
   }
   guard moment(x) is Some(m) else { return Null }
@@ -873,6 +875,7 @@ fn to_offset(
 fn isdate(
   v : @types.Value,
   t : @types.SqlType,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   match v {
     Null => Int(0)
@@ -880,7 +883,7 @@ fn isdate(
       if s.trim().length() == 0 {
         Int(0)
       } else {
-        Int(if @types.try_cast(v, t, DateTime) is Null { 0 } else { 1 })
+        Int(if @types.try_cast(v, t, DateTime, dates~) is Null { 0 } else { 1 })
       }
     _ => Int(0)
   }
@@ -892,6 +895,7 @@ fn datetrunc(
   args : Array[@ir.Expr],
   e : @ir.Expr,
   datefirst : Int,
+  dates : @types.DateSettings,
 ) -> @types.Value raise @types.SqlError {
   let p = part_of(v[0])
   if v[1] is Null {
@@ -919,7 +923,11 @@ fn datetrunc(
       (p == "microsecond" && scale < 6) => raise bad(11)
     _ => ()
   }
-  let x = if args[1].ty == t { v[1] } else { @types.cast(v[1], args[1].ty, t) }
+  let x = if args[1].ty == t {
+    v[1]
+  } else {
+    @types.cast(v[1], args[1].ty, t, dates~)
+  }
   guard moment(x) is Some(m) else { return Null }
   let (y, mo, _) = @types.civil_from_days(m.days)
   let days = match p {
@@ -966,21 +974,22 @@ fn call_date(
   args : Array[@ir.Expr],
   e : @ir.Expr,
   datefirst~ : Int,
+  dates? : @types.DateSettings = @types.default_date_settings,
 ) -> @types.Value? raise @types.SqlError {
   let r = match name {
-    "DATEADD" => dateadd(v, args, e)
-    "DATEDIFF" | "DATEDIFF_BIG" => datediff(name, v, args)
-    "DATEPART" | "DATENAME" => date_part(name, v, args, datefirst)
-    "EOMONTH" => eomonth(v, args)
+    "DATEADD" => dateadd(v, args, e, dates)
+    "DATEDIFF" | "DATEDIFF_BIG" => datediff(name, v, args, dates)
+    "DATEPART" | "DATENAME" => date_part(name, v, args, datefirst, dates)
+    "EOMONTH" => eomonth(v, args, dates)
     "DATEFROMPARTS"
     | "DATETIMEFROMPARTS"
     | "SMALLDATETIMEFROMPARTS"
     | "DATETIME2FROMPARTS"
     | "TIMEFROMPARTS"
     | "DATETIMEOFFSETFROMPARTS" => from_parts(name, v, e)
-    "TODATETIMEOFFSET" | "SWITCHOFFSET" => to_offset(name, v, args, e)
-    "ISDATE" => isdate(v[0], args[0].ty)
-    "DATETRUNC" => datetrunc(v, args, e, datefirst)
+    "TODATETIMEOFFSET" | "SWITCHOFFSET" => to_offset(name, v, args, e, dates)
+    "ISDATE" => isdate(v[0], args[0].ty, dates)
+    "DATETRUNC" => datetrunc(v, args, e, datefirst, dates)
     _ => return None
   }
   Some(r)

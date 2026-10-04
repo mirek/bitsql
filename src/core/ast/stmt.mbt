@@ -90,6 +90,29 @@ pub(all) enum StmtKind {
   /// `CREATE DATABASE name [COLLATE c] [...]`; file/option clauses are
   /// accepted and ignored (memory-only engine).
   CreateDatabase(Ident, collate~ : Ident?)
+  /// `ALTER DATABASE name|CURRENT ...`; `target` None is CURRENT.
+  AlterDatabase(target~ : Ident?, AlterDatabaseAction)
+} derive(Eq, Debug)
+
+///|
+/// What an ALTER DATABASE statement does.
+pub(all) enum AlterDatabaseAction {
+  /// `COLLATE name`
+  Collate(Ident)
+  /// `SET option [=] value [, ...] [WITH termination]`
+  SetOptions(Array[DatabaseOption])
+  /// Anything else (MODIFY, ADD FILE, SCOPED CONFIGURATION, ...): its
+  /// leading words, upper-cased, for the emulator error.
+  OtherAction(String)
+} derive(Eq, Debug)
+
+///|
+/// One `SET` option of ALTER DATABASE: upper-cased name and value (`ON`,
+/// `100`, `SIMPLE`, ...; None for bare options such as SINGLE_USER).
+pub(all) struct DatabaseOption {
+  name : String
+  value : String?
+  span : Span
 } derive(Eq, Debug)
 
 ///|

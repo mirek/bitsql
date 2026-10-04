@@ -38,12 +38,20 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
     Cast(inner, try_~, style~) => {
       let v = eval(ctx, inner)
       if try_ {
-        @types.try_cast(v, inner.ty, e.ty, style?)
+        @types.try_cast(v, inner.ty, e.ty, style?, dates=ctx.rt.dates)
       } else {
-        @types.cast(v, inner.ty, e.ty, style?)
+        @types.cast(v, inner.ty, e.ty, style?, dates=ctx.rt.dates)
       }
     }
-    Collate(a) => eval(ctx, a)
+    // varchar data changes code page with its collation (captured:
+    // settings/utf8, a UTF-8 varchar COLLATE'd to a CP1252 collation turns
+    // '😀' into '??')
+    Collate(a) =>
+      match (eval(ctx, a), a.ty.collation(), e.ty.collation()) {
+        (String(s), Some(from), Some(to)) if !e.ty.is_unicode() &&
+          from.code_page != to.code_page => String(@types.to_code_page(s, to))
+        (v, _, _) => v
+      }
     Arith(op, a, b) => {
       let va = eval(ctx, a)
       let vb = eval(ctx, b)
@@ -136,11 +144,19 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
         (String(s), String(pat)) => {
           let esc = match ve {
             String(x) if x.length() == 1 => Some(x.code_unit_at(0).to_int())
-            // captured: ESCAPE 'xx' and ESCAPE '' are 506
+            // captured: ESCAPE 'xx' and ESCAPE '' are 506, state 2 when
+            // any operand is Unicode (settings/like-escape-state)
             String(x) =>
               raise @types.sql_error(
                 506,
                 "The invalid escape character \"\{x}\" was specified in a LIKE predicate.",
+                state=if a.ty.is_unicode() ||
+                  p.ty.is_unicode() ||
+                  escape.map(x => x.ty.is_unicode()).unwrap_or(false) {
+                  2
+                } else {
+                  1
+                },
               )
             _ => None
           }
@@ -298,7 +314,7 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     // flips its bit (ANSI_WARNINGS OFF clears 8: 5488, captured msduck
     // session-property-context)
     Options => Int(5496 ^ ctx.rt.option_bits)
-    Language => String("us_english")
+    Language => String(@types.language(ctx.rt.dates.language).name)
     DateFirst => TinyInt(ctx.rt.datefirst)
     LockTimeout => Int(ctx.rt.lock_timeout)
     TextSize => Int(2147483647)

@@ -319,3 +319,53 @@ new `Catalog.system_tvf` hook: the binder folds the arguments and turns the
 rows into a VALUES plan with base-like column metadata, so the executor
 stays unaware of them. sp_describe_first_result_set shares the same core
 (session/describe.mbt).
+
+
+## 2026-10-04: database options on the server, RCSI as "no read locks"
+
+ALTER DATABASE settings live in `Server.db_options` (lowercased name →
+immutable `DbOptions`: collation, compatibility level, RCSI, snapshot
+isolation, cursor default, read-only, user access, recovery, ON/OFF option
+flags), not in `@store.Db`: ALTER DATABASE cannot run in a transaction
+(226), so the options never need rebasing, and request restarts and
+`emulator.snapshot` copy the map. `CREATE DATABASE … COLLATE` sets it too.
+Readers: `Session::db_collation()` (literals, variables, parameters, new
+columns, catalog view columns, savepoint names, case-sensitive object name
+checks), `rcsi()`, `check_snapshot_allowed()` and the read-only check.
+
+READ_COMMITTED_SNAPSHOT needs no row versions: a session's uncommitted
+changes already live only in its transaction view, and every READ COMMITTED
+statement starts by rebasing its transaction onto the newest committed
+state (`refresh_tx`, see "commits rebase" above). With RCSI on,
+`read_lock` therefore just returns no lock for plain READ COMMITTED reads;
+the statement sees the last committed state as of its start and never
+blocks. READCOMMITTEDLOCK, UPDLOCK/HOLDLOCK/XLOCK hints and all writes keep
+their locks; REPEATABLE READ and SERIALIZABLE are unchanged. SNAPSHOT
+transactions (already "no rebase, no read locks") now fail with 3952 when
+the database does not allow snapshot isolation, as SQL Server does.
+
+master stays alterable with `ALTER DATABASE CURRENT` (SQL Server: 12104 for
+tempdb/model/msdb, and master is not a user database) because master is the
+case database of process-isolated harness runs. A write while the database
+is READ_ONLY is detected in `Session::write` and turned into 3906 when the
+statement ends (its output is dropped, the batch ends), which covers every
+write path without touching each one.
+
+## 2026-10-04: SET DATEFORMAT / SET LANGUAGE travel with the cast
+
+String ↔ date/time conversions read the session's date order and language
+through `@types.DateSettings` (`Runtime.dates`), passed as an optional
+`dates~` argument of `@types.cast` / `try_cast` / `assign` / `render` and
+threaded by the executor (CAST/CONVERT nodes, date functions, DATE_BUCKET,
+PARSE) and the session (assignments, column conversions, RPC parameters).
+The default is us_english / mdy, so callers that never see session
+strings stay unchanged. The binder does not know the session settings, so
+it no longer folds string ↔ date/time casts (`session_dependent_cast` in
+`bind/fold.mbt`): they are evaluated at run time, where SQL Server's
+dateformat-dependent conversions are evaluated too. Language data (34
+languages: names, aliases, date order, first weekday, month and day names,
+INFO 5703 text) is generated from the oracle's sys.syslanguages
+(`scripts/gen-languages.py`). SET LANGUAGE applies the language's DATEFORMAT
+and DATEFIRST unless SET DATEFORMAT / DATEFIRST already ran in the same
+request (captured; flags reset per request). Error messages under a language
+with localized messages (German, French, …) stay English: fidelity trap.

@@ -91,13 +91,24 @@ fn checksum_value(v : @types.Value, ty : @types.SqlType, binary : Bool) -> Int? 
         if ty.is_unicode() {
           fold_units(s.iter().map(c => c.to_int()))
         } else {
-          fold_units(@types.cp1252_bytes(s).iter().map(signed_char))
+          fold_units(
+            @types.varchar_bytes(
+              s,
+              ty.collation().unwrap_or(@types.default_collation),
+            )
+            .iter()
+            .map(signed_char),
+          )
         }
       }
       if binary {
         return Some(plain())
       }
       let coll = ty.collation().unwrap_or(@types.default_collation)
+      // CHECKSUM weights of UTF-8 varchar are not modelled (not supported)
+      if coll.utf8() && !ty.is_unicode() && coll.kind is Linguistic {
+        return None
+      }
       let weighted = (table : FixedArray[Int]) => {
         fold_units(@types.cp1252_bytes(s).iter().map(b => table[b.to_int()]))
       }

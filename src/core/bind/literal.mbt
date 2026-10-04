@@ -164,8 +164,16 @@ fn binary_literal(text : String, params? : Bool = false) -> @ir.Expr {
 
 ///|
 fn string_literal(env : Env, s : String, national : Bool) -> @ir.Expr {
-  // An empty literal still has length 1 in metadata (varchar(1)).
-  let n = @cmp.maximum(1, s.length())
+  // An empty literal still has length 1 in metadata (varchar(1)); a varchar
+  // literal under a UTF-8 database collation counts UTF-8 bytes.
+  let n = @cmp.maximum(
+    1,
+    if !national && env.collation.utf8() {
+      @types.utf8_length(s)
+    } else {
+      s.length()
+    },
+  )
   let n = match (env.literal_params, national) {
     (true, true) if n <= 4000 => 4000
     (true, false) if n <= 8000 => 8000
@@ -176,7 +184,7 @@ fn string_literal(env : Env, s : String, national : Bool) -> @ir.Expr {
   } else {
     // Characters outside code page 1252 take SQL Server's best fit or '?'
     // (captured: 'Āłx🦆' is 0x416C783F3F).
-    let v = @types.cp1252_string(@types.cp1252_bytes(s))
+    let v = @types.to_code_page(s, env.collation)
     @ir.Expr::lit(String(v), VarChar(Some(n), env.collation))
   }
 }

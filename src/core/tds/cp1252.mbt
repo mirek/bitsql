@@ -48,3 +48,71 @@ pub fn cp1252_decode(b : BytesView) -> String {
   }
   sb.to_string()
 }
+
+///|
+/// The collation's fUTF8 flag (0x40 in the flags byte of the 5-byte TDS
+/// collation): char/varchar/text data travels as UTF-8.
+pub fn collation_is_utf8(c : Bytes) -> Bool {
+  c.length() >= 4 && (c[3].to_int() & 0x04) != 0
+}
+
+///|
+/// Wire bytes of char/varchar/text data under a collation.
+pub fn char_encode(s : String, collation : Bytes) -> Bytes {
+  if collation_is_utf8(collation) {
+    utf8_encode(s)
+  } else {
+    cp1252_encode(s)
+  }
+}
+
+///|
+/// Text of char/varchar/text wire bytes under a collation.
+pub fn char_decode(b : BytesView, collation : Bytes) -> String {
+  if collation_is_utf8(collation) {
+    @utf8.decode_lossy(b)
+  } else {
+    cp1252_decode(b)
+  }
+}
+
+///|
+/// UTF-8 bytes of a string; a lone surrogate becomes '?' (never aborts).
+fn utf8_encode(s : String) -> Bytes {
+  let out : Array[Byte] = []
+  let n = s.length()
+  let mut i = 0
+  while i < n {
+    let u = s.code_unit_at(i).to_int()
+    let cp = if u >= 0xD800 && u <= 0xDBFF && i + 1 < n {
+      let lo = s.code_unit_at(i + 1).to_int()
+      if lo >= 0xDC00 && lo <= 0xDFFF {
+        i += 1
+        0x10000 + ((u - 0xD800) << 10) + (lo - 0xDC00)
+      } else {
+        0x3F
+      }
+    } else if u >= 0xD800 && u <= 0xDFFF {
+      0x3F
+    } else {
+      u
+    }
+    if cp < 0x80 {
+      out.push(cp.to_byte())
+    } else if cp < 0x800 {
+      out.push((0xC0 | (cp >> 6)).to_byte())
+      out.push((0x80 | (cp & 0x3F)).to_byte())
+    } else if cp < 0x10000 {
+      out.push((0xE0 | (cp >> 12)).to_byte())
+      out.push((0x80 | ((cp >> 6) & 0x3F)).to_byte())
+      out.push((0x80 | (cp & 0x3F)).to_byte())
+    } else {
+      out.push((0xF0 | (cp >> 18)).to_byte())
+      out.push((0x80 | ((cp >> 12) & 0x3F)).to_byte())
+      out.push((0x80 | ((cp >> 6) & 0x3F)).to_byte())
+      out.push((0x80 | (cp & 0x3F)).to_byte())
+    }
+    i += 1
+  }
+  Bytes::from_array(out)
+}

@@ -29,17 +29,6 @@ fn Session::set_options(
       _ => None
     }
   }
-  let word = () => {
-    match value {
-      Word(w) => w.to_lower()
-      ValueExpr(e) =>
-        match self.eval(e).0 {
-          String(s) => s.to_lower()
-          _ => ""
-        }
-      _ => ""
-    }
-  }
   for n in names {
     match n.to_upper() {
       "NOCOUNT" => {
@@ -118,26 +107,70 @@ fn Session::set_options(
         cmd = Some(190)
       }
       "DATEFIRST" => {
+        self.cur_cmd = 249
         match number() {
-          Some(d) if d >= 1 && d <= 7 => self.rt.datefirst = d
+          Some(d) if d >= 1 && d <= 7 => {
+            self.rt.datefirst = d
+            self.datefirst_set = true
+          }
+          // captured: msduck rpc-session-scope, statement-level
+          Some(d) =>
+            raise @types.sql_error(2742, "SET DATEFIRST \{d} is out of range.")
+          // a NULL variable is 0 (captured: msduck rpc-session-scope #022)
+          None if value is ValueExpr(e) && self.eval(e).0 is Null =>
+            raise @types.sql_error(2742, "SET DATEFIRST 0 is out of range.")
           _ => raise unsupported(n)
         }
         cmd = Some(249)
       }
+      // statement errors 2741 / 2740 complete with CurCmd 249 and the
+      // batch goes on (captured: settings/dateformat, settings/language)
       "DATEFORMAT" => {
-        if word() != "mdy" {
-          raise unsupported(n)
+        self.cur_cmd = 249
+        let text = self.set_text(value)
+        match @types.DateFormat::parse(text) {
+          Some(f) => {
+            self.rt.dates = { ..self.rt.dates, format: f, }
+            self.dateformat_set = true
+          }
+          None =>
+            raise @types.sql_error(
+              2741,
+              "SET DATEFORMAT date order '\{text}' is invalid.",
+            )
         }
         cmd = Some(249)
       }
       "LANGUAGE" => {
-        let lang = word()
-        if lang != "us_english" && lang != "english" {
-          raise unsupported(n)
+        self.cur_cmd = 249
+        let text = self.set_text(value)
+        guard @types.find_language(text) is Some(lang) else {
+          raise @types.sql_error(
+            2740,
+            "SET LANGUAGE failed because '\{text}' is not an official language name or a language alias on this SQL Server.",
+          )
         }
-        // captured: ENVCHANGE language, INFO 5703, DONE 249
-        self.out.push(EnvChange(Language("us_english", "us_english")))
-        self.info(5703, 1, "Changed language setting to us_english.", line)
+        let old = @types.language(self.rt.dates.language).name
+        // the language's date order and first weekday, unless SET
+        // DATEFORMAT / DATEFIRST ran earlier in this request
+        self.rt.dates = {
+          format: if self.dateformat_set {
+            self.rt.dates.format
+          } else {
+            lang.dateformat
+          },
+          language: lang.langid,
+        }
+        if !self.datefirst_set {
+          self.rt.datefirst = lang.datefirst
+        }
+        // captured: ENVCHANGE language, INFO 5703 in the new language, DONE
+        // 249; inside EXEC / a procedure neither is sent (the setting
+        // reverts when the module ends)
+        if self.rt.nest_level == 0 {
+          self.out.push(EnvChange(Language(lang.name, old)))
+          self.info(5703, 1, lang.changed_message, line)
+        }
         cmd = Some(249)
       }
       "DEADLOCK_PRIORITY" => {
@@ -204,5 +237,25 @@ fn set_value_text(v : @ast.SetValue) -> String {
     Off => "OFF"
     Word(w) => w
     ValueExpr(_) => "<value>"
+  }
+}
+
+///|
+/// The text of a SET DATEFORMAT / SET LANGUAGE value as written: a bare or
+/// bracketed word, a string or a variable ('' for NULL).
+fn Session::set_text(self : Session, value : @ast.SetValue) -> String raise {
+  match value {
+    Word(w) => w
+    On => "ON"
+    Off => "OFF"
+    ValueExpr(e) =>
+      match self.eval(e) {
+        (Null, _) => ""
+        (v, ty) =>
+          match @types.cast(v, ty, NVarChar(None, self.db_collation())) {
+            String(s) => s
+            _ => ""
+          }
+      }
   }
 }

@@ -64,7 +64,7 @@ fn Session::function_def(
     )
   }
   let params : Array[@bind.UserParam] = def.params.map(p => {
-    match self.decl_type(p.type_, @types.default_collation) {
+    match self.decl_type(p.type_, self.db_collation()) {
       ScalarDecl(ty, _, _) =>
         { name: p.name, ty, default_: p.default_, table_type: None, }
       TableDecl(ut) =>
@@ -72,7 +72,7 @@ fn Session::function_def(
     }
   })
   let kind : @bind.UserFunctionKind = match def.returns {
-    Scalar(t, _) => Scalar(self.scalar_type(t, @types.default_collation))
+    Scalar(t, _) => Scalar(self.scalar_type(t, self.db_collation()))
     InlineTable(q) => Inline(q)
     TableVariable(_, body, _) => {
       // the declared return table, built like DECLARE @t TABLE (unsaved);

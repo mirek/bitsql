@@ -382,7 +382,9 @@ fn Session::resolve_object(
   let sid = if scope == 1 { Some(1) } else { db.schema_id(schema) }
   guard sid is Some(sid) else { return None }
   for o in objs {
-    if o.schema_id == sid && o.name.to_lower() == base.to_lower() {
+    if o.schema_id == sid &&
+      o.name.to_lower() == base.to_lower() &&
+      (scope == 1 || self.same_identifier(o.name, base)) {
       match want {
         Some(w) if w != o.code => return None
         _ => return Some(o)

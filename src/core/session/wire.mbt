@@ -23,6 +23,11 @@ pub fn collation_bytes(c : @types.Collation) -> Bytes {
       }
     }
   }
+  // fUTF8 (captured: Latin1_General_100_CI_AS_SC_UTF8 flags 77,
+  // Latin1_General_100_BIN2_UTF8 flags 96; settings/utf8)
+  if c.utf8() {
+    flags = flags | 0x40
+  }
   let sort_id = if c.sql_collation {
     match (c.case_sensitive, c.accent_sensitive, c.kind) {
       (_, _, Bin | Bin2) => 40

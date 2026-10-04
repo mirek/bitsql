@@ -1287,6 +1287,23 @@ let view_defs : Array[ViewDef] = [
       ),
     ],
   },
+  {
+    schema: "sys",
+    name: "syslanguages",
+    columns: [
+      vc("langid", SmallInt, false, false),
+      vc("dateformat", NChar(3, coll_default), false, false),
+      vc("datefirst", TinyInt, false, false),
+      vc("upgrade", Int, true, true),
+      vc("name", NVarChar(Some(128), coll_default), false, false),
+      vc("alias", NVarChar(Some(128), coll_default), false, false),
+      vc("months", NVarChar(Some(372), coll_default), true, true),
+      vc("shortmonths", NVarChar(Some(132), coll_default), true, true),
+      vc("days", NVarChar(Some(217), coll_default), true, true),
+      vc("lcid", Int, false, false),
+      vc("msglangid", SmallInt, false, false),
+    ],
+  },
 ]
 
 ///|

@@ -1022,5 +1022,27 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
     }
     Use(db) => self.s("(use " + ident_text(db) + ")")
     CreateDatabase(db, ..) => self.s("(create-database " + ident_text(db) + ")")
+    AlterDatabase(target~, action) => {
+      let t = match target {
+        Some(db) => ident_text(db)
+        None => "current"
+      }
+      let a = match action {
+        Collate(c) => "(collate " + ident_text(c) + ")"
+        SetOptions(opts) =>
+          "(set" +
+          opts
+          .map(o => {
+            match o.value {
+              Some(v) => " (" + o.name + " " + v + ")"
+              None => " " + o.name
+            }
+          })
+          .join("") +
+          ")"
+        OtherAction(w) => "(other " + w + ")"
+      }
+      self.s("(alter-database " + t + " " + a + ")")
+    }
   }
 }

@@ -76,9 +76,7 @@ fn Session::parameter_rows(self : Session, m : @store.Module) -> Array[VRow] {
   }
   for k, p in params {
     let x = match
-      (self.decl_type(p.type_, @types.default_collation) catch {
-        _ => continue
-      }) {
+      (self.decl_type(p.type_, self.db_collation()) catch { _ => continue }) {
       ScalarDecl(t, ut, _) => row(k + 1, p.name, Some(t), ut)
       TableDecl(ut) => row(k + 1, p.name, None, Some(ut.id))
     }

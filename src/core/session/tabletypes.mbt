@@ -120,7 +120,7 @@ fn Session::declared_var_type(
   name : String,
   tn : @ast.TypeName,
 ) -> DeclType raise @types.SqlError {
-  self.decl_type(tn, @types.default_collation) catch {
+  self.decl_type(tn, self.db_collation()) catch {
     @types.SqlError(number=2715, ..) => {
       self.trailing.push(
         @types.sql_error(

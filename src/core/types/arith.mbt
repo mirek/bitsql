@@ -47,7 +47,11 @@ pub fn arith(
     FString =>
       match (a, b) {
         (String(x), String(y)) => {
-          let joined = if rt.is_unicode() { x + y } else { to_cp1252(x + y) }
+          let joined = if rt.is_unicode() {
+            x + y
+          } else {
+            to_code_page(x + y, rt.collation().unwrap_or(default_collation))
+          }
           let cap = match rt {
             VarChar(Some(n), _)
             | NVarChar(Some(n), _)

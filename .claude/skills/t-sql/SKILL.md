@@ -674,6 +674,35 @@ mention the correction here.
   describe the first row-returning SELECT from the binder; compile errors
   become rows (DMF: ordinal 0 + 11501/11529) or errors (procedure).
   Rules in docs/reference/result-metadata.md.
+- 2026-10-04 (settings, corpus `settings/`, docs/reference/
+  database-settings.md and date-strings.md "DATEFORMAT and LANGUAGE"):
+  ALTER DATABASE completes with CurCmd 215; an unknown collation (448
+  **state 3**), a bad COMPATIBILITY_LEVEL (15048) and `CURRENT` in
+  tempdb/model/msdb (12104 state 2) are compile errors that end the batch
+  (DONE 253), an unknown database is 5011 (class 14) + 5069 and a
+  transaction 226 state 6 (both statement-level). Unknown SET option words
+  are 102 **state 6**. The database collation types literals, variables,
+  parameters and new columns (#temp: tempdb's) and, under CS/BIN, object
+  names. SET DATEFORMAT: legacy parser keeps a lone 4-digit part as the
+  year and swaps the others by the order (`2024-01-02` as datetime is Feb 1
+  under dmy); the new parser always reads a leading 4-digit year as y-m-d
+  and accepts nothing else under ydm. SET LANGUAGE also sets DATEFORMAT and
+  DATEFIRST unless those were SET earlier in the same batch; INFO 5703 and
+  error messages are localized (21 languages); inside EXEC it sends no
+  ENVCHANGE/INFO and reverts. 2741/2740 are statement-level (CurCmd 249).
+  LIKE ESCAPE errors (506) are state 2 when any operand is Unicode. 3952
+  (snapshot not allowed) and 3906 (read-only) end the batch. `x = NULL` and
+  `x IN (…, NULL)` never convert x to int (the NULL takes x's type).
+- 2026-10-04 (UTF-8 collations, settings/utf8): only `…_SC_UTF8` and
+  `…_BIN2_UTF8` exist for Latin1_General_100 (no `_SC` → 448). varchar(n)
+  counts UTF-8 bytes (2628 shows the longest whole-character prefix), CAST
+  of character data keeps the input collation (also outside UTF-8),
+  COLLATE between code pages converts with best fit, UPPER/LOWER are
+  varchar(min(8n, 8000)) and LEFT/RIGHT/SUBSTRING(…, k) varchar(min(8k, n)),
+  `_SC` LEN/LEFT/RIGHT/SUBSTRING/REVERSE count a surrogate pair once.
+  UPPER/LOWER map units by table version (v0: 1326 units, v100: 1764;
+  msduck unicode-case, `scripts/gen-case-map.py`).
+
 
 - 2026-10-04 (cursors, msduck-runs `cursor`, corpus `stmts/cursor-*`,
   rules in docs/reference/completions.md "Cursors"): the created type

@@ -15,19 +15,18 @@ priv struct Tx {
 
 ///|
 /// The innermost savepoint named `name` under the database collation
-/// (CI_AS here: 'casename' finds CaseName; trailing spaces are ignored).
+/// (CI_AS: 'casename' finds CaseName; trailing spaces are ignored).
 /// An empty name never matches (captured: 6401 state 2).
-fn Tx::savepoint_index(self : Tx, name : String) -> Int? {
+fn Tx::savepoint_index(
+  self : Tx,
+  name : String,
+  collation : @types.Collation,
+) -> Int? {
   if name == "" {
     return None
   }
   for i = self.savepoints.length() - 1; i >= 0; i = i - 1 {
-    if @types.compare_strings(
-        self.savepoints[i].0,
-        name,
-        @types.default_collation,
-      ) ==
-      0 {
+    if @types.compare_strings(self.savepoints[i].0, name, collation) == 0 {
       return Some(i)
     }
   }
@@ -66,6 +65,9 @@ fn Session::source(
 ///|
 /// Applies a database write for a scope (autocommit or into the transaction).
 fn Session::write(self : Session, scope : Int, db : @store.Db) -> Unit {
+  if scope == 0 && self.server.db_options(self.rt.database).read_only {
+    self.read_only_write = true
+  }
   match scope {
     1 => self.temp = db
     3 => self.tvars = db
@@ -191,7 +193,14 @@ fn Session::find_table(
   } else {
     let db = self.db_of(0)
     match db.lookup(schema, base) {
-      Some(id) => db.table(id).map(t => (0, t))
+      // a case- or binary-sensitive database collation also applies to
+      // object names (captured: settings/database-collation, OBJECT_ID
+      // 'AFTER_ALTER' is NULL under Latin1_General_100_CS_AS)
+      Some(id) =>
+        match db.table(id) {
+          Some(t) if self.same_identifier(t.name, base) => Some((0, t))
+          _ => None
+        }
       None => None
     }
   }

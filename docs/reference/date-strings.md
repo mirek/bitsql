@@ -121,3 +121,55 @@ bitsql implements 0, 1–5, 10, 11, 20, 21, 101–105, 110–112, 120, 121, 126,
 
 - `SET DATEFORMAT` other than mdy and `SET LANGUAGE` other than us_english
   raise 50100: conversions in `src/core/types` have no session context.
+
+## DATEFORMAT and LANGUAGE
+
+Captured 2026-10-04: `harness/corpus/settings/dateformat.cases.json` (every
+numeric shape × the six date orders × date/datetime/smalldatetime/
+datetime2/datetimeoffset/ISDATE) and `language.cases.json` (17 languages:
+settings, month and day names, styles, month names in strings), plus msduck
+`dateformat`, `temporal-guid-format`, `parse-try-parse`. Implementation:
+`DateStyle.order` / `lang` in `date_parse.mbt` from `@types.DateSettings`.
+
+Numeric dates (`a/b/c`, any of `/ - .`):
+
+- legacy parser (datetime, smalldatetime): a single 4-digit part is the
+  year wherever it stands; otherwise the year stands where the date order
+  puts it (ymd/ydm first, myd/dym middle, mdy/dmy last). The other two parts
+  are month and day in the order's relative order (m before d for mdy, ymd,
+  myd). So `2024-01-02` as datetime is **February 1** under dmy, ydm and
+  dym; `1/2024/2` is January 2 under mdy/ymd/myd.
+- new parser (date, datetime2, datetimeoffset): a **leading 4-digit year is
+  always y-m-d** under every order; otherwise the parts follow the order
+  (mdy, dmy, myd, dym; ymd reads `a/b/cccc` with a trailing 4-digit year as
+  m/d/y); **ydm accepts no other numeric date**. Two-digit years are
+  windowed as usual (`ymd 1/2/24` is 2001-02-24).
+- ISO forms with `T`, unseparated `yyyymmdd`/`yymmdd`, offsets and month
+  names are independent of the order.
+
+SET DATEFORMAT takes a bare word, a string or a variable (`DMY` too);
+anything else, NULL included, is 2741 "SET DATEFORMAT date order '…' is
+invalid." (statement-level, CurCmd 249). It reverts at the end of an EXEC /
+procedure, like other SET options. Explicit CONVERT styles keep their own
+order.
+
+SET LANGUAGE name|alias|'string'|[name]|@var (case-insensitive under the
+server collation: `english`, `British English`, `Deutsch`) sends ENVCHANGE
+language and INFO 5703 in that language ("Die Spracheneinstellung wurde in
+Deutsch geändert."), except inside EXEC/procedures (nothing sent, and the
+setting reverts). Unknown names and NULL are 2740 "SET LANGUAGE failed
+because '…' is not an official language name or a language alias on this
+SQL Server." It sets @@LANGUAGE (the language's own name, `Français`),
+@@LANGID, and the language's DATEFORMAT and DATEFIRST — unless SET
+DATEFORMAT / SET DATEFIRST already ran earlier **in the same batch** (then
+those stay; a separate earlier batch does not count). Month names in date
+strings: only the session language's full and short names (any case,
+accents significant: French `août` works, `aout` and `March` do not);
+Japanese/Korean/Chinese use the numbers `01`..`12` as month names, so
+`'2024 03 04'` parses there (bitsql: 50102). DATENAME(month|weekday) and
+styles 0/100/106/107/109/113 (also CAST of datetime/smalldatetime) print the
+language's names (`Mär  4 2024  5:06AM`); style 130 stays Arabic. FORMAT and
+PARSE without a culture use the language's culture (British en-GB, German
+de-DE, …; docs/reference/format-parse.md). Error messages are localized for 21 of
+the 34 languages (bitsql keeps English).
+

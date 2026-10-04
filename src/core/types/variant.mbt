@@ -25,6 +25,7 @@ fn cast_variant(
   from : SqlType,
   to : SqlType,
   style : Int?,
+  dates : DateSettings,
 ) -> Value raise SqlError {
   match (v, to) {
     (Null, _) => Null
@@ -38,7 +39,7 @@ fn cast_variant(
           state=3,
         )
       }
-      cast(inner, base, to, style?)
+      cast(inner, base, to, style?, dates~)
     }
     _ => raise internal("sql_variant cast of a non-variant value")
   }
@@ -49,14 +50,19 @@ fn cast_variant(
 /// conversion: like `cast`, but a sql_variant source only converts to a
 /// sql_variant target (257) and a target sql_variant rejects max types and
 /// timestamp (206). Checked before the value, so a NULL fails too.
-pub fn assign(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
+pub fn assign(
+  v : Value,
+  from : SqlType,
+  to : SqlType,
+  dates? : DateSettings = default_date_settings,
+) -> Value raise SqlError {
   // an untyped NULL (typed int by the binder) may be assigned to xml; the
   // type rule for other sources is checked at compile time (precheck_xml)
   if v is Null && (from is Xml || to is Xml) {
     return Null
   }
   check_assign(from, to)
-  cast(v, from, to)
+  cast(v, from, to, dates~)
 }
 
 ///|
