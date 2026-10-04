@@ -418,15 +418,18 @@ fn call(
       raise @types.not_supported("catalog functions")
     JsonValue =>
       match (v[0], v[1]) {
-        (Null, _) => Null
+        // the NULL path is checked first (captured: msduck
+        // unicode-json-storage#459)
         (_, Null) =>
           raise @types.sql_error(
             8116,
             "Argument data type NULL is invalid for argument 2 of JSON_VALUE function.",
             state=8,
           )
+        (Null, _) => Null
         (String(doc), String(path)) =>
-          match json(() => @json.json_value(doc, path)) {
+          match
+            json(() => @json.json_value(doc, path, lob=json_lob(args[0].ty))) {
             Some(s) => String(s)
             None => Null
           }
@@ -435,15 +438,16 @@ fn call(
     JsonQuery => {
       let path = if v.length() > 1 { v[1] } else { String("$") }
       match (v[0], path) {
-        (Null, _) => Null
         (_, Null) =>
           raise @types.sql_error(
             8116,
             "Argument data type NULL is invalid for argument 2 of JSON_QUERY function.",
             state=8,
           )
+        (Null, _) => Null
         (String(doc), String(p)) =>
-          match json(() => @json.json_query(doc, path=p)) {
+          match
+            json(() => @json.json_query(doc, path=p, lob=json_lob(args[0].ty))) {
             Some(s) => String(s)
             None => Null
           }
@@ -462,6 +466,13 @@ fn call(
         _ => raise @types.not_supported("ISJSON on non-character input")
       }
   }
+}
+
+///|
+/// Whether a JSON function's document argument is a max type (SQL Server
+/// reports other error states for those; see `@json.json_value`).
+fn json_lob(t : @types.SqlType) -> Bool {
+  t is (VarChar(None, _) | NVarChar(None, _))
 }
 
 ///|

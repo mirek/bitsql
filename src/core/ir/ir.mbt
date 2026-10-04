@@ -237,7 +237,8 @@ pub(all) enum Plan {
     Array[ResultColumn],
     root~ : String?,
     include_nulls~ : Bool,
-    without_array_wrapper~ : Bool
+    without_array_wrapper~ : Bool,
+    shape~ : JsonShape
   )
   /// Runs the input without raising warning 8153 for NULLs its aggregates
   /// eliminate (PIVOT's aggregates; captured: analytic/pivot).
@@ -266,6 +267,20 @@ pub(all) enum XmlMode {
   XmlAuto
   XmlPath
 } derive(Debug, Eq)
+
+///|
+/// How FOR JSON lays out its columns (resolved by the binder): `raw` marks
+/// columns whose text is JSON (embedded as is); `levels` is FOR JSON AUTO's
+/// nesting level per column (empty for PATH, which nests by dotted names)
+/// and `names` the name of each level (used for the arrays below the first).
+pub(all) struct JsonShape {
+  raw : Array[Bool]
+  levels : Array[Int]
+  /// AUTO: whether the column is a source column (expressions do not take
+  /// part in grouping a level's rows)
+  keys : Array[Bool]
+  names : Array[String]
+} derive(Debug)
 
 ///|
 /// FOR XML options, resolved by the binder.

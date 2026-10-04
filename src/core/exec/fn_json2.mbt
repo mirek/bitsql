@@ -113,6 +113,34 @@ fn call_json2(
       buf.write_char(if object { '}' } else { ']' })
       Some(String(buf.to_string()))
     }
+    "ISJSON" =>
+      match v[0] {
+        Null => Some(Null)
+        String(doc) => {
+          let ty : @json.IsJsonType = match v[1] {
+            String("VALUE") => Value
+            String("ARRAY") => Array
+            String("OBJECT") => Object
+            _ => Scalar
+          }
+          Some(Int(json(() => @json.isjson(doc, ty~))))
+        }
+        _ => raise @types.not_supported("ISJSON on non-character input")
+      }
+    "JSON_PATH_EXISTS" =>
+      match (v[0], v[1]) {
+        (_, Null) =>
+          raise @types.sql_error(
+            8116,
+            "Argument data type NULL is invalid for argument 2 of JSON_PATH_EXISTS function.",
+            state=8,
+          )
+        (Null, _) => Some(Null)
+        (String(doc), String(path)) =>
+          Some(Int(json(() => @json.json_path_exists(doc, path))))
+        _ =>
+          raise @types.not_supported("JSON_PATH_EXISTS on non-character input")
+      }
     "JSON_MODIFY" =>
       match (v[0], v[1]) {
         (Null, _) => Some(Null)

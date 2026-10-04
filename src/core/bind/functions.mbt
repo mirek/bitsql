@@ -200,6 +200,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "JSON_VALUE" => {
       arity(name, args, 2)
+      // captured: a bare NULL path is 8116 at compile time for JSON_VALUE
+      // only (JSON_QUERY reports it at run time; msduck
+      // unicode-json-storage#450)
+      if args[1].kind is Null {
+        raise null_arg(2, "json_value")
+      }
       constant_json_check(
         mk(Call(JsonValue, bound()), nvarchar(Some(4000)), true),
       )
@@ -221,8 +227,19 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         raise bad_arg_type(x.ty, 1, "isjson")
       }
       if args.length() == 2 {
-        // ISJSON(x, VALUE | ARRAY | OBJECT | SCALAR)
-        raise @types.not_supported("ISJSON with a JSON type constraint")
+        // ISJSON(x, VALUE | ARRAY | OBJECT | SCALAR): a bare (or bracketed)
+        // word, case-insensitive; an unknown word is 155, anything else
+        // (string, NULL, variable) 1023 (captured json3 probes)
+        // captured: text/ntext are 8116 here too (msduck isjson-coercion)
+        if x.ty.is_lob() {
+          raise bad_arg_type(x.ty, 1, "isjson")
+        }
+        let ty = isjson_type_arg(args[1])
+        return named(
+          "ISJSON",
+          [x, @ir.Expr::lit(String(ty), nvarchar(Some(10)))],
+          Int,
+        )
       }
       mk(Call(IsJson, [x]), Int, true)
     }

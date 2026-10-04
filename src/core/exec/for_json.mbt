@@ -168,12 +168,28 @@ fn json_write(node : Array[(String, JsonNode)], buf : StringBuilder) -> Unit {
 }
 
 ///|
+/// One FOR JSON value: JSON text columns (`raw`) are embedded as is
+/// (captured: msduck gaps-json_string#039/#044, unicode-json-storage
+/// for-json-fragment).
+fn json_cell(
+  v : @types.Value,
+  c : @ir.ResultColumn,
+  raw : Bool,
+) -> String raise @types.SqlError {
+  match v {
+    String(s) if raw => s
+    _ => json_scalar(v, c.ty)
+  }
+}
+
+///|
 fn run_for_json(
   rows : Array[Row],
   columns : Array[@ir.ResultColumn],
   root : String?,
   include_nulls : Bool,
   without_array_wrapper : Bool,
+  shape : @ir.JsonShape,
 ) -> Array[Row] raise @types.SqlError {
   if rows.is_empty() {
     return []
@@ -187,28 +203,39 @@ fn run_for_json(
   if !without_array_wrapper {
     buf.write_char('[')
   }
-  for i, row in rows {
-    if i > 0 {
-      buf.write_char(',')
-    }
-    let node = []
-    for j, c in columns {
-      let v = row[j]
-      let text = if v is Null {
-        if !include_nulls {
-          continue
-        }
-        "null"
-      } else {
-        json_scalar(v, c.ty)
+  let raw = (j : Int) => j < shape.raw.length() && shape.raw[j]
+  if shape.levels.is_empty() {
+    for i, row in rows {
+      if i > 0 {
+        buf.write_char(',')
       }
-      json_insert(
-        node,
-        c.name.split(".").map(p => p.to_owned()).to_array(),
-        text,
-      )
+      let node = []
+      for j, c in columns {
+        let v = row[j]
+        let text = if v is Null {
+          if !include_nulls {
+            continue
+          }
+          "null"
+        } else {
+          json_cell(v, c, raw(j))
+        }
+        json_insert(
+          node,
+          c.name.split(".").map(p => p.to_owned()).to_array(),
+          text,
+        )
+      }
+      json_write(node, buf)
     }
-    json_write(node, buf)
+  } else {
+    let top = auto_tree(rows, columns, shape)
+    for i, n in top {
+      if i > 0 {
+        buf.write_char(',')
+      }
+      auto_write(n, 0, columns, shape, include_nulls, buf)
+    }
   }
   if !without_array_wrapper {
     buf.write_char(']')
@@ -229,4 +256,118 @@ fn run_for_json(
     start = end
   }
   out
+}
+
+///|
+/// A FOR JSON AUTO object: the row that opened it and the objects of the
+/// next level nested in it.
+priv struct AutoNode {
+  row : Row
+  children : Array[AutoNode]
+}
+
+///|
+/// FOR JSON AUTO nesting (captured: msduck gaps-json_string#010-#046): one
+/// level per source table in the order of its first selected column; a
+/// row joins the previous object of a level when that level's values equal
+/// the previous row's (consecutive rows only, source columns only, compared
+/// under the column's collation), else it opens a new one. The deepest level
+/// never merges.
+fn auto_tree(
+  rows : Array[Row],
+  columns : Array[@ir.ResultColumn],
+  shape : @ir.JsonShape,
+) -> Array[AutoNode] raise @types.SqlError {
+  let depth = shape.names.length()
+  let top : Array[AutoNode] = []
+  for row in rows {
+    let mut list = top
+    for l in 0..<depth {
+      let node = match list.last() {
+        Some(prev) if l < depth - 1 &&
+          same_level(prev.row, row, l, columns, shape) => prev
+        _ => {
+          let n : AutoNode = { row, children: [], }
+          list.push(n)
+          n
+        }
+      }
+      list = node.children
+    }
+  }
+  top
+}
+
+///|
+fn same_level(
+  a : Row,
+  b : Row,
+  level : Int,
+  columns : Array[@ir.ResultColumn],
+  shape : @ir.JsonShape,
+) -> Bool raise @types.SqlError {
+  for j, c in columns {
+    if shape.levels[j] != level || !shape.keys[j] {
+      continue
+    }
+    match (a[j], b[j]) {
+      (Null, Null) => ()
+      (Null, _) | (_, Null) => return false
+      (x, y) => {
+        let collation = c.ty.collation().unwrap_or(@types.default_collation)
+        if @types.compare(x, y, collation~) != Some(0) {
+          return false
+        }
+      }
+    }
+  }
+  true
+}
+
+///|
+fn auto_write(
+  n : AutoNode,
+  level : Int,
+  columns : Array[@ir.ResultColumn],
+  shape : @ir.JsonShape,
+  include_nulls : Bool,
+  buf : StringBuilder,
+) -> Unit raise @types.SqlError {
+  buf.write_char('{')
+  let mut first = true
+  for j, c in columns {
+    if shape.levels[j] != level {
+      continue
+    }
+    let v = n.row[j]
+    if v is Null && !include_nulls {
+      continue
+    }
+    if !first {
+      buf.write_char(',')
+    }
+    first = false
+    json_escape(c.name, buf)
+    buf.write_char(':')
+    if v is Null {
+      buf.write_string("null")
+    } else {
+      buf.write_string(json_cell(v, c, j < shape.raw.length() && shape.raw[j]))
+    }
+  }
+  if level + 1 < shape.names.length() {
+    if !first {
+      buf.write_char(',')
+    }
+    json_escape(shape.names[level + 1], buf)
+    buf.write_string(":[")
+    for i, child in n.children {
+      if i > 0 {
+        buf.write_char(',')
+      }
+      auto_write(child, level + 1, columns, shape, include_nulls, buf)
+    }
+    buf.write_char(']')
+  }
+  buf.write_char('}')
 }

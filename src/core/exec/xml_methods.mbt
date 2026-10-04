@@ -130,13 +130,21 @@ fn xml_nodes_rows(
 /// input). The DONE count of the statement is not touched.
 fn run_concat(ctx : Ctx, inner : @ir.Plan) -> Array[Row] raise @types.SqlError {
   let rows = match inner {
-    ForJson(input, columns, root~, include_nulls~, without_array_wrapper~) =>
+    ForJson(
+      input,
+      columns,
+      root~,
+      include_nulls~,
+      without_array_wrapper~,
+      shape~
+    ) =>
       run_for_json(
         run(ctx, input),
         columns,
         root,
         include_nulls,
         without_array_wrapper,
+        shape,
       )
     other => run(ctx, other)
   }

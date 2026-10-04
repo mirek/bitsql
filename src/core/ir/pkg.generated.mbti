@@ -197,6 +197,13 @@ pub(all) enum JoinKind {
   Cross
 } derive(Eq, @debug.Debug)
 
+pub(all) struct JsonShape {
+  raw : Array[Bool]
+  levels : Array[Int]
+  keys : Array[Bool]
+  names : Array[String]
+} derive(@debug.Debug)
+
 pub(all) struct OpenJsonColumn {
   path : String
   as_json : Bool
@@ -234,7 +241,7 @@ pub(all) enum Plan {
   TableFunc(TableFn, Array[Expr])
   WithParams(Array[Expr], Plan)
   UserTable(Int, Array[Expr])
-  ForJson(Plan, Array[ResultColumn], root~ : String?, include_nulls~ : Bool, without_array_wrapper~ : Bool)
+  ForJson(Plan, Array[ResultColumn], root~ : String?, include_nulls~ : Bool, without_array_wrapper~ : Bool, shape~ : JsonShape)
   NoNullWarning(Plan)
   Unpivot(Plan, keep~ : Array[Int], columns~ : Array[Int], names~ : Array[String])
   ForXml(Plan, Array[ResultColumn], ForXmlSpec, chunked~ : Bool)

@@ -259,6 +259,9 @@ fn precheck_batch(
   if failure is None {
     failure = precheck_xml(stmts, types)
   }
+  if failure is None {
+    failure = precheck_json(stmts)
+  }
   failure
 }
 

@@ -295,8 +295,10 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     raise AbortBatch
   }
   // an XML parse error in an RPC request has no DONEINPROC: DONEPROC
-  // follows the ERROR (captured: xml/rpc#001)
-  if !(self.rpc && e.number() >= 9400 && e.number() < 9500) {
+  // follows the ERROR (captured: xml/rpc#001); so has a JSON error
+  // (captured: msduck isjson-depth, json-constructors#087/#091)
+  if !(self.rpc &&
+    ((e.number() >= 9400 && e.number() < 9500) || json_aborts_batch(e))) {
     self.done(cmd, error=true)
   }
   if ends_batch {
@@ -340,7 +342,17 @@ fn aborts_batch(
   is_identity_overflow(e) ||
   // XML parse errors (captured: xml/type#059, xml/rpc#001)
   (n >= 9400 && n < 9500) ||
+  json_aborts_batch(e) ||
   (n >= 50100 && n <= 50199)
+}
+
+///|
+/// JSON run-time errors (136xx, and the NULL path 8116 state 8 of the JSON
+/// functions) end the batch (captured json3 probes: the next statement does
+/// not run; a TRY still catches them).
+fn json_aborts_batch(e : @types.SqlError) -> Bool {
+  let n = e.number()
+  (n >= 13600 && n < 13700) || (n == 8116 && e.state() == 8)
 }
 
 ///|

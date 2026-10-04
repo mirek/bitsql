@@ -88,12 +88,16 @@ fn check_depth(depth : Int) -> Unit raise JsonError {
 
 ///|
 /// Scans one value starting at `pos` (no leading whitespace), validating it
-/// entirely. `depth` is the number of enclosing containers.
+/// entirely. `depth` is the number of enclosing containers. Nesting is
+/// checked lazily like SQL Server (msduck isjson-depth, json3 probes): a
+/// container opened inside 129 containers fails at once, while a scalar or
+/// a member name inside 129 containers fails only once it is complete (so
+/// `x` or an unterminated string there is a 13609 instead).
 fn Scanner::skip_value(self : Scanner, depth : Int) -> Kind raise JsonError {
-  check_depth(depth)
   let kind = self.kind_at()
   match kind {
     Object => {
+      check_depth(depth)
       self.pos += 1
       self.ws()
       if self.peek() == 0x7D {
@@ -102,6 +106,7 @@ fn Scanner::skip_value(self : Scanner, depth : Int) -> Kind raise JsonError {
       }
       while true {
         ignore(self.string_value())
+        check_depth(depth + 1)
         self.ws()
         self.expect(0x3A)
         self.ws()
@@ -121,6 +126,7 @@ fn Scanner::skip_value(self : Scanner, depth : Int) -> Kind raise JsonError {
       }
     }
     Array => {
+      check_depth(depth)
       self.pos += 1
       self.ws()
       if self.peek() == 0x5D {
@@ -143,15 +149,26 @@ fn Scanner::skip_value(self : Scanner, depth : Int) -> Kind raise JsonError {
         }
       }
     }
-    String => ignore(self.string_value())
-    Boolean =>
+    String => {
+      ignore(self.string_value())
+      check_depth(depth)
+    }
+    Boolean => {
       if self.peek() == 0x74 {
         self.literal("true")
       } else {
         self.literal("false")
       }
-    Null => self.literal("null")
-    Number => self.number()
+      check_depth(depth)
+    }
+    Null => {
+      self.literal("null")
+      check_depth(depth)
+    }
+    Number => {
+      self.number()
+      check_depth(depth)
+    }
   }
   kind
 }

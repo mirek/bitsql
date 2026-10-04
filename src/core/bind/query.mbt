@@ -1747,50 +1747,10 @@ pub fn bind_query(
       }
       bq
     }
-    Some(ForJson(mode~, root~, include_null_values~, without_array_wrapper~)) => {
-      let bq = bind_query_inner(env, { ..q, for_clause: None, }, top_level=true)
-      if mode is JsonAuto {
-        // AUTO nests the rows of joined tables; only one source is supported
-        let single = match q.body {
-          Select(
-            {
-              from: []
-              | [{ kind: Table(_, ..) | TableVar(_, ..) | Derived(_, ..), .. }],
-              ..
-            }
-          ) => true
-          _ => false
-        }
-        if !single || bq.columns.iter().any(c => c.name.contains(".")) {
-          raise @types.not_supported("FOR JSON AUTO over joins or dotted names")
-        }
-      }
-      for c in bq.columns {
-        if c.name == "" {
-          raise err(
-            13605, "Column expressions and data sources without names or aliases cannot be formatted as JSON text using FOR JSON clause. Add alias to the unnamed column or table.",
-          )
-        }
-      }
-      {
-        plan: ForJson(
-          bq.plan,
-          bq.columns,
-          root~,
-          include_nulls=include_null_values,
-          without_array_wrapper~,
-        ),
-        columns: [
-          {
-            name: for_json_column,
-            ty: NVarChar(None, env.collation),
-            nullable: true,
-            origin: SetOperation,
-          },
-        ],
-        order: [],
-      }
-    }
+    Some(ForJson(mode~, root~, include_null_values~, without_array_wrapper~)) =>
+      bind_for_json(
+        env, q, mode, root, include_null_values, without_array_wrapper,
+      )
     Some(_) => bind_for_xml(env, q, true)
   }
 }

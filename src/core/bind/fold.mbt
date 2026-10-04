@@ -214,6 +214,11 @@ fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
   guard e.kind is Call(_, args) && args.iter().all(a => a.kind is Lit(_)) else {
     return e
   }
+  // a NULL path is 8116 at run time, after the column metadata (captured:
+  // msduck json-extraction-boundaries#052)
+  if args.iter().any(a => a.kind is Lit(Null)) {
+    return e
+  }
   let ctx : @exec.Ctx = {
     rt: fold_runtime,
     vars: [],

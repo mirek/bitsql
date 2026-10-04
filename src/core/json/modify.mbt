@@ -15,98 +15,17 @@
 /// strict ones raise 13608.
 
 ///|
-priv struct ModifyPath {
-  append : Bool
-  strict : Bool
-  steps : Array[Step]
-}
-
-///|
-/// `[append] [lax|strict] $...` with JSON_MODIFY's 13607 states: 22 when
-/// the path does not start with a mode or `$`, 21 inside `[...]`, 14
-/// elsewhere; `[*]` is 13660.
-fn parse_modify_path(path : String) -> ModifyPath raise JsonError {
-  let n = path.length()
-  let at = (i : Int) => if i < n { path.code_unit_at(i).to_int() } else { -1 }
-  let fail = (i : Int, state : Int) => {
-    JsonError(13607, state, unexpected("path", path, i))
+/// JSON_MODIFY's path: the common grammar plus `append`; advanced
+/// accessors that select several values are 13660 state 4 (captured: `[*]`,
+/// `.*`, `[0 to 1]`; `[0 to 0]` is an index and `[last]` keeps its own 13660).
+fn parse_modify_path(path : String) -> Path raise JsonError {
+  let p = parse_path(path, allow_append=true)
+  if p.is_multi() {
+    raise JsonError(
+      13660, 4, "JsonModify not yet supported for advanced JSON array accessors.",
+    )
   }
-  let mut pos = 0
-  while at(pos) == 0x20 {
-    pos += 1
-  }
-  let mut append = false
-  let mut prefixed = false
-  if path[pos:].has_prefix("append") && (pos + 6 == n || at(pos + 6) == 0x20) {
-    append = true
-    prefixed = true
-    pos += 6
-    while at(pos) == 0x20 {
-      pos += 1
-    }
-  }
-  let mut strict = false
-  if path[pos:].has_prefix("strict") {
-    strict = true
-    prefixed = true
-    pos += 6
-  } else if path[pos:].has_prefix("lax") {
-    prefixed = true
-    pos += 3
-  }
-  while at(pos) == 0x20 {
-    pos += 1
-  }
-  if at(pos) != 0x24 {
-    raise fail(pos, if prefixed { 14 } else { 22 })
-  }
-  pos += 1
-  let steps = []
-  while pos < n {
-    match at(pos) {
-      0x2E => {
-        pos += 1
-        if at(pos) == 0x22 {
-          let s : Scanner = { text: path, pos, doc_state: 14, }
-          let key = s.string_value() catch { _ => raise fail(s.pos, 14) }
-          pos = s.pos
-          steps.push(Key(key))
-        } else {
-          let start = pos
-          while pos < n && !(at(pos) is (0x2E | 0x5B | 0x20)) {
-            pos += 1
-          }
-          if pos == start {
-            raise fail(pos, 14)
-          }
-          steps.push(Key(path.unsafe_substring(start~, end=pos)))
-        }
-      }
-      0x5B => {
-        pos += 1
-        if at(pos) == 0x2A {
-          raise JsonError(
-            13660, 4, "JsonModify not yet supported for advanced JSON array accessors.",
-          )
-        }
-        let start = pos
-        while at(pos) is (0x30..=0x39) {
-          pos += 1
-        }
-        if pos == start || at(pos) != 0x5D || pos - start > 9 {
-          raise fail(pos, 21)
-        }
-        let mut v = 0
-        for i in start..<pos {
-          v = v * 10 + (at(i) - 0x30)
-        }
-        steps.push(Index(v))
-        pos += 1
-      }
-      _ => raise fail(pos, 14)
-    }
-  }
-  { append, strict, steps, }
+  p
 }
 
 ///|
@@ -262,6 +181,7 @@ pub fn json_modify(
     let ok = match step {
       Key(_) => c == 0x7B
       Index(_) => c == 0x5B
+      _ => false
     }
     if !ok {
       return missing()

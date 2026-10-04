@@ -22,13 +22,15 @@ pub fn isjson(String, ty? : IsJsonType) -> Int raise JsonError
 
 pub fn json_modify(String, String, String?) -> String raise JsonError
 
-pub fn json_query(String, path? : String) -> String? raise JsonError
+pub fn json_path_exists(String, String) -> Int raise JsonError
 
-pub fn json_value(String, String) -> String? raise JsonError
+pub fn json_query(String, path? : String, lob? : Bool) -> String? raise JsonError
+
+pub fn json_value(String, String, lob? : Bool) -> String? raise JsonError
 
 pub fn openjson(String, path? : String) -> Array[OpenJsonRow] raise JsonError
 
-pub fn parse_path(String, state? : Int) -> Path raise JsonError
+pub fn parse_path(String, allow_append? : Bool) -> Path raise JsonError
 
 pub fn quote(String) -> String
 
@@ -66,13 +68,18 @@ pub(all) struct OpenJsonRow {
 
 pub(all) struct Path {
   strict : Bool
+  append : Bool
   steps : Array[Step]
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Step {
   Key(String)
   Index(Int)
+  AnyKey
+  AnyIndex
+  Range(Int64, Int64)
 } derive(Eq, @debug.Debug)
+pub fn Step::is_multi(Self) -> Bool
 
 // Type aliases
 

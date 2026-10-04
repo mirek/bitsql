@@ -248,11 +248,20 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       out
     }
     UserTable(id, args) => (ctx.user_table)(id, args.map(a => eval(ctx, a)))
-    ForJson(input, columns, root~, include_nulls~, without_array_wrapper~) => {
+    ForJson(
+      input,
+      columns,
+      root~,
+      include_nulls~,
+      without_array_wrapper~,
+      shape~
+    ) => {
       let rows = run(ctx, input)
       // captured: the DONE count is the number of input rows
       ctx.rt.count_override = Some(rows.length().to_int64())
-      run_for_json(rows, columns, root, include_nulls, without_array_wrapper)
+      run_for_json(
+        rows, columns, root, include_nulls, without_array_wrapper, shape,
+      )
     }
     ForXml(input, columns, spec, chunked~) => {
       let rows = run(ctx, input)
