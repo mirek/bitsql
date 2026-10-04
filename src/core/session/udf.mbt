@@ -242,7 +242,7 @@ fn Session::call_table_udf(
     raise @types.not_supported("this table-valued function call")
   }
   let rows = self.in_function(d, args, () => {
-    self.exec_declare_table(tv, table)
+    self.exec_declare_table(tv, table, -1)
     ignore(self.udf_list(body, None))
     match self.find_table_var(tv) {
       Some(t) => self.tvars.rows(t.id).map(kv => kv.1)

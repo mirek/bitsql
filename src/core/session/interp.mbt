@@ -32,6 +32,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     Block(_) => ()
     _ => f.line_mark = line
   }
+  self.recompile_temp_refs(s)
   self.rt.stmt_reads = statement_reads(self.slice(s.span))
   self.rt.stmt_dml = match s.kind {
     Insert(_) | Update(_) | Delete(_) | Merge(_) => true
@@ -518,8 +519,15 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.done(192)
       if @exec.is_true(v) {
         self.exec_block(then_)
-      } else if else_ is Some(e) {
-        self.exec_block(e)
+        match else_ {
+          Some(e) => self.declare_skipped_tables(e)
+          None => ()
+        }
+      } else {
+        self.declare_skipped_tables(then_)
+        if else_ is Some(e) {
+          self.exec_block(e)
+        }
       }
     }
     While(cond, body) => {
@@ -544,6 +552,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
           break
         }
       }
+      self.declare_skipped_tables(body)
     }
     Block(list) => self.exec_list(list)
     Break => {
@@ -700,7 +709,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.ddl_cmd = 198
       self.exec_create_table(ct)
     }
-    DeclareTable(name, body) => self.exec_declare_table(name, body)
+    DeclareTable(name, body) =>
+      self.exec_declare_table(name, body, s.span.start)
     Drop(kind, if_exists~, names) => self.exec_drop(kind, if_exists, names)
     Insert(ins) => self.exec_insert(ins)
     Update(u) => self.exec_update(u)

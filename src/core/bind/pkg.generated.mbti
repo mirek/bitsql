@@ -30,6 +30,8 @@ pub fn has_aggregate(@ast.Expr) -> Bool
 
 pub fn is_null_argument(@ast.Expr) -> Bool
 
+pub fn missing_object_error(@ast.ObjectName) -> @types.SqlError
+
 pub fn resolve_type(@ast.TypeName, TypeContext, @types.Collation) -> @types.SqlType raise @types.SqlError
 
 pub fn unify_types(Array[@types.SqlType]) -> @types.SqlType raise @types.SqlError

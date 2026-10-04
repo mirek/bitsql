@@ -1108,8 +1108,15 @@ fn Session::exec_declare_table(
   self : Session,
   name : String,
   body : @ast.TableBody,
+  site : Int,
 ) -> Unit raise {
   let key = name.to_lower()
+  // DECLARE is compile-time: run again (a loop) it keeps the table and its
+  // rows (captured: msduck gaps-temp_tables #039)
+  match self.frame().tables.get(key) {
+    Some(id) if self.tvar_sites.get(id) == Some(site) => return
+    _ => ()
+  }
   if self.frame().tables.contains(key) || self.frame().vars.contains(key) {
     raise @types.sql_error(
       134,
@@ -1122,6 +1129,40 @@ fn Session::exec_declare_table(
   let t = self.table_from_body(id, "dbo", internal, body, self.tvars, 3)
   self.tvars = self.tvars.create_table(t)
   self.frame().tables[key] = id
+  self.tvar_sites[id] = site
+}
+
+///|
+/// Table variables declared in a branch that does not run still exist
+/// (declarations are compile-time; captured: msduck gaps-temp_tables #040).
+fn Session::declare_skipped_tables(self : Session, s : @ast.Stmt) -> Unit raise {
+  match s.kind {
+    DeclareTable(name, body) =>
+      if !self.frame().tables.contains(name.to_lower()) {
+        self.exec_declare_table(name, body, s.span.start)
+      }
+    Block(list) =>
+      for x in list {
+        self.declare_skipped_tables(x)
+      }
+    If(_, a, b) => {
+      self.declare_skipped_tables(a)
+      match b {
+        Some(e) => self.declare_skipped_tables(e)
+        None => ()
+      }
+    }
+    While(_, body) => self.declare_skipped_tables(body)
+    TryCatch(a, b) => {
+      for x in a {
+        self.declare_skipped_tables(x)
+      }
+      for x in b {
+        self.declare_skipped_tables(x)
+      }
+    }
+    _ => ()
+  }
 }
 
 ///|

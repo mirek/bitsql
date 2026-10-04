@@ -300,6 +300,16 @@ pub struct Session {
   priv applocks : Map[String, AppLock]
   /// The parked request waited in sp_getapplock (its re-run returns 1).
   mut applock_waited : Bool
+  /// Database-qualified temp table references (`tempdb..#t`) of the text
+  /// being run whose table did not exist when it was compiled: (text
+  /// offset, line, database as written). Their statement repeats INFO 2701
+  /// when it is recompiled (session/temp_refs.mbt).
+  priv mut temp_db_refs : Array[(Int, Int, String)]
+  /// Table variable id → text offset of its DECLARE (a re-run DECLARE,
+  /// in a loop, is a no-op).
+  priv tvar_sites : Map[Int, Int]
+  /// Catalog views of tempdb are being computed (sysviews.mbt).
+  priv mut view_tempdb : Bool
   /// Timeout of the current lock wait when it is not SET LOCK_TIMEOUT
   /// (sp_getapplock @LockTimeout).
   mut wait_ms : Int?
@@ -415,6 +425,9 @@ pub fn Session::new(
     app_name: "",
     applocks: Map([]),
     applock_waited: false,
+    temp_db_refs: [],
+    tvar_sites: Map([]),
+    view_tempdb: false,
     wait_ms: None,
     bulk: None,
     lock_timeout: -1,
@@ -603,6 +616,7 @@ pub fn Session::run_batch(
   self.text = text
   self.rpc = false
   self.frames.clear()
+  self.tvar_sites.clear()
   self.frames.push(Frame::new())
   self.schema_ddl = false
   self.abort_cmd = None
@@ -686,11 +700,17 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     Some(name) => self.text_error(readonly_error(name), 1)
     None => ()
   }
+  let saved_refs = self.temp_db_refs
+  self.temp_db_refs = self.compile_temp_refs(text)
+  errdefer {
+    self.temp_db_refs = saved_refs
+  }
   self.exec_list(stmts) catch {
     Return(_) if self.rt.nest_level == 0 => ()
     Break | Continue => ()
     e => raise e
   }
+  self.temp_db_refs = saved_refs
 }
 
 ///|

@@ -32,10 +32,7 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
           if self.find_module(name) is Some({ kind: View, .. }) {
             raise @types.not_supported("INSERT/UPDATE/DELETE through a view")
           }
-          raise @types.sql_error(
-            208,
-            "Invalid object name '\{name.parts.map(p => p.name).join(".")}'.",
-          )
+          raise @bind.missing_object_error(name)
         }
       }
     TableVar(name, alias_~, ..) =>

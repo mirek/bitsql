@@ -44,6 +44,10 @@ fn Session::resolve_dml_target(
             from,
             purpose,
           )
+        // `UPDATE i ... FROM @t AS i` (captured: msduck gaps-temp_tables
+        // #035)
+        TableVar(_, alias_=Some(a), ..) if a.name.to_lower() == wanted =>
+          return (self.dml_target(leaf), None)
         Derived(q, alias_=Some(a), columns~) if a.name.to_lower() == wanted => {
           let v = self.view_target(env0, q, columns, a.name, KDerived, purpose)
           return (table_target(v.scope, v.table, wanted), Some(v))
