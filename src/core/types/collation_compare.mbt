@@ -63,8 +63,227 @@ pub fn compare_strings(
     Bin2 | Bin if ansi => compare_bytes(a, b)
     Bin2 => compare_bin2(a, b)
     Bin => compare_bin(a, b)
-    Linguistic => compare_linguistic(a, b, collation, ansi)
+    Linguistic => {
+      // Every code unit maps to its collation elements on its own, so an
+      // identical leading run contributes identical elements (and the same
+      // word-sort positions) to both sides and cannot decide the
+      // comparison; only trailing-space trimming looks at context, so the
+      // run must not end in a space or ignorable unit.
+      let k = shared_prefix(a, b, collation.version)
+      if is_ascii_from(a, k) && is_ascii_from(b, k) {
+        compare_ascii(a, b, k, collation, ansi)
+      } else if k == 0 {
+        compare_linguistic(a, b, collation, ansi)
+      } else {
+        compare_linguistic(
+          a.unsafe_substring(start=k, end=a.length()),
+          b.unsafe_substring(start=k, end=b.length()),
+          collation,
+          ansi,
+        )
+      }
+    }
   }
+}
+
+///|
+/// Length of the longest common prefix of code units that does not end in
+/// a space or a unit a linguistic comparison may ignore (and trim).
+fn shared_prefix(a : String, b : String, version : Int) -> Int {
+  let n = if a.length() < b.length() { a.length() } else { b.length() }
+  let mut k = 0
+  while k < n && a[k] == b[k] {
+    k += 1
+  }
+  while k > 0 {
+    let u = a[k - 1].to_int()
+    if u == ' ' || is_ignorable(u, version) {
+      k -= 1
+    } else {
+      break
+    }
+  }
+  k
+}
+
+///|
+fn is_ascii_from(s : String, start : Int) -> Bool {
+  for i in start..<s.length() {
+    if s[i].to_int() >= 0x80 {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Length of an ASCII string without trailing spaces and ignorables (NUL
+/// under word sort), as `collation_elements` trims it.
+fn ascii_trimmed_length(s : String, word_sort : Bool) -> Int {
+  let mut n = s.length()
+  while n > 0 {
+    let u = s[n - 1].to_int()
+    if u == ' ' || (u == 0 && word_sort) {
+      n -= 1
+    } else {
+      break
+    }
+  }
+  n
+}
+
+///|
+/// Does this ASCII unit produce a collation element (not ignorable, not a
+/// word-sort hyphen/apostrophe)?
+fn ascii_is_element(u : Int, word_sort : Bool) -> Bool {
+  !(word_sort && (u == 0 || u == '-' || u == '\''))
+}
+
+///|
+/// The primary weight `collation_elements` gives an ASCII unit.
+fn ascii_primary(u : Int) -> Int {
+  if u >= 'a' && u <= 'z' {
+    letter_primary(u)
+  } else if u >= 'A' && u <= 'Z' {
+    letter_primary(u + 32)
+  } else if u >= '0' && u <= '9' {
+    0x8000 + u
+  } else {
+    0x100 + u
+  }
+}
+
+///|
+/// `compare_linguistic` for two strings that are ASCII from `start` on and
+/// share their units before it, without building element arrays: every ASCII unit is one element with a non-zero primary, no
+/// accent, kana or width weight, and a tertiary weight of 2 for A-Z. The
+/// result is identical (checked exhaustively in
+/// collation_compare_wbtest.mbt); it streams over both strings so sorting
+/// and grouping ASCII text allocate nothing per comparison.
+fn compare_ascii(
+  a : String,
+  b : String,
+  start : Int,
+  collation : Collation,
+  ansi : Bool,
+) -> Int {
+  let word_sort = !(ansi && collation.sql_collation)
+  let na = ascii_trimmed_length(a, word_sort)
+  let nb = ascii_trimmed_length(b, word_sort)
+  // primary level
+  let mut i = start
+  let mut j = start
+  while true {
+    while i < na && !ascii_is_element(a[i].to_int(), word_sort) {
+      i += 1
+    }
+    while j < nb && !ascii_is_element(b[j].to_int(), word_sort) {
+      j += 1
+    }
+    if i >= na || j >= nb {
+      break
+    }
+    let pa = ascii_primary(a[i].to_int())
+    let pb = ascii_primary(b[j].to_int())
+    if pa != pb {
+      return sign_of(pa - pb)
+    }
+    i += 1
+    j += 1
+  }
+  if i < na || j < nb {
+    // one operand's elements are a prefix of the other's
+    let a_longer = i < na
+    if ansi && collation.sql_collation {
+      let next = if a_longer {
+        ascii_primary(a[i].to_int())
+      } else {
+        ascii_primary(b[j].to_int())
+      }
+      if next < 0x100 + ' '.to_int() {
+        return if a_longer { -1 } else { 1 }
+      }
+    }
+    return if a_longer { 1 } else { -1 }
+  }
+  // accent, kana and width weights are all zero; tertiary (case) level
+  if collation.case_sensitive {
+    i = start
+    j = start
+    while true {
+      while i < na && !ascii_is_element(a[i].to_int(), word_sort) {
+        i += 1
+      }
+      while j < nb && !ascii_is_element(b[j].to_int(), word_sort) {
+        j += 1
+      }
+      if i >= na || j >= nb {
+        break
+      }
+      let ua = a[i].to_int()
+      let ub = b[j].to_int()
+      let ta = if ua >= 'A' && ua <= 'Z' { 2 } else { 0 }
+      let tb = if ub >= 'A' && ub <= 'Z' { 2 } else { 0 }
+      if ta != tb {
+        let c = sign_of(ta - tb)
+        return if ansi && collation.sql_collation { -c } else { c }
+      }
+      i += 1
+      j += 1
+    }
+  }
+  if !word_sort {
+    return 0
+  }
+  // word-sort hyphens and apostrophes: by element position (later first),
+  // then code unit, then count (positions within the shared prefix are
+  // equal on both sides, so counting from `start` keeps the differences)
+  i = start
+  j = start
+  let mut ca = 0
+  let mut cb = 0
+  while true {
+    while i < na {
+      let u = a[i].to_int()
+      if u == '-' || u == '\'' {
+        break
+      }
+      if u != 0 {
+        ca += 1
+      }
+      i += 1
+    }
+    while j < nb {
+      let u = b[j].to_int()
+      if u == '-' || u == '\'' {
+        break
+      }
+      if u != 0 {
+        cb += 1
+      }
+      j += 1
+    }
+    if i >= na && j >= nb {
+      return 0
+    }
+    if i >= na {
+      return -1
+    }
+    if j >= nb {
+      return 1
+    }
+    if ca != cb {
+      return sign_of(cb - ca)
+    }
+    let ua = a[i].to_int()
+    let ub = b[j].to_int()
+    if ua != ub {
+      return sign_of(ua - ub)
+    }
+    i += 1
+    j += 1
+  }
+  0
 }
 
 ///|
@@ -545,17 +764,37 @@ fn compare_level(
   key : (Element) -> Int,
   skip_zero_primary : Bool,
 ) -> Int {
-  let xs = if skip_zero_primary { a.filter(e => e.primary != 0) } else { a }
-  let ys = if skip_zero_primary { b.filter(e => e.primary != 0) } else { b }
-  let n = if xs.length() < ys.length() { xs.length() } else { ys.length() }
-  for i in 0..<n {
-    let x = key(xs[i])
-    let y = key(ys[i])
+  // walks both arrays, skipping accent-only elements when asked, without
+  // building filtered copies
+  let mut i = 0
+  let mut j = 0
+  while true {
+    if skip_zero_primary {
+      while i < a.length() && a[i].primary == 0 {
+        i += 1
+      }
+      while j < b.length() && b[j].primary == 0 {
+        j += 1
+      }
+    }
+    if i >= a.length() || j >= b.length() {
+      break
+    }
+    let x = key(a[i])
+    let y = key(b[j])
     if x != y {
       return sign_of(x - y)
     }
+    i += 1
+    j += 1
   }
-  sign_of(xs.length() - ys.length())
+  if i < a.length() {
+    1
+  } else if j < b.length() {
+    -1
+  } else {
+    0
+  }
 }
 
 ///|

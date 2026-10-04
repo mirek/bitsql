@@ -34,6 +34,8 @@ const queries = [
   ['scalar subquery (uncorrelated)', 'SELECT COUNT(*) FROM w WHERE p = (SELECT MAX(p) FROM w2 JOIN w ON w.id = w2.id)'],
   ['equi-join', 'SELECT COUNT(*) FROM w JOIN w2 ON w2.w_id = w.id'],
   ['ORDER BY v', 'SELECT TOP 10 id FROM w ORDER BY v, id'],
+  ['ORDER BY v after a shared non-ASCII prefix', "SELECT TOP 10 id FROM w ORDER BY N'é' + v, id"],
+  ['ORDER BY accented text', 'SELECT TOP 10 id FROM w ORDER BY NCHAR(224 + id % 30) + v, id'],
   ['ROW_NUMBER over v', 'SELECT COUNT(*) FROM (SELECT ROW_NUMBER() OVER (PARTITION BY v ORDER BY id) AS r FROM w) x WHERE r = 1'],
   // DML, rolled back
   ['DELETE WHERE IN (subquery)', 'BEGIN TRAN; DELETE w WHERE id IN (SELECT w_id FROM w2); ROLLBACK'],
