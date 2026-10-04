@@ -135,6 +135,14 @@ priv struct Builder {
   creating : Bool
   /// Indexes that existed before the statement (ALTER TABLE ADD).
   base_indexes : Int
+  /// Regular columns declared later in the same statement: computed
+  /// columns bind against every column of the table, whatever the
+  /// declaration order (captured: corpus catalog/computed-forward-refs).
+  mut ahead : Array[@store.Column]
+  /// Lowercased name -> declared name of the computed columns declared in
+  /// this statement (a computed column using one of them is 1759, also
+  /// itself or one declared later).
+  computed_names : Map[String, String]
 }
 
 ///|
@@ -161,6 +169,8 @@ fn Builder::of_table(
     names: Set([]),
     creating: false,
     base_indexes: t.indexes.length(),
+    ahead: [],
+    computed_names: Map([]),
   }
 }
 
@@ -173,6 +183,80 @@ fn Builder::col_index(self : Builder, name : String) -> Int {
     }
   }
   -1
+}
+
+///|
+/// A column of the table under construction or one declared later in the
+/// same statement (`ahead`), for binding computed columns.
+fn Builder::shape(self : Builder, name : String) -> @store.Column? {
+  match self.col_index(name) {
+    -1 => {
+      let k = name.to_lower()
+      self.ahead.iter().find_first(c => c.name.to_lower() == k)
+    }
+    i => Some(self.columns[i])
+  }
+}
+
+///|
+/// Computed columns bind against every column of the table, also regular
+/// columns declared after them (captured: corpus
+/// catalog/computed-forward-refs). SQL Server resolves the column types
+/// (2715, 2705) before it binds computed-column expressions; when a
+/// computed column precedes a regular one, the regular columns are
+/// resolved first on a scratch builder (without their constraints), so
+/// their type errors come first too.
+fn Session::prepare_ahead(
+  self : Session,
+  b : Builder,
+  columns : Array[@ast.ColumnDef],
+  db : @store.Db,
+  pk_cols : Set[String],
+) -> Unit raise {
+  let mut seen_computed = false
+  let mut forward = false
+  for c in columns {
+    if c.computed is Some(_) {
+      seen_computed = true
+      b.computed_names.set(c.name.name.to_lower(), c.name.name)
+    } else if seen_computed {
+      forward = true
+    }
+  }
+  if !forward {
+    return
+  }
+  let scratch : Builder = {
+    id: b.id,
+    schema: b.schema,
+    display: b.display,
+    scope: b.scope,
+    written: b.written,
+    columns: b.columns.copy(),
+    indexes: b.indexes.copy(),
+    checks: b.checks.copy(),
+    fks: b.fks.copy(),
+    max_column_id: b.max_column_id,
+    names: Set([]),
+    creating: b.creating,
+    base_indexes: b.base_indexes,
+    ahead: [],
+    computed_names: Map([]),
+  }
+  let start = scratch.columns.length()
+  for i, c in columns {
+    if c.computed is None {
+      self.add_column(
+        scratch,
+        { ..c, constraints: [], },
+        db,
+        pk_cols,
+        false,
+        position=start + i + 1,
+      )
+    }
+  }
+  b.ahead = scratch.columns[start:].to_owned()
 }
 
 ///|
@@ -414,7 +498,9 @@ fn Session::add_column(
   db : @store.Db,
   pk_cols : Set[String],
   with_check : Bool,
+  position? : Int,
 ) -> Unit raise {
+  let position = position.unwrap_or(b.columns.length() + 1)
   // names compare under the database collation ([Ä] and [ä] collide under
   // CI; captured: msduck-runs table-type-catalog #005)
   let coll = self.db_collation()
@@ -437,7 +523,7 @@ fn Session::add_column(
       errdefer {
         self.error_line = Some(t.span.line)
       }
-      column_type_check(t, c.name.name, b.columns.length() + 1)
+      column_type_check(t, c.name.name, position)
     }
     None => ()
   }
@@ -452,25 +538,39 @@ fn Session::add_column(
   let mut alias_type : Int? = None
   let mut alias_nullable : Bool? = None
   let (ty, computed) = match (c.type_, c.computed) {
-    (Some(t), _) =>
-      match self.decl_type(t, collation) {
+    (Some(t), _) => {
+      let decl = self.decl_type(t, collation) catch {
+        @types.SqlError(number=2715, state~, ..) =>
+          raise missing_type(t, state, position~)
+        e => raise e
+      }
+      match decl {
         ScalarDecl(ty, ut, n) => {
           self.check_ansi_padding(ty)
           alias_type = ut
           alias_nullable = n
           (ty, None)
         }
-        TableDecl(_) => raise missing_type(t, 6)
+        TableDecl(_) => raise missing_type(t, 6, position~)
       }
+    }
     (None, Some(e)) => {
       // a computed column cannot use another one (captured: msduck
       // gaps-computed unicode-errors-1)
+      // (also itself or one declared later in the statement: probed)
       for n in expr_column_names(e) {
         let i = b.col_index(n)
-        if i >= 0 && b.columns[i].computed is Some(_) {
+        let other = if i >= 0 && b.columns[i].computed is Some(_) {
+          Some(b.columns[i].name)
+        } else if i < 0 {
+          b.computed_names.get(n.to_lower())
+        } else {
+          None
+        }
+        if other is Some(name) {
           raise @types.sql_error(
             1759,
-            "Computed column '\{b.columns[i].name}' in table '\{b.display}' is not allowed to be used in another computed-column definition.",
+            "Computed column '\{name}' in table '\{b.display}' is not allowed to be used in another computed-column definition.",
             state=0,
           )
         }
@@ -482,8 +582,14 @@ fn Session::add_column(
         )
       }
       // computed column: type of its expression over the other columns
+      let visible = b.columns.copy()
+      for x in b.ahead {
+        if b.col_index(x.name) < 0 {
+          visible.push(x)
+        }
+      }
       let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
-        b.columns.map(x => @bind.ColumnRef::{
+        visible.map(x => @bind.ColumnRef::{
           qualifier: "",
           name: x.name,
           ty: x.ty,
@@ -1129,6 +1235,8 @@ fn Session::table_from_body(
     names: Set([]),
     creating: true,
     base_indexes: 0,
+    ahead: [],
+    computed_names: Map([]),
   }
   let pk_cols : Set[String] = Set([])
   // PK columns are implicitly NOT NULL.
@@ -1162,6 +1270,7 @@ fn Session::table_from_body(
       state=0,
     )
   }
+  self.prepare_ahead(b, body.columns, db, pk_cols)
   for c in body.columns {
     self.add_column(b, c, db, pk_cols, true)
   }
@@ -1803,9 +1912,9 @@ fn computed_nullable(e : @ast.Expr, b : Builder) -> Bool {
   match e.kind {
     Paren(x) => computed_nullable(x, b)
     Column(parts) =>
-      match b.col_index(parts[parts.length() - 1].name) {
-        -1 => true
-        i => b.columns[i].nullable
+      match b.shape(parts[parts.length() - 1].name) {
+        None => true
+        Some(c) => c.nullable
       }
     IntLit(_)
     | DecimalLit(_)

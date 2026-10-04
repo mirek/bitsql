@@ -12,6 +12,9 @@ docker build -t bitsql .          # ~35 MB image, ~5 MB RAM idle
 docker run -p 1433:1433 bitsql --database app
 ```
 
+Published image (linux/amd64 + linux/arm64): `mirek/bitsql`, built and pushed
+with `scripts/docker-publish.sh --push`.
+
 Connect with tedious / mssql defaults (`encrypt: true` plus
 `trustServerCertificate: true`, as for SQL Server's self-signed certificate) or
 with `encrypt: false`; Prisma URLs work with `encrypt=true` or `encrypt=false`.
