@@ -3,6 +3,8 @@
 -- 1/300 s units (smalldatetime result rounds to the minute); * / are 257,
 -- % and the newer date/time types 402; date/time types with numbers are
 -- 206 with the temporal type first. CURRENT_DATE is a non-nullable date.
+-- Such type errors fail the whole batch before anything runs (also in an
+-- IF branch or TRY block, after a missing table); run-time errors do not.
 -- @step batch
 DECLARE @d datetime = '2020-01-31T12:00:00';
 SELECT @d + 1 AS a, @d - 1 AS b, @d + 1.5 AS c, @d - 0.25 AS d, 1 + @d AS e, @d + CAST(2 AS bigint) AS f, @d + CAST(1.5 AS float) AS g, @d + CAST(1 AS money) AS h;
@@ -77,3 +79,15 @@ DECLARE @d datetime = '2020-01-01T10:00:00', @n decimal(38,10) = 1.5, @m money =
 DECLARE @d datetime = NULL; SELECT @d + 1 AS a, CAST(NULL AS datetime) - NULL AS b;
 -- @step batch
 DECLARE @d datetime = '2020-01-01'; SELECT @d + NULL AS a, NULL - @d AS b;
+-- @step batch
+DECLARE @d date = '2020-01-01', @i int = 1; SELECT @i + @d;
+-- @step batch
+SELECT 1 AS a; IF 1 = 0 SELECT CAST('2020-01-01' AS date) + 1;
+-- @step batch
+SELECT 1 AS a; BEGIN TRY SELECT CAST('2020-01-01' AS date) + 1 END TRY BEGIN CATCH SELECT 99 END CATCH
+-- @step batch
+DECLARE @v sql_variant = 1; SELECT 1 AS a; DECLARE @n nvarchar(10) = @v;
+-- @step batch
+SELECT 1 AS a; SELECT * FROM dbo.missing_table; SELECT CAST('2020-01-01' AS date) + 1;
+-- @step batch
+SELECT 1 AS a; SELECT CAST('x' AS int);

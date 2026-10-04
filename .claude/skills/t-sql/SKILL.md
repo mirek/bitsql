@@ -1553,3 +1553,11 @@ and `XACT_STATE()` advertises nullable smallint width.
   Latin1_General_140_* (448). A column `COLLATE bad` is 448 state 2 for
   the whole batch; `int COLLATE …` is 447 "Expression type int is invalid
   for COLLATE clause."
+
+- 2026-10-04 (session/prebind.mbt): SQL Server compiles the whole batch
+  first: `DECLARE @d date = '…'; SELECT @d + 1` returns only 206 (no DONE
+  for the DECLARE), also when the bad statement sits in an IF branch that
+  never runs or in a TRY block (not catchable), and after a statement on a
+  missing table (deferred name resolution skips only that statement).
+  `DECLARE @n nvarchar(10) = @variant` is a batch-level 257. Run-time
+  errors (8134, 245) still come after earlier results.

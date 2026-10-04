@@ -911,6 +911,15 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     self.temp_db_refs = saved_refs
   }
   self.hoist_declares(stmts)
+  match self.prebind_batch(stmts) {
+    Some((errors, line)) => {
+      for e in errors[:errors.length() - 1] {
+        self.message(e, line)
+      }
+      self.text_error(errors[errors.length() - 1], line)
+    }
+    None => ()
+  }
   self.exec_list(stmts) catch {
     Return(_) if self.rt.nest_level == 0 => ()
     Break | Continue => ()

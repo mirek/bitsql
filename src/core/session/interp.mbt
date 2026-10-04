@@ -458,6 +458,25 @@ fn Session::assign(
   op : @ast.AssignOp,
   e : @ast.Expr,
 ) -> Unit raise {
+  let (info, value_expr) = self.bind_assignment(name, op, e)
+  let v = @exec.eval(self.ctx(), value_expr)
+  self.frame().values[info.slot] = @types.assign(
+    v,
+    value_expr.ty,
+    info.ty,
+    dates=self.rt.dates,
+  )
+}
+
+///|
+/// Binds `@name op= e` with its compile-time type check (also used by the
+/// batch pre-bind, prebind.mbt).
+fn Session::bind_assignment(
+  self : Session,
+  name : String,
+  op : @ast.AssignOp,
+  e : @ast.Expr,
+) -> (@bind.VarInfo, @ir.Expr) raise {
   let info = match self.frame().vars.get(name.to_lower()) {
     Some(v) => v
     None =>
@@ -504,13 +523,7 @@ fn Session::assign(
     self.cur_cmd = 253
     raise e
   }
-  let v = @exec.eval(self.ctx(), value_expr)
-  self.frame().values[info.slot] = @types.assign(
-    v,
-    value_expr.ty,
-    info.ty,
-    dates=self.rt.dates,
-  )
+  (info, value_expr)
 }
 
 ///|
