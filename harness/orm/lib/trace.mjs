@@ -14,6 +14,10 @@ export function makeNormalizer(database) {
     .replace(dbRe, '{db}')
     // PK__users__3213E83F0AB1C2D3, DF__users__name__5EBF139D, FK__a__b__0123ABCD
     .replace(/__[0-9A-F]{8}(?:[0-9A-F]{8})?\b/g, '__{hex}')
+    // client-side ids: Sequelize transaction ids, knex savepoint names
+    .replace(/^Executing \([0-9a-f]{20}\)/, 'Executing ({tx})')
+    .replace(/\[trx\d+\]/g, '[trx{n}]')
+    .replace(/\[[0-9a-f]{20}-sp-(\d+)\]/g, '[{tx}-sp-$1]')
     // clock values that tools inline into SQL or messages
     .replace(/\b20\d\d-\d\d-\d\d[ T]\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)?/g, m => {
       const t = Date.parse(m.includes('T') || m.endsWith('Z') ? m : m.replace(' ', 'T') + 'Z')

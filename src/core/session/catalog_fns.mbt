@@ -643,6 +643,12 @@ fn Session::object_property(
 ///|
 /// OBJECT_DEFINITION: module source, or normalized constraint expression.
 fn Session::object_definition(self : Session, id : Int) -> @types.Value {
+  // 0 is the default_object_id of a column without a default: NULL, not
+  // the definition of the first default-less column (captured: corpus
+  // orm/prisma-introspection; Prisma's db pull panicked on "")
+  if id == 0 {
+    return Null
+  }
   let db = self.db_of(0)
   match db.get_module(id) {
     Some(m) => return String(m.definition)

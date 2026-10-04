@@ -43,10 +43,12 @@ test "GROUP BY: groups in order of first appearance, first spelling, NULLs toget
 }
 
 ///|
-test "DISTINCT and UNION: first appearance order, binary-smallest spelling" {
+test "DISTINCT sorted, UNION first appearance order, binary-smallest spelling" {
   let s = perf_session()
+  // DISTINCT without ORDER BY comes out sorted (captured: corpus
+  // orm/distinct-order)
   let r = s.run_batch("SELECT DISTINCT v FROM pc", 0)
-  assert_eq(texts(r), [[Text("B")], [Text("A")], [Null]])
+  assert_eq(texts(r), [[Null], [Text("A")], [Text("B")]])
   let u = s.run_batch("SELECT w FROM pd UNION SELECT v FROM pc", 0)
   assert_eq(texts(u), [[Text("A")], [Text("c")], [Text("B")], [Null]])
 }

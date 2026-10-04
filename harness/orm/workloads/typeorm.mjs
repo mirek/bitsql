@@ -214,6 +214,12 @@ export default async function typeormWorkload(t, trace) {
       return { visible, all, after: await authors.count() }
     })
     await step('exists / countBy / sum', async () => ({ exists: await authors.exists({ where: { name: 'Ada' } }), count: await books.countBy({ pages: 50 }), sum: await books.sum('pages'), avg: await books.average('pages') }))
+    await step('pessimistic locks', () => ds.transaction(async m => ({
+      write: (await m.createQueryBuilder('Author', 'a').setLock('pessimistic_write').where('a.id = :id', { id: 1 }).getMany()).map(a => a.id),
+      read: (await m.createQueryBuilder('Author', 'a').setLock('pessimistic_read').getMany()).length,
+      skip: (await m.createQueryBuilder('Book', 'b').setLock('pessimistic_write').setOnLocked('skip_locked').getMany()).length,
+    })))
+    await step('optimistic lock mismatch', () => ds.transaction(async m => m.createQueryBuilder('Author', 'a').setLock('optimistic', 99).where('a.id = 1').getOne()))
     await step('raw query with params', () => ds.query('SELECT @0 AS a, @1 AS b, title FROM books WHERE pages > @0 ORDER BY title', [20, 'two']))
     await step('raw query error', () => ds.query('SELECT nope FROM books'))
     await step('transaction serializable', () => ds.transaction('SERIALIZABLE', async m => {

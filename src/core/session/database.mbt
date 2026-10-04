@@ -84,6 +84,12 @@ fn Session::exec_use(self : Session, name : @ast.Ident) -> Unit raise {
         911,
         "Database '\{name.name}' does not exist. Make sure that the name is entered correctly.",
       )
+    Some(display) if self.rt.nest_level > 0 => {
+      // inside dynamic SQL: no ENVCHANGE, no 5701; the database reverts at
+      // the end of the scope (captured: corpus orm/dynamic-use)
+      self.rt.database = display
+      self.done(226)
+    }
     Some(display) => {
       let old = self.rt.database
       self.rt.database = display

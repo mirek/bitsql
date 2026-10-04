@@ -283,13 +283,16 @@ fn Session::column_dependents(
   t : @store.Table,
   ord : Int,
   widen : Bool,
+  same_base? : Bool = false,
 ) -> Array[String] {
   let col = t.columns[ord]
   let name = col.name.to_lower()
   let mentions = (text : String) => expr_mentions(text, name)
   let out = []
   // captured order: default constraint, indexes/keys, checks, foreign keys
-  if col.default_id != 0 {
+  // a DEFAULT does not block a new length, precision or scale of the same
+  // type (captured: corpus orm/alter-column-default)
+  if col.default_id != 0 && !same_base {
     out.push(
       "The object '\{col.default_name.unwrap_or("")}' is dependent on column '\{col.name}'.",
     )
@@ -617,7 +620,13 @@ fn Session::alter_column(
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL
   let nullable = nullable.unwrap_or(true)
   if ty != old.ty {
-    let deps = self.column_dependents(scope, t, ord, widens(old.ty, ty))
+    let deps = self.column_dependents(
+      scope,
+      t,
+      ord,
+      widens(old.ty, ty),
+      same_base=same_base_type(old.ty, ty),
+    )
     if !deps.is_empty() {
       raise self.dependents_error(deps, "ALTER COLUMN", old.name)
     }
@@ -1247,6 +1256,27 @@ fn Session::constraint_owner(
 ///|
 /// A bounded variable-length type growing within its kind (varchar(10) to
 /// varchar(20), not to max).
+/// The same data type with another length, precision or scale (not to or
+/// from max): ALTER COLUMN may change it under a DEFAULT constraint
+/// (captured: corpus orm/alter-column-default; Sequelize's changeColumn).
+fn same_base_type(old : @types.SqlType, new : @types.SqlType) -> Bool {
+  match (old, new) {
+    (VarChar(Some(_), _), VarChar(Some(_), _))
+    | (NVarChar(Some(_), _), NVarChar(Some(_), _))
+    | (VarBinary(Some(_)), VarBinary(Some(_)))
+    | (Char(_, _), Char(_, _))
+    | (NChar(_, _), NChar(_, _))
+    | (Binary(_), Binary(_))
+    | (Decimal(_, _), Decimal(_, _))
+    | (Numeric(_, _), Numeric(_, _))
+    | (Time(_), Time(_))
+    | (DateTime2(_), DateTime2(_))
+    | (DateTimeOffset(_), DateTimeOffset(_)) => true
+    _ => false
+  }
+}
+
+///|
 fn widens(old : @types.SqlType, new : @types.SqlType) -> Bool {
   match (old, new) {
     (VarChar(Some(a), c1), VarChar(Some(b), c2))

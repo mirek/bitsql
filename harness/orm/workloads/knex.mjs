@@ -221,6 +221,16 @@ export default async function knexWorkload(t, trace) {
       return r
     }, { isolationLevel: 'serializable' }))
     await step('isolation read committed restored', () => db.raw('SELECT transaction_isolation_level AS level FROM sys.dm_exec_sessions WHERE session_id = @@SPID'))
+    await step('row locks in a transaction', () => db.transaction(async trx => ({
+      forUpdate: await trx('accounts').where('id', 1).forUpdate().select('id'),
+      forShare: await trx('accounts').where('id', 2).forShare().select('id'),
+      skipLocked: await trx('accounts').forUpdate().skipLocked().select('id').orderBy('id'),
+      noWait: await trx('accounts').where('id', 3).forUpdate().noWait().select('id'),
+    })))
+    await step('whereRaw / orderByRaw / havingRaw', () => db('accounts').whereRaw('age > ?', [20]).groupBy('role').havingRaw('count(*) >= ?', [1]).select('role').count({ n: '*' }).orderByRaw('role desc'))
+    await step('whereExists / whereBetween / whereNull', () => db('accounts as a').whereExists(db('projects as p').whereRaw('p.owner_id = a.id')).orWhereBetween('age', [20, 25]).orWhereNull('age').select('a.id').orderBy('a.id'))
+    await step('insert select', () => db.into(db.raw('?? (??)', ['labels', 'name'])).insert(db('accounts').select('name').where('id', 1)))
+    await step('update with join subquery', () => db('projects').update({ title: db.raw("title + N'!'") }).whereIn('owner_id', db('accounts').select('id').where('active', true)))
     await step('explicit trx object', async () => {
       const trx = await db.transaction()
       try { await trx('labels').insert({ name: 'manual' }) } finally { await trx.rollback() }

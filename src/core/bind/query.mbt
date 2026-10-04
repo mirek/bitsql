@@ -1710,6 +1710,15 @@ fn bind_select_query(
       plan = Sort(plan, pkeys)
       plan = limit(env, plan, top, pkeys, offset, fetch)
     } else {
+      // without ORDER BY SQL Server's DISTINCT comes out of a sort on the
+      // select list (captured: corpus orm/distinct-order; TypeORM builds its
+      // schema-diff queries in the order INFORMATION_SCHEMA rows arrive)
+      let dkeys = result.mapi((j, c) => @ir.SortKey::{
+        expr: mk(Col(j), c.ty, c.nullable),
+        desc: false,
+        collation: c.ty.collation(),
+      })
+      plan = Sort(plan, dkeys)
       plan = limit(env, plan, top, [], offset, fetch)
     }
   } else {

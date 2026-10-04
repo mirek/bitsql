@@ -790,14 +790,19 @@ fn Session::run_dynamic(
   levels~ : Int,
 ) -> ModuleRun raise {
   let saved_text = self.text
+  // a USE inside dynamic SQL lasts until the end of that scope (captured:
+  // corpus orm/object-ids, orm/dynamic-use)
+  let saved_db = self.rt.database
   self.text = sql
   let run = {
     errdefer {
       self.text = saved_text
+      self.rt.database = saved_db
     }
     self.run_module(bound, levels~, () => self.run_text(sql))
   }
   self.text = saved_text
+  self.rt.database = saved_db
   run
 }
 

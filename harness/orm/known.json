@@ -1,0 +1,4 @@
+{
+  "typeorm/generate after v1 (empty)": "plan-dependent row order: TypeORM's SELECT DISTINCT ... FROM INFORMATION_SCHEMA.TABLES WHERE (...) OR (...) comes back in the order of its OR predicates on SQL Server (one seek per OR); bitsql sorts DISTINCT results, so TypeORM's next catalog query lists the tables in another order (same tables, same generated migration)",
+  "typeorm/dropDatabase schema": "object ids are server-wide in bitsql and per database in SQL Server (corpus orm/object-ids): after the knex and sequelize workloads created objects in their databases, TypeORM's database lists its tables (INFORMATION_SCHEMA.TABLES without ORDER BY) in another order"
+}

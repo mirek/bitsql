@@ -40,7 +40,15 @@ function define(sequelize, { v2 = false } = {}) {
   Post.belongsTo(User, { foreignKey: 'userId', as: 'author' })
   Post.belongsToMany(Tag, { through: 'post_tags', as: 'tags', foreignKey: 'postId', otherKey: 'tagId', timestamps: false })
   Tag.belongsToMany(Post, { through: 'post_tags', as: 'posts', foreignKey: 'tagId', otherKey: 'postId', timestamps: false })
-  return { User, Post, Tag }
+  // no defaultValue anywhere: Sequelize's mssql changeColumn emits invalid
+  // `ALTER COLUMN ... DEFAULT` for columns with defaults (156 on SQL Server
+  // too), so sync({ alter }) is exercised on this model
+  const Note = sequelize.define('Note', {
+    title: { type: DataTypes.STRING(v2 ? 100 : 50), allowNull: v2 },
+    body: { type: v2 ? DataTypes.TEXT : DataTypes.STRING(200) },
+    ...(v2 ? { rating: { type: DataTypes.DECIMAL(4, 1), allowNull: true }, userId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'users', key: 'id' } } } : { legacy: { type: DataTypes.STRING(10) } }),
+  }, { tableName: 'notes', timestamps: false, indexes: v2 ? [{ name: 'notes_title', fields: ['title'] }] : [] })
+  return { User, Post, Tag, Note }
 }
 
 function plain(x) {
@@ -200,6 +208,10 @@ export default async function sequelizeWorkload(t, trace) {
     await step('describeTable users after alter', () => sequelize.getQueryInterface().describeTable('users'))
     await step('describeTable posts after alter', () => sequelize.getQueryInterface().describeTable('posts'))
     await step('sync alter again (no-op)', () => sequelize.sync({ alter: true }).then(() => 'synced'))
+    await step('Note.sync alter', () => sequelize.models.Note.sync({ alter: true }).then(() => 'synced'))
+    await step('describeTable notes after alter', () => sequelize.getQueryInterface().describeTable('notes'))
+    await step('showIndex notes', () => sequelize.getQueryInterface().showIndex('notes'))
+    await step('Note.sync alter again', () => sequelize.models.Note.sync({ alter: true }).then(() => 'synced'))
     await step('data survives alter', async () => plain(await User.findAll({ attributes: ['id', 'email', 'nickname', 'level'], order: [['id', 'ASC']] })))
     await step('queryInterface addColumn/removeColumn', async () => {
       const qi = sequelize.getQueryInterface()
