@@ -211,6 +211,9 @@ fn Session::alter_add(
       let c = nt.columns[k]
       let v : @types.Value = match (c.identity, c.default_) {
         (Some(idn), _) => identity_value(c.ty, self.next_identity(nt, idn))
+        // captured: existing rows get rowversion values (msduck
+        // gaps-rowversion_identity #079)
+        _ if c.ty is RowVersion => self.next_rowversion()
         (None, Some(d)) if c.computed is None &&
           (!c.nullable || with_values[k - old_width]) =>
           self.eval_text(target, d, row + [Null], c.ty)

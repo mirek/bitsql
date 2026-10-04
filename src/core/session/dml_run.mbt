@@ -356,6 +356,11 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             "Cannot update identity column '\{c.name}'.",
           )
         }
+        // captured: also SET rv = DEFAULT (msduck gaps-rowversion_identity
+        // #027/#028)
+        if c.ty is RowVersion {
+          raise @types.sql_error(272, "Cannot update a timestamp column.")
+        }
         if c.computed is Some(_) {
           raise @types.sql_error(
             271,
@@ -715,7 +720,10 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         // even under IDENTITY_INSERT ON (a value for it is 8101)
         let out = []
         for i, c in t.columns {
-          if c.identity is None && c.computed is None && c.ty != RowVersion {
+          // captured: the timestamp column is a target of an INSERT
+          // without a column list (DEFAULT or NULL for it; msduck
+          // gaps-rowversion_identity #022/#025)
+          if c.identity is None && c.computed is None {
             out.push(i)
           }
         }
@@ -874,6 +882,15 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           }
         _ => ()
       }
+      for r in bound {
+        for j, e in r {
+          if j < cols.length() &&
+            t.columns[cols[j]].ty is RowVersion &&
+            !(e is (None | Some({ kind: Lit(Null), .. }))) {
+            raise timestamp_insert_error()
+          }
+        }
+      }
       start_rows()
       sent = self.output_header(outputs)
       let ctx = self.ctx()
@@ -890,7 +907,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           Some(j) if identity_insert && r[j] is Some(b) => {
             let v = @exec.eval(ctx, b)
             let cv = self.to_column(target, t.columns[cols[j]], v, b.ty)
-            match cv.as_int64() {
+            match identity_int64(cv) {
               Some(n) => self.bump_identity(t, n)
               None => ()
             }
@@ -946,6 +963,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         )
       }
       for j, c in bq.columns {
+        if t.columns[cols[j]].ty is RowVersion {
+          if !query_item_is_null(q, j) {
+            raise timestamp_insert_error()
+          }
+          continue
+        }
         @types.check_assign(c.ty, t.columns[cols[j]].ty)
       }
       start_rows()
@@ -967,6 +990,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   // sql_variant columns are compile-time errors)
   for j, ci in cols {
     if j < types.length() &&
+      !(t.columns[ci].ty is RowVersion) &&
       !default_marks.iter().all(m => j < m.length() && m[j]) {
       @types.check_assign(types[j], t.columns[ci].ty)
     }
@@ -993,7 +1017,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
               339, "DEFAULT or NULL are not allowed as explicit identity values.",
             )
           }
-          if !is_default {
+          if !is_default && !(t.columns[ci].ty is RowVersion) {
             row[ci] = self.to_column(target, t.columns[ci], src[j], types[j])
             given[ci] = true
           }
@@ -1005,7 +1029,11 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         }
         match (c.identity, c.default_) {
           (Some(id), _) if !(identity_insert && given[i]) => {
-            let v = self.next_identity(t, id)
+            let v = self.peek_identity(t, id)
+            if !identity_fits(c.ty, v) {
+              raise self.identity_overflow(c.ty)
+            }
+            ignore(self.next_identity(t, id))
             row[i] = identity_value(c.ty, v)
             last_identity = Some(v)
           }
@@ -1025,7 +1053,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       if identity_insert {
         for i, c in t.columns {
           if c.identity is Some(_) && given[i] {
-            match row[i].as_int64() {
+            match identity_int64(row[i]) {
               Some(v) => {
                 self.bump_identity(t, v)
                 last_identity = Some(v)
@@ -1079,6 +1107,12 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
     self.rt.identity = iv
     self.rt.scope_identity = iv
+  } else if !has_identity {
+    // captured: an INSERT into a table without an identity column (even
+    // of no rows, also a table variable) makes SCOPE_IDENTITY() and
+    // @@IDENTITY NULL (msduck gaps-rowversion_identity #125/#137)
+    self.rt.identity = Null
+    self.rt.scope_identity = Null
   }
   if dup_ignored {
     self.info(3604, 0, "Duplicate key was ignored.", self.stmt_line)
@@ -1122,5 +1156,25 @@ fn Session::bump_identity(self : Session, t : @store.Table, v : Int64) -> Unit {
       if (increment >= 0L && v > cur) || (increment < 0L && v < cur) {
         self.server.idents[t.id] = v
       }
+  }
+}
+
+///|
+/// 273 (compile time): an INSERT value for a timestamp column other than
+/// DEFAULT or a NULL literal (captured: msduck gaps-rowversion_identity
+/// #019/#024/#026).
+fn timestamp_insert_error() -> @types.SqlError {
+  @types.sql_error(
+    273, "Cannot insert an explicit value into a timestamp column. Use INSERT with a column list to exclude the timestamp column, or insert a DEFAULT into the timestamp column.",
+  )
+}
+
+///|
+/// Whether select-list item `j` of an INSERT source query is a NULL literal.
+fn query_item_is_null(q : @ast.Query, j : Int) -> Bool {
+  guard q.body is Select(s) else { return false }
+  match s.items.get(j) {
+    Some({ kind: ExprItem(e, ..), .. }) => e.kind is Null
+    _ => false
   }
 }

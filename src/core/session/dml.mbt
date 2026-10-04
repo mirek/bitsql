@@ -199,6 +199,77 @@ fn Session::next_identity(
 }
 
 ///|
+/// The value the next generated identity would take, without consuming it.
+fn Session::peek_identity(
+  self : Session,
+  t : @store.Table,
+  id : @store.Identity,
+) -> Int64 {
+  match self.server.idents.get(t.id) {
+    Some(last) => last + id.increment
+    None => id.seed
+  }
+}
+
+///|
+/// Whether a generated identity value fits the column type.
+fn identity_fits(ty : @types.SqlType, v : Int64) -> Bool {
+  match ty {
+    TinyInt => v >= 0L && v <= 255L
+    SmallInt => v >= -32768L && v <= 32767L
+    Int => v >= -2147483648L && v <= 2147483647L
+    Decimal(p, _) | Numeric(p, _) if p < 19 => {
+      let mut limit = 1L
+      for _ in 0..<p {
+        limit = limit * 10L
+      }
+      v < limit && v > -limit
+    }
+    _ => true
+  }
+}
+
+///|
+/// 8115 for a generated identity that overflows its column (captured:
+/// msduck gaps-rowversion_identity #105/#109, corpus stmts/rowversion-*):
+/// batch-ending, rolls back an open transaction, followed by INFO 3606;
+/// the identity counter does not advance.
+fn Session::identity_overflow(
+  self : Session,
+  ty : @types.SqlType,
+) -> @types.SqlError {
+  self.trailing.push(
+    @types.sql_error(3606, "Arithmetic overflow occurred.", state=0, severity=0),
+  )
+  @types.sql_error(
+    8115,
+    "Arithmetic overflow error converting IDENTITY to data type \{ty.base_name()}.",
+  )
+}
+
+///|
+/// True for the identity-overflow 8115 (batch-ending, unlike other 8115s).
+fn is_identity_overflow(e : @types.SqlError) -> Bool {
+  e.number() == 8115 &&
+  e.message().has_prefix("Arithmetic overflow error converting IDENTITY")
+}
+
+///|
+/// An identity column value as Int64 (integers and scale-0 decimals).
+fn identity_int64(v : @types.Value) -> Int64? {
+  match v {
+    Decimal(_) =>
+      try @types.cast(v, @types.SqlType::Decimal(38, 0), BigInt) catch {
+        _ => None
+      } noraise {
+        BigInt(n) => Some(n)
+        _ => None
+      }
+    _ => v.as_int64()
+  }
+}
+
+///|
 fn identity_value(ty : @types.SqlType, v : Int64) -> @types.Value {
   match ty {
     TinyInt => TinyInt(v.to_int())

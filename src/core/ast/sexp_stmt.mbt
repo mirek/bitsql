@@ -904,6 +904,17 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.expr(e)
       self.close()
     }
+    Dbcc(name, args, options) => {
+      self.s("(dbcc " + name)
+      for a in args {
+        self.sp()
+        self.expr(a)
+      }
+      for o in options {
+        self.s(" " + o)
+      }
+      self.close()
+    }
     Throw(args) => {
       self.open("throw")
       for a in args {

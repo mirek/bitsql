@@ -80,6 +80,11 @@ fn Session::exec_select_into(
     db = db.insert_row(id, self.server.rowid(), r)
   }
   self.write(scope, db)
+  // captured: SELECT INTO a table without an identity column makes
+  // SCOPE_IDENTITY() and @@IDENTITY NULL (corpus stmts/rowversion-*); the
+  // new table never has one here
+  self.rt.identity = Null
+  self.rt.scope_identity = Null
   let n = rows.length().to_int64()
   self.rt.rowcount = n
   self.done(194, count=Some(n))

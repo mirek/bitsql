@@ -76,6 +76,12 @@ fn cmp_op(op : @ast.CmpOp) -> (@ir.CmpOp, Bool) {
 pub fn unify_types(
   tys : Array[@types.SqlType],
 ) -> @types.SqlType raise @types.SqlError {
+  // captured: a UNION ALL of rowversion columns stays timestamp (BINARY(8)
+  // on the wire, msduck gaps-rowversion_identity #066); mixed branches are
+  // left to common_type
+  if tys.iter().all(x => x is RowVersion) {
+    return RowVersion
+  }
   let mut t = tys[0]
   for i in 1..<tys.length() {
     t = @types.common_type(t, tys[i])

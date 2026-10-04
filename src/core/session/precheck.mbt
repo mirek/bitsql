@@ -143,6 +143,45 @@ fn precheck_batch(
         }
       }
       Throw(args) => args.each(x => expr(x, line))
+      // captured: an unknown DBCC WITH option is 195 state 4 for the
+      // whole batch (corpus stmts/tx-dbcc-useroptions)
+      Dbcc(_, args, options) => {
+        args.each(x => expr(x, line))
+        for o in options {
+          if failure is None && !dbcc_options.contains(o) {
+            failure = Some(
+              (
+                @types.sql_error(
+                  195,
+                  "'\{o}' is not a recognized option.",
+                  state=4,
+                  severity=15,
+                ),
+                line,
+              ),
+            )
+          }
+        }
+      }
+      // captured: a malformed WAITFOR literal is compile error 148 for the
+      // whole batch, not caught by TRY (msduck gaps-transactions #093/#094)
+      WaitFor(_, e) => {
+        expr(e, line)
+        if failure is None &&
+          e.kind is StrLit(text, ..) &&
+          parse_wait_time(text) is None {
+          failure = Some(
+            (
+              @types.sql_error(
+                148,
+                "Incorrect time syntax in time string '\{text}' used with WAITFOR.",
+                severity=15,
+              ),
+              line,
+            ),
+          )
+        }
+      }
       Use(_) if in_proc && failure is None =>
         failure = Some(
           (
