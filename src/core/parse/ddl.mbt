@@ -307,6 +307,16 @@ fn Parser::column_def(
     if self.eat_kw("PERSISTED") {
       persisted = true
     }
+  } else if name.name.to_lower() == "timestamp" &&
+    (self.is_punct(",") || self.is_punct(")")) {
+    // captured: a column named timestamp without a type is a timestamp
+    // column (msduck gaps-rowversion_identity #036)
+    type_ = Some(@ast.TypeName::{
+      schema: None,
+      name: "timestamp",
+      args: [],
+      span: name.span,
+    })
   } else {
     type_ = Some(self.type_name())
   }

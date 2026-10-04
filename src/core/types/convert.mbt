@@ -34,7 +34,10 @@ pub fn cast(
     FDecimal => to_decimal(v, from, to)
     FMoney => to_money(v, from, to)
     FFloat => to_float(v, from, to)
-    FString => to_character(v, from, to, style)
+    // captured: CONVERT(varchar, rowversion, 1) copies the raw bytes like
+    // style 0 (msduck gaps-rowversion_identity #071)
+    FString =>
+      to_character(v, from, to, if from is RowVersion { None } else { style })
     FBinary => to_binary(v, from, to, style)
     FDate | FTime | FDateTime => to_temporal(v, from, to, style)
     FGuid => to_guid(v, from)

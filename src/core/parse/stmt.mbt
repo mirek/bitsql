@@ -190,6 +190,38 @@ fn Parser::statement_kind(
       self.pos += 1
       Goto(self.ident())
     }
+    "DBCC" => {
+      self.pos += 1
+      let t = self.peek()
+      if !(t.kind is Word) {
+        raise self.error()
+      }
+      self.pos += 1
+      let args : Array[@ast.Expr] = []
+      if self.eat_punct("(") {
+        if !self.is_punct(")") {
+          args.push(self.scalar())
+          while self.eat_punct(",") {
+            args.push(self.scalar())
+          }
+        }
+        self.expect_punct(")")
+      }
+      let options : Array[String] = []
+      if self.eat_kw("WITH") {
+        let mut more = true
+        while more {
+          let o = self.peek()
+          if !(o.kind is Word) {
+            raise self.error()
+          }
+          self.pos += 1
+          options.push(o.text.to_upper())
+          more = self.eat_punct(",")
+        }
+      }
+      Dbcc(t.text.to_upper(), args, options)
+    }
     "WAITFOR" => {
       self.pos += 1
       let w = self.peek()
@@ -197,7 +229,12 @@ fn Parser::statement_kind(
         raise self.error()
       }
       self.pos += 1
-      WaitFor(upper(w), self.scalar())
+      // captured (msduck gaps-transactions #095/#096): only a string
+      // literal or a variable; `5` and `'..' + ''` are 102
+      if !(self.peek().kind is (Str | NStr | Variable)) {
+        raise self.error()
+      }
+      WaitFor(upper(w), self.primary())
     }
     "THROW" => {
       self.pos += 1

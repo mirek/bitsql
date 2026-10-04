@@ -413,6 +413,70 @@ fn Session::add_column(
       c.identity is None &&
       !(ty is RowVersion)
   }
+  // captured (msduck gaps-rowversion_identity #044/#045/#096/#097/#101)
+  if ty is RowVersion && b.columns.iter().any(x => x.ty is RowVersion) {
+    raise @types.sql_error(
+      2738,
+      "A table can only have one timestamp column. Because table '\{b.written}' already has one, the column '\{c.name.name}' cannot be added.",
+      state=2,
+    )
+  }
+  match c.identity {
+    Some(i) => {
+      let ok = match ty {
+        TinyInt | SmallInt | Int | BigInt => true
+        Decimal(_, 0) | Numeric(_, 0) => true
+        _ => false
+      }
+      if !ok {
+        raise @types.sql_error(
+          2749,
+          "Identity column '\{c.name.name}' must be of data type int, bigint, smallint, tinyint, or decimal or numeric with a scale of 0, unencrypted, and constrained to be nonnullable.",
+          state=2,
+        )
+      }
+      if c.nullable == Some(true) {
+        raise @types.sql_error(
+          8147,
+          "Could not create IDENTITY attribute on nullable column '\{c.name.name}', table '\{b.written}'.",
+        )
+      }
+      // identity values are Int64 here: a seed or increment beyond that
+      // range (decimal(38,0)) is not emulated
+      for part in [i.seed, i.increment] {
+        match part {
+          Some(text) if beyond_bigint(text.trim(chars="-+ ").to_owned()) =>
+            raise @types.not_supported(
+              "IDENTITY seed or increment beyond the bigint range",
+            )
+          _ => ()
+        }
+      }
+    }
+    None => ()
+  }
+  for k in c.constraints {
+    if k.kind is ColDefault(_) {
+      if c.identity is Some(_) {
+        raise self.constraint_error(
+          @types.sql_error(
+            1754,
+            "Defaults cannot be created on columns with an IDENTITY attribute. Table '\{b.written}', column '\{c.name.name}'.",
+            state=0,
+          ),
+        )
+      }
+      if ty is RowVersion {
+        raise self.constraint_error(
+          @types.sql_error(
+            1755,
+            "Defaults cannot be created on columns of data type timestamp. Table '\{b.written}', column '\{c.name.name}'.",
+            state=0,
+          ),
+        )
+      }
+    }
+  }
   b.max_column_id += 1
   let column_id = b.max_column_id
   let mut col : @store.Column = {
@@ -1633,4 +1697,11 @@ fn computed_nullable(e : @ast.Expr, b : Builder) -> Bool {
       }
     _ => true
   }
+}
+
+///|
+/// Digits of a non-negative integer literal beyond 9223372036854775807.
+fn beyond_bigint(digits : String) -> Bool {
+  let d = digits.trim_start(chars="0").to_owned()
+  d.length() > 19 || (d.length() == 19 && d > "9223372036854775807")
 }

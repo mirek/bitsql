@@ -69,6 +69,8 @@ pub(all) enum StmtKind {
   Label(Ident)
   /// `WAITFOR DELAY|TIME expr` (parse only).
   WaitFor(String, Expr)
+  /// `DBCC name [(args)] [WITH option, ...]` (name and options upper-cased).
+  Dbcc(String, Array[Expr], Array[String])
   /// Re-throw when `args` is empty, else number, message, state.
   Throw(Array[Expr])
   RaisError(Array[Expr], options~ : Array[String])

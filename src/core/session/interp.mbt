@@ -171,7 +171,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // even without XACT_ABORT (captured: savepoint errors/catch runs)
   // and so does MERGE's 8672 (captured: gaps-merge #022: ERROR, then the
   // rollback ENVCHANGE)
-  let conversion_abort = [241, 245, 295, 8114, 8672].contains(e.number())
+  let conversion_abort = [241, 245, 295, 8114, 8672].contains(e.number()) ||
+    is_identity_overflow(e)
   let xact_rollback = (
       (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
     ) &&
@@ -336,6 +337,7 @@ fn aborts_batch(
   n == 529 ||
   n == 11728 ||
   n == 217 ||
+  is_identity_overflow(e) ||
   // XML parse errors (captured: xml/type#059, xml/rpc#001)
   (n >= 9400 && n < 9500) ||
   (n >= 50100 && n <= 50199)
@@ -722,14 +724,34 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     SetIdentityInsert(name, on) =>
       match self.find_table(name) {
         Some((_, t)) => {
+          // the name as written (captured: msduck
+          // identity-insert-name-errors, 'DbO.PLAIN'); also for OFF
+          // (gaps-rowversion_identity #180)
+          if t.columns.iter().all(c => c.identity is None) {
+            raise @types.sql_error(
+              8106,
+              "Table '\{object_text(name)}' does not have the identity property. Cannot perform SET operation.",
+            )
+          }
           if on {
-            // the name as written (captured: msduck
-            // identity-insert-name-errors, 'DbO.PLAIN')
-            if t.columns.iter().all(c => c.identity is None) {
-              raise @types.sql_error(
-                8106,
-                "Table '\{object_text(name)}' does not have the identity property. Cannot perform SET operation.",
-              )
+            // captured: another table's ON is 8107 naming it in three
+            // parts (gaps-rowversion_identity #166)
+            match self.identity_insert {
+              Some(other) if other != t.id => {
+                let full = match self.db_of(0).table(other) {
+                  Some(o) => "\{self.rt.database}.\{o.schema}.\{o.name}"
+                  None =>
+                    match self.temp.table(other) {
+                      Some(o) => "tempdb.\{o.schema}.\{o.name}"
+                      None => "?"
+                    }
+                }
+                raise @types.sql_error(
+                  8107,
+                  "IDENTITY_INSERT is already ON for table '\{full}'. Cannot perform SET operation for table '\{object_text(name)}'.",
+                )
+              }
+              _ => ()
             }
             self.identity_insert = Some(t.id)
           } else if self.identity_insert == Some(t.id) {
@@ -778,6 +800,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     CloseCursor(name, global~) => self.exec_close_cursor(name, global)
     Deallocate(name, global~) => self.exec_deallocate(name, global)
     WaitFor(kind, e) => self.exec_waitfor(kind, e)
+    Dbcc(name, args, options) =>
+      self.exec_dbcc(name, args, options, s.span.line)
     _ => raise @types.not_supported(stmt_name(s))
   }
 }
