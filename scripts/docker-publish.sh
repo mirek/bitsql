@@ -10,6 +10,11 @@
 # objects. The arm64 objects come from the linux-aarch64 MoonBit release whose
 # version matches the local moonc. Per-arch images are COPY-only, so the classic
 # builder handles --platform without emulation; `docker manifest` joins them.
+# Every cc call gets -ffp-contract=off: GCC on aarch64 fuses a*b+c into fma
+# by default, which skips a rounding and diverges from SQL Server's float
+# results (x86-64 has no implicit FMA). The arm64 smoke caught it (VAR over
+# equal decimals 2204 instead of 0). moon.pkg `cc-flags` can't carry it: it
+# replaces moon's defaults (drops -O2 and the debug flags).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -57,7 +62,7 @@ build_arch() {
   find "$src" -type d -printf '%P\n' | (cd "$dst" && xargs -r mkdir -p)
   printf '%s\n' "$plan" | sed \
     -e "s#\./$src/#./$dst/#g" \
-    -e "s#^/usr/bin/cc #$cc #" -e "s#^/usr/bin/ar #$ar #" \
+    -e "s#^/usr/bin/cc #$cc -ffp-contract=off #" -e "s#^/usr/bin/ar #$ar #" \
     -e "s#\\\$MOON_HOME#/moon#g" >"$out/$arch/plan.sh"
   docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -v "$home:/moon:ro" -w /src \
     bitsql-xbuild sh -e "$out/$arch/plan.sh"
@@ -87,9 +92,30 @@ smoke() {
   grep -q '^SKIP' <<<"$log" && { echo "$log" | head; echo "== $arch smoke skipped" >&2; exit 1; }
   echo "== $arch smoke: $(grep -E '^ℹ (pass|fail|skipped) ' <<<"$log" | tr '\n' ' ')"
 }
+# arm64 under qemu takes about an hour for the full suite, and the binary is
+# the same C as amd64, so by default it gets a quick smoke: corpus/smoke plus
+# the allowlisted cases where the arch can show (float math, conversions:
+# FMA contraction diverged there), all over TLS logins. FULL_ARM64_SMOKE=1
+# runs the whole client suite instead.
+smoke_arm64_quick() {
+  local bin=$1 log
+  local -a sel=(smoke)
+  mapfile -t -O 1 sel < <(sed 's/\s\+#\s.*$//' harness/allowlist.txt |
+    grep -E '^(analytic|conversion|msduck-runs/statistical)')
+  log=$(cd harness && BITSQL_BIN="$bin" npm run --silent diff -- "${sel[@]}" 2>&1)
+  local summary
+  summary=$(grep -E '^emulator: ' <<<"$log")
+  grep -qE '^emulator: [0-9]+/[0-9]+ passed, 0 failed' <<<"$summary" ||
+    { echo "$log" | tail -40; echo "== arm64 smoke FAILED" >&2; exit 1; }
+  echo "== arm64 quick smoke (${#sel[@]} selectors): $summary"
+}
 if [[ ${SKIP_SMOKE:-0} != 1 ]]; then
   smoke amd64 "$PWD/$out/amd64/bitsql"
-  smoke arm64 "$PWD/$out/arm64/bitsql-qemu"
+  if [[ ${FULL_ARM64_SMOKE:-0} == 1 ]]; then
+    smoke arm64 "$PWD/$out/arm64/bitsql-qemu"
+  else
+    smoke_arm64_quick "$PWD/$out/arm64/bitsql-qemu"
+  fi
 fi
 
 for arch in amd64 arm64; do

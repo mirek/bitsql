@@ -10,6 +10,7 @@ new trap, add a row here *and* a corpus case.
 | `datetime2` / `datetimeoffset` | `Int64` ticks of 100 ns plus offset minutes | Never use a millisecond clock in the core: millisecond precision silently breaks comparisons |
 | Legacy `datetime` (if present) | Ticks rounded to 1/300 s | Values round to .000, .003 or .007 |
 | `uniqueidentifier` | 16 raw bytes | Mixed-endian wire format; SQL Server sorts by the last 6 bytes first, so `ORDER BY` on a GUID is a classic false green |
+| `float` arithmetic on arm64 | C compiled with `-ffp-contract=off` (`scripts/docker-publish.sh`) | GCC/clang on aarch64 fuse `a*b+c` into `fma`, skipping a rounding: VAR over equal decimals gave 2204 instead of 0 and a percentile 4.4 instead of 4.400000000000001. Only the arm64 smoke (corpus under qemu) shows it; x86-64 never fuses implicitly |
 | `rowversion` | Database-wide counter bumped on every insert and update | Assigned at modification time, not commit; `@@DBTS` and `MIN_ACTIVE_ROWVERSION()` |
 | `decimal` | Fixed-point big integer plus scale | Result precision and scale rules for `*` and `/`, and truncation vs rounding |
 | `NEWSEQUENTIALID()` | Monotonic per instance | Only valid in defaults |

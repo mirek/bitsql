@@ -247,3 +247,8 @@ scripts/check.sh                 # everything CI runs; must be green to push
   error. Use a block instead: `errdefer { f() catch { _ => () } }`.
   `--deny-warn` flags `try { … } catch { e => { cleanup; raise e } }` as
   `fragile_catch_all`; use `errdefer` for the cleanup.
+- 2026-10-04: `options(link: { "native": { "cc-flags": "…" } })` in moon.pkg
+  **replaces** moon's default C flags rather than adding to them: with
+  `-ffp-contract=off` there, the host link line lost `-O2` (and debug builds
+  would lose theirs). Release-only flags go into `scripts/docker-publish.sh`,
+  which replays moon's dry-run plan.
