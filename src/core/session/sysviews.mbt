@@ -469,6 +469,9 @@ fn Session::sys_view_rows(
   self : Session,
   id : Int,
 ) -> Array[(Int64, Array[@types.Value])] {
+  if id >= MSDB_VIEW_OFFSET {
+    return self.msdb_rows(id - MSDB_VIEW_OFFSET)
+  }
   let tempdb = id >= TEMPDB_VIEW_OFFSET
   let id = if tempdb { id - TEMPDB_VIEW_OFFSET } else { id }
   let v = view_defs[id]
@@ -1108,7 +1111,13 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
       out.append(system_columns_rows())
     }
     "sys.server_principals" => out.append(server_principal_rows())
-    "sys.database_files" => out.append(database_file_rows(self.rt.database))
+    "sys.database_files" =>
+      out.append(
+        database_file_rows(
+          self.rt.database,
+          self.server.db_files(self.rt.database),
+        ),
+      )
     "sys.dm_exec_sessions"
     | "sys.dm_exec_requests"
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))

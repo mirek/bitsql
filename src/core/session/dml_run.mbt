@@ -1246,11 +1246,12 @@ fn Session::bump_identity(self : Session, t : @store.Table, v : Int64) -> Unit {
     Some({ identity: Some(id), .. }) => id.increment
     _ => 1L
   }
-  match self.server.idents.get(t.id) {
-    None => self.server.idents[t.id] = v
+  let key = self.ident_key(t)
+  match self.server.idents.get(key) {
+    None => self.server.idents[key] = v
     Some(cur) =>
       if (increment >= 0L && v > cur) || (increment < 0L && v < cur) {
-        self.server.idents[t.id] = v
+        self.server.idents[key] = v
       }
   }
 }

@@ -247,7 +247,10 @@ fn seed_cat_obj(r : Array[@types.Value]) -> CatObj {
 /// max 2 TB, growth 8192 pages; master 600/352 pages, 10% growth); SQL
 /// Server's grow with the data, bitsql has no pages. A user database's
 /// file_guid is random in SQL Server; bitsql derives one from the name.
-fn database_file_rows(db : String) -> Array[VRow] {
+fn database_file_rows(
+  db : String,
+  files : Array[(String, String)],
+) -> Array[VRow] {
   let file = (
     id : Int,
     kind : Int,
@@ -266,7 +269,7 @@ fn database_file_rows(db : String) -> Array[VRow] {
       ("type_desc", s(if kind == 0 { "ROWS" } else { "LOG" })),
       ("data_space_id", i(if kind == 0 { 1 } else { 0 })),
       ("name", s(name)),
-      ("physical_name", s("/var/opt/mssql/data/" + path)),
+      ("physical_name", s(path)),
       ("state", TinyInt(0)),
       ("state_desc", s("ONLINE")),
       ("size", i(size)),
@@ -277,17 +280,17 @@ fn database_file_rows(db : String) -> Array[VRow] {
   }
   if db.to_lower() == "master" {
     return [
-      file(1, 0, "master", "master.mdf", 600, -1, 10, true, Null),
-      file(2, 1, "mastlog", "mastlog.ldf", 352, -1, 10, true, Null),
+      file(1, 0, files[0].0, files[0].1, 600, -1, 10, true, Null),
+      file(2, 1, files[1].0, files[1].1, 352, -1, 10, true, Null),
     ]
   }
   [
-    file(1, 0, db, db + ".mdf", 1024, -1, 8192, false, name_guid(db, 1)),
+    file(1, 0, files[0].0, files[0].1, 1024, -1, 8192, false, name_guid(db, 1)),
     file(
       2,
       1,
-      db + "_log",
-      db + "_log.ldf",
+      files[1].0,
+      files[1].1,
       1024,
       268435456,
       8192,

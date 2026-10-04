@@ -5,6 +5,28 @@ pub(all) struct Stmt {
 } derive(Eq, Debug)
 
 ///|
+/// A BACKUP/RESTORE device: `DISK|URL|TAPE = 'path' | @v` (kind
+/// upper-cased), or a logical backup device name or variable (kind "").
+pub(all) struct BackupDevice {
+  kind : String
+  value : Expr
+} derive(Eq, Debug)
+
+///|
+/// A BACKUP/RESTORE `WITH` option: the name upper-cased, `= value` when
+/// given (strings, numbers, variables; bare words as `Column`), and for
+/// `MOVE 'logical' TO 'physical'` the logical name as `value` and the
+/// physical one as `move_to`. Parenthesized arguments (COMPRESSION
+/// (ALGORITHM = ...), ENCRYPTION (...)) set `args`.
+pub(all) struct BackupOption {
+  name : String
+  value : Expr?
+  move_to : Expr?
+  args : Bool
+  span : Span
+} derive(Eq, Debug)
+
+///|
 pub(all) enum CreateMode {
   Create
   Alter
@@ -84,12 +106,21 @@ pub(all) enum StmtKind {
   /// `DBCC name [(args)] [WITH option, ...]` (name and options upper-cased).
   Dbcc(String, Array[Expr], Array[String])
   /// `BACKUP DATABASE|LOG name TO device [, ...] [WITH option, ...]`: the
-  /// database (a name as `Column([name])`, or a variable) and the options
-  /// (upper-cased); devices are not kept.
-  Backup(log~ : Bool, database~ : Expr, options~ : Array[String])
-  /// `RESTORE DATABASE|LOG|HEADERONLY|...`: the kind, upper-cased (parsed
-  /// to find the statement's end; not emulated).
-  Restore(String)
+  /// database (a name as `Column([name])`, or a variable).
+  Backup(
+    log~ : Bool,
+    database~ : Expr,
+    devices~ : Array[BackupDevice],
+    options~ : Array[BackupOption]
+  )
+  /// `RESTORE DATABASE|LOG|HEADERONLY|FILELISTONLY|VERIFYONLY|... [name]
+  /// [FROM device, ...] [WITH option, ...]`: the kind upper-cased.
+  Restore(
+    kind~ : String,
+    database~ : Expr?,
+    devices~ : Array[BackupDevice],
+    options~ : Array[BackupOption]
+  )
   /// Re-throw when `args` is empty, else number, message, state.
   Throw(Array[Expr])
   RaisError(Array[Expr], options~ : Array[String])

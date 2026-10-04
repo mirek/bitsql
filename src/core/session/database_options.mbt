@@ -22,6 +22,12 @@ priv struct DbOptions {
   /// ON/OFF options set by ALTER DATABASE (copy on write), by option name;
   /// absent: `default_flag`.
   flags : Map[String, Bool]
+  /// (logical name, physical path) of the data and log files when they
+  /// differ from the defaults (RESTORE … WITH MOVE; session/backup.mbt).
+  files : Array[(String, String)]?
+  /// Backup family GUID: assigned by the first BACKUP, carried by RESTORE
+  /// (3154 compares it).
+  family : Bytes?
 }
 
 ///|
@@ -75,6 +81,8 @@ fn DbOptions::default(name : String) -> DbOptions {
       "FULL"
     },
     flags: Map([]),
+    files: None,
+    family: None,
   }
 }
 

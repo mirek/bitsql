@@ -1,0 +1,1232 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "9a28a5f3eb79a4e8",
+  "steps": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "sets": [],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [
+        {"number":4035,"state":1,"class":0,"lineNumber":2,"message":"{masked}"},
+        {"number":4035,"state":1,"class":0,"lineNumber":2,"message":"{masked}"},
+        {"number":3014,"state":1,"class":0,"lineNumber":2,"message":"{masked}"}
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":228},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":228},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":228}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":228},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":228},
+        {"name":"INFO","number":3014},
+        {"name":"DONE","status":0,"curCmd":228}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "BackupName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "BackupDescription",
+              "type": "NVarChar",
+              "length": 510,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"BackupType","type":"IntN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"ExpirationDate","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"Compressed","type":"IntN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"Position","type":"IntN","length":2,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"DeviceType","type":"IntN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "UserName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "ServerName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "DatabaseName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"DatabaseVersion","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"DatabaseCreationDate","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"BackupSize","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"FirstLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"LastLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"CheckpointLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"DatabaseBackupLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"BackupStartDate","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"BackupFinishDate","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SortOrder","type":"IntN","length":2,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"CodePage","type":"IntN","length":2,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"UnicodeLocaleId","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"UnicodeComparisonStyle","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"CompatibilityLevel","type":"IntN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SoftwareVendorId","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SoftwareVersionMajor","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SoftwareVersionMinor","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SoftwareVersionBuild","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "MachineName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"Flags","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"BindingID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"RecoveryForkID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "Collation",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"FamilyGUID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"HasBulkLoggedData","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsSnapshot","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsReadOnly","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsSingleUser","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"HasBackupChecksums","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsDamaged","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"BeginsLogChain","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"HasIncompleteMetaData","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsForceOffline","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsCopyOnly","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"FirstRecoveryForkID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"ForkPointLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {
+              "name": "RecoveryModel",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"DifferentialBaseLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"DifferentialBaseGUID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "BackupTypeDescription",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"BackupSetGUID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"CompressedBackupSize","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"Containment","type":"IntN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "KeyAlgorithm",
+              "type": "NVarChar",
+              "length": 64,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"EncryptorThumbprint","type":"VarBinary","length":20,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "EncryptorType",
+              "type": "NVarChar",
+              "length": 64,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"LastValidRestoreTime","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"TimeZone","type":"IntN","length":2,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "CompressionAlgorithm",
+              "type": "NVarChar",
+              "length": 64,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [
+            [
+              "fixture",
+              null,
+              1,
+              null,
+              1,
+              1,
+              2,
+              "sa",
+              "{masked}",
+              "{db}",
+              998,
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              "{masked}",
+              52,
+              0,
+              1033,
+              196609,
+              170,
+              4608,
+              17,
+              0,
+              5005,
+              "{masked}",
+              512,
+              "{masked}",
+              "{masked}",
+              "SQL_Latin1_General_CP1_CI_AS",
+              "{masked}",
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              "{masked}",
+              null,
+              "FULL",
+              null,
+              null,
+              "Database",
+              "{masked}",
+              "{masked}",
+              0,
+              null,
+              null,
+              null,
+              null,
+              "{masked}",
+              "MS_XPRESS"
+            ]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":230},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":250}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":59},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":17,"curCmd":230},
+        {"name":"DONE","status":0,"curCmd":250}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "LogicalName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "PhysicalName",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "Type",
+              "type": "NChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "FileGroupName",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"Size","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"MaxSize","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"FileId","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"CreateLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"DropLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"UniqueId","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"ReadOnlyLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"ReadWriteLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"BackupSizeInBytes","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"SourceBlockSize","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"FileGroupId","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"LogGroupGUID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"DifferentialBaseLSN","type":"NumericN","length":17,"precision":25,"scale":0,"flags":1,"collation":null},
+            {"name":"DifferentialBaseGUID","type":"UniqueIdentifier","length":16,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsReadOnly","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"IsPresent","type":"BitN","length":1,"precision":null,"scale":null,"flags":1,"collation":null},
+            {"name":"TDEThumbprint","type":"VarBinary","length":20,"precision":null,"scale":null,"flags":1,"collation":null},
+            {
+              "name": "SnapshotUrl",
+              "type": "NVarChar",
+              "length": 672,
+              "precision": null,
+              "scale": null,
+              "flags": 1,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [
+            [
+              "{db}",
+              "/var/opt/mssql/data/{db}.mdf",
+              "D",
+              "PRIMARY",
+              "8388608",
+              "35184372080640",
+              "1",
+              0,
+              0,
+              "{masked}",
+              0,
+              0,
+              "{masked}",
+              4096,
+              1,
+              null,
+              "{masked}",
+              "{masked}",
+              false,
+              true,
+              null,
+              null
+            ],
+            [
+              "{masked}",
+              "{masked}",
+              "L",
+              null,
+              "8388608",
+              "2199023255552",
+              "2",
+              0,
+              0,
+              "{masked}",
+              0,
+              0,
+              "{masked}",
+              4096,
+              0,
+              null,
+              "{masked}",
+              "{masked}",
+              false,
+              true,
+              null,
+              null
+            ]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":2,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":230},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":376}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":22},
+        {"name":"NBCROW","count":2},
+        {"name":"DONE","status":17,"curCmd":230},
+        {"name":"DONE","status":0,"curCmd":376}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [
+        {"number":4035,"state":1,"class":0,"lineNumber":4,"message":"{masked}"},
+        {"number":4035,"state":1,"class":0,"lineNumber":4,"message":"{masked}"},
+        {"number":3014,"state":1,"class":0,"lineNumber":4,"message":"{masked}"}
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":229},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":229},
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"INFO","number":3014},
+        {"name":"DONE","status":0,"curCmd":229}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[2,"b"]]
+        },
+        {"columns":[{"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[2]]},
+        {"columns":[{"name":"f","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[42]]},
+        {
+          "columns": [{"name":"next_value","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],
+          "rows": [[11]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"],[3,"c!"]]
+        },
+        {"columns":[{"name":"ident","type":"NumericN","length":17,"precision":38,"scale":0,"flags":33,"collation":null}],"rows":[[3]]},
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["f","FN"],["p","P "],["pk_t","PK"],["s","SO"],["t","U "],["tr","TR"],["vw","V "]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":2,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":3,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":7,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":226},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":7,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":1,"curCmd":226},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":7},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 19
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"]]
+        },
+        {
+          "columns": [{"name":"next_value","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],
+          "rows": [[11]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"],[3,"x!"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":3,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 7
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"same_object_id","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+          "rows": [[1]]
+        },
+        {
+          "columns": [
+            {"name":"file_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "physical_name",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "logical",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"ROWS","/var/opt/mssql/data/{db}-copy.mdf","src"],[2,"LOG","/var/opt/mssql/data/{db}-copy.ldf","src_log"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":2,"more":true},
+        {"kind":"doneInProc","rowCount":3,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":226},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":196},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":1,"curCmd":226},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":17,"curCmd":196},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 9
+    },
+    {
+      "sets": [],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [
+        {"number":4035,"state":1,"class":0,"lineNumber":4,"message":"{masked}"},
+        {"number":4035,"state":1,"class":0,"lineNumber":4,"message":"{masked}"},
+        {"number":3014,"state":1,"class":0,"lineNumber":4,"message":"{masked}"}
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":229}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":229},
+        {"name":"INFO","number":4035},
+        {"name":"DONE","status":1,"curCmd":229},
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+        {"name":"INFO","number":3014},
+        {"name":"DONE","status":0,"curCmd":229}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":16,"collation":null},
+            {
+              "name": "v",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"a"],[2,"b"],[3,"d!"]]
+        },
+        {
+          "columns": [{"name":"next_value","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],
+          "rows": [[11]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":2,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":3,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":226},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":1,"curCmd":226},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 8
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "description",
+              "type": "NVarChar",
+              "length": 510,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "type",
+              "type": "Char",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"position","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "database_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_copy_only","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"has_backup_checksums","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "recovery_model",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"compatibility_level","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "collation_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"software_major_version","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"database_version","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flags","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "compression_algorithm",
+              "type": "NVarChar",
+              "length": 64,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"first_family_number","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_media_number","type":"IntN","length":2,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"mtf_minor_version","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"sort_order","type":"IntN","length":2,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"code_page","type":"IntN","length":2,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["fixture",null,"D",1,"{db}",false,false,"FULL",170,"SQL_Latin1_General_CP1_CI_AS",17,998,512,"MS_XPRESS",1,1,0,52,0]]
+        },
+        {
+          "columns": [
+            {
+              "name": "physical_device_name",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"device_type","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"family_sequence_number","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "logical_device_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"physical_block_size","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"mirror","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"media_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"media_family_count","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "software_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"software_vendor_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_compressed","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"mirror_count","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["/var/opt/mssql/data/{db}.bak",2,1,null,4096,0,1,1,"Microsoft SQL Server",4608,true,1]]
+        },
+        {
+          "columns": [
+            {
+              "name": "destination_database_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "restore_type",
+              "type": "Char",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"replace","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"recovery","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"restart","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"device_count","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stop_at","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["{db}-copy","D",true,true,false,1,null,"fixture"],["{db}-copy","D",true,true,false,1,null,"fixture"]]
+        },
+        {
+          "columns": [
+            {"name":"file_number","type":"NumericN","length":17,"precision":10,"scale":0,"flags":9,"collation":null},
+            {
+              "name": "destination_phys_drive",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "destination_phys_name",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [
+            [1,"C:\\","/var/opt/mssql/data/{db}-copy.mdf"],
+            [2,"C:\\","/var/opt/mssql/data/{db}-copy.ldf"],
+            [1,"C:\\","/var/opt/mssql/data/{db}-copy.mdf"],
+            [2,"C:\\","/var/opt/mssql/data/{db}-copy.ldf"]
+          ]
+        },
+        {
+          "columns": [
+            {"name":"file_number","type":"NumericN","length":17,"precision":10,"scale":0,"flags":8,"collation":null},
+            {
+              "name": "file_type",
+              "type": "Char",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "filegroup_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"page_size","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"source_file_block_size","type":"NumericN","length":17,"precision":10,"scale":0,"flags":9,"collation":null},
+            {
+              "name": "physical_drive",
+              "type": "NVarChar",
+              "length": 520,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"state","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "state_desc",
+              "type": "NVarChar",
+              "length": 128,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"drop_lsn","type":"NumericN","length":17,"precision":25,"scale":0,"flags":9,"collation":null},
+            {"name":"is_readonly","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_present","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "logical",
+              "type": "NVarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 32,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [
+            [1,"D","PRIMARY",8192,4096,"C:\\",0,"ONLINE",null,false,true,"src"],
+            [2,"L",null,null,4096,"C:\\",0,"ONLINE",null,false,true,"other"]
+          ]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":4,"more":true},
+        {"kind":"done","rowCount":2,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":19},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":12},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":8},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ORDER","columns":[0,1]},
+        {"name":"ROW","count":4},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":12},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 10
+    },
+    {
+      "sets": [],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":204},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONEINPROC","status":1,"curCmd":204},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

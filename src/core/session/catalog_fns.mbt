@@ -220,7 +220,7 @@ fn Session::catalog_fn(
                   let v = match name {
                     "IDENT_SEED" => idn.seed
                     "IDENT_INCR" => idn.increment
-                    _ => self.server.idents.get(t.id).unwrap_or(idn.seed)
+                    _ => self.server.idents.get(self.ident_key(t)).unwrap_or(idn.seed)
                   }
                   Decimal(@types.Decimal::from_int64(v))
                 }

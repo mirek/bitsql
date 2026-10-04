@@ -887,8 +887,10 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     WaitFor(kind, e) => self.exec_waitfor(kind, e)
     Dbcc(name, args, options) =>
       self.exec_dbcc(name, args, options, s.span.line)
-    Backup(log~, database~, ..) => self.exec_backup(log, database)
-    Restore(kind) => raise @types.not_supported("RESTORE \{kind}")
+    Backup(log~, database~, devices~, options~) =>
+      self.exec_backup(log, database, devices, options)
+    Restore(kind~, database~, devices~, options~) =>
+      self.exec_restore(kind, database, devices, options)
     _ => raise @types.not_supported(stmt_name(s))
   }
 }

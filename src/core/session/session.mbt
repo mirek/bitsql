@@ -18,8 +18,11 @@ pub struct Server {
   /// Row ids and object ids are never reused or rolled back.
   mut next_rowid : Int64
   mut next_object_id : Int
-  /// Last identity value per table id (not rolled back, like SQL Server).
-  idents : Map[Int, Int64]
+  /// Last identity value per table (not rolled back, like SQL Server),
+  /// keyed by `Session::ident_key`: "database:id" for tables of a
+  /// database (a restored copy shares its object ids with the original),
+  /// the bare id for temp tables and table variables.
+  idents : Map[String, Int64]
   /// Database-wide rowversion counter (@@DBTS).
   mut dbts : Int64
   /// emulator.snapshot / emulator.restore states.
@@ -46,13 +49,15 @@ pub struct Server {
   /// ALTER DATABASE settings by lowercased database name (absent: the
   /// defaults of `DbOptions::default`).
   priv db_options : Map[String, DbOptions]
+  /// BACKUP files and msdb backup history (session/backup.mbt).
+  priv backups : BackupStore
 }
 
 ///|
 priv struct ServerSnapshot {
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
-  idents : Map[Int, Int64]
+  idents : Map[String, Int64]
   dbts : Int64
   procs : Map[String, Proc]
   db_options : Map[String, DbOptions]
@@ -89,6 +94,7 @@ pub fn Server::new() -> Server {
     victims: [],
     udfs: Map([]),
     db_options: Map([]),
+    backups: BackupStore::new(),
   }
 }
 
@@ -260,6 +266,10 @@ pub struct Session {
   mut nocount : Bool
   mut xact_abort : Bool
   priv frames : Array[Frame]
+  /// Databases in effect outside the running dynamic SQL scopes (a USE
+  /// inside dynamic SQL lasts until the scope ends): the first entry is
+  /// the session's own database, which RESTORE's 3101 check reads.
+  priv outer_dbs : Array[String]
   priv out : Array[@reply.Item]
   /// Request mode: RPC statements complete with DONEINPROC and NOCOUNT
   /// suppresses their non-result completions.
@@ -435,6 +445,7 @@ pub fn Session::new(
     nocount: false,
     xact_abort: false,
     frames: [],
+    outer_dbs: [],
     out: [],
     rpc: false,
     try_depth: 0,

@@ -203,16 +203,28 @@ fn Session::eval_text(
 }
 
 ///|
+/// Key of a table's identity counter in `Server::idents`: temp tables
+/// ('#') and table variables ('@') by id (ids are unique per server),
+/// database tables by "database:id" (RESTORE copies keep object ids).
+fn Session::ident_key(self : Session, t : @store.Table) -> String {
+  if t.name.has_prefix("#") || t.name.has_prefix("@") {
+    t.id.to_string()
+  } else {
+    self.rt.database.to_lower() + ":" + t.id.to_string()
+  }
+}
+
+///|
 fn Session::next_identity(
   self : Session,
   t : @store.Table,
   id : @store.Identity,
 ) -> Int64 {
-  let v = match self.server.idents.get(t.id) {
+  let v = match self.server.idents.get(self.ident_key(t)) {
     Some(last) => last + id.increment
     None => id.seed
   }
-  self.server.idents[t.id] = v
+  self.server.idents[self.ident_key(t)] = v
   v
 }
 
@@ -223,7 +235,7 @@ fn Session::peek_identity(
   t : @store.Table,
   id : @store.Identity,
 ) -> Int64 {
-  match self.server.idents.get(t.id) {
+  match self.server.idents.get(self.ident_key(t)) {
     Some(last) => last + id.increment
     None => id.seed
   }
@@ -461,7 +473,7 @@ fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise 
       }
       self.write(scope, db.truncate(t.id))
       // TRUNCATE reseeds identity
-      self.server.idents.remove(t.id)
+      self.server.idents.remove(self.ident_key(t))
       self.rt.rowcount = 0
       self.done(234)
     }

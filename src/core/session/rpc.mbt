@@ -794,15 +794,18 @@ fn Session::run_dynamic(
   // corpus orm/object-ids, orm/dynamic-use)
   let saved_db = self.rt.database
   self.text = sql
+  self.outer_dbs.push(saved_db)
   let run = {
     errdefer {
       self.text = saved_text
       self.rt.database = saved_db
+      ignore(self.outer_dbs.pop())
     }
     self.run_module(bound, levels~, () => self.run_text(sql))
   }
   self.text = saved_text
   self.rt.database = saved_db
+  ignore(self.outer_dbs.pop())
   run
 }
 

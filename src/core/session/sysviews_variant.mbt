@@ -24,7 +24,7 @@ fn Session::variant_view_rows(self : Session, key : String) -> Array[VRow] {
           let r = column_row(t.id, c)
           r["seed_value"] = int_variant(id.seed, c.ty)
           r["increment_value"] = int_variant(id.increment, c.ty)
-          r["last_value"] = match self.server.idents.get(t.id) {
+          r["last_value"] = match self.server.idents.get(self.ident_key(t)) {
             Some(last) => int_variant(last, c.ty)
             None => Null
           }

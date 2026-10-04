@@ -240,6 +240,10 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         Some(b) => return Some(b)
         None => ()
       }
+      match self.msdb_binding(name) {
+        Some(b) => return Some(b)
+        None => ()
+      }
       let real = self.deref_synonym(name)
       match self.find_table(real) {
         Some((scope, t)) => {

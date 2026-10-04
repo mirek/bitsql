@@ -1401,7 +1401,7 @@ fn Session::exec_drop(
               }
             }
             self.write(scope, db)
-            self.server.idents.remove(t.id)
+            self.server.idents.remove(self.ident_key(t))
           }
           None => if !if_exists { raise drop_missing("table", n) }
         }

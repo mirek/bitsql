@@ -948,15 +948,24 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.expr(e)
       self.close()
     }
-    Backup(log~, database~, options~) => {
+    Backup(log~, database~, devices~, options~) => {
       self.s(if log { "(backup log " } else { "(backup database " })
       self.expr(database)
-      for o in options {
-        self.s(" " + o)
-      }
+      self.backup_parts(devices, options)
       self.close()
     }
-    Restore(kind) => self.s("(restore " + kind + ")")
+    Restore(kind~, database~, devices~, options~) => {
+      self.s("(restore " + kind)
+      match database {
+        Some(d) => {
+          self.s(" ")
+          self.expr(d)
+        }
+        None => ()
+      }
+      self.backup_parts(devices, options)
+      self.close()
+    }
     Dbcc(name, args, options) => {
       self.s("(dbcc " + name)
       for a in args {
@@ -1076,5 +1085,39 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       }
       self.s("(alter-database " + t + " " + a + ")")
     }
+  }
+}
+
+///|
+fn W::backup_parts(
+  self : W,
+  devices : Array[BackupDevice],
+  options : Array[BackupOption],
+) -> Unit {
+  for d in devices {
+    self.s(" (device " + d.kind + " ")
+    self.expr(d.value)
+    self.close()
+  }
+  for o in options {
+    self.s(" (" + o.name)
+    match o.value {
+      Some(v) => {
+        self.s(" ")
+        self.expr(v)
+      }
+      None => ()
+    }
+    match o.move_to {
+      Some(v) => {
+        self.s(" to ")
+        self.expr(v)
+      }
+      None => ()
+    }
+    if o.args {
+      self.s(" (...)")
+    }
+    self.close()
   }
 }
