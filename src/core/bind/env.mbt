@@ -12,6 +12,12 @@ pub(all) struct ColumnRef {
   ty : @types.SqlType
   nullable : Bool
   origin : @ir.Origin
+  /// The column is SQL Server's "NULL constant" read through a derived
+  /// table, CTE or VALUES (every row NULL, reported as int): a reference
+  /// binds as the untyped NULL literal, so it converts to any type
+  /// (captured: query/derived-untyped-null). Views, inline functions,
+  /// SELECT INTO and scalar subqueries type it int.
+  untyped_null : Bool
 } derive(Debug)
 
 ///|

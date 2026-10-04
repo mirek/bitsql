@@ -50,6 +50,8 @@ pub fn rounding_type(@types.SqlType) -> Bool
 
 pub fn unify_types(Array[@types.SqlType]) -> @types.SqlType raise @types.SqlError
 
+pub fn untyped_null_column(@ir.Plan, Int) -> Bool
+
 // Errors
 
 // Types and methods
@@ -85,6 +87,7 @@ pub(all) struct ColumnRef {
   ty : @types.SqlType
   nullable : Bool
   origin : @ir.Origin
+  untyped_null : Bool
 } derive(@debug.Debug)
 
 pub(all) struct CteDef {

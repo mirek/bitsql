@@ -428,7 +428,16 @@ fn bind_generate_series(
   }
   (
     TableFunc(GenerateSeries(ty), conv),
-    [{ qualifier: q, name: "value", ty, nullable, origin: SetOperation, }],
+    [
+      {
+        untyped_null: false,
+        qualifier: q,
+        name: "value",
+        ty,
+        nullable,
+        origin: SetOperation,
+      },
+    ],
   )
 }
 

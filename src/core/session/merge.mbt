@@ -191,6 +191,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   }
   // OUTPUT: deleted ++ inserted ++ source columns ++ $action
   let action_col : @bind.ColumnRef = {
+    untyped_null: false,
     qualifier: "",
     name: "$action",
     ty: NVarChar(Some(10), @types.default_collation),

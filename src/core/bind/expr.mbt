@@ -153,6 +153,11 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         ..
       }
     ) => mk(Lit(Int(-2147483648)), Int, false)
+    // captured: -NULL and ~NULL stay the NULL constant (untyped), while
+    // -col over a derived NULL column is int, ~col and +col are not
+    // (query/derived-untyped-null)
+    Unary(Neg | BitNot | Plus, inner) if null_keyword(inner) =>
+      mk(Lit(Null), Int, true)
     Unary(op, inner) => {
       let a = bind_expr(env, inner)
       variant_unary_check(op, a)
@@ -174,12 +179,21 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           )
         }
         Plus => a
+        // captured: ~ over a derived NULL column stays untyped (unlike -)
+        BitNot if is_untyped_null(a) => a
         BitNot => mk(BitNot(a), a.ty, a.nullable)
       }
     }
     Binary(op, l, r) => {
       let a = bind_expr(env, l)
       let b = bind_expr(env, r)
+      // captured: NULL + NULL (also over derived NULL columns) stays the
+      // NULL constant: untyped, assignable anywhere, 8133 in a CASE
+      if op is (Add | Sub | Mul | Div | Mod) &&
+        is_untyped_null(a) &&
+        is_untyped_null(b) {
+        return mk(Lit(Null), Int, true)
+      }
       variant_operator_check(op, a, b)
       // an untyped NULL next to a string concatenates as varchar(1)
       // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
@@ -354,7 +368,11 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       }
       // captured: CASE whose results are all the NULL constant is 8133
       // (msduck count-null-compilation #032)
-      if vals.iter().all(is_untyped_null) {
+      let asts = whens.map(w => w.1)
+      if else_ is Some(x) {
+        asts.push(x)
+      }
+      if all_null_constants(vals, asts) {
         raise err(
           8133, "At least one of the result expressions in a CASE specification must be an expression other than the NULL constant.",
         )
@@ -560,9 +578,41 @@ fn bind_global(name : String) -> @ir.Expr raise @types.SqlError {
 }
 
 ///|
+/// The NULL keyword, possibly parenthesized.
+fn null_keyword(e : @ast.Expr) -> Bool {
+  match e.kind {
+    Null => true
+    Paren(x) => null_keyword(x)
+    _ => false
+  }
+}
+
+///|
+/// A bare (possibly parenthesized) column reference.
+fn bare_column(e : @ast.Expr) -> Array[@ast.Ident]? {
+  match e.kind {
+    Column(parts) => Some(parts)
+    Paren(x) => bare_column(x)
+    _ => None
+  }
+}
+
+///|
+/// CASE / IIF results (8133) and COALESCE arguments (4127) that are all
+/// the NULL constant. A bare reference to a derived table's NULL column
+/// binds as the untyped literal but does not count here, while an
+/// expression over one does (captured: query/derived-untyped-null,
+/// CASE WHEN .. THEN s.o END is int, THEN ISNULL(s.o, NULL) END is 8133).
+fn all_null_constants(bound : Array[@ir.Expr], asts : Array[@ast.Expr]) -> Bool {
+  bound.iter().all(is_untyped_null) &&
+  !asts.iter().any(a => bare_column(a) is Some(_))
+}
+
+///|
 fn bind_column(
   env : Env,
   parts : Array[@ast.Ident],
+  raw? : Bool = false,
 ) -> @ir.Expr raise @types.SqlError {
   let name = parts[parts.length() - 1].name.to_lower()
   let qualifier = if parts.length() >= 2 {
@@ -588,6 +638,11 @@ fn bind_column(
     }
     if found >= 0 {
       let c = s.columns[found]
+      // a derived table's NULL constant column reads as the untyped NULL
+      // literal (`raw`: the column itself, for name lookups)
+      if c.untyped_null && !raw {
+        return mk(Lit(Null), Int, true)
+      }
       let kind : @ir.ExprKind = if depth == 0 {
         Col(found)
       } else {

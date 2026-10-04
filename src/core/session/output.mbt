@@ -79,6 +79,7 @@ fn Session::bind_output(
   let (base, forbidden) : (Array[@bind.ColumnRef], Array[String]) = match view {
     Some(v) => {
       let cols = v.result.map(c => @bind.ColumnRef::{
+        untyped_null: false,
         qualifier: "",
         name: c.name,
         ty: c.ty,

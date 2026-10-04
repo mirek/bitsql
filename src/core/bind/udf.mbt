@@ -193,6 +193,8 @@ fn bind_user_tvf(
       // flags 33 through the function)
       let cols = derived_columns(bq, name.base(), q, []).mapi((i, c) => {
         ..c,
+        // like a view's, a NULL column is int (query/derived-untyped-null)
+        untyped_null: false,
         origin: module_column_origin(bq.columns[i].origin),
       })
       Some((WithParams(bound, bq.plan), cols))

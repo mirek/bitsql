@@ -1053,13 +1053,16 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         )
       }
       for j, c in bq.columns {
+        // an untyped NULL column (also through derived tables, VALUES and
+        // set operations) takes any type (captured: query/derived-untyped-null)
+        let untyped = @bind.untyped_null_column(bq.plan, j)
         if t.columns[cols[j]].ty is RowVersion {
-          if !query_item_is_null(q, j) {
+          if !untyped {
             raise timestamp_insert_error()
           }
           continue
         }
-        if !query_item_is_null(q, j) {
+        if !untyped {
           @types.check_store(c.ty, t.columns[cols[j]].ty)
         }
       }
@@ -1263,14 +1266,4 @@ fn timestamp_insert_error() -> @types.SqlError {
   @types.sql_error(
     273, "Cannot insert an explicit value into a timestamp column. Use INSERT with a column list to exclude the timestamp column, or insert a DEFAULT into the timestamp column.",
   )
-}
-
-///|
-/// Whether select-list item `j` of an INSERT source query is a NULL literal.
-fn query_item_is_null(q : @ast.Query, j : Int) -> Bool {
-  guard q.body is Select(s) else { return false }
-  match s.items.get(j) {
-    Some({ kind: ExprItem(e, ..), .. }) => e.kind is Null
-    _ => false
-  }
 }

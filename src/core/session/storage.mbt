@@ -155,6 +155,7 @@ fn Session::rollback_tx(self : Session) -> Unit {
 ///|
 fn table_columns(t : @store.Table) -> Array[@bind.ColumnRef] {
   t.columns.map(c => @bind.ColumnRef::{
+    untyped_null: false,
     qualifier: t.name.to_lower(),
     name: c.name,
     ty: c.ty,

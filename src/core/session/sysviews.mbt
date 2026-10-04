@@ -115,6 +115,7 @@ fn Session::sys_view_binding(
         schema: v.schema,
         name: v.name,
         columns: v.columns.map(c => @bind.ColumnRef::{
+          untyped_null: false,
           qualifier: v.name.to_lower(),
           name: c.name,
           ty: col_type(c.ty),

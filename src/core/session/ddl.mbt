@@ -304,6 +304,7 @@ fn Session::new_check(
   // a CHECK must bind against the table's columns
   let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
     b.columns.map(x => @bind.ColumnRef::{
+      untyped_null: false,
       qualifier: "",
       name: x.name,
       ty: x.ty,
@@ -484,6 +485,7 @@ fn Session::add_column(
       // computed column: type of its expression over the other columns
       let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
         b.columns.map(x => @bind.ColumnRef::{
+          untyped_null: false,
           qualifier: "",
           name: x.name,
           ty: x.ty,

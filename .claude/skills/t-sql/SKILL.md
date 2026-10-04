@@ -943,6 +943,23 @@ mention the correction here.
   SCHEMA … TRANSFER (OBJECT::/TYPE::) keeps the object_id, moves
   constraints and triggers, sends no DONE; errors 15151, 15530, 33144, 2710
   at CurCmd 170.
+- 2026-10-04 (untyped NULL, corpus `query/derived-untyped-null`,
+  `query/union-untyped-null-tvf`): SQL Server's "NULL constant" (NULL,
+  `(NULL)`, `-NULL`, `~NULL`, `NULL + NULL`, `ISNULL(NULL, NULL)`) keeps
+  that status through derived tables, CTEs, VALUES (all rows NULL),
+  DISTINCT, TOP, GROUP BY, outer joins and UNION/EXCEPT whose every branch
+  is one: describe/SELECT INTO report int, yet it assigns to
+  datetimeoffset/uniqueidentifier/xml, loses UNION precedence, and
+  `s.o + N'x'`, `ISNULL(s.o, N'z')`, `s.o = N'abc'` treat it as untyped.
+  Not through views, inline TVFs, SELECT INTO, `(SELECT NULL)`, and not
+  for `CAST(NULL AS int)`, VALUES mixing NULL with 5, `NULL * 2` or `-s.o`
+  (all int, 206 into datetimeoffset); `~s.o` and `+s.o` stay untyped.
+  A bare `s.o` is not "the NULL constant" for CASE 8133, COALESCE 4127 or
+  ORDER BY constants (ORDER token sent), but `ISNULL(s.o, NULL)` and
+  `NULL + s.o` are; MIN/MAX/COUNT/SUM over it are 8117, STRING_AGG 8116.
+  CONCAT counts the NULL keyword as length 0 but a bare `s.o` as
+  varchar(1). bitsql: `ColumnRef.untyped_null`, references bind as
+  `Lit(Null)` int (bind/expr.mbt `bind_column`).
 
 # T-SQL Language Reference
 

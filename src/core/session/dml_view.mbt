@@ -386,6 +386,7 @@ fn Session::view_target(
   })
   plan = Project(plan, exprs + passthrough)
   let visible = exprs.mapi((i, e) => @bind.ColumnRef::{
+    untyped_null: false,
     qualifier: "",
     name: col_names[i],
     ty: e.ty,

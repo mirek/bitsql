@@ -235,6 +235,7 @@ fn derived_columns(
       }
     }
     out.push({
+      untyped_null: untyped_null_column(bq.plan, i),
       qualifier,
       name,
       ty: c.ty,
@@ -313,8 +314,10 @@ fn bind_table_ref(
           }
           // unlike derived tables, computed view columns keep fComputed
           // (captured: catalog/view-select)
+          // a view's NULL column is int (captured: query/derived-untyped-null)
           let cols = derived_columns(bq, a, a.to_lower(), names).mapi((i, c) => {
             ..c,
+            untyped_null: false,
             origin: module_column_origin(bq.columns[i].origin),
           })
           return (
@@ -448,6 +451,7 @@ fn bind_table_ref(
         )
         let nullable = bound.iter().any(r => r[j].nullable)
         cols.push(ColumnRef::{
+          untyped_null: bound.iter().all(r => is_untyped_null(r[j])),
           qualifier: alias_.name.to_lower(),
           name: columns[j].name,
           ty: t,
@@ -608,6 +612,7 @@ fn bind_cte_ref(
   // recursive CTE columns are nullable (captured: IntN flags 1)
   let cols = cols0.map(c => {
     ..c,
+    untyped_null: false,
     nullable: true,
     origin: derived_origin(c.origin),
   })
@@ -661,6 +666,7 @@ fn bind_table_function(
   }
   let penv = plan_env(env)
   let col = (n : String, ty : @types.SqlType, nullable : Bool) => ColumnRef::{
+    untyped_null: false,
     qualifier: q,
     name: n,
     ty,
@@ -972,7 +978,7 @@ fn bind_clause(
 
 ///|
 fn resolve_column(env : Env, parts : Array[@ast.Ident]) -> @ir.Expr? {
-  Some(bind_column(env, parts)) catch {
+  Some(bind_column(env, parts, raw=true)) catch {
     _ => None
   }
 }
@@ -1040,6 +1046,7 @@ fn Grouping::add_key(
       // captured: a grouped expression reads back without the computed flag
       _ =>
         {
+          untyped_null: false,
           qualifier: "",
           name: "\u{1}k\{i}",
           ty: b.ty,
@@ -1208,6 +1215,7 @@ fn Grouping::columns(self : Grouping) -> Array[ColumnRef] {
   })
   for i, a in self.aggs {
     out.push({
+      untyped_null: false,
       qualifier: "",
       name: "\u{1}a\{i}",
       ty: a.ty,
@@ -1223,6 +1231,7 @@ fn Grouping::columns(self : Grouping) -> Array[ColumnRef] {
   }
   if rolled {
     out.push({
+      untyped_null: false,
       qualifier: "",
       name: "\u{1}gid",
       ty: BigInt,
@@ -1506,6 +1515,7 @@ fn bind_select_query(
     let wc = base.columns.copy()
     for i, w in wins {
       wc.push({
+        untyped_null: false,
         qualifier: "",
         name: "\u{1}w\{i}",
         ty: w.ty,
@@ -1544,6 +1554,8 @@ fn bind_select_query(
               ]
               let e : @ast.Expr = { kind: Column(parts), span: item.span, }
               bind_clause(full, inner, e, SelectList, true, written~)
+            } else if c.untyped_null {
+              mk(Lit(Null), Int, true)
             } else {
               mk(Col(i), c.ty, c.nullable)
             }
@@ -1569,6 +1581,10 @@ fn bind_select_query(
         let origin : @ir.Origin = match b.kind {
           // also a column after constant folding (CASE WHEN 1=1 THEN col ...)
           Col(i) => full.columns[i].origin
+          // a derived NULL constant column bound as the untyped literal
+          Lit(Null) if bare_column(items[idx].unwrap()) is Some(parts) &&
+            resolve_column(full, parts) is Some({ kind: Col(i), .. }) =>
+            full.columns[i].origin
           // captured: NEXT VALUE FOR has flags 0 (sequence/basics)
           Call(Named("NEXT VALUE FOR"), _) => SetOperation
           _ => Computed
@@ -1645,7 +1661,11 @@ fn bind_select_query(
     // a constant key: hidden it is 408, projected it is dropped from the
     // sort and the ORDER token (captured: SELECT 1 AS k … ORDER BY k and
     // CAST(NULL AS int) keys send no ORDER token; ORDER BY 1+0 is 408)
-    if is_constant(key) {
+    // a derived table's NULL column is a column, not a constant, even
+    // though it binds as the NULL literal (captured: ORDER token;
+    // query/derived-untyped-null)
+    let derived_null = is_untyped_null(key) && bare_column(o.expr) is Some(_)
+    if is_constant(key) && !derived_null {
       if ordinal == 0 {
         raise err(
           408,
@@ -2041,8 +2061,8 @@ fn bind_body(env : Env, b : @ast.QueryBody) -> BoundQuery raise @types.SqlError 
           }
         }
         let t = unify_non_null([
-          (c.ty, null_literal_column(bl.plan, j)),
-          (br.columns[j].ty, null_literal_column(br.plan, j)),
+          (c.ty, untyped_null_column(bl.plan, j)),
+          (br.columns[j].ty, untyped_null_column(br.plan, j)),
         ])
         let t = match set_op_collation(env, op_name, bl, br, j) {
           Some(coll) => with_collation(t, coll)
@@ -2103,7 +2123,13 @@ fn convert_to(
   }
   let exprs = []
   for j, c in bq.columns {
-    exprs.push(coerce(mk(Col(j), c.ty, c.nullable), columns[j].ty))
+    // an untyped NULL branch takes the column type without a conversion
+    // (captured: a derived NULL column UNION ALL a date)
+    if untyped_null_column(bq.plan, j) {
+      exprs.push(typed_null(columns[j].ty))
+    } else {
+      exprs.push(coerce(mk(Col(j), c.ty, c.nullable), columns[j].ty))
+    }
   }
   Project(bq.plan, exprs)
 }
@@ -2123,7 +2149,7 @@ fn bind_union_all(
   let columns = []
   for j in 0..<bound[0].columns.length() {
     let t = unify_non_null(
-      bound.map(b => (b.columns[j].ty, null_literal_column(b.plan, j))),
+      bound.map(b => (b.columns[j].ty, untyped_null_column(b.plan, j))),
     )
     // an explicit collation in any branch labels the column (captured:
     // collation/deferred-conflicts, UNION ALL with a BIN2 branch is CS)
@@ -2275,12 +2301,32 @@ fn unify_non_null(
 }
 
 ///|
-/// Is output column `j` of a bound query a bare NULL literal?
-fn null_literal_column(plan : @ir.Plan, j : Int) -> Bool {
+/// Is output column `j` of a bound query SQL Server's "NULL constant"
+/// (untyped NULL, every row NULL)? Seen through filters, sorts, DISTINCT,
+/// grouping, joins, VALUES and set operations whose every branch is one
+/// (captured: query/derived-untyped-null). References to such columns of
+/// derived tables bind as the untyped literal, so nesting needs no walk.
+pub fn untyped_null_column(plan : @ir.Plan, j : Int) -> Bool {
   match plan {
-    Project(_, exprs) => j < exprs.length() && exprs[j].kind is Lit(Null)
-    Top(p, _, ..) | Limit(p, _, _) | Sort(p, _) | Distinct(p, _) =>
-      null_literal_column(p, j)
+    Project(_, exprs) => j < exprs.length() && is_untyped_null(exprs[j])
+    Top(p, _, ..)
+    | Limit(p, _, _)
+    | Sort(p, _)
+    | Distinct(p, _)
+    | Filter(p, _)
+    | NoNullWarning(p) => untyped_null_column(p, j)
+    Aggregate(_, keys, _, ..) => j < keys.length() && is_untyped_null(keys[j])
+    Join(_, l, r, _, left_width~, ..) =>
+      if j < left_width {
+        untyped_null_column(l, j)
+      } else {
+        untyped_null_column(r, j - left_width)
+      }
+    Values(rows) =>
+      !rows.is_empty() &&
+      rows.iter().all(r => j < r.length() && is_untyped_null(r[j]))
+    UnionAll(plans) => plans.iter().all(p => untyped_null_column(p, j))
+    SetOp(_, l, r, _) => untyped_null_column(l, j) && untyped_null_column(r, j)
     _ => false
   }
 }
