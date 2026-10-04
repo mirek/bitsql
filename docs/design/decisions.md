@@ -523,7 +523,7 @@ captured `tail/` cases, no regressions). Design points worth keeping:
 
 ## 2026-10-04: ORM compatibility suite (harness/orm)
 
-Corpus 20,453/20,587 → 20,465/20,601 passing (14 new `orm/` cases, two of
+Corpus 20,507/20,604 → 20,519/20,618 passing (14 new `orm/` cases, two of
 them failing on purpose to document gaps; no regressions). knex, Sequelize,
 TypeORM and Prisma run the same workload against the oracle and bitsql
 (`cd harness/orm && npm test`); only plan-dependent row order and
