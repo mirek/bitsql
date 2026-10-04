@@ -54,6 +54,31 @@ fn precheck_batch(
             )
           }
         }
+        // captured: a variable scale of DATETIME2FROMPARTS & co is 10760
+        // for the whole batch (functions/date#614)
+        Call(c) if failure is None &&
+          (match c.name.base().to_upper() {
+            "DATETIME2FROMPARTS" => c.args.length() == 8
+            "TIMEFROMPARTS" => c.args.length() == 5
+            "DATETIMEOFFSETFROMPARTS" => c.args.length() == 10
+            _ => false
+          }) &&
+          c.args[c.args.length() - 1].kind is Var(_) => {
+          let tname = match c.name.base().to_upper() {
+            "DATETIME2FROMPARTS" => "datetime2"
+            "TIMEFROMPARTS" => "time"
+            _ => "datetimeoffset"
+          }
+          failure = Some(
+            (
+              @types.sql_error(
+                10760,
+                "Scale argument is not valid. Valid expressions for data type \{tname} scale argument are integer constants and integer constant expressions.",
+              ),
+              x.span.line,
+            ),
+          )
+        }
         // captured: a style variable of a non-integer type is 8116 for the
         // whole batch (the DECLARE before it does not run)
         Convert(_, _, style=Some({ kind: Var(vn), .. }), ..) if failure is None =>

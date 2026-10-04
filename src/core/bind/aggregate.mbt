@@ -185,7 +185,9 @@ fn bind_agg_call(
     raise err(
       8117,
       "Operand data type \{a.ty.base_name()} is invalid for \{name.to_lower()} operator.",
-      state=if call.distinct { 2 } else { 1 },
+      // APPROX_COUNT_DISTINCT is state 2 like COUNT(DISTINCT) (captured:
+      // analytic/approx-checksum-gaps)
+      state=if call.distinct || f is ApproxCountDistinct { 2 } else { 1 },
     )
   }
   let ty = agg_result_type(f, arg.map(a => a.ty), env)

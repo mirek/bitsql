@@ -29,11 +29,10 @@ fn pivot_column(
 }
 
 ///|
-/// Types PIVOT cannot group or pivot on (488). bitsql has no text, ntext,
-/// image or xml type yet, so nothing reaches this today.
+/// Types PIVOT cannot group or pivot on (488; captured: analytic/pivot-text
+/// for text).
 fn pivot_comparable(ty : @types.SqlType) -> Bool {
-  ignore(ty)
-  true
+  !ty.is_lob() && !(ty is Xml)
 }
 
 ///|
@@ -124,6 +123,13 @@ fn bind_pivot(
         raise err(
           488,
           "Pivot columns must be comparable. The type of column \"\{sc[ci].name}\" is \"\{cty.base_name()}\", which is not comparable.",
+        )
+      }
+      // captured: COUNT(text) in PIVOT is 8117 like the plain aggregate
+      if vty.is_lob() {
+        raise err(
+          8117,
+          "Operand data type \{vty.base_name()} is invalid for \{fname.to_lower()} operator.",
         )
       }
       // output names: grouping columns, then the IN values as written

@@ -49,7 +49,9 @@ fn Session::property_fn(
     "SESSIONPROPERTY" =>
       Some(
         match text(0) {
-          Some(p) => self.session_property(p)
+          // captured: trailing spaces are ignored, leading ones are not
+          // (msduck session-property-context#010)
+          Some(p) => self.session_property(p.trim_end(chars=" ").to_owned())
           None => Null
         },
       )

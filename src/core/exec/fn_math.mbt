@@ -365,12 +365,14 @@ fn call_math(
     "COS" => f(d => @math.cos(d))
     "TAN" => f(d => @math.tan(d))
     "COT" =>
+      // SQL Server's COT is COS/SIN (captured: 911 inputs agree bit for
+      // bit with its own COS/SIN, 1/TAN differs in a third of them)
       f(d => {
-        let tn = @math.tan(d)
-        if tn == 0.0 {
+        let s = @math.sin(d)
+        if s == 0.0 {
           @double.not_a_number
         } else {
-          1.0 / tn
+          @math.cos(d) / s
         }
       })
     "ASIN" =>
