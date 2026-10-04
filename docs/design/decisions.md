@@ -298,3 +298,24 @@ multi-connection cursor visibility is not captured.
   `json_aborts_batch`), and FOR JSON's 13600/13620 plus ISJSON's 1023 are
   whole-batch compile errors (`session/precheck_json.mbt`), following the
   precheck_xml pattern. (docs/reference/json.md)
+## 2026-10-04: .NET culture data generated from the oracle; system TVFs through the catalog
+
+FORMAT and PARSE need .NET Framework culture data (separators, patterns,
+month/day names). Rather than transcribing CLDR or .NET sources, which
+differ from what SQL Server's runtime actually prints (fr-FR, hu-HU, de-CH
+all have surprises), `harness/gen/cultures.mjs` formats probe values in
+each culture on the oracle and reconstructs the data (patterns by mapping
+a probe date's fields back to tokens). The generated
+`exec/culture_data.mbt` is committed; real cultures missing from it raise
+50173 (FORMAT) / 50171 (PARSE) instead of falling back to a guess, while
+names whose language the oracle does not know format like the invariant
+culture, as SQL Server does. The session language reaches FORMAT through
+`@@LANGUAGE` (exec `global(ctx, Language)`), so whatever SET LANGUAGE
+stores flows in without a second runtime field.
+
+System table-valued functions whose rows the session computes from
+constant arguments (sys.dm_exec_describe_first_result_set) go through a
+new `Catalog.system_tvf` hook: the binder folds the arguments and turns the
+rows into a VALUES plan with base-like column metadata, so the executor
+stays unaware of them. sp_describe_first_result_set shares the same core
+(session/describe.mbt).

@@ -144,6 +144,57 @@ From msduck `conditional-literal-folding` and `case-constant-properties`:
    UNKNOWN (`CHAR(256)`, `SPACE(-1)`, NULL operands) falls through to the
    ELSE NULL (IntN 33).
 
+## GREATEST / LEAST
+
+(msduck greatest-least, functions2/order-and-types.) The type is the
+highest-precedence argument type; decimal results widen like CASE (an
+integer literal counts as numeric(digits, 0); `GREATEST(7, CAST(3.25 AS
+decimal(5,2)))` is decimal(5,2), bigint with decimal(5,2) decimal(21,2),
+decimal(38,38) with 1 decimal(38,37)) and keep the spelling of the first
+decimal/numeric argument (`GREATEST(2.5, CAST(1 AS decimal(3,1)))` is
+numeric). Max types report 8000 bytes (varchar(8000), nvarchar(4000),
+varbinary(8000)) and any longer argument is 8152 state 10 at run time.
+NOT NULL only when every argument is NOT NULL and converts without
+possible failure: same type, string widening, integer widening, int to
+float, decimal widening that keeps every digit (`GREATEST(1.5, 2.25)`
+32, `GREATEST(1, 2.5)` and `GREATEST(1e0, 2.5)` 33). xml/text/ntext are
+8116 state 4; collation conflicts name "GREATEST/LEAST" (468 state 9).
+
+## ORDER BY keys and the ORDER token
+
+(msduck order-token, order-token-expanded, functions2/order-and-types.)
+A key that is a constant (literal, `CAST(NULL AS int)`, `1+2`, also
+through an alias or position) sends no ORDER token entry and does not
+sort; when every key is constant there is no ORDER token at all. A hidden
+constant key (`ORDER BY 1+0`, `'x'`, `NULL`, `ABS(-1)`) is 408 "A constant
+expression was encountered in the ORDER BY list, position n." (also after
+a UNION); `ORDER BY @v` is 1008 for the whole batch, while `@v + 1` and
+`a + @v` sort. `-1` is a position (108, class 16). A name matching two
+output columns is 209, even for the same column (`SELECT a, a ... ORDER
+BY a`), while `t.a` is fine. Positions count wildcard-expanded columns
+(`h.*, c.b AS cb ... ORDER BY c.b` is ordinal 4).
+
+## sys.dm_exec_describe_first_result_set / sp_describe_first_result_set
+
+(session/describe.mbt; msduck greatest-least, json-constructors,
+parse-try-parse, probes.) The binder's result columns of the first
+statement that returns rows (SELECT without assignment or INTO; DECLARE
+and SET before it are skipped). Per column: system_type_id, `to_sql()`
+type text, sys.columns max_length (-1 for max and xml) / precision /
+scale, collation, is_nullable, is_case_sensitive (CS/BIN collations and
+xml), is_identity_column, is_updateable (non-identity base columns),
+is_computed_column (anything but a base column), ORDER BY position /
+descending / list length; is_part_of_unique_key and source_* stay NULL
+outside browse mode. The DMF columns are base-like (flags 9); the
+procedure's result uses flags 0/1 as captured and adds tds_type_id /
+tds_length / tds_collation_id / tds_collation_sort_id (nullable wire
+type: INTN 38, NUMERICN 108, MONEYN 110, FLTN 109, DATETIMN 111,
+NVARCHAR 231 with 65535 for max, sql_variant 98/8009, xml 241/8100,
+SQL_Latin1_General_CP1_CI_AS 13632521/52). A compile error becomes two
+DMF rows (column_ordinal 0: the error with error_type 2 "SYNTAX"; 1:
+11501 "SYNTAX", or 11529 "MISC" after a missing object or procedure) or
+two errors from the procedure.
+
 ## Open questions (need captures)
 
 - Folded function results take the length of their value (`LEFT('abcdef',3)`

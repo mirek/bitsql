@@ -334,3 +334,13 @@ Start the host with `--database NAME` so the app's database exists at login
   allowlist:sync` appends every passing case of the last report, also ones
   that passed before; parse-known.txt entries that now agree are listed by
   `node --test test/parse.test.mjs` and must be deleted.
+- 2026-10-04: `harness/gen/functions2.mjs` generates `corpus/functions2/*`
+  (FORMAT/PARSE in ~50 cultures, .NET format edge cases, ORDER BY keys,
+  GREATEST/CONCAT typing, offset window functions; 292 cases, ~4 min to
+  capture). `harness/gen/cultures.mjs` rebuilds
+  `src/core/exec/culture_data.mbt` from the oracle's FORMAT output (run
+  `moon fmt` afterwards); add a culture to its list and regenerate rather
+  than editing the table. For a quick oracle loop without CREATE DATABASE
+  per case, a scratch script that runs one batch per line on one oracle
+  connection (`capture()` from src/capture-core.mjs) answers dozens of
+  "what does SQL Server print" questions in seconds.

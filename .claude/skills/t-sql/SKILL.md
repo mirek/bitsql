@@ -608,6 +608,72 @@ mention the correction here.
   key distinct from a read-only N'locked') but read case-insensitively
   (SESSION_CONTEXT(N'Tenant') finds 'tenant'); bitsql prefers the exact
   spelling (msduck session-property-context#068, gaps-computed#071).
+- 2026-10-04 (functions round 2, corpus `functions2/`, docs/reference/
+  format-parse.md): FORMAT and PARSE run .NET Framework culture data;
+  bitsql reads it back from the oracle (`harness/gen/cultures.mjs` →
+  exec/culture_data.mbt, 67 cultures, 148 known languages). Culture
+  names: case-insensitive, `_` = `-`, unknown but well-formed names
+  (`xx-XX`, `a-b`, `x-foo`) format like the invariant culture, malformed
+  ones (`x`, `abcd`, `ab-12`, `'en-US '`, `German`) are 9818; the session
+  language picks the default culture. Invalid format strings are .NET
+  FormatExceptions (NULL): `B`, `Q`, `D`/`X` on non-integers, `R` on
+  int/decimal, single letters other than the standard date formats,
+  `ffffffff`, unescaped literals in time formats. Quirks: decimal/money
+  custom formats starting with a quote print placeholders literally
+  (`'a'0` → `a0`); a NULL format string means `G`; decimal `G` keeps its
+  scale (`42.50`). Correction of the 2026-10-03 note: negative en-US
+  currency is `($1.50)` (no longer unverified).
+- 2026-10-04 (CONCAT, GREATEST/LEAST; msduck concat-legacy-family,
+  concat-text-conversion, greatest-least): CONCAT/CONCAT_WS convert to
+  nvarchar only when an argument (separator included) is nchar/nvarchar/
+  ntext — xml and sql_variant do not count — and report the first
+  unconvertible argument in order (xml/sql_variant 257 state 3, image
+  206); binary reads as UTF-16LE there (ceil(n/2) characters, odd last
+  byte padded) and in a Unicode TRANSLATE. GREATEST/LEAST rules are in
+  docs/reference/result-metadata.md (first decimal/numeric argument's
+  spelling, max types as 8000 bytes + 8152 state 10, NOT NULL only for
+  digit-preserving conversions); this replaces the 2026-10-03
+  "unverified" GREATEST nullability note.
+- 2026-10-04 (ORDER BY, msduck order-token*): constant keys leave the
+  ORDER token and the sort; hidden constant keys are 408, a bare variable
+  1008 for the whole batch, a name matching two output columns 209, `-1`
+  is a position (108 class 16). Window functions emit rows sorted by
+  PARTITION BY then ORDER BY (a query without ORDER BY shows it); ties
+  and PARTITION-only aggregates come out in plan order (not modelled).
+- 2026-10-04 (literals and conversions, msduck percentile-*): a nonzero
+  float literal below 2.2250738585072014e-308 reads as 0 with INFO 337
+  (class 0) at parse time, before anything in the batch runs and also in
+  dead branches; above the double range it is 168 (class 15) and nothing
+  runs. String → float skips leading TAB/LF/VT/FF/CR/NBSP and Unicode
+  spaces, stops at NUL ('0.5'+CHAR(0) is 0.5, CHAR(0)+'0.5' is 0) and
+  allows only trailing spaces; '1e309' is 8115 (overflow), not 8114.
+  Integers and decimals accept only spaces.
+- 2026-10-04 (window and aggregate functions, functions2/offset-window,
+  msduck statistical-*): IGNORE NULLS works on LAG/LEAD/FIRST_VALUE/
+  LAST_VALUE; for LAG/LEAD it moves from the offset row further away to
+  the first non-NULL value and returns NULL (not the default) when none
+  exists. A NULL offset gives NULL, a negative one is 8730. STDEV/VAR are
+  (Σx² − (Σx)²/n)/(n−1|n) in float, negative read as 0, infinite sums
+  8115 — cancellation included (bit-identical on all captures). Float
+  SUM/AVG overflow is 8115 even if later values would cancel it.
+  Aggregate arity messages use the upper-case name ("The SUM function
+  requires 1 argument(s)."); DISTINCT with OVER is 10759 class 15.
+- 2026-10-04 (SWITCHOFFSET/TODATETIMEOFFSET, msduck offset-functions):
+  zone text is not trimmed (' +01:30 ' is 9812); numeric zones convert
+  like CAST(x AS int) (decimal truncates, money rounds); 9812 states 0/2
+  for text, 1/3 for numbers, 9813 states 0/2 for range overflow.
+- 2026-10-04 (math): SQL Server's SIN/COS/TAN/EXP/LOG/LOG10/ATN2 come
+  from the Windows CRT and differ from fdlibm / correct rounding by 1 ulp
+  on 2–20% of inputs (913-input dump; COS(1) is 0.5403023058681397 where
+  the correctly rounded value ends in 98). Not emulated: no public
+  algorithm is known to reproduce it bit for bit. COT is exactly
+  COS(x)/SIN(x) of its own functions (0 differences), so bitsql computes
+  it that way; SQRT and POWER matched on every input.
+- 2026-10-04 (describe, session/describe.mbt):
+  sys.dm_exec_describe_first_result_set and sp_describe_first_result_set
+  describe the first row-returning SELECT from the binder; compile errors
+  become rows (DMF: ordinal 0 + 11501/11529) or errors (procedure).
+  Rules in docs/reference/result-metadata.md.
 
 - 2026-10-04 (cursors, msduck-runs `cursor`, corpus `stmts/cursor-*`,
   rules in docs/reference/completions.md "Cursors"): the created type
