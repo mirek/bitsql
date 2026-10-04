@@ -267,3 +267,19 @@ compiling the whole batch; bitsql binds statements one at a time, so
 `session/precheck_xml.mbt` binds the batch's table-free statements up front
 and fails the batch only for xml-related compile errors (statements over
 tables are compiled when they run, like deferred name resolution).
+
+## 2026-10-04: server cursors re-read through the binder's plan
+
+Keyset and dynamic cursors over a single table are modelled row by row:
+the bound plan `Project(Filter/Sort/Top*(Scan))` is rewritten so the scan
+yields row ids (`Scan(rowid=true)`) and the projection appends hidden
+columns (row id, unique key, ORDER BY keys). Keysets store row ids and key
+values at OPEN and re-read through a `Project(Scan)` plan; dynamic cursors
+re-run the query (without its ORDER BY) and sort and position by the hidden
+ordering tuple. Re-reads are cached while `Db::same_table_data` holds, and
+run with the variable values captured at OPEN. Queries of other shapes
+(joins, views) keep the requested type's metadata but read a snapshot, and
+FETCH raises an Emulator error once a base table changed (no stale rows).
+Changes made by other sessions are seen through the session's normal view;
+multi-connection cursor visibility is not captured.
+

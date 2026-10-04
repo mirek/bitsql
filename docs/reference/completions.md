@@ -15,7 +15,7 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | DELETE | 196 | yes |
 | UPDATE (WITH … UPDATE also 197) | 197 | yes |
 | MERGE | 279 | yes |
-| MERGE failing with 8672 (repeated match) | 253, batch ends, transaction rolled back | no |
+| MERGE failing with 8672 (repeated match) | 253, or 279 once an OUTPUT result set started (earlier actions' rows are sent); batch ends, rollback ENVCHANGE after the ERROR | no |
 | CREATE TABLE | 198 | no |
 | DROP TABLE | 199 | no |
 | CREATE INDEX | 200 | no |
@@ -28,7 +28,7 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | CREATE/ALTER TRIGGER | 221 | no |
 | DROP TRIGGER | 225 | no |
 | DROP SCHEMA (missing: error 15151) | 170 | no |
-| `DISABLE TRIGGER x ON t` statement | 253 | no |
+| `ENABLE`/`DISABLE TRIGGER x ON t` statement | none of its own; a batch with no other completion ends with DONE 253 (gaps-triggers #057-#065) | no |
 | TRUNCATE TABLE | 234 | no |
 | CREATE DATABASE | 203 | no |
 | DROP DATABASE | 204 | no |
@@ -55,7 +55,12 @@ the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 | enter CATCH | 350 | no |
 | normal exit of a CATCH handler | 351 | no |
 | DONEPROC at end of RPC | 224 (0xE0) | no |
-| DECLARE CURSOR, FETCH (INTO) | 193 | no |
+| DECLARE CURSOR, `SET @c = CURSOR …`, FETCH INTO | 193 | no |
+| `SET @c = cursor_name` / `= @other` | 193 | yes, 1 |
+| FETCH without INTO | 193 (result set, see Cursors) | yes, 0 or 1 |
+| positioned UPDATE / DELETE (WHERE CURRENT OF) | 125 / 126 | yes |
+| DBCC USEROPTIONS | 230 with the row count, then INFO 2528 and a second DONE 230 without count (not under WITH NO_INFOMSGS) | yes |
+| WAITFOR with an argument of another type (9815) | 243 with the error bit; the batch continues | no |
 | OPEN cursor | 32 | no |
 | CLOSE cursor | 43 | no |
 | DEALLOCATE cursor | 44 | no |
@@ -196,3 +201,33 @@ Implemented in `session/rpc.mbt` (`run_module`, `exec_module_end`) and
 - **sp_prepexec / sp_prepare**: RETURNSTATUS precedes the handle's
   RETURNVALUE; a batch-aborting error discards the handle (its number is
   reused). sp_prepare of a non-query sends DONEINPROC 193 with count 0.
+
+## Cursors (2026-10-04, msduck-runs `cursor`, corpus `stmts/cursor-*`)
+
+Implemented in `session/cursor.mbt` (its header lists the type conversions
+and data models).
+
+- **FETCH result:** COLMETADATA of the cursor's columns plus a trailing
+  `ROWSTAT int` (flags 0; 1 fetched, 2 deleted keyset row), then TABNAME
+  (only when a result column is a base column: none for COUNT(*) or
+  constants), COLINFO, ORDER when the query has ORDER BY, the ROW (none past
+  either end) and DONE 193 with count 1 or 0. FETCH INTO sends only DONE 193
+  without count.
+- **Errors keep the batch going** and complete with the statement's CurCmd
+  and the error bit: OPEN 32 (16905, 16916, 16950), FETCH 193 (16911 with
+  the lower-case fetch type, 16917 state 2, 16924, 16925 "Absolute"),
+  CLOSE 43 (16917 state 1), DEALLOCATE 44, DECLARE 193 (16915). Rejected
+  FETCHes set @@FETCH_STATUS -1 and do not move the cursor.
+- **Lines:** 16916/16950 from OPEN and FETCH report the line of the previous
+  statement that set the current line (0 at the start of a batch or module;
+  DECLARE without initializer does not set it; after a failed statement the
+  next one reports its own line). CLOSE and DEALLOCATE report their own line.
+- **Compile errors:** conflicting options 1048 (fixed wording per pair, e.g.
+  "FOR UPDATE and STATIC", "STATIC and FAST_FORWARD") and mixed ISO/T-SQL
+  syntax 1049 (line 0) reject the whole batch with DONE 253.
+- **Positioned DML** errors (16929 READ ONLY, 16931 no current row, 16932
+  column outside FOR UPDATE OF, 16933 another table, 16947 row gone) are
+  followed by INFO 3621 and DONE 125/126 with the error bit.
+- TYPE_WARNING conversions send INFO 16956 (class 0) at the DECLARE's line
+  before its DONE.
+

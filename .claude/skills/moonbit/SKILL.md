@@ -194,3 +194,14 @@ scripts/check.sh                 # everything CI runs; must be green to push
   struct field or labelled argument) and `var` is a parse error as a local
   name (`let var = ...` reads as the deprecated `var x =` form). Name them
   `owner`, `proc_name`, `vname`.
+- 2026-10-04: `dyn` and `member` are reserved for future use too (warning
+  0035, also as struct fields). A `pub(all)` struct from another package can
+  be record-updated (`{ ..self.ctx(), vars: snapshot }`), handy for running
+  a plan with captured variable values.
+- 2026-10-04: a function's optional parameter shadowed by a later `let` of
+  the same name in its body silently uses the local value; name such
+  parameters distinctly. A `for { … break }` loop inside one arm of a large
+  `match` once made every constructor in the other arms "unbound" (4021 at
+  the first arm); a `while` loop with a flag compiled (reported by a fork
+  agent, not reduced).
+

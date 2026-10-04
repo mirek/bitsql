@@ -607,6 +607,104 @@ mention the correction here.
   (SESSION_CONTEXT(N'Tenant') finds 'tenant'); bitsql prefers the exact
   spelling (msduck session-property-context#068, gaps-computed#071).
 
+- 2026-10-04 (cursors, msduck-runs `cursor`, corpus `stmts/cursor-*`,
+  rules in docs/reference/completions.md "Cursors"): the created type
+  follows implicit conversions visible in sys.dm_exec_cursors
+  ("TSQL | Dynamic | Optimistic | Global (0)"): STATIC/INSENSITIVE and any
+  query with aggregates, GROUP BY, DISTINCT, UNION, window functions or no
+  table are Snapshot (FAST_FORWARD never converts); KEYSET and SCROLL need a
+  unique index on every table, else Snapshot; the default and DYNAMIC
+  cursor over one table become Keyset with TOP, a select-list subquery or an
+  ORDER BY no index provides (an index prefix extended by the clustered key,
+  or a leading unique key, counts), joins stay Dynamic. Snapshot and
+  Fast_Forward are Read Only. @@CURSOR_ROWS is n for Snapshot/Keyset, -1 for
+  Dynamic/Fast_Forward, 0 once the last opened cursor is closed or
+  deallocated; @@FETCH_STATUS starts at 0. Keyset rows deleted or re-keyed
+  after OPEN fetch with -2, ROWSTAT 2 and blank values (NULL if nullable,
+  else 0, n spaces, n zero bytes, 1900-01-01 for datetime, 0001-01-01 for
+  date/datetime2, zero GUID); inserted rows never join. Dynamic cursors skip
+  deleted rows and see rows inserted after the current position; ABSOLUTE
+  is 16925. LOCAL cursors are visible only in their own batch/module (not to
+  called procedures or sp_executesql), DEALLOCATE drops one reference (a
+  cursor variable keeps a named cursor alive), CURSOR_STATUS('variable') is
+  -2 without a cursor, dynamic cursors report 1 even when empty. 1048 names a
+  fixed pair per conflict (not source order); 1049 is line 0. Correction:
+  the 2026-10-03 roadmap note that DYNAMIC/KEYSET/FOR UPDATE must raise
+  Emulator errors is superseded.
+- 2026-10-04 (MERGE, msduck-runs merge-top-percent, gaps-merge, corpus
+  `stmts/merge-hints`): MERGE TOP (p) PERCENT keeps ceil(n*p/100) action
+  rows; outside 0..100 is 1031, NULL 1014 (class 15, batch ends with DONE
+  253, also for variables); TOP (NULL) without PERCENT is 1060. Unknown DML
+  target hints are 321 (hint lower-cased), NOLOCK/READUNCOMMITTED on a DML
+  target 1065 (line 15), both whole-batch compile errors. MERGE compile
+  errors 8102/271/109/110/213 complete with 253; an explicit identity value
+  is 544 at CurCmd 279 without 3621; the NOT NULL message says "UPDATE
+  fails." for INSERT actions too. 8672 fires at the second action touching a
+  target row (two DELETEs delete once without error) after streaming the
+  earlier OUTPUT rows, ends the batch, rollback ENVCHANGE after the ERROR.
+  OUTPUT source columns are nullable when WHEN NOT MATCHED BY SOURCE exists.
+- 2026-10-04 (triggers, msduck gaps-triggers, corpus
+  `stmts/trigger-trancount`): inside INSERT/UPDATE/DELETE/MERGE, SELECT INTO
+  and OUTPUT, @@TRANCOUNT reads max(@@TRANCOUNT, 1) + 1; inside a trigger it
+  is 1 (XACT_STATE() 1). A trigger starts with @@ROWCOUNT = the firing
+  statement's count (whole MERGE count for every action's trigger). After
+  ROLLBACK in a trigger, inserted/deleted are empty and the trigger's later
+  writes autocommit and survive 3609. An outer TRY catching a trigger error
+  undoes the autocommit statement. INSTEAD OF INSERT sees 0 in the identity
+  column and consumes no identity value; 217 at the nesting limit has no
+  3621. MERGE with INSTEAD OF triggers: 5316 unless every present action has
+  one; then they fire once per action (INSERT, UPDATE, DELETE), no AFTER
+  triggers. Definition errors: 2714 state 2, 111 state 6, 2103, 2110, 2111,
+  1034, 8197 state 6 (4 for a missing object). Standalone ENABLE/DISABLE
+  TRIGGER sends no completion; 1088 state 21 (table) / 119 (trigger).
+- 2026-10-04 (application locks, msduck gaps-applock, corpus
+  `stmts/applock-validation`; token paths in `session/applock.mbt`):
+  invalid or NULL @LockMode/@LockOwner is INFO 15625 ('(null)' for NULL) at
+  lines 26/39 (sp_releaseapplock 20), then 246, 193, -999; values are
+  case-insensitive with trailing blanks ignored. xp_userlock errors come as
+  ERROR + DONEINPROC 224 (error bit), 193, -999, in the order 1227/2, 1224/5,
+  1230, 1202 (get) and 1224, 1230, 3918/1, 1202, 1223 (release); under TRY
+  ERROR_PROCEDURE() is 'sys.xp_userlock'. Each fixed database principal is
+  its own lock space; resources truncate to 255 characters. Held modes
+  combine: S+IX = SharedIntentExclusive, U+IX = UpdateIntentExclusive, X
+  wins. APPLOCK_MODE/APPLOCK_TEST raise 1230/3, 1202, 1225/1-3, 1226, 3918/2
+  at run time, 8116 at compile time for NULL literals or non-strings.
+- 2026-10-04 (temp tables, msduck gaps-temp_tables, corpus `stmts/temp-*`):
+  `db..#t` / `db.schema.#t` resolve to tempdb for any database name with
+  INFO 2701 state 99 (database as written, line of the reference) once per
+  reference at batch compile and again before a statement whose temp table
+  did not exist at compile time. A missing temp table is 208 state 0 with
+  the bare name. Two `CREATE TABLE #t` of one name in a batch are a
+  compile-time 2714 state 1 at the second. Local temp tables of procedures
+  and dynamic SQL (also sp_executesql RPCs) are dropped at module end, ##
+  survive. tempdb catalog views list temp tables padded with `_` to 128
+  characters plus 12 hex digits. Table variable DECLAREs are compile-time
+  (loops keep rows, skipped branches still declare). 1087 in FROM is state 2.
+- 2026-10-04 (WAITFOR, DBCC, msduck gaps-transactions, corpus
+  `stmts/tx-*`): the WAITFOR argument is a string literal or variable only
+  (else 102); literals are checked at compile time against
+  `h:m[:s[.fff|:fff]]` with optional upper-case ` AM`/` PM` (148 for the
+  batch, not catchable); variables mismatching are 241; (n)varchar(max) is
+  always 241; int counts seconds; datetime uses its time of day; NULL returns
+  at once; other types are 9815 (243 + error bit, batch continues); a past
+  TIME waits until the next day. DBCC USEROPTIONS: nvarchar(128) `Set
+  Option`, nvarchar(46) `Value` (flags 1), fixed row order (textsize,
+  language, dateformat, datefirst, lock_timeout, ON flags, isolation level),
+  CurCmd 230 + INFO 2528; errors 2532, 2583/3, 2526/3, 195/4.
+- 2026-10-04 (rowversion and identity, msduck gaps-rowversion_identity,
+  corpus `stmts/rowversion-identity-rules`): `timestamp` alone declares a
+  timestamp column named timestamp; a second one is 2738 state 2, a default
+  1755 + 1750; INSERT without a column list includes it and accepts only
+  DEFAULT or NULL (273, compile time); UPDATE SET of it is 272; ALTER ADD
+  rowversion stamps existing rows; UNION ALL of rowversion stays timestamp;
+  MIN_ACTIVE_ROWVERSION() is NOT NULL. Identity: 2749 state 2 for other
+  types, 8147 for IDENTITY NULL, 1754 + 1750 for a default; overflow is 8115
+  "converting IDENTITY to data type X" + INFO 3606, ends the batch, rolls
+  back (ERROR, ENVCHANGE, INFO) and leaves IDENT_CURRENT unchanged; an
+  INSERT into a table without identity (even 0 rows, table variables,
+  SELECT INTO) sets SCOPE_IDENTITY() and @@IDENTITY to NULL; 8106/8107 for
+  IDENTITY_INSERT.
+
 # T-SQL Language Reference
 
 Complete reference for the Transact-SQL language used by Microsoft SQL Server.

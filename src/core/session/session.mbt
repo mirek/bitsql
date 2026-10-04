@@ -266,7 +266,7 @@ pub struct Session {
   /// The cursor opened last (@@CURSOR_ROWS reads 0 once it is closed).
   priv mut last_opened : CursorState?
   /// `Frame::line_mark` before the current statement.
-  mut prev_line : Int
+  priv mut prev_line : Int
   /// The transaction is the implicit one of an autocommit statement whose
   /// triggers run (no ENVCHANGE when it ends).
   mut implicit_tx : Bool

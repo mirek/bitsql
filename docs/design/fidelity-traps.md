@@ -99,3 +99,7 @@ real system message). Keep the allocation table in
 | CHECKSUM | per-type values, rotl4 fold (exec/checksum.mbt) | Strings hash collation weights, not bytes (SQL_ CI 'abc' = 'ABC'); decimals hash only their significant digits (1, 10, 0.1 alike) and are not modelled |
 | LIKE / CHARINDEX ignorables | like.mbt, coll_find | Version-0 collations ignore surrogates and NUL: LIKE/PATINDEX skip them, CHARINDEX refuses matches that contain them; a byte-wise LIKE passes ASCII tests and fails these |
 | CONVERT styles | temporal_styles.mbt | Undocumented styles exist (26-35 reorder day/month/year, 115 is hhmmss); treating unknown numbers as errors or as style 0 are both wrong |
+| Cursor type | session/cursor.mbt `cursor_type` | The requested type is not the created one: DYNAMIC with an ORDER BY no index provides becomes Keyset, KEYSET on a heap becomes Snapshot, aggregates make any non-FAST_FORWARD cursor Snapshot; @@CURSOR_ROWS, CURSOR_STATUS of empty cursors and positioned DML (16929) follow the created type | stmts/cursor-models, msduck-runs cursor #035 |
+| Keyset deleted rows | session/cursor.mbt `blank_value` | A deleted keyset row is still returned (ROWSTAT 2, @@FETCH_STATUS -2) with blank values (0 / spaces / zero dates), not skipped and not NULL for NOT NULL columns | stmts/cursor-keyset |
+| 16916 line | interp.mbt `line_mark` | OPEN/FETCH of a missing cursor report the previous statement's line (0 first in a batch), CLOSE/DEALLOCATE their own | stmts/cursor-lines |
+
