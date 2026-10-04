@@ -677,6 +677,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       return
     }
   }
+  self.float_literal_messages(text)
   // Compile-time checks that SQL Server performs for the whole batch.
   match precheck_batch(stmts, self.frame().vars) {
     Some((e0, line)) => {
@@ -711,6 +712,48 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     e => raise e
   }
   self.temp_db_refs = saved_refs
+}
+
+///|
+/// Parse-time float literal checks (captured: msduck
+/// percentile-numeric-rounding-v2, probes): a literal beyond the double
+/// range is 168 and nothing in the batch runs; a nonzero literal below the
+/// smallest normal double is INFO 337 (class 0, its line) before anything
+/// runs, also inside a branch that never executes.
+fn Session::float_literal_messages(self : Session, text : String) -> Unit raise {
+  let mut maybe = false
+  for i in 1..<text.length() {
+    let c = text.code_unit_at(i)
+    if (c == 'e' || c == 'E') &&
+      text.code_unit_at(i - 1) >= '0' &&
+      text.code_unit_at(i - 1) <= '9' {
+      maybe = true
+      break
+    }
+  }
+  if !maybe {
+    return
+  }
+  let toks = @lex.lex(text) catch { _ => return }
+  for t in toks {
+    if !(t.kind is FloatNum) {
+      continue
+    }
+    match @bind.float_literal_class(t.text) {
+      Some((_, 2)) =>
+        self.text_error(@bind.float_range_error(t.text), t.span.line)
+      Some((_, 1)) =>
+        self.message(
+          @types.sql_error(
+            337,
+            "Warning: the floating point value '\{t.text}' is too small. It will be interpreted as 0.",
+            severity=0,
+          ),
+          t.span.line,
+        )
+      _ => ()
+    }
+  }
 }
 
 ///|

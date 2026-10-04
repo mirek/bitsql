@@ -69,11 +69,58 @@ fn decimal_literal(text : String) -> @ir.Expr raise @types.SqlError {
 }
 
 ///|
-fn float_literal(text : String) -> @ir.Expr raise @types.SqlError {
+/// A float literal's value and range class: 0 in range, 1 too small (a
+/// nonzero literal below the smallest normal double reads as 0, with
+/// warning 337 at parse time), 2 too large (error 168). Captured: msduck
+/// percentile-numeric-rounding-v2 (1e-308 and 5e-324 are 0 with 337,
+/// 0e309 is 0, 1e309 is 168). None when the text is not a float literal.
+pub fn float_literal_class(text : String) -> (Double, Int)? {
+  let mut mantissa_zero = true
+  let mut exp_negative = false
+  let mut in_exp = false
+  for c in text {
+    match c {
+      'e' | 'E' => in_exp = true
+      '-' => if in_exp { exp_negative = true }
+      '1'..='9' => if !in_exp { mantissa_zero = false }
+      _ => ()
+    }
+  }
+  if mantissa_zero {
+    return Some((0.0, 0))
+  }
   match @types.parse_float_text(text) {
-    Some(f) => @ir.Expr::lit(Float(f), Float)
+    Some(f) if f.is_inf() => Some((0.0, 2))
+    Some(f) if f.abs() < 2.2250738585072014e-308 => Some((0.0, 1))
+    Some(f) => Some((f, 0))
+    None =>
+      if !in_exp {
+        None
+      } else if exp_negative {
+        Some((0.0, 1))
+      } else {
+        Some((0.0, 2))
+      }
+  }
+}
+
+///|
+fn float_literal(text : String) -> @ir.Expr raise @types.SqlError {
+  match float_literal_class(text) {
+    Some((_, 2)) => raise float_range_error(text)
+    Some((f, _)) => @ir.Expr::lit(Float(f), Float)
     None => raise err(102, "Incorrect syntax near '\{text}'.", severity=15)
   }
+}
+
+///|
+/// 168: a float literal beyond the double range.
+pub fn float_range_error(text : String) -> @types.SqlError {
+  err(
+    168,
+    "The floating point value '\{text}' is out of the range of computer representation (8 bytes).",
+    severity=15,
+  )
 }
 
 ///|

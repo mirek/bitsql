@@ -152,6 +152,11 @@ fn bind_percentile(
   let o = call.within_group[0]
   let key = bind_expr(env, o.expr)
   let cont = name == "PERCENTILE_CONT"
+  // captured: PERCENTILE_DISC over xml is 305, even over no rows
+  // (msduck percentile-order-type #166-#168)
+  if !cont && key.ty is Xml {
+    raise xml_not_comparable()
+  }
   // bit is accepted (msduck percentile-order-type); max types print as
   // varchar(max) in the message
   if cont &&

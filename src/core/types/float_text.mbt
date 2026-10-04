@@ -187,6 +187,20 @@ pub fn parse_float_text(text : String) -> Double? {
     "." +
     (if frac_part == "" { "0" } else { frac_part }) +
     exp_part
-  let v = @string.parse_double(canonical) catch { _ => return None }
+  let v = @string.parse_double(canonical) catch {
+    _ => {
+      // exponents beyond the parser: overflow to infinity, underflow to 0
+      // (captured: CAST('1e309' AS float) is 8115 "overflow", not 8114)
+      if exp_part == "" {
+        return None
+      }
+      let zero = (int_part + frac_part).iter().all(c => c == '0')
+      if zero || exp_part.contains("-") {
+        0.0
+      } else {
+        1.0 / 0.0
+      }
+    }
+  }
   Some(if negative { -v } else { v })
 }

@@ -565,10 +565,48 @@ fn to_money(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
 // ---------------------------------------------------------------- float
 
 ///|
+/// Text a string → float conversion reads (captured probes): it ends at
+/// the first NUL ('0.5'+CHAR(0) is 0.5, CHAR(0)+'0.5' is 0) and skips
+/// leading TAB/LF/VT/FF/CR and no-break spaces, while only spaces may
+/// trail ('0.5'+CHAR(9) is 8114). Integers and decimals take only spaces.
+fn float_source_text(text : String) -> String {
+  let n = text.length()
+  let mut end = n
+  for i in 0..<n {
+    if text.code_unit_at(i) == '\u{0}' {
+      end = i
+      break
+    }
+  }
+  let mut start = 0
+  while start < end {
+    let c = text.code_unit_at(start).to_int()
+    // Unicode space separators: captured U+202F (others unverified)
+    if c == 0x20 ||
+      (c >= 0x09 && c <= 0x0D) ||
+      c == 0xA0 ||
+      c == 0x1680 ||
+      (c >= 0x2000 && c <= 0x200A) ||
+      c == 0x202F ||
+      c == 0x205F ||
+      c == 0x3000 {
+      start += 1
+    } else {
+      break
+    }
+  }
+  if start == 0 && end == n {
+    text
+  } else {
+    text.unsafe_substring(start~, end~)
+  }
+}
+
+///|
 fn to_float(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
   let d = match v {
     String(text) =>
-      match parse_float_text(text) {
+      match parse_float_text(float_source_text(text)) {
         Some(d) => d
         // captured: 8114 state 5 "Error converting data type varchar to float."
         None => raise error_converting(from, to)
