@@ -1127,7 +1127,10 @@ fn bind_select_query(
   // projection
   let exprs : Array[@ir.Expr] = []
   let result : Array[@ir.ResultColumn] = []
+  // output position of each select item's first column (wildcards expand)
+  let item_pos : Array[Int] = []
   for idx, item in s.items {
+    item_pos.push(exprs.length())
     match item.kind {
       Star(qualifier) => {
         if cols.is_empty() {
@@ -1220,16 +1223,36 @@ fn bind_select_query(
   let keys : Array[@ir.SortKey] = []
   let order : Array[Int] = []
   for i, o in order_by {
+    // captured: a bare variable is 1008 (msduck order-token-expanded #076)
+    if o.expr.kind is Var(_) {
+      raise err(
+        1008,
+        "The SELECT item identified by the ORDER BY number \{i + 1} contains a variable as part of the expression identifying a column position. Variables are only allowed when ordering by an expression referencing a column name.",
+      )
+    }
     let (key, ordinal) = order_key(
       full,
       inner,
       o.expr,
       orders[i],
       s.items,
+      item_pos,
       result,
       exprs,
       grouped,
     )
+    // a constant key: hidden it is 408, projected it is dropped from the
+    // sort and the ORDER token (captured: SELECT 1 AS k … ORDER BY k and
+    // CAST(NULL AS int) keys send no ORDER token; ORDER BY 1+0 is 408)
+    if is_constant(key) {
+      if ordinal == 0 {
+        raise err(
+          408,
+          "A constant expression was encountered in the ORDER BY list, position \{i + 1}.",
+        )
+      }
+      continue
+    }
     // captured: ORDER BY a text/ntext/image key is 306 state 2
     if key.ty.is_lob() {
       raise @types.lob_sort_error()
@@ -1376,6 +1399,7 @@ fn order_key(
   original : @ast.Expr,
   rewritten : @ast.Expr,
   items : Array[@ast.SelectItem],
+  item_pos : Array[Int],
   result : Array[@ir.ResultColumn],
   exprs : Array[@ir.Expr],
   grouped : Bool,
@@ -1392,12 +1416,31 @@ fn order_key(
       }
       return (exprs[i - 1], i)
     }
-    Column([name]) =>
+    // captured probe: ORDER BY -1 is a position too (108), not 408
+    Unary(Neg, { kind: IntLit(n), .. }) =>
+      raise err(
+        108,
+        "The ORDER BY position number -\{n} is out of range of the number of items in the select list.",
+        severity=15,
+      )
+    Column([name]) => {
+      let lower = name.name.to_lower()
+      let mut found : Int? = None
       for i, c in result {
-        if c.name != "" && c.name.to_lower() == name.name.to_lower() {
-          return (exprs[i], i + 1)
+        if c.name != "" && c.name.to_lower() == lower {
+          // captured: two output columns of that name is 209, even for
+          // the same column (SELECT a, a … ORDER BY a)
+          if found is Some(_) {
+            raise err(209, "Ambiguous column name '\{name.name}'.")
+          }
+          found = Some(i)
         }
       }
+      match found {
+        Some(i) => return (exprs[i], i + 1)
+        None => ()
+      }
+    }
     _ => ()
   }
   let key = bind_clause(full, inner, rewritten, OrderBy, grouped)
@@ -1412,7 +1455,7 @@ fn order_key(
   for i, item in items {
     match item.kind {
       ExprItem(e, ..) if !user_call && expr_key(e) == text =>
-        return (exprs[i], i + 1)
+        return (exprs[item_pos[i]], item_pos[i] + 1)
       _ => ()
     }
   }
@@ -1523,6 +1566,13 @@ fn order_set_result(
         found
       }
       _ => -1
+    }
+    // captured probe: SELECT 1 UNION ALL SELECT 2 ORDER BY 1+0 is 408
+    if j < 0 && literal_only(o.expr) {
+      raise err(
+        408,
+        "A constant expression was encountered in the ORDER BY list, position \{order.length() + 1}.",
+      )
     }
     if j < 0 {
       raise err(
@@ -1830,4 +1880,22 @@ let openjson_key_collation : @types.Collation = match
   @types.Collation::parse("Latin1_General_BIN2") {
   Some(c) => c
   None => @types.latin1_general_100_bin2
+}
+
+///|
+/// An expression of literals and operators only (no columns, variables,
+/// subqueries or function calls).
+fn literal_only(e : @ast.Expr) -> Bool {
+  match e.kind {
+    Null
+    | IntLit(_)
+    | DecimalLit(_)
+    | FloatLit(_)
+    | MoneyLit(_)
+    | StrLit(_, ..)
+    | BinaryLit(_) => true
+    Unary(_, a) | Paren(a) | Cast(a, _, ..) => literal_only(a)
+    Binary(_, a, b) => literal_only(a) && literal_only(b)
+    _ => false
+  }
 }

@@ -160,7 +160,27 @@ fn precheck_batch(
         check_name(n, line)
         expr(e, line)
       }
-      Select(q) => query_vars(q, x => expr(x, line), n => check_name(n, line))
+      Select(q) => {
+        query_vars(q, x => expr(x, line), n => check_name(n, line))
+        // captured: ORDER BY a bare variable is 1008 for the whole batch
+        // (msduck order-token-expanded #076)
+        if failure is None {
+          for i, o in q.order_by {
+            if o.expr.kind is Var(_) {
+              failure = Some(
+                (
+                  @types.sql_error(
+                    1008,
+                    "The SELECT item identified by the ORDER BY number \{i + 1} contains a variable as part of the expression identifying a column position. Variables are only allowed when ordering by an expression referencing a column name.",
+                  ),
+                  o.expr.span.line,
+                ),
+              )
+              break
+            }
+          }
+        }
+      }
       Print(e) => {
         expr(e, line)
         // captured: PRINT of a sql_variant variable is a compile-time 257

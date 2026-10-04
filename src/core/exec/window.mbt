@@ -13,7 +13,35 @@ fn run_window(
       out[i].push(v)
     }
   }
-  out
+  // SQL Server's window operator emits rows sorted by the window's
+  // PARTITION BY then ORDER BY keys (captured: msduck order-token #046,
+  // SELECT a, ROW_NUMBER() OVER(ORDER BY a) without ORDER BY returns a in
+  // order; order-token-expanded #032 ties keep that order). With several
+  // window specifications the last one decides (unverified).
+  let mut last : @ir.WindowCall? = None
+  for call in calls {
+    if !(call.func is (PercentileCont | PercentileDisc)) &&
+      (!call.partition.is_empty() || !call.order.is_empty()) {
+      last = Some(call)
+    }
+  }
+  match last {
+    Some(call) => {
+      let keys : Array[@ir.SortKey] = call.partition.mapi((i, p) => @ir.SortKey::{
+        expr: p,
+        desc: false,
+        collation: call.partition_collations[i],
+      })
+      for k in call.order {
+        keys.push(k)
+      }
+      let keyed = rows.mapi((i, r) => {
+        (keys.map(k => eval(ctx.with_row(r), k.expr)), i)
+      })
+      sort_keyed(keyed, keys).map(kv => out[kv.1])
+    }
+    None => out
+  }
 }
 
 ///|
