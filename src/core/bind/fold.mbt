@@ -255,3 +255,11 @@ fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
   ignore(@exec.eval(ctx, e))
   e
 }
+
+///|
+/// The value of a bound expression that depends on nothing at run time
+/// (literals, casts and arithmetic over them), None otherwise or when its
+/// evaluation fails.
+pub fn constant_value(e : @ir.Expr) -> @types.Value? {
+  try_fold(e)
+}

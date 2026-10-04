@@ -440,9 +440,18 @@ fn bind_variant_fn(
       named(name, [text_arg(0, varchar)], Variant)
     }
     // captured: sql_variant, nullable (misc/session-context)
+    // the key must be Unicode: varchar and NULL are 8116 (captured: msduck
+    // session-property-context #069, #070)
     "SESSION_CONTEXT" => {
       arity_n(name, args, 1)
-      named(name, [text_arg(0, NVarChar(Some(128), env.collation))], Variant)
+      let k = bind_expr(env, args[0])
+      if is_null_lit(k) {
+        raise null_arg(1, "session_context")
+      }
+      if !(k.ty is (NVarChar(_, _) | NChar(_, _))) {
+        raise bad_arg_type(k.ty, 1, "session_context")
+      }
+      named(name, [coerce(k, NVarChar(Some(128), env.collation))], Variant)
     }
     "DATABASEPROPERTYEX" => {
       arity_n(name, args, 2)

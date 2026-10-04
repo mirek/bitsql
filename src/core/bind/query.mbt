@@ -58,7 +58,80 @@ fn bind_from(
     )
     cols = cols + c2
   }
+  check_exposed_names(from)
   (plan, cols)
+}
+
+///|
+/// Exposed names of one FROM item (joins and APPLY included): the name as
+/// compared, its spelling for messages and whether it is an unaliased
+/// table (or table variable) rather than a correlation name.
+fn exposed_names(
+  r : @ast.TableRef,
+  out : Array[(String, String, Bool)],
+) -> Unit {
+  let corr = (a : @ast.Ident) => out.push((a.name.to_lower(), a.name, false))
+  match r.kind {
+    Table(name, alias_~, ..) =>
+      match alias_ {
+        Some(a) => corr(a)
+        None => out.push((name.base().to_lower(), object_text(name), true))
+      }
+    TableVar(name, alias_~, ..) =>
+      match alias_ {
+        Some(a) => corr(a)
+        None => out.push((name.to_lower(), name, true))
+      }
+    Derived(_, alias_~, ..)
+    | TableFunc(_, _, alias_~, ..)
+    | Nodes(_, _, alias_~, ..) => if alias_ is Some(a) { corr(a) }
+    Values(_, alias_~, ..) | Pivot(_, _, alias_~) => corr(alias_)
+    Join(_, l, r, ..) => {
+      exposed_names(l, out)
+      exposed_names(r, out)
+    }
+  }
+}
+
+///|
+/// Two FROM items of one query level with the same exposed name, checked
+/// after the items are bound (a missing object's 208 wins) and before the
+/// select list (captured: tail/views-exposed-names): two tables 1013 (the
+/// later one named first), two correlation names 1011, a correlation name
+/// and a table 1012. Unaliased table functions take no part.
+fn check_exposed_names(
+  from : Array[@ast.TableRef],
+) -> Unit raise @types.SqlError {
+  let names : Array[(String, String, Bool)] = []
+  for r in from {
+    exposed_names(r, names)
+  }
+  for j in 1..<names.length() {
+    let (key, text, table) = names[j]
+    for i in 0..<j {
+      let (k0, text0, table0) = names[i]
+      if k0 != key {
+        continue
+      }
+      if table && table0 {
+        raise err(
+          1013,
+          "The objects \"\{text}\" and \"\{text0}\" in the FROM clause have the same exposed names. Use correlation names to distinguish them.",
+        )
+      } else if !table && !table0 {
+        raise err(
+          1011,
+          "The correlation name '\{text}' is specified multiple times in a FROM clause.",
+        )
+      } else {
+        let (c, t) = if table { (text0, text) } else { (text, text0) }
+        raise err(
+          1012,
+          "The correlation name '\{c}' has the same exposed name as table '\{t}'.",
+        )
+      }
+    }
+  }
 }
 
 ///|
@@ -92,6 +165,20 @@ fn requalify(cols : Array[ColumnRef], q : String) -> Array[ColumnRef] {
 fn derived_origin(o : @ir.Origin) -> @ir.Origin {
   match o {
     Computed | TableComputed => SetOperation
+    other => other
+  }
+}
+
+///|
+/// Origin of a column read through a view or an inline table-valued
+/// function: computed columns keep fComputed (captured: catalog/view-select),
+/// every other column reads as a base column, aggregates, UNION and
+/// derived-table columns included (flags 9; captured: msduck-runs
+/// aggregate-warning-boundaries, apply-full-join, tail/views-column-flags).
+fn module_column_origin(o : @ir.Origin) -> @ir.Origin {
+  match o {
+    Computed | TableComputed => Computed
+    SetOperation | Aggregate => BaseColumn(identity=false)
     other => other
   }
 }
@@ -202,11 +289,20 @@ fn bind_table_ref(
             )
           }
           let venv = {
-            ..Env::new(Map([]), collation=env.collation, catalog=env.catalog),
+            ..Env::new(
+              Map([]),
+              collation=env.collation,
+              catalog=env.catalog,
+              deferred=env.deferred,
+              ansi_nulls=(env.catalog.view_ansi_nulls)(name),
+              options=env.options,
+            ),
             ids: env.ids,
             nest: env.nest + 1,
           }
-          let bq = bind_query_inner(venv, vq)
+          let bq = module_binding(env, object_text(name), () => {
+            bind_query_inner(venv, vq)
+          })
           let a = match alias_ {
             Some(a) => a.name
             None => name.base()
@@ -214,11 +310,8 @@ fn bind_table_ref(
           // unlike derived tables, computed view columns keep fComputed
           // (captured: catalog/view-select)
           let cols = derived_columns(bq, a, a.to_lower(), names).mapi((i, c) => {
-            if bq.columns[i].origin is (Computed | TableComputed) {
-              { ..c, origin: Computed, }
-            } else {
-              c
-            }
+            ..c,
+            origin: module_column_origin(bq.columns[i].origin),
           })
           return (bq.plan, cols)
         }
@@ -381,11 +474,56 @@ fn bind_table_ref(
       )
     }
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
-      bind_table_function(env, name, args, openjson_with, alias_, columns)
+      match legacy_hint_ref(env, r) {
+        Some(t) => bind_table_ref(env, t)
+        None =>
+          bind_table_function(env, name, args, openjson_with, alias_, columns)
+      }
     Pivot(src, clause, alias_~) => bind_pivot(env, src, clause, alias_)
     Nodes(target, args, alias_~, columns~) =>
       bind_nodes_ref(env, target, args, alias_, columns)
   }
+}
+
+///|
+/// Hints that may follow a table without WITH when they are the only one
+/// (documented list; NOLOCK captured).
+let legacy_table_hints : Array[String] = [
+  "NOLOCK", "READUNCOMMITTED", "UPDLOCK", "REPEATABLEREAD", "SERIALIZABLE", "READCOMMITTED",
+  "TABLOCK", "TABLOCKX", "PAGLOCK", "ROWLOCK", "NOWAIT", "READPAST", "XLOCK", "HOLDLOCK",
+]
+
+///|
+/// `FROM t (NOLOCK)`: one hint without WITH on a table or view (captured:
+/// msduck-runs tedious-compat-gaps#088) reads as `t WITH (NOLOCK)`.
+fn legacy_hint_ref(
+  env : Env,
+  r : @ast.TableRef,
+) -> @ast.TableRef? raise @types.SqlError {
+  guard r.kind
+    is TableFunc(
+      name,
+      [{ kind: Column([w]), span, }],
+      openjson_with=None,
+      alias_~,
+      columns=[]
+    ) else {
+    return None
+  }
+  let hint = w.name.to_upper()
+  if w.quoted || !legacy_table_hints.contains(hint) {
+    return None
+  }
+  if (env.catalog.function)(name) is Some(_) {
+    return None
+  }
+  if (env.catalog.table)(name) is None && (env.catalog.view)(name) is None {
+    return None
+  }
+  Some({
+    kind: Table(name, alias_~, hints=[{ name: hint, args: [], span, }]),
+    span: r.span,
+  })
 }
 
 ///|
@@ -615,28 +753,80 @@ fn bind_table_function(
       }
     }
     "STRING_SPLIT" => {
-      arity_range(fname, args, 2, 3)
+      // arity errors are the procedure-style 313/8144 state 3; argument
+      // checks follow msduck string-split captures
+      if args.length() < 2 {
+        raise err(
+          313,
+          "An insufficient number of arguments were supplied for the procedure or function STRING_SPLIT.",
+          state=3,
+        )
+      }
+      if args.length() > 3 {
+        raise err(
+          8144,
+          "Procedure or function STRING_SPLIT has too many arguments specified.",
+          state=3,
+        )
+      }
       let s = bind_expr(penv, args[0])
       let sep = bind_expr(penv, args[1])
+      let string_or_null = (e : @ir.Expr) => {
+        is_null_lit(e) || e.ty.family() == FString
+      }
+      if !string_or_null(s) {
+        raise bad_arg_type(s.ty, 1, "string_split")
+      }
+      if !string_or_null(sep) {
+        raise bad_arg_type(sep.ty, 2, "string_split")
+      }
+      // enable_ordinal: a constant expression of an integer type or bit;
+      // NULL means no ordinal column, values other than 0/1 are 4199 and
+      // other types 8116 (both reported before the statement's later
+      // errors, which bind as if there were no ordinal column)
       let ordinal = if args.length() == 3 {
-        match args[2].kind {
-          IntLit("0") => false
-          IntLit("1") => true
-          _ =>
-            raise @types.not_supported(
-              "STRING_SPLIT enable_ordinal other than a 0/1 literal",
+        let o = bind_expr(penv, args[2])
+        let int_or_bit = o.ty is (Bit | TinyInt | SmallInt | Int | BigInt)
+        match try_fold(o) {
+          None =>
+            raise err(
+              8748, "The enable_ordinal argument for string_split only supports constant values (not variables or columns).",
             )
+          Some(_) if !int_or_bit => {
+            env.deferred.push(bad_arg_type(o.ty, 3, "string_split"))
+            false
+          }
+          Some(Null) => false
+          Some(Bit(b)) => b
+          Some(TinyInt(1) | SmallInt(1) | Int(1) | BigInt(1L)) => true
+          Some(TinyInt(0) | SmallInt(0) | Int(0) | BigInt(0L)) => false
+          Some(v) => {
+            let shown = match v {
+              TinyInt(n) | SmallInt(n) | Int(n) => n.to_string()
+              BigInt(n) => n.to_string()
+              _ => "?"
+            }
+            env.deferred.push(
+              err(
+                4199,
+                "Argument value \{shown} is invalid for argument 3 of string_split function.",
+              ),
+            )
+            false
+          }
         }
       } else {
         false
       }
+      // a Unicode separator makes a non-Unicode input nvarchar(n)
+      let unicode_sep = sep.ty is (NVarChar(_, _) | NChar(_, _))
       let vty : @types.SqlType = match s.ty {
+        Char(n, c) | VarChar(Some(n), c) if unicode_sep => NVarChar(Some(n), c)
+        VarChar(None, c) if unicode_sep => NVarChar(None, c)
         Char(n, c) => VarChar(Some(n), c)
         NChar(n, c) => NVarChar(Some(n), c)
         VarChar(_, _) | NVarChar(_, _) => s.ty
-        Int if s.kind is Lit(Null) => VarChar(Some(1), env.collation)
-        other =>
-          raise @types.not_supported("STRING_SPLIT of \{other.base_name()}")
+        _ => VarChar(Some(1), env.collation)
       }
       let cs = [col("value", vty, s.nullable)]
       if ordinal {
@@ -1025,6 +1215,107 @@ fn cross_sets(
 // -------------------------------------------------------------- SELECT
 
 ///|
+/// True when `e` reads no column at or after position `k` of the current
+/// row and runs no subquery or user function.
+fn reads_only_below(e : @ir.Expr, k : Int) -> Bool {
+  match e.kind {
+    Lit(_) | Var(_) | OuterCol(_, _) | Global(_) => true
+    Col(i) => i < k
+    Cast(a, ..) | Collate(a) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) =>
+      reads_only_below(a, k)
+    Arith(_, a, b)
+    | BitOp(_, a, b)
+    | Concat(a, b)
+    | Cmp(_, a, b, _)
+    | And(a, b)
+    | Or(a, b) => reads_only_below(a, k) && reads_only_below(b, k)
+    Like(a, p, escape~, ..) =>
+      reads_only_below(a, k) &&
+      reads_only_below(p, k) &&
+      (match escape {
+        Some(x) => reads_only_below(x, k)
+        None => true
+      })
+    InList(a, list, ..) =>
+      reads_only_below(a, k) && list.iter().all(x => reads_only_below(x, k))
+    Case(branches, els) =>
+      branches
+      .iter()
+      .all(x => reads_only_below(x.0, k) && reads_only_below(x.1, k)) &&
+      (match els {
+        Some(x) => reads_only_below(x, k)
+        None => true
+      })
+    Call(_, args) => args.iter().all(x => reads_only_below(x, k))
+    _ => false
+  }
+}
+
+///|
+fn conjuncts(e : @ir.Expr, out : Array[@ir.Expr]) -> Unit {
+  match e.kind {
+    And(a, b) => {
+      conjuncts(a, out)
+      conjuncts(b, out)
+    }
+    _ => out.push(e)
+  }
+}
+
+///|
+/// WHERE over CROSS/OUTER APPLY: conjuncts reading only the left input
+/// filter it before the applied side runs, like SQL Server's plans, so the
+/// right side never sees rows the WHERE removes (captured: msduck-runs
+/// apply-full-join#014, an OPENJSON conversion error of another row).
+/// `width` is the source's row width.
+fn push_filter(source : @ir.Plan, pred : @ir.Expr, width : Int) -> @ir.Plan {
+  guard source is Apply(left, right, outer~, right_width~) else {
+    return Filter(source, pred)
+  }
+  let k = width - right_width
+  let parts : Array[@ir.Expr] = []
+  conjuncts(pred, parts)
+  let down = parts.filter(x => reads_only_below(x, k))
+  if down.is_empty() {
+    return Filter(source, pred)
+  }
+  let rest = parts.filter(x => !reads_only_below(x, k))
+  let and_all = (xs : Array[@ir.Expr]) => {
+    let mut acc = xs[0]
+    for i in 1..<xs.length() {
+      acc = { kind: And(acc, xs[i]), ty: pred.ty, nullable: pred.nullable, }
+    }
+    acc
+  }
+  let applied : @ir.Plan = Apply(
+    push_filter(left, and_all(down), k),
+    right,
+    outer~,
+    right_width~,
+  )
+  if rest.is_empty() {
+    applied
+  } else {
+    Filter(applied, and_all(rest))
+  }
+}
+
+///|
+/// `1=0`, `0<>0`: a comparison of two integer literals that is false.
+fn literal_contradiction(e : @ir.Expr) -> Bool {
+  guard e.kind is Cmp(op, a, b, _) else { return false }
+  guard a.kind is Lit(Int(x)) && b.kind is Lit(Int(y)) else { return false }
+  match op {
+    Eq => x != y
+    Ne => x == y
+    Lt => x >= y
+    Le => x > y
+    Gt => x <= y
+    Ge => x < y
+  }
+}
+
+///|
 /// Binds `SELECT ... [ORDER BY] [OFFSET/FETCH]` into a plan that ends with
 /// the projection.
 fn bind_select_query(
@@ -1048,7 +1339,17 @@ fn bind_select_query(
       if has_window(w) {
         raise window_misplaced()
       }
-      @ir.Plan::Filter(source, bind_expr(inner, w))
+      let pred = bind_expr(inner, w)
+      // a contradiction between integer literals (`WHERE 1=0`) removes
+      // the source from the plan: nothing under it runs, so a view's
+      // aggregate raises no 8153 (captured: msduck-runs
+      // aggregate-warning-boundaries#001)
+      let source = if literal_contradiction(pred) {
+        @ir.Plan::Values([])
+      } else {
+        source
+      }
+      push_filter(source, pred, cols.length())
     }
     None => source
   }

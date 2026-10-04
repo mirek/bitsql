@@ -327,7 +327,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
         if k < 0 {
           raise @types.sql_error(
             127,
-            "A TOP N or FETCH rows count value may not be negative.",
+            "A TOP N or FETCH rowcount value may not be negative.",
             severity=15,
           )
         }

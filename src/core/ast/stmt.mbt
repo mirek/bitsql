@@ -31,6 +31,14 @@ pub(all) enum StmtKind {
   /// `DROP INDEX ix ON t` (table Some) or legacy `DROP INDEX t.ix` (None).
   /// Items: (index, table, has WITH options).
   DropIndex(if_exists~ : Bool, Array[(ObjectName, ObjectName?, Bool)])
+  /// `ALTER INDEX name|ALL ON t DISABLE|REBUILD|REORGANIZE|SET (...)`:
+  /// index None for ALL, action upper-cased, options of WITH / SET.
+  AlterIndex(
+    index~ : Ident?,
+    table~ : ObjectName,
+    action~ : String,
+    options~ : Array[OptionKV]
+  )
   CreateView(CreateView)
   CreateProcedure(CreateProcedure)
   CreateFunction(CreateFunction)
@@ -71,6 +79,13 @@ pub(all) enum StmtKind {
   WaitFor(String, Expr)
   /// `DBCC name [(args)] [WITH option, ...]` (name and options upper-cased).
   Dbcc(String, Array[Expr], Array[String])
+  /// `BACKUP DATABASE|LOG name TO device [, ...] [WITH option, ...]`: the
+  /// database (a name as `Column([name])`, or a variable) and the options
+  /// (upper-cased); devices are not kept.
+  Backup(log~ : Bool, database~ : Expr, options~ : Array[String])
+  /// `RESTORE DATABASE|LOG|HEADERONLY|...`: the kind, upper-cased (parsed
+  /// to find the statement's end; not emulated).
+  Restore(String)
   /// Re-throw when `args` is empty, else number, message, state.
   Throw(Array[Expr])
   RaisError(Array[Expr], options~ : Array[String])

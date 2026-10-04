@@ -112,6 +112,10 @@ pub fn resolve_type(
     // not emulated, and never 2715/243, which would claim it does not exist
     "json" if t.schema is None =>
       raise @types.not_supported("the json data type")
+    // CLR system types exist in SQL Server but are not emulated
+    "hierarchyid" | "geometry" | "geography" | "vector" if t.schema is None ||
+      t.schema.unwrap().name.to_lower() == "sys" =>
+      raise @types.not_supported("the \{t.name.to_lower()} data type")
     _ =>
       raise @types.sql_error(
         2715,

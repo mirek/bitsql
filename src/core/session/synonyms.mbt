@@ -50,6 +50,8 @@ fn Session::exec_create_synonym(
     schema_bound: false,
     check_option: false,
     returns: None,
+    ansi_nulls: true,
+    quoted_identifier: true,
   }
   self.write(0, db.add_module(m))
   self.rt.rowcount = 0

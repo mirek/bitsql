@@ -158,7 +158,7 @@ fn table_columns(t : @store.Table) -> Array[@bind.ColumnRef] {
     qualifier: t.name.to_lower(),
     name: c.name,
     ty: c.ty,
-    nullable: c.nullable,
+    nullable: c.result_nullable,
     origin: if c.computed is Some(_) {
       TableComputed
     } else {
@@ -208,16 +208,18 @@ fn Session::find_table(
 
 ///|
 fn Session::find_table_var(self : Session, name : String) -> @store.Table? {
+  // only the current module's frame: dynamic SQL, procedures and triggers
+  // do not see their caller's table variables (1087; captured: msduck-runs
+  // table-variable #023/#024)
   let key = name.to_lower()
-  let mut i = self.frames.length() - 1
-  while i >= 0 {
-    match self.frames[i].tables.get(key) {
-      Some(id) => return self.tvars.table(id)
-      None => ()
-    }
-    i -= 1
+  match self.frames.last() {
+    Some(f) =>
+      match f.tables.get(key) {
+        Some(id) => self.tvars.table(id)
+        None => None
+      }
+    None => None
   }
-  None
 }
 
 ///|
@@ -282,6 +284,13 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
         _ => None
       }
     },
+    view_ansi_nulls: name => {
+      let n = self.deref_synonym(name) catch { _ => name }
+      match self.find_module(n) {
+        Some(m) => m.ansi_nulls
+        None => true
+      }
+    },
     function: name => self.find_function(self.deref_synonym(name)),
     user_type: tn => self.find_user_type(tn) is Some(_),
     table_var: name => {
@@ -299,6 +308,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
     },
     sequence: name => self.sequence_binding(name),
     system_tvf: (name, args) => self.system_tvf(name, args),
+    compat_level: () => self.server.db_options(self.rt.database).compat_level,
   }
 }
 
@@ -441,8 +451,9 @@ fn Session::seek(
     }
     Some(vals)
   }
+  // a disabled index is not used (ALTER INDEX … DISABLE)
   for i, ix in t.indexes {
-    if !ix.unique || ix.filter is Some(_) {
+    if !ix.unique || ix.disabled || ix.filter is Some(_) {
       continue
     }
     if covered(ix) is Some(vals) {
@@ -459,7 +470,7 @@ fn Session::seek(
     }
   }
   for i, ix in t.indexes {
-    if ix.unique || ix.filter is Some(_) {
+    if ix.unique || ix.disabled || ix.filter is Some(_) {
       continue
     }
     let ansi = ix.columns

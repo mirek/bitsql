@@ -150,7 +150,9 @@ fn Session::exec_create_type(
       "The specified schema name \"\{schema}\" either does not exist or you do not have permission to use it.",
     )
   }
-  if db.lookup_type(schema, base) is Some(_) {
+  // a system type name (int, varchar, sysname) exists in every schema
+  // (captured: msduck-runs table-type-catalog #003, tail/catalog-column-types)
+  if db.lookup_type(schema, base) is Some(_) || is_system_type_name(base) {
     raise @types.sql_error(
       219,
       "The type '\{object_text(ct.name)}' already exists, or you do not have permission to create it.",

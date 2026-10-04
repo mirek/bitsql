@@ -204,4 +204,11 @@ scripts/check.sh                 # everything CI runs; must be green to push
   `match` once made every constructor in the other arms "unbound" (4021 at
   the first arm); a `while` loop with a flag compiled (reported by a fork
   agent, not reduced).
-
+- 2026-10-04: a guard may bind with `is`: `Call(c) if cond && f(c) is Some(e)
+  => use(e)`. Arms are tried in order and the first whose pattern and guard
+  match wins even if its body does nothing, so a broad arm (`Call(c) if
+  c.args.length() == 1`) placed first silently hides later, more specific
+  ones. A pub(all) struct field added to a store type (`Column`) breaks only
+  the record literals (moon check lists them); `{ ..c, field: v }` updates
+  elsewhere keep compiling and silently carry the old value of the new
+  field: grep for them.

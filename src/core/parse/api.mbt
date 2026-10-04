@@ -1,6 +1,13 @@
 ///|
 fn new_parser(src : String) -> Parser raise @ast.SyntaxError {
-  { src, toks: @lex.lex(src), pos: 0, depth: 0, in_procedure: false, }
+  {
+    src,
+    toks: @lex.lex(src),
+    pos: 0,
+    depth: 0,
+    in_procedure: false,
+    table_variable: false,
+  }
 }
 
 ///|

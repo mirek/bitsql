@@ -328,6 +328,84 @@ fn Session::new_check(
 }
 
 ///|
+/// Precision, scale and length arguments of a column type (captured:
+/// corpus tail/catalog-column-types, msduck-runs table-type-catalog): a
+/// zero length or precision is 1001 and a fractional-seconds scale above
+/// 7 is 1002 (class 15, "Line n:"), a precision above the maximum 2750
+/// naming the column ordinal, a scale above the precision 183 (class 15).
+fn column_type_check(
+  t : @ast.TypeName,
+  column : String,
+  ordinal : Int,
+) -> Unit raise @types.SqlError {
+  guard t.schema is None else { return }
+  let num = (k : Int) => {
+    match t.args.get(k) {
+      Some(Num(n)) =>
+        try @string.parse_int(n) catch {
+          _ => None
+        } noraise {
+          v => Some(v)
+        }
+      _ => None
+    }
+  }
+  let line = t.span.line
+  let zero = () => {
+    @types.sql_error(
+      1001,
+      "Line \{line}: Length or precision specification 0 is invalid.",
+      severity=15,
+    )
+  }
+  let too_big = (p : Int, max : Int) => {
+    @types.sql_error(
+      2750,
+      "Column or parameter #\{ordinal}: Specified column precision \{p} is greater than the maximum precision of \{max}.",
+    )
+  }
+  match t.name.to_lower() {
+    "decimal" | "numeric" =>
+      match num(0) {
+        Some(0) => raise zero()
+        Some(p) if p > 38 => raise too_big(p, 38)
+        Some(p) =>
+          match num(1) {
+            Some(s) if s > p =>
+              raise @types.sql_error(
+                183,
+                "The scale (\{s}) for column '\{column}' must be within the range 0 to \{p}.",
+                severity=15,
+              )
+            _ => ()
+          }
+        None => ()
+      }
+    "float" =>
+      match num(0) {
+        Some(0) => raise zero()
+        Some(p) if p > 53 => raise too_big(p, 53)
+        _ => ()
+      }
+    "char" | "varchar" | "nchar" | "nvarchar" | "binary" | "varbinary" =>
+      if num(0) == Some(0) {
+        raise zero()
+      }
+    "time" | "datetime2" | "datetimeoffset" =>
+      match num(0) {
+        Some(s) if s > 7 =>
+          raise @types.sql_error(
+            1002,
+            "Line \{line}: Specified scale \{s} is invalid.",
+            severity=15,
+          )
+        _ => ()
+      }
+    _ => ()
+  }
+}
+
+///|
 /// Adds a column definition (with its column-level constraints).
 fn Session::add_column(
   self : Session,
@@ -337,13 +415,31 @@ fn Session::add_column(
   pk_cols : Set[String],
   with_check : Bool,
 ) -> Unit raise {
-  if b.col_index(c.name.name) >= 0 {
+  // names compare under the database collation ([Ä] and [ä] collide under
+  // CI; captured: msduck-runs table-type-catalog #005)
+  let coll = self.db_collation()
+  if b.col_index(c.name.name) >= 0 ||
+    b.columns
+    .iter()
+    .any(x => @types.compare_strings(x.name, c.name.name, coll) == 0) {
     raise @types.sql_error(
       2705,
       "Column names in each table must be unique. Column name '\{c.name.name}' in table '\{b.written}' is specified more than once.",
-      // captured: state 3 in a table type
-      state=if b.scope == 4 { 3 } else { 4 },
+      // captured: state 3 within one CREATE TABLE / TYPE / table variable
+      // (tail/catalog-column-types), 4 for ALTER TABLE ADD of an existing
+      // name (catalog/ddl-errors)
+      state=if b.creating { 3 } else { 4 },
     )
+  }
+  match c.type_ {
+    Some(t) => {
+      // reported at the type's line (captured)
+      errdefer {
+        self.error_line = Some(t.span.line)
+      }
+      column_type_check(t, c.name.name, b.columns.length() + 1)
+    }
+    None => ()
   }
   let collation = match c.collate {
     Some(i) =>
@@ -359,6 +455,7 @@ fn Session::add_column(
     (Some(t), _) =>
       match self.decl_type(t, collation) {
         ScalarDecl(ty, ut, n) => {
+          self.check_ansi_padding(ty)
           alias_type = ut
           alias_nullable = n
           (ty, None)
@@ -497,6 +594,10 @@ fn Session::add_column(
     default_id: 0,
     default_auto: false,
     computed,
+    result_nullable: match (c.nullable, c.computed) {
+      (Some(false), Some(e)) => computed_nullable(e, b)
+      _ => nullable
+    },
     persisted: c.persisted,
     rowguidcol: c.rowguidcol,
     user_type: alias_type,
@@ -658,18 +759,19 @@ fn Session::add_key(
     fill_factor: 0,
     ignore_dup_key: false,
     is_constraint: true,
+    disabled: false,
   })
 }
 
 ///|
 fn next_index_id(indexes : Array[@store.Index]) -> Int {
-  let mut m = 1
-  for ix in indexes {
-    if ix.index_id > m {
-      m = ix.index_id
-    }
+  // the lowest free nonclustered id: a dropped index's id is reused
+  // (captured: msduck-runs index-catalog #017)
+  let mut k = 2
+  while indexes.iter().any(ix => ix.index_id == k) {
+    k += 1
   }
-  m + 1
+  k
 }
 
 ///|
@@ -990,6 +1092,7 @@ fn Session::finish(self : Session, b : Builder, name : String) -> @store.Table {
     created: self.rt.now,
     modified: self.rt.now,
     max_column_id: b.max_column_id,
+    ansi_nulls: self.ansi_nulls(),
   }
 }
 
@@ -1003,6 +1106,7 @@ fn Session::table_from_body(
   body : @ast.TableBody,
   db : @store.Db,
   scope : Int,
+  as_written? : String? = None,
 ) -> @store.Table raise {
   let b : Builder = {
     id,
@@ -1013,7 +1117,9 @@ fn Session::table_from_body(
       name
     },
     scope,
-    written: name,
+    // a table variable's messages use its declared name (captured: 2705
+    // "in table '@t'", msduck-runs table-variable#009)
+    written: as_written.unwrap_or(name),
     columns: [],
     indexes: [],
     checks: [],
@@ -1089,6 +1195,7 @@ fn Session::table_from_body(
       fill_factor: 0,
       ignore_dup_key: false,
       is_constraint: false,
+      disabled: false,
     })
   }
   renumber_indexes(b, body)
@@ -1190,7 +1297,15 @@ fn Session::exec_declare_table(
   }
   let id = self.server.object_id()
   let internal = "@" + id.to_string()
-  let t = self.table_from_body(id, "dbo", internal, body, self.tvars, 3)
+  let t = self.table_from_body(
+    id,
+    "dbo",
+    internal,
+    body,
+    self.tvars,
+    3,
+    as_written=Some(name),
+  )
   self.tvars = self.tvars.create_table(t)
   self.frame().tables[key] = id
   self.tvar_sites[id] = site
@@ -1260,6 +1375,9 @@ fn Session::exec_drop(
         self.not_a_synonym(n, "TABLE")
         match self.find_table(n) {
           Some((scope, t)) => {
+            if scope == 0 {
+              self.check_drop_references("TABLE", n, t.schema, t.name, false)
+            }
             // referenced by a foreign key from another table?
             let db = self.db_of(scope)
             for other in db.tables() {
@@ -1309,16 +1427,20 @@ fn Session::exec_drop(
         }
         match m {
           Some(m) => {
+            if kind is DropFunction {
+              self.check_drop_references("FUNCTION", n, m.schema, m.name, true)
+            }
             self.write(0, self.db_of(0).drop_object(m.id))
             if m.kind is Procedure {
               self.server.procs.remove(m.name.to_lower())
             }
           }
-          None if kind is DropProcedure && self.find_table(n) is Some(_) =>
-            // captured: gaps-procedures #143
+          None if kind is (DropProcedure | DropFunction) &&
+            self.find_table(n) is Some(_) =>
+            // captured: gaps-procedures #143, gaps-functions #093
             raise @types.sql_error(
               3705,
-              "Cannot use DROP PROCEDURE with '\{object_text(n)}' because '\{object_text(n)}' is a table. Use DROP TABLE.",
+              "Cannot use DROP \{word.to_upper()} with '\{object_text(n)}' because '\{object_text(n)}' is a table. Use DROP TABLE.",
             )
           None =>
             if !if_exists && missing is None {

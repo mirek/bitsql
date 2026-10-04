@@ -253,7 +253,7 @@ fn index_key(ix : Index, row : Row, rowid : Int64) -> Array[@types.Value] {
 ///|
 /// Filtered indexes skip rows outside their filter.
 fn in_index(ix : Index, row : Row) -> Bool {
-  ix.covers(row)
+  !ix.disabled && ix.covers(row)
 }
 
 ///|

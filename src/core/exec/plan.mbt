@@ -258,13 +258,26 @@ fn top_rows(
   percent : Bool,
   ties : Array[@ir.SortKey],
 ) -> Array[Row] raise @types.SqlError {
+  // captured (tail/top-invalid): NULL is 1014, a negative count 127,
+  // percent outside 0..100 1031, all class 15
+  let invalid = () => {
+    @types.sql_error(
+      1014,
+      "A TOP or FETCH clause contains an invalid value.",
+      severity=15,
+    )
+  }
   let n = if percent {
     let p = match @types.cast(eval(ctx, count), count.ty, Float) {
       Float(f) => f
-      _ => 0.0
+      _ => raise invalid()
     }
     if p < 0.0 || p > 100.0 {
-      raise @types.sql_error(1031, "Percent values must be between 0 and 100.")
+      raise @types.sql_error(
+        1031,
+        "Percent values must be between 0 and 100.",
+        severity=15,
+      )
     }
     (p * rows.length().to_double() / 100.0).ceil().to_int()
   } else {
@@ -277,9 +290,11 @@ fn top_rows(
         }
       Some(_) =>
         raise @types.sql_error(
-          1014, "A TOP or FETCH clause contains an invalid value.",
+          127,
+          "A TOP N or FETCH rowcount value may not be negative.",
+          severity=15,
         )
-      None => 0
+      None => raise invalid()
     }
   }
   let mut end = if n > rows.length() { rows.length() } else { n }

@@ -461,7 +461,7 @@ test "functions" {
   inspect(
     sx("CREATE FUNCTION f() RETURNS INT AS RETURN 1"),
     content=(
-      #|Msg 156, Level 15, State 1, Line 1: Incorrect syntax near the keyword 'RETURN'.
+      #|Msg 102, Level 15, State 31, Line 1: Incorrect syntax near 'RETURN'.
     ),
   )
   inspect(

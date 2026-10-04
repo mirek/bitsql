@@ -178,6 +178,7 @@ fn Session::run_module(
   self : Session,
   bound : Bound,
   levels~ : Int,
+  ansi_nulls? : Bool? = None,
   body : () -> Unit raise,
 ) -> ModuleRun raise {
   let frame = bound.frame
@@ -207,6 +208,12 @@ fn Session::run_module(
   self.frames.push(frame)
   self.rt.nest_level += levels
   self.try_base = self.try_depth
+  // a procedure runs with its CREATE-time ANSI_NULLS (reverted below with
+  // the other options)
+  if ansi_nulls is Some(on) {
+    frame.module_settings = true
+    self.set_ansi_nulls(on)
+  }
   let leave = () => {
     self.frames.pop() |> ignore
     // LOCAL cursors and cursor variables end with the module
@@ -613,7 +620,10 @@ fn Session::rpc_proc(
   let b = self.bind_params(params, bound, owner=Some(proc.name), conv_state=1)
   self.error_line = None
   let before = self.rt.trancount
-  let run = self.run_module(b, levels=1, () => self.exec_list(proc.def.body))
+  let run = self.run_module(b, levels=1, ansi_nulls=Some(proc.ansi_nulls), () => {
+    self.hoist_declares(proc.def.body)
+    self.exec_list(proc.def.body)
+  })
   guard run.status() is Some(status) else { return }
   let outs = self.output_values(wire, index, run)
   if !self.xml_aborted() {
@@ -1130,6 +1140,15 @@ fn Session::exec_proc_stmt(
     self.exec_executesql(e, line)
     return
   }
+  let sys_schema = name.parts.length() == 1 ||
+    name.parts[name.parts.length() - 2].name.to_lower() == "sys"
+  match name.base().to_lower() {
+    "sp_prepare" | "sp_execute" | "sp_unprepare" as which if sys_schema => {
+      self.exec_prepare_proc(which, e, line)
+      return
+    }
+    _ => ()
+  }
   // system procedures emulate their T-SQL bodies' completions, not their
   // @@ERROR: a successful EXEC leaves 0 (captured: gaps-applock #005)
   if self.exec_system_proc(name, e.args, e.return_var) {
@@ -1187,7 +1206,10 @@ fn Session::exec_proc_stmt(
   self.rt.error = 0
   let saved_rpc = self.rpc
   let before = self.rt.trancount
-  let run = self.run_module(b, levels=1, () => self.exec_list(proc.def.body))
+  let run = self.run_module(b, levels=1, ansi_nulls=Some(proc.ansi_nulls), () => {
+    self.hoist_declares(proc.def.body)
+    self.exec_list(proc.def.body)
+  })
   self.rpc = saved_rpc
   let status = run.status()
   if status is Some(st) {
@@ -1409,32 +1431,40 @@ fn Session::check_proc_args(
     false
   }
   let supplied = Array::make(params.length(), false)
+  // a missing parameter (201) is reported before an unknown name (8145),
+  // a repeated one (8143) or a bad OUTPUT (8162) (probed: tail/
+  // views-refreshview, `EXEC p @b = 1, @x = 1` is 201)
+  let mut first : @types.SqlError? = None
+  let note = (e : @types.SqlError) => if first is None { first = Some(e) }
   for i, a in args {
     let k = match a.name {
       None => i
       Some(n) =>
         match params.search_by(p => p.name.to_lower() == n.to_lower()) {
           Some(k) => k
-          None =>
-            return fail(
+          None => {
+            note(
               @types.sql_error(
                 8145,
                 "\{n} is not a parameter for procedure \{proc}.",
               ),
             )
+            continue
+          }
         }
     }
     if supplied[k] {
-      return fail(
+      note(
         @types.sql_error(
           8143,
           "Parameter '\{params[k].name}' was supplied multiple times.",
         ),
       )
+      continue
     }
     supplied[k] = true
     if a.output && !params[k].output {
-      return fail(
+      note(
         @types.sql_error(
           8162,
           "The formal parameter \"\{params[k].name}\" was not declared as an OUTPUT parameter, but the actual parameter passed in requested output.",
@@ -1466,7 +1496,10 @@ fn Session::check_proc_args(
       )
     }
   }
-  true
+  match first {
+    Some(e) => fail(e)
+    None => true
+  }
 }
 
 ///|

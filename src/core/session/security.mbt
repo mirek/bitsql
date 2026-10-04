@@ -51,7 +51,11 @@ fn Session::security_fn(
         None => Null
       }
     "SUSER_NAME" | "SUSER_SNAME" =>
-      if args.is_empty() || num(0) == Some(1) || text(0) == Some("\u{01}") {
+      // sa's sid is 0x01 (captured: msduck-runs tedious-compat-gaps#018)
+      if args.is_empty() ||
+        num(0) == Some(1) ||
+        text(0) == Some("\u{01}") ||
+        args.get(0) is Some(Binary(b"\x01")) {
         String(self.login)
       } else {
         Null
@@ -89,23 +93,13 @@ fn Session::security_fn(
     "SESSION_CONTEXT" =>
       match text(0) {
         Some(k) =>
-          // keys are set case-sensitively (N'LOCKED' is another key than
-          // a read-only N'locked') but read case-insensitively, the exact
-          // spelling first (captured: msduck session-property-context#068,
-          // gaps-computed session-default-values-6)
-          match self.session_context.get(k) {
-            Some((v, _)) => v
-            None => {
-              let lower = k.to_lower()
-              let mut found : @types.Value = Null
-              for key, entry in self.session_context {
-                if key.to_lower() == lower {
-                  found = entry.0
-                  break
-                }
+          match self.context_key(k) {
+            Some(key) =>
+              match self.session_context.get(key) {
+                Some((v, _)) => v
+                None => Null
               }
-              found
-            }
+            None => Null
           }
         None => Null
       }

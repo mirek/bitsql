@@ -218,9 +218,14 @@ fn Session::run_triggers(
       updated,
       table: target.table,
     })
-    self.frames.push(Frame::new())
+    let tframe = Frame::new()
+    tframe.module_settings = true
+    self.frames.push(tframe)
     self.rt.nest_level += 1
     self.xact_abort = true
+    // the trigger's CREATE-time ANSI_NULLS (option_bits revert below)
+    let outer_ansi_nulls = self.session_flags.get("ANSI_NULLS")
+    self.set_ansi_nulls(x.0.ansi_nulls)
     // @@ROWCOUNT on entry is the firing statement's row count (captured:
     // gaps-triggers #009 rc=2/0/1, #045 INSTEAD OF rc=2)
     // (MERGE: its whole row count for every action's trigger, captured:
@@ -231,6 +236,7 @@ fn Session::run_triggers(
       @cmp.maximum(inserted.length(), deleted.length()).to_int64()
     }
     let failure = try {
+      self.hoist_declares(x.1.body)
       self.exec_list(x.1.body)
       None
     } catch {
@@ -238,6 +244,10 @@ fn Session::run_triggers(
       e => Some(e)
     }
     self.frames.pop() |> ignore
+    match outer_ansi_nulls {
+      Some(v) => self.session_flags["ANSI_NULLS"] = v
+      None => self.session_flags.remove("ANSI_NULLS")
+    }
     self.rt.nest_level -= 1
     self.triggers.pop() |> ignore
     self.tvars = self.tvars.drop_object(ins).drop_object(del).drop_object(empty)

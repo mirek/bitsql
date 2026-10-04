@@ -80,6 +80,12 @@ fn Session::sys_view_binding(
       raise @types.not_supported("catalog views of another database")
     }
   }
+  // the files of tempdb, model and msdb are not modelled (tempdb has one
+  // data file per core, msdb other names and growth)
+  if base.to_lower() == "database_files" &&
+    (tempdb || self.rt.database.to_lower() is ("tempdb" | "model" | "msdb")) {
+    raise @types.not_supported("sys.database_files of a system database")
+  }
   match view_index(schema, base) {
     Some(i) => {
       let v = view_defs[i]
@@ -523,11 +529,19 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         let lob = t.columns
           .iter()
           .any(c => {
-            c.ty is (VarChar(None, _) | NVarChar(None, _) | VarBinary(None))
+            // captured: xml, text, ntext and image count too (tail probe)
+            c.ty
+            is (VarChar(None, _)
+            | NVarChar(None, _)
+            | VarBinary(None)
+            | Xml
+            | Text(_)
+            | NText(_)
+            | Image)
           })
         r["lob_data_space_id"] = i(if lob { 1 } else { 0 })
         r["max_column_id_used"] = i(t.max_column_id)
-        r["uses_ansi_nulls"] = b(true)
+        r["uses_ansi_nulls"] = b(t.ansi_nulls)
         r["text_in_row_limit"] = i(0)
         r["lock_escalation"] = TinyInt(0)
         r["lock_escalation_desc"] = s("TABLE")
@@ -582,8 +596,8 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           vrow([
             ("object_id", i(m.id)),
             ("definition", s(m.definition)),
-            ("uses_ansi_nulls", b(true)),
-            ("uses_quoted_identifier", b(true)),
+            ("uses_ansi_nulls", b(m.ansi_nulls)),
+            ("uses_quoted_identifier", b(m.quoted_identifier)),
             ("is_schema_bound", b(m.schema_bound)),
             ("uses_database_collation", b(m.schema_bound)),
             ("null_on_null_input", b(false)),
@@ -723,6 +737,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               ("is_unique_constraint", b(ix.is_constraint && !ix.primary)),
               ("fill_factor", TinyInt(ix.fill_factor)),
               ("ignore_dup_key", b(ix.ignore_dup_key)),
+              ("is_disabled", b(ix.disabled)),
               ("allow_row_locks", b(true)),
               ("allow_page_locks", b(true)),
               ("has_filter", b(ix.filter is Some(_))),
@@ -1087,6 +1102,21 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           )
         }
       }
+    // sys.all_objects = sys.objects + sys.system_objects, sys.all_columns =
+    // sys.columns + sys.system_columns (captured: msduck-runs all-objects,
+    // system-all-columns #011)
+    "sys.system_objects" => out.append(system_objects_rows())
+    "sys.all_objects" => {
+      out.append(self.view_rows("sys.objects"))
+      out.append(system_objects_rows())
+    }
+    "sys.system_columns" => out.append(system_columns_rows())
+    "sys.all_columns" => {
+      out.append(self.view_rows("sys.columns"))
+      out.append(system_columns_rows())
+    }
+    "sys.server_principals" => out.append(server_principal_rows())
+    "sys.database_files" => out.append(database_file_rows(self.rt.database))
     "sys.dm_exec_sessions"
     | "sys.dm_exec_requests"
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))

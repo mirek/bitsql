@@ -40,6 +40,43 @@ fn Parser::with_options(
 }
 
 ///|
+/// `ALTER INDEX { name | ALL } ON table action` (after ALTER INDEX).
+/// REBUILD/REORGANIZE take `WITH (...)`, SET takes `(...)`; partition
+/// clauses are not parsed.
+fn Parser::alter_index(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
+  let index = if self.eat_kw("ALL") { None } else { Some(self.ident()) }
+  self.expect_kw("ON")
+  let table = self.object_name()
+  let t = self.peek()
+  let action = upper(t)
+  let options = match action {
+    "DISABLE" => {
+      self.pos += 1
+      []
+    }
+    "REBUILD" | "REORGANIZE" => {
+      self.pos += 1
+      self.with_options()
+    }
+    "SET" => {
+      self.pos += 1
+      self.expect_punct("(")
+      let out = []
+      while true {
+        out.push(self.option_kv())
+        if !self.eat_punct(",") {
+          break
+        }
+      }
+      self.expect_punct(")")
+      out
+    }
+    _ => raise self.error()
+  }
+  AlterIndex(index~, table~, action~, options~)
+}
+
+///|
 fn Parser::option_kv(self : Parser) -> @ast.OptionKV raise @ast.SyntaxError {
   let name = upper(self.any_ident_tok())
   if self.eat_punct("=") {
@@ -239,6 +276,9 @@ fn Parser::table_constraint(
   self : Parser,
 ) -> @ast.TableConstraint raise @ast.SyntaxError {
   let start = self.start()
+  if self.table_variable && self.is_kw("CONSTRAINT") {
+    raise near(self.peek())
+  }
   let name = if self.eat_kw("CONSTRAINT") { Some(self.ident()) } else { None }
   let kind : @ast.TableConstraintKind = if self.is_kw("PRIMARY") {
     self.pos += 1
@@ -358,6 +398,9 @@ fn Parser::column_def(
       self.pos += 1
       persisted = true
     } else if self.at_constraint_start() || self.is_kw("REFERENCES") {
+      if self.table_variable && self.is_kw("CONSTRAINT") {
+        raise near(self.peek())
+      }
       let cname = if self.eat_kw("CONSTRAINT") {
         Some(self.ident())
       } else {
@@ -616,14 +659,28 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
         Some(self.object_name())
       } else {
         if ix.parts.length() < 2 {
-          raise self.error()
+          // captured: msduck-runs drop-index #020
+          raise @ast.SyntaxError(
+            number=159,
+            severity=15,
+            state=1,
+            message="Must specify the table name and index name for the DROP INDEX statement.",
+            span=ix.span,
+          )
         }
         None
       }
-      // drop options (ONLINE, MAXDOP, MOVE TO ...) apply to clustered
-      // indexes only (captured: msduck gaps-keys clustered-conflicts-8,
-      // constraints/index-options 3748)
-      let options = table is Some(_) && !self.with_options().is_empty()
+      // drop options (MAXDOP, MOVE TO ...) apply to clustered indexes only
+      // (captured: msduck gaps-keys clustered-conflicts-8,
+      // constraints/index-options 3748); ONLINE = OFF is accepted
+      // (msduck-runs drop-index #023)
+      let options = table is Some(_) &&
+        self
+        .with_options()
+        .iter()
+        .any(o => {
+          !(o.name == "ONLINE" && o.value.map(v => v.to_upper()) == Some("OFF"))
+        })
       items.push((ix, table, options))
       if !self.eat_punct(",") {
         break

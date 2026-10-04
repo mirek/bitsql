@@ -218,11 +218,19 @@ fn Session::dml_scan(
 ) -> (Array[(Int64, Array[@types.Value], Array[@types.Value])], Error?) raise {
   let limit = match top {
     Some(e) => {
-      let k = @exec.eval(self.ctx(), e).as_int64().unwrap_or(0L)
+      let k = match @exec.eval(self.ctx(), e).as_int64() {
+        Some(k) => k
+        None =>
+          raise @types.sql_error(
+            1014,
+            "A TOP or FETCH clause contains an invalid value.",
+            severity=15,
+          )
+      }
       if k < 0L {
         raise @types.sql_error(
           127,
-          "A TOP N or FETCH rows count value may not be negative.",
+          "A TOP N or FETCH rowcount value may not be negative.",
           severity=15,
         )
       }
@@ -244,6 +252,11 @@ fn Session::dml_scan(
         }
       }
       None => ()
+    }
+    // a target on the NULL-extended side of an outer join has no row to
+    // modify (captured: msduck gaps-outer_dml #003-#005, #020)
+    if r[src.rowid] is Null {
+      continue
     }
     let rowid = r[src.rowid].as_int64().unwrap_or(0L)
     let rec = (rowid, r[src.base:src.base + n].to_owned(), r)
@@ -384,6 +397,9 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             271,
             "The column \"\{c.name}\" cannot be modified because it is either a computed column or is the result of a UNION operator.",
           )
+        }
+        if @bind.null_aggregate_error(s.value) is Some(e) {
+          raise e
         }
         if @bind.has_aggregate(s.value) {
           raise @types.sql_error(
@@ -621,6 +637,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     self.check_writable()
   }
   let t = target.table
+  self.check_index_options(t)
   let src = dml_source(env0, target, view, d.from)
   let env = env0.with_columns(src.columns)
   let where_ = match d.current_of {

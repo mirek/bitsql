@@ -42,6 +42,7 @@ fn Session::exec_select_into(
         severity=15,
       )
     }
+    self.check_ansi_padding(c.ty)
     columns.push({
       column_id: columns.length() + 1,
       name: c.name,
@@ -53,6 +54,7 @@ fn Session::exec_select_into(
       default_id: 0,
       default_auto: false,
       computed: None,
+      result_nullable: c.nullable,
       persisted: false,
       rowguidcol: false,
       user_type: None,
@@ -74,6 +76,7 @@ fn Session::exec_select_into(
     created: self.rt.now,
     modified: self.rt.now,
     max_column_id: columns.length(),
+    ansi_nulls: self.ansi_nulls(),
   }
   let mut db = self.db_of(scope).create_table(t)
   for r in rows {

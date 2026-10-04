@@ -36,6 +36,32 @@ fn precheck_batch(
     walk_expr(e, fn(x) {
       match x.kind {
         Var(n) => check_name(n, x.span.line)
+        // captured: ranking and offset functions with the wrong number of
+        // arguments are 4114 / 10755 (class 15) for the whole batch
+        // (msduck-runs count-ranking-declarations#054, tail/window-arity)
+        Call(c) if failure is None &&
+          c.over is Some(_) &&
+          window_arity_error(c.name.base(), c.args.length()) is Some(e) =>
+          failure = Some((e, x.span.line))
+        // captured: window-only functions without OVER are 10753 for the
+        // whole batch, state 3 for ranking/distribution, 1 for offset and
+        // value functions (msduck-runs distribution-reference#009,
+        // tail/window-arity)
+        Call(c) if failure is None &&
+          c.over is None &&
+          c.name.parts.length() == 1 &&
+          window_over_state(c.name.base()) is Some(st) =>
+          failure = Some(
+            (
+              @types.sql_error(
+                10753,
+                "The function '\{c.name.base()}' must have an OVER clause.",
+                state=st,
+                severity=15,
+              ),
+              x.span.line,
+            ),
+          )
         // captured: COUNT(NULL) / COUNT_BIG(NULL), also parenthesized,
         // DISTINCT or windowed, is 8117 for the whole batch (msduck
         // count-null-compilation)
@@ -162,6 +188,41 @@ fn precheck_batch(
       }
       Select(q) => {
         query_vars(q, x => expr(x, line), n => check_name(n, line))
+        // captured: an undeclared table variable in FROM is 1087 state 2
+        // for the whole batch, and at CREATE PROCEDURE (msduck-runs
+        // table-variable #014, #038)
+        if failure is None {
+          match undeclared_table_var(q.body, declared) {
+            Some(n) =>
+              failure = Some(
+                (
+                  @types.sql_error(
+                    1087,
+                    "Must declare the table variable \"\{n}\".",
+                    state=2,
+                    severity=15,
+                  ),
+                  line,
+                ),
+              )
+            None => ()
+          }
+        }
+        if failure is None &&
+          q.body is Select({ top: Some(t), .. }) &&
+          top_constant_error(t, types) is Some(e) {
+          failure = Some((e, line))
+        }
+        // captured: a variable or parameter as STRING_SPLIT's
+        // enable_ordinal is 8748 for the whole batch (msduck string-split
+        // #036, #048)
+        if failure is None && q.body is Select(sel) {
+          for t in sel.from {
+            if failure is None {
+              failure = string_split_ordinal_error(t)
+            }
+          }
+        }
         // captured: ORDER BY a bare variable is 1008 for the whole batch
         // (msduck order-token-expanded #076)
         if failure is None {
@@ -271,11 +332,20 @@ fn precheck_batch(
             line,
           ),
         )
-      Insert({ target, .. })
-      | Update({ target, .. })
-      | Delete({ target, .. })
-      | Merge({ target, .. }) if failure is None =>
+      Insert({ target, top, .. })
+      | Update({ target, top, .. })
+      | Delete({ target, top, .. })
+      | Merge({ target, top, .. }) if failure is None => {
         failure = target_hint_error(target, line)
+        // captured: a constant DML TOP is checked like SELECT's (msduck-runs
+        // merge-top#062/#066/#070)
+        if failure is None && top is Some(t) && !t.percent {
+          failure = top_constant_error(t, types).map(e => (e, line))
+        }
+        if failure is None && s.kind is Merge(m) {
+          failure = merge_clause_error(m).map(e => (e, line))
+        }
+      }
       Return(Some(e)) if in_proc => expr(e, line)
       Return(Some(e)) => {
         // RETURN with a value outside a procedure (batch, sp_executesql
@@ -440,6 +510,211 @@ fn raiserror_compile_error(
     }
   }
   None
+}
+
+///|
+/// A constant SELECT TOP count fails the whole batch (class 15; captured:
+/// msduck-runs select-top-percent, tail/top-invalid): PERCENT outside
+/// 0..100 is 1031, NULL 1014; a row count below 0 is 127, NULL 1060.
+fn top_constant_error(
+  t : @ast.Top,
+  types : Map[String, @types.SqlType],
+) -> @types.SqlError? {
+  let vars : Map[String, @bind.VarInfo] = Map([])
+  for k, ty in types {
+    vars[k] = { slot: vars.length(), ty, }
+  }
+  let b = @bind.bind_expr(@bind.Env::new(vars), t.count) catch {
+    _ => return None
+  }
+  // a row count of any non-integer type, constant or not, is 1060
+  // (captured: tail/top-fractional, DECLARE @d decimal; TOP (@d))
+  if !t.percent && !(b.ty.family() is FInteger) && !(b.kind is Lit(Null)) {
+    return Some(top_not_integer_error())
+  }
+  guard @bind.constant_value(b) is Some(v) else { return None }
+  if t.percent {
+    if v is Null {
+      return Some(top_invalid_error())
+    }
+    let p = @types.cast(v, b.ty, Float) catch { _ => Null }
+    match p {
+      Float(p) if p < 0.0 || p > 100.0 => Some(top_percent_error())
+      _ => None
+    }
+  } else if v is Null {
+    Some(top_not_integer_error())
+  } else {
+    match v.as_int64() {
+      Some(n) if n < 0L =>
+        Some(
+          @types.sql_error(
+            127,
+            "A TOP N or FETCH rowcount value may not be negative.",
+            severity=15,
+          ),
+        )
+      _ => None
+    }
+  }
+}
+
+///|
+fn top_not_integer_error() -> @types.SqlError {
+  @types.sql_error(
+    1060,
+    "The number of rows provided for a TOP or FETCH clauses row count parameter must be an integer.",
+    severity=15,
+  )
+}
+
+///|
+fn top_invalid_error() -> @types.SqlError {
+  @types.sql_error(
+    1014,
+    "A TOP or FETCH clause contains an invalid value.",
+    severity=15,
+  )
+}
+
+///|
+fn top_percent_error() -> @types.SqlError {
+  @types.sql_error(
+    1031,
+    "Percent values must be between 0 and 100.",
+    severity=15,
+  )
+}
+
+///|
+/// The first table variable a query's FROM trees read that is not declared
+/// (derived tables included; subqueries in expressions are not walked).
+fn undeclared_table_var(b : @ast.QueryBody, declared : Set[String]) -> String? {
+  fn refs(r : @ast.TableRef) -> String? {
+    match r.kind {
+      TableVar(n, ..) if !declared.contains(n.to_lower()) => Some(n)
+      Join(_, a, c, ..) =>
+        match refs(a) {
+          Some(n) => Some(n)
+          None => refs(c)
+        }
+      Pivot(src, _, ..) => refs(src)
+      Derived(q, ..) => undeclared_table_var(q.body, declared)
+      _ => None
+    }
+  }
+  match b {
+    Select(s) => {
+      for r in s.from {
+        match refs(r) {
+          Some(n) => return Some(n)
+          None => ()
+        }
+      }
+      None
+    }
+    SetOperation(_, l, r) =>
+      match undeclared_table_var(l, declared) {
+        Some(n) => Some(n)
+        None => undeclared_table_var(r, declared)
+      }
+    Nested(q) => undeclared_table_var(q.body, declared)
+  }
+}
+
+///|
+/// MERGE WHEN clauses, checked for the whole batch (captured: msduck-runs
+/// merge-execution #043/#044, tail/merge-when-clauses): an action repeated
+/// within one WHEN kind is 10714 (class 15); a clause after one of the
+/// same kind without a search condition is 5324.
+fn merge_clause_error(m : @ast.Merge) -> @types.SqlError? {
+  let kinds : Array[(@ast.MergeMatch, String)] = [
+    (Matched, "WHEN MATCHED"),
+    (NotMatchedByTarget, "WHEN NOT MATCHED"),
+    (NotMatchedBySource, "WHEN NOT MATCHED BY SOURCE"),
+  ]
+  for k in kinds {
+    let (kind, label) = k
+    let list = m.whens.filter(w => w.match_ == kind)
+    let seen : Array[String] = []
+    for w in list {
+      let action = match w.action {
+        MergeUpdate(_) => "UPDATE"
+        MergeDelete => "DELETE"
+        MergeInsert(..) => "INSERT"
+      }
+      if seen.contains(action) {
+        return Some(
+          @types.sql_error(
+            10714,
+            "An action of type '\{label}' cannot appear more than once in a '\{action}' clause of a MERGE statement.",
+            severity=15,
+          ),
+        )
+      }
+      seen.push(action)
+    }
+    for i in 1..<list.length() {
+      if list[i - 1].condition is None {
+        return Some(
+          @types.sql_error(
+            5324,
+            "In a MERGE statement, a '\{label}' clause with a search condition cannot appear after a '\{label}' clause with no search condition.",
+          ),
+        )
+      }
+    }
+  }
+  None
+}
+
+///|
+/// The 10753 state of a window-only function called without OVER.
+fn window_over_state(name : String) -> Int? {
+  match name.to_upper() {
+    "ROW_NUMBER"
+    | "RANK"
+    | "DENSE_RANK"
+    | "NTILE"
+    | "CUME_DIST"
+    | "PERCENT_RANK" => Some(3)
+    "LAG" | "LEAD" | "FIRST_VALUE" | "LAST_VALUE" => Some(1)
+    _ => None
+  }
+}
+
+///|
+/// Arity of window-only functions: 4114 "The function 'X' takes exactly n
+/// argument(s)." and 10755 for LAG/LEAD, naming the function as written.
+fn window_arity_error(name : String, n : Int) -> @types.SqlError? {
+  let exact = match name.to_upper() {
+    "ROW_NUMBER" | "RANK" | "DENSE_RANK" | "PERCENT_RANK" | "CUME_DIST" => 0
+    "NTILE" => 1
+    "LAG" | "LEAD" =>
+      return if n < 1 || n > 3 {
+        Some(
+          @types.sql_error(
+            10755,
+            "The function '\{name}' takes between 1 and 3 arguments.",
+            severity=15,
+          ),
+        )
+      } else {
+        None
+      }
+    _ => return None
+  }
+  if n == exact {
+    None
+  } else {
+    Some(
+      @types.sql_error(
+        4114,
+        "The function '\{name}' takes exactly \{exact} argument(s).",
+        severity=15,
+      ),
+    )
+  }
 }
 
 ///|

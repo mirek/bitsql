@@ -33,7 +33,7 @@ fn compare(
 ) -> @ir.Expr raise @types.SqlError {
   let a = bind_expr(env, left)
   let b = bind_expr(env, right)
-  compare_bound(env, op, a, b)
+  non_ansi(env, op, left, right, a, b, compare_bound(env, op, a, b))
 }
 
 ///|
@@ -103,6 +103,13 @@ fn var_name_key(name : String) -> String {
 
 ///|
 pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
+  let x = bind_expr_kind(env, e)
+  check_bind_options(env, x)
+  x
+}
+
+///|
+fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
   match e.kind {
     Null => mk(Lit(Null), Int, true)
     Default =>
@@ -284,6 +291,10 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           coerce(b, t)
         }
       })
+      match non_ansi_in_list(env, x, items, a, bs, coll, negated) {
+        Some(e) => return e
+        None => ()
+      }
       let nullable = a.nullable || bs.iter().any(b => b.nullable)
       bit_expr(InList(a, bs, negated~, collation=coll), nullable)
     }
@@ -323,9 +334,12 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       }
       let branches = []
       for w in whens {
-        let cond = match op {
-          Some(o) => compare_bound(env, Eq, o, bind_expr(env, w.0))
-          None => bind_expr(env, w.0)
+        let cond = match (op, operand) {
+          (Some(o), Some(oa)) => {
+            let b = bind_expr(env, w.0)
+            non_ansi(env, Eq, oa, w.0, o, b, compare_bound(env, Eq, o, b))
+          }
+          _ => bind_expr(env, w.0)
         }
         branches.push((cond, bind_expr(env, w.1)))
       }
@@ -424,11 +438,24 @@ pub fn bind_expr(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     }
     InQuery(x, q, negated~) => {
       let (a, plan, coll) = compare_with_subquery(env, Eq, x, q)
+      if !env.ansi_nulls {
+        return non_ansi_subquery(Eq, a, plan, coll, all=false, negated~)
+      }
       bit_expr(InQuery(a, plan, negated~, collation=coll), true)
     }
     Quantified(op, quant, x, q) => {
       let (o, _) = cmp_op(op)
       let (a, plan, coll) = compare_with_subquery(env, o, x, q)
+      if !env.ansi_nulls && o is (Eq | Ne) {
+        return non_ansi_subquery(
+          o,
+          a,
+          plan,
+          coll,
+          all=quant is All,
+          negated=false,
+        )
+      }
       bit_expr(Quantified(o, a, plan, all=quant is All, collation=coll), true)
     }
     Parse(x, tn, culture~, try_~) => bind_parse(env, x, tn, culture, try_)

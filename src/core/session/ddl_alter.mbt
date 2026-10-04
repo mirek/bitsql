@@ -112,7 +112,11 @@ fn Session::validate_constraints(
       ..t,
       checks,
       foreign_keys: fks,
-      columns: t.columns.map(c => { ..c, nullable: true, }),
+      columns: t.columns.map(c => {
+        ..c,
+        nullable: true,
+        result_nullable: true,
+      }),
     },
     display: display_name(scope, t),
     qualifier: t.name.to_lower(),
@@ -152,6 +156,13 @@ fn Session::alter_add(
   with_check : Bool,
   written : String,
 ) -> Unit raise {
+  // a failing ALTER TABLE ADD consumes no object ids (captured: msduck-runs
+  // alter-named-default, the table after two failed ADDs keeps the id
+  // sequence)
+  let ids_mark = self.server.next_object_id
+  errdefer {
+    self.server.next_object_id = ids_mark
+  }
   let db = self.db_of(scope)
   let b = Builder::of_table(t, scope, written)
   let old_width = t.columns.length()
@@ -196,7 +207,11 @@ fn Session::alter_add(
   for ix in body.indexes {
     raise @types.not_supported("ALTER TABLE ADD INDEX (\{ix.0.name})")
   }
-  let nt = { ..self.finish(b, t.name), created: t.created, }
+  let nt = {
+    ..self.finish(b, t.name),
+    created: t.created,
+    ansi_nulls: t.ansi_nulls,
+  }
   // new column values for existing rows
   let target : Target = {
     scope,
@@ -214,9 +229,21 @@ fn Session::alter_add(
         // captured: existing rows get rowversion values (msduck
         // gaps-rowversion_identity #079)
         _ if c.ty is RowVersion => self.next_rowversion()
+        // a default failing for an existing row: the error, then 1750
+        // state 0 (captured: msduck-runs alter-named-default #059)
         (None, Some(d)) if c.computed is None &&
           (!c.nullable || with_values[k - old_width]) =>
-          self.eval_text(target, d, row + [Null], c.ty)
+          self.eval_text(target, d, row + [Null], c.ty) catch {
+            @types.SqlError(..) as e => {
+              self.pending.push(e)
+              raise @types.sql_error(
+                1750,
+                "Could not create constraint or index. See previous errors.",
+                state=0,
+              )
+            }
+            other => raise other
+          }
         _ => Null
       }
       row.push(v)
@@ -580,6 +607,7 @@ fn Session::alter_column(
     None => self.scope_collation(scope)
   }
   let ty = @bind.resolve_type(type_, Declaration, collation)
+  self.check_ansi_padding(ty)
   // ANSI_NULL_DFLT_ON: an unspecified nullability makes the column NULL
   let nullable = nullable.unwrap_or(true)
   if ty != old.ty {
@@ -598,7 +626,7 @@ fn Session::alter_column(
       )
     }
   }
-  let ncol = { ..old, ty, nullable, }
+  let ncol = { ..old, ty, nullable, result_nullable: nullable, }
   let cols = t.columns.copy()
   cols[ord] = ncol
   let nt = { ..t, columns: cols, modified: self.rt.now, }
@@ -959,6 +987,20 @@ fn Session::exec_create_index(
   // traps/computed-persisted-index)
   for c in columns {
     let tc = t.columns[c.0]
+    // captured: msduck-runs tedious-compat-gaps#042 (GETDATE())
+    let nondeterministic = match tc.computed {
+      Some(text) =>
+        expr_nondeterministic(@parse.parse_expr(text)) catch {
+          _ => false
+        }
+      None => false
+    }
+    if nondeterministic {
+      raise @types.sql_error(
+        2729,
+        "Column '\{tc.name}' in table '\{t.name}' cannot be used in an index or statistics or as a partition key because it is non-deterministic.",
+      )
+    }
     if tc.computed is Some(_) && !tc.persisted && tc.ty is (Float | Real) {
       raise @types.sql_error(
         2799,
@@ -1024,6 +1066,7 @@ fn Session::exec_create_index(
     fill_factor,
     ignore_dup_key,
     is_constraint: false,
+    disabled: false,
   }
   let db = self.db_of(scope)
   if ci.unique {
@@ -1064,6 +1107,7 @@ fn Session::exec_drop_index(
   items : Array[(@ast.ObjectName, @ast.ObjectName?, Bool)],
 ) -> Unit raise {
   self.cur_cmd = 201
+  let mut failure : @types.SqlError? = None
   for item in items {
     let (ixname, table) = match item {
       (ix, Some(t), _) => (ix.base(), t)
@@ -1082,17 +1126,25 @@ fn Session::exec_drop_index(
         )
       }
     }
-    let missing = () => {
+    // a missing table is state 6, a missing index state 7 (captured:
+    // msduck-runs drop-index #005, #007, #008)
+    let missing = (state : Int) => {
       @types.sql_error(
         3701,
         "Cannot drop the index '\{object_text(table)}.\{ixname}', because it does not exist or you do not have permission.",
-        state=7,
+        state~,
         severity=11,
       )
     }
     let (scope, t) = match self.find_table(table) {
       Some(x) => x
-      None => if if_exists { continue } else { raise missing() }
+      None =>
+        if if_exists {
+          continue
+        } else {
+          failure = Some(missing(6))
+          break
+        }
     }
     match
       t.indexes.iter().find_first(ix => ix.name.to_lower() == ixname.to_lower()) {
@@ -1118,8 +1170,24 @@ fn Session::exec_drop_index(
         })
         self.write(scope, self.db_of(scope).alter_table({ ..t, indexes, }))
       }
-      None => if !if_exists { raise missing() }
+      None =>
+        if !if_exists {
+          failure = Some(missing(7))
+          break
+        }
     }
+  }
+  // the indexes dropped before a missing one stay dropped: ERROR, then the
+  // statement's DONE with the error bit (captured: drop-index #015, #018)
+  if failure is Some(e) {
+    if self.try_depth > 0 {
+      raise e
+    }
+    self.message(e, self.stmt_line)
+    self.stmt_error = e.number()
+    self.rt.rowcount = 0
+    self.done(201, error=true)
+    return
   }
   self.rt.rowcount = 0
   self.done(201)

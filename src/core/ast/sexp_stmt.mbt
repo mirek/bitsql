@@ -620,6 +620,19 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       }
       self.close()
     }
+    AlterIndex(index~, table~, action~, options~) => {
+      self.s("(alter-index ")
+      self.s(
+        match index {
+          Some(i) => i.name
+          None => "ALL"
+        },
+      )
+      self.atom(table.to_sexp())
+      self.atom(action)
+      self.options_kv(options)
+      self.close()
+    }
     CreateView(v) => {
       self.s("(" + mode_text(v.mode) + "-view " + v.name.to_sexp())
       if v.columns.length() > 0 {
@@ -925,6 +938,15 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.expr(e)
       self.close()
     }
+    Backup(log~, database~, options~) => {
+      self.s(if log { "(backup log " } else { "(backup database " })
+      self.expr(database)
+      for o in options {
+        self.s(" " + o)
+      }
+      self.close()
+    }
+    Restore(kind) => self.s("(restore " + kind + ")")
     Dbcc(name, args, options) => {
       self.s("(dbcc " + name)
       for a in args {

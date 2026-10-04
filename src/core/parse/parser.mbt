@@ -7,6 +7,9 @@ priv struct Parser {
   /// Parsing a procedure body: CREATE PROCEDURE there is 156 near the
   /// keyword, not 111 (captured: gaps-procedures #137).
   mut in_procedure : Bool
+  /// Parsing a table variable's columns: named constraints are a syntax
+  /// error there (captured: msduck-runs table-variable#010).
+  mut table_variable : Bool
 }
 
 ///|

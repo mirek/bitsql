@@ -132,7 +132,10 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
     (FBinary, FDateTime) => is_legacy_datetime(to)
-    (FDateTime, FBinary) => is_legacy_datetime(from)
+    // date, time, datetime2 and datetimeoffset convert to their storage
+    // bytes (captured: msduck temporal-guid-format, tail/functions-binary)
+    (FDateTime, FBinary) => true
+    (FDate | FTime, FBinary) => true
     _ => false
   }
 }

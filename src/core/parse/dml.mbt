@@ -1,13 +1,21 @@
 ///|
 /// DML target: `@t` or an object name, with optional `WITH (hints)`.
-fn Parser::dml_target(self : Parser) -> @ast.TableRef raise @ast.SyntaxError {
+fn Parser::dml_target(
+  self : Parser,
+  delete? : Bool = false,
+) -> @ast.TableRef raise @ast.SyntaxError {
   let start = self.start()
   let t = self.peek()
   if t.kind is Variable {
     self.pos += 1
-    let hints = self.table_hints()
+    // table variables take no hints (captured: tail/table-hints-gaps,
+    // INSERT/UPDATE @t WITH (...) is 156 near 'WITH')
+    // (DELETE leaves the WITH to start a new statement: 319)
+    if !delete && self.is_kw("WITH") && self.is_punct_at(1, "(") {
+      raise near(self.peek())
+    }
     return {
-      kind: TableVar(t.text, alias_=None, hints~),
+      kind: TableVar(t.text, alias_=None, hints=[]),
       span: self.span_from(start),
     }
   }
@@ -212,7 +220,7 @@ fn Parser::delete_stmt(
   self.expect_kw("DELETE")
   let top = self.dml_top()
   ignore(self.eat_kw("FROM"))
-  let target = self.dml_target()
+  let target = self.dml_target(delete=true)
   let output = self.output_clauses()
   let from = if self.eat_kw("FROM") { self.from_list() } else { [] }
   let (where_, current_of, current_of_global) = self.dml_where()

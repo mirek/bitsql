@@ -12,13 +12,15 @@ fn compare_rows(
   a : Row,
   b : Row,
   collations : Array[@types.Collation?],
+  ansi? : Bool = false,
 ) -> Int raise @types.SqlError {
   for i in 0..<a.length() {
     let c = match (a[i], b[i]) {
       (Null, Null) => 0
       (Null, _) => -1
       (_, Null) => 1
-      _ => @types.compare(a[i], b[i], collation?=collations[i]).unwrap_or(0)
+      _ =>
+        @types.compare(a[i], b[i], collation?=collations[i], ansi~).unwrap_or(0)
     }
     if c != 0 {
       return c
@@ -32,11 +34,12 @@ fn compare_rows(
 fn sorted_positions(
   keys : Array[Row],
   collations : Array[@types.Collation?],
+  ansi? : Bool = false,
 ) -> Array[Int] raise @types.SqlError {
   let order = Array::makei(keys.length(), i => i)
   let mut failure : @types.SqlError? = None
   order.sort_by((x, y) => {
-    let c = compare_rows(keys[x], keys[y], collations) catch {
+    let c = compare_rows(keys[x], keys[y], collations, ansi~) catch {
       e => {
         failure = Some(e)
         0
@@ -62,15 +65,16 @@ fn sorted_positions(
 fn group_ids(
   keys : Array[Row],
   collations : Array[@types.Collation?],
+  ansi? : Bool = false,
 ) -> (Array[Int], Int) raise @types.SqlError {
   let n = keys.length()
-  let order = sorted_positions(keys, collations)
+  let order = sorted_positions(keys, collations, ansi~)
   // each row's run leader: the first (smallest) position of its run
   let leader = Array::make(n, 0)
   let mut start = 0
   for k in 0..<n {
     if k > 0 &&
-      compare_rows(keys[order[k - 1]], keys[order[k]], collations) != 0 {
+      compare_rows(keys[order[k - 1]], keys[order[k]], collations, ansi~) != 0 {
       start = k
     }
     leader[order[k]] = order[start]

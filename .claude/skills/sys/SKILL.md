@@ -93,7 +93,8 @@ mention the correction here.
   have system_type_id 243, max_length -1, is_nullable 0, is_table_type 1 and
   a sys.table_types row (sys.types columns + type_table_object_id,
   is_memory_optimized). The type table has sys.columns and sys.indexes rows
-  (PK name `PK__TT_<name 5>__<hex>`, random) but **no sys.objects row**;
+  (PK name `PK__TT_<name 5>__<hex>`, random) and (corrected 2026-10-04) a
+  sys.objects row `TT_<type>_<id hex>` of type TT in schema sys;
   OBJECT_ID of a type name is NULL; TYPE_ID accepts `dbo.T`, `T`,
   `[dbo].[T]`. sys.synonyms = sys.objects columns + base_object_name
   (`[dbo].[t]`, parts as written, bracket-quoted), type `SN`. sys.parameters:
@@ -150,6 +151,21 @@ mention the correction here.
   server collation. DATABASEPROPERTYEX: SQLSortOrder 0 for Windows
   collations, ComparisonStyle 0 for BIN2, IsReadCommittedSnapshotOn NULL.
 
+
+- 2026-10-04 (system catalog, fork A; docs/reference/system-catalog.md):
+  sys.system_objects (2637 rows, schemas 3/4) and sys.system_columns
+  (11569) are generated from oracle dumps (`harness/src/dump-system-catalog.mjs`
+  → `scripts/system-catalog/*.tsv` → `session/sysviews_system_data.mbt`);
+  sys.all_objects / all_columns are the unions; `all_objects.type` has
+  flags 33, `system_objects.type` 8. sys.server_principals: 31 rows, sa sid
+  0x01. sys.database_files: `<db>.mdf` / `<db>_log.ldf`, 1024 pages, growth
+  8192. Table types *do* have a sys.objects row (`TT_<type>_<id hex>`, type
+  TT, schema sys, is_ms_shipped 1); the 2026-10-03 note saying otherwise was
+  wrong. User object ids start at 1221579390 (stride 16000057).
+- 2026-10-04 (fork B): sys.sql_modules.uses_ansi_nulls /
+  uses_quoted_identifier, sys.tables.uses_ansi_nulls and OBJECTPROPERTY
+  IsAnsiNullsOn / ExecIsAnsiNullsOn / IsQuotedIdentOn / ExecIsQuotedIdentOn
+  report the CREATE-time settings (Exec* NULL for tables).
 
 # MSSQL System Catalog Views - Implementation Specification
 

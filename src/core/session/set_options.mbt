@@ -47,13 +47,9 @@ fn Session::set_options(
           self.rt.option_bits & (16384 ^ -1)
         }
       }
-      // compile-time option: no DONE of its own
-      "QUOTED_IDENTIFIER" => {
-        if !on {
-          raise unsupported(n)
-        }
-        cmd = None
-      }
+      // parse-time option: applied while the batch is parsed (run_text,
+      // Session::quoted_identifier_scan), no DONE of its own
+      "QUOTED_IDENTIFIER" => cmd = None
       // defaults bitsql implements; the other value changes semantics
       // OFF drops the 8153 warning; the run-time errors it would turn into
       // silent truncation or NULL are Emulator errors (interp.mbt)
@@ -65,13 +61,29 @@ fn Session::set_options(
           self.rt.option_bits | 8
         }
       }
-      "ANSI_NULLS"
-      | "ANSI_PADDING"
-      | "ANSI_NULL_DFLT_ON"
-      | "CONCAT_NULL_YIELDS_NULL" => if !on { raise unsupported(n) }
+      // inside a procedure, function or trigger the module's setting holds
+      // and the statement sends no DONE (probed: tail/settings-ansi-nulls)
+      "ANSI_NULLS" =>
+        if self.frame().module_settings {
+          cmd = None
+        } else {
+          self.set_ansi_nulls(on)
+        }
+      // OFF changes how new char/varchar/binary/varbinary columns store
+      // trailing blanks and zeros: creating one is an Emulator error
+      // (Session::check_ansi_padding)
+      "ANSI_PADDING" => self.set_option_flag("ANSI_PADDING", on, 16, true)
+      // OFF: `'a' + NULL` is 'a'; string `+` is an Emulator error then
+      // (bind/set_options.mbt)
+      "CONCAT_NULL_YIELDS_NULL" =>
+        self.set_option_flag("CONCAT_NULL_YIELDS_NULL", on, 4096, true)
+      // ON: precision loss is 8115 state 7; decimal, money and float
+      // expressions are Emulator errors then (bind/set_options.mbt)
+      "NUMERIC_ROUNDABORT" =>
+        self.set_option_flag("NUMERIC_ROUNDABORT", on, 8192, false)
+      "ANSI_NULL_DFLT_ON" => if !on { raise unsupported(n) }
       "ANSI_DEFAULTS" => if !on { raise unsupported(n) }
-      "NUMERIC_ROUNDABORT"
-      | "IMPLICIT_TRANSACTIONS"
+      "IMPLICIT_TRANSACTIONS"
       | "CURSOR_CLOSE_ON_COMMIT"
       | "NOEXEC"
       | "FMTONLY"
@@ -81,8 +93,9 @@ fn Session::set_options(
       | "SHOWPLAN_ALL"
       | "SHOWPLAN_TEXT"
       | "SHOWPLAN_XML" => if on { raise unsupported(n) }
-      // no effect while ANSI_WARNINGS is ON
-      "ARITHABORT" | "ARITHIGNORE" => self.session_flags[n.to_upper()] = on
+      // no effect while ANSI_WARNINGS is ON (@@OPTIONS bits 64 / 128)
+      "ARITHABORT" => self.set_option_flag("ARITHABORT", on, 64, true)
+      "ARITHIGNORE" => self.set_option_flag("ARITHIGNORE", on, 128, false)
       "STATISTICS"
       | "STATISTICS IO"
       | "STATISTICS TIME"
@@ -257,5 +270,174 @@ fn Session::set_text(self : Session, value : @ast.SetValue) -> String raise {
             _ => ""
           }
       }
+  }
+}
+
+///|
+/// Records a SET option for SESSIONPROPERTY and the binder, and its
+/// @@OPTIONS bit (kept as a XOR mask over the login defaults).
+fn Session::set_option_flag(
+  self : Session,
+  key : String,
+  on : Bool,
+  bit : Int,
+  default : Bool,
+) -> Unit {
+  self.session_flags[key] = on
+  self.rt.option_bits = if on == default {
+    self.rt.option_bits & (bit ^ -1)
+  } else {
+    self.rt.option_bits | bit
+  }
+}
+
+///|
+/// The SET options error 1934 requires (indexed views, filtered and
+/// computed-column indexes, XML methods) that are not at their required
+/// values, in SQL Server's message order (probed: 'ANSI_NULLS,
+/// ANSI_PADDING').
+fn Session::wrong_index_options(self : Session) -> Array[String] {
+  let out = []
+  for
+    k in [
+      "ANSI_NULLS", "ANSI_PADDING", "ANSI_WARNINGS", "ARITHABORT", "CONCAT_NULL_YIELDS_NULL",
+      "QUOTED_IDENTIFIER",
+    ] {
+    if !self.session_flags.get(k).unwrap_or(true) {
+      out.push(k)
+    }
+  }
+  if self.session_flags.get("NUMERIC_ROUNDABORT").unwrap_or(false) {
+    out.push("NUMERIC_ROUNDABORT")
+  }
+  out
+}
+
+///|
+/// Binder view of the SET options it checks.
+fn Session::bind_options(self : Session) -> @bind.BindOptions {
+  {
+    concat_null_yields_null: self.session_flags
+    .get("CONCAT_NULL_YIELDS_NULL")
+    .unwrap_or(true),
+    numeric_roundabort: self.session_flags
+    .get("NUMERIC_ROUNDABORT")
+    .unwrap_or(false),
+    wrong_for_indexes: self.wrong_index_options(),
+  }
+}
+
+///|
+/// SET ANSI_PADDING OFF: new char/varchar/binary/varbinary columns would
+/// drop trailing blanks and zeros (and nullable char behaves like varchar;
+/// probed: tail/settings-options). Not modelled: an Emulator error.
+fn Session::check_ansi_padding(
+  self : Session,
+  ty : @types.SqlType,
+) -> Unit raise @types.SqlError {
+  if self.session_flags.get("ANSI_PADDING").unwrap_or(true) {
+    return
+  }
+  if ty is (Char(_, _) | VarChar(_, _) | Binary(_) | VarBinary(_)) {
+    raise @types.not_supported(
+      "char, varchar, binary or varbinary columns created under SET ANSI_PADDING OFF",
+    )
+  }
+}
+
+///|
+/// SET QUOTED_IDENTIFIER is a parse-time option: every SET in the batch
+/// (also in branches that do not run) applies while the batch is parsed,
+/// to the tokens after it, and the batch then runs with the last value
+/// (probed: tail/settings-options, `SET QUOTED_IDENTIFIER OFF; SELECT
+/// SESSIONPROPERTY(...); SET QUOTED_IDENTIFIER ON` reads 1). OFF reads "x"
+/// as a string literal; bitsql parses it as an identifier, so a
+/// double-quoted token where the option is OFF is an Emulator error.
+/// Applies the final value and returns that token's line.
+fn Session::quoted_identifier_scan(self : Session, text : String) -> Int? {
+  let mut on = self.session_flags.get("QUOTED_IDENTIFIER").unwrap_or(true)
+  if on && !contains_ascii_ci(text, "quoted_identifier") {
+    return None
+  }
+  let toks = @lex.lex(text) catch { _ => return None }
+  let mut conflict : Int? = None
+  for k, t in toks {
+    if t.is_kw("QUOTED_IDENTIFIER") &&
+      k > 0 &&
+      toks[k - 1].is_kw("SET") &&
+      k + 1 < toks.length() {
+      if toks[k + 1].is_kw("ON") {
+        on = true
+        self.set_option_flag("QUOTED_IDENTIFIER", true, 256, true)
+      } else if toks[k + 1].is_kw("OFF") {
+        on = false
+        self.set_option_flag("QUOTED_IDENTIFIER", false, 256, true)
+      }
+    }
+    if conflict is None &&
+      !on &&
+      t.kind is QuotedIdent &&
+      t.span.start < text.length() &&
+      text[t.span.start] == '"' {
+      conflict = Some(t.span.line)
+    }
+  }
+  conflict
+}
+
+///|
+/// ASCII case-insensitive substring test (`word` lower case).
+fn contains_ascii_ci(text : String, word : String) -> Bool {
+  let n = word.length()
+  if n == 0 {
+    return true
+  }
+  for i = 0; i + n <= text.length(); i = i + 1 {
+    let mut ok = true
+    for j in 0..<n {
+      let c = text[i + j].to_int()
+      let c = if c >= 65 && c <= 90 { c + 32 } else { c }
+      if c != word[j].to_int() {
+        ok = false
+        break
+      }
+    }
+    if ok {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// DML on a table with a filtered index or an index on a computed column
+/// needs the index SET options; otherwise SQL Server raises 1934 and ends
+/// the batch (probed: tail/settings-options, "INSERT failed because the
+/// following SET options have incorrect settings: 'ANSI_NULLS'."). Not
+/// modelled: an Emulator error.
+fn Session::check_index_options(
+  self : Session,
+  t : @store.Table,
+) -> Unit raise @types.SqlError {
+  if self.session_flags.is_empty() {
+    return
+  }
+  let special = t.indexes
+    .iter()
+    .any(ix => {
+      ix.filter is Some(_) ||
+      ix.columns.iter().any(c => t.columns[c.0].computed is Some(_)) ||
+      ix.included.iter().any(c => t.columns[c].computed is Some(_))
+    })
+  if !special {
+    return
+  }
+  let wrong = self.wrong_index_options()
+  if !wrong.is_empty() {
+    raise @types.not_supported(
+      "changing a table with a filtered or computed-column index under SET " +
+      wrong.join(", ") +
+      " (SQL Server error 1934)",
+    )
   }
 }

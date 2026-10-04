@@ -439,3 +439,48 @@ seeks, only candidate pairs are evaluated, so an ON or WHERE conjunct that
 would raise on a non-matching row no longer does (SQL Server's seek plans
 behave the same way). `harness/bench/bench.mjs` (`npm run bench`) times
 these shapes on a release build.
+## 2026-10-04: long tail round 4 (coordinator + three forks)
+
+Corpus 20,088/20,558 → 20,453/20,587 passing (process isolation; 29 new
+captured `tail/` cases, no regressions). Design points worth keeping:
+
+- **Batch-level checks grow in `session/precheck*.mbt`.** SQL Server compiles
+  the whole batch first; bitsql binds per statement. Rather than a batch
+  compiler, syntactic or catalog-only checks that SQL Server reports for the
+  whole batch run before execution: table hints (`precheck_hints.mbt`, two
+  passes: 321/1047/10746 for the whole batch, then object checks), TOP
+  counts, window arity / missing OVER, MERGE WHEN clauses, undeclared table
+  variables. Checks that need binding (8117 of COUNT(NULL)) still go
+  through the binder.
+- **Two plan rewrites in the binder**, both because SQL Server's plans make
+  them observable: a `WHERE` that is a false comparison of integer literals
+  replaces the source with an empty VALUES, and WHERE conjuncts that read
+  only the left input of CROSS/OUTER APPLY are pushed below the Apply
+  (`push_filter`). Other predicate pushdown is not attempted (plan-dependent).
+- **BACKUP / RESTORE**: parsed so that file-independent errors are exact
+  (911 + 3013 for a missing database, 155 for unknown options); a BACKUP of
+  an existing database and every RESTORE are Emulator errors. Raising 3201
+  ("cannot open backup device") would claim a fact about the server's file
+  system that bitsql cannot know.
+- **EXEC sp_prepare in T-SQL** compiles a single SELECT through the
+  describe path (`describe_batch`) to send its metadata; other single
+  statements are Emulator errors rather than "prepared" without a compile
+  check.
+- **Table variables** are visible only in the frame that declared them
+  (`find_table_var` used to search every frame, so dynamic SQL could see the
+  caller's variables).
+- **ANSI_NULLS OFF** (fork B) is a binder rewrite of `=`/`<>` against NULL
+  literals and variables plus a per-module setting stored at CREATE time
+  and applied while the module runs; the other non-default SET options are
+  reported but their effects remain Emulator errors.
+- **System catalog rows** (fork A): `sys.system_objects` / `system_columns`
+  are generated data (`scripts/system-catalog/*.tsv` from the oracle →
+  `session/sysviews_system_data.mbt`, ~470 KB of source) rather than
+  hand-written seeds; user object ids start at 1221579390 with SQL Server's
+  stride so captured ids match. The data is parsed once into a lazily
+  filled module-level cache (deterministic, so core stays pure) with
+  by-id and by-name maps: `OBJECT_ID(N'sys.x')` evaluated per row of an
+  11.5k-row `sys.all_columns` scan took 7 s with a linear name search.
+- **Compatibility level in the binder** (fork C): `Catalog.compat_level`
+  exists only to keep SOUNDEX's pre-110 H/W rule; behaviour of levels below
+  170 is otherwise still not modelled (trap row "Compatibility level").

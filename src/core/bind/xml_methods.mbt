@@ -192,6 +192,7 @@ fn bind_method_call(
   if !(t.ty is Xml) {
     raise err(258, "Cannot call methods on \{t.ty.base_name()}.", severity=15)
   }
+  check_xml_options(env)
   let meth = name.name
   match meth {
     "value" | "query" | "exist" => ()
@@ -247,6 +248,7 @@ fn bind_nodes_ref(
   columns : Array[@ast.Ident],
 ) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError {
   let penv = plan_env(env)
+  check_xml_options(env)
   let t = bind_xml_target(penv, target)
   if !(t.ty is Xml) {
     raise err(258, "Cannot call methods on \{t.ty.base_name()}.", severity=15)
@@ -357,8 +359,9 @@ fn xml_guard(
           "DATALENGTH of xml (SQL Server's internal binary size)",
           number=@types.EMU_XML_NOT_SUPPORTED,
         )
-      // captured: GREATEST(xml, xml) is 8116 state 4 (like text/ntext)
-      "GREATEST" | "LEAST" =>
+      // captured: GREATEST(xml, xml) is 8116 state 4 (like text/ntext),
+      // CHECKSUM(xml) too (msduck hashbytes-checksum #061)
+      "GREATEST" | "LEAST" | "CHECKSUM" =>
         raise bad_arg_type(ty, i + 1, name.to_lower(), state=4)
       _ => raise bad_arg_type(ty, i + 1, name.to_lower())
     }

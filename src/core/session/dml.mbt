@@ -318,6 +318,7 @@ fn Session::check_row(
   self_fks? : Bool = true,
 ) -> Unit raise {
   let t = target.table
+  self.check_index_options(t)
   // captured: MERGE reports "UPDATE fails." for its INSERT and UPDATE
   // actions alike (msduck gaps-merge #028, #029)
   let fails = if verb == "MERGE" { "UPDATE" } else { verb }

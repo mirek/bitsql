@@ -624,7 +624,7 @@ test "batches" {
   inspect(
     sx("SELECT 1\nWITH c AS (SELECT 1 AS a) SELECT * FROM c"),
     content=(
-      #|Msg 319, Level 15, State 1, Line 2: Incorrect syntax near the keyword 'WITH'. If this statement is a common table expression, an xmlnamespaces clause or a change tracking context clause, the previous statement must be terminated with a semicolon.
+      #|Msg 319, Level 15, State 1, Line 2: Incorrect syntax near the keyword 'with'. If this statement is a common table expression, an xmlnamespaces clause or a change tracking context clause, the previous statement must be terminated with a semicolon.
     ),
   )
   inspect(

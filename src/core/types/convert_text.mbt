@@ -299,6 +299,33 @@ fn to_binary(
       let b = big_endian(m.to_int64(), 2)
       (Bytes::makei(4, fn(i) { if i < 2 { a[i] } else { b[i - 2] } }), true)
     }
+    Date(_) | Time(_) | DateTime2(_) | DateTimeOffset(_, _) => {
+      let b = temporal_storage_bytes(v, from)
+      let cap = match to {
+        Binary(k) | VarBinary(Some(k)) => Some(k)
+        _ => None
+      }
+      match cap {
+        Some(k) if k < b.length() =>
+          // a cut date keeps its head under CONVERT but is NULL under
+          // TRY_CONVERT (captured): not modelled; the scale-prefixed
+          // types are 8152 state 17
+          if v is Date(_) {
+            raise not_supported(
+              "CONVERT of date to a shorter binary type",
+              number=EMU_CONVERSION_NOT_SUPPORTED,
+            )
+          } else {
+            raise sql_error(
+              8152,
+              "String or binary data would be truncated.",
+              state=17,
+            )
+          }
+        _ => ()
+      }
+      (b, false)
+    }
     Float(_) | Money(_) | Decimal(_) =>
       match numeric_storage_bytes(v, from) {
         Some(x) => x
@@ -346,4 +373,49 @@ fn to_binary(
     }
     _ => Binary(fitted)
   }
+}
+
+///|
+/// Storage bytes of date, time, datetime2 and datetimeoffset values as
+/// CONVERT(varbinary, x) shows them: date = 3 bytes of days since
+/// 0001-01-01 (little-endian); the others start with their scale, then the
+/// time of day in units of 10^-scale s (3 bytes for scale 0-2, 4 for 3-4,
+/// 5 for 5-7), then the date, then (datetimeoffset, UTC) the offset in
+/// minutes as int16 (captured: msduck temporal-guid-format, corpus
+/// tail/functions-binary).
+fn temporal_storage_bytes(v : Value, from : SqlType) -> Bytes {
+  let scale = match from {
+    Time(s) | DateTime2(s) | DateTimeOffset(s) => s
+    _ => 7
+  }
+  let out : Array[Int] = []
+  let le = (n : Int64, width : Int) => {
+    for i in 0..<width {
+      out.push((n >> (8 * i)).to_int() & 0xFF)
+    }
+  }
+  let time_part = (ticks : Int64) => {
+    out.push(scale)
+    let mut unit = 1L
+    for _ in 0..<(7 - scale) {
+      unit = unit * 10L
+    }
+    let width = if scale <= 2 { 3 } else if scale <= 4 { 4 } else { 5 }
+    le(ticks / unit, width)
+  }
+  match v {
+    Date(d) => le(d.to_int64(), 3)
+    Time(t) => time_part(t)
+    DateTime2(x) => {
+      time_part(x % TICKS_PER_DAY)
+      le(x / TICKS_PER_DAY, 3)
+    }
+    DateTimeOffset(utc, off) => {
+      time_part(utc % TICKS_PER_DAY)
+      le(utc / TICKS_PER_DAY, 3)
+      le(off.to_int64(), 2)
+    }
+    _ => ()
+  }
+  Bytes::makei(out.length(), i => out[i].to_byte())
 }

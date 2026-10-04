@@ -134,6 +134,15 @@ pub fn bind_dml_source(
       Derived(_, alias_=Some(a), ..) if found.val is None &&
         view is Some(_) &&
         target_names.contains(a.name.to_lower()) => take(a.name.to_lower())
+      // the applied side sees the left row (the target included) as its
+      // outer row (captured: msduck gaps-outer_dml #017-#019)
+      Join(CrossApply | OuterApply as kind, left, right, ..) => {
+        let (lp, lc) = leaf(left, offset)
+        let (rp, rc) = bind_table_ref(env.with_source(lc, lp), right)
+        let outer = kind is OuterApply
+        let rc2 = if outer { rc.map(c => { ..c, nullable: true, }) } else { rc }
+        (Apply(lp, rp, outer~, right_width=rc.length()), lc + rc2)
+      }
       Join(kind, left, right, on~, ..) => {
         let (lp, lc) = leaf(left, offset)
         let (rp, rc) = leaf(right, offset + lc.length())
@@ -188,6 +197,7 @@ pub fn bind_dml_source(
       cols = cols + c
     }
   }
+  check_exposed_names(from)
   match found.val {
     Some((start, l)) =>
       {

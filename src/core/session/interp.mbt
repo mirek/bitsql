@@ -134,6 +134,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     return
   }
+  let stmt_line = line
   let line = match self.error_line {
     Some(l) => l
     None => udf_error_line(e, line)
@@ -185,7 +186,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // even without XACT_ABORT (captured: savepoint errors/catch runs)
   // and so does MERGE's 8672 (captured: gaps-merge #022: ERROR, then the
   // rollback ENVCHANGE)
-  let conversion_abort = [241, 245, 295, 8114, 8672, 3952].contains(e.number()) ||
+  let conversion_abort = [241, 245, 295, 8114, 8169, 8672, 3952].contains(
+      e.number(),
+    ) ||
     is_identity_overflow(e)
   let xact_rollback = (
       (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
@@ -259,8 +262,10 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   )
   // IDENTITY_INSERT errors (544, 545, 339) come without 3621 (captured:
   // msduck identity-insert-*)
+  // a negative DML TOP (127) ends the batch after 3621, a NULL one (1014)
+  // without it (captured: tail/top-invalid-abort)
   if dml &&
-    !ends_batch &&
+    (!ends_batch || e.number() == 127) &&
     self.trailing.is_empty() &&
     ![544, 545, 339].contains(e.number()) {
     ignore(self.terminated(e))
@@ -270,8 +275,10 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     self.cur_cmd = 253
   }
   self.flush_pending(line)
+  // deferred errors keep the statement's line (4413 of a qualified view
+  // reports line 13 after the 207 on line 1; tail/views-binding-errors)
   for d in self.deferred {
-    self.message(d, line)
+    self.message(d, if e.number() == 4413 { stmt_line } else { line })
   }
   self.deferred.clear()
   self.message(e, line)
@@ -312,7 +319,11 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // follows the ERROR (captured: xml/rpc#001); so has a JSON error
   // (captured: msduck isjson-depth, json-constructors#087/#091)
   if !(self.rpc &&
-    ((e.number() >= 9400 && e.number() < 9500) || json_aborts_batch(e))) {
+    (
+      (e.number() >= 9400 && e.number() < 9500) ||
+      json_aborts_batch(e) ||
+      top_value_error(e)
+    )) {
     self.done(cmd, error=true)
   }
   if ends_batch {
@@ -350,15 +361,30 @@ fn aborts_batch(
   n == 3952 ||
   n == 295 ||
   n == 8114 ||
+  // uniqueidentifier conversion (captured: msduck guid-assignment)
+  n == 8169 ||
   n == 8672 ||
   n == 529 ||
   n == 11728 ||
   n == 217 ||
+  // *FROMPARTS invalid arguments (captured: an RPC ends without
+  // DONEINPROC, msduck temporal-parts #196)
+  n == 289 ||
   is_identity_overflow(e) ||
   // XML parse errors (captured: xml/type#059, xml/rpc#001)
   (n >= 9400 && n < 9500) ||
   json_aborts_batch(e) ||
+  top_value_error(e) ||
   (n >= 50100 && n <= 50199)
+}
+
+///|
+/// Invalid TOP / FETCH values at run time (1014 NULL, 127 negative, 1031
+/// percent): class 15, they end the batch without a rollback, and in an RPC
+/// DONEPROC follows the ERROR (captured: tail/top-invalid, msduck-runs
+/// select-top-percent#045).
+fn top_value_error(e : @types.SqlError) -> Bool {
+  e.severity() == 15 && [1014, 127, 1031, 4116].contains(e.number())
 }
 
 ///|
@@ -473,8 +499,19 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         if ty.is_lob() {
           raise @types.lob_variable_error()
         }
-        let existing = self.frame().vars.contains(v.name.to_lower()) ||
-          self.frame().tables.contains(v.name.to_lower())
+        let key = v.name.to_lower()
+        let existing = self.frame().vars.contains(key) ||
+          self.frame().tables.contains(key)
+        // declared at compile time (declare_hoist.mbt): running the
+        // DECLARE again keeps the value; only an initializer assigns
+        if existing && self.frame().decl_sites.get(key) == Some(v.span.start) {
+          if v.init is Some(init) {
+            self.cur_cmd = 193
+            self.assign(v.name, Assign, init)
+            initialized = true
+          }
+          continue
+        }
         if existing {
           raise @types.sql_error(
             134,
@@ -483,6 +520,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
           )
         }
         ignore(self.frame().add_var(v.name, ty))
+        self.frame().decl_sites[key] = v.span.start
         if v.init is Some(init) {
           self.cur_cmd = 193
           self.assign(v.name, Assign, init)
@@ -824,6 +862,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.exec_create_index(ci)
     }
     DropIndex(if_exists~, items) => self.exec_drop_index(if_exists, items)
+    AlterIndex(index~, table~, action~, options~) =>
+      self.exec_alter_index(index, table, action, options)
     Exec(e) => self.exec_proc_stmt(e, s.span.line)
     ExecString(parts) => self.exec_string(parts)
     DeclareCursor(c) => self.exec_declare_cursor(c)
@@ -835,6 +875,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     WaitFor(kind, e) => self.exec_waitfor(kind, e)
     Dbcc(name, args, options) =>
       self.exec_dbcc(name, args, options, s.span.line)
+    Backup(log~, database~, ..) => self.exec_backup(log, database)
+    Restore(kind) => raise @types.not_supported("RESTORE \{kind}")
     _ => raise @types.not_supported(stmt_name(s))
   }
 }
@@ -1060,7 +1102,10 @@ fn Session::exec_try(
     }
   }
   // The construct completes with 351 whether or not CATCH ran (captured:
-  // msduck control-completion-tokens #10/#11).
+  // msduck control-completion-tokens #10/#11) and sets @@ROWCOUNT to 0
+  // (captured: msduck-runs aggregate-warning-boundaries#022,
+  // tail/try-catch-rowcount).
+  self.rt.rowcount = 0
   self.done(351)
 }
 
@@ -1068,7 +1113,12 @@ fn Session::exec_try(
 /// Binder errors SQL Server reports while compiling (or recompiling) a
 /// statement, which TRY in the same scope cannot catch.
 fn is_compile_error(n : Int) -> Bool {
-  [8117, 8116, 206, 402, 207, 4104, 209, 8120, 147, 4108, 4109].contains(n)
+  // 4413 and the FROM exposed-name errors 1011-1013 too (probed:
+  // tail/views-binding-errors, tail/views-exposed-names)
+  [
+    8117, 8116, 206, 402, 207, 4104, 209, 8120, 147, 4108, 4109, 4413, 1011, 1012,
+    1013,
+  ].contains(n)
 }
 
 ///|

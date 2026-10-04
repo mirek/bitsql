@@ -147,3 +147,44 @@ change 1326 units, version-100 collations 1764 (all `_100` variants alike,
 BIN2 included), from the captured msduck `unicode-case` tables
 (`scripts/gen-case-map.py`). Surrogates and supplementary letters are
 unchanged.
+
+## Session SET options (2026-10-04, corpus `tail/settings-*`, msduck-runs session-property-context)
+
+- `SET ANSI_NULLS OFF`: `=`, `<>`, `!=` are two-valued when one operand is
+  a NULL literal (also parenthesized) or a bare variable/parameter (`NULL =
+  NULL` true, `1 <> NULL` true). Column = column, `@v + 1`, `CAST(NULL AS
+  int)`, ISNULL(...) and `<`/`>`/BETWEEN stay three-valued. IN lists and
+  simple CASE compare per item; IN / `= ALL|ANY` / `<> ALL|ANY` over a
+  subquery treat NULL as equal to NULL even between columns. RPC
+  parameters behave like variables.
+- Modules capture ANSI_NULLS and QUOTED_IDENTIFIER at CREATE/ALTER
+  (procedures, views, functions, triggers; tables capture ANSI_NULLS).
+  Inside a procedure `SET ANSI_NULLS` has no effect and sends no DONE;
+  SESSIONPROPERTY and `@@OPTIONS & 32` show the module's value; dynamic SQL
+  inherits it. sys.sql_modules.uses_ansi_nulls / uses_quoted_identifier,
+  sys.tables.uses_ansi_nulls, OBJECTPROPERTY IsAnsiNullsOn /
+  ExecIsAnsiNullsOn / IsQuotedIdentOn / ExecIsQuotedIdentOn report them
+  (Exec* is NULL for tables).
+- `@@OPTIONS` bits: ANSI_WARNINGS 8, ANSI_PADDING 16, ANSI_NULLS 32,
+  ARITHABORT 64, ARITHIGNORE 128, QUOTED_IDENTIFIER 256, CONCAT_NULL_YIELDS_NULL
+  4096, NUMERIC_ROUNDABORT 8192 (login default 5496).
+- QUOTED_IDENTIFIER is a parse-time option: every `SET QUOTED_IDENTIFIER`
+  in a batch applies while parsing, so `SET … OFF; SELECT
+  SESSIONPROPERTY('QUOTED_IDENTIFIER'); SET … ON` reads 1.
+- Not modelled (Emulator errors): string `+` under CONCAT_NULL_YIELDS_NULL
+  OFF (`'a' + NULL` is 'a'), decimal/money/float expressions under
+  NUMERIC_ROUNDABORT ON (rounding is 8115 state 7), char/varchar/binary/
+  varbinary columns created under ANSI_PADDING OFF (trailing blanks/zeros
+  dropped, nullable char too, is_ansi_padded 0), double-quoted strings under
+  QUOTED_IDENTIFIER OFF, XML methods and DML on tables with filtered or
+  computed-column indexes under any non-default index option (SQL Server:
+  1934 "… following SET options have incorrect settings: 'ANSI_NULLS,
+  ANSI_PADDING'", batch ends).
+- sp_set_session_context checks, in order: 16914/16903 argument count
+  (message names sp_set_connection_context), 225 NULL key, 15666 empty or
+  over-256-byte key, 15600 NULL @read_only or max-type value, 15664
+  read-only key; failures return 1 with the DONEPROC error bit; under TRY
+  ERROR_PROCEDURE() is sys.sp_set_session_context. Keys match ignoring case
+  and trailing spaces except that the last character must match exactly
+  ('email' found by 'Email', not by 'EMAIL'). SESSION_CONTEXT of varchar or
+  NULL is 8116.

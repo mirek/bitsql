@@ -32,7 +32,13 @@ fn agg_inputs(
     return out
   }
   // DISTINCT: the first of each run of equal values, in input order
-  let (ids, _) = group_ids(out.map(x => [x.0]), [coll])
+  // non-Unicode values compare as such (NUL below the space under SQL
+  // sort orders; captured: msduck-runs character-extrema)
+  let (ids, _) = group_ids(
+    out.map(x => [x.0]),
+    [coll],
+    ansi=!arg.ty.is_unicode(),
+  )
   let firsts : Array[(@types.Value, Row)] = []
   for i, x in out {
     if ids[i] == firsts.length() {
@@ -236,7 +242,12 @@ pub fn eval_aggregate(
         if best is Null {
           best = x.0
         } else {
-          let c = @types.compare(x.0, best, collation?=coll).unwrap_or(0)
+          let c = @types.compare(
+            x.0,
+            best,
+            collation?=coll,
+            ansi=!arg.ty.is_unicode(),
+          ).unwrap_or(0)
           if (call.func is Min && c < 0) || (call.func is Max && c > 0) {
             best = x.0
           }

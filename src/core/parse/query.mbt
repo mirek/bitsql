@@ -836,9 +836,11 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
   if t.kind is Variable {
     self.pos += 1
     let alias_ = self.table_alias()
-    let hints = self.table_hints()
+    // no hints on table variables: a following WITH starts a new statement
+    // (319 when the previous one is unterminated; captured:
+    // tail/table-hints-gaps)
     return {
-      kind: TableVar(t.text, alias_~, hints~),
+      kind: TableVar(t.text, alias_~, hints=[]),
       span: self.span_from(start),
     }
   }
@@ -855,6 +857,16 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
   }
   if self.is_punct("(") {
     self.pos += 1
+    // `t (INDEX(0))`: an index hint needs WITH (captured: 1018,
+    // tail/table-hints-gaps)
+    if self.is_kw("INDEX") {
+      let x = self.peek()
+      raise syntax_error(
+        1018,
+        "Incorrect syntax near '\{x.text}'. If this is intended as a part of a table hint, A WITH keyword and parenthesis are now required. See SQL Server Books Online for proper syntax.",
+        x.span,
+      )
+    }
     let args = []
     if !self.is_punct(")") {
       args.push(self.call_arg())
@@ -888,9 +900,31 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     }
   }
   let alias_ = self.table_alias()
+  // `t alias (NOLOCK)`: one hint without WITH (captured: tail/table-hints)
+  if alias_ is Some(_) &&
+    self.is_punct("(") &&
+    self.peek_at(1).kind is Word &&
+    self.is_punct_at(2, ")") &&
+    legacy_hint_words.contains(upper(self.peek_at(1))) {
+    let h = self.peek_at(1)
+    self.pos += 3
+    return {
+      kind: Table(name, alias_~, hints=[
+        { name: upper(h), args: [], span: h.span, },
+      ]),
+      span: self.span_from(start),
+    }
+  }
   let hints = self.tablesample() + self.table_hints()
   { kind: Table(name, alias_~, hints~), span: self.span_from(start), }
 }
+
+///|
+/// Hints allowed without WITH when they are the only one (documented).
+let legacy_hint_words : Array[String] = [
+  "NOLOCK", "READUNCOMMITTED", "UPDLOCK", "REPEATABLEREAD", "SERIALIZABLE", "READCOMMITTED",
+  "TABLOCK", "TABLOCKX", "PAGLOCK", "ROWLOCK", "NOWAIT", "READPAST", "XLOCK", "HOLDLOCK",
+]
 
 ///|
 /// The alias and column list after `x.nodes(...)`.

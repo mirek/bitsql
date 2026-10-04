@@ -337,16 +337,20 @@ fn collation_elements(
 ) -> (Array[Element], Array[(Int, Int)]) {
   let version = collation.version
   let word_sort = !(ansi && collation.sql_collation)
+  // SQL sort orders on varchar data give NUL a weight below the space
+  // (captured: MIN over '', ' ' and CHAR(0) is CHAR(0); msduck
+  // character-extrema #098, #130)
+  let ignored = (u : Int) => is_ignorable(u, version) && !(u == 0 && !word_sort)
   // pad semantics: drop trailing spaces (and trailing ignorables)
   let mut n = s.length()
-  while n > 0 && (s[n - 1] == ' ' || is_ignorable(s[n - 1].to_int(), version)) {
+  while n > 0 && (s[n - 1] == ' ' || ignored(s[n - 1].to_int())) {
     n -= 1
   }
   let out : Array[Element] = []
   let ws : Array[(Int, Int)] = []
   for i in 0..<n {
     let raw = s[i].to_int()
-    if is_ignorable(raw, version) {
+    if ignored(raw) {
       continue
     }
     if word_sort && (raw == '-' || raw == '\'') {
@@ -564,6 +568,22 @@ fn compare_linguistic(
   let (ea, wa) = collation_elements(a, collation, ansi)
   let (eb, wb) = collation_elements(b, collation, ansi)
   let primary = compare_level(ea, eb, e => e.primary, true)
+  // pad semantics under SQL sort orders on varchar: the shorter operand
+  // is space-padded, so a control character (NUL) after the common prefix
+  // sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), msduck
+  // character-extrema #098)
+  if ansi && collation.sql_collation && primary != 0 {
+    let xs = ea.filter(e => e.primary != 0)
+    let ys = eb.filter(e => e.primary != 0)
+    let n = if xs.length() < ys.length() { xs.length() } else { ys.length() }
+    let prefix = (0).until(n).all(i => xs[i].primary == ys[i].primary)
+    if prefix && xs.length() != ys.length() {
+      let longer_next = if xs.length() > n { xs[n] } else { ys[n] }
+      if longer_next.primary < 0x100 + ' '.to_int() {
+        return if xs.length() > n { -1 } else { 1 }
+      }
+    }
+  }
   if primary != 0 {
     return primary
   }

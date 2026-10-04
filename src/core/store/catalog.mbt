@@ -22,6 +22,11 @@ pub(all) struct Column {
   /// The DEFAULT constraint name was generated (is_system_named).
   default_auto : Bool
   computed : String?
+  /// Nullability in result metadata: a computed column declared PERSISTED
+  /// NOT NULL is NOT NULL in sys.columns but keeps its expression's
+  /// nullability on the wire (captured: msduck-runs tedious-compat-gaps
+  /// #038/#039). Equal to `nullable` otherwise.
+  result_nullable : Bool
   persisted : Bool
   rowguidcol : Bool
   /// user_type_id of an alias type the column was declared with (None:
@@ -31,7 +36,8 @@ pub(all) struct Column {
 
 ///|
 pub(all) struct Index {
-  /// sys.indexes.index_id: 1 = clustered, 2.. nonclustered (not reused).
+  /// sys.indexes.index_id: 1 = clustered, 2.. nonclustered (the lowest free
+  /// id is reused after DROP INDEX).
   index_id : Int
   /// Object id of the PK/UNIQUE constraint (0 for CREATE INDEX).
   object_id : Int
@@ -59,6 +65,9 @@ pub(all) struct Index {
   ignore_dup_key : Bool
   /// Constraint (PK/UNIQUE) rather than CREATE INDEX.
   is_constraint : Bool
+  /// ALTER INDEX ... DISABLE: the index holds no rows and enforces nothing
+  /// until REBUILD.
+  disabled : Bool
 } derive(Debug)
 
 ///|
@@ -183,6 +192,8 @@ pub(all) struct Table {
   modified : Int64
   /// sys.tables.max_column_id_used.
   max_column_id : Int
+  /// SET ANSI_NULLS at CREATE TABLE (sys.tables.uses_ansi_nulls).
+  ansi_nulls : Bool
 } derive(Debug)
 
 ///|
@@ -231,6 +242,12 @@ pub(all) struct Module {
   check_option : Bool
   /// Scalar functions: the RETURNS type.
   returns : @types.SqlType?
+  /// SET ANSI_NULLS when the module was created or altered: its statements
+  /// run with it (sys.sql_modules.uses_ansi_nulls).
+  ansi_nulls : Bool
+  /// SET QUOTED_IDENTIFIER when the module was created or altered
+  /// (sys.sql_modules.uses_quoted_identifier).
+  quoted_identifier : Bool
 } derive(Debug)
 
 ///|

@@ -447,10 +447,26 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
         "NEXT" if self.is_kw_at(1, "VALUE") && self.is_kw_at(2, "FOR") => {
           self.pos += 3
           let name = self.object_name()
+          // NEXT VALUE FOR s OVER (ORDER BY ...) numbers rows in that order
+          // (captured: msduck-runs sequence-reference#005); not emulated
+          if self.is_kw("OVER") {
+            raise @ast.SyntaxError(
+              number=50100,
+              severity=16,
+              state=1,
+              message="Emulator: NEXT VALUE FOR with an OVER clause is not supported.",
+              span=self.peek().span,
+            )
+          }
           mk(NextValueFor(name), self.span_from(start))
         }
         _ =>
-          if niladic(u) && !next_paren {
+          if niladic(u) && next_paren {
+            // `CURRENT_TIMESTAMP()`, `USER()`: 102 near the token after the
+            // parenthesis (captured: msduck-runs tedious-compat-gaps#010,
+            // tail/niladic-parentheses)
+            raise near(self.peek_at(2))
+          } else if niladic(u) {
             self.pos += 1
             let name : @ast.ObjectName = {
               parts: [tok_ident(t)],

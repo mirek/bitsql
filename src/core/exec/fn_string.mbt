@@ -391,22 +391,31 @@ fn soundex_code(c : Int) -> Int {
 }
 
 ///|
-/// Letters for SOUNDEX: ASCII and Latin-1 / Latin Extended-A letters
-/// (captured: 'ébc' is É120; non-ASCII letters code like vowels).
+/// Letters for SOUNDEX, which reads its input as code page 1252: ASCII
+/// letters and the bytes 0xC0-0xFF except × and ÷ (captured: 'ébc' is
+/// É120, non-ASCII letters code like vowels; Š, Œ, Ÿ (0x8A, 0x8C, 0x9F)
+/// end the input: msduck soundex-difference #009).
 fn is_soundex_letter(c : Int) -> Bool {
-  let u = case_unit(c, true)
-  (u >= 'A'.to_int() && u <= 'Z'.to_int()) ||
-  (c >= 0xC0 && c <= 0x17F && c != 0xD7 && c != 0xF7)
+  (c >= 'A'.to_int() && c <= 'Z'.to_int()) ||
+  (c >= 'a'.to_int() && c <= 'z'.to_int()) ||
+  (c >= 0xC0 && c <= 0xFF && c != 0xD7 && c != 0xF7)
 }
 
 ///|
-/// SQL Server's SOUNDEX code: H and W separate like vowels (captured:
-/// Ashcraft is A226), the first non-letter ends the input ('ab-c' is A100,
+/// SQL Server's SOUNDEX code: lower-case h and w separate like vowels
+/// (captured: Ashcraft is A226), the first non-letter ends the input ('ab-c' is A100,
 /// a non-letter first character gives 0000). `dedupe_first` drops a code
 /// equal to the first letter's (SOUNDEX: Pfister is P236); DIFFERENCE
 /// compares codes built without that rule (captured: DIFFERENCE('Pfister',
 /// 'Fister') is 2, consistent with P123 vs F236).
-fn soundex_with(s : String, dedupe_first : Bool) -> String {
+fn soundex_with(
+  s0 : String,
+  dedupe_first : Bool,
+  legacy? : Bool = false,
+) -> String {
+  // nvarchar input converts to varchar first (best fit: 'Łódź' is L320,
+  // fullwidth letters read as ASCII)
+  let s = @types.to_cp1252(s0)
   if s.length() == 0 || !is_soundex_letter(s.code_unit_at(0).to_int()) {
     return "0000"
   }
@@ -420,6 +429,13 @@ fn soundex_with(s : String, dedupe_first : Bool) -> String {
     let c = s.code_unit_at(i).to_int()
     if !is_soundex_letter(c) {
       break
+    }
+    // upper-case H and W are skipped without separating equal codes, while
+    // lower-case h and w separate like vowels (captured: 'BHB' is B000,
+    // 'Bhb' B100, Ashcraft A226; msduck soundex-difference #009)
+    if !legacy && (c == 'H'.to_int() || c == 'W'.to_int()) {
+      i += 1
+      continue
     }
     let code = soundex_code(case_unit(c, true))
     if code != 0 && code != last {
@@ -447,9 +463,9 @@ fn soundex(s : String) -> String {
 /// else +1 per digit of a found in b's digits. Fits all 26 captured pairs,
 /// including the asymmetric DIFFERENCE('Washington', 'Washer') = 3 vs 2;
 /// other inputs are unverified.
-fn difference(a : String, b : String) -> Int {
-  let x = soundex_with(a, false)
-  let y = soundex_with(b, false)
+fn difference(a : String, b : String, legacy? : Bool = false) -> Int {
+  let x = soundex_with(a, false, legacy~)
+  let y = soundex_with(b, false, legacy~)
   let mut score = if x.code_unit_at(0) == y.code_unit_at(0) { 1 } else { 0 }
   let xt = x.unsafe_substring(start=1, end=4)
   let yt = y.unsafe_substring(start=1, end=4)
@@ -555,10 +571,20 @@ fn string_escape_json(s : String) -> String {
 
 ///|
 fn quotename(s : String, q : String) -> String? {
-  if s.length() > 128 || q.length() == 0 {
+  if s.length() > 128 {
     return None
   }
-  let (open, close) = match q.code_unit_at(0).to_int() {
+  // captured (msduck quotename, probes): an empty delimiter means '[';
+  // a NUL delimiter returns the input unquoted (an empty input NULL);
+  // otherwise an input containing NUL is NULL
+  let first = if q.length() == 0 { 0x5B } else { q.code_unit_at(0).to_int() }
+  if first == 0 {
+    return if s.length() == 0 { None } else { Some(s) }
+  }
+  if s.contains_char('\u{0}') {
+    return None
+  }
+  let (open, close) = match first {
     '[' | ']' => ('[', ']')
     '\'' => ('\'', '\'')
     '"' => ('"', '"')
@@ -968,8 +994,16 @@ fn call_string(
       }
     }
     "STRING_ESCAPE" => {
-      let kind = str(1)
-      if !(kind is Some(k) && k.to_lower() == "json") {
+      // trailing blanks of the kind are ignored ('json  ', char(8)); a NULL
+      // kind is 8116 state 8 (msduck string-escape-format)
+      guard str(1) is Some(kind) else {
+        raise @types.sql_error(
+          8116,
+          "Argument data type NULL is invalid for argument 2 of STRING_ESCAPE function.",
+          state=8,
+        )
+      }
+      if kind.trim_end(chars=" ").to_owned().to_lower() != "json" {
         raise @types.sql_error(
           13622, "An invalid value was specified for argument 2.",
         )
@@ -1028,14 +1062,22 @@ fn call_string(
       }
       String(cap_text(out.to_string(), e.ty))
     }
-    "SOUNDEX" =>
+    "SOUNDEX" | "SOUNDEX_100" =>
       match str(0) {
-        Some(s) => String(soundex(s))
+        Some(s) =>
+          String(
+            if name == "SOUNDEX" {
+              soundex(s)
+            } else {
+              soundex_with(s, true, legacy=true)
+            },
+          )
         None => Null
       }
-    "DIFFERENCE" =>
+    "DIFFERENCE" | "DIFFERENCE_100" =>
       match (str(0), str(1)) {
-        (Some(a), Some(b)) => Int(difference(a, b))
+        (Some(a), Some(b)) =>
+          Int(difference(a, b, legacy=name == "DIFFERENCE_100"))
         _ => Null
       }
     _ => return None

@@ -367,3 +367,14 @@ Start the host with `--database NAME` so the app's database exists at login
   after executor changes: quadratic paths show up as 16x per 4x rows. The
   release build takes ~2 min; `BITSQL_BIN=` reuses a binary, `BENCH_ONLY=`
   selects queries by name.
+- 2026-10-04 (long tail round 4): `harness/src/dump-system-catalog.mjs`
+  dumps sys.system_objects / system_columns for `scripts/gen-sysviews.py`.
+  In process isolation the case database is master, so captures that read
+  another database as `master` (gaps-catalog #107/#115/#117, sys-databases
+  #003) or print `master` fail only there; check them with `BITSQL_ADDR`
+  (database isolation) before chasing them. Useful scratch helpers (not
+  committed, recreate under `harness/out/`): a script that prints a failing
+  case's step SQL with the report's first difference, and one that prints
+  the expanded steps of a case with its expected errors and token stream;
+  `npm run probe -- out/x.sql both` remains the fastest way to learn a rule.
+  Parallel forks on one oracle worked fine (captures are per case database).

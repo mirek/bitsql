@@ -263,3 +263,13 @@ fn null_aggregate(e : @ast.Expr) -> String? {
   )
   found
 }
+
+///|
+/// 8117 for a COUNT/COUNT_BIG/SUM/AVG over a NULL literal anywhere in `e`
+/// (it wins over 157 in an UPDATE SET list; captured: msduck-runs
+/// count-null-compilation#064).
+pub fn null_aggregate_error(e : @ast.Expr) -> @types.SqlError? {
+  null_aggregate(e).map(n => {
+    err(8117, "Operand data type NULL is invalid for \{n} operator.")
+  })
+}

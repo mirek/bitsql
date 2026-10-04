@@ -171,24 +171,55 @@ fn bind_user_tvf(
         }
       }
       let fenv = {
-        ..Env::new(vars, collation=env.collation, catalog=env.catalog),
+        ..Env::new(
+          vars,
+          collation=env.collation,
+          catalog=env.catalog,
+          deferred=env.deferred,
+          ansi_nulls=f.ansi_nulls,
+          options=env.options,
+        ),
         ids: env.ids,
         nest: env.nest + 1,
         table_params,
       }
-      let bq = bind_query_inner(fenv, query)
+      let bq = module_binding(env, written, () => bind_query_inner(fenv, query))
       // like views, computed columns keep fComputed (captured: a * 2 is
       // flags 33 through the function)
       let cols = derived_columns(bq, name.base(), q, []).mapi((i, c) => {
-        if bq.columns[i].origin is (Computed | TableComputed) {
-          { ..c, origin: Computed, }
-        } else {
-          c
-        }
+        ..c,
+        origin: module_column_origin(bq.columns[i].origin),
       })
       Some((WithParams(bound, bq.plan), cols))
     }
     MultiStatement(cols) => Some((UserTable(f.id, bound), requalify(cols, q)))
     Scalar(_) => None
+  }
+}
+
+///|
+/// Binds the body of a view or inline function used by a query. A binding
+/// error inside it is reported, then 4413 naming the module as written
+/// (captured: tail/views-binding-errors; nested modules: only the
+/// outermost one is named). Emulator errors pass through unchanged.
+fn module_binding(
+  env : Env,
+  written : String,
+  bind : () -> BoundQuery raise @types.SqlError,
+) -> BoundQuery raise @types.SqlError {
+  bind() catch {
+    e => {
+      let n = e.number()
+      if n >= 50100 && n <= 50199 {
+        raise e
+      }
+      if n != 4413 {
+        env.deferred.push(e)
+      }
+      raise err(
+        4413,
+        "Could not use view or function '\{written}' because of binding errors.",
+      )
+    }
   }
 }

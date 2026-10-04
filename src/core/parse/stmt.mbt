@@ -26,7 +26,9 @@ fn Parser::stmt_list(
       if t.is_kw("WITH") {
         raise syntax_error(
           319,
-          "Incorrect syntax near the keyword '\{t.text}'. If this statement is a common table expression, an xmlnamespaces clause or a change tracking context clause, the previous statement must be terminated with a semicolon.",
+          // the keyword prints lower-case whatever its spelling (captured:
+          // msduck gaps-merge#008, tail/table-hints)
+          "Incorrect syntax near the keyword 'with'. If this statement is a common table expression, an xmlnamespaces clause or a change tracking context clause, the previous statement must be terminated with a semicolon.",
           t.span,
         )
       }
@@ -189,6 +191,14 @@ fn Parser::statement_kind(
     "GOTO" => {
       self.pos += 1
       Goto(self.ident())
+    }
+    "BACKUP" => {
+      self.pos += 1
+      self.backup_stmt()
+    }
+    "RESTORE" => {
+      self.pos += 1
+      self.restore_stmt()
     }
     "DBCC" => {
       self.pos += 1
@@ -672,7 +682,14 @@ fn Parser::declare_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     self.pos += 1
     ignore(self.eat_kw("AS"))
     self.pos += 1
-    let body = self.table_body()
+    self.table_variable = true
+    let body = {
+      errdefer {
+        self.table_variable = false
+      }
+      self.table_body()
+    }
+    self.table_variable = false
     return DeclareTable(t.text, body)
   }
   let vars : Array[@ast.DeclareVar] = []
@@ -983,6 +1000,10 @@ fn Parser::create_or_alter(
     }
     "UNIQUE" | "CLUSTERED" | "NONCLUSTERED" | "INDEX" | "COLUMNSTORE" if mode
       is Create => CreateIndex(self.create_index())
+    "INDEX" if mode is Alter => {
+      self.pos += 1
+      self.alter_index()
+    }
     "VIEW" => {
       must_be_first("\{verb} VIEW")
       self.pos += 1
@@ -1047,6 +1068,11 @@ fn Parser::create_or_alter(
         self.pos += 1
         let options = self.module_options()
         ignore(self.eat_kw("AS"))
+        // captured: BEGIN after an inline function's AS is 102 state 31
+        // (msduck gaps-functions #108)
+        if self.is_kw("BEGIN") {
+          raise module_body_error(self.peek())
+        }
         self.expect_kw("RETURN")
         let q = self.query()
         let q = match q {
@@ -1273,6 +1299,11 @@ fn Parser::create_or_alter(
 /// `BEGIN stmts END` of a scalar / multi-statement function, then end of
 /// batch.
 fn Parser::func_block(self : Parser) -> Array[@ast.Stmt] raise @ast.SyntaxError {
+  // captured: a scalar function body without BEGIN (`AS RETURN @x`) is
+  // 102 state 31 near 'RETURN' (msduck gaps-functions #109)
+  if self.is_kw("RETURN") {
+    raise module_body_error(self.peek())
+  }
   self.expect_kw("BEGIN")
   let body = self.stmt_list(at_end)
   self.expect_kw("END")
@@ -1440,4 +1471,17 @@ fn Parser::insert_bulk(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     self.expect_punct(")") |> ignore
   }
   InsertBulk(name, cols, options)
+}
+
+///|
+/// "Incorrect syntax near 'X'." (102 state 31) for a function body of the
+/// wrong shape.
+fn module_body_error(t : @lex.Token) -> @ast.SyntaxError {
+  @ast.SyntaxError(
+    number=102,
+    severity=15,
+    state=31,
+    message="Incorrect syntax near '\{t.text}'.",
+    span=t.span,
+  )
 }

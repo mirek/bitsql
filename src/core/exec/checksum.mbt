@@ -16,8 +16,20 @@
 //   BIN/BIN2 collations, and under SQL_Latin1_General_CP1_CI_AS / CS_AS
 //   folds per-byte sort weights (checksum_data.mbt).
 //
-// Not modelled (None → Emulator error): decimal/numeric (a hash of the
-// normalized digits SQL Server does not document), nvarchar or varchar
+// - decimal/numeric: |value| as a 38-digit integer (the coefficient at
+//   scale 38, divided by 10 while it has more than 38 digits; 0.01 is
+//   10^36, 1 and 10 are 10^37), folded with rotl4 over its 32-bit words
+//   from the lowest up to the highest nonzero one (derived from oracle
+//   probes, 2026-10-04; msduck hashbytes-checksum #040/#064);
+//
+// - Unicode text under the version-0 Windows tables (nvarchar under
+//   SQL_Latin1_General_CP1_* and Latin1_General_*, varchar under
+//   Latin1_General_*): the primary sort key bytes (checksum_unicode_data.mbt;
+//   case and accents do not count) as little-endian 32-bit words folded with
+//   rotl3, then the remaining bytes one by one with rotl3; trailing U+0020
+//   and U+3000 are dropped (oracle dump, 2026-10-04);
+//
+// Not modelled (None → Emulator error): other
 // under Windows collations (sort-key based), other SQL collations,
 // sql_variant.
 
@@ -77,6 +89,7 @@ fn checksum_value(v : @types.Value, ty : @types.SqlType, binary : Bool) -> Int? 
       )
     DateTime(d, u) => Some(d ^ u)
     SmallDateTime(d, m) => Some((d << 16) | m)
+    Decimal(d) => Some(decimal_checksum(d))
     Guid(b) => Some(fold_units(b.iter().map(x => x.to_int())))
     Binary(b) => {
       let mut n = b.length()
@@ -114,6 +127,11 @@ fn checksum_value(v : @types.Value, ty : @types.SqlType, binary : Bool) -> Int? 
       }
       match coll.kind {
         Bin | Bin2 => Some(plain())
+        Linguistic if coll.version == 0 &&
+          coll.code_page == 1252 &&
+          !coll.kana_sensitive &&
+          !coll.width_sensitive &&
+          (ty.is_unicode() || !coll.sql_collation) => unicode_checksum(s)
         Linguistic if !ty.is_unicode() &&
           coll.name == "SQL_Latin1_General_CP1_CI_AS" =>
           Some(weighted(checksum_sql_ci_as))
@@ -125,4 +143,86 @@ fn checksum_value(v : @types.Value, ty : @types.SqlType, binary : Bool) -> Int? 
     }
     _ => None
   }
+}
+
+///|
+fn decimal_checksum(d : @types.Decimal) -> Int {
+  let coef = d.coef()
+  let c = if coef.compare_int(0) < 0 { -coef } else { coef }
+  if c.is_zero() {
+    return 0
+  }
+  let shift = @cmp.minimum(38 - d.scale(), 38 - d.digits())
+  let c = if shift > 0 { c * @types.pow10(shift) } else { c }
+  let words = (c.bit_length() + 31) / 32
+  let mask = @bigint.BigInt::from_int64(0xFFFFFFFFL)
+  let mut h = 0
+  for i in 0..<words {
+    h = rotl4(h) ^ c.shr(32 * i).land(mask).to_int64().to_int()
+  }
+  h
+}
+
+///|
+fn rotl3(x : Int) -> Int {
+  (x << 3) | (x.reinterpret_as_uint() >> 29).reinterpret_as_int()
+}
+
+///|
+/// Primary sort key bytes of one UTF-16 unit; None when not captured.
+fn unicode_key(u : Int, out : Array[Int]) -> Bool {
+  // binary search the run containing u
+  let mut lo = 0
+  let mut hi = checksum_key_runs.length() - 1
+  while lo <= hi {
+    let mid = (lo + hi) / 2
+    let (start, count, kind, script, w0, step) = checksum_key_runs[mid]
+    if u < start {
+      hi = mid - 1
+    } else if u >= start + count {
+      lo = mid + 1
+    } else {
+      if kind == 2 {
+        out.push(script)
+        out.push(w0 + (u - start) * step)
+      }
+      return true
+    }
+  }
+  for k in checksum_key4 {
+    if k.0 == u {
+      for i in 0..<4 {
+        out.push((k.1 >> (8 * i)).to_int() & 0xFF)
+      }
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn unicode_checksum(s : String) -> Int? {
+  let mut n = s.length()
+  while n > 0 &&
+        (s.code_unit_at(n - 1) == ' ' || s.code_unit_at(n - 1) == '\u{3000}') {
+    n -= 1
+  }
+  let key : Array[Int] = []
+  for i in 0..<n {
+    if !unicode_key(s.code_unit_at(i).to_int(), key) {
+      return None
+    }
+  }
+  let mut h = 0
+  let mut i = 0
+  while i + 4 <= key.length() {
+    h = rotl3(h) ^
+      (key[i] | (key[i + 1] << 8) | (key[i + 2] << 16) | (key[i + 3] << 24))
+    i += 4
+  }
+  while i < key.length() {
+    h = rotl3(h) ^ key[i]
+    i += 1
+  }
+  Some(h)
 }

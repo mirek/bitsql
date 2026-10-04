@@ -2,8 +2,27 @@
 // tables' sys.columns / sys.indexes rows), synonyms (sys.synonyms) and
 // procedure / function parameters (sys.parameters). Captures:
 // harness/corpus/tabletypes/{create-table-type,alias-types,synonyms,
-// parameters}.sql. Type tables are not objects: sys.objects has no row for
-// them (captured).
+// parameters}.sql. A type table is a system-shipped sys.objects row in
+// schema sys named TT_<type>_<object id hex> (captured: msduck-runs
+// table-type-catalog #011).
+
+///|
+/// The sys.objects entry of a table type's table: TT_<type>_<object id as
+/// 8 upper-case hex digits> in schema sys.
+fn type_table_obj(ut : @store.UserType, t : @store.Table) -> CatObj {
+  let hex = t.id.reinterpret_as_uint().to_string(radix=16).to_upper()
+  let hex = "0".repeat(8 - hex.length()) + hex
+  {
+    id: t.id,
+    name: "TT_\{ut.name}_\{hex}",
+    schema_id: 4,
+    parent: 0,
+    code: "TT",
+    desc: "TYPE_TABLE",
+    created: ut.created,
+    modified: ut.created,
+  }
+}
 
 ///|
 /// sys.types row of a user-defined type.
@@ -99,6 +118,13 @@ fn Session::type_view_rows(
     "sys.types" =>
       for ut in db.user_types() {
         out.push(user_type_row(db, ut))
+      }
+    "sys.objects" if !self.view_tempdb =>
+      for ut in db.user_types() {
+        guard ut.table is Some(t) else { continue }
+        let r = object_row(type_table_obj(ut, t))
+        r["is_ms_shipped"] = b(true)
+        out.push(r)
       }
     "sys.table_types" =>
       for ut in db.user_types() {

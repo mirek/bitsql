@@ -31,7 +31,7 @@ test "every prefix of every test query parses or errors cleanly" {
   debug_inspect(
     seen,
     content=(
-      #|[0, 102, 105, 111, 113, 156, 319, 10713]
+      #|[0, 102, 105, 111, 113, 156, 159, 319, 10713]
     ),
   )
 }

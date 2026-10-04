@@ -96,7 +96,7 @@ fn Session::function_def(
   let d : UdfDef = {
     definition: m.definition,
     def,
-    info: { id: m.id, params, kind, },
+    info: { id: m.id, params, kind, ansi_nulls: m.ansi_nulls, },
   }
   self.server.udfs[m.id] = d
   d
@@ -164,10 +164,20 @@ fn[T] Session::in_function(
   // statement spans inside the body index the definition text
   let saved_text = self.text
   self.text = d.definition
+  // the function's CREATE-time ANSI_NULLS
+  let saved_ansi_nulls = self.session_flags.get("ANSI_NULLS")
+  let saved_bits = self.rt.option_bits
+  frame.module_settings = true
   self.frames.push(frame)
   self.rt.nest_level += 1
+  self.set_ansi_nulls(d.info.ansi_nulls)
   let restore = () => {
     ignore(self.frames.pop())
+    match saved_ansi_nulls {
+      Some(v) => self.session_flags["ANSI_NULLS"] = v
+      None => self.session_flags.remove("ANSI_NULLS")
+    }
+    self.rt.option_bits = saved_bits
     self.rt.nest_level -= 1
     // the frame's table variables die with it
     for k, id in frame.tables {
@@ -220,6 +230,7 @@ fn Session::call_scalar_udf(
     return Null
   }
   self.in_function(d, args, () => {
+    self.hoist_declares(body)
     match self.udf_list(body, Some(ret)) {
       Returned(Some(v)) => v
       // validated at CREATE: a scalar body ends with RETURN <value>
@@ -243,6 +254,7 @@ fn Session::call_table_udf(
   }
   let rows = self.in_function(d, args, () => {
     self.exec_declare_table(tv, table, -1)
+    self.hoist_declares(body)
     ignore(self.udf_list(body, None))
     match self.find_table_var(tv) {
       Some(t) => self.tvars.rows(t.id).map(kv => kv.1)
@@ -367,7 +379,9 @@ fn returns_data(q : @ast.Query) -> Bool {
 fn udf_error_line(e : @types.SqlError, line : Int) -> Int {
   let n = e.number()
   let tvf_arity = (n == 313 || n == 8144) && e.state() == 3
-  if (tvf_arity || n == 216) && qualified_in_message(e.message()) {
+  // 4413 (view or function with binding errors) likewise (captured:
+  // tail/views-binding-errors)
+  if (tvf_arity || n == 216 || n == 4413) && qualified_in_message(e.message()) {
     13
   } else {
     line

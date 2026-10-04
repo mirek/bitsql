@@ -391,6 +391,18 @@ fn Session::resolve_object(
       }
     }
   }
+  // system objects: catalog views, system procedures, functions and tables
+  // (captured: msduck-runs system-all-columns, OBJECT_ID(N'sys.columns'))
+  if scope == 0 {
+    match system_object_named(sid, base) {
+      Some(o) =>
+        match want {
+          Some(w) if w != o.code => return None
+          _ => return Some(o)
+        }
+      None => ()
+    }
+  }
   None
 }
 
@@ -404,30 +416,15 @@ fn Session::object_by_id(self : Session, id : Int) -> (CatObj, String)? {
       return Some((o, db.schema_name(o.schema_id).unwrap_or("dbo")))
     }
   }
-  for r in seed_system_objects {
-    if r[1] is Int(oid) && oid == id {
-      let sid = match r[3] {
-        Int(x) => x
-        _ => 4
-      }
-      let name = match r[0] {
-        String(x) => x
-        _ => ""
-      }
-      let o : CatObj = {
-        id,
-        name,
-        schema_id: sid,
-        parent: 0,
-        code: "S",
-        desc: "SYSTEM_TABLE",
-        created: 0L,
-        modified: 0L,
-      }
-      return Some((o, db.schema_name(sid).unwrap_or("sys")))
+  for ut in db.user_types() {
+    if ut.table is Some(t) && t.id == id {
+      return Some((type_table_obj(ut, t), "sys"))
     }
   }
-  None
+  match system_object_by_id(id) {
+    Some(o) => Some((o, db.schema_name(o.schema_id).unwrap_or("sys")))
+    None => None
+  }
 }
 
 ///|
@@ -479,7 +476,16 @@ fn Session::columns_of(self : Session, id : Int) -> Array[@store.Column]? {
     None =>
       match db.get_module(id) {
         Some(m) if m.kind is View => Some(m.columns)
-        _ => self.temp.table(id).map(t => t.columns)
+        _ => {
+          // a table type's table (captured: COL_NAME, msduck-runs
+          // table-type-catalog #013)
+          for ut in db.user_types() {
+            if ut.table is Some(t) && t.id == id {
+              return Some(t.columns)
+            }
+          }
+          self.temp.table(id).map(t => t.columns)
+        }
       }
   }
 }
@@ -561,7 +567,7 @@ fn Session::object_property(
     "ischeckcnst" => flag(code == "C")
     "isdefaultcnst" => flag(code == "D")
     "isuniquecnst" => flag(code == "UQ")
-    "ismsshipped" => flag(code == "S")
+    "ismsshipped" => flag(system_object_by_id(id) is Some(_))
     "ownerid" => Int(1)
     "schemaid" => Int(o.schema_id)
     "isschemabound" =>
@@ -569,7 +575,29 @@ fn Session::object_property(
         Some(m) => flag(m.schema_bound)
         None => flag(false)
       }
-    "isansinullson" | "isquotedidenton" => Int(1)
+    // the CREATE-time SET ANSI_NULLS of tables and modules (probed:
+    // tail/settings-ansi-nulls); ExecIsAnsiNullsOn is NULL for tables
+    "isansinullson" =>
+      match (m, t) {
+        (Some(m), _) => flag(m.ansi_nulls)
+        (_, Some(t)) => flag(t.ansi_nulls)
+        _ => Int(1)
+      }
+    "execisansinullson" =>
+      match m {
+        Some(m) => flag(m.ansi_nulls)
+        None => Null
+      }
+    "isquotedidenton" =>
+      match m {
+        Some(m) => flag(m.quoted_identifier)
+        None => Int(1)
+      }
+    "execisquotedidenton" =>
+      match m {
+        Some(m) => flag(m.quoted_identifier)
+        None => Null
+      }
     "isencrypted" => Int(0)
     "execistriggerdisabled" =>
       match m {

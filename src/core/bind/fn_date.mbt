@@ -234,7 +234,18 @@ fn scale_arg(
     10760,
     "Scale argument is not valid. Valid expressions for data type \{tname} scale argument are integer constants and integer constant expressions.",
   )
-  match fold_int(x) {
+  // any integer constant expression counts (captured: 7&3, msduck
+  // temporal-parts #134)
+  let folded = match fold_int(x) {
+    Some(p) => Some(p)
+    None if x.ty.family() == FInteger =>
+      match try_fold(x) {
+        Some(v) => v.as_int64()
+        None => None
+      }
+    None => None
+  }
+  match folded {
     Some(p) =>
       if p < 0L || p > 7L {
         raise err(1002, "Line 1: Specified scale \{p} is invalid.", state=2)

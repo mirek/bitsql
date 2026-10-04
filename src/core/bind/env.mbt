@@ -35,6 +35,8 @@ pub(all) struct Catalog {
   /// Resolves a view to its query and declared column names (bound like a
   /// derived table, in an environment of its own).
   view : (@ast.ObjectName) -> (@ast.Query, Array[@ast.Ident])? raise @types.SqlError
+  /// SET ANSI_NULLS stored with a view (its body binds with it).
+  view_ansi_nulls : (@ast.ObjectName) -> Bool
   /// Resolves a sequence for NEXT VALUE FOR: (session key, type).
   sequence : (@ast.ObjectName) -> (String, @types.SqlType)?
   /// Resolves a user-defined function (scalar, inline or multi-statement
@@ -50,6 +52,9 @@ pub(all) struct Catalog {
     Array[ColumnRef],
     Array[Array[@types.Value]],
   )? raise @types.SqlError
+  /// The current database's compatibility level (SOUNDEX below 110 keeps
+  /// the old H/W rule).
+  compat_level : () -> Int
 }
 
 ///|
@@ -59,6 +64,8 @@ pub(all) struct UserFunction {
   id : Int
   params : Array[UserParam]
   kind : UserFunctionKind
+  /// SET ANSI_NULLS stored with the function (an inline body binds with it).
+  ansi_nulls : Bool
 }
 
 ///|
@@ -90,10 +97,12 @@ pub fn Catalog::empty() -> Catalog {
     table: _ => None,
     table_var: _ => None,
     view: _ => None,
+    view_ansi_nulls: _ => true,
     sequence: _ => None,
     function: _ => None,
     user_type: _ => false,
     system_tvf: (_, _) => None,
+    compat_level: () => 170,
   }
 }
 
@@ -133,6 +142,32 @@ pub(all) struct Env {
   /// Table-valued parameters of an inline function being expanded: the
   /// parameter name (lowercased) → the caller's table variable.
   table_params : Map[String, TableBinding]
+  /// SET ANSI_NULLS: OFF makes `=` / `<>` against a NULL literal or a
+  /// variable two-valued (bind/ansi_nulls.mbt).
+  ansi_nulls : Bool
+  /// Other SET options with semantics bitsql does not model
+  /// (bind/set_options.mbt).
+  options : BindOptions
+}
+
+///|
+/// SET options the binder checks (defaults: SQL Server's).
+pub(all) struct BindOptions {
+  concat_null_yields_null : Bool
+  numeric_roundabort : Bool
+  /// The SET options listed by error 1934 that are not at their required
+  /// values (ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT,
+  /// CONCAT_NULL_YIELDS_NULL, QUOTED_IDENTIFIER ON; NUMERIC_ROUNDABORT OFF).
+  wrong_for_indexes : Array[String]
+}
+
+///|
+pub fn BindOptions::default() -> BindOptions {
+  {
+    concat_null_yields_null: true,
+    numeric_roundabort: false,
+    wrong_for_indexes: [],
+  }
 }
 
 ///|
@@ -153,6 +188,8 @@ pub fn Env::new(
   collation? : @types.Collation = @types.default_collation,
   catalog? : Catalog = Catalog::empty(),
   deferred? : Array[@types.SqlError] = [],
+  ansi_nulls? : Bool = true,
+  options? : BindOptions = BindOptions::default(),
 ) -> Env {
   {
     vars,
@@ -168,6 +205,8 @@ pub fn Env::new(
     literal_params: false,
     deferred,
     table_params: Map([]),
+    ansi_nulls,
+    options,
   }
 }
 

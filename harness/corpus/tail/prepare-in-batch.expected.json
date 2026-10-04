@@ -1,0 +1,341 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "f26208ff9e1c490c",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "b",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        },
+        {"columns":[{"name":"h","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[1]]},
+        {
+          "columns": [
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "b",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"x"],[2,null]]
+        }
+      ],
+      "done": [
+        {"kind":"doneInProc","rowCount":0,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":2,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":2},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"NBCROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"h","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[null,214]]
+        },
+        {"columns":[{"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[8179]]},
+        {"columns":[{"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[8179]]}
+      ],
+      "done": [
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [
+        {"number":214,"state":3,"class":16,"lineNumber":1,"message":"Procedure expects parameter '@options' of type 'int'."},
+        {"number":8179,"state":4,"class":16,"lineNumber":1,"message":"Could not find prepared statement with handle 0."},
+        {"number":8179,"state":8,"class":16,"lineNumber":1,"message":"Could not find prepared statement with handle 0."}
+      ],
+      "info": [],
+      "returnStatus": 8179,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ERROR","number":214},
+        {"name":"RETURNSTATUS","value":214},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":8179},
+        {"name":"RETURNSTATUS","value":8179},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":8179},
+        {"name":"RETURNSTATUS","value":8179},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [{"columns":[{"name":"h","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[null]]}],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [
+        {"number":208,"state":1,"class":16,"lineNumber":1,"message":"Invalid object name 'missing_t'."},
+        {"number":8180,"state":1,"class":16,"lineNumber":1,"message":"Statement(s) could not be prepared."}
+      ],
+      "info": [],
+      "returnStatus": 8180,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ERROR","number":208},
+        {"name":"ERROR","number":8180},
+        {"name":"RETURNSTATUS","value":8180},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"x","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]},
+        {"columns":[{"name":"y","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[2]]}
+      ],
+      "done": [
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneInProc","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"RETURNSTATUS","value":8182},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [{"columns":[{"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[8179]]}],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [{"number":8179,"state":4,"class":16,"lineNumber":1,"message":"Could not find prepared statement with handle 12345."}],
+      "info": [],
+      "returnStatus": 8179,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ERROR","number":8179},
+        {"name":"RETURNSTATUS","value":8179},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"r","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[8179]]}],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [{"number":8179,"state":8,"class":16,"lineNumber":1,"message":"Could not find prepared statement with handle 12345."}],
+      "info": [],
+      "returnStatus": 8179,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ERROR","number":8179},
+        {"name":"RETURNSTATUS","value":8179},
+        {"name":"DONEPROC","status":3,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"q","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+        {"columns":[{"name":"q","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]},
+        {"columns":[{"name":"after_err","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[7]]}
+      ],
+      "done": [
+        {"kind":"doneInProc","rowCount":0,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"doneInProc","rowCount":null,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"doneProc","rowCount":null,"more":false}
+      ],
+      "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+      "info": [],
+      "returnStatus": 0,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":1},
+        {"name":"DONEINPROC","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ERROR","number":8134},
+        {"name":"DONEINPROC","status":3,"curCmd":193},
+        {"name":"RETURNSTATUS","value":8134},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"RETURNSTATUS","value":0},
+        {"name":"DONEPROC","status":0,"curCmd":224}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"h","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[4]]}],
+      "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": 8182,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":224},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"RETURNSTATUS","value":8182},
+        {"name":"DONEPROC","status":1,"curCmd":224},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

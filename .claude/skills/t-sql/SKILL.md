@@ -802,6 +802,75 @@ mention the correction here.
   SELECT INTO) sets SCOPE_IDENTITY() and @@IDENTITY to NULL; 8106/8107 for
   IDENTITY_INSERT.
 
+- 2026-10-04 (long tail round 4, corpus `tail/`, docs/reference/
+  batch-checks.md): whole-batch compile errors (ERROR + DONE 253, nothing
+  runs) for table hints (321 as written, 1047 isolation/granularity/
+  UPDLOCK-XLOCK/NOLOCK conflicts, 10746, 367, 8171 state 2 NOEXPAND / 1
+  IGNORE_*, 307/308, 8622 state 1 FORCESEEK without a leading-key predicate
+  or with INDEX(0), state 2 INDEX(0) with another index), constant or
+  non-integer TOP counts (127 negative, 1060 NULL or non-integer type even
+  for a decimal variable, 1014 NULL percent, 1031 percent outside 0..100),
+  window functions (4114 arity, 10755 LAG/LEAD, 10753 without OVER: state 3
+  ranking/distribution, 1 offset/value functions; names as written), MERGE
+  WHEN clauses (10714 repeated action, 5324 clause after an unconditional
+  one), undeclared table variables (1087 state 2, also at CREATE
+  PROCEDURE), unknown BACKUP options (155 state 1 / 2 with a value). Run-time
+  TOP/percent errors and NTILE 4116 end the batch (no rollback; RPC: DONEPROC
+  right after the ERROR); DML TOP adds 3621 after 127 only. Legacy `t
+  (NOLOCK)` takes one hint, `t (INDEX(0))` is 1018, table variables take no
+  hints (319; DML targets 156), 319 prints 'with' lower-case. Niladic
+  functions with parentheses are 102 near the token after `(`.
+- 2026-10-04 (statements): END CATCH sets @@ROWCOUNT 0 (also when CATCH did
+  not run); COUNT(NULL) in UPDATE SET is 8117 before 157; BACKUP of a
+  missing database is 911 (state 11, LOG 10) + 3013 at CurCmd 228/235, the
+  batch continues, TRY catches 3013 only; a table variable is invisible to
+  EXEC(), sp_executesql and procedures (1087) and takes no named
+  constraints (156); UPDATE/DELETE FROM outer joins skip NULL-extended
+  targets, APPLY in their FROM sees the target. EXEC sp_prepare in T-SQL
+  compiles one SELECT (COLMETADATA + ORDER, DONEINPROC 193 count 0), else
+  defers (status 8182) or fails with the error + 8180; @options 0 is 214
+  state 3; sp_execute returns the last @@ERROR. A `PERSISTED NOT NULL`
+  computed column keeps its expression's nullability on the wire; indexing a
+  non-deterministic computed column is 2729. Columns through a view or
+  inline function report as base columns (flags 8/9) unless computed.
+  `WHERE 1=0` never runs its source; WHERE conjuncts over APPLY's left input
+  filter before the applied side runs (no errors from removed rows). Still
+  plan-dependent and not modelled: an uncorrelated aggregate subquery is
+  evaluated even over zero outer rows (8153; aggregate-warning-boundaries
+  #008), rows of earlier groups precede an aggregate's run-time error
+  (json-aggregates#017).
+- 2026-10-04 (session options, fork B; docs/reference/database-settings.md
+  "Session SET options"): ANSI_NULLS OFF makes `=`/`<>`/`!=` two-valued only
+  against a NULL literal or a bare variable/parameter; IN lists and simple
+  CASE compare per item; subquery IN/ALL/ANY treat NULL = NULL. Modules keep
+  their CREATE-time ANSI_NULLS / QUOTED_IDENTIFIER (SET inside a procedure
+  has no effect and sends no DONE). QUOTED_IDENTIFIER applies at parse time.
+  @@OPTIONS bits 8/16/32/64/128/256/4096/8192. FROM exposed names: 1013 two
+  tables (later one named first), 1011 two correlation names, 1012 alias vs
+  table, before 207, not catchable; views/inline functions that no longer
+  bind give the inner error then 4413 (line 13 for a schema-qualified name).
+  sp_refreshview 15165 at line 62. EXEC argument errors: 201 before
+  8145/8143/8162. sp_set_session_context check order 16914/16903, 225,
+  15666, 15600, 15664.
+- 2026-10-04 (functions, fork C; docs/reference/hash-compress.md):
+  STRING_ESCAPE trims the kind's trailing spaces, NULL literal kind is 8116
+  state 1 at compile time, typed NULL 8116 state 8 at run time. STRING_SPLIT
+  arity 313/8144 state 3, Unicode separator makes the value nvarchar,
+  enable_ordinal is any constant (NULL = no ordinal), other values 4199,
+  non-integers 8116, a variable 8748 for the whole batch. QUOTENAME: empty
+  delimiter = '[', NUL first delimiter returns the input. HASHBYTES trims
+  trailing blanks of the algorithm. CHECKSUM of decimals is |value| as a
+  38-digit integer folded per 32-bit word (sign ignored); of Unicode text
+  under version-0 Windows collations the primary sort keys with rotl3.
+  DECLARE is compile-time (a variable declared in a skipped branch exists as
+  NULL; a loop re-runs only the initializer). CREATE FUNCTION compiles its
+  body (137), 102 state 31 for BEGIN in an inline / RETURN-first scalar
+  body, 2010 between kinds (CurCmd 222), 3729 states 1/3 for functions used
+  by computed columns/defaults/schema-bound modules, 4512 state 3, 4513
+  state 2. 8169 (GUID) and 289 (*FROMPARTS) end the batch. SOUNDEX reads
+  code page 1252 and skips upper-case H/W (compat >= 110). CONVERT of
+  date/time types to binary: storage bytes, 8152 state 17 when cut.
+
 # T-SQL Language Reference
 
 Complete reference for the Transact-SQL language used by Microsoft SQL Server.

@@ -49,11 +49,26 @@ left by 4 bits). Values:
 | smalldatetime | days << 16 | minutes |
 | uniqueidentifier | rotl4 fold of the 16 storage bytes |
 | binary/varbinary | fold of the bytes after dropping trailing 0x00 |
-| strings | trailing spaces dropped; BINARY_CHECKSUM folds varchar bytes as signed chars and nvarchar UTF-16 units; CHECKSUM does the same under BIN/BIN2 and folds per-byte sort weights under SQL_Latin1_General_CP1_CI_AS / CS_AS (`exec/checksum_data.mbt`, captured for every byte) |
+| strings | trailing spaces dropped; BINARY_CHECKSUM folds varchar bytes as signed chars and nvarchar UTF-16 units; CHECKSUM does the same under BIN/BIN2, folds per-byte sort weights for varchar under SQL_Latin1_General_CP1_CI_AS / CS_AS (`exec/checksum_data.mbt`, captured for every byte) and hashes Unicode sort keys otherwise (below) |
 
-Not modelled (Emulator error): decimal/numeric (depends only on the
-normalized significant digits: 1, 10, 0.1 and -1 hash alike), strings under
-Windows collations and nvarchar under SQL collations (sort-key based),
-other SQL collations, sql_variant. CHECKSUM(*) covers the FROM columns in
+decimal/numeric (2026-10-04, oracle probes, msduck hashbytes-checksum
+#040/#064, corpus tail/functions-checksum): |value| as a 38-digit integer
+(coefficient at scale 38, divided by 10 while it has more than 38 digits:
+1, 10 and 0.1 are 10^37, 0.01 is 10^36), rotl4-folded over its 32-bit words
+from the lowest to the highest nonzero one; the sign is ignored; CHECKSUM
+and BINARY_CHECKSUM agree.
+
+Unicode text under the version-0 Windows tables (nvarchar under
+SQL_Latin1_General_CP1_*, any type under Latin1_General_* without _100;
+2026-10-04, oracle dump of every UTF-16 unit, `harness/src/dump-checksum-keys.mjs`
+→ `exec/checksum_unicode_data.mbt`): CHECKSUM hashes the primary sort key
+bytes (case and accents do not count; ß = ss): 32-bit little-endian words
+folded with `h = rotl3(h) ^ word`, then the remaining bytes one at a time
+with rotl3; trailing U+0020 and U+3000 are dropped. Two ligature units
+(U+FB03, U+FB04) have 6-byte keys and are not modelled.
+
+Not modelled (Emulator error): _100/_140 tables, kana/width-sensitive
+collations, other SQL collations (SQL_Latin1_General_CP1_CI_AI varchar),
+sql_variant. CHECKSUM(*) covers the FROM columns in
 order; text/xml columns are 8116 state 4 per column for CHECKSUM and
 skipped by BINARY_CHECKSUM.

@@ -270,7 +270,19 @@ fn Session::exec_help_proc(
   return_var : String?,
 ) -> Bool raise {
   guard help_proc_spec(name) is Some((names, nocount)) else { return false }
-  let a = self.sp_args(name, names, args)
+  // sp_pkeys / sp_fkeys check their arguments like any procedure (201,
+  // 8145, 8144; captured: msduck gaps-catalog #032, #108, #109)
+  let a = if name is ("sp_pkeys" | "sp_fkeys") {
+    let params = sysproc_params(
+      names.map(n => (n, !(name == "sp_pkeys" && n == "@table_name"))),
+    )
+    if !self.check_proc_args(name, params, args) {
+      return true
+    }
+    self.sysproc_values(names, args)
+  } else {
+    self.sp_args(name, names, args)
+  }
   self.run_sysproc(return_var, nocount, () => self.help_proc_run(name, a))
   true
 }
@@ -1642,16 +1654,20 @@ fn Session::sp_pkeys(
   self : Session,
   a : Map[String, @types.Value],
 ) -> Int raise {
-  guard arg_text(a, "@table_name") is Some(name) else {
-    raise @types.not_supported("sp_pkeys without @table_name")
-  }
   let owner = arg_text(a, "@table_owner")
-  let objs = self.odbc_objects(
-    name,
-    owner,
-    arg_text(a, "@table_qualifier"),
-    false,
-  )
+  // names are compared, not matched as patterns (captured: 'v2_%' and
+  // 'r_' find nothing); a NULL name finds nothing
+  let objs = match arg_text(a, "@table_name") {
+    Some(name) => self.odbc_exact(name, owner)
+    None => []
+  }
+  match arg_text(a, "@table_qualifier") {
+    Some(q) if q.to_lower() != self.rt.database.to_lower() => {
+      self.sp_dones([-1, -1])
+      return self.qualifier_error("sp_pkeys", 17, after=Some(219))
+    }
+    _ => ()
+  }
   let rows : Array[Array[@types.Value]] = []
   for o in objs {
     guard o.3 is Some(t) else { continue }
@@ -1691,6 +1707,87 @@ fn Session::sp_pkeys(
 }
 
 ///|
+/// Tables named exactly `name` (and `owner`), compared case-insensitively:
+/// sp_pkeys and sp_fkeys take no patterns.
+fn Session::odbc_exact(
+  self : Session,
+  name : String,
+  owner : String?,
+) -> Array[(String, String, Bool, @store.Table?, @store.Module?)] {
+  let out = []
+  for t in self.db_of(0).tables() {
+    if t.name.to_lower() == name.to_lower() &&
+      owner.map(o => o.to_lower() == t.schema.to_lower()).unwrap_or(true) {
+      out.push((t.schema, t.name, false, Some(t), None))
+    }
+  }
+  out
+}
+
+///|
+/// An error raised by a T-SQL system procedure body (RAISERROR + RETURN):
+/// ERROR + DONEINPROC 246 with the error bit, return status -6. Under TRY
+/// the CATCH runs and the procedure ends with a plain DONEPROC (captured:
+/// gaps-catalog #117, tail/catalog-sp-keys).
+fn Session::sysproc_fail(
+  self : Session,
+  proc : String,
+  line : Int,
+  e : @types.SqlError,
+  after? : Int? = None,
+  try_246? : Bool = false,
+) -> Int raise {
+  self.rt.error = e.number()
+  if self.try_depth > 0 {
+    if try_246 {
+      self.out.push(InProcDone(cmd=246, count=None, error=false))
+    }
+    // run_sysproc's errdefer leaves the procedure's nesting level
+    self.rt.nest_level -= 1
+    self.module_done(error=false)
+    self.rt.nest_level += 1
+    raise Caught(e, line, Some(proc), max_nest_level + 1)
+  }
+  self.out.push(
+    Message({
+      number: e.number(),
+      state: e.state(),
+      class: e.severity(),
+      message: e.message(),
+      procedure: proc,
+      line,
+    }),
+  )
+  self.out.push(InProcDone(cmd=246, count=None, error=true))
+  match after {
+    Some(cmd) => self.done(cmd)
+    None => ()
+  }
+  // @@ERROR keeps the error after the EXEC (captured: tail/catalog-sp-keys)
+  self.stmt_error = e.number()
+  -6
+}
+
+///|
+/// 15250: a qualifier naming another database.
+fn Session::qualifier_error(
+  self : Session,
+  proc : String,
+  line : Int,
+  after? : Int? = None,
+) -> Int raise {
+  self.sysproc_fail(
+    proc,
+    line,
+    @types.sql_error(
+      15250, "The database name component of the object qualifier must be the name of the current database.",
+    ),
+    after~,
+    try_246=after is Some(_),
+  )
+}
+
+///|
 /// ODBC update/delete rule codes of sp_fkeys (1 = NO ACTION, captured).
 fn odbc_rule(a : @store.RefAction) -> Int {
   match a {
@@ -1710,18 +1807,33 @@ fn Session::sp_fkeys(
   let pk_name = arg_text(a, "@pktable_name")
   let fk_name = arg_text(a, "@fktable_name")
   if pk_name is None && fk_name is None {
-    raise @types.not_supported("sp_fkeys without a table name")
+    return self.sysproc_fail(
+      "sp_fkeys",
+      20,
+      @types.sql_error(
+        15252, "The primary or foreign key table name must be given.",
+      ),
+    )
+  }
+  // the foreign key qualifier is checked first (line 28), then the
+  // primary key one (line 37; captured: corpus tail/catalog-sp-keys)
+  let other_db = (k : String) => {
+    match arg_text(a, k) {
+      Some(q) => q.to_lower() != self.rt.database.to_lower()
+      None => false
+    }
+  }
+  if fk_name is Some(_) && other_db("@fktable_qualifier") {
+    return self.qualifier_error("sp_fkeys", 28)
+  }
+  if pk_name is Some(_) && other_db("@pktable_qualifier") {
+    return self.qualifier_error("sp_fkeys", 37)
   }
   let pk_tables = match pk_name {
     Some(n) =>
       Some(
         self
-        .odbc_objects(
-          n,
-          arg_text(a, "@pktable_owner"),
-          arg_text(a, "@pktable_qualifier"),
-          false,
-        )
+        .odbc_exact(n, arg_text(a, "@pktable_owner"))
         .map(o => o.1.to_lower() + "." + o.0.to_lower()),
       )
     None => None
@@ -1730,15 +1842,20 @@ fn Session::sp_fkeys(
     Some(n) =>
       Some(
         self
-        .odbc_objects(
-          n,
-          arg_text(a, "@fktable_owner"),
-          arg_text(a, "@fktable_qualifier"),
-          false,
-        )
+        .odbc_exact(n, arg_text(a, "@fktable_owner"))
         .map(o => o.1.to_lower() + "." + o.0.to_lower()),
       )
     None => None
+  }
+  // without @pktable_name SQL Server reports only CASCADE (0) and NO
+  // ACTION (1): SET NULL / SET DEFAULT show as 1 (captured: msduck
+  // gaps-catalog #111, corpus tail/catalog-sp-keys)
+  let rule = (r : @store.RefAction) => {
+    if pk_name is None && r != Cascade {
+      1
+    } else {
+      odbc_rule(r)
+    }
   }
   let db = self.db_of(0)
   let rows : Array[Array[@types.Value]] = []
@@ -1778,8 +1895,8 @@ fn Session::sp_fkeys(
           String(t.name),
           String(t.columns[c].name),
           SmallInt(k + 1),
-          SmallInt(odbc_rule(fk.on_update)),
-          SmallInt(odbc_rule(fk.on_delete)),
+          SmallInt(rule(fk.on_update)),
+          SmallInt(rule(fk.on_delete)),
           String(fk.name),
           key,
           SmallInt(7),

@@ -1,0 +1,397 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "745738f00e62fef7",
+  "steps": [
+    null,
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":2727,"state":1,"class":11,"lineNumber":1,"message":"Cannot find index 'nope'."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":2727},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 1088,
+          "state": 9,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot find the object \"dbo.nope\" because it does not exist or you do not have permissions."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":1088},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"w","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[1,1,1],[2,2,2],[3,1,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [{"columns":[{"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}],"rows":[[1],[3]]}],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ORDER","columns":[1]},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 1505,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The CREATE UNIQUE INDEX statement terminated because a duplicate key was found for the object name 'dbo.t' and the index name 'UX_t_v'. The duplicate key value is (1)."
+        }
+      ],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":1505},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_disabled","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_unique","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["PK_t",false,true],["UX_t_v",true,true],["IX_t_w",false,false]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[0]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 1973,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot perform the specified operation on disabled index 'UX_t_v' on table 'dbo.t'."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":196},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+      ],
+      "stream": [{"name":"DONE","status":17,"curCmd":196},{"name":"ERROR","number":1973},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_disabled","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["PK_t",false],["UX_t_v",false],["IX_t_w",false]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 2601,
+          "state": 1,
+          "class": 14,
+          "lineNumber": 1,
+          "message": "Cannot insert duplicate key row in object 'dbo.t' with unique index 'UX_t_v'. The duplicate key value is (1)."
+        }
+      ],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":195}],
+      "stream": [{"name":"ERROR","number":2601},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":195}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"fill_factor","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": [["PK_t",0],["UX_t_v",0],["IX_t_w",80]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [{"columns":[{"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_disabled","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [["PK_t",false],["UX_t_v",false],["IX_t_w",false]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":3,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":212},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":210},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+        {"name":"DONE","status":1,"curCmd":212},
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+        {"name":"DONE","status":1,"curCmd":210},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[0]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"index_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": [["PK_t",1],["IX_t_new",2],["IX_t_w",3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":201},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":200},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":201},
+        {"name":"DONE","status":1,"curCmd":200},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[2]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [{"columns":[{"name":"r","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[0]]}],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":337},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":201},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":337},
+        {"name":"DONE","status":1,"curCmd":201},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

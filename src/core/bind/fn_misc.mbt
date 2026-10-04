@@ -121,6 +121,10 @@ fn bind_misc_fn(
           raise null_arg(i + 1, "hashbytes")
         }
       }
+      // captured: HASHBYTES(5, 'abc') is 8116 for argument 1
+      if x[0].ty.family() != FString {
+        raise bad_arg_type(x[0].ty, 1, "hashbytes")
+      }
       if !(x[1].ty.family() is (FString | FBinary)) {
         raise bad_arg_type(x[1].ty, 2, "hashbytes")
       }
@@ -142,7 +146,7 @@ fn bind_misc_fn(
         let cols = []
         for i, c in env.columns {
           let e = mk(Col(i), c.ty, c.nullable)
-          if c.ty.is_lob() {
+          if c.ty.is_lob() || c.ty is Xml {
             if name == "CHECKSUM" {
               env.deferred.push(bad_arg_type(c.ty, i + 1, "checksum", state=4))
             }

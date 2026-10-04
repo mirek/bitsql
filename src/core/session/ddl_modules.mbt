@@ -65,6 +65,9 @@ fn Session::define_module(
   let (schema, base) = split_name(name)
   let db = self.db_of(0)
   if db.schema_id(schema) is None {
+    // captured: the statement completes with its CurCmd (gaps-functions
+    // #100)
+    self.cur_cmd = cmd
     raise @types.sql_error(
       2760,
       "The specified schema name \"\{schema}\" either does not exist or you do not have permission to use it.",
@@ -75,11 +78,9 @@ fn Session::define_module(
     None => None
   }
   let existing = match existing {
-    Some(m) if m.kind == kind ||
-      (
-        kind is (ScalarFunction | InlineFunction | TableFunction) &&
-        m.kind is (ScalarFunction | InlineFunction | TableFunction)
-      ) => Some(m)
+    // ALTER between scalar, inline and multi-statement functions is 2010
+    // (captured: gaps-functions #087, #089)
+    Some(m) if m.kind == kind => Some(m)
     _ => None
   }
   match mode {
@@ -92,14 +93,16 @@ fn Session::define_module(
           state=3,
         )
       }
-    Alter | CreateOrAlter if kind is Procedure &&
+    Alter | CreateOrAlter if kind
+      is (Procedure | ScalarFunction | InlineFunction | TableFunction) &&
       existing is None &&
       self.object_name_taken(db, schema, base) => {
-      // captured: gaps-procedures #129, #130 (DONE with CurCmd 222)
+      // captured: gaps-procedures #129, #130, gaps-functions #087-#092
+      // (DONE with CurCmd 222; the name as written)
       self.cur_cmd = cmd
       raise @types.sql_error(
         2010,
-        "Cannot perform alter on '\{base}' because it is an incompatible object type.",
+        "Cannot perform alter on '\{object_text(name)}' because it is an incompatible object type.",
       )
     }
     Alter =>
@@ -133,6 +136,10 @@ fn Session::define_module(
         schema_bound,
         check_option,
         returns,
+        ansi_nulls: self.ansi_nulls(),
+        quoted_identifier: self.session_flags
+        .get("QUOTED_IDENTIFIER")
+        .unwrap_or(true),
       }
     None =>
       {
@@ -150,6 +157,10 @@ fn Session::define_module(
         schema_bound,
         check_option,
         returns,
+        ansi_nulls: self.ansi_nulls(),
+        quoted_identifier: self.session_flags
+        .get("QUOTED_IDENTIFIER")
+        .unwrap_or(true),
       }
   }
   self.write(0, db.add_module(m))
@@ -201,6 +212,7 @@ fn Session::view_columns(
       default_id: 0,
       default_auto: false,
       computed: None,
+      result_nullable: c.nullable,
       persisted: false,
       rowguidcol: false,
       user_type: None,
@@ -257,7 +269,11 @@ fn Session::exec_create_procedure(
     None => ()
   }
   let m = self.define_module(p.mode, p.name, Procedure, 222, start)
-  self.server.procs[m.name.to_lower()] = { name: m.name, def: p, }
+  self.server.procs[m.name.to_lower()] = {
+    name: m.name,
+    def: p,
+    ansi_nulls: m.ansi_nulls,
+  }
 }
 
 ///|
@@ -280,6 +296,32 @@ fn Session::exec_create_function(
     TableVariable(_, _, _) => (TableFunction, None)
   }
   self.validate_function(f)
+  // compiled at CREATE: undeclared variables are 137 (captured:
+  // gaps-functions #101)
+  let vars : Map[String, @bind.VarInfo] = Map([])
+  for i, prm in f.params {
+    let ty = @bind.resolve_type(
+      prm.type_,
+      Declaration,
+      @types.default_collation,
+    ) catch {
+      _ => Int
+    }
+    vars[prm.name.to_lower()] = { slot: i, ty, }
+  }
+  let body = match f.returns {
+    Scalar(_, body) => body
+    TableVariable(tv, _, body) => {
+      vars[tv.to_lower()] = { slot: vars.length(), ty: Int, }
+      body
+    }
+    InlineTable(_) => []
+  }
+  match precheck_batch(body, vars, in_proc=true) {
+    Some((e, _)) => raise e
+    None => ()
+  }
+  self.check_function_binding(f)
   ignore(
     self.define_module(
       f.mode,
@@ -439,232 +481,18 @@ fn Session::exec_system_proc(
       self.exec_sp_helpindex(args, return_var)
       true
     }
+    "sp_refreshview" => {
+      self.exec_sp_refreshview(args, return_var)
+      true
+    }
     "sp_getapplock" | "sp_releaseapplock" as p => {
       self.exec_applock_proc(p, args, return_var)
       true
     }
     "sp_rename" => {
-      let vals = args.map(a => self.eval(a.value).0)
-      let text = (k : Int) => {
-        match vals.get(k) {
-          Some(String(s)) => Some(s)
-          _ => None
-        }
-      }
-      // sp_rename runs its own transaction: BEGIN/COMMIT ENVCHANGEs come
-      // first (captured, also when it fails)
-      let implicit = self.rt.trancount == 0
-      let d = self.tx_descriptor()
-      if implicit {
-        self.out.push(EnvChange(BeginTransaction(d)))
-      }
-      let mark = self.out.length()
-      let status = self.sp_rename(text(0), text(1), text(2))
-      if implicit {
-        // the commit precedes the messages of the procedure body
-        let tail = self.out[mark:].to_owned()
-        self.out.truncate(mark)
-        if status != 0 {
-          self.out.push(EnvChange(CommitTransaction(d)))
-          for x in tail {
-            self.out.push(x)
-          }
-        } else {
-          for x in tail {
-            self.out.push(x)
-          }
-          self.out.push(EnvChange(CommitTransaction(d)))
-        }
-      }
-      match return_var {
-        Some(rv) =>
-          match self.frame().vars.get(rv.to_lower()) {
-            Some(info) =>
-              self.frame().values[info.slot] = @types.cast(
-                Int(status),
-                Int,
-                info.ty,
-              )
-            None => ()
-          }
-        None => ()
-      }
-      self.proc_done(status)
+      self.exec_sp_rename(args, return_var)
       true
     }
     other => self.exec_help_proc(other, args, return_var)
   }
-}
-
-///|
-/// Error raised inside a system procedure (class 11/16, procedure name and
-/// line inside the procedure as captured).
-fn Session::proc_error(
-  self : Session,
-  proc : String,
-  number : Int,
-  severity : Int,
-  line : Int,
-  text : String,
-) -> Unit {
-  self.out.push(
-    Message({
-      number,
-      state: 1,
-      class: severity,
-      message: text,
-      procedure: proc,
-      line,
-    }),
-  )
-  self.rt.error = number
-  self.out.push(InProcDone(cmd=246, count=None, error=true))
-}
-
-///|
-/// sp_rename for tables (and other objects) and columns. Returns the
-/// procedure's return status.
-fn Session::sp_rename(
-  self : Session,
-  objname : String?,
-  newname : String?,
-  objtype : String?,
-) -> Int {
-  let objname = objname.unwrap_or("")
-  let newname = newname.unwrap_or("")
-  let kind = objtype.map(x => x.to_upper())
-  let db = self.db_of(0)
-  if kind == Some("COLUMN") {
-    let parts = split_name_text(objname)
-    let col = parts[parts.length() - 1]
-    let tname = parts[:parts.length() - 1].to_owned().join(".")
-    let table = if parts.length() >= 2 {
-      self.resolve_table_text(tname)
-    } else {
-      None
-    }
-    match table {
-      Some((scope, t)) =>
-        match t.column_index(col) {
-          Some(ord) => {
-            if t.column_index(newname) is Some(_) {
-              self.proc_error(
-                "sp_rename",
-                15335,
-                11,
-                738,
-                "Error: The new name '\{newname}' is already in use as a COLUMN name and would cause a duplicate that is not permitted.",
-              )
-              return 1
-            }
-            let cols = t.columns.copy()
-            cols[ord] = { ..cols[ord], name: newname, }
-            self.write(
-              scope,
-              self
-              .db_of(scope)
-              .alter_table({ ..t, columns: cols, modified: self.rt.now, }),
-            )
-          }
-          None => {
-            self.proc_error(
-              "sp_rename", 15248, 11, 269, "Either the parameter @objname is ambiguous or the claimed @objtype (COLUMN) is wrong.",
-            )
-            return 1
-          }
-        }
-      None => {
-        self.proc_error(
-          "sp_rename", 15248, 11, 269, "Either the parameter @objname is ambiguous or the claimed @objtype (COLUMN) is wrong.",
-        )
-        return 1
-      }
-    }
-  } else if kind is (None | Some("OBJECT")) {
-    match self.name_target(objname) {
-      Some((0, schema, base)) =>
-        match db.lookup(schema, base) {
-          Some(id) => {
-            if self.object_name_taken(db, schema, newname) {
-              self.proc_error(
-                "sp_rename",
-                15335,
-                11,
-                738,
-                "Error: The new name '\{newname}' is already in use as a object name and would cause a duplicate that is not permitted.",
-              )
-              return 1
-            }
-            match db.table(id) {
-              Some(t) =>
-                self.write(
-                  0,
-                  db.alter_table({ ..t, name: newname, modified: self.rt.now, }),
-                )
-              None =>
-                match db.get_module(id) {
-                  Some(m) =>
-                    self.write(
-                      0,
-                      db.rename_module({
-                        ..m,
-                        name: newname,
-                        modified: self.rt.now,
-                      }),
-                    )
-                  None => ()
-                }
-            }
-          }
-          None => {
-            self.rename_missing(objname, objtype)
-            return 1
-          }
-        }
-      _ => {
-        self.rename_missing(objname, objtype)
-        return 1
-      }
-    }
-  } else {
-    self.out.push(
-      Message({
-        number: 50100,
-        state: 1,
-        class: 16,
-        message: "Emulator: sp_rename @objtype '\{objtype.unwrap_or("")}' is not supported",
-        procedure: "",
-        line: 1,
-      }),
-    )
-    self.rt.error = 50100
-    self.out.push(InProcDone(cmd=246, count=None, error=true))
-    return 1
-  }
-  self.out.push(
-    Message({
-      number: 15477,
-      state: 1,
-      class: 0,
-      message: "Caution: Changing any part of an object name could break scripts and stored procedures.",
-      procedure: "sp_rename",
-      line: 801,
-    }),
-  )
-  0
-}
-
-///|
-fn Session::rename_missing(
-  self : Session,
-  objname : String,
-  objtype : String?,
-) -> Unit {
-  self.proc_error(
-    "sp_rename",
-    15225,
-    11,
-    637,
-    "No item by the name of '\{objname}' could be found in the current database '\{self.rt.database}', given that @itemtype was input as '\{objtype.unwrap_or("(null)")}'.",
-  )
 }

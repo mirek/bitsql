@@ -3,6 +3,8 @@
 pub(all) struct Proc {
   name : String
   def : @ast.CreateProcedure
+  /// SET ANSI_NULLS at CREATE / ALTER PROCEDURE: the body runs with it.
+  ansi_nulls : Bool
 }
 
 ///|
@@ -70,7 +72,10 @@ pub fn Server::new() -> Server {
     dbs,
     db_names: names,
     next_rowid: 1L,
-    next_object_id: 245575913,
+    // the first user object id of a fresh SQL Server 2025 database (every
+    // capture printing object ids agrees: msduck-runs alter-named-default,
+    // table-type-catalog, system-all-columns)
+    next_object_id: 1221579390,
     idents: Map([]),
     dbts: 2000L,
     snapshots: Map([]),
@@ -187,10 +192,19 @@ priv struct Frame {
   /// (ERROR_PROCEDURE(), message procedure names); None for batches and
   /// dynamic SQL.
   proc_name : String?
+  /// A procedure, function or trigger body: SET ANSI_NULLS inside it has
+  /// no effect (the module's CREATE-time setting holds; probed:
+  /// tail/settings-ansi-nulls).
+  mut module_settings : Bool
   /// Highest severity (> 10) of the errors raised by this scope's own
   /// statements, caught or not: a procedure that ends without RETURN
   /// returns 10 - severity (captured: proc/return-status).
   mut worst : Int
+  /// Declared variables (lowercased) → the offset of their DECLARE: SQL
+  /// Server declares at compile time, so a DECLARE runs again in a loop
+  /// without 134 and a variable declared in a branch not taken exists
+  /// (declare_hoist.mbt).
+  decl_sites : Map[String, Int]
 }
 
 ///|
@@ -206,7 +220,9 @@ fn Frame::new(proc_name? : String? = None) -> Frame {
     read_only_tvps: Set([]),
     owned: Set([]),
     proc_name,
+    module_settings: false,
     worst: 0,
+    decl_sites: Map([]),
   }
 }
 
@@ -492,6 +508,8 @@ fn Session::env(self : Session) -> @bind.Env {
     collation=self.db_collation(),
     catalog=self.catalog(),
     deferred=self.deferred,
+    ansi_nulls=self.ansi_nulls(),
+    options=self.bind_options(),
   )
 }
 
@@ -694,6 +712,18 @@ pub fn Session::run_batch(
 /// sp_executesql) it ends the module, or an enclosing TRY catches it
 /// (captured: proc/dynamic-errors).
 fn Session::run_text(self : Session, text : String) -> Unit raise {
+  match self.quoted_identifier_scan(text) {
+    Some(line) => {
+      self.text_error(
+        @types.not_supported(
+          "double-quoted strings under SET QUOTED_IDENTIFIER OFF",
+        ),
+        line,
+      )
+      return
+    }
+    None => ()
+  }
   let stmts = @parse.parse_batch(text) catch {
     e => {
       let err = @types.sql_error(
@@ -708,7 +738,19 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
   }
   self.float_literal_messages(text)
   // Compile-time checks that SQL Server performs for the whole batch.
-  match precheck_batch(stmts, self.frame().vars) {
+  // Table-valued parameters of the frame count as declared.
+  let known = if self.frame().tables.is_empty() {
+    self.frame().vars
+  } else {
+    let m = Map::from_array(self.frame().vars.iter().to_array())
+    for k, _ in self.frame().tables {
+      if !m.contains(k) {
+        m[k] = { slot: -1, ty: Int, }
+      }
+    }
+    m
+  }
+  match precheck_batch(stmts, known) {
     Some((e0, line)) => {
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
@@ -719,8 +761,20 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       } else {
         e0
       }
+      // 8748 inside sp_executesql ends the request without a return
+      // status, like a batch-aborting error (captured: msduck string-split
+      // #048)
+      if e.number() == 8748 && self.rt.nest_level > 0 && self.try_depth == 0 {
+        self.rt.error = e.number()
+        self.message(e, line)
+        raise AbortBatch
+      }
       self.text_error(e, line)
     }
+    None => ()
+  }
+  match self.precheck_hints(stmts) {
+    Some((e, line)) => self.text_error(e, line)
     None => ()
   }
   // dynamic SQL modifying a READONLY table-valued parameter: 10700 ends
@@ -735,6 +789,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
   errdefer {
     self.temp_db_refs = saved_refs
   }
+  self.hoist_declares(stmts)
   self.exec_list(stmts) catch {
     Return(_) if self.rt.nest_level == 0 => ()
     Break | Continue => ()
@@ -927,4 +982,23 @@ fn Session::count_null_error(
 /// SET ANSI_WARNINGS (default ON).
 fn Session::ansi_warnings(self : Session) -> Bool {
   self.session_flags.get("ANSI_WARNINGS").unwrap_or(true)
+}
+
+///|
+/// SET ANSI_NULLS (default ON). Inside a procedure, function, trigger or
+/// view it is the module's setting from CREATE time (probed:
+/// tail/settings-ansi-nulls).
+fn Session::ansi_nulls(self : Session) -> Bool {
+  self.session_flags.get("ANSI_NULLS").unwrap_or(true)
+}
+
+///|
+/// Sets ANSI_NULLS for SESSIONPROPERTY, the binder and @@OPTIONS (bit 32).
+fn Session::set_ansi_nulls(self : Session, on : Bool) -> Unit {
+  self.session_flags["ANSI_NULLS"] = on
+  self.rt.option_bits = if on {
+    self.rt.option_bits & (32 ^ -1)
+  } else {
+    self.rt.option_bits | 32
+  }
 }

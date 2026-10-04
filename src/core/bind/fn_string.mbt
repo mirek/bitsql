@@ -412,7 +412,13 @@ fn bind_string_fn(
       if !is_null_lit(s) && s.ty.family() != FString {
         raise bad_arg_type(s.ty, 1, "string_escape")
       }
-      named("STRING_ESCAPE", [s, b(1)], NVarChar(None, env.collation))
+      // a NULL literal kind is a compile error (lower-case name, state 1);
+      // a typed NULL fails at run time (msduck string-escape-format)
+      let k = b(1)
+      if is_null_lit(k) {
+        raise null_arg(2, "string_escape")
+      }
+      named("STRING_ESCAPE", [s, k], NVarChar(None, env.collation))
     }
     "TRANSLATE" => {
       arity_n(name, args, 3)
@@ -480,16 +486,30 @@ fn bind_string_fn(
     }
     "SOUNDEX" => {
       arity_n(name, args, 1)
-      named(
-        "SOUNDEX",
-        [as_string_arg(b(0), env)],
-        VarChar(Some(5), env.collation),
-      )
+      // the result takes a varchar argument's collation (captured: 'x'
+      // COLLATE Latin1_General_BIN2 gives a BIN2 result)
+      let x = b(0)
+      let coll = match x.ty {
+        VarChar(_, c) | Char(_, c) => c
+        _ => env.collation
+      }
+      // compatibility level 100 and below: H and W always separate
+      // (captured: msduck soundex-difference #015)
+      let fname = if (env.catalog.compat_level)() < 110 {
+        "SOUNDEX_100"
+      } else {
+        "SOUNDEX"
+      }
+      named(fname, [as_string_arg(x, env)], VarChar(Some(5), coll))
     }
     "DIFFERENCE" => {
       arity_n(name, args, 2)
       named(
-        "DIFFERENCE",
+        if (env.catalog.compat_level)() < 110 {
+          "DIFFERENCE_100"
+        } else {
+          "DIFFERENCE"
+        },
         [as_string_arg(b(0), env), as_string_arg(b(1), env)],
         Int,
       )
