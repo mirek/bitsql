@@ -991,6 +991,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     "sys.dm_exec_sessions"
     | "sys.dm_exec_requests"
     | "sys.dm_exec_connections" => out.append(self.dmv_rows(key))
+    "sys.dm_exec_cursors" => out.append(self.cursor_view_rows())
     _ => {
       out.append(self.variant_view_rows(key))
       out.append(self.param_view_rows(key))

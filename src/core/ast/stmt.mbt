@@ -46,6 +46,8 @@ pub(all) enum StmtKind {
   Declare(Array[DeclareVar])
   DeclareTable(String, TableBody)
   DeclareCursor(Cursor)
+  /// `SET @v = CURSOR ... FOR query` (the cursor's name is the variable's).
+  SetCursor(Cursor)
   SetVar(String, AssignOp, Expr)
   /// `SET @x.modify('xml dml')`: an xml mutator method on a variable.
   SetVarMethod(String, Ident, Array[Expr])
@@ -153,8 +155,9 @@ pub(all) struct Update {
   output : Array[OutputClause]
   from : Array[TableRef]
   where_ : Expr?
-  /// `WHERE CURRENT OF cursor`
+  /// `WHERE CURRENT OF [GLOBAL] cursor`
   current_of : Ident?
+  current_of_global : Bool
   options : Array[QueryHint]
 } derive(Eq, Debug)
 
@@ -167,6 +170,7 @@ pub(all) struct Delete {
   from : Array[TableRef]
   where_ : Expr?
   current_of : Ident?
+  current_of_global : Bool
   options : Array[QueryHint]
 } derive(Eq, Debug)
 
@@ -478,6 +482,9 @@ pub(all) struct Cursor {
   query : Query
   for_update : Bool
   update_columns : Array[Ident]
+  /// ISO syntax (`[INSENSITIVE] [SCROLL] CURSOR FOR`): its options come
+  /// first in `options`, followed by any (invalid, 1049) T-SQL ones.
+  iso : Bool
 } derive(Eq, Debug)
 
 ///|

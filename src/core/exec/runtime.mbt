@@ -80,7 +80,7 @@ pub fn Runtime::new(
     stmt_reads: false,
     identity: Null,
     scope_identity: Null,
-    fetch_status: -1,
+    fetch_status: 0,
     cursor_rows: 0,
     nest_level: 0,
     catch_error: None,

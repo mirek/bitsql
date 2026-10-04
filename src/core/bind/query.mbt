@@ -507,6 +507,32 @@ fn bind_table_function(
   if fname == "GENERATE_SERIES" {
     return bind_generate_series(env, name, args, columns, q)
   }
+  // sys.dm_exec_cursors(session_id): the session's cursors (0: all)
+  if fname == "DM_EXEC_CURSORS" &&
+    name.parts.length() == 2 &&
+    name.parts[0].name.to_lower() == "sys" {
+    arity_range(fname, args, 1, 1)
+    match (env.catalog.table)(name) {
+      Some(t) => {
+        let arg = coerce(bind_expr(penv, args[0]), Int)
+        let sid = mk(Col(0), Int, false)
+        let zero = mk(Lit(Int(0)), Int, false)
+        let pred = mk(
+          Or(
+            mk(Cmp(Eq, sid, arg, None), Bit, true),
+            mk(Cmp(Eq, arg, zero, None), Bit, true),
+          ),
+          Bit,
+          true,
+        )
+        return (
+          Filter(Scan(scope=t.scope, id=t.id, rowid=false), pred),
+          requalify(t.columns, q),
+        )
+      }
+      None => ()
+    }
+  }
   if fname != "OPENJSON" && fname != "STRING_SPLIT" {
     match bind_user_tvf(env, name, args, alias_, columns) {
       Some(r) => return r

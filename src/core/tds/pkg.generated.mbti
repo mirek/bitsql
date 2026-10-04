@@ -107,6 +107,8 @@ pub fn read_value(Reader, TypeInfo) -> WireValue raise TdsError
 
 pub fn scramble_password(String) -> Bytes
 
+pub fn write_colinfo(Writer, ArrayView[ColInfo]) -> Unit
+
 pub fn write_colmetadata(Writer, ArrayView[Column]) -> Unit
 
 pub fn write_done(Writer, DoneKind, Int, Int, Int64) -> Unit
@@ -127,6 +129,8 @@ pub fn write_return_value(Writer, ordinal~ : Int, name~ : String, udf~ : Bool, t
 
 pub fn write_row(Writer, ArrayView[Column], ArrayView[WireValue]) -> Unit raise TdsError
 
+pub fn write_tabname(Writer, ArrayView[Array[String]]) -> Unit
+
 pub fn write_type_info(Writer, TypeInfo) -> Unit
 
 pub fn write_value(Writer, TypeInfo, WireValue) -> Unit raise TdsError
@@ -143,6 +147,13 @@ pub(all) struct BulkColumn {
   type_info : TypeInfo
   nullable : Bool
 } derive(@debug.Debug)
+
+pub(all) struct ColInfo {
+  column : Int
+  table : Int
+  status : Int
+  base_name : String?
+} derive(Eq, @debug.Debug)
 
 pub(all) struct Column {
   name : String

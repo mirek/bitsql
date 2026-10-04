@@ -177,6 +177,7 @@ pub(all) struct Cursor {
   query : Query
   for_update : Bool
   update_columns : Array[Ident]
+  iso : Bool
 } derive(Eq, @debug.Debug)
 
 pub(all) struct DeclareVar {
@@ -194,6 +195,7 @@ pub(all) struct Delete {
   from : Array[TableRef]
   where_ : Expr?
   current_of : Ident?
+  current_of_global : Bool
   options : Array[QueryHint]
 } derive(Eq, @debug.Debug)
 
@@ -628,6 +630,7 @@ pub(all) enum StmtKind {
   Declare(Array[DeclareVar])
   DeclareTable(String, TableBody)
   DeclareCursor(Cursor)
+  SetCursor(Cursor)
   SetVar(String, AssignOp, Expr)
   SetVarMethod(String, Ident, Array[Expr])
   SetOption(Array[String], SetValue)
@@ -745,6 +748,7 @@ pub(all) struct Update {
   from : Array[TableRef]
   where_ : Expr?
   current_of : Ident?
+  current_of_global : Bool
   options : Array[QueryHint]
 } derive(Eq, @debug.Debug)
 

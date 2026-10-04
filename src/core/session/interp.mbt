@@ -20,6 +20,18 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
 fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let line = s.span.line
   self.stmt_line = line
+  // the current line as SQL Server reports it for errors raised before a
+  // statement sets its own (OPEN/FETCH of a missing cursor): DECLARE
+  // without initializers and blocks do not set it
+  let f = self.frame()
+  // after a failed statement the next one reports its own line (captured:
+  // stmts/cursor-lines, FETCH after a failed OPEN)
+  self.prev_line = if f.line_mark < 0 { line } else { f.line_mark }
+  match s.kind {
+    Declare(vars) if vars.iter().all(v => v.init is None) => ()
+    Block(_) => ()
+    _ => f.line_mark = line
+  }
   self.rt.stmt_reads = statement_reads(self.slice(s.span))
   self.rt.null_eliminated = false
   self.cur_cmd = 253
@@ -67,7 +79,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     AbortBatch if self.trigger_unwind => {
       self.trigger_unwind = false
       let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
-        self.cur_cmd == 279
+        self.cur_cmd == 279 ||
+        self.cur_cmd == 125 ||
+        self.cur_cmd == 126
       if dml && !self.throwing {
         self.out.push(
           Message({
@@ -100,6 +114,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     Some(l) => l
     None => udf_error_line(e, line)
   }
+  self.frame().line_mark = -1
   // under SET ANSI_WARNINGS OFF SQL Server truncates strings silently and,
   // with ARITHABORT OFF, makes overflow and division by zero NULL: not
   // modelled; with ARITHABORT ON those errors stay (captured: 8115 and 8134
@@ -201,7 +216,12 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // been terminated." unless the error ends the batch (captured:
   // catalog/filtered-unique, output/dml-error-completion). A batch-ending
   // error completes with 253 unless an OUTPUT result set had started.
-  let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) || self.cur_cmd == 279
+  // positioned UPDATE/DELETE (WHERE CURRENT OF) complete with 125/126
+  // (captured: msduck-runs/cursor #037-#048)
+  let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
+    self.cur_cmd == 279 ||
+    self.cur_cmd == 125 ||
+    self.cur_cmd == 126
   let ends_batch = aborts_batch(
     e,
     self.cur_cmd,
@@ -389,6 +409,11 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       // DECLARE, however many variables are initialized
       let mut initialized = false
       for v in vars {
+        if is_cursor_type(v.type_) {
+          // a cursor variable: no cursor until SET assigns one
+          self.frame().cursor_vars[v.name.to_lower()] = None
+          continue
+        }
         let ty = match self.declared_var_type(v.name, v.type_) {
           ScalarDecl(ty, _, _) => ty
           TableDecl(ut) => {
@@ -427,6 +452,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         number=@types.EMU_XML_NOT_SUPPORTED,
       )
     }
+    SetVar(name, _, e) if self.frame().cursor_vars.contains(name.to_lower()) =>
+      self.assign_cursor_var(name, e)
     SetVar(name, op, e) => {
       self.cur_cmd = 193
       self.assign(name, op, e)
@@ -719,6 +746,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     Exec(e) => self.exec_proc_stmt(e, s.span.line)
     ExecString(parts) => self.exec_string(parts)
     DeclareCursor(c) => self.exec_declare_cursor(c)
+    SetCursor(c) => self.exec_set_cursor(c)
     OpenCursor(name, global~) => self.exec_open_cursor(name, global)
     Fetch(f) => self.exec_fetch(f)
     CloseCursor(name, global~) => self.exec_close_cursor(name, global)

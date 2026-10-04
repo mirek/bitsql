@@ -816,8 +816,15 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.table_body(body)
       self.close()
     }
-    DeclareCursor(c) => {
-      self.s("(declare-cursor " + ident_text(c.name))
+    DeclareCursor(c) | SetCursor(c) => {
+      self.s(
+        (if s.kind is SetCursor(_) {
+          "(set-cursor "
+        } else {
+          "(declare-cursor "
+        }) +
+        ident_text(c.name),
+      )
       for o in c.options {
         self.atom(quote(o))
       }

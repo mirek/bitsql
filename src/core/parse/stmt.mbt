@@ -641,11 +641,22 @@ fn Parser::declare_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
 ///|
 fn Parser::cursor_decl(self : Parser) -> @ast.Cursor raise @ast.SyntaxError {
   let name = self.ident()
+  self.cursor_body(name)
+}
+
+///|
+/// `[INSENSITIVE] [SCROLL] CURSOR [options] FOR query [FOR UPDATE [OF
+/// cols] | FOR READ ONLY]` after the cursor's name (also `SET @v = CURSOR`).
+fn Parser::cursor_body(
+  self : Parser,
+  name : @ast.Ident,
+) -> @ast.Cursor raise @ast.SyntaxError {
   let options = []
   // ISO syntax: [INSENSITIVE] [SCROLL] CURSOR FOR
   while self.is_kw("INSENSITIVE") || self.is_kw("SCROLL") {
     options.push(upper(self.advance()))
   }
+  let iso = !options.is_empty()
   self.expect_kw("CURSOR")
   while true {
     let t = self.peek()
@@ -689,7 +700,7 @@ fn Parser::cursor_decl(self : Parser) -> @ast.Cursor raise @ast.SyntaxError {
     self.expect_kw("ONLY")
     options.push("READ ONLY")
   }
-  { name, options, query, for_update, update_columns, }
+  { name, options, query, for_update, update_columns, iso, }
 }
 
 ///|
@@ -703,6 +714,13 @@ fn Parser::set_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     self.pos += 2
     let m = tok_ident(self.advance())
     return SetVarMethod(t.text, m, self.method_args())
+  }
+  if t.kind is Variable &&
+    self.is_punct_at(1, "=") &&
+    self.is_kw_at(2, "CURSOR") {
+    self.pos += 2
+    let name : @ast.Ident = { name: t.text, quoted: false, span: t.span, }
+    return SetCursor(self.cursor_body(name))
   }
   if t.kind is Variable {
     self.pos += 1

@@ -18,6 +18,9 @@ pub(all) enum Item {
   ResultSet(Array[@tds.Column])
   /// ORDER token: projected ordinals of the ORDER BY keys (0 = hidden key).
   Order(Array[Int])
+  /// TABNAME + COLINFO (browse-mode metadata of server-cursor FETCH
+  /// results): table name parts and per-column info.
+  BrowseInfo(Array[Array[String]], Array[@tds.ColInfo])
   Row(Array[@tds.WireValue])
   /// End of one statement. `count` is Some when DONE_COUNT applies (NOCOUNT OFF
   /// and a counting statement); `error` sets DONE_ERROR.
@@ -72,6 +75,12 @@ pub fn render(
         @tds.write_colmetadata(w, c)
       }
       Order(ordinals) => @tds.write_order(w, ordinals)
+      BrowseInfo(tables, cols) => {
+        if !tables.is_empty() {
+          @tds.write_tabname(w, tables)
+        }
+        @tds.write_colinfo(w, cols)
+      }
       Row(values) =>
         if @tds.nbcrow_is_smaller(cols, values) {
           @tds.write_nbcrow(w, cols, values)

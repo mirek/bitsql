@@ -289,9 +289,8 @@ fn unique_failure(
 
 ///|
 fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
-  if u.current_of is Some(_) {
-    raise @types.not_supported("UPDATE ... WHERE CURRENT OF")
-  }
+  // positioned UPDATE (WHERE CURRENT OF) completes with CurCmd 125
+  let cmd = if u.current_of is Some(_) { 125 } else { 197 }
   let env0 = self.env().with_ctes(u.ctes)
   let set_names = []
   for s in u.sets {
@@ -324,7 +323,22 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   } else {
     env
   }
-  let where_ = u.where_.map(w => @bind.bind_expr(env, w))
+  let where_ = match u.current_of {
+    Some(cursor) => {
+      self.cur_cmd = cmd
+      Some(
+        self.current_of_predicate(
+          cursor,
+          u.current_of_global,
+          target.scope,
+          t.id,
+          src.rowid,
+          Some(set_names),
+        ),
+      )
+    }
+    None => u.where_.map(w => @bind.bind_expr(env, w))
+  }
   let top = self.dml_top(u.top)
   // bind SET clauses against the full source row
   let sets = []
@@ -385,7 +399,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   let (extra, extra_idx) = output_extra(src, u.from)
   let outputs = self.bind_output(u.output, target, view, true, true, extra)
-  self.cur_cmd = 197
+  self.cur_cmd = cmd
   let sent = self.output_header(outputs)
   let (rows, deferred) = self.dml_scan(src, n, where_, top)
   self.lock_rows(target, rows.map(r => (r.0, r.1)))
@@ -437,7 +451,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     )
     let count = images.length().to_int64()
     self.rt.rowcount = count
-    self.done(197, count=Some(count))
+    self.done(cmd, count=Some(count))
     return
   }
   match unique_failure(target, db, images) {
@@ -497,7 +511,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   )
   let count = images.length().to_int64()
   self.rt.rowcount = count
-  self.done(197, count=Some(count), result_set=sent)
+  self.done(cmd, count=Some(count), result_set=sent)
 }
 
 ///|
@@ -590,9 +604,8 @@ fn Session::update_output_row(
 
 ///|
 fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
-  if d.current_of is Some(_) {
-    raise @types.not_supported("DELETE ... WHERE CURRENT OF")
-  }
+  // positioned DELETE (WHERE CURRENT OF) completes with CurCmd 126
+  let cmd = if d.current_of is Some(_) { 126 } else { 196 }
   let env0 = self.env().with_ctes(d.ctes)
   let (target, view) = self.resolve_dml_target(env0, d.target, d.from, PDelete)
   if target.scope != 3 {
@@ -601,11 +614,26 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   let t = target.table
   let src = dml_source(env0, target, view, d.from)
   let env = env0.with_columns(src.columns)
-  let where_ = d.where_.map(w => @bind.bind_expr(env, w))
+  let where_ = match d.current_of {
+    Some(cursor) => {
+      self.cur_cmd = cmd
+      Some(
+        self.current_of_predicate(
+          cursor,
+          d.current_of_global,
+          target.scope,
+          t.id,
+          src.rowid,
+          None,
+        ),
+      )
+    }
+    None => d.where_.map(w => @bind.bind_expr(env, w))
+  }
   let top = self.dml_top(d.top)
   let (extra, extra_idx) = output_extra(src, d.from)
   let outputs = self.bind_output(d.output, target, view, true, false, extra)
-  self.cur_cmd = 196
+  self.cur_cmd = cmd
   let sent = self.output_header(outputs)
   let (rows, deferred) = self.dml_scan(src, t.columns.length(), where_, top)
   self.lock_rows(target, rows.map(r => (r.0, r.1)))
@@ -620,7 +648,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     self.run_triggers(target, instead, rows.map(r => r.1), [], [], pre)
     let count = rows.length().to_int64()
     self.rt.rowcount = count
-    self.done(196, count=Some(count))
+    self.done(cmd, count=Some(count))
     return
   }
   let evaluated = []
@@ -669,7 +697,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
   let count = rows.length().to_int64()
   self.rt.rowcount = count
-  self.done(196, count=Some(count), result_set=sent)
+  self.done(cmd, count=Some(count), result_set=sent)
 }
 
 ///|

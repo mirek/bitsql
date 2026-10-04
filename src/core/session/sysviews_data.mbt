@@ -977,6 +977,33 @@ let view_defs : Array[ViewDef] = [
     ],
   },
   {
+    // read as sys.dm_exec_cursors(session_id) (bind_table_function)
+    schema: "sys",
+    name: "dm_exec_cursors",
+    columns: [
+      vc("session_id", Int, false, false),
+      vc("cursor_id", Int, false, false),
+      vc("name", NVarChar(Some(128), coll_default), true, false),
+      vc("properties", NVarChar(Some(128), coll_default), false, false),
+      vc("sql_handle", VarBinary(Some(64)), true, false),
+      vc("statement_start_offset", Int, true, false),
+      vc("statement_end_offset", Int, true, false),
+      vc("plan_generation_num", BigInt, true, false),
+      vc("creation_time", DateTime, true, false),
+      vc("is_open", Bit, false, false),
+      vc("is_async_population", Bit, false, false),
+      vc("is_close_on_commit", Bit, false, false),
+      vc("fetch_status", Int, false, false),
+      vc("fetch_buffer_size", Int, false, false),
+      vc("fetch_buffer_start", Int, false, false),
+      vc("ansi_position", Int, false, false),
+      vc("worker_time", BigInt, false, false),
+      vc("reads", BigInt, false, false),
+      vc("writes", BigInt, false, false),
+      vc("dormant_duration", BigInt, false, false),
+    ],
+  },
+  {
     schema: "sys",
     name: "identity_columns",
     columns: [

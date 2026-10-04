@@ -98,6 +98,19 @@ fn precheck_batch(
           }
         }
       DeclareTable(name, _) => declared.add(name.to_lower())
+      // conflicting cursor options are compile errors of the batch: 1048
+      // at the statement's line, 1049 (old and new syntax) at line 0
+      // (captured: msduck-runs/cursor #029-#034, stmts/cursor-options)
+      DeclareCursor(c) | SetCursor(c) => {
+        if s.kind is SetCursor(_) {
+          check_name(c.name.name, line)
+        }
+        if failure is None {
+          failure = cursor_option_error(c).map(e => {
+            (e, if e.number() == 1049 { 0 } else { line })
+          })
+        }
+      }
       SetVar(n, _, e) => {
         check_name(n, line)
         expr(e, line)

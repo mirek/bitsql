@@ -163,6 +163,16 @@ priv struct Frame {
   tables : Map[String, Int]
   /// LOCAL cursors of this scope.
   cursors : Map[String, CursorState]
+  /// Cursor variables (`DECLARE @c CURSOR`, CURSOR parameters): None until
+  /// a cursor is assigned (lowercased name).
+  cursor_vars : Map[String, CursorState?]
+  /// CURSOR parameters (lowercased): their cursors outlive the module (an
+  /// OUTPUT argument takes them over).
+  cursor_params : Set[String]
+  /// Line of the last statement of this scope that set the current line
+  /// (0 before the first): OPEN/FETCH of a missing cursor report it
+  /// (captured: stmts/cursor-lines).
+  mut line_mark : Int
   /// READONLY table-valued parameters (lowercased names); unless also in
   /// `owned` they share the caller's table variable.
   read_only_tvps : Set[String]
@@ -185,6 +195,9 @@ fn Frame::new(proc_name? : String? = None) -> Frame {
     values: [],
     tables: Map([]),
     cursors: Map([]),
+    cursor_vars: Map([]),
+    cursor_params: Set([]),
+    line_mark: 0,
     read_only_tvps: Set([]),
     owned: Set([]),
     proc_name,
@@ -250,6 +263,10 @@ pub struct Session {
   mut stmt_line : Int
   /// GLOBAL cursors (session lifetime).
   priv cursors : Map[String, CursorState]
+  /// The cursor opened last (@@CURSOR_ROWS reads 0 once it is closed).
+  priv mut last_opened : CursorState?
+  /// `Frame::line_mark` before the current statement.
+  mut prev_line : Int
   /// The transaction is the implicit one of an autocommit statement whose
   /// triggers run (no ENVCHANGE when it ends).
   mut implicit_tx : Bool
@@ -376,6 +393,8 @@ pub fn Session::new(
     identity_insert: None,
     stmt_line: 1,
     cursors: Map([]),
+    last_opened: None,
+    prev_line: 0,
     prepared: Map([]),
     triggers: [],
     seq_row: Map([]),
@@ -695,6 +714,10 @@ fn Session::text_error(
 /// rolled back with error 3998 (msduck transaction-recovery; the exact
 /// completion shape is unverified).
 fn Session::end_of_request(self : Session) -> Unit {
+  // LOCAL cursors and cursor variables of the batch end with it
+  for f in self.frames {
+    self.release_frame_cursors(f)
+  }
   if self.rt.xact_state == -1 && self.rt.trancount > 0 {
     self.out.push(
       Message({

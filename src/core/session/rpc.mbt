@@ -59,6 +59,8 @@ priv struct ModuleRun {
   /// Final values and types of the parameters, by parameter index.
   values : Array[@types.Value]
   types : Array[@types.SqlType]
+  /// The module's frame (CURSOR OUTPUT parameters).
+  frame : Frame
 }
 
 ///|
@@ -117,6 +119,13 @@ fn Session::bind_params(
     let arg = match bound.get(i) {
       Some(a) => a
       None => None
+    }
+    if is_cursor_type(p.type_) {
+      frame.cursor_vars[p.name.to_lower()] = None
+      frame.cursor_params.add(p.name.to_lower())
+      types.push(@types.SqlType::Int)
+      slots.push(-1)
+      continue
     }
     let ty = match self.decl_type(p.type_, @types.default_collation) {
       ScalarDecl(ty, _, _) => ty
@@ -188,6 +197,8 @@ fn Session::run_module(
   self.try_base = self.try_depth
   let leave = () => {
     self.frames.pop() |> ignore
+    // LOCAL cursors and cursor variables end with the module
+    self.release_frame_cursors(frame)
     self.rt.nest_level -= levels
     self.nocount = saved.0
     self.xact_abort = saved.1
@@ -238,6 +249,7 @@ fn Session::run_module(
     worst: frame.worst,
     values: bound.slots.map(k => if k < 0 { Null } else { frame.values[k] }),
     types: bound.types,
+    frame,
   }
 }
 
@@ -980,6 +992,10 @@ fn Session::exec_arg_value(self : Session, a : @ast.ExecArg) -> Arg? raise {
   }
   match a.value.kind {
     Default => None
+    // a cursor variable: OUTPUT CURSOR parameters hand their cursor back
+    // (write_back_outputs)
+    Var(n) if self.frame().cursor_vars.contains(n.to_lower()) =>
+      Some({ value: Null, ty: Int, output: a.output, table: None, })
     Column([id]) =>
       Some({
         value: String(id.name),
@@ -1276,6 +1292,25 @@ fn Session::write_back_outputs(
       Some(n) => params.search_by(p => p.name.to_lower() == n.to_lower())
     }
     guard k is Some(k) && k < run.values.length() && params[k].output else {
+      continue
+    }
+    // CURSOR VARYING OUTPUT: the caller's variable takes the cursor over
+    // (captured: msduck-runs/cursor #075)
+    if is_cursor_type(params[k].type_) {
+      match self.frame().cursor_vars.get(vname.to_lower()) {
+        Some(old) => {
+          let c = run.frame.cursor_vars
+            .get(params[k].name.to_lower())
+            .unwrap_or(None)
+          match c {
+            Some(x) => x.refs += 1
+            None => ()
+          }
+          self.release_ref(old)
+          self.frame().cursor_vars[vname.to_lower()] = c
+        }
+        None => ()
+      }
       continue
     }
     match self.frame().vars.get(vname.to_lower()) {

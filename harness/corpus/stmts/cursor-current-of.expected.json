@@ -1,0 +1,437 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "6f9226ce637b75bf",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,10,1]]
+        },
+        {"columns":[{"name":"rc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]},
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[2,20,1]]
+        },
+        {"columns":[{"name":"rc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]},
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[3,30,1]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[4,40,1]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,11,"a"],[3,30,"c"],[4,40,"d"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":3,"more":false}
+      ],
+      "errors": [
+        {"number":16931,"state":1,"class":16,"lineNumber":3,"message":"There are no rows in the current fetch buffer."},
+        {
+          "number": 16932,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 7,
+          "message": "The cursor has a FOR UPDATE list and the requested column to be updated is not in this list."
+        },
+        {
+          "number": 16933,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 8,
+          "message": "The cursor does not include the table being modified or the table is not updatable through the cursor."
+        },
+        {"number":16947,"state":1,"class":16,"lineNumber":12,"message":"No rows were updated or deleted."},
+        {"number":16931,"state":1,"class":16,"lineNumber":16,"message":"There are no rows in the current fetch buffer."}
+      ],
+      "info": [
+        {"number":3621,"state":0,"class":0,"lineNumber":3,"message":"The statement has been terminated."},
+        {"number":3621,"state":0,"class":0,"lineNumber":7,"message":"The statement has been terminated."},
+        {"number":3621,"state":0,"class":0,"lineNumber":8,"message":"The statement has been terminated."},
+        {"number":3621,"state":0,"class":0,"lineNumber":12,"message":"The statement has been terminated."},
+        {"number":3621,"state":0,"class":0,"lineNumber":16,"message":"The statement has been terminated."}
+      ],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":32},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":125},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":125},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":125},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":126},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":126},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":125},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":125},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":193},
+        {"name":"DONE","status":1,"curCmd":32},
+        {"name":"ERROR","number":16931},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":125},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":125},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":16932},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":125},
+        {"name":"ERROR","number":16933},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":126},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":126},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":16947},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":125},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":16931},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":125},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 11
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[4,"d",1]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,"a",1]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[0,"          ",2]]
+        },
+        {"columns":[{"name":"fs","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[-2]]},
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[3,"c",1]]
+        },
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"q","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "name",
+              "type": "VarChar",
+              "length": 10,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[3,30,"c"],[4,40,"last"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":2,"more":false}
+      ],
+      "errors": [{"number":16947,"state":1,"class":16,"lineNumber":8,"message":"No rows were updated or deleted."}],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":8,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":32},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":125},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":126},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":126},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":193},
+        {"name":"DONE","status":1,"curCmd":32},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":125},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":126},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":16947},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":126},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 9
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ROWSTAT","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[3,1]]
+        },
+        {
+          "columns": [
+            {"name":"rc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+            {"name":"err","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+          ],
+          "rows": [[0,16929]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [{"number":16929,"state":1,"class":16,"lineNumber":4,"message":"The cursor is READ ONLY."}],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":4,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":32},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":125},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":193},
+        {"name":"DONE","status":1,"curCmd":32},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"TABNAME"},
+        {"name":"COLINFO"},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":16929},
+        {"name":"INFO","number":3621},
+        {"name":"DONE","status":3,"curCmd":125},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

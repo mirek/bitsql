@@ -346,3 +346,53 @@ pub fn nbcrow_is_smaller(
   }
   saved > (cols.length() + 7) / 8
 }
+
+///|
+/// TABNAME (0xA4): the base tables of a browse-mode / cursor result, each
+/// as its name parts (US_VARCHAR each). SQL Server sends it before COLINFO
+/// in FETCH results of server cursors (captured: msduck-runs/cursor).
+pub fn write_tabname(w : Writer, tables : ArrayView[Array[String]]) -> Unit {
+  let body = Writer::new(size_hint=64)
+  for parts in tables {
+    body.u8(parts.length())
+    for p in parts {
+      body.us_varchar(p)
+    }
+  }
+  let b = body.to_bytes()
+  w.u8(0xA4)
+  w.u16le(b.length())
+  w.bytes(b)
+}
+
+///|
+/// One COLINFO entry: 1-based result column, 1-based TABNAME table (0 for
+/// an expression), status bits (0x04 expression, 0x08 key, 0x10 hidden,
+/// 0x20 different name) and the base column name when it differs.
+pub(all) struct ColInfo {
+  column : Int
+  table : Int
+  status : Int
+  base_name : String?
+} derive(Debug, Eq)
+
+///|
+/// COLINFO (0xA5): browse-mode column information, after TABNAME.
+pub fn write_colinfo(w : Writer, cols : ArrayView[ColInfo]) -> Unit {
+  let body = Writer::new(size_hint=64)
+  for c in cols {
+    body.u8(c.column)
+    body.u8(c.table)
+    match c.base_name {
+      Some(n) => {
+        body.u8(c.status | 0x20)
+        body.b_varchar(n)
+      }
+      None => body.u8(c.status)
+    }
+  }
+  let b = body.to_bytes()
+  w.u8(0xA5)
+  w.u16le(b.length())
+  w.bytes(b)
+}

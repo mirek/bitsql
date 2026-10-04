@@ -163,16 +163,16 @@ fn Parser::set_clauses(
 /// `WHERE cond` or `WHERE CURRENT OF cursor`.
 fn Parser::dml_where(
   self : Parser,
-) -> (@ast.Expr?, @ast.Ident?) raise @ast.SyntaxError {
+) -> (@ast.Expr?, @ast.Ident?, Bool) raise @ast.SyntaxError {
   if !self.eat_kw("WHERE") {
-    return (None, None)
+    return (None, None, false)
   }
   if self.is_kw("CURRENT") && self.is_kw_at(1, "OF") {
     self.pos += 2
-    ignore(self.eat_kw("GLOBAL"))
-    (None, Some(self.cursor_name()))
+    let global = self.eat_kw("GLOBAL")
+    (None, Some(self.cursor_name()), global)
   } else {
-    (Some(self.cond()), None)
+    (Some(self.cond()), None, false)
   }
 }
 
@@ -188,9 +188,20 @@ fn Parser::update_stmt(
   let sets = self.set_clauses()
   let output = self.output_clauses()
   let from = if self.eat_kw("FROM") { self.from_list() } else { [] }
-  let (where_, current_of) = self.dml_where()
+  let (where_, current_of, current_of_global) = self.dml_where()
   let options = self.query_hints()
-  { ctes, top, target, sets, output, from, where_, current_of, options, }
+  {
+    ctes,
+    top,
+    target,
+    sets,
+    output,
+    from,
+    where_,
+    current_of,
+    current_of_global,
+    options,
+  }
 }
 
 ///|
@@ -204,9 +215,19 @@ fn Parser::delete_stmt(
   let target = self.dml_target()
   let output = self.output_clauses()
   let from = if self.eat_kw("FROM") { self.from_list() } else { [] }
-  let (where_, current_of) = self.dml_where()
+  let (where_, current_of, current_of_global) = self.dml_where()
   let options = self.query_hints()
-  { ctes, top, target, output, from, where_, current_of, options, }
+  {
+    ctes,
+    top,
+    target,
+    output,
+    from,
+    where_,
+    current_of,
+    current_of_global,
+    options,
+  }
 }
 
 ///|
