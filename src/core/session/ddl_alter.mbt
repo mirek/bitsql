@@ -178,6 +178,7 @@ fn Session::alter_add(
       }
     }
   }
+  self.prepare_ahead(b, body.columns, db, pk_cols)
   let with_values : Array[Bool] = []
   for c in body.columns {
     self.add_column(b, c, db, pk_cols, with_check)

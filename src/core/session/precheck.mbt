@@ -242,6 +242,9 @@ fn precheck_batch(
           }
         }
       }
+      CreateTable({ body, .. }) | AlterTable(_, Add(body, ..)) if failure
+        is None =>
+        failure = computed_constraint_error(body.columns).map(e => (e, line))
       Print(e) => {
         expr(e, line)
         // captured: PRINT of a sql_variant variable is a compile-time 257
@@ -810,6 +813,34 @@ fn target_hint_error(
             severity=15,
           ),
           15,
+        ),
+      )
+    }
+  }
+  None
+}
+
+///|
+/// A non-persisted computed column takes only UNIQUE / PRIMARY KEY
+/// constraints: a column-level CHECK, REFERENCES, NULL or NOT NULL on it is
+/// compile error 8183 for the whole batch (captured: corpus
+/// catalog/computed-forward-refs; a table-level CHECK naming it is 1764
+/// when the statement runs).
+fn computed_constraint_error(
+  columns : Array[@ast.ColumnDef],
+) -> @types.SqlError? {
+  for c in columns {
+    if c.computed is Some(_) &&
+      !c.persisted &&
+      (
+        c.nullable is Some(_) ||
+        c.constraints
+        .iter()
+        .any(k => k.kind is (ColCheck(_, ..) | ColReferences(_)))
+      ) {
+      return Some(
+        @types.sql_error(
+          8183, "Only UNIQUE or PRIMARY KEY constraints can be created on computed columns, while CHECK, FOREIGN KEY, and NOT NULL constraints require that computed columns be persisted.",
         ),
       )
     }
