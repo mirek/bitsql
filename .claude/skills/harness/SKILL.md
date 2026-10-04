@@ -460,3 +460,13 @@ Start the host with `--database NAME` so the app's database exists at login
   DB_NAME() and filter history by them. A second session's
   `EXEC('USE x; WAITFOR …')` as an `async` step is a usable way to have a
   session inside another database.
+
+- 2026-10-04 (ATTENTION): request cancellation is not corpus-shaped (the
+  corpus runner cannot cancel); `test/attention.test.mjs` covers it and runs
+  against the oracle with `ATTENTION_ORACLE=1` to re-verify its pinned
+  expectations. For exact token streams of flows the capture layer cannot
+  see (tedious discards a cancelled request's response unparsed), a scratch
+  TCP proxy between tedious (`encrypt:false`, i.e. login-only TLS, so
+  everything after LOGIN7 is plaintext) and the server that logs each TDS
+  packet as hex works on both targets; it can also inject raw packets (an
+  idle ATTENTION `06 01 00 08 00 00 01 00`) and swallow their replies.

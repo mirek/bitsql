@@ -388,6 +388,7 @@ fn Session::new_check(
   // a CHECK must bind against the table's columns
   let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
     b.columns.map(x => @bind.ColumnRef::{
+      untyped_null: false,
       qualifier: "",
       name: x.name,
       ty: x.ty,
@@ -590,6 +591,7 @@ fn Session::add_column(
       }
       let env = @bind.Env::new(Map([]), catalog=self.catalog()).with_columns(
         visible.map(x => @bind.ColumnRef::{
+          untyped_null: false,
           qualifier: "",
           name: x.name,
           ty: x.ty,
@@ -1482,11 +1484,14 @@ fn Session::exec_drop(
     DropTable => {
       self.cur_cmd = 199
       for n in names {
+        self.check_other_db_module(n)
         self.not_a_synonym(n, "TABLE")
         match self.find_table(n) {
           Some((scope, t)) => {
-            if scope == 0 {
-              self.check_drop_references("TABLE", n, t.schema, t.name, false)
+            if scope == 0 || scope >= OTHER_DB_SCOPE {
+              self.in_scope_database(scope, () => {
+                self.check_drop_references("TABLE", n, t.schema, t.name, false)
+              })
             }
             // referenced by a foreign key from another table?
             let db = self.db_of(scope)
@@ -1510,7 +1515,7 @@ fn Session::exec_drop(
               }
             }
             self.write(scope, db)
-            self.server.idents.remove(self.ident_key(t))
+            self.server.idents.remove(self.ident_key(scope, t))
           }
           None => if !if_exists { raise drop_missing("table", n) }
         }

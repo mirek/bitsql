@@ -76,6 +76,17 @@ mention the correction here.
 (`packages/server/src/server.test.ts`). It exercises the full stack the
 same way real applications do.
 
+- 2026-10-04 (harness test/attention.test.mjs): the inherited
+  `Request.cancel()` note below is right and bit bitsql: after EOM tedious
+  20.3.3 discards the *next* message whole (SentClientRequest switches to
+  SentAttention without parsing it) and then reads one message expecting
+  DONE_ATTN. A server that answers a pending request's ATTENTION with a
+  single DONE_ATTN message makes every mssql `requestTimeout` end as
+  `ETIMEOUT: Failed to cancel request in <cancelTimeout>ms` (5 s by
+  default), though the follow-up query works. SQL Server sends the cut-short
+  response, then DONE_ATTN (tds-protocol finding); the request then fails
+  with the plain "Timeout: Request failed to complete in 150ms" (or
+  `ECANCEL` for cancel()) about 40 ms after the deadline.
 - 2026-10-03 (harness test/mssql-tvp.test.mjs): mssql `request.input('ids',
   table)` with an `sql.Table('dbo.IdList')` (or `sql.TVP`) sends TYPES.TVP;
   `execute('dbo.pick')` is an RPC by name, `query()` sp_executesql with the

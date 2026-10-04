@@ -225,6 +225,7 @@ fn bind_pivot(
       let out : Array[ColumnRef] = groups.map(i => { ..sc[i], qualifier: q, })
       for v in values {
         out.push({
+          untyped_null: false,
           qualifier: q,
           name: v.name,
           ty,
@@ -274,6 +275,7 @@ fn bind_pivot(
       }
       let out : Array[ColumnRef] = keep.map(i => { ..sc[i], qualifier: q, })
       out.push({
+        untyped_null: false,
         qualifier: q,
         name: value.name,
         ty,
@@ -281,6 +283,7 @@ fn bind_pivot(
         origin: SetOperation,
       })
       out.push({
+        untyped_null: false,
         qualifier: q,
         name: name.name,
         ty: NVarChar(Some(128), env.collation),

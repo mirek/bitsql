@@ -110,8 +110,8 @@ pub fn Session::run_tm(
         }
         match (savepoint, self.tx) {
           (Some(i), Some(tx)) => {
-            let (_, view, temp) = tx.savepoints[i]
-            tx.view = view
+            let (_, views, temp) = tx.savepoints[i]
+            tx.restore(views)
             self.temp = temp
             tx.savepoints.truncate(i)
           }
@@ -135,7 +135,7 @@ pub fn Session::run_tm(
           )
         }
         match self.tx {
-          Some(tx) => tx.savepoints.push((name, tx.view, self.temp))
+          Some(tx) => tx.savepoints.push((name, tx.views(), self.temp))
           None => ()
         }
       }

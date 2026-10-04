@@ -45,7 +45,8 @@ Instead:
   restart, because from the client's point of view the statement ran once.
 - Items already produced by earlier statements in the batch are kept. The
   restarted statement's partial items are dropped.
-- Attention and time limits are checked between statements; a single
+- (2026-10-04: ATTENTION is implemented by re-running a parked request in
+  cancel mode, see the dated entry below.) Attention and time limits are checked between statements; a single
   statement is not time-sliced in v1. `Yield` remains available for later.
 
 Effect: `NeedLock` is per statement, not per row. Deadlock detection and lock
@@ -604,9 +605,12 @@ needs neither persistence nor Microsoft-format files. Corpus `backup/*`
 - **A restored copy keeps the original's object ids** (captured: OBJECT_ID
   equal in both). Identity counters were keyed by object id alone, which
   ids unique per server made safe; they are now keyed by
-  `Session::ident_key` ("database:id" for database tables, the bare id for
-  temp tables and table variables). It assumes the table lives in the
-  current database (true until three-part DML).
+  `Session::ident_key(scope, t)` ("database:id" of the table scope's
+  database, so three-part DML into another database counts there; the bare
+  id for temp tables and table variables). A RESTORE that creates a
+  database goes through `Server::create_database` (next free database_id,
+  so DB_ID, sys.databases and three-part names see the copy; corpus
+  `backup/clone-three-part`); one restored over keeps its id.
 - **Database files and family.** `DbOptions.files` holds (logical,
   physical) pairs once a RESTORE moved them (else `name` / `name_log` in
   /var/opt/mssql/data); sys.database_files reads them. `DbOptions.family`
@@ -642,3 +646,69 @@ needs neither persistence nor Microsoft-format files. Corpus `backup/*`
   other unlisted options, several/URL/TAPE/logical devices, BACKUP or
   RESTORE of master/model/msdb (tempdb is 3147), RESTORE LOG / LABELONLY /
   REWINDONLY, NORECOVERY, STANDBY, STOPAT, PARTIAL.
+
+## 2026-10-04: ATTENTION cancels a parked request by re-running it
+
+A request can only be "running" across events while parked (lock wait,
+application lock, WAITFOR); everything else completes inside one
+`Engine::handle` call, so an ATTENTION arriving later finds its response
+already sent and only needs DONE_ATTN. For a parked request the engine calls
+`Session::attention()` (withdraws the lock request, sets `cancelling`) and
+re-runs it from the start, as it does for deadlock victims. Completed
+WAITFORs are passed again; the first wait that would park instead raises
+`Park` with `attn.hit` set. The innermost `exec_one` rolls that statement
+back (statement level), applies XACT_ABORT, and lets `Park` unwind; the
+request then keeps its state (no request snapshot restore) and
+`finish_attention` rewrites the tail of the response to SQL Server's cancel
+completion (session/attention.mbt). The engine sends that response and then
+DONE_ATTN as its own message. Not covered: cancelling a CPU-bound request
+(no time slicing); a wait inside a trigger rolls back only the trigger's
+statement, not the firing one.
+
+## 2026-10-04: server-wide database discovery, cross-database names
+
+- **Databases have ids on the server** (`Server.db_ids`: master 1 … msdb 4,
+  then the lowest free id from 5; unverified, the shared oracle's ids are
+  not reproducible, so cases only compare facts about ids).
+  sys.databases, DB_ID, DB_NAME and the server-level views (databases,
+  server_principals, syslanguages, time_zone_info, dm_*) list every
+  database, whatever the session database or the `db.sys.` prefix is.
+  Before, only the four system databases and the *session's* database were
+  listed, so a fixture's `IF DB_ID(N'foo') IS NOT NULL DROP DATABASE foo`
+  silently skipped the drop (compatibility report; corpus
+  `database/cross-database`). `--database` and `--auto-create-databases`
+  go through `Server::create_database` and get ids too.
+- **Three-part names reach other databases' tables** through a table scope
+  `OTHER_DB_SCOPE (100) + database_id` (session/storage.mbt): `db_of` /
+  `write` map it to that database, so reads, INSERT/UPDATE/DELETE/MERGE,
+  TRUNCATE, FK checks and key locks (object ids are server-wide) work
+  unchanged. `find_table` used to drop the database part, which resolved
+  `foo.dbo.t` in the session database: every name with a database part now
+  resolves there or nowhere (208 for a missing database, as captured).
+- **A transaction spans databases** (`Tx.parts`: one base/view per database,
+  joined at first use; savepoints and statement rollback snapshot every
+  part; COMMIT rebases every part before writing any). This also fixes
+  `USE other` inside a transaction, which used to write past the
+  transaction. Autocommit statement rollback restores every database the
+  statement changed (a copy of the database map per statement).
+- **DDL runs in the named database by switching the session database for
+  the statement** (`in_scope_database`, no ENVCHANGE): CREATE TABLE (2702
+  for a missing database), ALTER TABLE, CREATE INDEX, DROP TABLE's
+  dependency check; SELECT INTO writes the other scope directly. Another
+  database's catalog views (`db.sys.x`, `db.INFORMATION_SCHEMA.x`) and
+  OBJECT_NAME(id, db_id) are computed the same way (binding id
+  `view + (database_id + 1) * 2^20`), so DB_NAME(), TABLE_CATALOG and the
+  database collation follow. OBJECT_ID, IDENT_*, COL_LENGTH accept
+  `db.schema.t` (`name_target(other_db=true)`; other name_target callers,
+  sp_help and friends, keep refusing other databases).
+- **Not emulated (50100)**, because their bodies or semantics bind names in
+  their own database: views, functions, procedures-as-objects, synonyms and
+  sequences of another database (`check_other_db_module`), DML on another
+  database's table that has triggers or whose defaults / computed columns /
+  CHECKs call functions or sequences, and other DDL on another database's
+  objects (DROP INDEX, CREATE/DROP of modules, synonyms, sequences, types,
+  SET IDENTITY_INSERT, INSERT BULK, ALTER SCHEMA TRANSFER). CREATE VIEW /
+  PROCEDURE with any database prefix is SQL Server's 166 (batch compile
+  error, reported on line 13). Procedures are still stored server-wide by
+  name (pre-existing), so `EXEC foo.dbo.p` finds `p` whatever database
+  created it.

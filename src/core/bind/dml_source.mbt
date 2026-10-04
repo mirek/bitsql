@@ -37,6 +37,7 @@ pub fn Env::find_cte(self : Env, name : @ast.ObjectName) -> CteDef? {
 ///|
 fn rowid_column() -> ColumnRef {
   {
+    untyped_null: false,
     qualifier: "%rowid",
     name: "%rowid",
     ty: BigInt,

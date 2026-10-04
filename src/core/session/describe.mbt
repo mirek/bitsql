@@ -10,6 +10,7 @@
 ///|
 fn describe_columns() -> Array[@bind.ColumnRef] {
   let c = (name : String, ty : @types.SqlType) => @bind.ColumnRef::{
+    untyped_null: false,
     qualifier: "",
     name,
     ty,

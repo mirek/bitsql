@@ -23,11 +23,7 @@ type RowChange = (Int64, Array[@types.Value], Array[@types.Value]?)
 
 ///|
 fn Session::fk_db_name(self : Session, scope : Int) -> String {
-  if scope == 1 {
-    "tempdb"
-  } else {
-    self.rt.database
-  }
+  self.scope_database(scope)
 }
 
 ///|

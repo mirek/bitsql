@@ -998,7 +998,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
             let v = @exec.eval(ctx, b)
             let cv = self.to_column(target, t.columns[cols[j]], v, b.ty)
             match identity_int64(cv) {
-              Some(n) => self.bump_identity(t, n)
+              Some(n) => self.bump_identity(target.scope, t, n)
               None => ()
             }
             Some((j, v))
@@ -1053,13 +1053,16 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         )
       }
       for j, c in bq.columns {
+        // an untyped NULL column (also through derived tables, VALUES and
+        // set operations) takes any type (captured: query/derived-untyped-null)
+        let untyped = @bind.untyped_null_column(bq.plan, j)
         if t.columns[cols[j]].ty is RowVersion {
-          if !query_item_is_null(q, j) {
+          if !untyped {
             raise timestamp_insert_error()
           }
           continue
         }
-        if !query_item_is_null(q, j) {
+        if !untyped {
           @types.check_store(c.ty, t.columns[cols[j]].ty)
         }
       }
@@ -1125,11 +1128,11 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           (Some(_), _) if !instead.is_empty() =>
             row[i] = identity_value(c.ty, 0L)
           (Some(id), _) if !(identity_insert && given[i]) => {
-            let v = self.peek_identity(t, id)
+            let v = self.peek_identity(target.scope, t, id)
             if !identity_fits(c.ty, v) {
               raise self.identity_overflow(c.ty)
             }
-            ignore(self.next_identity(t, id))
+            ignore(self.next_identity(target.scope, t, id))
             row[i] = identity_value(c.ty, v)
             last_identity = Some(v)
           }
@@ -1151,7 +1154,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
           if c.identity is Some(_) && given[i] {
             match identity_int64(row[i]) {
               Some(v) => {
-                self.bump_identity(t, v)
+                self.bump_identity(target.scope, t, v)
                 last_identity = Some(v)
               }
               None => ()
@@ -1178,7 +1181,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         return
       }
       let rowid = self.server.rowid()
-      if target.scope == 0 {
+      if is_db_scope(target.scope) {
         // X on the new key: waits for another transaction's uncommitted
         // insert of the same key, or a range lock covering it
         self.acquire(row_resource(t, rowid, row), X, Transaction)
@@ -1240,13 +1243,18 @@ fn touched_columns(t : @store.Table, set : Array[Int]) -> Array[Int] {
 /// An explicit identity value (IDENTITY_INSERT ON) moves the table's
 /// identity forward when it lies beyond the current value in the
 /// increment's direction.
-fn Session::bump_identity(self : Session, t : @store.Table, v : Int64) -> Unit {
+fn Session::bump_identity(
+  self : Session,
+  scope : Int,
+  t : @store.Table,
+  v : Int64,
+) -> Unit {
   let increment = match
     t.columns.iter().find_first(c => c.identity is Some(_)) {
     Some({ identity: Some(id), .. }) => id.increment
     _ => 1L
   }
-  let key = self.ident_key(t)
+  let key = self.ident_key(scope, t)
   match self.server.idents.get(key) {
     None => self.server.idents[key] = v
     Some(cur) =>
@@ -1264,14 +1272,4 @@ fn timestamp_insert_error() -> @types.SqlError {
   @types.sql_error(
     273, "Cannot insert an explicit value into a timestamp column. Use INSERT with a column list to exclude the timestamp column, or insert a DEFAULT into the timestamp column.",
   )
-}
-
-///|
-/// Whether select-list item `j` of an INSERT source query is a NULL literal.
-fn query_item_is_null(q : @ast.Query, j : Int) -> Bool {
-  guard q.body is Select(s) else { return false }
-  match s.items.get(j) {
-    Some({ kind: ExprItem(e, ..), .. }) => e.kind is Null
-    _ => false
-  }
 }

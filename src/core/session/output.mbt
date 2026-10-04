@@ -79,6 +79,7 @@ fn Session::bind_output(
   let (base, forbidden) : (Array[@bind.ColumnRef], Array[String]) = match view {
     Some(v) => {
       let cols = v.result.map(c => @bind.ColumnRef::{
+        untyped_null: false,
         qualifier: "",
         name: c.name,
         ty: c.ty,
@@ -366,7 +367,7 @@ fn Session::output_into(
       }
       for i, c in t.columns {
         if c.identity is Some(id) {
-          row[i] = identity_value(c.ty, self.next_identity(t, id))
+          row[i] = identity_value(c.ty, self.next_identity(target.scope, t, id))
         } else if row[i] is Null && c.default_ is Some(d) && !idx.contains(i) {
           row[i] = self.eval_text(target, d, row, c.ty)
         }

@@ -80,7 +80,10 @@ pub fn Session::run_bulk(
         match c.identity {
           Some(id) =>
             if !(keep_identity && given[i]) {
-              row[i] = identity_value(c.ty, self.next_identity(t, id))
+              row[i] = identity_value(
+                c.ty,
+                self.next_identity(target.scope, t, id),
+              )
             }
           None =>
             if !given[i] && c.computed is None {

@@ -23,8 +23,7 @@ fn Session::exec_create_database(
       state=3,
     )
   }
-  self.server.set_db(name.name, @store.Db::empty())
-  self.server.db_names[name.name.to_lower()] = name.name
+  self.server.create_database(name.name)
   match collation {
     Some(c) =>
       self.server.db_options[name.name.to_lower()] = {
@@ -71,6 +70,7 @@ fn Session::exec_drop_database(
     }
     self.server.dbs.remove(key)
     self.server.db_names.remove(key)
+    self.server.db_ids.remove(key)
     self.server.db_options.remove(key)
   }
   self.done(204)
@@ -94,7 +94,12 @@ fn Session::exec_use(self : Session, name : @ast.Ident) -> Unit raise {
       let old = self.rt.database
       self.rt.database = display
       self.out.push(EnvChange(Database(display, old)))
-      self.info(5701, 1, "Changed database context to '\{display}'.", 1)
+      self.info(
+        5701,
+        1,
+        "Changed database context to '\{display}'.",
+        self.stmt_line,
+      )
       // captured (settings/alter-database): the collation ENVCHANGE follows
       // every USE, then DONE 226
       self.collation_envchange()
@@ -141,6 +146,7 @@ fn Session::exec_emulator_proc(
       for k, v in self.server.db_names {
         names[k] = v
       }
+      let ids = copy_map(self.server.db_ids)
       let idents = Map([])
       for k, v in self.server.idents {
         idents[k] = v
@@ -156,6 +162,7 @@ fn Session::exec_emulator_proc(
       self.server.snapshots[name] = {
         dbs,
         db_names: names,
+        db_ids: ids,
         idents,
         dbts: self.server.dbts,
         procs,
@@ -172,6 +179,10 @@ fn Session::exec_emulator_proc(
           self.server.db_names.clear()
           for k, v in s.db_names {
             self.server.db_names[k] = v
+          }
+          self.server.db_ids.clear()
+          for k, v in s.db_ids {
+            self.server.db_ids[k] = v
           }
           self.server.idents.clear()
           for k, v in s.idents {

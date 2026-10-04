@@ -78,7 +78,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       arity(name, args, 2)
       let b = bound()
       // An untyped NULL first argument takes the second's type.
-      let first_null = b[0].kind is Lit(Null) && b[0].ty is Int
+      let first_null = is_untyped_null(b[0])
+      // captured: ISNULL(NULL, NULL) is the NULL constant (8133 in a CASE,
+      // assignable to any type through a derived table)
+      if first_null && is_untyped_null(b[1]) {
+        return mk(Lit(Null), Int, true)
+      }
       let ty = if first_null { b[1].ty } else { b[0].ty }
       let first = coerce(b[0], ty)
       let second = coerce(b[1], ty)
@@ -104,6 +109,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         )
       }
       let b = bound()
+      // captured: query/derived-untyped-null
+      if all_null_constants(b, args) {
+        raise err(
+          4127, "At least one of the arguments to COALESCE must be an expression that is not the NULL constant.",
+        )
+      }
       // captured: COALESCE(NULL, N'longer') is nvarchar(6) (msduck
       // conditional-literal-folding #021)
       let t = unify_args(b)
@@ -139,6 +150,12 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let c = bind_expr(env, args[0])
       let a = bind_expr(env, args[1])
       let b2 = bind_expr(env, args[2])
+      // captured: IIF(c, NULL, NULL) is the CASE error 8133
+      if all_null_constants([a, b2], [args[1], args[2]]) {
+        raise err(
+          8133, "At least one of the result expressions in a CASE specification must be an expression other than the NULL constant.",
+        )
+      }
       // captured: IIF(1=1, NULL, N'x') is nvarchar(1), IIF(1=2, 1, 2.5)
       // numeric(2,1) (msduck conditional-literal-folding #018, logic#022)
       let t = unify_args([a, b2])

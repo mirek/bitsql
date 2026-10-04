@@ -57,24 +57,28 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let snap_tvars = self.tvars
   let snap_tx = self.tx
   let snap_view = match self.tx {
-    Some(tx) => Some(tx.view)
+    Some(tx) => Some(tx.views())
     None => None
   }
-  let snap_db = self.server.get_db(self.rt.database)
-  let snap_database = self.rt.database
+  // autocommit: every database (three-part names write other databases)
+  let snap_dbs = if self.tx is None {
+    Some(copy_map(self.server.dbs))
+  } else {
+    None
+  }
   let out_mark = self.out.length()
-  self.read_only_write = false
+  self.read_only_write = None
   let failure = try {
     self.exec_stmt(s)
     // a write to a READ_ONLY database: 3906 instead of the statement's own
     // output, ending the batch (captured: settings/alter-database)
-    if self.read_only_write {
-      self.read_only_write = false
+    if self.read_only_write is Some(ro) {
+      self.read_only_write = None
       self.out.truncate(out_mark)
       self.cur_cmd = 253
       raise @types.sql_error(
         3906,
-        "Failed to update database \"\{self.rt.database}\" because the database is read-only.",
+        "Failed to update database \"\{ro}\" because the database is read-only.",
       )
     }
     // a deferred binder error no later error reported (bound outside
@@ -119,6 +123,26 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
         )
       }
       raise AbortBatch
+    }
+    // ATTENTION cancelled a wait in this statement (attention.mbt): roll the
+    // statement back like a failed one, then unwind the request
+    Park if self.attn.hit && !self.attn.handled => {
+      self.temp = snap_temp
+      self.tvars = snap_tvars
+      // same statement-level rollback as a failed statement (below)
+      match (snap_tx, self.tx, snap_view, snap_dbs) {
+        (Some(_), Some(tx), Some(v), _) => tx.restore(v)
+        (None, None, _, Some(m)) =>
+          for k, db in m {
+            if self.server.dbs.contains(k) {
+              self.server.dbs[k] = db
+            }
+          }
+        _ => ()
+      }
+      self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
+      self.statement_attention(out_mark, line)
+      raise Park
     }
     other => raise other
   }
@@ -169,10 +193,18 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.temp = snap_temp
   self.tvars = snap_tvars
   match (snap_tx, self.tx, snap_view) {
-    (Some(_), Some(tx), Some(v)) => tx.view = v
+    (Some(_), Some(tx), Some(v)) => tx.restore(v)
     (None, None, _) if self.tx_ended_in_trigger =>
       self.tx_ended_in_trigger = false
-    (None, None, _) => self.server.set_db(snap_database, snap_db)
+    (None, None, _) =>
+      if snap_dbs is Some(m) {
+        // databases created or dropped by the statement stay so
+        for k, db in m {
+          if self.server.dbs.contains(k) {
+            self.server.dbs[k] = db
+          }
+        }
+      }
     _ => ()
   }
   self.rt.error = self.error_override.unwrap_or(e.number())
@@ -483,6 +515,10 @@ fn Session::assign(
 
 ///|
 fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
+  self.check_cross_database_ddl(s.kind)
+  if self.exec_in_table_database(s) {
+    return
+  }
   match s.kind {
     Select(q) => self.exec_select(q, s.span.line)
     Declare(vars) => {
@@ -731,8 +767,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
                   3931, "The current transaction cannot be committed and cannot be rolled back to a savepoint. Roll back the entire transaction.",
                 )
               }
-              let (_, view, temp) = tx.savepoints[i]
-              tx.view = view
+              let (_, views, temp) = tx.savepoints[i]
+              tx.restore(views)
               self.temp = temp
               tx.savepoints.truncate(i)
               self.done(210)
@@ -778,14 +814,18 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         raise doomed_error()
       }
       match (name, self.tx) {
-        (Some(sp), Some(tx)) => tx.savepoints.push((sp, tx.view, self.temp))
+        (Some(sp), Some(tx)) => tx.savepoints.push((sp, tx.views(), self.temp))
         _ => ()
       }
       self.done(214)
     }
     CreateTable(ct) => {
       self.ddl_cmd = 198
-      self.exec_create_table(ct)
+      if self.names_other_database(ct.name) {
+        self.exec_create_table_in(ct)
+      } else {
+        self.exec_create_table(ct)
+      }
     }
     DeclareTable(name, body) =>
       self.exec_declare_table(name, body, s.span.start)

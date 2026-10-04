@@ -226,7 +226,8 @@ fn Session::alter_add(
     for k in old_width..<nt.columns.length() {
       let c = nt.columns[k]
       let v : @types.Value = match (c.identity, c.default_) {
-        (Some(idn), _) => identity_value(c.ty, self.next_identity(nt, idn))
+        (Some(idn), _) =>
+          identity_value(c.ty, self.next_identity(scope, nt, idn))
         // captured: existing rows get rowversion values (msduck
         // gaps-rowversion_identity #079)
         _ if c.ty is RowVersion => self.next_rowversion()

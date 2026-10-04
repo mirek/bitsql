@@ -15,6 +15,9 @@ pub struct Server {
   dbs : Map[String, @store.Db]
   /// Display names as created.
   db_names : Map[String, String]
+  /// database_id by lowercased name (master 1 … msdb 4, then the lowest
+  /// free id from 5; unverified, cases never compare user database ids).
+  db_ids : Map[String, Int]
   /// Row ids and object ids are never reused or rolled back.
   mut next_rowid : Int64
   mut next_object_id : Int
@@ -57,6 +60,7 @@ pub struct Server {
 priv struct ServerSnapshot {
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
+  db_ids : Map[String, Int]
   idents : Map[String, Int64]
   dbts : Int64
   procs : Map[String, Proc]
@@ -68,14 +72,17 @@ pub fn Server::new() -> Server {
   let priorities : Map[Int, Int] = Map([])
   let dbs = Map([])
   let names = Map([])
-  for n in ["master", "tempdb", "model", "msdb"] {
+  let ids = Map([])
+  for k, n in ["master", "tempdb", "model", "msdb"] {
     dbs[n] = @store.Db::empty()
     names[n] = n
+    ids[n] = k + 1
   }
   {
     procs: Map([]),
     dbs,
     db_names: names,
+    db_ids: ids,
     next_rowid: 1L,
     // the first user object id of a fresh SQL Server 2025 database (every
     // capture printing object ids agrees: msduck-runs alter-named-default,
@@ -133,7 +140,39 @@ pub fn Server::create_database(self : Server, name : String) -> Unit {
   if !self.has_database(name) {
     self.dbs[name.to_lower()] = @store.Db::empty()
     self.db_names[name.to_lower()] = name
+    self.db_ids[name.to_lower()] = self.free_database_id()
   }
+}
+
+///|
+/// The lowest database_id from 5 no database uses.
+fn Server::free_database_id(self : Server) -> Int {
+  let used : Set[Int] = Set([])
+  for _, v in self.db_ids {
+    used.add(v)
+  }
+  for id = 5; ; id = id + 1 {
+    if !used.contains(id) {
+      return id
+    }
+  }
+}
+
+///|
+/// database_id of a database (None when it does not exist).
+pub fn Server::database_id(self : Server, name : String) -> Int? {
+  self.db_ids.get(name.to_lower())
+}
+
+///|
+/// Lowercased name of the database with this database_id.
+fn Server::database_key(self : Server, id : Int) -> String? {
+  for k, v in self.db_ids {
+    if v == id {
+      return Some(k)
+    }
+  }
+  None
 }
 
 ///|
@@ -313,6 +352,8 @@ pub struct Session {
   mut waits_done : Int
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
+  /// ATTENTION (cancellation) of a parked request (attention.mbt).
+  priv attn : Attention
   /// @@ERROR to record for the failing statement instead of the error's
   /// number (RAISERROR format errors leave 50000).
   mut error_override : Int?
@@ -420,7 +461,7 @@ pub struct Session {
   mut datefirst_set : Bool
   /// The current statement wrote to a READ_ONLY database (3906 when it
   /// ends; session/database_options.mbt).
-  mut read_only_write : Bool
+  mut read_only_write : String?
 }
 
 ///|
@@ -493,6 +534,7 @@ pub fn Session::new(
     waiting: None,
     fail_next_wait: None,
     parked: false,
+    attn: Attention::new(),
     next_handle: 1,
     pending: [],
     trailing: [],
@@ -510,7 +552,7 @@ pub fn Session::new(
     tx_ended_in_trigger: false,
     dateformat_set: false,
     datefirst_set: false,
-    read_only_write: false,
+    read_only_write: None,
   }
   server.live[spid] = session
   session
@@ -679,6 +721,7 @@ pub fn Session::run_batch(
   self.parked = false
   self.waiting = None
   self.wait_ms = None
+  self.attn.reset()
   self.out.clear()
   self.text = text
   self.rpc = false
@@ -704,19 +747,24 @@ pub fn Session::run_batch(
     _ => false
   }
   self.abort_cmd = None
-  if parked {
+  if parked && !self.attn.hit {
     // a lock wait: discard this attempt; the engine re-runs it later
     self.restore_request(snap)
     self.parked = true
     return []
   }
+  self.attn.cancelling = false
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
-  self.end_of_request()
-  if self.schema_ddl &&
-    !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
-    self.out.push(StatementDone(cmd=253, count=None, error=false))
+  if self.attn.hit {
+    self.finish_attention()
+  } else {
+    self.end_of_request()
+    if self.schema_ddl &&
+      !self.out.iter().any(i => i is (StatementDone(..) | ProcDone(..))) {
+      self.out.push(StatementDone(cmd=253, count=None, error=false))
+    }
   }
   self.frames.clear()
   let items = self.out.copy()

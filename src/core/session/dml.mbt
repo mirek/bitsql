@@ -14,7 +14,10 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
   match r.kind {
     Table(name, alias_~, ..) =>
       match self.find_table(self.deref_synonym(name)) {
-        Some((scope, t)) =>
+        Some((scope, t)) => {
+          if scope >= OTHER_DB_SCOPE {
+            self.check_other_db_target(scope, t)
+          }
           {
             scope,
             table: t,
@@ -28,7 +31,9 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
               None => name.base().to_lower()
             },
           }
+        }
         None => {
+          self.check_other_db_module(name)
           if self.find_module(name) is Some({ kind: View, .. }) {
             raise @types.not_supported("INSERT/UPDATE/DELETE through a view")
           }
@@ -59,13 +64,49 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
 }
 
 ///|
+/// DML on a table of another database runs its constraints in the
+/// session; what would bind names in the wrong database is not emulated:
+/// triggers (they run in their own database) and defaults, computed
+/// columns and CHECK constraints calling user functions or sequences.
+fn Session::check_other_db_target(
+  self : Session,
+  scope : Int,
+  t : @store.Table,
+) -> Unit raise @types.SqlError {
+  let db = self.db_of(scope)
+  if db.modules().iter().any(m => m.kind is Trigger && m.parent == Some(t.id)) {
+    raise @types.not_supported(
+      "DML on a table with triggers in another database",
+    )
+  }
+  let exprs : Array[String] = t.checks.map(c => c.expr)
+  for c in t.columns {
+    if c.default_ is Some(e) {
+      exprs.push(e)
+    }
+    if c.computed is Some(e) {
+      exprs.push(e)
+    }
+  }
+  for e in exprs {
+    let low = e.to_lower()
+    // user functions are schema-qualified (`[dbo].[f](`)
+    if low.contains("next value for") || low.contains("].[") {
+      raise @types.not_supported(
+        "DML on a table of another database whose defaults, computed columns or CHECK constraints call functions or sequences",
+      )
+    }
+  }
+}
+
+///|
 fn Session::full_name(self : Session, target : Target) -> String {
   if target.scope == 1 {
     "tempdb.dbo." + target.table.name
   } else if target.scope == 3 {
     target.display
   } else {
-    self.rt.database + "." + target.display
+    self.scope_database(target.scope) + "." + target.display
   }
 }
 
@@ -205,26 +246,32 @@ fn Session::eval_text(
 ///|
 /// Key of a table's identity counter in `Server::idents`: temp tables
 /// ('#') and table variables ('@') by id (ids are unique per server),
-/// database tables by "database:id" (RESTORE copies keep object ids).
-fn Session::ident_key(self : Session, t : @store.Table) -> String {
-  if t.name.has_prefix("#") || t.name.has_prefix("@") {
+/// database tables by "database:id" of the table's database `scope`
+/// (RESTORE copies keep object ids).
+fn Session::ident_key(self : Session, scope : Int, t : @store.Table) -> String {
+  if scope == 1 ||
+    scope == 3 ||
+    t.name.has_prefix("#") ||
+    t.name.has_prefix("@") {
     t.id.to_string()
   } else {
-    self.rt.database.to_lower() + ":" + t.id.to_string()
+    self.scope_key(scope) + ":" + t.id.to_string()
   }
 }
 
 ///|
 fn Session::next_identity(
   self : Session,
+  scope : Int,
   t : @store.Table,
   id : @store.Identity,
 ) -> Int64 {
-  let v = match self.server.idents.get(self.ident_key(t)) {
+  let key = self.ident_key(scope, t)
+  let v = match self.server.idents.get(key) {
     Some(last) => last + id.increment
     None => id.seed
   }
-  self.server.idents[self.ident_key(t)] = v
+  self.server.idents[key] = v
   v
 }
 
@@ -232,10 +279,11 @@ fn Session::next_identity(
 /// The value the next generated identity would take, without consuming it.
 fn Session::peek_identity(
   self : Session,
+  scope : Int,
   t : @store.Table,
   id : @store.Identity,
 ) -> Int64 {
-  match self.server.idents.get(self.ident_key(t)) {
+  match self.server.idents.get(self.ident_key(scope, t)) {
     Some(last) => last + id.increment
     None => id.seed
   }
@@ -365,7 +413,7 @@ fn Session::check_row(
     if v is Bit(false) {
       raise @types.sql_error(
         547,
-        "The \{verb} statement conflicted with the CHECK constraint \"\{ck.name}\". The conflict occurred in database \"\{if target.scope == 1 { "tempdb" } else { self.rt.database }}\", table \"\{target.display}\"\{check_column_suffix(t, ck.expr)}.",
+        "The \{verb} statement conflicted with the CHECK constraint \"\{ck.name}\". The conflict occurred in database \"\{self.scope_database(target.scope)}\", table \"\{target.display}\"\{check_column_suffix(t, ck.expr)}.",
         state=0,
       )
     }
@@ -473,7 +521,7 @@ fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise 
       }
       self.write(scope, db.truncate(t.id))
       // TRUNCATE reseeds identity
-      self.server.idents.remove(self.ident_key(t))
+      self.server.idents.remove(self.ident_key(scope, t))
       self.rt.rowcount = 0
       self.done(234)
     }

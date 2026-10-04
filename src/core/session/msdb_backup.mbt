@@ -3,10 +3,7 @@
 // the server's BackupStore (session/backup.mbt). Column names, types,
 // nullability and identity are msdb's (captured: msdb.sys.columns on SQL
 // Server 17.0.5005, corpus backup/msdb-history). They bind as scope-2
-// sources like the catalog views, under `MSDB_VIEW_OFFSET`.
-
-///|
-const MSDB_VIEW_OFFSET : Int = 2097152
+// sources like the catalog views, with negative ids (-1 - table index).
 
 ///|
 /// (column, type, nullable, identity) of each msdb table.
@@ -219,7 +216,7 @@ fn Session::msdb_binding(
     if t.name == base {
       return Some({
         scope: 2,
-        id: MSDB_VIEW_OFFSET + k,
+        id: -1 - k,
         schema: "dbo",
         name: t.name,
         columns: t.columns.map(c => @bind.ColumnRef::{
@@ -228,6 +225,7 @@ fn Session::msdb_binding(
           ty: c.1,
           nullable: c.2,
           origin: BaseColumn(identity=c.3),
+          untyped_null: false,
         }),
       })
     }

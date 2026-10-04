@@ -47,6 +47,7 @@ pub struct Server {
   procs : Map[String, Proc]
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
+  db_ids : Map[String, Int]
   mut next_rowid : Int64
   mut next_object_id : Int
   idents : Map[String, Int64]
@@ -61,6 +62,7 @@ pub struct Server {
   // private fields
 }
 pub fn Server::create_database(Self, String) -> Unit
+pub fn Server::database_id(Self, String) -> Int?
 pub fn Server::database_name(Self, String) -> String
 pub fn Server::has_database(Self, String) -> Bool
 pub fn Server::new() -> Self
@@ -120,9 +122,10 @@ pub struct Session {
   mut tx_ended_in_trigger : Bool
   mut dateformat_set : Bool
   mut datefirst_set : Bool
-  mut read_only_write : Bool
+  mut read_only_write : String?
   // private fields
 }
+pub fn Session::attention(Self) -> Unit
 pub fn Session::cancel_wait(Self) -> Unit
 pub fn Session::close(Self) -> Unit
 pub fn Session::is_parked(Self) -> Bool
@@ -138,6 +141,7 @@ pub fn Session::set_work_limit(Self, Int64) -> Unit
 pub fn Session::stream_error(Self, Int, Int, String, Int64) -> Array[@reply.Item]
 pub fn Session::time_out(Self) -> Unit
 pub fn Session::wait_timeout(Self) -> Int?
+pub fn Session::was_cancelled(Self) -> Bool
 
 // Type aliases
 

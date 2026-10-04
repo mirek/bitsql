@@ -432,6 +432,7 @@ fn Session::fn_listextendedproperty(
   args : Array[@types.Value],
 ) -> (Array[@bind.ColumnRef], Array[Array[@types.Value]]) raise @types.SqlError {
   let col = (n : String, ty : @types.SqlType, nullable : Bool) => @bind.ColumnRef::{
+    untyped_null: false,
     qualifier: "fn_listextendedproperty",
     name: n,
     ty,

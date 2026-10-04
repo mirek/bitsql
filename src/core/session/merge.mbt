@@ -191,6 +191,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   }
   // OUTPUT: deleted ++ inserted ++ source columns ++ $action
   let action_col : @bind.ColumnRef = {
+    untyped_null: false,
     qualifier: "",
     name: "$action",
     ty: NVarChar(Some(10), @types.default_collation),
@@ -494,7 +495,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
               // INSTEAD OF INSERT sees 0 and consumes no identity value
               (Some(_), _) if io => row[i] = identity_value(c.ty, 0L)
               (Some(id), _) => {
-                let v = self.next_identity(t, id)
+                let v = self.next_identity(target.scope, t, id)
                 row[i] = identity_value(c.ty, v)
                 let iv : @types.Value = Decimal(@types.Decimal::from_int64(v))
                 self.rt.identity = iv
@@ -603,7 +604,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       MUpdate(rowid, _, new, _) => db = insert_checked(target, db, rowid, new)
       MInsert(new, _) => {
         let rowid = self.server.rowid()
-        if target.scope == 0 {
+        if is_db_scope(target.scope) {
           self.acquire(row_resource(t, rowid, new), X, Transaction)
         }
         db = insert_checked(target, db, rowid, new)

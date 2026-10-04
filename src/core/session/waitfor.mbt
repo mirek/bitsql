@@ -81,6 +81,10 @@ fn Session::exec_waitfor(
   self.waits_seen += 1
   if self.waits_seen > self.waits_done {
     if delay > 0L {
+      if self.attn.cancelling {
+        self.cur_cmd = 243
+        self.cancel_at_wait(None)
+      }
       // a delay longer than a day would outlive any client timeout
       self.wait_ms = Some(
         if delay > 86400000L {

@@ -1308,6 +1308,8 @@ set/tedious-initial.sql
 database/create-drop.sql
 database/drop-missing.sql
 database/use-missing.sql
+database/cross-database.sql
+database/cross-database-ddl.sql
 dml/merge-delete-insert-defaults.sql
 dml/merge-repeated-match.sql
 dml/merge-upsert.sql
@@ -14818,7 +14820,6 @@ msduck-runs/unicode-case.cases.json#022-latin1-general-100-cs-as-statistics
 msduck-runs/unicode-case.cases.json#033-latin1-general-100-ci-ai-statistics
 msduck-runs/unicode-case.cases.json#044-latin1-general-100-cs-ai-statistics
 msduck-runs/unicode-case.cases.json#055-latin1-general-100-bin2-statistics
-# 2026-10-03: analytic and json: newly passing msduck gaps/runs
 msduck-runs/percentile-order-type.cases.json#001-cont-bit-ordinary
 msduck-runs/percentile-order-type.cases.json#002-cont-bit-all-null
 msduck-runs/percentile-order-type.cases.json#003-cont-bit-empty
@@ -15177,7 +15178,6 @@ xml/type.cases.json#067-select-cast-n-doctype-a-a-as-xml-as-x
 xml/type.cases.json#068-select-cast-n-xml-version-1-0-encoding-utf-8-a-as-xml-as-x
 xml/type.cases.json#069-select-cast-n-a-xml-space-preserve-b-b-a-as-xml-as-x
 xml/type.cases.json#070-select-cast-n-a-x-a-as-xml-value-nvarchar-5-as-v
-# 2026-10-03: xml
 xml/type.cases.json#071-exec-sp-columns-xc
 xml/type.cases.json#072-declare-x-xml-null-declare-y-xml-set-y-null-select-x-as-x-y-
 # 2026-10-03: after analytic and xml merges
@@ -20580,7 +20580,10 @@ backup/errors.sql
 backup/media-sets.sql
 msduck-gaps/gaps-backup.cases.json#011-restore-missing-file
 msduck-gaps/gaps-backup.cases.json#012-headeronly-missing-file
+query/derived-untyped-null.sql
+query/union-untyped-null-tvf.sql
 catalog/computed-forward-refs.sql
 # 2026-10-04: newly passing
 catalog/alter-column-dependents.sql
 catalog/alter-column-filtered-index.sql
+backup/clone-three-part.sql

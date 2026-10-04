@@ -274,6 +274,7 @@ fn bind_nodes_ref(
     TableFunc(XmlNodes, [t, lit] + exts),
     [
       {
+        untyped_null: false,
         qualifier: a.name.to_lower(),
         name: columns[0].name,
         ty: Xml,

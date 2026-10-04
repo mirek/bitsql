@@ -281,7 +281,17 @@ fn bind_string_fn(
           severity=15,
         )
       }
-      let bs = args.map(a => bind_expr(env, a))
+      // a bare derived-table NULL column counts as varchar(1), the NULL
+      // keyword as nothing (captured: query/derived-untyped-null,
+      // CONCAT(NULL, 1) varchar(12), CONCAT(s.o, 1) varchar(13))
+      let bs = args.map(a => {
+        let b = bind_expr(env, a)
+        if is_untyped_null(b) && bare_column(a) is Some(_) {
+          mk(Lit(Null), VarChar(Some(1), env.collation), true)
+        } else {
+          b
+        }
+      })
       let ty = concat_type(env, bs, None)
       named("CONCAT", unicode_binary_args(bs, ty), ty, nullable=false)
     }

@@ -385,6 +385,7 @@ fn Session::getapplock(
         self.server.wake_all(self.server.locks.cancel(request))
         -1
       } else {
+        self.cancel_at_wait(Some(request))
         // park the request; its re-run finds the lock granted and returns 1
         self.applock_waited = true
         self.wait_ms = Some(timeout)
@@ -395,6 +396,7 @@ fn Session::getapplock(
       if victim == self.rt.spid {
         -3
       } else {
+        self.cancel_at_wait(request)
         self.server.victims.push(victim)
         self.applock_waited = true
         self.wait_ms = Some(timeout)

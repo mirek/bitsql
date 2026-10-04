@@ -849,8 +849,12 @@ fn Session::restore_database(
   for p in set.procs {
     self.server.procs[p.name.to_lower()] = p
   }
+  // a new database takes the next free database_id; one restored over
+  // keeps its id
+  if !exists {
+    self.server.create_database(display)
+  }
   self.server.set_db(display, set.db)
-  self.server.db_names[key] = display
   self.server.db_options[key] = {
     ..set.options,
     files: Some(files),

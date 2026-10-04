@@ -138,6 +138,22 @@ MARS transport source: [MC-SMP Specification](https://learn.microsoft.com/en-us/
   0x00 (first flight ~1.5 KB with an RSA-2048 cert). After the server's
   Finished both sides send bare TLS records. TLS 1.3-only clients are
   dropped (TLS 1.2 is the maximum under TDS 7).
+- 2026-10-04 (ATTENTION, wire probes through a logging proxy with
+  `encrypt:false`, SQL Server 17.0.5005.3; harness test/attention.test.mjs):
+  ATTENTION to a running request gets **two** response messages: first the
+  request's own response, cut short, then a separate message with only
+  DONE(status 0x20 DONE_ATTN, CurCmd 253, count 0). An idle ATTENTION gets
+  just the DONE_ATTN message. The cut-short response has no ERROR token and
+  ends with DONE(ERROR 0x02) in a batch / DONEPROC(ERROR, 224) in an RPC.
+  The last statement completion (held back because its MORE bit is not yet
+  known) is consumed: in a batch it becomes that final DONE(ERROR, its
+  CurCmd, no count), else CurCmd is 253; in an RPC it is dropped. ENVCHANGE
+  and COLMETADATA flush it, INFO does not. A blocked SELECT has already
+  sent COLMETADATA and ends DONE(ERROR, 193); a lock-blocked DML adds INFO
+  3621 before the final DONE (not under XACT_ABORT, which instead rolls
+  back: ROLLBACK ENVCHANGE, DONE(ERROR, 253)). Inside TRY the interrupted
+  statement completes with its own CurCmd and no CATCH runs. Rules
+  implemented in src/core/session/attention.mbt.
 
 ## Reference Files
 
