@@ -11,9 +11,11 @@ fn Parser::stmt_list(
   self : Parser,
   stop : (Parser) -> Bool,
   top? : Bool = false,
+  resumed? : Bool = false,
 ) -> Array[@ast.Stmt] raise @ast.SyntaxError {
   let out = []
-  let mut terminated = true
+  // `resumed`: error recovery restarts here after an unterminated statement
+  let mut terminated = !resumed
   while true {
     while self.eat_punct(";") {
       terminated = true
@@ -22,7 +24,7 @@ fn Parser::stmt_list(
       break
     }
     let t = self.peek()
-    if !terminated && out.length() > 0 {
+    if !terminated && (out.length() > 0 || resumed) {
       if t.is_kw("WITH") {
         raise syntax_error(
           319,

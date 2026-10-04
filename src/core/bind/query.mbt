@@ -888,7 +888,27 @@ fn bind_clause(
   e : @ast.Expr,
   clause : Clause,
   grouped : Bool,
+  written? : Map[String, String] = Map([]),
 ) -> @ir.Expr raise @types.SqlError {
+  // a name ambiguous among the FROM sources is 209 even when the grouped
+  // row has only one of them (captured: tail5/b1-ungrouped-name)
+  if grouped {
+    let mut ambiguous : @types.SqlError? = None
+    ignore(
+      any_expr(e, x => {
+        if ambiguous is None && x.kind is Column(parts) {
+          ignore(bind_column(inner, parts)) catch {
+            @types.SqlError(number=209, ..) as a => ambiguous = Some(a)
+            _ => ()
+          }
+        }
+        false
+      }),
+    )
+    if ambiguous is Some(a) {
+      raise a
+    }
+  }
   bind_expr(env, e) catch {
     @types.SqlError(number=207 | 4104, ..) as failure if grouped => {
       let bad : Ref[ColumnRef?] = Ref(None)
@@ -909,10 +929,13 @@ fn bind_clause(
       )
       match bad.val {
         Some(c) => {
+          // a base table or view is named as written in FROM, schema
+          // included, even when aliased (captured: tail5/b1-ungrouped-name,
+          // msduck json-aggregates#033 'dbo.json_agg_src.g')
           let name = if c.qualifier == "" {
             c.name
           } else {
-            c.qualifier + "." + c.name
+            written.get(c.qualifier).unwrap_or(c.qualifier) + "." + c.name
           }
           match clause {
             SelectList =>
@@ -1337,6 +1360,7 @@ fn bind_select_query(
   }
   let (source, cols) = bind_from(env, s.from)
   let inner = env.with_source(cols, source)
+  let written = written_names(s.from)
   let mut plan = match s.where_ {
     Some(w) => {
       if has_aggregate(w) {
@@ -1344,6 +1368,9 @@ fn bind_select_query(
       }
       if has_window(w) {
         raise window_misplaced()
+      }
+      if has_next_value(w) {
+        raise next_value_misplaced()
       }
       let pred = bind_expr(inner, w)
       // a contradiction between integer literals (`WHERE 1=0`) removes
@@ -1413,14 +1440,34 @@ fn bind_select_query(
     plan = Aggregate(plan, g.keys, scope_ordered_aggs(g.aggs), sets=g.sets)
     base = env.with_source(g.columns(), plan)
     match having {
-      Some(h) => plan = Filter(plan, bind_clause(base, inner, h, Having, true))
+      Some(h) =>
+        plan = Filter(plan, bind_clause(base, inner, h, Having, true, written~))
       None => ()
     }
   }
   // window functions: appended to the (grouped) row
   let wins : Array[@ir.WindowCall] = []
+  // NEXT VALUE FOR ... OVER: one window per sequence (same OVER shares
+  // values; captured: tail5/b1-next-value-over)
+  check_next_value_overs(env, items)
+  let seq_wins : Map[String, Int] = Map([])
   let win_rewrite = (e : @ast.Expr) => {
     map_expr(e, x => {
+      if x.kind is NextValueFor(name, Some(over)) {
+        let key = match (env.catalog.sequence)(name) {
+          Some((k, _)) => k
+          None => ""
+        }
+        match seq_wins.get(key) {
+          Some(i) => return Some(synthetic("\u{1}w\{i}"))
+          None => ()
+        }
+        let w = bind_next_value_window(base, x, over)
+        let i = wins.length()
+        wins.push(w)
+        seq_wins[key] = i
+        return Some(synthetic("\u{1}w\{i}"))
+      }
       guard is_window(x) && x.kind is Call(call) else { return None }
       let w = bind_window_call(base, call)
       let i = wins.length()
@@ -1434,6 +1481,11 @@ fn bind_select_query(
       None => None
     }
   })
+  for o in orders {
+    if has_next_value(o) {
+      raise next_value_misplaced()
+    }
+  }
   orders = orders.map(o => win_rewrite(o))
   let full = if wins.is_empty() {
     base
@@ -1446,9 +1498,14 @@ fn bind_select_query(
         name: "\u{1}w\{i}",
         ty: w.ty,
         // captured: PERCENTILE_DISC over a NOT NULL key is NOT NULL
-        // (analytic/percentile)
-        nullable: !(w.func is PercentileDisc) || w.order[0].expr.nullable,
-        origin: Aggregate,
+        // (analytic/percentile); NEXT VALUE FOR is NOT NULL, flags 0
+        nullable: !(w.func is (PercentileDisc | NextValue)) ||
+        (w.func is PercentileDisc && w.order[0].expr.nullable),
+        origin: if w.func is NextValue {
+          SetOperation
+        } else {
+          Aggregate
+        },
       })
     }
     env.with_columns(wc)
@@ -1474,7 +1531,7 @@ fn bind_select_query(
                 { name: c.name, quoted: true, span: item.span, },
               ]
               let e : @ast.Expr = { kind: Column(parts), span: item.span, }
-              bind_clause(full, inner, e, SelectList, true)
+              bind_clause(full, inner, e, SelectList, true, written~)
             } else {
               mk(Col(i), c.ty, c.nullable)
             }
@@ -1495,6 +1552,7 @@ fn bind_select_query(
           items[idx].unwrap(),
           SelectList,
           grouped,
+          written~,
         )
         let origin : @ir.Origin = match b.kind {
           // also a column after constant folding (CASE WHEN 1=1 THEN col ...)
@@ -1535,6 +1593,7 @@ fn bind_select_query(
           items[idx].unwrap(),
           SelectList,
           grouped,
+          written~,
         )
         let value = compound_assign(info, op, rhs)
         targets.push((info.slot, info.ty))
@@ -1569,6 +1628,7 @@ fn bind_select_query(
       result,
       exprs,
       grouped,
+      written,
     )
     // a constant key: hidden it is 408, projected it is dropped from the
     // sort and the ORDER token (captured: SELECT 1 AS k … ORDER BY k and
@@ -1732,6 +1792,7 @@ fn order_key(
   result : Array[@ir.ResultColumn],
   exprs : Array[@ir.Expr],
   grouped : Bool,
+  written : Map[String, String],
 ) -> (@ir.Expr, Int) raise @types.SqlError {
   match original.kind {
     IntLit(n) => {
@@ -1772,7 +1833,7 @@ fn order_key(
     }
     _ => ()
   }
-  let key = bind_clause(full, inner, rewritten, OrderBy, grouped)
+  let key = bind_clause(full, inner, rewritten, OrderBy, grouped, written~)
   let text = expr_key(original)
   // a key calling a user function is never matched to a select item
   // (captured: udf/scalar-basics, ORDER 0)
@@ -2227,4 +2288,33 @@ fn literal_only(e : @ast.Expr) -> Bool {
     Binary(_, a, b) => literal_only(a) && literal_only(b)
     _ => false
   }
+}
+
+///|
+/// The name a FROM base table or view is written with (schema included,
+/// delimiters removed), keyed by its column qualifier (alias or name,
+/// lowercased): 8120/8121/8127 print it even for aliased tables.
+fn written_names(from : Array[@ast.TableRef]) -> Map[String, String] {
+  let out : Map[String, String] = Map([])
+  fn walk(t : @ast.TableRef) {
+    match t.kind {
+      Table(name, alias_~, ..) => {
+        let q = match alias_ {
+          Some(a) => a.name
+          None => name.base()
+        }
+        out[q.to_lower()] = name.parts.map(p => p.name).join(".")
+      }
+      Join(_, l, r, ..) => {
+        walk(l)
+        walk(r)
+      }
+      _ => ()
+    }
+  }
+
+  for t in from {
+    walk(t)
+  }
+  out
 }

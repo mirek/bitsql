@@ -400,6 +400,8 @@ pub fn stream(
         emit(r.map(e => eval(ctx, e)))
       }
     TableFunc(f, args) => stream_table_fn(ctx, f, args, emit)
+    Window(input, calls) if next_value_streams(calls) =>
+      stream_next_value_window(ctx, run(ctx, input), calls, emit)
     WithParams(args, inner) => stream(params_ctx(ctx, args), inner, emit)
     Unpivot(input, keep~, columns~, names~) =>
       run_unpivot(ctx, input, keep, columns, names, emit)

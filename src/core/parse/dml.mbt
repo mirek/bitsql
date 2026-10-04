@@ -189,6 +189,14 @@ fn Parser::update_stmt(
   self : Parser,
   ctes : Array[@ast.Cte],
 ) -> @ast.Update raise @ast.SyntaxError {
+  self.forbid_nvf_over(() => self.update_body(ctes))
+}
+
+///|
+fn Parser::update_body(
+  self : Parser,
+  ctes : Array[@ast.Cte],
+) -> @ast.Update raise @ast.SyntaxError {
   self.expect_kw("UPDATE")
   let top = self.dml_top()
   let target = self.dml_target()
@@ -243,16 +251,33 @@ fn Parser::merge_stmt(
   self : Parser,
   ctes : Array[@ast.Cte],
 ) -> @ast.Merge raise @ast.SyntaxError {
+  self.forbid_nvf_over(() => self.merge_body(ctes))
+}
+
+///|
+fn Parser::merge_body(
+  self : Parser,
+  ctes : Array[@ast.Cte],
+) -> @ast.Merge raise @ast.SyntaxError {
   self.expect_kw("MERGE")
   let top = self.dml_top()
   ignore(self.eat_kw("INTO"))
   let start = self.start()
-  let name = self.object_name()
-  let hints = self.table_hints()
-  let alias_ = self.table_alias(merge_target=true)
-  let target : @ast.TableRef = {
-    kind: Table(name, alias_~, hints~),
-    span: self.span_from(start),
+  let target : @ast.TableRef = if self.peek().kind is Variable {
+    // a table variable takes no hints: 156 near 'WITH' (captured:
+    // tail/tablevar-hints)
+    let v = self.peek().text
+    self.pos += 1
+    if self.is_kw("WITH") && self.is_punct_at(1, "(") {
+      raise near(self.peek())
+    }
+    let alias_ = self.table_alias(merge_target=true)
+    { kind: TableVar(v, alias_~, hints=[]), span: self.span_from(start), }
+  } else {
+    let name = self.object_name()
+    let hints = self.table_hints()
+    let alias_ = self.table_alias(merge_target=true)
+    { kind: Table(name, alias_~, hints~), span: self.span_from(start), }
   }
   self.expect_kw("USING")
   let source = self.table_ref()

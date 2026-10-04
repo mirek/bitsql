@@ -7,6 +7,11 @@ fn new_parser(src : String) -> Parser raise @ast.SyntaxError {
     depth: 0,
     in_procedure: false,
     table_variable: false,
+    windows: None,
+    last_windows: None,
+    over_named: false,
+    deferred: None,
+    nvf_over_forbidden: false,
   }
 }
 
@@ -18,7 +23,11 @@ fn new_parser(src : String) -> Parser raise @ast.SyntaxError {
 /// 191 nesting too deep) and the line of the offending token. Never panics.
 pub fn parse_batch(src : String) -> Array[@ast.Stmt] raise @ast.SyntaxError {
   let p = new_parser(src)
-  p.stmt_list(never, top=true)
+  let stmts = p.stmt_list(never, top=true)
+  if p.deferred is Some(e) {
+    raise e
+  }
+  stmts
 }
 
 ///|
@@ -34,6 +43,9 @@ pub fn parse_statement(src : String) -> @ast.Stmt raise @ast.SyntaxError {
   }
   if !(p.peek().kind is Eof) {
     raise p.error()
+  }
+  if p.deferred is Some(e) {
+    raise e
   }
   s
 }

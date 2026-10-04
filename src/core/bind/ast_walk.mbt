@@ -61,6 +61,11 @@ fn map_expr(
     AtTimeZone(a, b) => AtTimeZone(m(a), m(b))
     Paren(a) => Paren(m(a))
     MethodCall(t, n, args) => MethodCall(m(t), n, args.map(m))
+    NextValueFor(n, Some(o)) =>
+      NextValueFor(
+        n,
+        Some({ ..o, order_by: o.order_by.map(i => { ..i, expr: m(i.expr), }), }),
+      )
     other => other
   }
   { kind, span: e.span, }
@@ -154,7 +159,7 @@ fn uses_next_value(exprs : Array[@ast.Expr]) -> Bool raise @types.SqlError {
   for e in exprs {
     ignore(
       map_expr(e, x => {
-        if x.kind is NextValueFor(_) {
+        if x.kind is NextValueFor(_, _) {
           found = true
         }
         None
@@ -207,6 +212,22 @@ fn check_next_value_context(
       raise next_value_set_op()
     SetOperation(_, _, _) as b if body_uses_next_value(b) =>
       raise next_value_set_op()
+    // captured (tail5/b1-next-value-over): TOP/OFFSET 11739, a plain NEXT
+    // VALUE FOR in a query with ORDER BY 11723
+    Select(s) if (s.top is Some(_) || q.offset is Some(_)) &&
+      uses_next_value(select_exprs(s)) =>
+      raise @types.sql_error(
+        11739,
+        "NEXT VALUE FOR function cannot be used if ROWCOUNT option has been set, or the query contains TOP or OFFSET.",
+        severity=15,
+      )
+    Select(s) if !q.order_by.is_empty() &&
+      select_exprs(s).iter().any(plain_next_value) =>
+      raise @types.sql_error(
+        11723,
+        "NEXT VALUE FOR function cannot be used directly in a statement that contains an ORDER BY clause unless the OVER clause is specified.",
+        severity=15,
+      )
     _ => ()
   }
 }
@@ -272,4 +293,85 @@ pub fn null_aggregate_error(e : @ast.Expr) -> @types.SqlError? {
   null_aggregate(e).map(n => {
     err(8117, "Operand data type NULL is invalid for \{n} operator.")
   })
+}
+
+///|
+fn has_next_value(e : @ast.Expr) -> Bool {
+  any_expr(e, x => x.kind is NextValueFor(_, _))
+}
+
+///|
+/// 11720: NEXT VALUE FOR in WHERE / ORDER BY (captured:
+/// tail5/b1-next-value-over).
+fn next_value_misplaced() -> @types.SqlError {
+  @types.sql_error(
+    11720,
+    "NEXT VALUE FOR function is not allowed in the TOP, OVER, OUTPUT, ON, WHERE, GROUP BY, HAVING, or ORDER BY clauses.",
+    severity=15,
+  )
+}
+
+///|
+/// 11727: every NEXT VALUE FOR of one sequence in a select list needs the
+/// same OVER clause (or none) (captured: tail5/b1-next-value-over).
+fn check_next_value_overs(
+  env : Env,
+  items : Array[@ast.Expr?],
+) -> Unit raise @types.SqlError {
+  let seen : Map[String, String] = Map([])
+  for item in items {
+    guard item is Some(e) else { continue }
+    ignore(
+      map_expr(e, x => {
+        guard x.kind is NextValueFor(name, over) else { return None }
+        let key = match (env.catalog.sequence)(name) {
+          Some((k, _)) => k
+          None => return None
+        }
+        let shape = match over {
+          Some(o) =>
+            o.order_by
+            .map(i => expr_key(i.expr) + (if i.desc { " desc" } else { "" }))
+            .join(",")
+          None => ""
+        }
+        match seen.get(key) {
+          Some(s) if s != shape =>
+            raise @types.sql_error(
+              11727, "NEXT VALUE FOR functions for a given sequence object must have exactly the same OVER clause definition.",
+            )
+          _ => seen[key] = shape
+        }
+        None
+      }),
+    )
+  }
+}
+
+///|
+/// True when `e` uses NEXT VALUE FOR … OVER (outside subqueries).
+pub fn has_next_value_over(e : @ast.Expr) -> Bool {
+  any_expr(e, x => x.kind is NextValueFor(_, Some(_)))
+}
+
+///|
+/// A NEXT VALUE FOR without OVER outside window function calls (inside one
+/// it is 11720 when the call binds; captured: msduck
+/// percentile-runtime-fraction#040).
+fn plain_next_value(e : @ast.Expr) -> Bool {
+  let mut found = false
+  ignore(
+    map_expr(e, x => {
+      if is_window(x) {
+        return Some(x)
+      }
+      if x.kind is NextValueFor(_, None) {
+        found = true
+      }
+      None
+    }) catch {
+      _ => e
+    },
+  )
+  found
 }

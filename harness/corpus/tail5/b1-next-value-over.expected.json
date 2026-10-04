@@ -1,0 +1,976 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "679ea4c6ee5f07a7",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,1],[2,2],[3,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,6],[2,5],[3,4]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[3,7],[2,8],[1,9]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[2]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"w","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,10,10],[2,11,11],[3,12,12]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11727,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR functions for a given sequence object must have exactly the same OVER clause definition."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11727},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11723,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used directly in a statement that contains an ORDER BY clause unless the OVER clause is specified."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11723},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":11716,"state":1,"class":15,"lineNumber":1,"message":"NEXT VALUE FOR function does not support the PARTITION BY clause."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11716},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":11718,"state":1,"class":15,"lineNumber":1,"message":"NEXT VALUE FOR function does not support an empty OVER clause."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11718},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11737,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function does not support the ROWS and RANGE clauses."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11737},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,13],[2,14],[3,15]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[1,116],[2,117],[3,118]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"r","type":"IntN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[1,19,"3"],[2,20,"2"],[3,21,"1"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,22],[2,23],[3,24]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[27,1],[26,2],[25,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":195},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[2]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 6
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[28],[29],[30]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":true},{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":194},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":194},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":3},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 6
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11717,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function does not support the OVER clause in default constraints, UPDATE statements, or MERGE statements."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11717},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,0],[2,-1],[3,-2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[-2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 5308,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Windowed functions, aggregates and NEXT VALUE FOR functions do not support integer indices as ORDER BY clause expressions."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":5308},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}],
+          "rows": [[31],[32],[33]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[2,34],[3,35]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11739,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used if ROWCOUNT option has been set, or the query contains TOP or OFFSET."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11739},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"g","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,36],[2,37]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11719,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function is not allowed in check constraints, default objects, computed columns, views, user-defined functions, user-defined aggregates, user-defined table types, sub-queries, common table expressions, derived tables or return statements."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11719},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "s",
+              "type": "VarChar",
+              "length": 5,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [["a",38],["b",39],["c",40]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[40]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":447,"state":0,"class":16,"lineNumber":1,"message":"Expression type int is invalid for COLLATE clause."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":447},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "s",
+              "type": "VarChar",
+              "length": 5,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [["a",41],["b",42],["c",43]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11727,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR functions for a given sequence object must have exactly the same OVER clause definition."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11727},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11720,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function is not allowed in the TOP, OVER, OUTPUT, ON, WHERE, GROUP BY, HAVING, or ORDER BY clauses."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11720},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11720,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function is not allowed in the TOP, OVER, OUTPUT, ON, WHERE, GROUP BY, HAVING, or ORDER BY clauses."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11720},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195}],
+      "stream": [{"name":"DONE","status":16,"curCmd":195}],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[45]]}],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [{"columns":[{"name":"v","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[48]]}],
+      "done": [{"kind":"done","rowCount":3,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"t","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}
+          ],
+          "rows": [[1,49,6],[2,50,5],[3,51,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11739,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used if ROWCOUNT option has been set, or the query contains TOP or OFFSET."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11739},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11739,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used if ROWCOUNT option has been set, or the query contains TOP or OFFSET."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11739},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11723,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used directly in a statement that contains an ORDER BY clause unless the OVER clause is specified."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11723},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11721,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used directly in a statement that uses a DISTINCT, UNION, UNION ALL, EXCEPT or INTERSECT operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11721},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"w","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,52,52],[2,53,53],[3,54,54]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"w","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[1,55,55],[2,56,56],[3,57,57]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ORDER","columns":[1]},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11721,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function cannot be used directly in a statement that uses a DISTINCT, UNION, UNION ALL, EXCEPT or INTERSECT operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11721},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[57]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null}
+          ],
+          "rows": [[3,1],[2,2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11728,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The sequence object 'sx' has reached its minimum or maximum value. Restart the sequence object to allow new values to be generated."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":2},{"name":"ERROR","number":11728},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[2]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":11716,"state":1,"class":15,"lineNumber":1,"message":"NEXT VALUE FOR function does not support the PARTITION BY clause."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11716},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 11717,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "NEXT VALUE FOR function does not support the OVER clause in default constraints, UPDATE statements, or MERGE statements."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":11717},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 1046,
+          "state": 1,
+          "class": 15,
+          "lineNumber": 1,
+          "message": "Subqueries are not allowed in this context. Only scalar expressions are allowed."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":1046},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"v","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[58,1],[59,2],[60,3]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":3,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":3,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"current_value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":8,"collation":null}],
+          "rows": [[60]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

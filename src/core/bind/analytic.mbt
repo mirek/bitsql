@@ -131,7 +131,7 @@ fn bind_percentile(
   // column references is accepted (@p + 0, ABS(@p), (SELECT .5), RAND()...)
   // ... but column references, also inside a subquery with a FROM clause,
   // are 8726, and NEXT VALUE FOR is 11720
-  if any_expr(call.args[0], x => x.kind is NextValueFor(_), subqueries=false) {
+  if any_expr(call.args[0], x => x.kind is NextValueFor(_, _), subqueries=false) {
     raise err(
       11720,
       "NEXT VALUE FOR function is not allowed in the TOP, OVER, OUTPUT, ON, WHERE, GROUP BY, HAVING, or ORDER BY clauses.",
@@ -540,4 +540,37 @@ fn query_reads_tables(q : @ast.Query) -> Bool {
     }
   }
   body(q.body)
+}
+
+///|
+/// `NEXT VALUE FOR seq OVER (ORDER BY ...)` as a window call (captured:
+/// tail5/b1-next-value-over; the OVER clause shape was checked by the
+/// parser: 11716/11718/11737).
+fn bind_next_value_window(
+  env : Env,
+  e : @ast.Expr,
+  over : @ast.Over,
+) -> @ir.WindowCall raise @types.SqlError {
+  for o in over.order_by {
+    if o.expr.kind is IntLit(_) {
+      raise err(
+        5308, "Windowed functions, aggregates and NEXT VALUE FOR functions do not support integer indices as ORDER BY clause expressions.",
+      )
+    }
+  }
+  let order = over.order_by.map(o => {
+    let k = bind_expr(env, o.expr)
+    @ir.SortKey::{ expr: k, desc: o.desc, collation: k.ty.collation(), }
+  })
+  let call = bind_expr(env, e)
+  {
+    func: NextValue,
+    args: [call],
+    partition: [],
+    partition_collations: [],
+    order,
+    frame: None,
+    ty: call.ty,
+    ignore_nulls: false,
+  }
 }

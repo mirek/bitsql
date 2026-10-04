@@ -38,7 +38,18 @@ fn Parser::query_with(
   let order_by = if self.is_kw("ORDER") {
     self.pos += 1
     self.expect_kw("BY")
-    self.order_items()
+    // the ORDER BY sees the named windows of its SELECT; under a set
+    // operation such a key is 104 later, not 5362 (captured:
+    // tail5/b1-named-window)
+    let saved = self.windows
+    self.windows = if body is Select(_) {
+      self.last_windows
+    } else {
+      Some(unchecked_windows())
+    }
+    let items = self.order_items()
+    self.windows = saved
+    items
   } else {
     []
   }
@@ -353,6 +364,8 @@ fn Parser::select_core(self : Parser) -> @ast.Select raise @ast.SyntaxError {
     false
   }
   let top = self.top(true)
+  let saved_windows = self.windows
+  self.windows = self.prescan_windows()
   let items = self.select_items(true)
   let into = if self.eat_kw("INTO") { Some(self.object_name()) } else { None }
   let from = if self.eat_kw("FROM") { self.from_list() } else { [] }
@@ -365,6 +378,9 @@ fn Parser::select_core(self : Parser) -> @ast.Select raise @ast.SyntaxError {
     []
   }
   let having = if self.eat_kw("HAVING") { Some(self.cond()) } else { None }
+  self.skip_window_clause()
+  self.last_windows = self.windows
+  self.windows = saved_windows
   {
     distinct,
     top,
@@ -519,7 +535,9 @@ fn Parser::table_alias(
   if self.eat_kw("AS") {
     return Some(self.ident())
   }
-  if self.at_ident() && !(merge_target && self.is_kw("USING")) {
+  if self.at_ident() &&
+    !(merge_target && self.is_kw("USING")) &&
+    !self.window_clause_at(self.pos) {
     Some(self.ident())
   } else {
     None

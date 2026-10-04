@@ -732,6 +732,31 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
   }
   let stmts = @parse.parse_batch(text) catch {
     e => {
+      // errors found by the parser's error recovery come first (captured:
+      // tail/tablevar-hints, 156 then 319)
+      let all = @parse.batch_errors(text)
+      if all.length() > 1 && self.try_depth == 0 {
+        for extra in all[:all.length() - 1] {
+          self.message(
+            @types.sql_error(
+              extra.number(),
+              extra.message(),
+              state=extra.state(),
+              severity=extra.severity(),
+            ),
+            extra.line(),
+          )
+        }
+        let e = all[all.length() - 1]
+        let err = @types.sql_error(
+          e.number(),
+          e.message(),
+          state=e.state(),
+          severity=e.severity(),
+        )
+        self.text_error(err, e.line())
+        return
+      }
       let err = @types.sql_error(
         e.number(),
         e.message(),

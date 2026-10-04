@@ -460,7 +460,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
     }
     Parse(x, tn, culture~, try_~) => bind_parse(env, x, tn, culture, try_)
     AtTimeZone(x, z) => bind_at_time_zone(env, x, z)
-    NextValueFor(name) =>
+    NextValueFor(name, _) =>
       match (env.catalog.sequence)(name) {
         // evaluated by the session (Ctx::ext); never folded
         Some((key, ty)) =>

@@ -10,7 +10,10 @@ import { repoDir } from './env.mjs'
 import { loadCorpus, readExpected } from './corpus.mjs'
 
 // Errors the parser itself raises; any other captured error means SQL Server parsed the batch.
-export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 1034, 10713])
+// Named-window (4123, 5362-5367, 16211) and NEXT VALUE FOR … OVER (117xx)
+// errors are resolved while parsing too (parse/window.mbt).
+export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 1034, 10713,
+  4123, 5362, 5364, 5365, 5366, 5367, 16211, 11716, 11717, 11718, 11737])
 
 function parsecheckBinary() {
   if (process.env.BITSQL_PARSECHECK) return process.env.BITSQL_PARSECHECK
@@ -37,15 +40,16 @@ export async function parseDiff(selectors = []) {
   const dir = mkdtempSync(join(tmpdir(), 'bitsql-parse-'))
   const input = join(dir, 'batches.json')
   writeFileSync(input, JSON.stringify(items.map(x => x.sql)))
-  const run = spawnSync(parsecheckBinary(), ['--json', input], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  const run = spawnSync(parsecheckBinary(), ['--json', input, '--all'], { encoding: 'utf8', maxBuffer: 1 << 28 })
   if (run.status !== 0) throw new Error(`parsecheck failed: ${run.stderr}`)
   const lines = run.stdout.split('\n')
   const disagreements = []
   items.forEach((item, i) => {
+    // every syntax error of the batch, in order (parser error recovery)
     const out = lines[i]
-    const ours = out === 'ok' ? null : Number(out.split(' ')[0])
-    const theirs = item.syntax[0] ?? null
-    if (ours !== theirs) disagreements.push({ id: item.id, ours: out, sqlServer: theirs, sql: item.sql.slice(0, 200) })
+    const ours = out === 'ok' ? '' : out
+    const theirs = item.syntax.join(' ')
+    if (ours !== theirs) disagreements.push({ id: item.id, ours: out, sqlServer: theirs || null, sql: item.sql.slice(0, 200) })
   })
   return { total: items.length, disagreements }
 }

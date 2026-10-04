@@ -367,6 +367,9 @@ pub(all) enum WinFn {
   /// GROUP key is the call's `order`, which then does not order the window.
   PercentileCont
   PercentileDisc
+  /// NEXT VALUE FOR seq OVER (ORDER BY ...): args = [the bound NEXT VALUE
+  /// FOR call], evaluated once per row in the window's order
+  NextValue
 } derive(Debug, Eq)
 
 ///|

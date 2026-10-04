@@ -25,7 +25,7 @@ fn simple_param_exprs(exprs : Array[@ast.Expr]) -> Bool {
         | Exists(_)
         | InQuery(_, _, ..)
         | Quantified(_, _, _, _)
-        | NextValueFor(_)
+        | NextValueFor(_, _)
         | Parse(_, _, ..)
         | AtTimeZone(_, _)) {
         ok = false

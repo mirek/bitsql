@@ -1723,6 +1723,14 @@ fn Session::check_default(
       severity=15,
     )
   }
+  // after 1046 (captured: tail5/b1-next-value-over)
+  if @bind.has_next_value_over(e) {
+    raise @types.sql_error(
+      11717,
+      "NEXT VALUE FOR function does not support the OVER clause in default constraints, UPDATE statements, or MERGE statements.",
+      severity=15,
+    )
+  }
   if is_newsequentialid(self.slice(e.span)) {
     return
   }

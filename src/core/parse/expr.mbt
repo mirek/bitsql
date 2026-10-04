@@ -448,17 +448,35 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
           self.pos += 3
           let name = self.object_name()
           // NEXT VALUE FOR s OVER (ORDER BY ...) numbers rows in that order
-          // (captured: msduck-runs sequence-reference#005); not emulated
-          if self.is_kw("OVER") {
-            raise @ast.SyntaxError(
-              number=50100,
-              severity=16,
-              state=1,
-              message="Emulator: NEXT VALUE FOR with an OVER clause is not supported.",
-              span=self.peek().span,
-            )
+          // (captured: msduck-runs sequence-reference#005,
+          // tail5/b1-next-value-over); only ORDER BY is allowed
+          let over = if self.is_kw("OVER") {
+            let o = self.over()
+            let fail = (n : Int, m : String) => {
+              self.defer_error(window_error(n, 1, m, o.span))
+            }
+            if self.nvf_over_forbidden {
+              fail(
+                11717, "NEXT VALUE FOR function does not support the OVER clause in default constraints, UPDATE statements, or MERGE statements.",
+              )
+            } else if !o.partition_by.is_empty() {
+              fail(
+                11716, "NEXT VALUE FOR function does not support the PARTITION BY clause.",
+              )
+            } else if o.frame is Some(_) {
+              fail(
+                11737, "NEXT VALUE FOR function does not support the ROWS and RANGE clauses.",
+              )
+            } else if o.order_by.is_empty() {
+              fail(
+                11718, "NEXT VALUE FOR function does not support an empty OVER clause.",
+              )
+            }
+            Some(o)
+          } else {
+            None
           }
-          mk(NextValueFor(name), self.span_from(start))
+          mk(NextValueFor(name, over), self.span_from(start))
         }
         _ =>
           if niladic(u) && next_paren {
@@ -672,6 +690,7 @@ fn Parser::call(
   }
   let over = if self.is_kw("OVER") {
     let o = self.over()
+    self.check_named_window_order(name, o)
     Some({ ..o, ignore_nulls: nulls.unwrap_or(false), })
   } else {
     None
@@ -720,52 +739,54 @@ fn Parser::order_item(self : Parser) -> @ast.OrderItem raise @ast.SyntaxError {
 fn Parser::over(self : Parser) -> @ast.Over raise @ast.SyntaxError {
   let start = self.start()
   self.expect_kw("OVER")
+  // `OVER w`: a named window of the SELECT (window.mbt)
+  if ident_token(self.peek()) {
+    let t = self.advance()
+    let o = self.named_window(tok_ident(t), self.span_from(start))
+    self.over_named = true
+    return o
+  }
   self.expect_punct("(")
-  let partition_by = []
-  if self.is_kw("PARTITION") && self.is_kw_at(1, "BY") {
-    self.pos += 2
-    partition_by.push(self.scalar())
-    while self.eat_punct(",") {
-      partition_by.push(self.scalar())
-    }
-  }
-  let order_by = if self.is_kw("ORDER") {
-    self.pos += 1
-    self.expect_kw("BY")
-    self.order_items()
-  } else {
-    []
-  }
-  let frame : @ast.Frame? = if self.is_kw("ROWS") || self.is_kw("RANGE") {
-    // captured: a frame with neither PARTITION BY nor ORDER BY is a syntax
-    // error at ROWS/RANGE (with PARTITION BY only it is 10756)
-    if partition_by.is_empty() && order_by.is_empty() {
-      raise self.error()
-    }
-    let unit : @ast.FrameUnit = if self.eat_kw("ROWS") {
-      Rows
-    } else {
-      self.pos += 1
-      Range
-    }
-    if self.eat_kw("BETWEEN") {
-      let s = self.frame_bound(start=true)
-      self.expect_kw("AND")
-      let e = self.frame_bound(start=false)
-      Some({ unit, start: s, end: Some(e), })
-    } else {
-      Some({ unit, start: self.frame_bound(start=true), end: None, })
-    }
-  } else {
-    None
-  }
+  let base = self.window_base(allow_alone=false)
+  let (partition_by, order_by, frame) = self.window_elements(
+    frame_needs_keys=base is None,
+  )
   self.expect_punct(")")
-  {
+  let own : @ast.Over = {
     partition_by,
     order_by,
     frame,
     span: self.span_from(start),
     ignore_nulls: false,
+  }
+  match base {
+    None => {
+      self.over_named = false
+      own
+    }
+    Some(b) => {
+      let w = self.named_window(b, own.span)
+      self.over_named = true
+      match merge_window(w, own) {
+        Some(m) => {
+          if m.frame is Some(_) && m.order_by.is_empty() {
+            self.defer_error(frame_without_order(own.span))
+          }
+          m
+        }
+        None => {
+          self.defer_error(
+            window_error(
+              4123,
+              2,
+              "Window element in OVER clause can not also be specified in WINDOW clause.",
+              own.span,
+            ),
+          )
+          own
+        }
+      }
+    }
   }
 }
 

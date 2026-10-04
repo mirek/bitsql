@@ -9,6 +9,8 @@ async fn main {
   let quiet = args.contains("--quiet")
   // --json FILE: FILE holds a JSON array of batch texts; print one line per
   // batch: "ok" or "<number> <line> <message>" (harness parse differential).
+  // --all: print every recovered syntax error number instead ("156 319").
+  let all = args.contains("--all")
   match args.search("--json") {
     Some(i) if i + 1 < args.length() => {
       let json = @json.parse(@fs.read_file(args[i + 1]).text())
@@ -19,7 +21,14 @@ async fn main {
           ignore(@parse.parse_batch(sql))
           "ok"
         } catch {
-          e => "\{e.number()} \{e.line()} \{e.message()}"
+          e =>
+            if all {
+              @parse.batch_errors(sql)
+              .map(e => e.number().to_string())
+              .join(" ")
+            } else {
+              "\{e.number()} \{e.line()} \{e.message()}"
+            }
         }
         @stdio.stdout.write(line + "\n")
       }

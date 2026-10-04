@@ -284,9 +284,12 @@ fn W::expr(self : W, e : Expr) -> Unit {
       self.close()
     }
     AtTimeZone(x, z) => self.node2("at-time-zone", x, z)
-    NextValueFor(n) => {
+    NextValueFor(n, over) => {
       self.open("next-value-for")
       self.atom(n.to_sexp())
+      if over is Some(o) {
+        self.over(o)
+      }
       self.close()
     }
     Paren(x) => {
@@ -345,32 +348,37 @@ fn W::call(self : W, c : FuncCall) -> Unit {
     self.close()
   }
   if c.over is Some(o) {
-    self.s(" (over")
-    if o.partition_by.length() > 0 {
-      self.s(" (partition-by")
-      for p in o.partition_by {
-        self.sp()
-        self.expr(p)
-      }
-      self.close()
+    self.over(o)
+  }
+  self.close()
+}
+
+///|
+fn W::over(self : W, o : Over) -> Unit {
+  self.s(" (over")
+  if o.partition_by.length() > 0 {
+    self.s(" (partition-by")
+    for p in o.partition_by {
+      self.sp()
+      self.expr(p)
     }
-    if o.order_by.length() > 0 {
-      self.s(" (order-by")
-      self.order_items(o.order_by)
-      self.close()
-    }
-    if o.frame is Some(f) {
-      self.s(
-        match f.unit {
-          Rows => " (rows"
-          Range => " (range"
-        },
-      )
-      self.frame_bound(f.start)
-      if f.end is Some(e) {
-        self.frame_bound(e)
-      }
-      self.close()
+    self.close()
+  }
+  if o.order_by.length() > 0 {
+    self.s(" (order-by")
+    self.order_items(o.order_by)
+    self.close()
+  }
+  if o.frame is Some(f) {
+    self.s(
+      match f.unit {
+        Rows => " (rows"
+        Range => " (range"
+      },
+    )
+    self.frame_bound(f.start)
+    if f.end is Some(e) {
+      self.frame_bound(e)
     }
     self.close()
   }

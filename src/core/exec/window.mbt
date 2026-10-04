@@ -133,6 +133,12 @@ fn window_values(
           )
         CumeDist => Float(peer_end[j].to_double() / n.to_double())
         PercentileCont | PercentileDisc => Null
+        NextValue => {
+          // one sequence value per row in OVER (ORDER BY) order (captured:
+          // tail5/b1-next-value-over)
+          ctx.rt.next_row()
+          eval(row_ctx, call.args[0])
+        }
         Ntile => {
           // captured: a NULL or non-positive count at run time is 4116
           // (severity 15); counts beyond the row count give one row each
@@ -438,4 +444,57 @@ fn running_aggregate(
     )
   }
   Some(out)
+}
+
+///|
+/// A window operator whose output order is decided by its only NEXT VALUE
+/// FOR … OVER call streams rows as their values are drawn: rows numbered
+/// before an exhausted sequence's 11728 are sent before the error
+/// (captured: tail5/b1-next-value-over).
+fn next_value_streams(calls : Array[@ir.WindowCall]) -> Bool {
+  let nv = calls.filter(c => c.func is NextValue)
+  if nv.length() != 1 {
+    return false
+  }
+  // the last call with keys decides the output order (run_window)
+  let mut last = -1
+  for i, c in calls {
+    if !(c.func is (PercentileCont | PercentileDisc)) &&
+      (!c.partition.is_empty() || !c.order.is_empty()) {
+      last = i
+    }
+  }
+  last >= 0 && calls[last].func is NextValue
+}
+
+///|
+fn stream_next_value_window(
+  ctx : Ctx,
+  rows : Array[Row],
+  calls : Array[@ir.WindowCall],
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  // the other calls first, as run_window computes them
+  let values : Array[Array[@types.Value]] = calls.map(c => {
+    if c.func is NextValue {
+      []
+    } else {
+      window_values(ctx, rows, c)
+    }
+  })
+  let at = calls.search_by(c => c.func is NextValue).unwrap_or(0)
+  let call = calls[at]
+  let keyed = rows.mapi((i, r) => {
+    (call.order.map(k => eval(ctx.with_row(r), k.expr)), i)
+  })
+  for kv in sort_keyed(keyed, call.order) {
+    let i = kv.1
+    ctx.rt.next_row()
+    let v = eval(ctx.with_row(rows[i]), call.args[0])
+    let out = rows[i].copy()
+    for j, vs in values {
+      out.push(if j == at { v } else { vs[i] })
+    }
+    emit(out)
+  }
 }

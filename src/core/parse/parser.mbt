@@ -10,6 +10,18 @@ priv struct Parser {
   /// Parsing a table variable's columns: named constraints are a syntax
   /// error there (captured: msduck-runs table-variable#010).
   mut table_variable : Bool
+  /// Named windows of the SELECT being parsed (its WINDOW clause, found by
+  /// a look-ahead before the select list; window.mbt)
+  mut windows : WindowScope?
+  /// Named windows of the last SELECT finished (for its query's ORDER BY)
+  mut last_windows : WindowScope?
+  /// The last OVER clause used a named window
+  mut over_named : Bool
+  /// First compile error found while parsing (5362, 4123, ...): raised once
+  /// the whole batch parsed, so syntax errors anywhere come first
+  mut deferred : @ast.SyntaxError?
+  /// Inside UPDATE / MERGE / a DEFAULT: NEXT VALUE FOR … OVER is 11717
+  mut nvf_over_forbidden : Bool
 }
 
 ///|

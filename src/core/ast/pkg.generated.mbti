@@ -290,7 +290,7 @@ pub(all) enum ExprKind {
   Call(FuncCall)
   Collate(Expr, Ident)
   AtTimeZone(Expr, Expr)
-  NextValueFor(ObjectName)
+  NextValueFor(ObjectName, Over?)
   Paren(Expr)
   MethodCall(Expr, Ident, Array[Expr])
 } derive(Eq, @debug.Debug)

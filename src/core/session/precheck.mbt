@@ -502,6 +502,7 @@ fn walk_expr(e : @ast.Expr, f : (@ast.Expr) -> Unit) -> Unit {
       }
     }
     Call(c) => c.args.each(x => walk_expr(x, f))
+    NextValueFor(_, Some(o)) => o.order_by.each(i => walk_expr(i.expr, f))
     _ => ()
   }
 }

@@ -142,7 +142,8 @@ pub(all) enum ExprKind {
   Call(FuncCall)
   Collate(Expr, Ident)
   AtTimeZone(Expr, Expr)
-  NextValueFor(ObjectName)
+  /// `NEXT VALUE FOR seq [OVER (ORDER BY ...)]`
+  NextValueFor(ObjectName, Over?)
   /// `(expr)` kept so the binder can see explicit grouping.
   Paren(Expr)
   /// xml data type method call `target.name(args)`: `@x.value(...)`,
