@@ -760,10 +760,12 @@ fn from_parts(
 
 ///|
 /// Parses a time zone argument: '+hh:mm' / '-hh:mm' text or minutes.
-fn tz_minutes(v : @types.Value) -> Int? {
+fn tz_minutes(v : @types.Value, t : @types.SqlType) -> Int? {
   match v {
     String(s) => {
-      let s = s.trim().to_owned()
+      // captured: ' +01:30 ' is invalid (msduck offset-functions #052);
+      // trailing blanks of char values are dropped (unverified)
+      let s = s.trim_end(chars=" ").to_owned()
       if s.length() != 6 {
         return None
       }
@@ -798,10 +800,14 @@ fn tz_minutes(v : @types.Value) -> Int? {
         Some(total)
       }
     }
+    // numbers convert like CAST(x AS int): decimal and float truncate,
+    // money rounds (captured: 90.5 is 90, CAST(90.5 AS money) 91)
     _ =>
-      match v.as_int64() {
-        Some(n) => if n < -840L || n > 840L { None } else { Some(n.to_int()) }
-        None => None
+      try @types.cast(v, t, Int) catch {
+        _ => None
+      } noraise {
+        Int(n) => if n < -840 || n > 840 { None } else { Some(n) }
+        _ => None
       }
   }
 }
@@ -821,11 +827,14 @@ fn to_offset(
     _ => 7
   }
   let fname = name.to_lower()
-  guard tz_minutes(v[1]) is Some(off) else {
+  // states: text zone 0 (SWITCHOFFSET) / 2 (TODATETIMEOFFSET), numeric
+  // zone 1 / 3 (captured: msduck offset-functions)
+  let base_state = if name == "SWITCHOFFSET" { 0 } else { 2 }
+  guard tz_minutes(v[1], args[1].ty) is Some(off) else {
     raise @types.sql_error(
       9812,
       "The timezone provided to builtin function \{fname} is invalid.",
-      state=if name == "SWITCHOFFSET" { 0 } else { 2 },
+      state=base_state + (if v[1] is String(_) { 0 } else { 1 }),
     )
   }
   let x = match args[0].ty.family() {
@@ -851,7 +860,11 @@ fn to_offset(
   let utc = @types.round_ticks(utc, scale)
   let new_local = utc + off.to_int64() * @types.TICKS_PER_MINUTE
   if utc < 0L || utc > MAX_TICKS || new_local < 0L || new_local > MAX_TICKS {
-    raise @types.overflow_expression(e.ty, state=1)
+    raise @types.sql_error(
+      9813,
+      "The timezone provided to builtin function \{fname} would cause the datetimeoffset to overflow the range of valid date range in either UTC or local time.",
+      state=base_state,
+    )
   }
   DateTimeOffset(utc, off)
 }
