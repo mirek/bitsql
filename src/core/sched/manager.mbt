@@ -38,6 +38,10 @@ pub struct LockManager[K] {
   priv grants : Array[Grant[K]]
   priv waiters : Array[Waiter[K]]
   priv mut next_id : Int
+  /// Grants + waiters per table per session: lets a request on a table no
+  /// other session touches skip the conflict scan (bulk inserts take one
+  /// key lock per row; scanning every grant made them quadratic).
+  priv occupants : Map[Int, Map[Int, Int]]
 }
 
 ///|
@@ -45,7 +49,7 @@ pub fn[K] LockManager::new(
   cmp : (K, K) -> Int,
   cost? : (Int) -> Int64 = _ => 0L,
 ) -> LockManager[K] {
-  { cmp, cost, grants: [], waiters: [], next_id: 1, }
+  { cmp, cost, grants: [], waiters: [], next_id: 1, occupants: Map([]), }
 }
 
 ///|
@@ -115,6 +119,7 @@ fn[K] LockManager::grant(
     }
   }
   self.grants.push({ session, resource, mode, duration, })
+  self.occupy(resource.table(), session, 1)
 }
 
 ///|
@@ -125,6 +130,14 @@ pub fn[K] LockManager::request(
   mode : LockMode,
   duration : Duration,
 ) -> Outcome {
+  // fast path: nobody else on this table, so nothing can conflict. Append
+  // without the in-place upgrade search: duplicate entries of one session
+  // never conflict with each other and releases remove them all.
+  if self.alone(resource.table(), session) {
+    self.grants.push({ session, resource, mode, duration, })
+    self.occupy(resource.table(), session, 1)
+    return Granted
+  }
   let blockers = self.conflicts_with_grants(session, resource, mode)
   for
     s in self.conflicts_with_waiters_before(
@@ -144,6 +157,7 @@ pub fn[K] LockManager::request(
   let id = self.next_id
   self.next_id += 1
   self.waiters.push({ id, session, resource, mode, duration, })
+  self.occupy(resource.table(), session, 1)
   match self.find_cycle(session) {
     None => Waiting(request=id)
     Some(cycle) => {
@@ -170,6 +184,7 @@ pub fn[K] LockManager::request(
       }
       if victim == session {
         self.waiters.pop() |> ignore
+        self.occupy(resource.table(), session, -1)
         Deadlock(victim~, request=None)
       } else {
         Deadlock(victim~, request=Some(id))
@@ -252,6 +267,7 @@ fn[K] LockManager::wake(self : LockManager[K]) -> Array[(Int, Int)] {
         .conflicts_with_waiters_before(i, w.session, w.resource, w.mode)
         .is_empty() {
         self.waiters.remove(i) |> ignore
+        self.occupy(w.resource.table(), w.session, -1)
         self.grant(w.session, w.resource, w.mode, w.duration)
         woken.push((w.session, w.id))
         progress = true
@@ -269,8 +285,8 @@ pub fn[K] LockManager::release_all(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.grants.retain(g => g.session != session || g.duration == Session)
-  self.waiters.retain(w => w.session != session)
+  self.retain_grants(g => g.session != session || g.duration == Session)
+  self.retain_waiters(w => w.session != session)
   self.wake()
 }
 
@@ -280,8 +296,8 @@ pub fn[K] LockManager::release_session(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.grants.retain(g => g.session != session)
-  self.waiters.retain(w => w.session != session)
+  self.retain_grants(g => g.session != session)
+  self.retain_waiters(w => w.session != session)
   self.wake()
 }
 
@@ -292,7 +308,7 @@ pub fn[K] LockManager::release_resource(
   session : Int,
   resource : Resource[K],
 ) -> Array[(Int, Int)] {
-  self.grants.retain(g => {
+  self.retain_grants(g => {
     !(g.session == session && g.resource.same(resource, self.cmp))
   })
   self.wake()
@@ -319,7 +335,7 @@ pub fn[K] LockManager::release_statement(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.grants.retain(g => !(g.session == session && g.duration == Statement))
+  self.retain_grants(g => !(g.session == session && g.duration == Statement))
   self.wake()
 }
 
@@ -329,7 +345,7 @@ pub fn[K] LockManager::cancel(
   self : LockManager[K],
   request : Int,
 ) -> Array[(Int, Int)] {
-  self.waiters.retain(w => w.id != request)
+  self.retain_waiters(w => w.id != request)
   self.wake()
 }
 
@@ -375,4 +391,73 @@ pub fn[K] LockManager::waiting_on(
     }
   }
   None
+}
+
+///|
+fn[K] LockManager::occupy(
+  self : LockManager[K],
+  table : Int,
+  session : Int,
+  delta : Int,
+) -> Unit {
+  let m = match self.occupants.get(table) {
+    Some(m) => m
+    None => {
+      let m : Map[Int, Int] = Map([])
+      self.occupants[table] = m
+      m
+    }
+  }
+  let n = m.get(session).unwrap_or(0) + delta
+  if n <= 0 {
+    m.remove(session)
+    if m.is_empty() {
+      self.occupants.remove(table)
+    }
+  } else {
+    m[session] = n
+  }
+}
+
+///|
+/// No other session holds or waits for anything on `table`.
+fn[K] LockManager::alone(
+  self : LockManager[K],
+  table : Int,
+  session : Int,
+) -> Bool {
+  match self.occupants.get(table) {
+    None => true
+    Some(m) => m.length() == 0 || (m.length() == 1 && m.contains(session))
+  }
+}
+
+///|
+fn[K] LockManager::retain_grants(
+  self : LockManager[K],
+  keep : (Grant[K]) -> Bool,
+) -> Unit {
+  self.grants.retain(g => {
+    if keep(g) {
+      true
+    } else {
+      self.occupy(g.resource.table(), g.session, -1)
+      false
+    }
+  })
+}
+
+///|
+fn[K] LockManager::retain_waiters(
+  self : LockManager[K],
+  keep : (Waiter[K]) -> Bool,
+) -> Unit {
+  self.waiters.retain(w => {
+    if keep(w) {
+      true
+    } else {
+      self.occupy(w.resource.table(), w.session, -1)
+      false
+    }
+  })
 }

@@ -59,22 +59,27 @@ fn window_values(
   } else {
     Null
   }
-  // partitions in order of first appearance, as lists of row indexes
+  // partitions as lists of row indexes (in input order): sort by the
+  // partition key, then group runs of equal keys (same equality as
+  // same_row: collation-aware, NULLs equal); O(n log n)
   let parts : Array[(Array[@types.Value], Array[Int])] = []
-  for i, r in rows {
-    let key = call.partition.map(p => eval(ctx.with_row(r), p))
-    let mut found = -1
-    for pi, p in parts {
-      if same_row(p.0, key, call.partition_collations) {
-        found = pi
-        break
-      }
+  let pkeys : Array[@ir.SortKey] = call.partition.mapi((i, p) => @ir.SortKey::{
+    expr: p,
+    desc: false,
+    collation: call.partition_collations[i],
+  })
+  let keyed = rows.mapi((i, r) => {
+    (call.partition.map(p => eval(ctx.with_row(r), p)), i)
+  })
+  for kv in sort_keyed(keyed, pkeys) {
+    match parts.last() {
+      Some(last) if same_row(last.0, kv.0, call.partition_collations) =>
+        last.1.push(kv.1)
+      _ => parts.push((kv.0, [kv.1]))
     }
-    if found >= 0 {
-      parts[found].1.push(i)
-    } else {
-      parts.push((key, [i]))
-    }
+  }
+  for p in parts {
+    p.1.sort()
   }
   for p in parts {
     let keyed = p.1.map(i => {
@@ -105,6 +110,9 @@ fn window_values(
       }
       continue
     }
+    // running COUNT/SUM over frames growing from the partition start:
+    // one pass instead of re-aggregating every frame (quadratic)
+    let running = running_aggregate(ctx, call, part_rows, peer_start, peer_end)
     let mut dense = 0
     for j in 0..<n {
       if peer_start[j] == j {
@@ -229,6 +237,7 @@ fn window_values(
               }
               r
             }
+            Agg(_, ..) if running is Some(r) => r[j]
             Agg(f, distinct~) => {
               let agg : @ir.AggCall = {
                 func: f,
@@ -292,4 +301,141 @@ fn frame_bounds(
       (clamp(start), clamp(end))
     }
   }
+}
+
+///|
+/// Prefix results of COUNT / COUNT_BIG / SUM when every frame of the
+/// partition starts at its first row and frame ends never move back (the
+/// default RANGE frame with ORDER BY, ROWS UNBOUNDED PRECEDING). Values,
+/// overflow checks and the 8153 flag match `eval_aggregate` on each frame:
+/// SUM checks every partial sum, so a prefix fails exactly when it would.
+/// None: not this shape; evaluate frame by frame.
+fn running_aggregate(
+  ctx : Ctx,
+  call : @ir.WindowCall,
+  part_rows : Array[Row],
+  peer_start : Array[Int],
+  peer_end : Array[Int],
+) -> Array[@types.Value]? raise @types.SqlError {
+  guard call.func is Agg(f, distinct=false) && f is (Count | CountBig | Sum) else {
+    return None
+  }
+  let n = part_rows.length()
+  let ends = []
+  let mut last = 0
+  for j in 0..<n {
+    let (fs, fe) = frame_bounds(
+      ctx.with_row(part_rows[j]),
+      call,
+      j,
+      n,
+      peer_start,
+      peer_end,
+    )
+    if fs != 0 || fe < last {
+      return None
+    }
+    ends.push(fe)
+    last = fe
+  }
+  let arg = call.args.get(0)
+  let ty = call.ty
+  let arg_ty = match arg {
+    Some(a) => a.ty
+    None => ty
+  }
+  if f is Sum &&
+    !(ty
+    is (TinyInt
+    | SmallInt
+    | Int
+    | BigInt
+    | Decimal(_, _)
+    | Numeric(_, _)
+    | Money
+    | SmallMoney
+    | Float
+    | Real)) {
+    return None
+  }
+  let out = []
+  let mut k = 0
+  let mut count = 0
+  let mut iacc = 0L
+  let mut facc = 0.0
+  let mut dacc = match ty {
+    Decimal(_, s) | Numeric(_, s) => @types.Decimal::zero().rescale(s)
+    _ => @types.Decimal::zero()
+  }
+  for j in 0..<n {
+    while k < ends[j] {
+      let v : @types.Value = match arg {
+        Some(a) => eval(ctx.with_row(part_rows[k]), a)
+        None => Int(1)
+      }
+      k += 1
+      if v is Null {
+        ctx.rt.null_eliminated = true
+        continue
+      }
+      count += 1
+      if f is Sum {
+        match ty {
+          TinyInt | SmallInt | Int | BigInt => {
+            let (lo, hi) = @types.int_range(ty)
+            let x = v.as_int64().unwrap_or(0L)
+            let s = iacc + x
+            if (x > 0L && s < iacc) || (x < 0L && s > iacc) || s < lo || s > hi {
+              raise @types.overflow_expression(ty)
+            }
+            iacc = s
+          }
+          Decimal(p, s) | Numeric(p, s) => {
+            dacc = dacc.add(@types.cast(v, arg_ty, ty).as_decimal().unwrap())
+            if !dacc.fits(p, s) {
+              raise @types.overflow_expression(ty)
+            }
+          }
+          Money | SmallMoney => {
+            let x = match @types.cast(v, arg_ty, Money) {
+              Money(m) => m
+              _ => 0L
+            }
+            let s = iacc + x
+            if (x > 0L && s < iacc) || (x < 0L && s > iacc) {
+              raise @types.overflow_expression(ty)
+            }
+            iacc = s
+          }
+          _ => {
+            match @types.cast(v, arg_ty, Float) {
+              Float(x) => facc = facc + x
+              _ => ()
+            }
+            if facc.is_inf() {
+              raise @types.overflow_expression(Float)
+            }
+          }
+        }
+      }
+    }
+    out.push(
+      match f {
+        Count => @types.Value::Int(count)
+        CountBig => BigInt(count.to_int64())
+        _ =>
+          if count == 0 {
+            Null
+          } else {
+            match ty {
+              TinyInt | SmallInt | Int | BigInt => @types.int_value(ty, iacc)
+              Decimal(_, s) | Numeric(_, s) => Decimal(dacc.rescale(s))
+              Money | SmallMoney => Money(iacc)
+              _ => Float(facc)
+            }
+          }
+      },
+    )
+  }
+  Some(out)
 }

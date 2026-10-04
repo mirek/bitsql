@@ -369,3 +369,18 @@ INFO 5703 text) is generated from the oracle's sys.syslanguages
 and DATEFIRST unless SET DATEFORMAT / DATEFIRST already ran in the same
 request (captured; flags reset per request). Error messages under a language
 with localized messages (German, French, …) stay English: fidelity trap.
+
+## 2026-10-04: lock manager fast path; window partitions and running aggregates
+
+Large statements were quadratic: every row an INSERT writes takes a key
+lock, and each lock request scanned every grant (8,000 rows: 7.5 s). The
+lock manager now counts grants and waiters per table per session; when no
+other session touches the table, a request is granted by appending, without
+the conflict scan or in-place upgrade (duplicate entries of one session never
+conflict and releases remove them all). The exact algorithm still runs as
+soon as a second session is involved. Window functions partition by sorting
+on the partition key (was a linear search per row over all partitions), and
+COUNT/COUNT_BIG/SUM over frames that grow from the partition start are
+computed as prefix aggregates with the same per-addition overflow checks
+(running SUM over 20k rows: 8.2 s → 24 ms).
+
