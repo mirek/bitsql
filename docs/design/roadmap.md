@@ -186,7 +186,8 @@ Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
   - 2026-10-03 (later): binary 5.3 MB, ~4.9 MB RSS idle after time-zone data, catalog seeds, cp1252 best-fit tables
   - 2026-10-04: binary 11.3 MB (10.9 MB before TLS), image 35 MB, ~4.6 MiB RSS after TLS logins; distroless/cc already ships libssl3, which `moonbitlang/async/tls` dlopens
 - [x] `mirek/bitsql:0.1.0` (`0.1`, `latest`) pushed to Docker Hub 2026-10-04, amd64 only (with TLS)
-- [ ] Public visibility on Docker Hub (first push created a private repo); arm64 image (needs a MoonBit cross build, msduck ships amd64+arm64)
+- [x] arm64: `mirek/bitsql:0.1.1` (`0.1`, `latest`) is a linux/amd64 + linux/arm64 manifest list, built by `scripts/docker-publish.sh` (cross gcc in a bookworm container; arm64 smoke-tested with the client suite under qemu-user) 2026-10-04
+- [ ] Public visibility on Docker Hub (first push created a private repo)
 
 ## Limiting factor
 
