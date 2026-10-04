@@ -12,6 +12,7 @@
 # builder handles --platform without emulation; `docker manifest` joins them.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+mkdir -p .tmp && export TMPDIR="$PWD/.tmp"  # never /tmp (see CLAUDE.md)
 
 push=0
 [[ ${1:-} == --push ]] && push=1
