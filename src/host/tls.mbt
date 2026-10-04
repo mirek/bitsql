@@ -41,27 +41,11 @@ async fn setup_tls(args : Array[String]) -> TlsFiles? {
     return None
   }
   try {
-    let dir = @fs.tmpdir(prefix="bitsql-tls")
-    let conf = dir + "/openssl.cnf"
-    @fs.write_file(conf, openssl_conf, create_mode=CreateOrTruncate)
-    @env.set_env_var("OPENSSL_CONF", conf)
+    let dir = tls_dir()
+    @env.set_env_var("OPENSSL_CONF", dir + "/openssl.cnf")
     let files = match (flag(args, "--tls-cert"), flag(args, "--tls-key")) {
       (Some(cert), Some(key)) => { key, cert, }
-      (None, None) => {
-        let files = { key: dir + "/key.pem", cert: dir + "/cert.pem", }
-        @fs.write_file(
-          files.key,
-          builtin_private_key,
-          create_mode=CreateOrTruncate,
-          permission=0o600,
-        )
-        @fs.write_file(
-          files.cert,
-          builtin_certificate,
-          create_mode=CreateOrTruncate,
-        )
-        files
-      }
+      (None, None) => { key: dir + "/key.pem", cert: dir + "/cert.pem", }
       _ => fail("--tls-cert and --tls-key go together")
     }
     @async.with_timeout(5000, () => self_test(files))
@@ -74,6 +58,70 @@ async fn setup_tls(args : Array[String]) -> TlsFiles? {
       None
     }
   }
+}
+
+///|
+/// The OpenSSL config and built-in key/certificate live on disk for the
+/// whole process (each accepted connection loads them). A fresh directory
+/// per start leaked one directory per server run (the harness starts
+/// thousands, which exhausted /tmp's inodes), so the directory is shared:
+/// content-addressed under `$TMPDIR` (default /tmp) and per user, built in a
+/// staging directory and renamed into place so concurrent starts never see
+/// partial files. Repeated starts reuse it; nothing accumulates.
+async fn tls_dir() -> String {
+  let base = match @env.get_env_var("TMPDIR") {
+    Some(dir) if dir != "" => dir
+    _ => "/tmp"
+  }
+  let user = @env.get_env_var("USER").unwrap_or("user")
+  let hash = fnv1a(openssl_conf + builtin_private_key + builtin_certificate)
+  let dir = "\{base}/bitsql-tls-\{user}-\{hash}"
+  if @fs.exists(dir) {
+    return dir
+  }
+  let suffix = match @env.rand(8) {
+    Some(bytes) =>
+      bytes.iter().map(b => b.to_int().to_string(radix=16)).join("")
+    None => @env.now().to_string()
+  }
+  let staging = "\{dir}.staging-\{suffix}"
+  @fs.mkdir(staging, permission=0o700)
+  errdefer (@fs.rmdir(staging, recursive=true) catch { _ => () })
+  @fs.write_file(
+    staging + "/openssl.cnf",
+    openssl_conf,
+    create_mode=CreateOrTruncate,
+  )
+  @fs.write_file(
+    staging + "/key.pem",
+    builtin_private_key,
+    create_mode=CreateOrTruncate,
+    permission=0o600,
+  )
+  @fs.write_file(
+    staging + "/cert.pem",
+    builtin_certificate,
+    create_mode=CreateOrTruncate,
+  )
+  // loses the race harmlessly when another start renamed first
+  @fs.rename(staging, dir) catch {
+    _ => ()
+  }
+  if @fs.exists(staging) {
+    @fs.rmdir(staging, recursive=true) catch {
+      _ => ()
+    }
+  }
+  dir
+}
+
+///|
+fn fnv1a(text : String) -> String {
+  let mut hash = 0xcbf29ce484222325UL
+  for ch in text {
+    hash = (hash ^ ch.to_int().to_uint64()) * 0x100000001b3UL
+  }
+  hash.to_string(radix=16)
 }
 
 ///|

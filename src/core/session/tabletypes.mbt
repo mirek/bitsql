@@ -90,10 +90,17 @@ fn Session::decl_type(
 ///|
 /// 2715 naming the type as written (captured: "Cannot find data type
 /// dbo.NoSuch."); state 6 for columns and parameters, 3 for DECLARE.
-fn missing_type(tn : @ast.TypeName, state : Int) -> @types.SqlError {
+/// A table column names its ordinal in the table (captured: corpus
+/// catalog/computed-forward-refs, `#3` for the third column, counting the
+/// existing ones under ALTER TABLE ADD).
+fn missing_type(
+  tn : @ast.TypeName,
+  state : Int,
+  position? : Int = 1,
+) -> @types.SqlError {
   @types.sql_error(
     2715,
-    "Column, parameter, or variable #1: Cannot find data type \{type_text(tn)}.",
+    "Column, parameter, or variable #\{position}: Cannot find data type \{type_text(tn)}.",
     state~,
   )
 }
