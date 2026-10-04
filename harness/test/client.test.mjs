@@ -6,7 +6,7 @@ import sql from 'mssql'
 import { connect, close } from '../src/client.mjs'
 import { server, skipIfUnsupported } from './support.mjs'
 
-test('tedious logs in (encrypt:false) and the connection is LoggedIn', async t => {
+test('tedious logs in (encrypt:true, its default) and the connection is LoggedIn', async t => {
   const s = await server(t)
   const connection = await connect(s.config)
   t.after(() => close(connection))

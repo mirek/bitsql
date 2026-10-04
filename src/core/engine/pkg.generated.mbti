@@ -27,6 +27,7 @@ pub(all) struct Config {
   databases : Array[String]
   auto_create_databases : Bool
   max_request_work : Int64
+  tls : Bool
 } derive(@debug.Debug)
 pub fn Config::default() -> Self
 
@@ -55,6 +56,8 @@ pub(all) enum Output {
   CancelTimer(Int)
   Yield
   Log(String)
+  StartTls(Int)
+  EndTls(Int)
 } derive(Eq, @debug.Debug)
 
 // Type aliases

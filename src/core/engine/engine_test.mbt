@@ -106,14 +106,54 @@ test "prelogin, login and batch flow" {
 }
 
 ///|
-test "client requiring encryption is closed" {
-  let e = @engine.Engine::new(@engine.Config::default(), 42)
+test "client requiring encryption is closed without TLS" {
+  let e = @engine.Engine::new({ ..@engine.Config::default(), tls: false, }, 42)
   ignore(e.handle(ev(Connected(7))))
   let pre = @tds.from_hex(
     "00 00 10 00 06 01 00 16 00 01 04 00 17 00 01 FF 0c 00 00 00 00 00 01 00",
   )
   let outs = e.handle(ev(Received(7, @tds.frame(Prelogin, pre))))
   assert_true(outs.contains(Close(7)))
+}
+
+///|
+test "ENCRYPT_ON: StartTls precedes the plaintext PRELOGIN response" {
+  let e = @engine.Engine::new(@engine.Config::default(), 42)
+  ignore(e.handle(ev(Connected(7))))
+  let pre = @tds.from_hex(
+    "00 00 10 00 06 01 00 16 00 01 04 00 17 00 01 FF 0c 00 00 00 00 00 01 00",
+  )
+  let outs = e.handle(ev(Received(7, @tds.frame(Prelogin, pre))))
+  assert_eq(outs.length(), 2)
+  assert_eq(outs[0], StartTls(7))
+  let r = sent([outs[1]])
+  assert_eq(
+    @tds.decode_prelogin(r[0].payload).encryption,
+    Some(@tds.ENCRYPT_ON),
+  )
+  // full TLS: no EndTls after LOGIN7
+  let login = @tds.frame(Login7, login7_payload("sa", "secret", "master"))
+  let outs = e.handle(ev(Received(7, login)))
+  assert_false(outs.contains(EndTls(7)))
+}
+
+///|
+test "ENCRYPT_OFF: login-only TLS ends before the LOGIN7 response" {
+  let e = @engine.Engine::new(@engine.Config::default(), 42)
+  ignore(e.handle(ev(Connected(8))))
+  let pre = @tds.from_hex(
+    "00 00 10 00 06 01 00 16 00 01 04 00 17 00 01 FF 0c 00 00 00 00 00 00 00",
+  )
+  let outs = e.handle(ev(Received(8, @tds.frame(Prelogin, pre))))
+  assert_eq(outs[0], StartTls(8))
+  assert_eq(
+    @tds.decode_prelogin(sent([outs[1]])[0].payload).encryption,
+    Some(@tds.ENCRYPT_OFF),
+  )
+  let login = @tds.frame(Login7, login7_payload("sa", "secret", "master"))
+  let outs = e.handle(ev(Received(8, login)))
+  assert_eq(outs[0], EndTls(8))
+  assert_true(outs[1] is Send(8, _))
 }
 
 ///|

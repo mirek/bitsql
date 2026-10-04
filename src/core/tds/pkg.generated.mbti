@@ -93,7 +93,7 @@ pub let default_collation : Bytes
 
 pub fn encode_prelogin_response(version~ : (Int, Int, Int, Int), encryption~ : Int) -> Bytes
 
-pub fn frame(PacketType, BytesView, packet_size? : Int, spid? : Int) -> Bytes
+pub fn frame(PacketType, BytesView, packet_size? : Int, spid? : Int, first_packet_id? : Int) -> Bytes
 
 pub fn from_hex(String) -> Bytes
 
@@ -101,7 +101,7 @@ pub fn hex(BytesView) -> String
 
 pub fn nbcrow_is_smaller(ArrayView[Column], ArrayView[WireValue]) -> Bool
 
-pub fn negotiate_encryption_without_tls(Int?) -> Int?
+pub fn negotiate_encryption(Int?, tls~ : Bool) -> Int?
 
 pub fn read_all_headers(Reader) -> Headers raise TdsError
 

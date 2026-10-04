@@ -20,10 +20,10 @@ export function close(connection) {
   })
 }
 
-// A tedious config for a target address. `tls` selects encrypt:true (the
-// oracle); the emulator has no TLS in v1 and gets encrypt:false, which tedious
-// sends as ENCRYPT_NOT_SUP in PRELOGIN.
-export function tediousConfig({ host, port, user = 'sa', password = 'bitsql', database = 'master', tls = false, requestTimeout = 30000, connectTimeout = 15000 }) {
+// A tedious config for a target address. `tls` is tedious's encrypt option:
+// true (its default, used for both the oracle and the emulator) sends
+// ENCRYPT_ON in PRELOGIN; false sends ENCRYPT_NOT_SUP (plaintext session).
+export function tediousConfig({ host, port, user = 'sa', password = 'bitsql', database = 'master', tls = true, requestTimeout = 30000, connectTimeout = 15000 }) {
   return {
     server: host,
     authentication: { type: 'default', options: { userName: user, password } },

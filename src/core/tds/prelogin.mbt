@@ -69,13 +69,19 @@ pub fn decode_prelogin(payload : BytesView) -> Prelogin raise TdsError {
 }
 
 ///|
-/// Server encryption reply for a server without TLS: OFF and NOT_SUP are
-/// answered NOT_SUP (plaintext session); ON/REQ cannot be served (None).
-/// Note tedious with `encrypt: false` sends NOT_SUP, not OFF.
-pub fn negotiate_encryption_without_tls(client : Int?) -> Int? {
+/// Server ENCRYPTION reply to the client's PRELOGIN option. Captured from SQL
+/// Server 2025 (17.0.5005): OFF → OFF (TLS for LOGIN7 only), ON → ON,
+/// REQ → ON (full TLS), NOT_SUP → NOT_SUP (plaintext). Without TLS (`tls`
+/// false) OFF is answered NOT_SUP and ON/REQ cannot be served (None: close).
+/// tedious with `encrypt: false` sends NOT_SUP, not OFF; tiberius (Prisma's
+/// schema engine) with `encrypt=false` sends OFF.
+pub fn negotiate_encryption(client : Int?, tls~ : Bool) -> Int? {
   match client {
     None => Some(ENCRYPT_NOT_SUP)
-    Some(c) if c == ENCRYPT_OFF || c == ENCRYPT_NOT_SUP => Some(ENCRYPT_NOT_SUP)
+    Some(c) if c == ENCRYPT_NOT_SUP => Some(ENCRYPT_NOT_SUP)
+    Some(c) if c == ENCRYPT_OFF =>
+      Some(if tls { ENCRYPT_OFF } else { ENCRYPT_NOT_SUP })
+    Some(c) if tls && (c == ENCRYPT_ON || c == ENCRYPT_REQ) => Some(ENCRYPT_ON)
     _ => None
   }
 }

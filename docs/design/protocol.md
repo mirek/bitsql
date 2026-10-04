@@ -19,11 +19,12 @@ TLS.
 - **RPC is phase 2, not later.** `mssql`'s `request.query()` with inputs sends
   `sp_executesql`; `request.execute()` sends a proc RPC. Decoding TYPE_INFO for
   parameters is needed from the first real test.
-- **TLS:** v1 requires `encrypt: false` in test configs. Later, TLS can use
-  `moonbitlang/async/tls` (OpenSSL) in the host. Handshake records travel inside
-  PRELOGIN packets, so the core will unwrap them and hand TLS bytes to the host
-  through extra `Input`/`Output` variants; design this only when needed. How the
-  pinned `tedious` reacts to `ENCRYPT_NOT_SUP` is recorded in the tedious skill.
+- **TLS** (2026-10-04, decisions.md) lives entirely in the host
+  (`src/host/tls.mbt`, `moonbitlang/async/tls` over OpenSSL). The engine
+  negotiates (`@tds.negotiate_encryption`) and emits `StartTls` before the
+  PRELOGIN response and, for login-only encryption, `EndTls` before the LOGIN7
+  response; it only ever sees plaintext, so event logs and replay stay
+  deterministic.
 - **Packet framing:** default 4 KB packets, honoring the size negotiated in
   LOGIN7. Large result sets span packets with the EOM flag on the last.
 - **`FOR JSON`** results are returned as multiple rows of roughly 2,000

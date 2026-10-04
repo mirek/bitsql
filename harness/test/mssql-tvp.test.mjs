@@ -12,7 +12,7 @@ async function pool(t) {
   const s = await server(t)
   const p = new sql.ConnectionPool({
     server: s.host, port: s.port, user: 'sa', password: 'bitsql', database: 'master',
-    options: { encrypt: false, trustServerCertificate: true }, pool: { max: 2 },
+    options: { trustServerCertificate: true }, pool: { max: 2 },
     connectionTimeout: 5000, requestTimeout: 15000,
   })
   await p.connect()

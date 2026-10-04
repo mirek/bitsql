@@ -11,6 +11,9 @@
 ///               instead of failing with 4060 (not SQL Server behavior)
 ///   --max-request-work N  work units per request before it fails with
 ///               50108 (runaway protection; default 300000000)
+///   --tls-cert FILE --tls-key FILE  PEM certificate and key for TLS
+///               (default: a built-in self-signed localhost certificate)
+///   --no-tls    refuse encryption like a server without a certificate
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
@@ -28,6 +31,7 @@ async fn main {
   let port = server.addr.port()
   let host = listen.split(":").next().unwrap_or("127.0.0.1").to_owned()
   @stdio.stderr.write("listening on \{host}:\{port}\n")
+  let tls_files = setup_tls(args)
   let databases = []
   for i in 0..<args.length() {
     if args[i] == "--database" && i + 1 < args.length() {
@@ -45,10 +49,11 @@ async fn main {
         }
       None => @engine.default_max_request_work
     },
+    tls: tls_files is Some(_),
   }
   let engine = @engine.Engine::new(config, seed)
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)
-  let conns : Map[Int, @socket.Tcp] = Map([])
+  let conns : Map[Int, Conn] = Map([])
   // pending timers: id → generation (a re-set or cancel invalidates it)
   let timers : Map[Int, Int] = Map([])
   let mut timer_gen = 0
@@ -65,10 +70,15 @@ async fn main {
           match o {
             Send(id, bytes) =>
               match conns.get(id) {
-                Some(tcp) =>
-                  tcp.write(bytes) catch {
+                Some(conn) =>
+                  try {
+                    match conn.mode {
+                      Tls({ tls: Some(tls), .. }) => tls.write(bytes)
+                      _ => conn.tcp.write(bytes)
+                    }
+                  } catch {
                     _ => {
-                      tcp.close()
+                      conn.tcp.close()
                       conns.remove(id)
                     }
                   }
@@ -76,9 +86,24 @@ async fn main {
               }
             Close(id) =>
               match conns.get(id) {
-                Some(tcp) => {
-                  tcp.close()
+                Some(conn) => {
+                  conn.tcp.close()
                   conns.remove(id)
+                }
+                None => ()
+              }
+            StartTls(id) =>
+              match conns.get(id) {
+                Some(conn) => conn.mode = Pending
+                None => ()
+              }
+            EndTls(id) =>
+              match conns.get(id) {
+                Some(conn) => {
+                  if conn.mode is Tls(wire) {
+                    wire.chunks.close()
+                  }
+                  conn.mode = Plain
                 }
                 None => ()
               }
@@ -106,14 +131,38 @@ async fn main {
       let (tcp, _) = server.accept()
       next_id += 1
       let id = next_id
-      conns[id] = tcp
+      let conn = { tcp, mode: Plain, }
+      conns[id] = conn
       queue.put(Connected(id))
       group.spawn_bg(allow_failure=true, () => {
         defer queue.try_put(Closed(id)) |> ignore
-        while true {
-          match tcp.read_some() {
-            Some(bytes) => queue.put(Received(id, bytes))
-            None => break
+        defer (if conn.mode is Tls(wire) { wire.chunks.close() })
+        while tcp.read_some() is Some(bytes) {
+          match conn.mode {
+            Plain => queue.put(Received(id, bytes))
+            Tls(wire) => wire.chunks.put(bytes)
+            Pending =>
+              match tls_files {
+                Some(files) => {
+                  let wire = TlsWire::new(tcp)
+                  conn.mode = Tls(wire)
+                  wire.chunks.put(bytes)
+                  group.spawn_bg(allow_failure=true, () => {
+                    run_tls(wire, files, b => queue.put(Received(id, b))) catch {
+                      e => {
+                        @stdio.stderr.write("connection \{id}: TLS: \{e}\n")
+                        tcp.close()
+                        return
+                      }
+                    }
+                    // EOF: unless login-only TLS ended, the session is over
+                    if conn.mode is Tls(_) {
+                      tcp.close()
+                    }
+                  })
+                }
+                None => tcp.close()
+              }
           }
         }
       })

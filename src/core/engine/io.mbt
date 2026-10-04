@@ -25,6 +25,13 @@ pub(all) enum Output {
   CancelTimer(Int)
   Yield // host re-sends Resume on its next turn
   Log(String)
+  /// The client's next bytes are a TLS handshake carried in PRELOGIN
+  /// packets; once it completes, the connection's traffic is TLS. Emitted
+  /// before the PRELOGIN response, which still goes out in plaintext.
+  StartTls(Int)
+  /// Login-only encryption ends: from here on both directions are
+  /// plaintext again (no close_notify). Emitted before the LOGIN7 response.
+  EndTls(Int)
 } derive(Debug, Eq)
 
 ///|
@@ -46,6 +53,9 @@ pub(all) struct Config {
   /// Work units a request may use before failing with 50108 (host
   /// `--max-request-work`).
   max_request_work : Int64
+  /// The host can run TLS (PRELOGIN encryption OFF/ON/REQ are honored).
+  /// Without it, ON/REQ clients are closed and OFF is answered NOT_SUP.
+  tls : Bool
 } derive(Debug)
 
 ///|
@@ -57,6 +67,7 @@ pub fn Config::default() -> Config {
     databases: [],
     auto_create_databases: false,
     max_request_work: default_max_request_work,
+    tls: true,
   }
 }
 

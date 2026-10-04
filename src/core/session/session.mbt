@@ -315,6 +315,8 @@ pub struct Session {
   /// LOGIN7 client library (client_interface_name) and login time.
   mut library : String
   mut login_time : Int64
+  /// The whole connection runs over TLS (dm_exec_connections.encrypt_option)
+  mut encrypted : Bool
   /// LOGIN7 login, host and application names.
   mut login : String
   mut host_name : String
@@ -454,6 +456,7 @@ pub fn Session::new(
     deferred: [],
     library: "",
     login_time: 0L,
+    encrypted: false,
     session_context: Map([]),
     error_override: None,
     context_info: None,
@@ -943,9 +946,11 @@ pub fn Session::set_login(
   host_name : String,
   app_name : String,
   library? : String = "",
+  encrypted? : Bool = false,
   now? : Int64 = 0L,
 ) -> Unit {
   self.library = library
+  self.encrypted = encrypted
   self.login_time = now
   self.login = login
   self.host_name = host_name

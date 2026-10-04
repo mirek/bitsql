@@ -224,3 +224,13 @@ scripts/check.sh                 # everything CI runs; must be green to push
   `types/collation_compare_wbtest.mbt` checks the fast paths against the
   element-array comparison on ~13M string pairs (adds ~13 s to the types
   tests).
+- 2026-10-04: implementing `@io.Reader`/`@io.Writer` (moonbitlang/async) for
+  your own type: `impl @io.Reader for T with fn _direct_read(self, buf,
+  offset~, max_len~) { ... }` — no `async` keyword in the impl even though the
+  trait method is async; `_get_internal_buffer` returns a field holding
+  `@io.ReaderBuffer::new()`. Those, and `@tls.Tls::server_from_pair`, carry
+  `#internal` alerts (warning 0014): silence per item with
+  `#warnings("-alert_internal")`. `Tls::client_from_pair(verify=false)` is
+  deprecated: `trust=NoVerification`. Copy bytes into a `FixedArray[Byte]`
+  with `buf.blit_from_bytes(dst_off, src, src_off, len)` (Bytes has no
+  `blit_to`). `@env.set_env_var` and `@fs.tmpdir(prefix=)` exist.

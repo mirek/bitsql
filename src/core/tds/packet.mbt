@@ -134,17 +134,19 @@ pub fn Reassembler::push(
 
 ///|
 /// Splits a server message into packets of at most `packet_size` bytes,
-/// setting EOM on the last one. Packet ids count from 1 and wrap at 256.
+/// setting EOM on the last one. Packet ids count from `first_packet_id`
+/// (1; SQL Server's TLS handshake replies start at 0) and wrap at 256.
 pub fn frame(
   ty : PacketType,
   payload : BytesView,
   packet_size? : Int = DEFAULT_PACKET_SIZE,
   spid? : Int = 0,
+  first_packet_id? : Int = 1,
 ) -> Bytes {
   let room = packet_size - HEADER_LEN
   let w = Writer::new(size_hint=payload.length() + HEADER_LEN)
   let mut pos = 0
-  let mut id = 1
+  let mut id = first_packet_id
   while true {
     let n = @cmp.minimum(room, payload.length() - pos)
     let last = pos + n >= payload.length()

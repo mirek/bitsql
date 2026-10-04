@@ -54,8 +54,9 @@ npm run bench [-- 20000 80000]     # release-build timings of grouping/subquery/
 - Default: `moon build --target native` at the repo root, then spawn the newest
   `_build/native/**/host/host.exe` with `--listen 127.0.0.1:0` and read
   `listening on 127.0.0.1:<port>` from stderr (msduck contract).
-- Emulator logins use `encrypt:false, trustServerCertificate:true` (no TLS in
-  v1); the oracle uses `encrypt:true, trustServerCertificate:true`.
+- Emulator and oracle logins both use `encrypt:true,
+  trustServerCertificate:true` (bitsql has TLS since 2026-10-04;
+  `test/tls.test.mjs` covers encrypt true/false and login-only TLS).
 
 ## Isolation
 
@@ -272,8 +273,9 @@ ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
 - Prisma: `prisma/schema.prisma` (+ `schema.v1.prisma` that produced the
   two committed migrations via `prisma migrate diff`), `prisma.config.mjs`
   reads `DATABASE_URL`; the client is generated into `prisma/generated`
-  (git-ignored) on first run. The CLI's schema engine is tiberius: the
-  emulator URL needs `encrypt=DANGER_PLAINTEXT`. The CLI refuses `db push
+  (git-ignored) on first run. The CLI's schema engine is tiberius; the
+  URL is the same for both targets (`encrypt=true`; `encrypt=false`, i.e.
+  login-only TLS, works too). The CLI refuses `db push
   --accept-data-loss` under an AI agent; the workload never passes it.
 - Scratch probes for ORM questions live in `harness/orm/out/` (ignored):
   a tedious script that logs every `execSql`/`execSqlBatch` text is the

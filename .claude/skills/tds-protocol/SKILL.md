@@ -129,6 +129,15 @@ MARS transport source: [MC-SMP Specification](https://learn.microsoft.com/en-us/
   Both answer ERROR, then ENVCHANGE ROLLBACK_TXN if a transaction was open
   (it is rolled back), then DONE(ERROR) with CurCmd 253 — no DONEPROC.
   bitsql used to close the connection ("socket hang up").
+- 2026-10-04 (PRELOGIN encryption / TLS, oracle probes + test/tls.test.mjs):
+  SQL Server 2025 answers client ENCRYPTION OFF → OFF, ON → ON, NOT_SUP →
+  NOT_SUP, REQ → ON. OFF means login-only TLS: handshake, LOGIN7 through
+  TLS, then the LOGINACK response and everything after in plaintext (no
+  close_notify). Handshake records ride in PRELOGIN (0x12) packets both
+  ways; the server's flights are one message each, status EOM, packet id
+  0x00 (first flight ~1.5 KB with an RSA-2048 cert). After the server's
+  Finished both sides send bare TLS records. TLS 1.3-only clients are
+  dropped (TLS 1.2 is the maximum under TDS 7).
 
 ## Reference Files
 

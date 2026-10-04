@@ -93,6 +93,7 @@ pub struct Session {
   mut context_info : Bytes?
   mut library : String
   mut login_time : Int64
+  mut encrypted : Bool
   mut login : String
   mut host_name : String
   mut app_name : String
@@ -132,7 +133,7 @@ pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
 pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
-pub fn Session::set_login(Self, String, String, String, library? : String, now? : Int64) -> Unit
+pub fn Session::set_login(Self, String, String, String, library? : String, encrypted? : Bool, now? : Int64) -> Unit
 pub fn Session::set_work_limit(Self, Int64) -> Unit
 pub fn Session::stream_error(Self, Int, Int, String, Int64) -> Array[@reply.Item]
 pub fn Session::time_out(Self) -> Unit

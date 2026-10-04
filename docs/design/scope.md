@@ -9,8 +9,8 @@ fake.
 
 Success criteria:
 
-- **Drop-in:** the existing test suite runs unchanged except for the connection
-  string (`encrypt: false`).
+- **Drop-in:** the existing test suite runs unchanged except for the server
+  address (TLS was added 2026-10-04, so `encrypt: true` works).
 - **Faithful:** every test that passes on the emulator passes on real SQL
   Server. A false green is worse than slow CI.
 - **Small:** container image in the tens of MB and idle RAM well under 100 MB.
@@ -24,7 +24,7 @@ custom SQL migration scripts, procs, RCSI with locking hints.
 
 | Area | In v1 | Out of v1 |
 | --- | --- | --- |
-| Protocol | PRELOGIN, LOGIN7, SQLBatch, RPC (`sp_executesql`, proc calls), ATTENTION (bulk load and TVPs were added later, decisions.md) | TLS, MARS |
+| Protocol | PRELOGIN, LOGIN7, SQLBatch, RPC (`sp_executesql`, proc calls), ATTENTION (bulk load and TVPs were added later, decisions.md) | TLS (added later, decisions.md), MARS |
 | DDL | Tables, PKs, indexes, FKs, CHECK, defaults, computed columns, views, triggers (sequences, user-defined types and synonyms were added later) | Partitioning |
 | DML | CRUD, joins, subqueries, CTEs, `OUTPUT`, `MERGE` | Updatable views beyond simple cases |
 | Procedural | Procs, dynamic SQL, cursors (`STATIC`, `FAST_FORWARD`, `LOCAL`), `TRY/CATCH`, `THROW`, `RAISERROR` | `DYNAMIC`/`KEYSET` cursors, CLR, `WAITFOR` |

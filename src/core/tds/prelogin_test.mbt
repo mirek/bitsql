@@ -15,15 +15,24 @@ test "decode PRELOGIN example 4.1" {
 ///|
 test "encryption negotiation without TLS" {
   assert_eq(
-    @tds.negotiate_encryption_without_tls(Some(@tds.ENCRYPT_OFF)),
+    @tds.negotiate_encryption(Some(@tds.ENCRYPT_OFF), tls=false),
     Some(@tds.ENCRYPT_NOT_SUP),
   )
   assert_eq(
-    @tds.negotiate_encryption_without_tls(Some(@tds.ENCRYPT_NOT_SUP)),
+    @tds.negotiate_encryption(Some(@tds.ENCRYPT_NOT_SUP), tls=false),
     Some(@tds.ENCRYPT_NOT_SUP),
   )
-  assert_eq(@tds.negotiate_encryption_without_tls(Some(@tds.ENCRYPT_ON)), None)
-  assert_eq(@tds.negotiate_encryption_without_tls(Some(@tds.ENCRYPT_REQ)), None)
+  assert_eq(@tds.negotiate_encryption(Some(@tds.ENCRYPT_ON), tls=false), None)
+  assert_eq(@tds.negotiate_encryption(Some(@tds.ENCRYPT_REQ), tls=false), None)
+}
+
+///|
+test "encryption negotiation with TLS (captured replies)" {
+  let reply = (c : Int) => @tds.negotiate_encryption(Some(c), tls=true)
+  assert_eq(reply(@tds.ENCRYPT_OFF), Some(@tds.ENCRYPT_OFF))
+  assert_eq(reply(@tds.ENCRYPT_ON), Some(@tds.ENCRYPT_ON))
+  assert_eq(reply(@tds.ENCRYPT_NOT_SUP), Some(@tds.ENCRYPT_NOT_SUP))
+  assert_eq(reply(@tds.ENCRYPT_REQ), Some(@tds.ENCRYPT_ON))
 }
 
 ///|

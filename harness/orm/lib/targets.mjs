@@ -74,11 +74,11 @@ export async function emulator({ log = () => {} } = {}) {
   if (fixed) {
     const error = await probe(fixed)
     if (error) throw error
-    return { name: 'emulator', ...fixed, user: 'sa', password: 'bitsql', encrypt: false, stop: async () => {} }
+    return { name: 'emulator', ...fixed, user: 'sa', password: 'bitsql', encrypt: true, stop: async () => {} }
   }
   const bin = emulatorBinary({ log })
   const server = await spawnEmulator({ bin })
   const error = await probe(server)
   if (error) { await server.stop(); throw error }
-  return { name: 'emulator', host: server.host, port: server.port, user: 'sa', password: 'bitsql', encrypt: false, stop: server.stop, logs: server.logs }
+  return { name: 'emulator', host: server.host, port: server.port, user: 'sa', password: 'bitsql', encrypt: true, stop: server.stop, logs: server.logs }
 }

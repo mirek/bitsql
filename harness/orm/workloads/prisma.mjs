@@ -23,7 +23,7 @@ const require = createRequire(import.meta.url)
 const prismaCli = join(here, 'node_modules', 'prisma', 'build', 'index.js')
 
 function url(t, database) {
-  return `sqlserver://${t.host}:${t.port};database=${database};user=${t.user};password={${t.password}};encrypt=${t.encrypt ? "true" : "DANGER_PLAINTEXT"};trustServerCertificate=true;connectTimeout=30`
+  return `sqlserver://${t.host}:${t.port};database=${database};user=${t.user};password={${t.password}};encrypt=${t.encrypt};trustServerCertificate=true;connectTimeout=30`
 }
 
 async function cli(t, database, args) {

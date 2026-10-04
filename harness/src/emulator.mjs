@@ -13,7 +13,7 @@ import { repoDir } from './env.mjs'
 import { connect, close, tediousConfig } from './client.mjs'
 
 export function emulatorConfig({ host, port }) {
-  return tediousConfig({ host, port, password: 'bitsql', tls: false, connectTimeout: 5000, requestTimeout: 15000 })
+  return tediousConfig({ host, port, password: 'bitsql', tls: true, connectTimeout: 5000, requestTimeout: 15000 })
 }
 
 function findHostExe(dir) {

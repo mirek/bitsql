@@ -29,6 +29,8 @@ async fn main {
         SetTimer(t, ms) => "#\{i} set timer \{t} \{ms}ms"
         CancelTimer(t) => "#\{i} cancel timer \{t}"
         Yield => "#\{i} yield"
+        StartTls(id) => "#\{i} conn \{id} start tls"
+        EndTls(id) => "#\{i} conn \{id} end tls"
       }
       @stdio.stdout.write(line + "\n")
     }

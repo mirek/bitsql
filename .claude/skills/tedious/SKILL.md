@@ -11,7 +11,7 @@ description: "Using the tedious MSSQL client against bitsql (and real SQL Server
 
 ## bitsql implementation
 
-`harness/` (TypeScript). bitsql v1 has no TLS: connect with `encrypt: false, trustServerCertificate: true`; the server answers PRELOGIN with ENCRYPT_NOT_SUP.
+`harness/` (TypeScript). bitsql speaks TLS like SQL Server (2026-10-04): connect with tedious's default `encrypt: true` plus `trustServerCertificate: true` (built-in self-signed certificate), or `encrypt: false` (PRELOGIN NOT_SUP, plaintext).
 
 ## bitsql findings (keep current)
 
@@ -51,7 +51,7 @@ mention the correction here.
   next query). Prisma 7: the client needs no engine binary (query compiler
   + `@prisma/adapter-mssql` over `mssql`/tedious, `encrypt:false` works);
   the CLI's schema engine is Rust/tiberius, whose `encrypt=false` still
-  means login-only TLS, so against bitsql use `encrypt=DANGER_PLAINTEXT`.
+  means login-only TLS (PRELOGIN ENCRYPT_OFF), supported since 2026-10-04.
   Prisma's CLI refuses `db push --accept-data-loss` when it detects an AI
   agent (Claude Code); plain `db push` on an empty database works.
   Sequelize 6 mssql: `sync({ alter: true })` emits `ALTER COLUMN ...
@@ -60,6 +60,15 @@ mention the correction here.
   has no onConflict() and no createSchema(). TypeORM rejects an unawaited
   promise from startTransaction on a destroyed DataSource (crashes Node
   without an unhandledRejection handler).
+- 2026-10-04: TLS (test/tls.test.mjs, same results on the oracle). tedious
+  20.3.3 caps TLS at 1.2 itself (message-io.js startTls) and sends one
+  PRELOGIN message per handshake flight, expecting exactly one PRELOGIN
+  message back; SQL Server's replies are type 0x12, EOM, packet id 0.
+  `encrypt: true` → PRELOGIN ON, server ON, negotiated
+  ECDHE-RSA-AES128-GCM-SHA256 / TLSv1.2 on both targets;
+  `dm_exec_connections.encrypt_option` is TRUE only for full TLS (FALSE for
+  NOT_SUP and for login-only). `encrypt: 'strict'` (TDS 8) fails against
+  the oracle image ("socket disconnected before secure TLS connection").
 
 # tedious Client Against mssqlite
 

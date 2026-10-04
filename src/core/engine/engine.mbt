@@ -11,6 +11,8 @@ priv struct Conn {
   reassembler : @tds.Reassembler
   mut phase : Phase
   mut packet_size : Int
+  /// Negotiated PRELOGIN encryption (ENCRYPT_OFF: TLS for LOGIN7 only).
+  mut encryption : Int
 }
 
 ///|
@@ -62,6 +64,7 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
         reassembler: @tds.Reassembler::new(),
         phase: AwaitPrelogin,
         packet_size: @tds.DEFAULT_PACKET_SIZE,
+        encryption: @tds.ENCRYPT_NOT_SUP,
       }
     Closed(id) => {
       match self.sessions.get(id) {
@@ -142,11 +145,11 @@ fn Engine::on_message(
   match (conn.phase, msg.ty) {
     (AwaitPrelogin, Prelogin) => {
       let p = @tds.decode_prelogin(msg.payload)
-      match @tds.negotiate_encryption_without_tls(p.encryption) {
+      match @tds.negotiate_encryption(p.encryption, tls=self.config.tls) {
         None => {
           out.push(
             Log(
-              "connection \{conn.id}: client requires encryption; TLS is not supported (use encrypt: false)",
+              "connection \{conn.id}: client requires encryption; TLS is not available",
             ),
           )
           out.push(Close(conn.id))
@@ -158,12 +161,19 @@ fn Engine::on_message(
             version=(major, minor, build, 0),
             encryption=enc,
           )
+          conn.encryption = enc
+          if enc == @tds.ENCRYPT_OFF || enc == @tds.ENCRYPT_ON {
+            out.push(StartTls(conn.id))
+          }
           out.push(Send(conn.id, @tds.frame(TabularResult, payload)))
           conn.phase = AwaitLogin
         }
       }
     }
     (AwaitLogin, Login7) => {
+      if conn.encryption == @tds.ENCRYPT_OFF {
+        out.push(EndTls(conn.id))
+      }
       let login = @tds.decode_login7(msg.payload)
       if login.packet_size >= 512 && login.packet_size <= 32767 {
         conn.packet_size = login.packet_size
@@ -224,6 +234,7 @@ fn Engine::on_message(
         login.host_name,
         login.app_name,
         library=login.library_name,
+        encrypted=conn.encryption == @tds.ENCRYPT_ON,
         now~,
       )
       self.send(conn, self.login_response(db, conn.packet_size), out)

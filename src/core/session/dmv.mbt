@@ -123,7 +123,7 @@ fn Session::dmv_rows(self : Session, key : String) -> Array[VRow] {
             ("protocol_type", s("TSQL")),
             ("protocol_version", i(1946157060)),
             ("endpoint_id", i(4)),
-            ("encrypt_option", s("FALSE")),
+            ("encrypt_option", s(if x.encrypted { "TRUE" } else { "FALSE" })),
             ("auth_scheme", s("SQL")),
             ("node_affinity", SmallInt(0)),
           ]),

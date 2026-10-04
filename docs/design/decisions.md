@@ -559,3 +559,26 @@ server-wide object ids remain (`harness/orm/known.json`). Design points:
   (sp_addextendedproperty …) are emulated for results and errors only;
   their internal DONEINPROC/ENVCHANGE streams are masked in the corpus
   (`-- @mask tokens/stream/done/rowCount`).
+
+## 2026-10-04: TLS in the host
+
+- **Ciphertext never reaches the core.** The draft (protocol.md) had the
+  core unwrap handshake packets via extra `Input`/`Output` variants. Instead
+  the engine only decides (PRELOGIN reply as captured: OFF → OFF, ON/REQ →
+  ON, NOT_SUP → NOT_SUP) and says `StartTls(id)` / `EndTls(id)`; the host
+  unwraps PRELOGIN packets (`@tds.Reassembler`), wraps each server flight in
+  one PRELOGIN message (packet id 0, as captured) and feeds OpenSSL. Event
+  logs keep plaintext, so replay is unaffected by key exchange randomness.
+- **TLS 1.2 maximum**, set through an `OPENSSL_CONF` the host writes at
+  startup (`moonbitlang/async/tls` exposes no protocol options). SQL Server
+  does TLS 1.3 only for TDS 8; under TDS 7 wrapping, TLS 1.3 session tickets
+  would arrive wrapped after the client stopped unwrapping.
+- **A built-in self-signed certificate** (CN=localhost, public key in
+  `src/host/tls_builtin_cert.mbt`) stands in for the certificate SQL Server
+  generates for itself; clients still need `trustServerCertificate`, as with
+  the real server. `--tls-cert/--tls-key` override it, `--no-tls` restores the
+  old refusal. A loopback handshake at startup turns a missing libssl or a bad
+  key into a logged "TLS disabled" instead of failed logins.
+- **No TDS 8 (`encrypt: strict`)**: the oracle image refuses it as well; a
+  TLS ClientHello as the first bytes is malformed TDS and closes the
+  connection.
