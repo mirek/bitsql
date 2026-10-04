@@ -19,6 +19,10 @@ pub fn compare(
     return None
   }
   let r = match (a, b) {
+    // same-representation integers: no decimal conversion
+    (Int(x), Int(y)) | (SmallInt(x), SmallInt(y)) | (TinyInt(x), TinyInt(y)) =>
+      x.compare(y)
+    (BigInt(x), BigInt(y)) => x.compare(y)
     (Variant(x, tx), Variant(y, ty)) => compare_variants(x, tx, y, ty)
     (Variant(_, _), _) | (_, Variant(_, _)) =>
       raise internal("sql_variant compared with a non-variant value")

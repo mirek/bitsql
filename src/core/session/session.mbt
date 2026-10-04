@@ -313,6 +313,12 @@ pub struct Session {
   /// Table variable id → text offset of its DECLARE (a re-run DECLARE,
   /// in a loop, is a no-op).
   priv tvar_sites : Map[Int, Int]
+  /// Data stamps for the executor's statement caches (`data_stamp`): the
+  /// table data last seen per (scope, id) and its stamp.
+  priv stamps : Map[(Int, Int), (@store.TableData, Int64)]
+  priv mut stamp_seq : Int64
+  /// Foreign key lookup indexes of recent table states (fk_actions.mbt).
+  priv fk_cache : Array[KeyCache]
   /// Catalog views of tempdb are being computed (sysviews.mbt).
   priv mut view_tempdb : Bool
   /// Timeout of the current lock wait when it is not SET LOCK_TIMEOUT
@@ -440,6 +446,9 @@ pub fn Session::new(
     applock_waited: false,
     temp_db_refs: [],
     tvar_sites: Map([]),
+    stamps: Map([]),
+    stamp_seq: 0L,
+    fk_cache: [],
     view_tempdb: false,
     wait_ms: None,
     bulk: None,
@@ -503,6 +512,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     user_fn: (id, args) => self.call_scalar_udf(id, args),
     user_table: (id, args) => self.call_table_udf(id, args),
     seek: (scope, id, key) => self.seek(scope, id, key),
+    stamp: (scope, id) => self.data_stamp(scope, id),
   }
 }
 

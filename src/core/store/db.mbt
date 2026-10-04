@@ -515,6 +515,14 @@ pub fn Db::truncate(self : Db, id : Int) -> Db {
 }
 
 ///|
+/// The physical rows and indexes of table `id`: a new value after every
+/// write, so `physical_equal` on two results tells whether a write
+/// happened in between (statement caches, `Session::data_stamp`).
+pub fn Db::table_data(self : Db, id : Int) -> TableData? {
+  self.data.get(id)
+}
+
+///|
 /// True when `id`'s rows are physically the same in both databases (no
 /// write happened in between). Used to detect modifications under open
 /// cursors.

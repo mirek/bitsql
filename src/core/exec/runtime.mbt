@@ -67,6 +67,9 @@ pub(all) struct Runtime {
   version : String
   /// Product version (major, minor, build) reported by SERVERPROPERTY.
   build : (Int, Int, Int)
+  /// Statement caches: memoized uncorrelated subqueries and lookup indexes
+  /// (exec/memo.mbt); `clear_caches` at every statement start.
+  memo : Memo
 }
 
 ///|
@@ -111,6 +114,7 @@ pub fn Runtime::new(
     server_name,
     version,
     build,
+    memo: Memo::new(),
   }
 }
 
@@ -143,12 +147,17 @@ pub(all) struct Ctx {
   /// Multi-statement table-valued function call: the rows of its return
   /// table after the body ran.
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
-  /// Unique-index lookup: rows of table (scope, id) whose columns equal the
-  /// given (column ordinal, value) pairs, or None when no unique index is
-  /// fully covered (the caller scans). See `seek_rows` in plan.mbt.
+  /// Index lookup: rows of table (scope, id) whose columns equal the given
+  /// (column ordinal, value) pairs, possibly more (the caller re-applies its
+  /// predicate), in row id order; None when no index applies (the caller
+  /// scans). See `seek_rows` in plan.mbt.
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[
     (Int64, Array[@types.Value]),
   ]?
+  /// Data version of table (scope, id): equal stamps mean physically the
+  /// same rows (no write in between); None when the table's rows cannot be
+  /// tracked (catalog views), which disables statement caches for it.
+  stamp : (Int, Int) -> Int64?
 }
 
 ///|
@@ -158,6 +167,12 @@ pub fn no_seek(
   _id : Int,
   _key : Array[(Int, @types.Value)],
 ) -> Array[(Int64, Array[@types.Value])]? {
+  None
+}
+
+///|
+/// `stamp` for contexts without a database: nothing is cached.
+pub fn no_stamp(_scope : Int, _id : Int) -> Int64? {
   None
 }
 

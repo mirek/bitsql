@@ -244,13 +244,17 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   // target order, then inserts in source order (captured: dml/merge-upsert
   // OUTPUT order UPDATE, DELETE, INSERT).
   let source_matched = Array::make(source_rows.length(), false)
-  let matches : Array[Array[Int]] = target_rows.map(_ => [])
-  for ti, tr in target_rows {
-    for si, s in source_rows {
-      if @exec.is_true(@exec.eval(self.ctx().with_row(tr.1 + s), on)) {
-        matches[ti].push(si)
-        source_matched[si] = true
-      }
+  // (an equi-join ON is matched by key instead of over every pair)
+  let matches = @exec.match_pairs(
+    self.ctx(),
+    on,
+    target_rows.map(tr => tr.1),
+    n,
+    source_rows,
+  )
+  for ms in matches {
+    for si in ms {
+      source_matched[si] = true
     }
   }
   for ti, tr in target_rows {

@@ -108,19 +108,172 @@ fn fk_keys_equal(
 }
 
 ///|
-/// Does `t` have a row whose `cols` equal `key`?
-fn fk_has_key(
+/// Keys sorted for `fk_keys_equal` lookups: (key, original position) by
+/// key under the column collations, then position. Keys with a NULL are
+/// left out (they never match).
+priv struct KeyIndex {
+  keys : Array[(Array[@types.Value], Int)]
+  collations : Array[@types.Collation?]
+}
+
+///|
+/// None when two keys cannot be compared (the caller searches linearly).
+fn KeyIndex::new(
+  keys : Array[Array[@types.Value]],
+  collations : Array[@types.Collation?],
+) -> KeyIndex? {
+  let sorted = []
+  for i, k in keys {
+    if !k.iter().any(v => v is Null) {
+      sorted.push((k, i))
+    }
+  }
+  let mut failed = false
+  sorted.sort_by((a, b) => {
+    let c = key_compare(a.0, b.0, collations) catch {
+      _ => {
+        failed = true
+        0
+      }
+    }
+    if c != 0 {
+      c
+    } else {
+      a.1.compare(b.1)
+    }
+  })
+  if failed {
+    None
+  } else {
+    Some({ keys: sorted, collations, })
+  }
+}
+
+///|
+fn key_compare(
+  a : Array[@types.Value],
+  b : Array[@types.Value],
+  collations : Array[@types.Collation?],
+) -> Int raise @types.SqlError {
+  for j in 0..<a.length() {
+    let c = @types.compare(a[j], b[j], collation?=collations[j]).unwrap_or(0)
+    if c != 0 {
+      return c
+    }
+  }
+  0
+}
+
+///|
+/// The first position whose key `fk_keys_equal`s `key`, if any.
+fn KeyIndex::first(self : KeyIndex, key : Array[@types.Value]) -> Int? {
+  if key.iter().any(v => v is Null) {
+    return None
+  }
+  let mut lo = 0
+  let mut hi = self.keys.length()
+  while lo < hi {
+    let mid = (lo + hi) / 2
+    let c = key_compare(self.keys[mid].0, key, self.collations) catch {
+      _ => return None
+    }
+    if c < 0 {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  if lo < self.keys.length() &&
+    (key_compare(self.keys[lo].0, key, self.collations) catch { _ => 1 }) == 0 {
+    Some(self.keys[lo].1)
+  } else {
+    None
+  }
+}
+
+///|
+/// Does `t` have a row whose `cols` equal `key` (`fk_keys_equal`)? Through
+/// a unique, unfiltered index on exactly these columns when there is one
+/// (its keys compare the same way); otherwise repeated lookups in one
+/// table state share a sorted key index (`fk_cache`), so per-row checks of
+/// a large statement do not scan the table each time.
+fn Session::fk_has_key(
+  self : Session,
   db : @store.Db,
   t : @store.Table,
   cols : Array[Int],
   key : Array[@types.Value],
 ) -> Bool {
-  for kv in db.rows(t.id) {
-    if fk_keys_equal(t, cols, cols.map(c => kv.1[c]), key) {
-      return true
+  if key.iter().any(v => v is Null) {
+    return false
+  }
+  for i, ix in t.indexes {
+    if !ix.unique ||
+      ix.filter is Some(_) ||
+      ix.columns.length() != cols.length() {
+      continue
+    }
+    let vals = []
+    for c in ix.columns {
+      match cols.search(c.0) {
+        Some(j) => vals.push(key[j])
+        None => break
+      }
+    }
+    if vals.length() == cols.length() {
+      return db.find_key(t.id, i, vals) is Some(_)
     }
   }
-  false
+  guard db.table_data(t.id) is Some(data) else { return false }
+  let found = self.fk_cache.search_by(e => {
+    physical_equal(e.data, data) && e.table == t.id && e.columns == cols
+  })
+  let entry = match found {
+    Some(i) => self.fk_cache[i]
+    None => {
+      if self.fk_cache.length() >= 8 {
+        self.fk_cache.remove(0) |> ignore
+      }
+      let e : KeyCache = {
+        data,
+        table: t.id,
+        columns: cols,
+        uses: 0,
+        index: None,
+      }
+      self.fk_cache.push(e)
+      e
+    }
+  }
+  entry.uses += 1
+  if entry.index is None && entry.uses >= 2 {
+    let rows = db.rows(t.id)
+    entry.index = KeyIndex::new(
+      rows.map(kv => cols.map(c => kv.1[c])),
+      cols.map(c => t.columns[c].ty.collation()),
+    )
+  }
+  match entry.index {
+    Some(ix) => ix.first(key) is Some(_)
+    None => {
+      for kv in db.rows(t.id) {
+        if fk_keys_equal(t, cols, cols.map(c => kv.1[c]), key) {
+          return true
+        }
+      }
+      false
+    }
+  }
+}
+
+///|
+/// A sorted key index of one table state (`Session::fk_has_key`).
+priv struct KeyCache {
+  data : @store.TableData
+  table : Int
+  columns : Array[Int]
+  mut uses : Int
+  mut index : KeyIndex?
 }
 
 ///|
@@ -197,11 +350,17 @@ fn Session::cascade_actions(
         // child rows matching a removed key, from the state before this
         // foreign key's action (a key swap must not apply twice)
         let child_changes : Array[RowChange] = []
+        let move_index = KeyIndex::new(
+          moves.map(m => m.0),
+          f.ref_columns.map(c => parent.columns[c].ty.collation()),
+        )
         for kv in db.rows(child.id) {
           let ck = f.columns.map(c => kv.1[c])
-          let hit = moves.search_by(m => {
-            fk_keys_equal(parent, f.ref_columns, m.0, ck)
-          })
+          let hit = match move_index {
+            Some(ix) => ix.first(ck)
+            None =>
+              moves.search_by(m => fk_keys_equal(parent, f.ref_columns, m.0, ck))
+          }
           guard hit is Some(mi) else { continue }
           let new_row : Array[@types.Value]? = match (action, moves[mi].1) {
             (Cascade, None) => None
@@ -286,7 +445,7 @@ fn Session::cascade_actions(
     if key.iter().any(v => v is Null) {
       continue
     }
-    if !fk_has_key(db, parent, f.ref_columns, key) {
+    if !self.fk_has_key(db, parent, f.ref_columns, key) {
       raise self.fk_child_error(scope, verb, f, cid, parent)
     }
   }
@@ -294,8 +453,8 @@ fn Session::cascade_actions(
     let (f, cid, key) = n
     guard db.table(cid) is Some(child) else { continue }
     guard db.table(f.ref_table) is Some(parent) else { continue }
-    if fk_has_key(db, child, f.columns, key) &&
-      !fk_has_key(db, parent, f.ref_columns, key) {
+    if self.fk_has_key(db, child, f.columns, key) &&
+      !self.fk_has_key(db, parent, f.ref_columns, key) {
       raise self.fk_parent_error(scope, verb, f, child)
     }
   }
@@ -342,8 +501,8 @@ fn Session::check_references(
             }
           None => ()
         }
-        if fk_has_key(db, child, fk.columns, key) &&
-          !fk_has_key(db, t, fk.ref_columns, key) {
+        if self.fk_has_key(db, child, fk.columns, key) &&
+          !self.fk_has_key(db, t, fk.ref_columns, key) {
           raise self.fk_parent_error(target.scope, verb, fk, child)
         }
       }
@@ -374,7 +533,7 @@ fn Session::check_self_references(
     if key.iter().any(v => v is Null) {
       continue
     }
-    if !fk_has_key(db, t, fk.ref_columns, key) {
+    if !self.fk_has_key(db, t, fk.ref_columns, key) {
       raise self.fk_child_error(target.scope, verb, fk, t.id, t)
     }
   }

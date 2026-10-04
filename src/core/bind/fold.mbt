@@ -89,6 +89,7 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
     user_fn: @exec.no_user_fn,
     user_table: @exec.no_user_table,
     seek: @exec.no_seek,
+    stamp: @exec.no_stamp,
   }
   Some(@exec.eval(ctx, e)) catch {
     _ => None
@@ -249,6 +250,7 @@ fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
     user_fn: @exec.no_user_fn,
     user_table: @exec.no_user_table,
     seek: @exec.no_seek,
+    stamp: @exec.no_stamp,
   }
   ignore(@exec.eval(ctx, e))
   e

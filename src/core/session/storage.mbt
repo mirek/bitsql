@@ -413,9 +413,13 @@ fn view_query(
 }
 
 ///|
-/// Unique-index lookup for the executor (`@exec.Ctx::seek`): the row whose
-/// unique, unfiltered index columns equal `key`, or None when no such index
-/// is fully covered by `key`.
+/// Index lookup for the executor (`@exec.Ctx::seek`): rows of table
+/// (scope, id) whose index columns equal `key`, in row id order, or None
+/// when no index is fully covered by `key`. A unique, unfiltered index
+/// gives at most one row; otherwise an unfiltered non-unique index whose
+/// key comparison is the predicate's (not a char/varchar column: index
+/// keys compare without the code page 1252 rules of `=`) gives every row
+/// with an equal key. The caller re-applies its whole predicate.
 fn Session::seek(
   self : Session,
   scope : Int,
@@ -427,18 +431,21 @@ fn Session::seek(
   }
   let db = self.db_of(scope)
   guard db.table(id) is Some(t) else { return None }
-  for i, ix in t.indexes {
-    if !ix.unique || ix.filter is Some(_) {
-      continue
-    }
+  let covered = (ix : @store.Index) => {
     let vals = []
     for c in ix.columns {
       match key.search_by(k => k.0 == c.0) {
         Some(j) => vals.push(key[j].1)
-        None => break
+        None => return None
       }
     }
-    if vals.length() == ix.columns.length() {
+    Some(vals)
+  }
+  for i, ix in t.indexes {
+    if !ix.unique || ix.filter is Some(_) {
+      continue
+    }
+    if covered(ix) is Some(vals) {
       return Some(
         match db.find_key(id, i, vals) {
           Some(rowid) =>
@@ -451,5 +458,55 @@ fn Session::seek(
       )
     }
   }
+  for i, ix in t.indexes {
+    if ix.unique || ix.filter is Some(_) {
+      continue
+    }
+    let ansi = ix.columns
+      .iter()
+      .any(c => {
+        let ty = t.columns[c.0].ty
+        ty.family() == FString && !ty.is_unicode()
+      })
+    if ansi {
+      continue
+    }
+    guard covered(ix) is Some(vals) else { continue }
+    // non-unique keys end with the row id: the range of one key value
+    let lo = vals.copy()
+    lo.push(BigInt(-0x8000000000000000L))
+    let hi = vals
+    hi.push(BigInt(0x7FFFFFFFFFFFFFFFL))
+    let rowids = db.seek(id, i, lo~, hi~)
+    rowids.sort()
+    let out = []
+    for rowid in rowids {
+      match db.row(id, rowid) {
+        Some(r) => out.push((rowid, r))
+        None => ()
+      }
+    }
+    return Some(out)
+  }
   None
+}
+
+///|
+/// Data stamp of table (scope, id) for the executor's statement caches
+/// (`@exec.Ctx::stamp`): unchanged while the table's data is physically the
+/// same value (`@store.Db::table_data`), a new number after any write.
+/// None for catalog views and unknown tables.
+fn Session::data_stamp(self : Session, scope : Int, id : Int) -> Int64? {
+  if scope == 2 {
+    return None
+  }
+  guard self.db_of(scope).table_data(id) is Some(data) else { return None }
+  match self.stamps.get((scope, id)) {
+    Some((seen, stamp)) if physical_equal(seen, data) => Some(stamp)
+    _ => {
+      self.stamp_seq += 1L
+      self.stamps[(scope, id)] = (data, self.stamp_seq)
+      Some(self.stamp_seq)
+    }
+  }
 }

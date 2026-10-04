@@ -40,6 +40,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     _ => false
   }
   self.rt.null_eliminated = false
+  self.rt.clear_caches()
+  self.fk_cache.clear()
   self.tx_ended_in_trigger = false
   self.cur_cmd = 253
   self.ddl_cmd = 0

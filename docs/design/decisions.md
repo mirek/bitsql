@@ -384,3 +384,58 @@ COUNT/COUNT_BIG/SUM over frames that grow from the partition start are
 computed as prefix aggregates with the same per-addition overflow checks
 (running SUM over 20k rows: 8.2 s → 24 ms).
 
+
+## 2026-10-04: sort-based grouping, statement memo for subqueries, lookup indexes
+
+GROUP BY, DISTINCT, UNION/EXCEPT/INTERSECT and DISTINCT aggregate inputs
+searched the groups found so far for every row (20k rows, 5003 groups:
+~20 s each). They now sort row positions by `compare_rows` (the order whose
+ties are exactly `same_row`'s equality: collation-aware, trailing spaces
+ignored, NULLs equal), take runs of equal keys as groups and number them by
+first appearance (exec/grouping.mbt), so results keep the old first-
+appearance order and `prefer_representative` spellings; EXCEPT/INTERSECT
+test membership by binary search over the sorted right side.
+
+Subqueries ran once per outer row. `subquery_rows` (exec/memo.mbt) keeps a
+statement memo keyed by the plan object: a subquery with no outer-row
+references, no `@@` globals, user functions, FOR JSON/XML, or volatile
+functions (NEWID, RAND, NEXT VALUE FOR, SCOPE_IDENTITY, ERROR_*, …) runs
+once, and later evaluations reuse its rows while every table it scans has
+the same data stamp and every variable it reads the same value. The stamp
+(`Ctx::stamp`, `Session::data_stamp`) changes whenever a table's
+`TableData` is a different value (`Db::table_data`, `physical_equal`), so
+writes inside the statement invalidate it; catalog views are never
+memoized. A reuse replays the run's side effects on the runtime (the 8153
+flag, the row counter used by NEXT VALUE FOR). IN / NOT IN over a memoized
+set binary-searches its sorted non-NULL values (same `compare` and
+collation as the linear loop; a NULL in the set still makes a miss
+unknown). The session clears the memo at every statement start, nested ones
+included. Keeping today's per-row semantics was chosen over SQL Server's
+observed one-time evaluation: `SELECT @t = @t + (SELECT COUNT(*) FROM pd
+WHERE k > @t) FROM pc` gives 21 on SQL Server 17.0.5005.3 (subquery run
+once) and 9 here (rerun when @t changes), as before; that shape is
+undocumented and plan-dependent.
+
+Correlated `column = outer value` lookups (EXISTS / scalar subqueries on
+unindexed columns) scanned the inner table per outer row. `seek_rows` now
+asks `Session::seek`, which also uses non-unique unfiltered indexes covering
+the pinned columns (not for char/varchar keys, whose `=` follows code page
+1252 rules index keys do not), and otherwise `cached_lookup` indexes the
+table on the lookup's second use in a statement under the conjuncts' own
+collation and ansi flag, valid while its data stamp holds. Candidates come
+back in row id order and the whole predicate is re-applied, so rows and
+order equal a scan's. Table indexes are only used when the `=` compares
+under the column's collation.
+
+Found while measuring: foreign key checks scanned the referenced table per
+row (`fk_has_key`; INSERT of 20k child rows: 38–49 s), cascades searched the
+removed keys per child row, and MERGE evaluated ON for every (target,
+source) pair (20k rows: 110–156 s). FK lookups now use a unique index on exactly
+the key columns, else a sorted key index per table state (`fk_cache`,
+built on the second lookup, cleared per statement); cascades binary-search
+the removed keys; MERGE matches through the equi-join index
+(`@exec.match_pairs`, the full ON re-checked per candidate pair). Like the
+seeks, only candidate pairs are evaluated, so an ON or WHERE conjunct that
+would raise on a non-matching row no longer does (SQL Server's seek plans
+behave the same way). `harness/bench/bench.mjs` (`npm run bench`) times
+these shapes on a release build.

@@ -22,6 +22,7 @@ npm run allowlist:sync             # after a full `npm run diff`: allowlist ever
 npm run oracle:stop                # remove the container
 npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
 npm run probe -- out/x.sql oracle  # run a scratch .sql case, print columns/rows/errors/tokens (no expectation)
+npm run bench [-- 20000 80000]     # release-build timings of grouping/subquery/DML shapes (BENCH_ONLY=regexp, BITSQL_BIN)
 ```
 
 ## Rules
@@ -360,3 +361,9 @@ Start the host with `--database NAME` so the app's database exists at login
   an expectation: `npm run probe -- file.sql [oracle|emulator|both]` prints
   columns, rows, errors and the token stream per step (keep the .sql under
   `harness/out/`, which is not committed).
+- 2026-10-04: `npm run bench` (harness/bench/bench.mjs) builds the release
+  binary and times ~20 query and DML shapes over N-row tables (default
+  20000; pass several sizes to check n log n scaling). Run it before and
+  after executor changes: quadratic paths show up as 16x per 4x rows. The
+  release build takes ~2 min; `BITSQL_BIN=` reuses a binary, `BENCH_ONLY=`
+  selects queries by name.

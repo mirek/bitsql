@@ -136,23 +136,7 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let end = @cmp.minimum(start + @cmp.maximum(cnt, 0), rows.length())
       rows[start:end].to_owned()
     }
-    Distinct(input, collations) => {
-      let out : Array[Row] = []
-      for row in run(ctx, input) {
-        let mut dup = false
-        for seen in out {
-          if same_row(seen, row, collations) {
-            prefer_representative(seen, row)
-            dup = true
-            break
-          }
-        }
-        if !dup {
-          out.push(row.copy())
-        }
-      }
-      out
-    }
+    Distinct(input, collations) => distinct_rows(run(ctx, input), collations)
     UnionAll(parts) => {
       let out = []
       for p in parts {
@@ -182,47 +166,22 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     SetOp(kind, left, right, collations) => {
       let ls = run(ctx, left)
       let rs = run(ctx, right)
-      let out : Array[Row] = []
-      let contains = (rows : Array[Row], row : Row) => {
-        for x in rows {
-          if same_row(x, row, collations) {
-            return true
-          }
-        }
-        false
-      }
-      let add = (row : Row) => {
-        for x in out {
-          if same_row(x, row, collations) {
-            prefer_representative(x, row)
-            return
-          }
-        }
-        out.push(row.copy())
-      }
+      // distinct rows in order of first appearance; the shown spelling of
+      // equal strings is `prefer_representative`'s
       match kind {
-        Union => {
+        Union => distinct_rows(ls + rs, collations)
+        Except | Intersect => {
+          let set = RowSet::new(rs, collations)
+          let keep = kind is Intersect
+          let kept = []
           for r in ls {
-            add(r)
+            if set.contains(r) == keep {
+              kept.push(r)
+            }
           }
-          for r in rs {
-            add(r)
-          }
+          distinct_rows(kept, collations)
         }
-        Except =>
-          for r in ls {
-            if !contains(rs, r) {
-              add(r)
-            }
-          }
-        Intersect =>
-          for r in ls {
-            if contains(rs, r) {
-              add(r)
-            }
-          }
       }
-      out
     }
     Top(input, count, percent~, ties~) => {
       let rows = run(ctx, input)
@@ -498,12 +457,13 @@ fn row_free(e : @ir.Expr) -> Bool {
 }
 
 ///|
-/// `Filter(Scan)` through a unique index: when the predicate's conjuncts
-/// pin all columns of a unique index with `column = value` of the column's
-/// own type and collation, the session looks the key up instead of the scan
-/// reading every row. The full predicate is applied to the result, so the
-/// rows are exactly those of the scan (a unique key matches at most one).
-/// None: no index applies; scan.
+/// `Filter(Scan)` through an index: when the predicate's conjuncts pin
+/// columns with `column = value` of the column's own type and collation,
+/// the session looks the key up in a table index covering them
+/// (`Ctx::seek`), or else a statement lookup cache indexes the table on the
+/// lookup's second use (`cached_lookup`, for correlated subqueries).
+/// Candidates come in row id order and the full predicate is applied to
+/// them, so the rows are exactly those of the scan. None: scan.
 fn seek_rows(
   ctx : Ctx,
   scope : Int,
@@ -524,6 +484,12 @@ fn seek_rows(
 
   split(pred)
   let key : Array[(Int, @types.Value)] = []
+  // each pinned column's `=` comparison, for the statement lookup cache
+  let colls : Array[@types.Collation?] = []
+  let ansi : Array[Bool] = []
+  // table indexes compare keys under the column collation: usable when
+  // every `=` compares under it too
+  let mut index_ok = true
   for e in conj {
     guard e.kind is Cmp(Eq, a, b, coll) else { continue }
     let pinned = match (a.kind, b.kind) {
@@ -548,11 +514,32 @@ fn seek_rows(
       return Some([])
     }
     key.push((i, v))
+    colls.push(coll)
+    ansi.push(col.ty.family() == FString && !col.ty.is_unicode())
+    if col.ty.family() == FString && coll != col.ty.collation() {
+      index_ok = false
+    }
   }
   if key.is_empty() {
     return None
   }
-  guard (ctx.seek)(scope, id, key) is Some(found) else { return None }
+  let found = match (if index_ok { (ctx.seek)(scope, id, key) } else { None }) {
+    Some(found) => found
+    None =>
+      match
+        cached_lookup(
+          ctx,
+          scope,
+          id,
+          key.map(k => k.0),
+          colls,
+          ansi,
+          key.map(k => k.1),
+        ) {
+        Some(found) => found
+        None => return None
+      }
+  }
   let out = []
   for kv in found {
     let row = if rowid {
@@ -673,4 +660,32 @@ fn EquiIndex::lookup(
     i += 1
   }
   out
+}
+
+///|
+/// For each left row, the indexes of the right rows (in order) for which
+/// `on` holds over `left ++ right`: what a nested loop over every pair
+/// finds, through an equi-join index when `on` has a `left.col = right.col`
+/// conjunct of one type (MERGE's ON). Only candidate pairs are evaluated.
+pub fn match_pairs(
+  ctx : Ctx,
+  on : @ir.Expr,
+  left : Array[Row],
+  left_width : Int,
+  right : Array[Row],
+) -> Array[Array[Int]] raise @types.SqlError {
+  let index = equi_index(on, left_width, right)
+  left.map(l => {
+    let candidates = match index {
+      Some(ix) => ix.lookup(l)
+      None => Array::makei(right.length(), j => j)
+    }
+    let hits = []
+    for j in candidates {
+      if is_true(eval(ctx.with_row(l + right[j]), on)) {
+        hits.push(j)
+      }
+    }
+    hits
+  })
 }

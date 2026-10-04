@@ -26,21 +26,20 @@ fn agg_inputs(
       }
       continue
     }
-    if call.distinct {
-      let mut dup = false
-      for seen in out {
-        if @types.compare(seen.0, v, collation?=coll) == Some(0) {
-          dup = true
-          break
-        }
-      }
-      if dup {
-        continue
-      }
-    }
     out.push((v, r))
   }
-  out
+  if !call.distinct || out.length() < 2 {
+    return out
+  }
+  // DISTINCT: the first of each run of equal values, in input order
+  let (ids, _) = group_ids(out.map(x => [x.0]), [coll])
+  let firsts : Array[(@types.Value, Row)] = []
+  for i, x in out {
+    if ids[i] == firsts.length() {
+      firsts.push(x)
+    }
+  }
+  firsts
 }
 
 ///|
@@ -391,21 +390,16 @@ fn run_aggregate(
     for i in 0..<keys.length() {
       gid = gid * 2L + (if set.contains(i) { 0L } else { 1L })
     }
+    // groups in order of first appearance, each keeping its first key
+    let cs = set.map(i => collations[i])
+    let kvs = keyed.map(kr => set.map(i => kr.0[i]))
+    let (ids, _) = group_ids(kvs, cs)
     let groups : Array[(Array[@types.Value], Array[Row])] = []
-    for kr in keyed {
-      let kv = set.map(i => kr.0[i])
-      let cs = set.map(i => collations[i])
-      let mut found = -1
-      for gi, g in groups {
-        if same_row(g.0, kv, cs) {
-          found = gi
-          break
-        }
-      }
-      if found >= 0 {
-        groups[found].1.push(kr.1)
+    for j, kr in keyed {
+      if ids[j] == groups.length() {
+        groups.push((kvs[j], [kr.1]))
       } else {
-        groups.push((kv, [kr.1]))
+        groups[ids[j]].1.push(kr.1)
       }
     }
     // scalar aggregate (no GROUP BY): one row even over empty input;

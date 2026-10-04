@@ -51,6 +51,10 @@ pub fn compare_strings(
 ) -> Int {
   // UTF-8 varchar holds Unicode text and compares like nvarchar; its byte
   // order is the code point order
+  // identical text is equal under every collation
+  if a == b {
+    return 0
+  }
   let ansi = ansi && !collation.utf8()
   match collation.kind {
     // varchar data is stored in code page 1252: binary collations order

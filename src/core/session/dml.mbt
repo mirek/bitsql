@@ -372,7 +372,7 @@ fn Session::check_row(
       continue
     }
     guard db.table(fk.ref_table) is Some(parent) else { continue }
-    if !fk_has_key(db, parent, fk.ref_columns, key) {
+    if !self.fk_has_key(db, parent, fk.ref_columns, key) {
       raise self.fk_child_error(target.scope, verb, fk, t.id, parent)
     }
   }

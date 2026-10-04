@@ -215,7 +215,7 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
     Call(f, args) => call(ctx, f, args, e)
     Global(g) => global(ctx, g)
     Subquery(plan) => {
-      let rows = run(ctx.push_outer(ctx.row), plan)
+      let rows = subquery_rows(ctx, plan).0
       if rows.length() > 1 {
         raise @types.sql_error(
           512, "Subquery returned more than 1 value. This is not permitted when the subquery follows =, !=, <, <= , >, >= or when the subquery is used as an expression.",
@@ -227,16 +227,22 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
         rows[0][0]
       }
     }
-    Exists(plan) =>
-      of_bool(Some(!run(ctx.push_outer(ctx.row), plan).is_empty()))
+    Exists(plan) => of_bool(Some(!subquery_rows(ctx, plan).0.is_empty()))
     InQuery(a, plan, negated~, collation~) => {
       let va = eval(ctx, a)
-      let rows = run(ctx.push_outer(ctx.row), plan)
+      let (rows, memo) = subquery_rows(ctx, plan)
       if rows.is_empty() {
         return of_bool(Some(negated))
       }
       if va is Null {
         return Null
+      }
+      // a memoized set: binary search over its sorted values
+      if memo is Some(m) && m.members(collation) is Some(set) {
+        return match set.contains(va) {
+          Some(found) => of_bool(Some(found != negated))
+          None => Null
+        }
       }
       let mut unknown = false
       for r in rows {
@@ -254,7 +260,7 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
     }
     Quantified(op, a, plan, all~, collation~) => {
       let va = eval(ctx, a)
-      let rows = run(ctx.push_outer(ctx.row), plan)
+      let rows = subquery_rows(ctx, plan).0
       let mut unknown = false
       for r in rows {
         let t = match @types.compare(va, r[0], collation?) {

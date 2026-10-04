@@ -20,7 +20,11 @@ pub fn is_true(@types.Value) -> Bool
 
 pub fn like_match(String, String, Int?, @types.Collation, Bool) -> Bool
 
+pub fn match_pairs(Ctx, @ir.Expr, Array[Array[@types.Value]], Int, Array[Array[@types.Value]]) -> Array[Array[Int]] raise @types.SqlError
+
 pub fn no_seek(Int, Int, Array[(Int, @types.Value)]) -> Array[(Int64, Array[@types.Value])]?
+
+pub fn no_stamp(Int, Int) -> Int64?
 
 pub fn no_user_fn(Int, Array[@types.Value]) -> @types.Value raise @types.SqlError
 
@@ -45,6 +49,7 @@ pub(all) struct Ctx {
   user_fn : (Int, Array[@types.Value]) -> @types.Value raise @types.SqlError
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[(Int64, Array[@types.Value])]?
+  stamp : (Int, Int) -> Int64?
 }
 pub fn Ctx::push_outer(Self, Array[@types.Value]) -> Self
 pub fn Ctx::with_row(Self, Array[@types.Value]) -> Self
@@ -57,6 +62,8 @@ pub(all) struct ErrorInfo {
   line : Int
   procedure : String?
 } derive(@debug.Debug)
+
+type Memo
 
 pub(all) struct Runtime {
   mut rowcount : Int64
@@ -90,8 +97,10 @@ pub(all) struct Runtime {
   server_name : String
   version : String
   build : (Int, Int, Int)
+  memo : Memo
 }
 pub fn Runtime::charge(Self, Int64) -> Unit raise @types.SqlError
+pub fn Runtime::clear_caches(Self) -> Unit
 pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String, build? : (Int, Int, Int)) -> Self
 pub fn Runtime::next_random(Self) -> UInt64
 pub fn Runtime::next_row(Self) -> Unit
