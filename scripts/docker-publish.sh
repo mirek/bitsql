@@ -118,9 +118,17 @@ if [[ ${SKIP_SMOKE:-0} != 1 ]]; then
   fi
 fi
 
+# The base is pinned per arch by digest: given a tag, the classic builder
+# reuses whatever arch is cached locally (amd64) even with --platform.
+base=gcr.io/distroless/cc-debian12
+base_index=$(docker manifest inspect "$base:nonroot")
 for arch in amd64 arm64; do
-  docker build -q --platform "linux/$arch" --build-arg "BITSQL_BIN=$out/$arch/bitsql" \
-    -t "$repo:$version-$arch" . >/dev/null
+  digest=$(python3 -c "import json,sys; print(next(m['digest'] for m in json.load(sys.stdin)['manifests'] if m['platform']['architecture'] == sys.argv[1]))" "$arch" <<<"$base_index")
+  docker pull -q --platform "linux/$arch" "$base@$digest" >/dev/null
+  docker build -q --platform "linux/$arch" --build-arg "BASE=$base@$digest" \
+    --build-arg "BITSQL_BIN=$out/$arch/bitsql" -t "$repo:$version-$arch" . >/dev/null
+  [[ $(docker image inspect -f '{{.Architecture}}' "$repo:$version-$arch") == "$arch" ]] ||
+    { echo "image $repo:$version-$arch has the wrong architecture" >&2; exit 1; }
 done
 echo "== images: $repo:$version-amd64, $repo:$version-arm64"
 
