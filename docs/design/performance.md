@@ -216,3 +216,38 @@ time in ms (50 repetitions for the standard shapes, 30 for integer EXCEPT):
 At 80k rows, INTERSECT measured 46.37 → 22.68 ms (one run per binary,
 20 repetitions). All timings were collected without concurrent builds,
 tests or benchmarks.
+
+The validated amd64 container measured INTERSECT at 2.55 ms versus SQL
+Server's 4.16 ms; all 24 shapes totalled 257 versus 696 ms (2026-10-06,
+Europe/Zurich). UNION measured 12.1 versus 7.92 ms in that run. A follow-up
+of two interleaved runs per native release binary (50 repetitions each)
+found similar UNION means: 0.1.9 at 8.41/8.54 ms and 0.1.10 at 8.68/8.54 ms.
+UNION does not use RowSet; this control did not confirm a regression.
+The README retains the original container measurement.
+
+## ROW_NUMBER partition scan (2026-10-06, unreleased)
+
+A direct scan after the unchanged stable sort replaces materialized partition
+ranges and unused per-partition index arrays for ROW_NUMBER. It makes the
+same adjacent `same_prefix` calls in the same order; intervening rank writes
+are local, cannot raise, and do not escape if a later comparison fails.
+The white-box test compares against the old partition materialization for
+empty/singleton/many rows, NULLs, multiple keys, reversed input positions,
+and linguistic/binary collations. Sort keys and expression evaluation are
+unchanged, including the distinction between ANSI sort keys and partition
+equality.
+
+Two sequential interleaved native release runs at 20k rows, 80 repetitions
+each, with no concurrent builds/tests/benchmarks:
+
+| ROW_NUMBER over v | 0.1.10 | Candidate |
+| --- | ---: | ---: |
+| Mean wall time, run 1 | 8.22 ms | 7.56 ms |
+| Mean wall time, run 2 | 8.17 ms | 7.62 ms |
+| Minimum wall time, run 1 | 7.75 ms | 7.13 ms |
+| Minimum wall time, run 2 | 7.72 ms | 7.13 ms |
+
+Existing window-functions and order-and-types captures give 37/39 on both
+baseline and candidate: the same two non-allowlisted failures (SUM window
+ordering and COT) remain. Executor unit tests pass (14/14). Full gate passed: 273 MoonBit tests,
+20702 client/corpus passes, 3 skips, no failures.

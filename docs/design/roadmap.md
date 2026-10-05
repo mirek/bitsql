@@ -209,6 +209,7 @@ Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
 - [x] Container benchmark vs real SQL Server (`npm run bench:compare`, README refreshed for 0.1.9 on 2026-10-05): 24 shapes 257 ms vs SQL Server 702 ms; accented-text sorting 3.11 vs 3.30 ms; 12.5 MiB download vs 604.5 MiB, cold start 128 ms vs 2.69 s, 4.4 MiB idle vs 1.17 GiB. Seven individual shapes remain slower.
 - [x] `mirek/bitsql:0.1.8` (`0.1`, `latest`) published 2026-10-05 for amd64 + arm64: compact single-column grouping slots; full gate 269 MoonBit tests and 20702 client/corpus passes (3 skips), amd64 release smoke 20702 passes, arm64 smoke 571/571. Registry manifests verified for all three tags.
 - [x] `mirek/bitsql:0.1.9` (`0.1`, `latest`) published 2026-10-05 for amd64 + arm64: early linguistic-primary decisions, compiled CHAR/NCHAR and immutable character results. Full gate against the exact amd64 release binary: 271 MoonBit tests, 20702 client/corpus passes (3 skips); arm64 smoke 571/571.
+- [~] 0.1.10 release prepared 2026-10-06 for amd64 + arm64: integer set membership. Full gate against the exact amd64 release binary: 272 MoonBit tests, 20702 client/corpus passes (3 skips); arm64 smoke 571/571. Container comparison: 24 shapes 257 vs 696 ms, INTERSECT 2.55 vs 4.16 ms. README refreshed. Registry publication awaits explicit destination/tag authorization after automatic approval review rejected the push.
 - [~] Executor speed vs SQL Server on set-heavy shapes at 20k rows (same benchmark), as of 0.1.3: GROUP BY/DISTINCT/UNION/ORDER BY/ROW_NUMBER 3–9× slower, UPDATE all rows/UPDATE FROM 4–5× slower, accented-text ORDER BY 35× slower; parameterized point SELECT through sp_executesql 0.16 vs 0.15 ms. 2026-10-05 (decisions.md "sort keys, hash grouping, set-at-once DML"): sort keys, hash grouping, stable merge sort, UPDATE/DELETE/MERGE applied once with unchanged-index replacement and O(n) bulk deletes; bulk multi-row INSERT, hashed EXCEPT/INTERSECT; 1.5–4× faster across the shapes (24 shapes 1.08 → 0.50 s). 2026-10-05 performance push (docs/design/performance.md, papers in performance.bib): closure-compiled expressions, streamed scalar aggregates and joins, accumulator GROUP BY, Int64 hash tables for joins/grouping/unnesting, unnested integer-key correlated subqueries, normalized ORDER BY keys, TOP-N heap, packed collation elements, scan cache, cheaper UPDATE/FK/lock paths; 24 shapes 478 → 251 ms (best of 3). Missing: IN sets by hashing, correlated subqueries on non-integer keys, per-row validity checks of memoized uncorrelated subqueries (~1 ms/20k rows), per-request overhead (binding runs twice per batch: prebind + run; 2026-10-05: parse cache, precheck memo, the first query reuses the prebind plan, seekable DML WHERE; point SELECT server CPU 62 → 40 µs; open: a cross-request plan cache needs a catalog generation counter, decisions.md) 0.1.4 (README): 24 shapes 511 ms vs SQL Server 695 ms (0.1.3: 1.09 s), 40k-row load on par (49.8 vs 50.1 ms); still slower per query on sorting/grouping (2–3×), correlated subqueries (3.7–5.2×), accented-text ORDER BY (8×), UPDATE all rows/FROM (1.4×)
 
 Performance follow-up (2026-10-05): single-column exact collation/temporal
@@ -229,9 +230,11 @@ The 0.1.10 performance follow-up specializes integer EXCEPT/INTERSECT
 membership while retaining conversion-aware comparison for other probes;
 equivalence tests and before/after timings are in `performance.md`.
 
-- [ ] Reduce ROW_NUMBER partition-allocation overhead while preserving the
-  existing sort, boundary comparisons, and output order (next candidate,
-  not yet measured).
+- [x] Reduce ROW_NUMBER partition-allocation overhead while preserving the
+  existing sort, boundary comparisons, and output order: direct scan measured
+  7–8% lower mean time on 2026-10-06; equivalence tests and targeted captures
+  checked; full gate passed (273 MoonBit tests, 20702 client/corpus passes,
+  3 skips). Unreleased (`performance.md`).
 
 ## Limiting factor
 

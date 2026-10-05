@@ -106,6 +106,10 @@ fn window_values_ordered(
   let cs = all_keys.map(k => compile(k.expr))
   let keyed = rows.mapi((i, r) => (cs.map(f => f(ctx, r)), i))
   let sorted_all = sort_keyed(keyed, all_keys)
+  if call.func is RowNumber {
+    row_numbers(sorted_all, np, call.partition_collations, result)
+    return (result, sorted_all.map(kv => kv.1))
+  }
   let parts : Array[(Int, Int)] = []
   let mut start = 0
   for j in 1..<=sorted_all.length() {
@@ -125,13 +129,6 @@ fn window_values_ordered(
   for p in parts {
     let sorted = sorted_all[p.0:p.1]
     let idx = sorted.iter().map(kv => kv.1).to_array()
-    // ROW_NUMBER: the position in the partition's order, nothing else
-    if call.func is RowNumber {
-      for j, kv in sorted {
-        result[kv.1] = BigInt((j + 1).to_int64())
-      }
-      continue
-    }
     let keys = sorted.iter().map(kv => kv.0[np:].to_owned()).to_array()
     let n = idx.length()
     // peer group boundaries [start, end) per position
@@ -546,5 +543,23 @@ fn stream_next_value_window(
       out.push(if j == at { v } else { vs[i] })
     }
     emit(out)
+  }
+}
+
+///|
+/// Keep the same adjacent partition comparisons as the general window path.
+/// Rank writes are local and cannot raise; no partial values escape on error.
+fn row_numbers(
+  sorted : Array[(Array[@types.Value], Int)],
+  np : Int,
+  collations : Array[@types.Collation?],
+  result : Array[@types.Value],
+) -> Unit raise @types.SqlError {
+  let mut start = 0
+  for j, kv in sorted {
+    if j > 0 && !same_prefix(sorted[j - 1].0, kv.0, np, collations) {
+      start = j
+    }
+    result[kv.1] = BigInt((j - start + 1).to_int64())
   }
 }
