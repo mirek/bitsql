@@ -22,7 +22,9 @@ fn Session::prebind_batch(
   let compile_only = self.compile_only
   let error = self.rt.error
   self.compile_only = true
+  self.prebound_candidate = prebound_candidate(stmts)
   defer {
+    self.prebound_candidate = None
     self.compile_only = compile_only
     self.rt.error = error
     self.cur_cmd = cur_cmd
@@ -70,7 +72,14 @@ fn Session::prebind_stmt(
     Select({ body: Select(sel), .. }) if sel.items.length() > 0 &&
       sel.items.iter().all(i => i.kind is Assign(_, _, _)) =>
       attempt(() => self.compile_statement(s))
-    Select(q) => attempt(() => ignore(@bind.bind_query(self.env(), q)))
+    Select(q) =>
+      attempt(() => {
+        let out_len = self.out.length()
+        let cur_cmd = self.cur_cmd
+        let error = self.rt.error
+        let bound = @bind.bind_query(self.env(), q)
+        self.keep_prebound(q, bound, out_len, cur_cmd, error)
+      })
     Insert(_) | Update(_) | Delete(_) | Merge(_) | Print(_) =>
       attempt(() => self.compile_statement(s))
     SetVar(name, op, e) =>
@@ -111,6 +120,54 @@ fn Session::prebind_stmt(
         None => self.prebind_list(b)
       }
     _ => None
+  }
+}
+
+///|
+/// A pre-bound query and the binder's deferred errors it left.
+priv struct Prebound {
+  query : @ast.Query
+  bound : @bind.BoundQuery
+  deferred : Array[@types.SqlError]
+}
+
+///|
+/// Keeps the pre-bind's plan of the batch's first statement, a plain query
+/// (`prebound_candidate`), for `exec_query` when it runs next: binding is
+/// deterministic, nothing the binder reads changes before that statement
+/// runs (no transaction whose views `refresh_tx` could rebase; the
+/// statement prologue resets only per-statement runtime state), and the
+/// bind left no other trace (no output, CurCmd or @@ERROR change) that the
+/// run's own binding would have repeated. Its deferred errors are replayed.
+fn Session::keep_prebound(
+  self : Session,
+  q : @ast.Query,
+  bound : @bind.BoundQuery,
+  out_len : Int,
+  cur_cmd : Int,
+  error : Int,
+) -> Unit {
+  guard self.prebound_candidate is Some(c) && physical_equal(c, q) else {
+    return
+  }
+  self.prebound_candidate = None
+  if self.tx is None &&
+    self.out.length() == out_len &&
+    self.cur_cmd == cur_cmd &&
+    self.rt.error == error {
+    self.prebound = Some({ query: q, bound, deferred: self.deferred.copy(), })
+  }
+}
+
+///|
+/// The first statement when it is a query `exec_query` runs as written:
+/// not a variable assignment and without INTO.
+fn prebound_candidate(stmts : Array[@ast.Stmt]) -> @ast.Query? {
+  guard stmts.get(0) is Some({ kind: Select(q), .. }) else { return None }
+  match q.body {
+    Select(sel) if sel.into is Some(_) ||
+      sel.items.iter().any(i => i.kind is Assign(_, _, _)) => None
+    _ => Some(q)
   }
 }
 

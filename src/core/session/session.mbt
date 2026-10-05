@@ -426,6 +426,10 @@ pub struct Session {
   /// sp_prepare in T-SQL compiling a DML statement: the statement stops
   /// with `CompiledOnly` once bound (at its OUTPUT header).
   mut compile_only : Bool
+  /// The batch pre-bind's plan of the batch's first statement, a query,
+  /// for that statement's run (prebind.mbt).
+  priv mut prebound : Prebound?
+  priv mut prebound_candidate : @ast.Query?
   /// CurCmd a failed DDL statement completes with inside TRY (outside TRY
   /// it fails with 253 and ends the batch); 0 for other statements.
   mut ddl_cmd : Int
@@ -543,6 +547,8 @@ pub fn Session::new(
     trailing: [],
     schema_ddl: false,
     compile_only: false,
+    prebound: None,
+    prebound_candidate: None,
     ddl_cmd: 0,
     uncatchable: false,
     session_flags: Map([]),
@@ -932,6 +938,10 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     self.temp_db_refs = saved_refs
   }
   self.hoist_declares(stmts)
+  self.prebound = None
+  defer {
+    self.prebound = None
+  }
   match self.prebind_batch(stmts) {
     Some((errors, line)) => {
       for e in errors[:errors.length() - 1] {

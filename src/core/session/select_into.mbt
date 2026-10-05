@@ -160,7 +160,16 @@ fn Session::exec_query(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
-  let bound = @bind.bind_query(self.env(), q)
+  let bound = match self.prebound {
+    Some(p) if physical_equal(p.query, q) => {
+      self.prebound = None
+      for e in p.deferred {
+        self.deferred.push(e)
+      }
+      p.bound
+    }
+    _ => @bind.bind_query(self.env(), q)
+  }
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))
   self.cur_cmd = 193
