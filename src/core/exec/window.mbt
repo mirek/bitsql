@@ -6,15 +6,23 @@ fn run_window(
   rows : Array[Row],
   calls : Array[@ir.WindowCall],
 ) -> Array[Row] raise @types.SqlError {
-  let out = rows.map(r => r.copy())
   let orders : Array[Array[Int]] = []
+  let columns : Array[Array[@types.Value]] = []
   for call in calls {
     let (values, order) = window_values_ordered(ctx, rows, call)
     orders.push(order)
-    for i, v in values {
-      out[i].push(v)
-    }
+    columns.push(values)
   }
+  let out = rows.mapi((i, r) => {
+    let row = Array(capacity=r.length() + columns.length())
+    for v in r {
+      row.push(v)
+    }
+    for c in columns {
+      row.push(c[i])
+    }
+    row
+  })
   // SQL Server's window operator emits rows sorted by the window's
   // PARTITION BY then ORDER BY keys (captured: msduck order-token #046,
   // SELECT a, ROW_NUMBER() OVER(ORDER BY a) without ORDER BY returns a in
@@ -117,6 +125,13 @@ fn window_values_ordered(
   for p in parts {
     let sorted = sorted_all[p.0:p.1]
     let idx = sorted.iter().map(kv => kv.1).to_array()
+    // ROW_NUMBER: the position in the partition's order, nothing else
+    if call.func is RowNumber {
+      for j, kv in sorted {
+        result[kv.1] = BigInt((j + 1).to_int64())
+      }
+      continue
+    }
     let keys = sorted.iter().map(kv => kv.0[np:].to_owned()).to_array()
     let n = idx.length()
     // peer group boundaries [start, end) per position

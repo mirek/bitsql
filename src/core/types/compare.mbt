@@ -23,6 +23,18 @@ pub fn compare(
     (Int(x), Int(y)) | (SmallInt(x), SmallInt(y)) | (TinyInt(x), TinyInt(y)) =>
       x.compare(y)
     (BigInt(x), BigInt(y)) => x.compare(y)
+    // integers of different types: by value, exact in Int64 (the decimal
+    // comparison below gives the same order)
+    (
+      TinyInt(_)
+      | SmallInt(_)
+      | Int(_)
+      | BigInt(_),
+      TinyInt(_)
+      | SmallInt(_)
+      | Int(_)
+      | BigInt(_),
+    ) => a.int64_or(0L).compare(b.int64_or(0L))
     (Variant(x, tx), Variant(y, ty)) => compare_variants(x, tx, y, ty)
     (Variant(_, _), _) | (_, Variant(_, _)) =>
       raise internal("sql_variant compared with a non-variant value")

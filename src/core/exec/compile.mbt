@@ -33,6 +33,7 @@ pub fn compile(e : @ir.Expr) -> Compiled {
         (c, r) => @types.cast(ci(c, r), from, to, style?, dates=c.rt.dates)
       }
     }
+    Concat(a, b) => compile({ ..e, kind: Arith(Add, a, b), })
     Arith(op, a, b) => {
       let ca = compile(a)
       let cb = compile(b)
@@ -66,6 +67,20 @@ pub fn compile(e : @ir.Expr) -> Compiled {
         let vb = cb(c, r)
         match (va, vb) {
           (Int(x), Int(y)) => of_bool(Some(cmp_holds(op, x.compare(y))))
+          // integers of different types compare by value (exact in Int64)
+          (
+            TinyInt(_)
+            | SmallInt(_)
+            | Int(_)
+            | BigInt(_),
+            TinyInt(_)
+            | SmallInt(_)
+            | Int(_)
+            | BigInt(_),
+          ) =>
+            of_bool(
+              Some(cmp_holds(op, va.int64_or(0L).compare(vb.int64_or(0L)))),
+            )
           _ =>
             match @types.compare(va, vb, collation?=coll, ansi~) {
               None => Null
@@ -131,6 +146,10 @@ pub fn compile(e : @ir.Expr) -> Compiled {
           None => Null
         }
       }
+    }
+    Call(f, args) => {
+      let cs = args.map(compile)
+      (c, r) => call_values(c, f, cs.map(g => g(c, r)), args, e)
     }
     _ => (c, r) => eval(c.with_row(r), e)
   }

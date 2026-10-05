@@ -98,8 +98,20 @@ fn call(
   args : Array[@ir.Expr],
   e : @ir.Expr,
 ) -> @types.Value raise @types.SqlError {
+  call_values(ctx, f, args.map(a => eval(ctx, a)), args, e)
+}
+
+///|
+/// `call` with the arguments already evaluated (in order, all of them):
+/// built-ins never look at the current row themselves (compile.mbt).
+fn call_values(
+  ctx : Ctx,
+  f : @ir.Fn,
+  v : Array[@types.Value],
+  args : Array[@ir.Expr],
+  e : @ir.Expr,
+) -> @types.Value raise @types.SqlError {
   let rt = ctx.rt
-  let v = args.map(a => eval(ctx, a))
   let any_null = v.iter().any(x => x is Null)
   match f {
     Len =>
