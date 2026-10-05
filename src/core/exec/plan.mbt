@@ -44,9 +44,10 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         for j in candidates {
           let r = rs[j]
           let row = l + r
-          let ok = match con {
-            Some(p) => is_true(p(ctx, row))
-            None => true
+          let ok = match (con, index) {
+            (_, Some(ix)) if ix.exact => true
+            (Some(p), _) => is_true(p(ctx, row))
+            (None, _) => true
           }
           if ok {
             matched = true
@@ -620,6 +621,13 @@ priv struct EquiIndex {
   keys : Array[(@types.Value, Int)]
   coll : @types.Collation?
   ansi : Bool
+  /// integer keys (one integer type, so `=` is Int64 equality): hash
+  /// chains instead of `keys`; `heads` maps a key to its first right row,
+  /// `next` links each row to the next one with that key (ascending)
+  heads : Map[Int64, Int]?
+  next : Array[Int]
+  /// the predicate is exactly this conjunct: candidates satisfy it
+  exact : Bool
 }
 
 ///|
@@ -656,6 +664,31 @@ fn equi_index(
       continue
     }
     let ansi = a.ty.family() == FString && !a.ty.is_unicode()
+    if a.ty is (TinyInt | SmallInt | Int | BigInt) {
+      // hash join on integer keys (NULL keys join nothing)
+      let heads : Map[Int64, Int] = Map([])
+      let next = Array::make(rs.length(), -1)
+      for j = rs.length() - 1; j >= 0; j = j - 1 {
+        let r = rs[j]
+        if ri < r.length() && !(r[ri] is Null) {
+          let k = r[ri].int64_or(0L)
+          match heads.get(k) {
+            Some(h) => next[j] = h
+            None => ()
+          }
+          heads[k] = j
+        }
+      }
+      return Some({
+        left_col: li,
+        keys: [],
+        coll,
+        ansi,
+        heads: Some(heads),
+        next,
+        exact: conj.length() == 1,
+      })
+    }
     let keys = []
     for j, r in rs {
       if ri < r.length() && !(r[ri] is Null) {
@@ -680,7 +713,15 @@ fn equi_index(
       Some(err) => raise err
       None => ()
     }
-    return Some({ left_col: li, keys, coll, ansi, })
+    return Some({
+      left_col: li,
+      keys,
+      coll,
+      ansi,
+      heads: None,
+      next: [],
+      exact: false,
+    })
   }
   None
 }
@@ -694,6 +735,15 @@ fn EquiIndex::lookup(
   let v = l[self.left_col]
   if v is Null {
     return []
+  }
+  if self.heads is Some(heads) {
+    let out = []
+    let mut j = heads.get(v.int64_or(0L)).unwrap_or(-1)
+    while j >= 0 {
+      out.push(j)
+      j = self.next[j]
+    }
+    return out
   }
   let cmp = (k : @types.Value) => {
     @types.compare(k, v, collation?=self.coll, ansi=self.ansi).unwrap_or(0)
