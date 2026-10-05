@@ -225,6 +225,14 @@ single-character results. Reference-equivalence tests and isolated/combined
 measurements are in `performance.md`; the remaining benchmark gaps continue
 to guide work.
 
+The 0.1.10 performance follow-up specializes integer EXCEPT/INTERSECT
+membership while retaining conversion-aware comparison for other probes;
+equivalence tests and before/after timings are in `performance.md`.
+
+- [ ] Reduce ROW_NUMBER partition-allocation overhead while preserving the
+  existing sort, boundary comparisons, and output order (next candidate,
+  not yet measured).
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no

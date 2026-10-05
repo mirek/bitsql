@@ -188,3 +188,31 @@ range, at 6.89 → 5.01 ms; CHAR(224 + id % 30) at 6.97 → 3.25 ms.
 At 80k rows the original accented shape measured 49.05 → 31.10 ms
 (20 repetitions). An initial run overlapped a worker's test compilation and
 was discarded; all reported timings were collected with workers idle.
+
+## Integer set membership (2026-10-05, 0.1.10)
+
+Single-column integer EXCEPT/INTERSECT membership now uses `IntTable`,
+with a separate NULL flag, rather than allocating an array of sort keys
+per row and per probe (`exec/grouping.mbt`, `RowSet`). The original scalar
+values are retained in order for noninteger probes: the existing comparison
+still determines cross-type equality, conversion errors and early returns.
+Text and multicolumn sets retain their previous representation, and result
+deduplication/representative selection is unchanged. IN/NOT IN use a separate
+`Members` implementation and are not affected by this change.
+
+`grouping_wbtest.mbt` compares the integer path against the general RowSet
+implementation, including empty/NULL-only sets, duplicate and mixed integer
+constructors, Int64 limits, table growth, and noninteger probes/errors.
+
+Two sequential interleaved release-binary runs, 20k rows, best minimum wall
+time in ms (50 repetitions for the standard shapes, 30 for integer EXCEPT):
+
+| Shape | 0.1.9 | 0.1.10 |
+| --- | ---: | ---: |
+| INTERSECT | 4.93 | 2.31 |
+| EXCEPT (text, existing benchmark) | 5.48 | 5.36 |
+| SELECT p FROM w EXCEPT SELECT w_id FROM w2 | 5.33 | 2.74 |
+
+At 80k rows, INTERSECT measured 46.37 → 22.68 ms (one run per binary,
+20 repetitions). All timings were collected without concurrent builds,
+tests or benchmarks.

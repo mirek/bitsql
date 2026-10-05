@@ -510,3 +510,16 @@ Start the host with `--database NAME` so the app's database exists at login
   ("n/a"); fill it in from `docker manifest inspect --verbose` after the
   push, or re-run `bench:compare` with the default tag. Pure bug-fix
   releases keep the previous tables and their version label.
+- 2026-10-05: an alternative release workflow runs the full client suite once
+  against the actual cross-built amd64 binary: build local images with
+  `SKIP_SMOKE=1 scripts/docker-publish.sh`, then run
+  `BITSQL_BIN=$PWD/_build/xarch/amd64/bitsql scripts/check.sh` and the release
+  script's arm64 quick-smoke selection under `bitsql-qemu` (smoke plus
+  allowlisted analytic/conversion/statistical cases). After the gate passes,
+  commit, stamp the image revision label with that commit, and assert the
+  image's `RootFS.Layers` are identical before/after the metadata-only change.
+  Benchmark, then push these exact tested images and create the version,
+  minor and latest manifest lists; verify each remote manifest's platforms
+  and child digests. Refresh README from the measurements, including registry
+  layer sizes after pushing. This avoids rebuilding or re-testing the same
+  release binaries solely to publish them (used for 0.1.9 and 0.1.10).

@@ -78,3 +78,53 @@ test "single-column slots preserve first occurrence for temporal keys" {
   assert_eq(group_ids([], [None]), ([], 0))
   assert_eq(group_ids([[Null], [Null]], [None]), ([0, 0], 1))
 }
+
+///|
+test "integer RowSet agrees with general keys including conversions and errors" {
+  let many : Array[Row] = Array::makei(3000, i => {
+    let n = i * 37 % 997
+    if i % 17 == 0 {
+      [Null]
+    } else {
+      [Int(n)]
+    }
+  })
+  let sets : Array[Array[Row]] = [
+    [],
+    [[Null], [Null]],
+    [[TinyInt(7)], [SmallInt(-3)], [Int(7)], [BigInt(7L)], [Null]],
+    [[BigInt(-9223372036854775808L)], [BigInt(9223372036854775807L)]],
+    [[TinyInt(0)], [Int(256)]],
+    [[Int(256)], [TinyInt(0)]],
+    many,
+  ]
+  let probes : Array[@types.Value] = [
+    Null,
+    TinyInt(0),
+    TinyInt(7),
+    SmallInt(-3),
+    Int(256),
+    Int(-99),
+    BigInt(-9223372036854775808L),
+    BigInt(9223372036854775807L),
+    Float(7.0),
+    Float(7.5),
+    Bit(true),
+    String("7"),
+    String("256"),
+    String("not an integer"),
+    Date(0),
+  ]
+  for rows in sets {
+    let fast = RowSet::new(rows, [None])
+    let reference = RowSet::new(rows, [None], integer_fast=false)
+    for value in probes {
+      let actual = Ok(fast.contains([value])) catch { e => Err(e) }
+      let expected = Ok(reference.contains([value])) catch { e => Err(e) }
+      assert_eq(actual, expected)
+    }
+    for n in -5..<1010 {
+      assert_eq(fast.contains([Int(n)]), reference.contains([Int(n)]))
+    }
+  }
+}

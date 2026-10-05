@@ -248,6 +248,9 @@ fn distinct_rows(
 /// exact keys when every column has them (a probe row with another key
 /// kind is compared row by row), else binary search over sorted keys.
 priv struct RowSet {
+  // Single integer column: membership, NULL presence, original values for
+  // conversion-aware probes of another kind (including their error order).
+  integer : (IntTable, Bool, Array[@types.Value])?
   sorted : Array[Array[@types.SortKey]]
   hashed : Set[Array[@types.SortKey]]?
   // exact key kind per column (0 when every key is NULL)
@@ -259,7 +262,31 @@ priv struct RowSet {
 fn RowSet::new(
   rows : Array[Row],
   collations : Array[@types.Collation?],
+  integer_fast? : Bool = true,
 ) -> RowSet raise @types.SqlError {
+  if integer_fast &&
+    collations.length() == 1 &&
+    rows
+    .iter()
+    .all(r => r[0] is (Null | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
+    let table = IntTable::new(16)
+    let mut has_null = false
+    let values = rows.map(r => r[0])
+    for v in values {
+      if v is Null {
+        has_null = true
+      } else {
+        table.set(v.int64_or(0L), 0)
+      }
+    }
+    return {
+      integer: Some((table, has_null, values)),
+      sorted: [],
+      hashed: None,
+      kinds: [],
+      collations,
+    }
+  }
   let keys = rows.map(r => key_row(r, collations, false))
   let hashed = if hashable_key_rows(keys) {
     Some(Set::from_array(keys))
@@ -283,11 +310,33 @@ fn RowSet::new(
     let order = sort_key_rows(keys, collations, false)
     order.map(i => keys[i])
   }
-  { sorted, hashed, kinds, collations, }
+  { integer: None, sorted, hashed, kinds, collations, }
 }
 
 ///|
 fn RowSet::contains(self : RowSet, row : Row) -> Bool raise @types.SqlError {
+  if self.integer is Some((table, has_null, values)) {
+    match row[0] {
+      Null => return has_null
+      TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_) =>
+        return table.get(row[0].int64_or(0L)) >= 0
+      _ => {
+        let collation = self.collations[0]
+        let probe = @types.sort_key(row[0], collation?)
+        for v in values {
+          if @types.compare_sort_keys(
+              @types.sort_key(v, collation?),
+              probe,
+              collation?,
+            ) ==
+            0 {
+            return true
+          }
+        }
+        return false
+      }
+    }
+  }
   let probe = key_row(row, self.collations, false)
   if self.hashed is Some(set) {
     if self.kinds_match(probe) {
