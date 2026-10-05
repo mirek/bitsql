@@ -189,7 +189,8 @@ pub impl Hash for SortKey with fn hash_combine(self, h) {
 ///|
 /// `text_key` of an all-ASCII string without building collation elements:
 /// the same integers `collation_elements` gives such strings (no accents,
-/// width or kana forms; only NUL can be ignorable, under word sort).
+/// width or kana forms; only NUL can be ignorable, under word sort),
+/// written into one array of the exact size.
 fn ascii_text_key(
   s : String,
   collation : Collation,
@@ -199,56 +200,66 @@ fn ascii_text_key(
   while n > 0 && (s[n - 1] == ' ' || (word_sort && s[n - 1].to_int() == 0)) {
     n -= 1
   }
-  let primary : Array[Int] = []
-  let tertiary : Array[Int] = []
-  let ws : Array[Int] = []
+  // elements (one per unit) and word-sort ignorables
+  let mut elems = 0
+  let mut marks = 0
+  for i in 0..<n {
+    let u = s[i].to_int()
+    if word_sort && (u == '-' || u == '\'') {
+      marks += 1
+    } else if !(word_sort && u == 0) {
+      elems += 1
+    }
+  }
+  let plain_levels = (if collation.accent_sensitive { 1 } else { 0 }) +
+    (if collation.kana_sensitive { 1 } else { 0 }) +
+    (if collation.width_sensitive { 1 } else { 0 })
+  let cased = collation.case_sensitive
+  let levels = 1 + plain_levels + (if cased { 1 } else { 0 })
+  let out = FixedArray::make(levels * (elems + 1) + 2 * marks, 0)
+  // level offsets in `compare_linguistic` order: primary, accent, case,
+  // kana, width (each elems weights + a 0 terminator)
+  let stride = elems + 1
+  let case_at = if cased {
+    stride * (1 + (if collation.accent_sensitive { 1 } else { 0 }))
+  } else {
+    -1
+  }
+  let mut ws_at = levels * stride
+  let mut e = 0
   for i in 0..<n {
     let u = s[i].to_int()
     if word_sort && (u == 0 || u == '-' || u == '\'') {
       if u != 0 {
-        ws.push(0x3FFFFFFF - primary.length())
-        ws.push(u + 1)
+        out[ws_at] = 0x3FFFFFFF - e
+        out[ws_at + 1] = u + 1
+        ws_at += 2
       }
       continue
     }
-    if u >= 'A' && u <= 'Z' {
-      primary.push(letter_primary(u + 32))
-      tertiary.push(2)
+    let (p, t) = if u >= 'A' && u <= 'Z' {
+      (letter_primary(u + 32), 2)
     } else if u >= 'a' && u <= 'z' {
-      primary.push(letter_primary(u))
-      tertiary.push(0)
+      (letter_primary(u), 0)
     } else if u >= '0' && u <= '9' {
-      primary.push(0x8000 + u)
-      tertiary.push(0)
+      (0x8000 + u, 0)
     } else {
-      primary.push(0x100 + u)
-      tertiary.push(0)
+      (0x100 + u, 0)
     }
+    out[e] = p + 1
+    if case_at >= 0 {
+      out[case_at + e] = t + 1
+    }
+    e += 1
   }
-  let out : Array[Int] = []
-  for p in primary {
-    out.push(p + 1)
-  }
-  out.push(0)
-  let plain = (sensitive : Bool) => {
-    if sensitive {
-      for _ in primary {
-        out.push(1)
+  // plain levels: weight 0 (+1) per element; terminators stay 0
+  for l in 1..<levels {
+    let base = l * stride
+    if base != case_at {
+      for k in 0..<elems {
+        out[base + k] = 1
       }
-      out.push(0)
     }
   }
-  plain(collation.accent_sensitive)
-  if collation.case_sensitive {
-    for t in tertiary {
-      out.push(t + 1)
-    }
-    out.push(0)
-  }
-  plain(collation.kana_sensitive)
-  plain(collation.width_sensitive)
-  for w in ws {
-    out.push(w)
-  }
-  FixedArray::from_array(out)
+  out
 }
