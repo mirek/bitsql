@@ -386,7 +386,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       MInsert(_, _) => ()
     }
   }
-  self.lock_rows(target, locked)
+  self.lock_rows(target, locked, r => r.0, r => r.1)
   // build new images
   let deleted_rows : Set[Int64] = Set([])
   for o in ops {
@@ -602,6 +602,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   // apply: references, removals, then inserts with unique checks
   let removed = []
   let removed_new = []
+  let row_lock = row_lock(t)
   for o in final_ops {
     match o {
       MUpdate(_, old, new, _) => {
@@ -631,7 +632,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
         MInsert(new, _) => {
           let rowid = self.server.rowid()
           if is_db_scope(target.scope) {
-            self.acquire(row_resource(t, rowid, new), X, Transaction)
+            self.acquire(row_lock.resource(rowid, new), X, Transaction)
           }
           d = insert_checked(target, d, rowid, new)
         }

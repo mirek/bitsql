@@ -129,3 +129,32 @@ test "statement-duration locks release at statement end" {
   assert_eq(m.request(3, key(2), S, Transaction), Waiting(request=2))
   assert_eq(m.cancel(2), [])
 }
+
+///|
+test "row keys and point ranges are one resource" {
+  let m = @sched.LockManager::new(cmp_int)
+  let row = (k : Int) => @sched.Resource::Key(table=1, index=1, k)
+  // UPDLOCK on a point range, then X on the row: a conversion in place
+  assert_eq(m.request(1, key(5), U, Transaction), Granted)
+  assert_eq(m.request(2, key(5), U, Transaction), Waiting(request=1))
+  assert_eq(m.request(1, row(5), X, Transaction), Granted)
+  assert_eq(m.held(1), 1)
+  // a range covers row keys inside it, not outside
+  assert_eq(m.request(3, range(10, 20), S, Transaction), Granted)
+  assert_eq(m.request(4, row(15), X, Transaction), Waiting(request=2))
+  assert_eq(m.request(4, row(21), X, Statement), Granted)
+  assert_eq(m.release_statement(4), [])
+  assert_eq(m.held(4), 0)
+}
+
+///|
+test "blockers are listed by their earliest conflicting grant" {
+  let m = @sched.LockManager::new(cmp_int)
+  assert_eq(m.request(1, key(1), S, Statement), Granted)
+  assert_eq(m.request(2, key(2), S, Transaction), Granted)
+  assert_eq(m.request(1, key(3), S, Transaction), Granted)
+  assert_eq(m.release_statement(1), [])
+  // session 1's remaining grant is newer than session 2's
+  assert_eq(m.request(3, range(1, 3), X, Transaction), Waiting(request=1))
+  assert_eq(m.waiting_on(1), Some((X, [2, 1])))
+}

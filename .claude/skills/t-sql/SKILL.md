@@ -1617,3 +1617,10 @@ and `XACT_STATE()` advertises nullable smallint width.
   "Common table expression defined but not used." for the whole batch, on
   the SELECT's line; an unused CTE next to a FROM, WHERE 1 = 1, a
   subquery or COUNT(*) is fine (`session/precheck.mbt select_shape_error`).
+- 2026-10-05: lock escalation on 17.0.5005.3 fires when one statement holds
+  ~6250 locks on a table counting KEY **and PAGE** locks (6200-row UPDATE
+  of an `(int PK, int)` table: 6200 KEY X + 14 PAGE IX, no escalation;
+  6240 rows: OBJECT X), not at the documented 5000. On a 32-CPU host the
+  escalated lock shows as 32 OBJECT X rows in sys.dm_tran_locks (lock
+  partitioning). Details and why bitsql does not escalate: decisions.md
+  2026-10-05 "lock grants per (table, session)".

@@ -784,3 +784,49 @@ order is reproducible; no corpus case changed.
 UPDATE FROM 125 → 41, INSERT with FK 39 → 27, cascade DELETE 136 → 65,
 MERGE 82 → 46, 40k-row GENERATE_SERIES load 77 → 51; all 24 shapes 1.08 →
 0.50 s.
+
+## 2026-10-05: lock grants per (table, session); no lock escalation yet
+
+The lock manager kept every grant in one flat array: a request scanned all
+of them, statement end ran `retain` over all of them, and every grant
+updated an occupancy map. Set-wide DML takes one X key lock per row, so
+`UPDATE w SET p = p + 1` over 20k rows spent ~17% of its CPU there
+(`scripts/profile.sh 'UPDATE all rows'`). Now:
+
+- `LockManager.tables : Map[table, Map[session, Slot]]`; a slot holds the
+  session's grants on that table plus counts of statement- and
+  session-duration grants. A request scans only other sessions' slots on
+  its own table; the "nobody else here" fast path appends to the cached
+  last slot. Releases drop whole slots when the counts say every grant
+  goes (commit/rollback, autocommit statement end) and skip slots without
+  statement locks at statement end.
+- Blocker lists stay in the old order (by each session's earliest
+  conflicting grant: grants carry a sequence number), so
+  `blocking_session_id` and wait-for traversal are unchanged.
+- `Resource::Key(table, index, k)`: a row lock is one allocation instead
+  of a `KeyRange` with an `Interval` and two `Bound`s; it is `same` as the
+  point range (UPDLOCK then X still converts in place) and overlaps ranges
+  that contain it. `RowLock` computes the key columns and collations once
+  per statement, not per row.
+
+Lock bookkeeping fell from ~17% to ~10% of UPDATE all rows; 20k-row
+shapes, server CPU per statement on a loaded host (two interleaved runs,
+before → after): UPDATE all rows 71 → 63 ms, UPDATE FROM 78 → 71,
+INSERT with FK 58 → 44, DELETE parent rows 81 → 68, cascade DELETE
+133 → 93, MERGE 75 → 64, DELETE WHERE IN 38 → 32.
+
+Lock escalation was evaluated and **not** implemented. Captured on
+17.0.5005.3 (probe, not kept as a corpus case): `UPDATE t SET v = 1 WHERE
+id <= n` on an `(int PK, int)` table holds n KEY X + ~n/450 PAGE IX locks
+for n = 6000/6100/6200 and escalates to OBJECT X (32 rows in
+sys.dm_tran_locks: lock partitioning on this 32-CPU host) from n = 6240,
+i.e. when key + page locks reach ~6250, not the documented 5000. INSERT
+of 8000 rows and DELETE of 15000 escalate too; a 30k-row heap UPDATE
+showed OBJECT X plus 6234 leftover RID X locks. The trigger counts page
+locks, which bitsql does not model (rows per page depend on row width),
+so the threshold in rows lies anywhere between ~3125 and 6250; escalation
+also fails while another session holds a lock on the table and is retried
+every 1250 locks, and `ALTER TABLE … SET (LOCK_ESCALATION = …)` is
+accepted and ignored today. A faithful-where-certain variant (escalate at
+6250 row locks of one statement when no other session holds or waits on
+the table; honour LOCK_ESCALATION = DISABLE) is a roadmap item.

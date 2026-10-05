@@ -63,6 +63,7 @@ pub(all) enum Outcome {
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Resource[K] {
+  Key(table~ : Int, index~ : Int, K)
   KeyRange(table~ : Int, index~ : Int, Interval[K])
   WholeTable(Int)
 } derive(Eq, @debug.Debug)
