@@ -146,6 +146,19 @@ pub fn Value::as_int64(self : Value) -> Int64? {
 }
 
 ///|
+/// `as_int64` for values known to be bit/integers, without the boxed
+/// `Int64?` (an allocation per call on the native backend): `default` for
+/// any other value.
+pub fn Value::int64_or(self : Value, default : Int64) -> Int64 {
+  match self {
+    Bit(b) => if b { 1L } else { 0L }
+    TinyInt(n) | SmallInt(n) | Int(n) => n.to_int64()
+    BigInt(n) => n
+    _ => default
+  }
+}
+
+///|
 /// Exact numeric content as a decimal (bit, integers, decimal, money).
 pub fn Value::as_decimal(self : Value) -> Decimal? {
   match self {

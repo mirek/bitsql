@@ -26,7 +26,20 @@ pub fn arith(
   b : Value,
   tb : SqlType,
 ) -> Value raise SqlError {
-  let rt = arith_result_type(op, ta, tb)
+  arith_typed(op, a, ta, b, tb, arith_result_type(op, ta, tb))
+}
+
+///|
+/// `arith` with the result type already computed (`arith_result_type`), for
+/// callers that evaluate one expression over many rows.
+pub fn arith_typed(
+  op : ArithOp,
+  a : Value,
+  ta : SqlType,
+  b : Value,
+  tb : SqlType,
+  rt : SqlType,
+) -> Value raise SqlError {
   if a is Null || b is Null {
     return Null
   }
@@ -108,14 +121,39 @@ fn int_arith(
   b : Value,
   rt : SqlType,
 ) -> Value raise SqlError {
-  let (x, y) = match (a.as_int64(), b.as_int64()) {
-    (Some(x), Some(y)) => (x, y)
-    _ => raise internal("integer arithmetic on non-integers")
+  let is_int = (v : Value) => {
+    v is (Bit(_) | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))
   }
+  if !is_int(a) || !is_int(b) {
+    raise internal("integer arithmetic on non-integers")
+  }
+  let x = a.int64_or(0L)
+  let y = b.int64_or(0L)
   if op is (Div | Mod) && y == 0L {
     raise divide_by_zero_error()
   }
   let (lo, hi) = int_range(rt)
+  // operands within ±2^31 (every int/smallint/tinyint, most bigints):
+  // exact in Int64 (|x * y| <= 2^62), no BigInt allocation
+  if x >= -2147483648L &&
+    x <= 2147483648L &&
+    y >= -2147483648L &&
+    y <= 2147483648L {
+    let r = match op {
+      Add => x + y
+      Sub => x - y
+      Mul => x * y
+      Div => x / y // truncates toward zero, like the BigInt path
+      Mod => x % y // sign of the dividend
+    }
+    if op == Mod && y == -1L && x == lo {
+      raise overflow_expression(rt)
+    }
+    if r < lo || r > hi {
+      raise overflow_expression(rt)
+    }
+    return int_value(rt, r)
+  }
   // exact in BigInt, then range-checked (covers MIN / -1 and MIN % -1,
   // which SQL Server also reports as overflow)
   let bx = @bigint.BigInt::from_int64(x)

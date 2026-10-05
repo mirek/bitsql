@@ -17,8 +17,9 @@ fn agg_inputs(
   }
   let out : Array[(@types.Value, Row)] = []
   let coll = arg.ty.collation()
+  let ca = compile(arg)
   for r in rows {
-    let v = eval(ctx.with_row(r), arg)
+    let v = ca(ctx, r)
     if v is Null {
       // captured: STRING_AGG skips NULLs without warning 8153
       if !(call.func is StringAgg) {
@@ -62,7 +63,7 @@ fn sum_values(
       let (lo, hi) = @types.int_range(ty)
       let mut acc = 0L
       for x in values {
-        let v = x.0.as_int64().unwrap_or(0L)
+        let v = x.0.int64_or(0L)
         let s = acc + v
         // overflow of Int64 itself or of the result type
         if (v > 0L && s < acc) || (v < 0L && s > acc) || s < lo || s > hi {
@@ -338,8 +339,10 @@ fn[T] sort_rows_by(
   row_of : (T) -> Row,
   keys : Array[@ir.SortKey],
 ) -> Array[T] raise @types.SqlError {
+  let cs = keys.map(k => compile(k.expr))
   let keyed = items.map(x => {
-    (keys.map(k => eval(ctx.with_row(row_of(x)), k.expr)), x)
+    let r = row_of(x)
+    (cs.map(f => f(ctx, r)), x)
   })
   sort_keyed(keyed, keys).map(kv => kv.1)
 }
@@ -424,8 +427,12 @@ fn run_aggregate(
   aggs : Array[@ir.AggCall],
   sets : Array[Array[Int]],
 ) -> Array[Row] raise @types.SqlError {
+  if sets.is_empty() && fast_aggregates(aggs) {
+    return run_aggregate_fast(ctx, rows, keys, aggs)
+  }
   let collations = keys.map(k => k.ty.collation())
-  let keyed = rows.map(r => (keys.map(k => eval(ctx.with_row(r), k)), r))
+  let cs = keys.map(compile)
+  let keyed = rows.map(r => (cs.map(f => f(ctx, r)), r))
   let plain = sets.is_empty()
   let all_keys = Array::makei(keys.length(), i => i)
   let out : Array[Row] = []

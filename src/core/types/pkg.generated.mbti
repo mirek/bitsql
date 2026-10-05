@@ -62,6 +62,8 @@ pub fn arith(ArithOp, Value, SqlType, Value, SqlType) -> Value raise SqlError
 
 pub fn arith_result_type(ArithOp, SqlType, SqlType) -> SqlType raise SqlError
 
+pub fn arith_typed(ArithOp, Value, SqlType, Value, SqlType, SqlType) -> Value raise SqlError
+
 pub fn assign(Value, SqlType, SqlType, dates? : DateSettings) -> Value raise SqlError
 
 pub fn can_convert_explicitly(SqlType, SqlType) -> Bool
@@ -487,6 +489,7 @@ pub(all) enum Value {
 } derive(Eq, @debug.Debug)
 pub fn Value::as_decimal(Self) -> Decimal?
 pub fn Value::as_int64(Self) -> Int64?
+pub fn Value::int64_or(Self, Int64) -> Int64
 pub fn Value::is_null(Self) -> Bool
 
 // Type aliases

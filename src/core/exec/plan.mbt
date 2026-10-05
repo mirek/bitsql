@@ -28,6 +28,7 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         Some(p) => equi_index(p, left_width, rs)
         None => None
       }
+      let con = on.map(compile)
       for l in ls {
         let mut matched = false
         let candidates = match index {
@@ -43,8 +44,8 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         for j in candidates {
           let r = rs[j]
           let row = l + r
-          let ok = match on {
-            Some(p) => is_true(eval(ctx.with_row(row), p))
+          let ok = match con {
+            Some(p) => is_true(p(ctx, row))
             None => true
           }
           if ok {
@@ -71,12 +72,14 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         ctx.rt.next_row()
         r.map(e => eval(ctx, e))
       })
-    Project(input, exprs) =>
-      run(ctx, input).map(row => {
+    Project(input, exprs) => {
+      let rows = run(ctx, input)
+      let cs = exprs.map(compile)
+      rows.map(row => {
         ctx.rt.next_row()
-        let c = ctx.with_row(row)
-        exprs.map(e => eval(c, e))
+        cs.map(f => f(ctx, row))
       })
+    }
     Filter(Scan(scope~, id~, rowid~), pred) if seek_rows(
         ctx, scope, id, rowid, pred,
       )
@@ -85,8 +88,9 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let out = []
       let rows = run(ctx, input)
       ctx.rt.charge(rows.length().to_int64())
+      let p = compile(pred)
       for row in rows {
-        if is_true(eval(ctx.with_row(row), pred)) {
+        if is_true(p(ctx, row)) {
           out.push(row)
         }
       }
@@ -95,9 +99,9 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     Sort(input, keys) => {
       let rows = run(ctx, input)
       let ansi = keys.map(ansi_key)
+      let cs = keys.map(k => compile(k.expr))
       let prepared = rows.map(row => {
-        let c = ctx.with_row(row)
-        (order_keys(keys.map(k => eval(c, k.expr)), keys, ansi), row)
+        (order_keys(cs.map(f => f(ctx, row)), keys, ansi), row)
       })
       sort_prepared(prepared, keys, ansi)
       prepared.map(p => p.1)
@@ -382,12 +386,13 @@ pub fn stream(
   emit : (Row) -> Unit raise @types.SqlError,
 ) -> Unit raise @types.SqlError {
   match plan {
-    Project(input, exprs) =>
+    Project(input, exprs) => {
+      let cs = exprs.map(compile)
       stream(ctx, input, row => {
         ctx.rt.next_row()
-        let c = ctx.with_row(row)
-        emit(exprs.map(e => eval(c, e)))
+        emit(cs.map(f => f(ctx, row)))
       })
+    }
     Filter(Scan(scope~, id~, rowid~), pred) if seek_rows(
         ctx, scope, id, rowid, pred,
       )
@@ -395,13 +400,15 @@ pub fn stream(
       for row in rows {
         emit(row)
       }
-    Filter(input, pred) =>
+    Filter(input, pred) => {
+      let p = compile(pred)
       stream(ctx, input, row => {
         ctx.rt.charge(1L)
-        if is_true(eval(ctx.with_row(row), pred)) {
+        if is_true(p(ctx, row)) {
           emit(row)
         }
       })
+    }
     UnionAll(parts) =>
       for p in parts {
         stream(ctx, p, emit)
@@ -581,6 +588,7 @@ fn seek_rows(
       }
   }
   let out = []
+  let p = compile(pred)
   for kv in found {
     let row = if rowid {
       let r = kv.1.copy()
@@ -589,7 +597,7 @@ fn seek_rows(
     } else {
       kv.1
     }
-    if is_true(eval(ctx.with_row(row), pred)) {
+    if is_true(p(ctx, row)) {
       out.push(row)
     }
   }
@@ -715,6 +723,7 @@ pub fn match_pairs(
   right : Array[Row],
 ) -> Array[Array[Int]] raise @types.SqlError {
   let index = equi_index(on, left_width, right)
+  let con = compile(on)
   left.map(l => {
     let candidates = match index {
       Some(ix) => ix.lookup(l)
@@ -722,7 +731,7 @@ pub fn match_pairs(
     }
     let hits = []
     for j in candidates {
-      if is_true(eval(ctx.with_row(l + right[j]), on)) {
+      if is_true(con(ctx, l + right[j])) {
         hits.push(j)
       }
     }

@@ -22,9 +22,15 @@ try {
     await capture(c, { kind: 'batch', sql: setupSql(n) }, { rowLimit: 1 })
     for (const [name, sql] of work) {
       await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
-      const t = performance.now()
-      for (let i = 0; i < reps; i++) await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
-      console.log(`${((performance.now() - t) / reps).toFixed(2).padStart(8)} ms  ${name}`)
+      let total = 0, min = Infinity
+      for (let i = 0; i < reps; i++) {
+        const t = performance.now()
+        await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
+        const ms = performance.now() - t
+        total += ms; min = Math.min(min, ms)
+      }
+      // min is robust against load from other processes on a shared host
+      console.log(`${(total / reps).toFixed(2).padStart(8)} ms mean ${min.toFixed(2).padStart(8)} ms min  ${name}`)
     }
   } finally { await close(c) }
 } finally { await server.stop() }

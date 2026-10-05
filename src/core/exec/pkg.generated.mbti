@@ -10,6 +10,8 @@ import {
 // Values
 pub let bitsql_version : String
 
+pub fn compile(@ir.Expr) -> (Ctx, Array[@types.Value]) -> @types.Value raise @types.SqlError
+
 pub let default_work_limit : Int64
 
 pub fn encode_xml_name(String) -> String
@@ -108,6 +110,8 @@ pub fn Runtime::next_random(Self) -> UInt64
 pub fn Runtime::next_row(Self) -> Unit
 
 // Type aliases
+pub type Compiled = (Ctx, Array[@types.Value]) -> @types.Value raise @types.SqlError
+
 pub type Row = Array[@types.Value]
 
 // Traits
