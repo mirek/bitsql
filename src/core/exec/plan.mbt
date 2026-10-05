@@ -104,22 +104,51 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     }
     Limit(input, offset, count) => {
       let rows = run(ctx, input)
+      // captured (query/top-fetch-bigint): bigint counts are not clamped
+      // to int; NULL OFFSET is 10743, negative 10742, NULL FETCH 1014,
+      // negative 127, all class 15; FETCH 0 at run time is empty
+      let len = rows.length().to_int64()
       let off = match offset {
-        Some(o) => eval(ctx, o).as_int64().unwrap_or(0L).to_int()
-        None => 0
+        Some(o) =>
+          match eval(ctx, o).as_int64() {
+            Some(n) if n < 0L =>
+              raise @types.sql_error(
+                10742,
+                "The offset specified in a OFFSET clause may not be negative.",
+                severity=15,
+              )
+            Some(n) => n
+            None =>
+              raise @types.sql_error(
+                10743,
+                "The number of rows provided for a OFFSET clause must be an integer.",
+                severity=15,
+              )
+          }
+        None => 0L
       }
       let cnt = match count {
-        Some(c) => eval(ctx, c).as_int64().unwrap_or(0L).to_int()
-        None => rows.length()
+        Some(c) =>
+          match eval(ctx, c).as_int64() {
+            Some(n) if n < 0L =>
+              raise @types.sql_error(
+                127,
+                "A TOP N or FETCH rowcount value may not be negative.",
+                severity=15,
+              )
+            Some(n) => n
+            None =>
+              raise @types.sql_error(
+                1014,
+                "A TOP or FETCH clause contains an invalid value.",
+                severity=15,
+              )
+          }
+        None => len
       }
-      if off < 0 {
-        raise @types.sql_error(
-          10742, "The offset specified in a OFFSET clause may not be negative.",
-        )
-      }
-      let start = @cmp.minimum(off, rows.length())
-      let end = @cmp.minimum(start + @cmp.maximum(cnt, 0), rows.length())
-      rows[start:end].to_owned()
+      let start = @cmp.minimum(off, len)
+      let end = start + @cmp.minimum(cnt, len - start)
+      rows[start.to_int():end.to_int()].to_owned()
     }
     Distinct(input, collations) => distinct_rows(run(ctx, input), collations)
     UnionAll(parts) => {

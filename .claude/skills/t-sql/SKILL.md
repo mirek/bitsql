@@ -20,6 +20,18 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-05 (TOP/FETCH row counts, corpus `query/top-fetch-bigint`): a
+  TOP/FETCH/OFFSET count is valid when its type is an integer type or when
+  it is a *constant* of type `numeric` with scale 0, so `TOP 2147483648`,
+  `TOP (1 * 2147483648)` and `CAST(2 AS numeric(5,0))` run while
+  `CAST(2 AS decimal(5,0))`, a `numeric(19,0)` variable and `2147483648.0`
+  are 1060 (OFFSET: 10743). The `decimal`/`numeric` name matters: binary
+  arithmetic is numeric when either side is numeric (an int literal beside a
+  decimal stays decimal), CASE/UNION ALL/COALESCE take the first branch's
+  name. Constant FETCH ≤ 0 is batch-level 10744, constant negative OFFSET
+  10742; at run time a FETCH variable of 0 returns no rows, negative is 127,
+  NULL 1014; OFFSET NULL 10743. Counts above bigint fail at run time with
+  8115 after COLMETADATA.
 - 2026-10-04 (computed forward references, corpus
   `catalog/computed-forward-refs`): CREATE TABLE / ALTER TABLE ADD resolve
   every column type first (2715, 2705 come before a computed column's 207),

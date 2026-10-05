@@ -231,6 +231,10 @@ fn precheck_batch(
           top_constant_error(t, types) is Some(e) {
           failure = Some((e, line))
         }
+        if failure is None &&
+          offset_fetch_constant_error(q.offset, q.fetch, types) is Some(e) {
+          failure = Some((e, line))
+        }
         // captured: a variable or parameter as STRING_SPLIT's
         // enable_ordinal is 8748 for the whole batch (msduck string-split
         // #036, #048)
@@ -577,16 +581,11 @@ fn top_constant_error(
   t : @ast.Top,
   types : Map[String, @types.SqlType],
 ) -> @types.SqlError? {
-  let vars : Map[String, @bind.VarInfo] = Map([])
-  for k, ty in types {
-    vars[k] = { slot: vars.length(), ty, }
-  }
-  let b = @bind.bind_expr(@bind.Env::new(vars), t.count) catch {
-    _ => return None
-  }
+  let b = bind_row_count(t.count, types)
+  guard b is Some(b) else { return None }
   // a row count of any non-integer type, constant or not, is 1060
   // (captured: tail/top-fractional, DECLARE @d decimal; TOP (@d))
-  if !t.percent && !(b.ty.family() is FInteger) && !(b.kind is Lit(Null)) {
+  if !t.percent && !row_count_integer(b) && !(b.kind is Lit(Null)) {
     return Some(top_not_integer_error())
   }
   guard @bind.constant_value(b) is Some(v) else { return None }
@@ -602,7 +601,7 @@ fn top_constant_error(
   } else if v is Null {
     Some(top_not_integer_error())
   } else {
-    match v.as_int64() {
+    match row_count_value(v, b.ty) {
       Some(n) if n < 0L =>
         Some(
           @types.sql_error(
@@ -613,6 +612,89 @@ fn top_constant_error(
         )
       _ => None
     }
+  }
+}
+
+///|
+/// Constant OFFSET / FETCH counts fail the whole batch (class 15;
+/// captured: query/top-fetch-bigint): OFFSET not an integer or NULL is
+/// 10743, negative 10742; FETCH not an integer or NULL is 1060, below 1
+/// 10744. Bigint overflow is left to run time (8115).
+fn offset_fetch_constant_error(
+  offset : @ast.Expr?,
+  fetch : @ast.Expr?,
+  types : Map[String, @types.SqlType],
+) -> @types.SqlError? {
+  if offset is Some(o) && bind_row_count(o, types) is Some(b) {
+    let v = @bind.constant_value(b)
+    if !row_count_integer(b) || v is Some(Null) {
+      return Some(
+        @types.sql_error(
+          10743,
+          "The number of rows provided for a OFFSET clause must be an integer.",
+          severity=15,
+        ),
+      )
+    }
+    if v is Some(v) && row_count_value(v, b.ty) is Some(n) && n < 0L {
+      return Some(
+        @types.sql_error(
+          10742,
+          "The offset specified in a OFFSET clause may not be negative.",
+          severity=15,
+        ),
+      )
+    }
+  }
+  if fetch is Some(f) && bind_row_count(f, types) is Some(b) {
+    let v = @bind.constant_value(b)
+    if !row_count_integer(b) || v is Some(Null) {
+      return Some(top_not_integer_error())
+    }
+    if v is Some(v) && row_count_value(v, b.ty) is Some(n) && n < 1L {
+      return Some(
+        @types.sql_error(
+          10744,
+          "The number of rows provided for a FETCH clause must be greater then zero.",
+          severity=15,
+        ),
+      )
+    }
+  }
+  None
+}
+
+///|
+fn bind_row_count(
+  e : @ast.Expr,
+  types : Map[String, @types.SqlType],
+) -> @ir.Expr? {
+  let vars : Map[String, @bind.VarInfo] = Map([])
+  for k, ty in types {
+    vars[k] = { slot: vars.length(), ty, }
+  }
+  Some(@bind.bind_expr(@bind.Env::new(vars), e)) catch {
+    _ => None
+  }
+}
+
+///|
+/// A TOP / FETCH / OFFSET row count must be an integer type, or a constant
+/// of type numeric with scale 0 (an integer literal beyond int: captured
+/// query/top-fetch-bigint, `TOP 2147483648`, `TOP (1 * 2147483648)` and
+/// `CAST(2 AS numeric(5,0))` run; decimal(p,0), and numeric variables or
+/// subqueries, are 1060).
+fn row_count_integer(b : @ir.Expr) -> Bool {
+  b.ty.family() is FInteger ||
+  (b.ty is Numeric(_, 0) && @bind.constant_value(b) is Some(_))
+}
+
+///|
+/// The constant row count as bigint; None when it overflows (run time
+/// raises 8115 then).
+fn row_count_value(v : @types.Value, ty : @types.SqlType) -> Int64? {
+  @types.cast(v, ty, BigInt).as_int64() catch {
+    _ => None
   }
 }
 
