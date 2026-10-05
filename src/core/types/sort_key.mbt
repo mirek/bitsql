@@ -106,35 +106,63 @@ fn text_key(s : String, collation : Collation, ansi : Bool) -> FixedArray[Int]? 
       ascii_text_key(s, collation, !(ansi && collation.sql_collation)),
     )
   }
-  let (es, ws) = collation_elements(s, collation, ansi)
-  let out : Array[Int] = []
-  let level = (key : (Element) -> Int, skip_zero_primary : Bool) => {
-    for e in es {
-      if !(skip_zero_primary && e.primary == 0) {
-        out.push(key(e) + 1)
-      }
+  let buffers = buffers_a
+  let es = buffers.elems
+  let ws = buffers.ws
+  collation_elements_into(s, 0, collation, ansi, es, ws)
+  // one exactly sized key: count base elements (accent-only ones only
+  // appear at the accent level)
+  let mut base = 0
+  for e in es {
+    if e >= 0 {
+      base += 1
     }
-    out.push(0)
   }
-  level(e => e.primary, true)
+  let mut size = base + 1 + ws.length()
   if collation.accent_sensitive {
-    level(e => e.secondary, false)
+    size += es.length() + 1
   }
   if collation.case_sensitive {
-    level(e => e.tertiary, true)
+    size += base + 1
   }
   if collation.kana_sensitive {
-    level(e => e.kana, true)
+    size += base + 1
   }
   if collation.width_sensitive {
-    level(e => e.width, true)
+    size += base + 1
+  }
+  let out = FixedArray::make(size, 0)
+  let mut at = 0
+  // levels in `compare_linguistic` order, weight + 1 per element and a 0
+  // terminator (already 0)
+  for level in 0..<5 {
+    let wanted = match level {
+      0 => true
+      1 => collation.accent_sensitive
+      2 => collation.case_sensitive
+      3 => collation.kana_sensitive
+      _ => collation.width_sensitive
+    }
+    if wanted {
+      for e in es {
+        if level == 1 || e >= 0 {
+          out[at] = element_weight(e, level) + 1
+          at += 1
+        }
+      }
+      at += 1
+    }
   }
   // a later position sorts first (compare_linguistic: sign_of(wb - wa))
-  for w in ws {
-    out.push(0x3FFFFFFF - w.0)
-    out.push(w.1 + 1)
+  let mut k = 0
+  while k < ws.length() {
+    out[at] = 0x3FFFFFFF - ws[k]
+    out[at + 1] = ws[k + 1] + 1
+    at += 2
+    k += 2
   }
-  Some(FixedArray::from_array(out))
+  buffers.release()
+  Some(out)
 }
 
 ///|
@@ -237,18 +265,9 @@ fn ascii_text_key(
       }
       continue
     }
-    let (p, t) = if u >= 'A' && u <= 'Z' {
-      (letter_primary(u + 32), 2)
-    } else if u >= 'a' && u <= 'z' {
-      (letter_primary(u), 0)
-    } else if u >= '0' && u <= '9' {
-      (0x8000 + u, 0)
-    } else {
-      (0x100 + u, 0)
-    }
-    out[e] = p + 1
+    out[e] = ascii_primary(u) + 1
     if case_at >= 0 {
-      out[case_at + e] = t + 1
+      out[case_at + e] = if u >= 'A' && u <= 'Z' { 3 } else { 1 }
     }
     e += 1
   }

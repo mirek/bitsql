@@ -104,3 +104,39 @@ test "numeric and temporal sort keys order like compare" {
     fail("\{bad.length()} mismatches, first \{@debug.to_string(bad[0])}")
   }
 }
+
+///|
+/// `text_key` must equal the reference key (built from element structs,
+/// without the ASCII shortcut) integer for integer: every unit alone and
+/// in context, and short strings over ASCII units with special paths.
+test "text keys equal the reference keys bit for bit" {
+  let strings = []
+  for u in element_test_units() {
+    let ch = unit_string(u)
+    strings.push(ch)
+    strings.push("A" + ch + "b")
+    strings.push(ch + " -x")
+    strings.push("x" + ch + ch + "'")
+  }
+  for s in all_strings(["a", "B", "-", "'", " ", "\u{0}", "1", "\u{e9}"], 3) {
+    strings.push(s)
+  }
+  let mut checked = 0
+  for name in element_test_collations {
+    let c = Collation::parse(name).unwrap()
+    for ansi in [false, true] {
+      for s in strings {
+        let same = match (text_key(s, c, ansi), ref_text_key(s, c, ansi)) {
+          (None, None) => true
+          (Some(x), Some(y)) => x == y
+          _ => false
+        }
+        if !same {
+          fail("\{name} ansi=\{ansi}: key of \{@debug.to_string(s)} differs")
+        }
+        checked += 1
+      }
+    }
+  }
+  debug_inspect(checked, content="62398")
+}
