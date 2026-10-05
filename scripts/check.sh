@@ -10,6 +10,10 @@ for pkg in $(ls -d src/core/*/ 2>/dev/null); do
   moon check --target all "$pkg" >/dev/null 2>&1 \
     || { echo "core package $name does not check on all backends"; moon check --target all "$pkg"; exit 1; }
 done
+echo "== release version"
+mod=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
+grep -q "bitsql_version : String = \"$mod\"" src/core/exec/version.mbt \
+  || { echo "src/core/exec/version.mbt bitsql_version differs from moon.mod $mod"; exit 1; }
 echo "== moon test"
 moon test --target native 2>&1 | tail -n 5
 echo "== moon fmt / info drift"

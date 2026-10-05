@@ -2,7 +2,7 @@
 /// Thin native host: moves bytes between sockets and the pure engine and
 /// fires timers. Knows nothing about SQL or TDS.
 ///
-/// Usage: host [--listen HOST:PORT] [--record FILE] [--database NAME]...
+/// Usage: host [--version] [--listen HOST:PORT] [--record FILE] [--database NAME]...
 ///             [--auto-create-databases]
 ///   --listen    default 127.0.0.1:47333; port 0 picks a free port
 ///   --record    append every engine event to FILE for `replay`
@@ -17,6 +17,10 @@
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
+  if args.contains("--version") {
+    @stdio.stdout.write("bitsql \{@engine.version()}\n")
+    return
+  }
   let listen = flag(args, "--listen").unwrap_or("127.0.0.1:47333")
   let seed = now_ticks()
   let record = match flag(args, "--record") {

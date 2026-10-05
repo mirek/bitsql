@@ -79,7 +79,7 @@ pub fn Runtime::new(
   now~ : Int64,
   seed~ : Int64,
   server_name? : String = "bitsql",
-  version? : String = "Microsoft SQL Server 2025 (bitsql emulator)",
+  version? : String = "Microsoft SQL Server 2025 (bitsql emulator \{bitsql_version})",
   build? : (Int, Int, Int) = (17, 0, 5005),
 ) -> Runtime {
   {

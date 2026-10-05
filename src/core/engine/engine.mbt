@@ -501,3 +501,9 @@ fn Engine::rerun(
     _ => ()
   }
 }
+
+///|
+/// The bitsql release (moon.mod version), for `host --version`.
+pub fn version() -> String {
+  @exec.bitsql_version
+}

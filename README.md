@@ -15,7 +15,9 @@ docker run --rm -p 1433:1433 mirek/bitsql --auto-create-databases
 ```
 
 Published image (linux/amd64 + linux/arm64): `mirek/bitsql` (tags `X.Y.Z`,
-`X.Y`, `latest`).
+`X.Y`, `latest`). `SELECT @@VERSION` returns `Microsoft SQL Server 2025
+(bitsql emulator X.Y.Z)`, so you can tell which release you're connected to,
+and the image has `org.opencontainers.image.version` and `revision` labels.
 
 ## Drop-in replacement for `mcr.microsoft.com/mssql/server`
 
@@ -87,7 +89,7 @@ run `EXEC emulator.restore 'seed'` before each test.
 Clients checked by the harness: tedious and mssql (Node), plus knex,
 Sequelize, TypeORM and Prisma through `harness/orm`.
 
-Server options (append them after the image name): `--listen HOST:PORT`, `--database NAME`
+Server options (append them after the image name): `--version`, `--listen HOST:PORT`, `--database NAME`
 (repeatable), `--auto-create-databases`, `--tls-cert FILE --tls-key FILE`
 (PEM; default a built-in self-signed localhost certificate), `--no-tls`,
 `--max-request-work N` (runaway-request budget; a request past it fails with

@@ -712,3 +712,16 @@ statement, not the firing one.
   error, reported on line 13). Procedures are still stored server-wide by
   name (pre-existing), so `EXEC foo.dbo.p` finds `p` whatever database
   created it.
+
+## 2026-10-05: @@VERSION names the bitsql release
+
+A compatibility report could not tell which bitsql build it had reached: the
+image had no labels (0.1.1) and SQL showed only `Microsoft SQL Server 2025
+(bitsql emulator)`. `@@VERSION` is now `Microsoft SQL Server 2025 (bitsql
+emulator X.Y.Z)` with X.Y.Z = moon.mod `version`
+(`src/core/exec/version.mbt`, checked equal by `scripts/check.sh`;
+`host --version` prints it). `@@VERSION` already differed from SQL Server's
+multi-line banner, and SERVERPROPERTY('ProductVersion') stays 17.0.5005, so
+clients that gate on the product version see no change (knex, Sequelize,
+TypeORM and Prisma ORM suites unchanged). Release images also carry the
+`org.opencontainers.image.version` / `revision` labels (since 0.1.2).

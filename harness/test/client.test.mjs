@@ -3,7 +3,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Request } from 'tedious'
 import sql from 'mssql'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { connect, close } from '../src/client.mjs'
+import { query } from '../src/capture-core.mjs'
+import { repoDir } from '../src/env.mjs'
 import { server, skipIfUnsupported } from './support.mjs'
 
 test('tedious logs in (encrypt:true, its default) and the connection is LoggedIn', async t => {
@@ -52,4 +56,15 @@ test('mssql pool runs SELECT 1 AS a', async t => {
     throw error
   }
   assert.deepEqual(result.recordset, [{ a: 1 }])
+})
+
+// Not SQL Server behavior: @@VERSION names the bitsql release (moon.mod
+// version) so a client can tell which emulator build it reached.
+test('@@VERSION names the bitsql release', async t => {
+  const s = await server(t)
+  const connection = await connect(s.config)
+  t.after(() => close(connection))
+  const version = readFileSync(join(repoDir, 'moon.mod'), 'utf8').match(/^version = "(.*)"/m)[1]
+  const { rows } = await query(connection, 'SELECT @@VERSION')
+  assert.equal(rows[0][0], `Microsoft SQL Server 2025 (bitsql emulator ${version})`)
 })
