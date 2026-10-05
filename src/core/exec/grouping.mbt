@@ -140,15 +140,26 @@ fn single_column_ids(
       kind = x
     }
   }
-  let seen : Map[@types.SortKey, Int] = Map([])
+  // Store representative row positions in unboxed slots. Each incoming key
+  // is hashed once, and a new group uses the same probe that found its empty
+  // slot (no boxed Map entry or second lookup to insert it).
+  let mut capacity = 16
+  while capacity < n * 2 {
+    capacity *= 2
+  }
+  let slots = FixedArray::make(capacity, -1)
+  let mask = capacity - 1
   for i, k in ks {
-    match seen.get(k) {
-      Some(id) => ids[i] = id
-      None => {
-        ids[i] = count
-        seen[k] = count
-        count += 1
-      }
+    let mut slot = k.hash() & mask
+    while slots[slot] >= 0 && ks[slots[slot]] != k {
+      slot = (slot + 1) & mask
+    }
+    if slots[slot] >= 0 {
+      ids[i] = ids[slots[slot]]
+    } else {
+      slots[slot] = i
+      ids[i] = count
+      count += 1
     }
   }
   Some((ids, count))

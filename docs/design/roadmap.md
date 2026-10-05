@@ -209,6 +209,14 @@ Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
 - [x] Container benchmark vs real SQL Server (`npm run bench:compare`, numbers in README.md for 0.1.6 since 2026-10-05: 24 shapes 272 ms vs SQL Server 696 ms) 2026-10-05: 12.4 MiB download vs 605 MiB, cold start 121 ms vs 2.73 s, 4.3 MiB idle vs 1.17 GiB, login 2.3 vs 49 ms, schema drop/create 0.16 vs 7.0 ms, parameterized INSERT 5.7× faster
 - [~] Executor speed vs SQL Server on set-heavy shapes at 20k rows (same benchmark), as of 0.1.3: GROUP BY/DISTINCT/UNION/ORDER BY/ROW_NUMBER 3–9× slower, UPDATE all rows/UPDATE FROM 4–5× slower, accented-text ORDER BY 35× slower; parameterized point SELECT through sp_executesql 0.16 vs 0.15 ms. 2026-10-05 (decisions.md "sort keys, hash grouping, set-at-once DML"): sort keys, hash grouping, stable merge sort, UPDATE/DELETE/MERGE applied once with unchanged-index replacement and O(n) bulk deletes; bulk multi-row INSERT, hashed EXCEPT/INTERSECT; 1.5–4× faster across the shapes (24 shapes 1.08 → 0.50 s). 2026-10-05 performance push (docs/design/performance.md, papers in performance.bib): closure-compiled expressions, streamed scalar aggregates and joins, accumulator GROUP BY, Int64 hash tables for joins/grouping/unnesting, unnested integer-key correlated subqueries, normalized ORDER BY keys, TOP-N heap, packed collation elements, scan cache, cheaper UPDATE/FK/lock paths; 24 shapes 478 → 251 ms (best of 3). Missing: IN sets by hashing, correlated subqueries on non-integer keys, per-row validity checks of memoized uncorrelated subqueries (~1 ms/20k rows), per-request overhead (binding runs twice per batch: prebind + run; 2026-10-05: parse cache, precheck memo, the first query reuses the prebind plan, seekable DML WHERE; point SELECT server CPU 62 → 40 µs; open: a cross-request plan cache needs a catalog generation counter, decisions.md) 0.1.4 (README): 24 shapes 511 ms vs SQL Server 695 ms (0.1.3: 1.09 s), 40k-row load on par (49.8 vs 50.1 ms); still slower per query on sorting/grouping (2–3×), correlated subqueries (3.7–5.2×), accented-text ORDER BY (8×), UPDATE all rows/FROM (1.4×)
 
+Performance follow-up (2026-10-05): single-column exact collation/temporal
+keys now group through unboxed representative-position slots. At 20k rows,
+interleaved release-binary checks improved string grouping/distinct/union
+by 3–9% and an all-unique-string DISTINCT check by 13%; equivalence tests
+cover collation comparisons, temporal key equivalence, NULLs and group
+numbering. See `performance.md` for measurements and the rejected raw-string
+cache experiment. Beating SQL Server on every benchmark remains open.
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no

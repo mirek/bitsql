@@ -119,3 +119,31 @@ they short-cut (`top_n_wbtest`, `normalized_sort_wbtest`,
 | **total** | **477.6** | **251.3** |
 
 Against real SQL Server see the README's benchmark table.
+
+## Single-column grouping (2026-10-05, 0.1.8)
+
+Exact non-integer keys now use an open-addressing array of representative
+row positions (`exec/grouping.mbt`). One hash/probe both finds an existing
+group and inserts a new one; no per-group Map entry is allocated. The slot
+array has power-of-two capacity at least twice the input length (O(n)
+scratch space). Integer grouping retains its existing Int64 table, and
+inexact or mixed key kinds retain the comparison fallback. Tests in
+`grouping_wbtest.mbt` compare text groups with pairwise SQL comparison and
+temporal groups with the former Map path, including NULLs and first-occurrence
+numbering.
+
+Two interleaved baseline/candidate runs, 30 repetitions per query, 20k rows;
+best minimum wall time in ms (release binaries, TLS, no concurrent benchmark):
+
+| Shape | 0.1.7 | 0.1.8 |
+| --- | ---: | ---: |
+| GROUP BY v (5003 groups) | 5.56 | 5.09 |
+| SELECT DISTINCT v | 5.94 | 5.66 |
+| COUNT(DISTINCT v) | 4.91 | 4.60 |
+| UNION | 8.22 | 7.97 |
+| COUNT(DISTINCT CONCAT(N'unique', id)) (20000 distinct strings) | 11.39 | 9.89 |
+
+A raw-string memo in front of the collation-key map was also measured and
+rejected: repeated-string queries improved 10–25%, but the all-unique
+check regressed from 11.42 to 14.01 ms. Keep a high-cardinality check when
+evaluating caches for grouping.
