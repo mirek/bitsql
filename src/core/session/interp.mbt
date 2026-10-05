@@ -975,6 +975,8 @@ fn Session::exec_select(
       )
     }
     if !sel.from.is_empty() ||
+      !q.ctes.is_empty() ||
+      q.for_clause is Some(_) ||
       sel.where_ is Some(_) ||
       !sel.group_by.is_empty() ||
       sel.having is Some(_) ||
