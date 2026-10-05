@@ -30,6 +30,15 @@ fn text(
 fn int_of(v : @types.Value) -> Int64? raise @types.SqlError {
   let n = match v {
     Null => return None
+    // integers directly (the decimal route below gives the same value and
+    // the same overflow outside int)
+    TinyInt(x) | SmallInt(x) | Int(x) => x.to_int64()
+    BigInt(x) =>
+      if x < -2147483648L || x > 2147483647L {
+        raise @types.overflow_expression(Int)
+      } else {
+        x
+      }
     Float(d) =>
       if d.is_nan() || d.is_inf() || d.abs() >= 9.0e18 {
         raise @types.overflow_expression(Int)

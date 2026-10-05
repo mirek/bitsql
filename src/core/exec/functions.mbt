@@ -486,6 +486,7 @@ fn call_values(
         _ => raise @types.not_supported("JSON_QUERY on non-character input")
       }
     }
+    Named(name) if pure_named.contains(name) => call_more(ctx, name, v, args, e)
     Named(name) =>
       match (ctx.ext)(name, v) {
         Some(r) => r

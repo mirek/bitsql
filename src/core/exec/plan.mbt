@@ -57,11 +57,17 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let rows = run(ctx, input)
       let ansi = keys.map(ansi_key)
       let cs = keys.map(k => compile(k.expr))
-      let prepared = rows.map(row => {
-        (order_keys(cs.map(f => f(ctx, row)), keys, ansi), row)
-      })
-      sort_prepared(prepared, keys, ansi)
-      prepared.map(p => p.1)
+      let values = rows.map(row => cs.map(f => f(ctx, row)))
+      match sort_order(values, keys) {
+        Some(order) => order.map(i => rows[i])
+        None => {
+          let prepared = rows.mapi((i, row) => {
+            (order_keys(values[i], keys, ansi), row)
+          })
+          sort_prepared(prepared, keys, ansi)
+          prepared.map(p => p.1)
+        }
+      }
     }
     Limit(input, offset, count) => {
       let rows = run(ctx, input)
@@ -165,17 +171,20 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     // TOP n ORDER BY: heap selection instead of a full sort (top_n.mbt)
     Top(Sort(input, keys), count, percent~, ties=[]) => {
       let rows = run(ctx, input)
-      let ansi = keys.map(ansi_key)
       let cs = keys.map(k => compile(k.expr))
-      let prepared = rows.map(row => {
-        (order_keys(cs.map(f => f(ctx, row)), keys, ansi), row)
-      })
+      let values = rows.map(row => cs.map(f => f(ctx, row)))
       let n = top_count(ctx, count, percent, rows.length())
-      if n * 4 >= rows.length() {
+      if n * 4 >= rows.length() && sort_order(values, keys) is Some(order) {
+        order[0:n].iter().map(i => rows[i]).to_array()
+      } else if n * 4 >= rows.length() {
+        let ansi = keys.map(ansi_key)
+        let prepared = rows.mapi((i, row) => {
+          (order_keys(values[i], keys, ansi), row)
+        })
         sort_prepared(prepared, keys, ansi)
         prepared[0:n].iter().map(p => p.1).to_array()
       } else {
-        top_n_prepared(prepared, n, keys, ansi)
+        top_n_values(values, rows, n, keys)
       }
     }
     Top(input, count, percent~, ties~) => {
