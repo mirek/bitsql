@@ -73,7 +73,7 @@ export function spawnEmulator({ bin = emulatorBinary(), args = [], timeout = 100
           child.kill('SIGTERM')
           setTimeout(() => child.kill('SIGKILL'), 2000).unref()
         })
-        resolve({ host: '127.0.0.1', port: Number(match[1]), stop, logs: () => logs })
+        resolve({ host: '127.0.0.1', port: Number(match[1]), pid: child.pid, stop, logs: () => logs })
       }
     })
   })

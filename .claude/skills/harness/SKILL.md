@@ -483,6 +483,13 @@ Start the host with `--database NAME` so the app's database exists at login
   dump-collation-weights.mjs` regenerates
   `src/core/types/collation_weights_data.mbt` (ignorable code units,
   accent ranks) from the oracle.
+- 2026-10-05: per-request profiling without the oracle:
+  `WORKLOAD=requests REPS=3 scripts/profile.sh` (or `node bench/profile.mjs`
+  with `BITSQL_BIN`) runs compare.mjs's request workload (SELECT 1,
+  parameterized INSERT / point SELECT, transactions, report) and prints
+  wall time plus server CPU from `/proc/<pid>/schedstat`; the wall time is
+  mostly tedious and TLS, so compare CPU. `report.py --focus FUNC` keeps
+  only samples with FUNC on the stack (e.g. `rpc__executesql`).
 - 2026-10-05: `npm run bench:compare` (harness/bench/compare.mjs) produces the
   README benchmark tables. It runs containers `bitsql-bench-bitsql`
   (47340) and `bitsql-bench-mssql` (47341), removes them at the end, and

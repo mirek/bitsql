@@ -830,3 +830,50 @@ every 1250 locks, and `ALTER TABLE … SET (LOCK_ESCALATION = …)` is
 accepted and ignored today. A faithful-where-certain variant (escalate at
 6250 row locks of one statement when no other session holds or waits on
 the table; honour LOCK_ESCALATION = DISABLE) is a roadmap item.
+
+## 2026-10-05: per-request shortcuts (parse cache, first-query plan reuse)
+
+Profiling a request loop (`WORKLOAD=requests scripts/profile.sh`) showed
+a parameterized point SELECT through sp_executesql spending its server
+time on parsing the text and the parameter declarations (~25%), binding
+twice (batch prebind, then the run: ~45%) and batch prechecks (~10%),
+and `UPDATE … WHERE id = @c` scanning the whole table. Changes, each
+argued equivalent to the code it short-cuts:
+
+- **Parse cache** (`session/parse_cache.mbt`, on `Server`): parsed
+  batches and statements by text. The parser is a pure function of the
+  text and no code mutates an AST after parsing. Syntax errors are not
+  cached (their path re-parses with recovery). Bounded at 1024 entries
+  per map (emptied when full) and 64 KiB texts.
+- **precheck_batch memo**: its no-failure outcome is kept per cached
+  parse and variable signature (names and types of the frame's
+  variables). It is a pure function of those (its catalog callback only
+  names the column in a 264 message, i.e. only on failure).
+- **First-query plan reuse** (`prebind.mbt` `keep_prebound`): when the
+  batch's first statement is a plain query, `exec_query` uses the plan
+  the prebind just built instead of binding again. Conditions: no
+  transaction (`refresh_tx` could rebase the views between the two),
+  the bind left no output, CurCmd or @@ERROR change, and its deferred
+  binder errors are replayed. Nothing between prebind and that statement
+  changes what the binder reads (the statement prologue resets only
+  per-statement runtime state).
+- **DML WHERE seek** (`dml_run.mbt` `never_fails`): a single-table
+  UPDATE/DELETE whose WHERE is an AND of same-type comparisons of
+  columns, variables and literals runs as `Filter(Scan)`, which seeks an
+  index. Such a predicate cannot raise, so row-by-row error order is
+  moot, and seeks return the scan's rows in row id order.
+
+Not done: a cross-request plan cache keyed by (text, parameter types,
+settings, catalog version). The binder reads the catalog through
+closures over many session states (temp tables, table variables,
+transaction views, synonyms, sys views, IDENTITY_INSERT, compat level,
+trigger pseudo tables), and no single version stamp covers them yet. It
+needs a catalog generation counter maintained by every catalog write and
+rollback first.
+
+Request loop (1000 requests, release build, local TLS; server CPU from
+schedstat): point SELECT via sp_executesql 62–79 → 38–42 µs CPU
+(wall 140–166 → 117–128 µs), parameterized INSERT 64–76 → 52–56 µs,
+BEGIN/INSERT/UPDATE/COMMIT 310–330 → 66–70 µs, `SELECT 1` unchanged
+(~120 µs wall). Executor-bound shapes (24 bench shapes, the join +
+GROUP BY report) are unchanged.

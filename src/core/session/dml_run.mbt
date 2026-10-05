@@ -238,7 +238,14 @@ fn Session::dml_scan(
     }
     None => None
   }
-  let rows = @exec.run(self.ctx(), src.plan)
+  // a WHERE that cannot fail on any row (`id = @id`) narrows a single-table
+  // scan through `Filter(Scan)`, which seeks an index when one fits: the
+  // same rows in the same (row id) order, without visiting the others
+  let plan = match (src.plan, where_) {
+    (Scan(..), Some(w)) if never_fails(w) => @ir.Plan::Filter(src.plan, w)
+    _ => src.plan
+  }
+  let rows = @exec.run(self.ctx(), plan)
   let out = []
   let at : Map[Int64, Int] = Map([])
   for r in rows {
@@ -273,6 +280,35 @@ fn Session::dml_scan(
     }
   }
   (out, None)
+}
+
+///|
+/// A predicate whose evaluation raises for no row and depends on nothing
+/// but the row and the variables: AND of comparisons between columns,
+/// variables and literals of one scalar type (`@types.compare` raises only
+/// for mixed or non-comparable representations).
+fn never_fails(e : @ir.Expr) -> Bool {
+  let leaf = (x : @ir.Expr) => x.kind is (Col(_) | Var(_) | Lit(_))
+  match e.kind {
+    And(a, b) => never_fails(a) && never_fails(b)
+    Cmp(_, a, b, _) =>
+      leaf(a) &&
+      leaf(b) &&
+      a.ty == b.ty &&
+      a.ty.family()
+      is (FBit
+      | FInteger
+      | FDecimal
+      | FMoney
+      | FFloat
+      | FString
+      | FBinary
+      | FDate
+      | FTime
+      | FDateTime
+      | FGuid)
+    _ => false
+  }
 }
 
 ///|

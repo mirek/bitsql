@@ -6,6 +6,7 @@
 #   scripts/profile.sh 'GROUP BY v'              # shapes matching a regexp
 #   SQL='SELECT SUM(p + 1) FROM w' scripts/profile.sh
 #   REPS=50 scripts/profile.sh 'UPDATE all' --callers drop_object
+#   WORKLOAD=requests REPS=3 scripts/profile.sh   # per-request workload (compare.mjs)
 #
 # Extra arguments go to scripts/profile/report.py (--top N, --callers FUNC).
 # Samples live in _build/profile/ and are replaced on each run.

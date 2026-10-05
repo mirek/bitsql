@@ -4,6 +4,8 @@
   report.py DATA EXE [--top N]            self and inclusive time per function
   report.py DATA EXE --callers FUNC       first bitsql caller of FUNC's samples
                                           (FUNC: substring, e.g. drop_object)
+  report.py DATA EXE --focus FUNC         only samples with FUNC on the stack
+                                          (e.g. rpc__executesql)
 """
 import argparse, collections, re, struct, subprocess
 
@@ -28,6 +30,7 @@ def main():
     ap.add_argument('data'); ap.add_argument('exe')
     ap.add_argument('--top', type=int, default=30)
     ap.add_argument('--callers')
+    ap.add_argument('--focus')
     a = ap.parse_args()
     base = next(int(l.split('-')[0], 16) for l in open(a.data + '.maps') if l.rstrip().endswith(a.exe.split('/')[-1]))
     raw = open(a.data, 'rb').read(); rec = 8 * (DEPTH + 1)
@@ -44,6 +47,10 @@ def main():
         fs = [name.get(x, '?') for x in s]
         if fs and fs[0] == '?' and len(fs) > 1: fs = fs[1:]  # libc trampoline
         if fs: stacks.append(fs)
+    if a.focus:
+        total = len(stacks)
+        stacks = [fs for fs in stacks if any(a.focus in f for f in fs)]
+        print(f'focus {a.focus}: {len(stacks)} of {total} samples')
     n = len(stacks)
     print(f'{n} samples ({n / 2000:.2f} s CPU)')
     if a.callers:
