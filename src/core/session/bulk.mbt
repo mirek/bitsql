@@ -64,6 +64,7 @@ pub fn Session::run_bulk(
     let keep_identity = has("KEEP_IDENTITY")
     let keep_nulls = has("KEEP_NULLS")
     let mut db = self.db_of(target.scope)
+    let row_lock = row_lock(t)
     for src in rows {
       let row = Array::make(t.columns.length(), @types.Value::Null)
       let given = Array::make(t.columns.length(), false)
@@ -111,7 +112,7 @@ pub fn Session::run_bulk(
       )
       let rowid = self.server.rowid()
       if target.scope == 0 {
-        self.acquire(row_resource(t, rowid, row), X, Transaction)
+        self.acquire(row_lock.resource(rowid, row), X, Transaction)
       }
       db = insert_checked(target, db, rowid, row)
     }

@@ -96,6 +96,9 @@ fn[K] lo_before_hi(lo : Bound[K], hi : Bound[K], cmp : (K, K) -> Int) -> Bool {
 
 ///|
 pub(all) enum Resource[K] {
+  /// One key of `index` on `table` (a row lock); same as a point
+  /// `KeyRange` but a single allocation, since DML takes one per row.
+  Key(table~ : Int, index~ : Int, K)
   /// Interval of keys of `index` on `table`.
   KeyRange(table~ : Int, index~ : Int, Interval[K])
   /// Whole table: the fallback when no index matches the predicate.
@@ -105,7 +108,7 @@ pub(all) enum Resource[K] {
 ///|
 pub fn[K] Resource::table(self : Resource[K]) -> Int {
   match self {
-    KeyRange(table~, _, ..) => table
+    Key(table~, _, ..) | KeyRange(table~, _, ..) => table
     WholeTable(t) => t
   }
 }
@@ -123,7 +126,32 @@ pub fn[K] Resource::overlaps(
       // Different indexes of one table may cover the same row; without row
       // identity we must assume they do (conservative: may over-block).
       t1 == t2 && (i1 != i2 || a.overlaps(b, cmp))
+    (Key(table=t1, index=i1, a), Key(table=t2, index=i2, b)) =>
+      t1 == t2 && (i1 != i2 || cmp(a, b) == 0)
+    (Key(table=t1, index=i1, k), KeyRange(table=t2, index=i2, iv))
+    | (KeyRange(table=t2, index=i2, iv), Key(table=t1, index=i1, k)) =>
+      t1 == t2 && (i1 != i2 || iv.contains(k, cmp))
   }
+}
+
+///|
+/// True when key `k` lies inside the interval under `cmp`.
+fn[K] Interval::contains(
+  self : Interval[K],
+  k : K,
+  cmp : (K, K) -> Int,
+) -> Bool {
+  let above_lo = match self.lo {
+    Unbounded => true
+    Inclusive(a) => cmp(a, k) <= 0
+    Exclusive(a) => cmp(a, k) < 0
+  }
+  above_lo &&
+  (match self.hi {
+    Unbounded => true
+    Inclusive(b) => cmp(k, b) <= 0
+    Exclusive(b) => cmp(k, b) < 0
+  })
 }
 
 ///|
@@ -150,6 +178,18 @@ pub fn[K] Resource::same(
       i1 == i2 &&
       bound_eq(a.lo, b.lo, cmp) &&
       bound_eq(a.hi, b.hi, cmp)
+    (Key(table=t1, index=i1, a), Key(table=t2, index=i2, b)) =>
+      t1 == t2 && i1 == i2 && cmp(a, b) == 0
+    // a point range and a key are the same resource (UPDLOCK on a key, then
+    // X on the row it reads, is a conversion)
+    (Key(table=t1, index=i1, k), KeyRange(table=t2, index=i2, iv))
+    | (KeyRange(table=t2, index=i2, iv), Key(table=t1, index=i1, k)) =>
+      t1 == t2 &&
+      i1 == i2 &&
+      (match (iv.lo, iv.hi) {
+        (Inclusive(a), Inclusive(b)) => cmp(a, k) == 0 && cmp(b, k) == 0
+        _ => false
+      })
     _ => false
   }
 }

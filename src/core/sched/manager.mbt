@@ -1,9 +1,43 @@
 ///|
+/// A granted lock. The owning session and table are implied by the `Slot`
+/// holding it; `seq` orders grants across sessions (blocker lists report
+/// sessions in the order of their earliest conflicting grant).
 priv struct Grant[K] {
-  session : Int
+  seq : Int
   resource : Resource[K]
   mode : LockMode
   duration : Duration
+}
+
+///|
+/// The grants of one session on one table, with per-duration counts so
+/// statement and transaction ends release them in bulk.
+priv struct Slot[K] {
+  grants : Array[Grant[K]]
+  /// Grants of duration `Statement` and `Session` in `grants`.
+  mut statement : Int
+  mut session : Int
+}
+
+///|
+fn[K] Slot::count(self : Slot[K], d : Duration, delta : Int) -> Unit {
+  match d {
+    Statement => self.statement += delta
+    Session => self.session += delta
+    Transaction => ()
+  }
+}
+
+///|
+fn[K] Slot::retain(self : Slot[K], keep : (Grant[K]) -> Bool) -> Unit {
+  self.grants.retain(g => {
+    if keep(g) {
+      true
+    } else {
+      self.count(g.duration, -1)
+      false
+    }
+  })
 }
 
 ///|
@@ -35,13 +69,17 @@ pub struct LockManager[K] {
   /// Cost of rolling back a session; the cheapest session in a cycle is the
   /// deadlock victim (SQL Server's default DEADLOCK_PRIORITY NORMAL rule).
   cost : (Int) -> Int64
-  priv grants : Array[Grant[K]]
+  /// Grants by table, then session. A request only scans the grants of
+  /// other sessions on its own table, and set-wide DML (one key lock per
+  /// row) appends to its own slot without searching.
+  priv tables : Map[Int, Map[Int, Slot[K]]]
+  /// Pending requests in arrival order (at most one per session).
   priv waiters : Array[Waiter[K]]
   priv mut next_id : Int
-  /// Grants + waiters per table per session: lets a request on a table no
-  /// other session touches skip the conflict scan (bulk inserts take one
-  /// key lock per row; scanning every grant made them quadratic).
-  priv occupants : Map[Int, Map[Int, Int]]
+  priv mut next_seq : Int
+  /// Slot of the last fast-path request (table, session): consecutive row
+  /// locks of one statement skip both map lookups. Cleared on release.
+  priv mut last : (Int, Int, Slot[K])?
 }
 
 ///|
@@ -49,7 +87,58 @@ pub fn[K] LockManager::new(
   cmp : (K, K) -> Int,
   cost? : (Int) -> Int64 = _ => 0L,
 ) -> LockManager[K] {
-  { cmp, cost, grants: [], waiters: [], next_id: 1, occupants: Map([]), }
+  {
+    cmp,
+    cost,
+    tables: Map([]),
+    waiters: [],
+    next_id: 1,
+    next_seq: 0,
+    last: None,
+  }
+}
+
+///|
+fn[K] LockManager::slot(
+  self : LockManager[K],
+  table : Int,
+  session : Int,
+) -> Slot[K] {
+  if self.last is Some((t, s, slot)) && t == table && s == session {
+    return slot
+  }
+  let sessions = match self.tables.get(table) {
+    Some(m) => m
+    None => {
+      let m : Map[Int, Slot[K]] = Map([])
+      self.tables[table] = m
+      m
+    }
+  }
+  let slot = match sessions.get(session) {
+    Some(slot) => slot
+    None => {
+      let slot : Slot[K] = { grants: [], statement: 0, session: 0, }
+      sessions[session] = slot
+      slot
+    }
+  }
+  self.last = Some((table, session, slot))
+  slot
+}
+
+///|
+fn[K] LockManager::push_grant(
+  self : LockManager[K],
+  slot : Slot[K],
+  resource : Resource[K],
+  mode : LockMode,
+  duration : Duration,
+) -> Unit {
+  let seq = self.next_seq
+  self.next_seq += 1
+  slot.grants.push({ seq, resource, mode, duration, })
+  slot.count(duration, 1)
 }
 
 ///|
@@ -59,16 +148,24 @@ fn[K] LockManager::conflicts_with_grants(
   resource : Resource[K],
   mode : LockMode,
 ) -> Array[Int] {
-  let out = []
-  for g in self.grants {
-    if g.session != session &&
-      !compatible(g.mode, mode) &&
-      g.resource.overlaps(resource, self.cmp) &&
-      !out.contains(g.session) {
-      out.push(g.session)
+  guard self.tables.get(resource.table()) is Some(sessions) else { return [] }
+  // (earliest conflicting grant, session)
+  let found : Array[(Int, Int)] = []
+  for s, slot in sessions {
+    if s == session {
+      continue
+    }
+    for g in slot.grants {
+      if !compatible(g.mode, mode) && g.resource.overlaps(resource, self.cmp) {
+        found.push((g.seq, s))
+        break
+      }
     }
   }
-  out
+  if found.length() > 1 {
+    found.sort_by((a, b) => a.0.compare(b.0))
+  }
+  found.map(f => f.1)
 }
 
 ///|
@@ -80,6 +177,9 @@ fn[K] LockManager::conflicts_with_waiters_before(
   mode : LockMode,
 ) -> Array[Int] {
   let out = []
+  if limit == 0 {
+    return out
+  }
   // A conversion (the session already holds this resource, e.g. U -> X) is
   // served before new waiters, as in SQL Server's conversion queue.
   // Otherwise UPDLOCK upserts would deadlock against their own waiters.
@@ -106,20 +206,22 @@ fn[K] LockManager::grant(
   mode : LockMode,
   duration : Duration,
 ) -> Unit {
+  let slot = self.slot(resource.table(), session)
   // Upgrade in place when the same session already holds this exact resource.
-  for i, g in self.grants {
-    if g.session == session && g.resource.same(resource, self.cmp) {
+  for i, g in slot.grants {
+    if g.resource.same(resource, self.cmp) {
       let d : Duration = match (g.duration, duration) {
         (Session, _) | (_, Session) => Session
         (Transaction, _) | (_, Transaction) => Transaction
         _ => Statement
       }
-      self.grants[i] = { ..g, mode: g.mode.max(mode), duration: d, }
+      slot.count(g.duration, -1)
+      slot.count(d, 1)
+      slot.grants[i] = { ..g, mode: g.mode.max(mode), duration: d, }
       return
     }
   }
-  self.grants.push({ session, resource, mode, duration, })
-  self.occupy(resource.table(), session, 1)
+  self.push_grant(slot, resource, mode, duration)
 }
 
 ///|
@@ -133,9 +235,9 @@ pub fn[K] LockManager::request(
   // fast path: nobody else on this table, so nothing can conflict. Append
   // without the in-place upgrade search: duplicate entries of one session
   // never conflict with each other and releases remove them all.
-  if self.alone(resource.table(), session) {
-    self.grants.push({ session, resource, mode, duration, })
-    self.occupy(resource.table(), session, 1)
+  let table = resource.table()
+  if self.alone(table, session) {
+    self.push_grant(self.slot(table, session), resource, mode, duration)
     return Granted
   }
   let blockers = self.conflicts_with_grants(session, resource, mode)
@@ -157,7 +259,6 @@ pub fn[K] LockManager::request(
   let id = self.next_id
   self.next_id += 1
   self.waiters.push({ id, session, resource, mode, duration, })
-  self.occupy(resource.table(), session, 1)
   match self.find_cycle(session) {
     None => Waiting(request=id)
     Some(cycle) => {
@@ -184,7 +285,6 @@ pub fn[K] LockManager::request(
       }
       if victim == session {
         self.waiters.pop() |> ignore
-        self.occupy(resource.table(), session, -1)
         Deadlock(victim~, request=None)
       } else {
         Deadlock(victim~, request=Some(id))
@@ -267,7 +367,6 @@ fn[K] LockManager::wake(self : LockManager[K]) -> Array[(Int, Int)] {
         .conflicts_with_waiters_before(i, w.session, w.resource, w.mode)
         .is_empty() {
         self.waiters.remove(i) |> ignore
-        self.occupy(w.resource.table(), w.session, -1)
         self.grant(w.session, w.resource, w.mode, w.duration)
         woken.push((w.session, w.id))
         progress = true
@@ -285,8 +384,16 @@ pub fn[K] LockManager::release_all(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.retain_grants(g => g.session != session || g.duration == Session)
-  self.retain_waiters(w => w.session != session)
+  self.release_slots(session, slot => {
+    if slot.session == 0 {
+      false
+    } else {
+      slot.retain(g => g.duration == Session)
+      slot.statement = 0
+      true
+    }
+  })
+  self.waiters.retain(w => w.session != session)
   self.wake()
 }
 
@@ -296,8 +403,8 @@ pub fn[K] LockManager::release_session(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.retain_grants(g => g.session != session)
-  self.retain_waiters(w => w.session != session)
+  self.release_slots(session, _ => false)
+  self.waiters.retain(w => w.session != session)
   self.wake()
 }
 
@@ -308,9 +415,15 @@ pub fn[K] LockManager::release_resource(
   session : Int,
   resource : Resource[K],
 ) -> Array[(Int, Int)] {
-  self.retain_grants(g => {
-    !(g.session == session && g.resource.same(resource, self.cmp))
-  })
+  self.last = None
+  let table = resource.table()
+  if self.tables.get(table) is Some(sessions) &&
+    sessions.get(session) is Some(slot) {
+    slot.retain(g => !g.resource.same(resource, self.cmp))
+    if slot.grants.is_empty() {
+      self.drop_slot(table, sessions, session)
+    }
+  }
   self.wake()
 }
 
@@ -335,7 +448,16 @@ pub fn[K] LockManager::release_statement(
   self : LockManager[K],
   session : Int,
 ) -> Array[(Int, Int)] {
-  self.retain_grants(g => !(g.session == session && g.duration == Statement))
+  self.release_slots(session, slot => {
+    if slot.statement == slot.grants.length() {
+      false
+    } else {
+      if slot.statement > 0 {
+        slot.retain(g => g.duration != Statement)
+      }
+      true
+    }
+  })
   self.wake()
 }
 
@@ -345,14 +467,20 @@ pub fn[K] LockManager::cancel(
   self : LockManager[K],
   request : Int,
 ) -> Array[(Int, Int)] {
-  self.retain_waiters(w => w.id != request)
+  self.waiters.retain(w => w.id != request)
   self.wake()
 }
 
 ///|
 /// Number of granted locks held by `session` (tests, diagnostics).
 pub fn[K] LockManager::held(self : LockManager[K], session : Int) -> Int {
-  self.grants.filter(g => g.session == session).length()
+  let mut n = 0
+  for _, sessions in self.tables {
+    if sessions.get(session) is Some(slot) {
+      n += slot.grants.length()
+    }
+  }
+  n
 }
 
 ///|
@@ -361,9 +489,15 @@ fn[K] LockManager::holds(
   session : Int,
   resource : Resource[K],
 ) -> Bool {
-  self.grants
-  .iter()
-  .any(g => g.session == session && g.resource.same(resource, self.cmp))
+  match self.tables.get(resource.table()) {
+    Some(sessions) =>
+      match sessions.get(session) {
+        Some(slot) =>
+          slot.grants.iter().any(g => g.resource.same(resource, self.cmp))
+        None => false
+      }
+    None => false
+  }
 }
 
 ///|
@@ -394,28 +528,37 @@ pub fn[K] LockManager::waiting_on(
 }
 
 ///|
-fn[K] LockManager::occupy(
+/// Applies `keep` to every slot of `session`; a slot it returns false for
+/// is dropped whole (bulk release without visiting its grants).
+fn[K] LockManager::release_slots(
   self : LockManager[K],
-  table : Int,
   session : Int,
-  delta : Int,
+  keep : (Slot[K]) -> Bool,
 ) -> Unit {
-  let m = match self.occupants.get(table) {
-    Some(m) => m
-    None => {
-      let m : Map[Int, Int] = Map([])
-      self.occupants[table] = m
-      m
+  self.last = None
+  let drop = []
+  for table, sessions in self.tables {
+    if sessions.get(session) is Some(slot) && !keep(slot) {
+      drop.push(table)
     }
   }
-  let n = m.get(session).unwrap_or(0) + delta
-  if n <= 0 {
-    m.remove(session)
-    if m.is_empty() {
-      self.occupants.remove(table)
+  for table in drop {
+    if self.tables.get(table) is Some(sessions) {
+      self.drop_slot(table, sessions, session)
     }
-  } else {
-    m[session] = n
+  }
+}
+
+///|
+fn[K] LockManager::drop_slot(
+  self : LockManager[K],
+  table : Int,
+  sessions : Map[Int, Slot[K]],
+  session : Int,
+) -> Unit {
+  sessions.remove(session)
+  if sessions.is_empty() {
+    self.tables.remove(table)
   }
 }
 
@@ -426,38 +569,17 @@ fn[K] LockManager::alone(
   table : Int,
   session : Int,
 ) -> Bool {
-  match self.occupants.get(table) {
-    None => true
-    Some(m) => m.length() == 0 || (m.length() == 1 && m.contains(session))
+  match self.tables.get(table) {
+    None => ()
+    Some(m) =>
+      if m.length() > 1 || (m.length() == 1 && !m.contains(session)) {
+        return false
+      }
   }
-}
-
-///|
-fn[K] LockManager::retain_grants(
-  self : LockManager[K],
-  keep : (Grant[K]) -> Bool,
-) -> Unit {
-  self.grants.retain(g => {
-    if keep(g) {
-      true
-    } else {
-      self.occupy(g.resource.table(), g.session, -1)
-      false
+  for w in self.waiters {
+    if w.session != session && w.resource.table() == table {
+      return false
     }
-  })
-}
-
-///|
-fn[K] LockManager::retain_waiters(
-  self : LockManager[K],
-  keep : (Waiter[K]) -> Bool,
-) -> Unit {
-  self.waiters.retain(w => {
-    if keep(w) {
-      true
-    } else {
-      self.occupy(w.resource.table(), w.session, -1)
-      false
-    }
-  })
+  }
+  true
 }

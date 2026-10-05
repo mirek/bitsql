@@ -139,41 +139,62 @@ fn index_colls(t : @store.Table, ix : @store.Index) -> Array[@types.Collation?] 
 }
 
 ///|
+/// How rows of one table are identified for locking (its primary key, or
+/// the row id), computed once per statement rather than per row.
+priv struct RowLock {
+  table : Int
+  /// Position of the primary key in `indexes`; -1 locks by row id.
+  index : Int
+  cols : Array[Int]
+  colls : Array[@types.Collation?]
+}
+
+///|
+fn row_lock(t : @store.Table) -> RowLock {
+  for i, ix in t.indexes {
+    if ix.primary {
+      return {
+        table: t.id,
+        index: i,
+        cols: ix.columns.map(c => c.0),
+        colls: index_colls(t, ix),
+      }
+    }
+  }
+  { table: t.id, index: -1, cols: [], colls: [None], }
+}
+
+///|
 /// The point lock resource identifying a row: its primary key, or its row id.
-fn row_resource(
-  t : @store.Table,
+fn RowLock::resource(
+  self : RowLock,
   rowid : Int64,
   row : Array[@types.Value],
 ) -> @sched.Resource[LockKey] {
-  for i, ix in t.indexes {
-    if ix.primary {
-      let key = {
-        values: ix.columns.map(c => row[c.0]),
-        colls: index_colls(t, ix),
-      }
-      return KeyRange(table=t.id, index=i, @sched.Interval::point(key))
-    }
+  let values = if self.index < 0 {
+    [@types.Value::BigInt(rowid)]
+  } else {
+    self.cols.map(c => row[c])
   }
-  KeyRange(
-    table=t.id,
-    index=-1,
-    @sched.Interval::point({ values: [BigInt(rowid)], colls: [None], }),
-  )
+  Key(table=self.table, index=self.index, { values, colls: self.colls, })
 }
 
 ///|
 /// X locks on rows a DML statement modifies (database tables only).
-fn Session::lock_rows(
+fn[R] Session::lock_rows(
   self : Session,
   target : Target,
-  rows : Array[(Int64, Array[@types.Value])],
+  rows : Array[R],
+  rowid : (R) -> Int64,
+  row : (R) -> Array[@types.Value],
 ) -> Unit raise {
   if !is_db_scope(target.scope) {
     return
   }
   self.check_snapshot_allowed()
+  let rl = row_lock(target.table)
   for r in rows {
-    self.acquire(row_resource(target.table, r.0, r.1), X, Transaction)
+    self.acquire(rl.resource(rowid(r), row(r)), X, Transaction)
   }
 }
 
@@ -319,8 +340,7 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
                   }
                   let res : @sched.Resource[LockKey] = match
                     self.pk_point(t, a, sel.where_) {
-                    Some((i, key)) =>
-                      KeyRange(table=t.id, index=i, @sched.Interval::point(key))
+                    Some((i, key)) => Key(table=t.id, index=i, key)
                     None => WholeTable(t.id)
                   }
                   self.acquire(res, mode, duration)

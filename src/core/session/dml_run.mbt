@@ -495,7 +495,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   self.cur_cmd = cmd
   let sent = self.output_header(outputs)
   let (rows, deferred) = self.dml_scan(src, n, where_, top)
-  self.lock_rows(target, rows.map(r => (r.0, r.1)))
+  self.lock_rows(target, rows, r => r.0, r => r.1)
   let db = self.db_of(target.scope)
   let pre = db
   let instead = self.instead_of_trigger(target, OnUpdate)
@@ -756,7 +756,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   self.cur_cmd = cmd
   let sent = self.output_header(outputs)
   let (rows, deferred) = self.dml_scan(src, t.columns.length(), where_, top)
-  self.lock_rows(target, rows.map(r => (r.0, r.1)))
+  self.lock_rows(target, rows, r => r.0, r => r.1)
   let mut db = self.db_of(target.scope)
   let pre = db
   let instead = self.instead_of_trigger(target, OnDelete)
@@ -1188,6 +1188,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     instead.is_empty() &&
     !t.foreign_keys.iter().any(fk => fk.ref_table == t.id) &&
     !t.indexes.iter().any(ix => ix.unique && ix.ignore_dup_key)
+  let row_lock = row_lock(t)
   for ri, src in source {
     self.rt.next_row()
     let row = Array::make(t.columns.length(), @types.Value::Null)
@@ -1275,7 +1276,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       if is_db_scope(target.scope) {
         // X on the new key: waits for another transaction's uncommitted
         // insert of the same key, or a range lock covering it
-        self.acquire(row_resource(t, rowid, row), X, Transaction)
+        self.acquire(row_lock.resource(rowid, row), X, Transaction)
       }
       if buffered && !pending.add(target, db, rowid, row) {
         db = pending.flush(db, t.id)
