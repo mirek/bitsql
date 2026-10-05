@@ -154,15 +154,31 @@ fn Session::db_of(self : Session, scope : Int) -> @store.Db {
 
 ///|
 /// Rows of a bound table source: scope 2 are the virtual catalog views.
+/// Table rows are materialized once per physical table data (immutable, so
+/// an identical `TableData` has identical rows) and shared by later scans;
+/// the executor never mutates the returned array.
 fn Session::source(
   self : Session,
   scope : Int,
   id : Int,
 ) -> Array[(Int64, Array[@types.Value])] {
   if scope == 2 {
-    self.sys_view_rows(id)
-  } else {
-    self.db_of(scope).rows(id)
+    return self.sys_view_rows(id)
+  }
+  let db = self.db_of(scope)
+  guard db.table_data(id) is Some(data) else { return db.rows(id) }
+  match self.scans.get((scope, id)) {
+    Some((seen, rows)) if physical_equal(seen, data) => rows
+    _ => {
+      let rows = db.rows(id)
+      // bounded: pooled sessions that create and drop many tables must not
+      // keep their old data alive
+      if self.scans.length() >= 32 {
+        self.scans.clear()
+      }
+      self.scans[(scope, id)] = (data, rows)
+      rows
+    }
   }
 }
 

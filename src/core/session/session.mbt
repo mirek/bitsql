@@ -387,6 +387,11 @@ pub struct Session {
   /// Data stamps for the executor's statement caches (`data_stamp`): the
   /// table data last seen per (scope, id) and its stamp.
   priv stamps : Map[(Int, Int), (@store.TableData, Int64)]
+  /// Materialized table rows per (scope, id) for `source` (scan cache).
+  priv scans : Map[
+    (Int, Int),
+    (@store.TableData, Array[(Int64, Array[@types.Value])]),
+  ]
   priv mut stamp_seq : Int64
   /// Foreign key lookup indexes of recent table states (fk_actions.mbt).
   priv fk_cache : Array[KeyCache]
@@ -523,6 +528,7 @@ pub fn Session::new(
     temp_db_refs: [],
     tvar_sites: Map([]),
     stamps: Map([]),
+    scans: Map([]),
     stamp_seq: 0L,
     fk_cache: [],
     view_tempdb: false,
