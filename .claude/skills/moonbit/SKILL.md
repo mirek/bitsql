@@ -258,9 +258,12 @@ scripts/check.sh                 # everything CI runs; must be green to push
   (`_M0FP45mirek6bitsql4core4exec3run...`), so stacks are readable without
   debug info.
 - 2026-10-05: profiling: `perf` (perf_event_paranoid=4) and valgrind are
-  unavailable and ptrace_scope=1, so gdb must be the parent. Run the server
-  as `gdb -batch -x script --args host.exe --listen 127.0.0.1:473xx` with
-  `handle SIGUSR2 stop print nopass` and a `while 1 / bt 40 / continue /
-  end` loop, send `kill -USR2 <pid>` every ~30 ms while a client repeats the
-  query, then count frames. SIGINT does not work: moonbitlang/async consumes
-  it and exits, and gdb's `noprint` implies `nostop`.
+  unavailable and ptrace_scope=1. Use `scripts/profile.sh '<shape regexp>'`
+  (or `SQL='...' scripts/profile.sh`): it LD_PRELOADs a SIGPROF/backtrace()
+  sampler (`scripts/profile/sampler.c`) into the release server, repeats the
+  bench shapes (`harness/bench/profile.mjs`) and prints self/inclusive time;
+  `--callers drop_object` attributes runtime frames to the first bitsql
+  caller. Finding from it: malloc + refcount drop/free are ~45% of executor
+  CPU (every payload `Value` constructor, tuple, row copy and `{..ctx}` is a
+  heap object released recursively), so per-row allocations are the first
+  thing to remove.
