@@ -245,6 +245,14 @@ equivalence tests and before/after timings are in `performance.md`.
   README refreshed; raw timings retained. Registry destination approval is
   still pending.
 
+- [~] 0.1.12 prepared: integer IN/NOT IN hash membership with unchanged
+  conversion-aware fallback, NULL semantics, and memo invalidation. Executor
+  equivalence tests pass; isolated repeated IN time improves about 27%, NOT IN
+  about 11–16%. Exact amd64 release gate: 274 MoonBit tests, 20702 client
+  passes, 3 skips; arm64 571/571. Container IN 3.11 vs 4.88 ms, NOT IN 2.39
+  vs 3.12 ms, 24 shapes 247 vs 669 ms. README refreshed; publication pending
+  registry authorization (`performance.md`).
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no

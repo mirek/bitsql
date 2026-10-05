@@ -291,3 +291,56 @@ measurements use a different sampling method from the 0.1.10 table, so the
 interleaved native runs above are the before/after evidence. Both database
 containers ran sequentially after all builds and validation processes ended.
 Images remain local while publication authorization is pending.
+
+## Integer IN membership (2026-10-06, 0.1.12, publication pending)
+
+The IN profile attributed about 31% of sampled execution time to
+`Members::contains`. Memoized all-integer subquery sets now also build an
+IntTable. Integer probes use it; all other probes retain the existing sorted
+values and conversion-aware binary search. Sorting, NULL handling, memo
+invalidation, and warning/row-counter replay are unchanged. This applies to
+IN/NOT IN, unlike 0.1.10's separate EXCEPT/INTERSECT RowSet specialization.
+
+The new white-box test compares the fast path with binary search for empty
+sets, duplicates, mixed integer constructors, Int64 limits, 3000 values,
+NULL-present/absent sets, noninteger probes, and errors (15/15 executor tests).
+Two sequential interleaved release-binary runs, 20k rows, 120 repetitions:
+
+| Shape | 0.1.11 mean runs | Candidate mean runs | 0.1.11 minimum runs | Candidate minimum runs |
+| --- | --- | --- | --- | --- |
+| IN | 4.41 / 4.34 ms | 3.16 / 3.20 ms | 4.19 / 4.15 ms | 3.01 / 3.01 ms |
+| NOT IN | 2.80 / 2.79 ms | 2.36 / 2.49 ms | 2.73 / 2.71 ms | 2.30 / 2.30 ms |
+
+No builds, tests, or other benchmarks ran concurrently. The exact amd64
+release binary passed the full gate: 274 MoonBit tests, 20702 client/corpus
+passes, 3 skips, no failures. Arm64 smoke passed 571/571.
+
+The separate uncorrelated scalar-subquery profile still attributes about
+30% of inclusive samples to `Session::data_stamp` (table/database lookups
+on every outer row). Reducing that cost must preserve detection of table
+changes, rollback, session-variable changes, and subquery warning replay;
+this membership change deliberately leaves those validity checks intact.
+
+Read-only follow-up: `scope_key` already caches a lowercase database key,
+but `db_of` passes it through `Server::get_db`, lowercasing it again on each
+stamp probe. A canonical-key lookup is a small next candidate. A stamp cache
+could also key on resolved immutable Db identity plus scope/table id, but it
+must still resolve `db_of` every time: transaction views, rollback, USE,
+temp/table-variable scopes and restored copies can change the resolved Db.
+A one-entry cache would miss alternating dependencies in the scalar-subquery
+benchmark. Existing variable checks and warning/row-sequence replay must stay.
+These are investigation findings, not implemented or measured optimizations.
+
+The exact 0.1.12 amd64 container measured IN at 3.11 ms versus SQL Server's
+4.88 ms and NOT IN at 2.39 versus 3.12 ms; the 24 shape medians totalled
+247 versus 669 ms. The raw 240 samples reproduce all 48 reported medians.
+The first comparison attempt failed before measurement on a transient port
+47340 bind conflict; the successful retry ran after confirming the port was
+free and no competing benchmark process was active.
+
+The separate 1000-point-select container workload measured 187 versus
+159 ms. A follow-up of two interleaved native runs per binary, ten batches
+of 1000 reads each, found baseline wall medians 106.20/109.42 ms and candidate
+105.90/106.80 ms; server CPU medians 37.26/36.34 versus 35.50/35.31 ms.
+This does not confirm a persistent regression. The README retains the actual
+container result. Publication remains pending destination authorization.

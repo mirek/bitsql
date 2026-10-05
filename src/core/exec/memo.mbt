@@ -52,6 +52,7 @@ priv struct Members {
   collation : @types.Collation?
   values : Array[@types.Value]
   has_null : Bool
+  integers : IntTable?
 }
 
 ///|
@@ -474,9 +475,30 @@ fn SubqueryMemo::members(
   if failed {
     return None
   }
-  let m = { collation, values, has_null, }
+  let m = Members::new(values, has_null, collation)
   self.members = Some(m)
   Some(m)
+}
+
+///|
+/// Keep the sorted values for probes requiring conversion-aware comparison.
+fn Members::new(
+  values : Array[@types.Value],
+  has_null : Bool,
+  collation : @types.Collation?,
+) -> Members {
+  let integers = if values
+    .iter()
+    .all(v => v is (TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
+    let table = IntTable::new(values.length())
+    for v in values {
+      table.set(v.int64_or(0L), 0)
+    }
+    Some(table)
+  } else {
+    None
+  }
+  { collation, values, has_null, integers, }
 }
 
 ///|
@@ -487,6 +509,13 @@ fn Members::contains(
   self : Members,
   va : @types.Value,
 ) -> Bool? raise @types.SqlError {
+  if self.integers is Some(table) &&
+    va is (TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_)) {
+    if table.get(va.int64_or(0L)) >= 0 {
+      return Some(true)
+    }
+    return if self.has_null { None } else { Some(false) }
+  }
   let mut lo = 0
   let mut hi = self.values.length()
   while lo < hi {
