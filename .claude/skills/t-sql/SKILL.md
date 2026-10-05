@@ -1561,3 +1561,13 @@ and `XACT_STATE()` advertises nullable smallint width.
   missing table (deferred name resolution skips only that statement).
   `DECLARE @n nvarchar(10) = @variant` is a batch-level 257. Run-time
   errors (8134, 245) still come after earlier results.
+
+- 2026-10-05 (compat report 0.1.3 #4): `WITH … SELECT @v = … FROM cte` is
+  ordinary T-SQL (one or more CTEs, recursive, in triggers). `SELECT @v = …
+  FOR JSON|XML` is compile error 6819 state 3 "The FOR XML clause is not
+  allowed in a ASSIGNMENT statement." for both (whole batch, reported on
+  the WITH line). `WITH r AS (…) SELECT 7` / `SELECT @k = 7` (no FROM,
+  WHERE, TOP, DISTINCT, ORDER BY, subquery, aggregate) is 422 state 4
+  "Common table expression defined but not used." for the whole batch, on
+  the SELECT's line; an unused CTE next to a FROM, WHERE 1 = 1, a
+  subquery or COUNT(*) is fine (`session/precheck.mbt select_shape_error`).

@@ -123,6 +123,16 @@ test "SELECT INTO and SELECT @v = ... FROM" {
 }
 
 ///|
+test "SELECT @v = ... FROM a CTE" {
+  let s = query_session()
+  let r = s.run_batch(
+    "DECLARE @n int = 0, @last int; WITH a AS (SELECT n FROM gb WHERE n IS NOT NULL), b AS (SELECT n FROM a) SELECT @n = COUNT(*) FROM b; WITH c AS (SELECT n FROM gb WHERE n IS NOT NULL) SELECT @last = n FROM c ORDER BY n DESC; SELECT @n AS n, @last AS last",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(3), Int(5)]])
+}
+
+///|
 test "FOR JSON splits text into 2033-character rows" {
   let s = query_session()
   let r = s.run_batch(

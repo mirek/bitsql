@@ -2255,10 +2255,15 @@ pub fn bind_assignment_select(
   guard q.body is Select(s) else {
     raise @types.not_supported("assignment SELECT with set operations")
   }
-  if q.for_clause is Some(_) || !q.ctes.is_empty() {
-    raise @types.not_supported("assignment SELECT with WITH/FOR")
+  // captured (query/cte-assignment-select): FOR XML / FOR JSON on an
+  // assignment SELECT is 6819 (the message names FOR XML for both); the
+  // batch precheck raises it first, this covers other entry points
+  if q.for_clause is Some(_) {
+    raise for_assignment_error()
   }
   let env = { ..env, maxrecursion: max_recursion(q.options, env.maxrecursion), }
+  // CTEs bind like any other query's (they are inlined at reference sites)
+  let env = with_ctes(env, q.ctes)
   let targets : Array[(Int, @types.SqlType)] = []
   if s.top is Some(_) && (q.offset is Some(_) || q.fetch is Some(_)) {
     raise err(
@@ -2277,6 +2282,17 @@ pub fn bind_assignment_select(
     assign=Some(targets),
   )
   (bq, targets)
+}
+
+///|
+/// `SELECT @v = ... FOR XML/JSON`: compile error 6819 state 3 (captured:
+/// query/cte-assignment-select; FOR JSON reports "FOR XML" too).
+pub fn for_assignment_error() -> @types.SqlError {
+  err(
+    6819,
+    "The FOR XML clause is not allowed in a ASSIGNMENT statement.",
+    state=3,
+  )
 }
 
 ///|

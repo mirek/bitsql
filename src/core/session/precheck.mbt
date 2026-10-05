@@ -206,6 +206,18 @@ fn precheck_batch(
       }
       Select(q) => {
         query_vars(q, x => expr(x, line), n => check_name(n, line))
+        if failure is None {
+          // 422 is reported on the SELECT's line, 6819 on the WITH's
+          failure = match select_shape_error(q) {
+            Some((e, true)) =>
+              match q.body {
+                Select(sel) => Some((e, sel.span.line))
+                _ => Some((e, line))
+              }
+            Some((e, false)) => Some((e, line))
+            None => None
+          }
+        }
         // captured: an undeclared table variable in FROM is 1087 state 2
         // for the whole batch, and at CREATE PROCEDURE (msduck-runs
         // table-variable #014, #038)
@@ -871,4 +883,71 @@ fn computed_constraint_error(
     }
   }
   None
+}
+
+///|
+/// Whole-batch errors from a SELECT's shape (captured:
+/// query/cte-assignment-select, query/unused-cte):
+/// - an assignment SELECT with FOR XML / FOR JSON is 6819;
+/// - a WITH whose SELECT is a bare constant projection (no FROM, WHERE,
+///   GROUP BY, HAVING, TOP, DISTINCT, ORDER BY, subquery or aggregate) is
+///   422: SQL Server never references the CTE. Calls other than the
+///   simplest forms are left alone (only constants, variables, operators
+///   and CASE/CAST were captured), so the check stays narrow.
+/// The flag says the error is reported on the SELECT's own line.
+fn select_shape_error(q : @ast.Query) -> (@types.SqlError, Bool)? {
+  guard q.body is Select(sel) else { return None }
+  let assigns = sel.items.iter().any(i => i.kind is Assign(_, _, _))
+  if assigns && q.for_clause is Some(_) {
+    return Some((@bind.for_assignment_error(), false))
+  }
+  if q.ctes.is_empty() ||
+    !sel.from.is_empty() ||
+    sel.where_ is Some(_) ||
+    !sel.group_by.is_empty() ||
+    sel.having is Some(_) ||
+    sel.top is Some(_) ||
+    sel.distinct ||
+    !q.order_by.is_empty() ||
+    q.offset is Some(_) ||
+    q.for_clause is Some(_) {
+    return None
+  }
+  let mut simple = true
+  for i in sel.items {
+    let e = match i.kind {
+      ExprItem(e, ..) | Assign(_, _, e) => e
+      Star(_) => {
+        simple = false
+        break
+      }
+    }
+    walk_expr(e, x => {
+      match x.kind {
+        Subquery(_)
+        | Exists(_)
+        | InQuery(_, _, ..)
+        | Quantified(_, _, _, _)
+        | Call(_)
+        | MethodCall(_, _, _)
+        | NextValueFor(_, _)
+        | Parse(_, _, ..)
+        | Column(_) => simple = false
+        _ => ()
+      }
+    })
+  }
+  if !simple {
+    return None
+  }
+  Some(
+    (
+      @types.sql_error(
+        422,
+        "Common table expression defined but not used.",
+        state=4,
+      ),
+      true,
+    ),
+  )
 }
