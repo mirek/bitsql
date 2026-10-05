@@ -7,6 +7,8 @@ readme = "README.md"
 
 repository = "https://github.com/mirek/bitsql"
 
+license = "CC0-1.0"
+
 keywords = [ "sql", "tsql", "mssql", "tds", "emulator" ]
 
 description = "Memory-only SQL Server emulator speaking TDS, written in MoonBit"

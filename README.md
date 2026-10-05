@@ -183,3 +183,7 @@ The multi-arch release is built and pushed with
 
 - Design: [docs/design/](docs/design/README.md)
 - Contributing and agent guide: [CLAUDE.md](CLAUDE.md)
+
+## License
+
+Public domain, [CC0 1.0](LICENSE.md); see [AUTHORS.md](AUTHORS.md).
