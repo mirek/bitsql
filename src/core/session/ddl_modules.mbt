@@ -400,6 +400,22 @@ fn Session::exec_create_trigger(
     _ => ()
   }
   if tr.timing is InsteadOf {
+    // captured (triggers/instead-of-cascade-ddl): foreign keys whose
+    // action would delete / update this table's rows, enabled or not
+    let cascading = t.foreign_keys
+      .iter()
+      .any(f => {
+        let (del, upd) = cascade_events(f.on_delete, f.on_update)
+        (del && tr.events.contains(OnDelete)) ||
+        (upd && tr.events.contains(OnUpdate))
+      })
+    if cascading {
+      self.cur_cmd = 221
+      raise @types.sql_error(
+        2113,
+        "Cannot create INSTEAD OF DELETE or INSTEAD OF UPDATE TRIGGER '\{object_text(tr.name)}' on table '\{object_text(tr.table)}'. This is  because the table has a FOREIGN KEY with cascading DELETE or UPDATE.",
+      )
+    }
     for ev in tr.events {
       let other = db
         .modules()

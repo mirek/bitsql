@@ -294,16 +294,18 @@ fn Session::cascade_actions(
   db0 : @store.Db,
   changes : Array[RowChange],
   verb : String,
-) -> @store.Db raise {
+) -> (@store.Db, Array[CascadeNode]) raise {
   let mut db = db0
-  let queue : Array[(Int, Array[RowChange])] = [(root, changes)]
+  // (table, its changed rows, its node in `nodes`; -1 for the statement)
+  let queue : Array[(Int, Array[RowChange], Int)] = [(root, changes, -1)]
+  let nodes : Array[CascadeNode] = []
   // NO ACTION keys removed by cascaded changes: (fk, child id, key)
   let no_action : Array[(@store.ForeignKey, Int, Array[@types.Value])] = []
   // rows given SET DEFAULT values: (fk, child id, rowid)
   let defaults : Array[(@store.ForeignKey, Int, Int64)] = []
   let mut qi = 0
   while qi < queue.length() {
-    let (tid, chs) = queue[qi]
+    let (tid, chs, node) = queue[qi]
     qi += 1
     guard db.table(tid) is Some(parent) else { continue }
     for child in db.tables() {
@@ -333,19 +335,31 @@ fn Session::cascade_actions(
         if moves.is_empty() {
           continue
         }
-        let deleting = moves[0].1 is None
-        let action = if deleting { f.on_delete } else { f.on_update }
-        if action is NoAction {
-          if qi > 1 {
-            for m in moves {
+        // a MERGE removes some keys and changes others: each move takes
+        // the action of its own kind
+        let action_of = (m : (Array[@types.Value], Array[@types.Value]?)) => {
+          if m.1 is None {
+            f.on_delete
+          } else {
+            f.on_update
+          }
+        }
+        if qi > 1 {
+          for m in moves {
+            if action_of(m) is NoAction {
               no_action.push((f, child.id, m.0))
             }
           }
+        }
+        let moves = moves.filter(m => !(action_of(m) is NoAction))
+        if moves.is_empty() {
           continue
         }
         // child rows matching a removed key, from the state before this
         // foreign key's action (a key swap must not apply twice)
         let child_changes : Array[RowChange] = []
+        // rows given SET DEFAULT values (checked against the parent later)
+        let set_default : Set[Int64] = Set([])
         let move_index = KeyIndex::new(
           moves.map(m => m.0),
           f.ref_columns.map(c => parent.columns[c].ty.collation()),
@@ -358,6 +372,7 @@ fn Session::cascade_actions(
               moves.search_by(m => fk_keys_equal(parent, f.ref_columns, m.0, ck))
           }
           guard hit is Some(mi) else { continue }
+          let action = action_of(moves[mi])
           let new_row : Array[@types.Value]? = match (action, moves[mi].1) {
             (Cascade, None) => None
             (Cascade, Some(nk)) => {
@@ -388,22 +403,16 @@ fn Session::cascade_actions(
               Some(r)
             }
           }
+          if action is SetDefault {
+            set_default.add(kv.0)
+          }
           child_changes.push((kv.0, kv.1, new_row))
         }
         if child_changes.is_empty() {
           continue
         }
         let target = table_target(scope, child, child.name.to_lower())
-        let ev : @ast.DmlEvent = if child_changes[0].2 is None {
-          OnDelete
-        } else {
-          OnUpdate
-        }
-        if !self.table_triggers(target, ev).is_empty() {
-          raise @types.not_supported(
-            "triggers on a table changed by a cascading referential action",
-          )
-        }
+        self.check_cascade_triggers(target, f, child_changes, verb)
         let applied : Array[RowChange] = []
         db = db.delete_rows(child.id, child_changes.map(ch => ch.0))
         for ch in child_changes {
@@ -421,13 +430,20 @@ fn Session::cascade_actions(
               self.check_row(target, db, r, verb, touched=f.columns, fks=false)
               db = insert_checked(target, db, ch.0, r)
               applied.push((ch.0, ch.1, Some(r)))
-              if action is SetDefault {
+              if set_default.contains(ch.0) {
                 defaults.push((f, child.id, ch.0))
               }
             }
           }
         }
-        queue.push((child.id, applied))
+        queue.push((child.id, applied, nodes.length()))
+        nodes.push({
+          table: child.id,
+          fk: f.id,
+          parent: node,
+          changes: applied,
+          updated: f.columns,
+        })
       }
     }
   }
@@ -452,7 +468,7 @@ fn Session::cascade_actions(
       raise self.fk_parent_error(scope, verb, f, child)
     }
   }
-  db
+  (db, nodes)
 }
 
 ///|
