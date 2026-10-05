@@ -206,7 +206,7 @@ fn Session::alter_add(
     self.add_table_constraint(b, db, k, with_check)
   }
   for ix in body.indexes {
-    raise @types.not_supported("ALTER TABLE ADD INDEX (\{ix.0.name})")
+    raise @types.not_supported("ALTER TABLE ADD INDEX (\{ix.name.name})")
   }
   let nt = {
     ..self.finish(b, t.name),
@@ -910,27 +910,16 @@ fn Session::filter_terms(
 }
 
 ///|
-fn Session::exec_create_index(
-  self : Session,
-  ci : @ast.CreateIndex,
-) -> Unit raise {
-  if ci.columnstore {
-    raise @types.not_supported("columnstore indexes")
-  }
-  let (scope, t) = match self.find_table(ci.table) {
-    Some(x) => x
-    None =>
-      raise @types.sql_error(
-        1088,
-        "Cannot find the object \"\{object_text(ci.table)}\" because it does not exist or you do not have permissions.",
-        state=12,
-      )
-  }
-  // WITH options (captured: msduck gaps-keys diagnostics-14..17)
+/// FILLFACTOR, IGNORE_DUP_KEY and DROP_EXISTING of CREATE INDEX or an
+/// inline INDEX `WITH (...)` (captured: msduck gaps-keys diagnostics-14..17).
+fn index_with_options(
+  options : Array[@ast.OptionKV],
+  unique : Bool,
+) -> (Int, Bool, Bool) raise @types.SqlError {
   let mut fill_factor = 0
   let mut ignore_dup_key = false
   let mut drop_existing = false
-  for o in ci.options {
+  for o in options {
     let name = o.name.to_upper()
     if !index_options.contains(name) {
       raise @types.sql_error(
@@ -957,13 +946,78 @@ fn Session::exec_create_index(
       _ => ()
     }
   }
-  if ignore_dup_key && !ci.unique {
+  if ignore_dup_key && !unique {
     raise @types.sql_error(
       1916,
       "CREATE INDEX options nonunique and ignore_dup_key are mutually exclusive.",
       state=4,
     )
   }
+  (fill_factor, ignore_dup_key, drop_existing)
+}
+
+///|
+/// Filter text, IS NOT NULL columns and other conjuncts of a filtered
+/// index (CREATE INDEX or inline INDEX ... WHERE).
+fn Session::index_filter(
+  self : Session,
+  where_ : @ast.Expr?,
+  t : @store.Table,
+  unique : Bool,
+) -> (String?, Array[Int], Array[@store.FilterTerm]) raise {
+  match where_ {
+    Some(w) => {
+      for n in expr_column_names(w) {
+        if t.column_index(n) is None {
+          raise @types.sql_error(207, "Invalid column name '\{n}'.")
+        }
+      }
+      let terms : Array[@store.FilterTerm] = []
+      if self.filter_terms(w, t, terms) {
+        // IS NOT NULL conjuncts are recorded as FIsNull(-1 - ordinal)
+        let nn = []
+        let rest = []
+        for x in terms {
+          match x {
+            FIsNull(i) if i < 0 => nn.push(-1 - i)
+            other => rest.push(other)
+          }
+        }
+        (Some(self.slice(w.span)), nn, rest)
+      } else if unique {
+        raise @types.not_supported(
+          "filtered UNIQUE index with a filter other than AND of column comparisons",
+        )
+      } else {
+        // non-unique: kept as text; the index holds every row
+        (Some(self.slice(w.span)), [], [])
+      }
+    }
+    None => (None, [], [])
+  }
+}
+
+///|
+fn Session::exec_create_index(
+  self : Session,
+  ci : @ast.CreateIndex,
+) -> Unit raise {
+  if ci.columnstore {
+    raise @types.not_supported("columnstore indexes")
+  }
+  let (scope, t) = match self.find_table(ci.table) {
+    Some(x) => x
+    None =>
+      raise @types.sql_error(
+        1088,
+        "Cannot find the object \"\{object_text(ci.table)}\" because it does not exist or you do not have permissions.",
+        state=12,
+      )
+  }
+  let (fill_factor, ignore_dup_key, drop_existing) = index_with_options(
+    ci.options,
+    ci.unique,
+  )
   let existing = t.indexes.search_by(ix => {
     ix.name.to_lower() == ci.name.name.to_lower()
   })
@@ -1063,36 +1117,7 @@ fn Session::exec_create_index(
       state=3,
     )
   }
-  let (filter, nn, terms) = match ci.where_ {
-    Some(w) => {
-      for n in expr_column_names(w) {
-        if t.column_index(n) is None {
-          raise @types.sql_error(207, "Invalid column name '\{n}'.")
-        }
-      }
-      let terms : Array[@store.FilterTerm] = []
-      if self.filter_terms(w, t, terms) {
-        // IS NOT NULL conjuncts are recorded as FIsNull(-1 - ordinal)
-        let nn = []
-        let rest = []
-        for x in terms {
-          match x {
-            FIsNull(i) if i < 0 => nn.push(-1 - i)
-            other => rest.push(other)
-          }
-        }
-        (Some(self.slice(w.span)), nn, rest)
-      } else if ci.unique {
-        raise @types.not_supported(
-          "filtered UNIQUE index with a filter other than AND of column comparisons",
-        )
-      } else {
-        // non-unique: kept as text; the index holds every row
-        (Some(self.slice(w.span)), [], [])
-      }
-    }
-    None => (None, [], [])
-  }
+  let (filter, nn, terms) = self.index_filter(ci.where_, t, ci.unique)
   let ix : @store.Index = {
     index_id: match existing {
       Some(k) => t.indexes[k].index_id

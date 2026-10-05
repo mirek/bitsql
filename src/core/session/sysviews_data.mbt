@@ -1103,18 +1103,6 @@ let view_defs : Array[ViewDef] = [
   },
   {
     schema: "sys",
-    name: "extended_properties",
-    columns: [
-      vc("class", TinyInt, false, false),
-      vc("class_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("major_id", Int, false, false),
-      vc("minor_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("value", Variant, true, false),
-    ],
-  },
-  {
-    schema: "sys",
     name: "synonyms",
     columns: [
       vc("name", NVarChar(Some(128), coll_default), false, false),
@@ -1527,6 +1515,49 @@ let view_defs : Array[ViewDef] = [
       vc("redo_target_lsn", Numeric(25, 0), true, true),
       vc("redo_target_fork_guid", UniqueIdentifier, true, false),
       vc("backup_lsn", Numeric(25, 0), true, true),
+    ],
+  },
+  {
+    schema: "sys",
+    name: "extended_properties",
+    columns: [
+      vc("class", TinyInt, false, false),
+      vc("class_desc", NVarChar(Some(60), coll_ks_ws), true, false),
+      vc("major_id", Int, false, false),
+      vc("minor_id", Int, false, false),
+      vc("name", NVarChar(Some(128), coll_default), false, false),
+      vc("value", Variant, true, false),
+    ],
+  },
+  {
+    schema: "sys",
+    name: "partitions",
+    columns: [
+      vc("partition_id", BigInt, false, false),
+      vc("object_id", Int, false, false),
+      vc("index_id", Int, false, false),
+      vc("partition_number", Int, false, false),
+      vc("hobt_id", BigInt, false, false),
+      vc("rows", BigInt, true, false),
+      vc("filestream_filegroup_id", SmallInt, false, false),
+      vc("data_compression", TinyInt, false, false),
+      vc("data_compression_desc", NVarChar(Some(60), coll_ks_ws), true, false),
+      vc("xml_compression", Bit, true, false),
+      vc("xml_compression_desc", VarChar(Some(3), coll_default), true, false),
+    ],
+  },
+  {
+    schema: "sys",
+    name: "allocation_units",
+    columns: [
+      vc("allocation_unit_id", BigInt, false, false),
+      vc("type", TinyInt, false, false),
+      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
+      vc("container_id", BigInt, false, false),
+      vc("data_space_id", Int, true, true),
+      vc("total_pages", BigInt, false, true),
+      vc("used_pages", BigInt, false, true),
+      vc("data_pages", BigInt, false, true),
     ],
   },
   {

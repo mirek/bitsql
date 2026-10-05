@@ -935,3 +935,29 @@ short-cut. Two behavior-adjacent consequences:
 - Named built-ins implemented only by the executor no longer consult the
   session's function chain first; `session/named_pure_wbtest.mbt` fails if
   the chain ever starts answering one of them.
+
+## 2026-10-05: storage catalogs model page counts
+
+`sys.partitions` and `sys.allocation_units` exist (a compatibility report:
+an application's storage-size query, `SUM(used_pages) * 8192` joined on
+`container_id`, failed with 50100). Row counts, ids and which allocation
+units exist follow captures (catalog/storage-catalogs). Page counts are
+physical in SQL Server and cannot be captured in general, so bitsql models
+them from the row format (`session/sysviews_storage.mbt`: record header,
+fixed and variable sections, slot array, 8096-byte pages, B-tree upper
+levels, IAM page, whole extents for total_pages). The model is exact for an
+empty table and a one-page table (the shapes tests assert, e.g. 16384 used
+bytes before and 0 after TRUNCATE) and an estimate beyond; total_pages of a
+growing table is the least faithful (SQL Server preallocates extents).
+This is a deliberate approximation of a physical quantity, not of
+semantics: no query result other than page counts depends on it. Ids are
+`72057594037927936 + (object_id << 16) + index_id` (allocation units add
+`type << 52`), stable per object and index. System tables have no rows.
+
+Also in this change: inline `INDEX` in CREATE TABLE was parsed and its
+UNIQUE / CLUSTERED silently dropped (a duplicate key was accepted) and
+INCLUDE / WHERE rejected; it now builds the same index as CREATE INDEX
+(catalog/inline-index-options), and a trailing comma closes a CREATE TABLE
+element list (catalog/create-table-trailing-comma). The `sys.extended_properties`
+descriptor, hand-added earlier, now comes from a capture
+(catalog/view-descriptors-storage).

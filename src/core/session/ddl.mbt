@@ -144,6 +144,13 @@ priv struct Builder {
   /// this statement (a computed column using one of them is 1759, also
   /// itself or one declared later).
   computed_names : Map[String, String]
+  /// CREATE TABLE has an inline `INDEX ... CLUSTERED`: a PRIMARY KEY without
+  /// CLUSTERED becomes nonclustered, one with CLUSTERED is 8112 (captured:
+  /// catalog/inline-index-options).
+  mut inline_clustered : Bool
+  /// The table name as written in CREATE TABLE, schema included (8112
+  /// with an inline clustered INDEX names it so).
+  stmt_name : String
 }
 
 ///|
@@ -170,6 +177,8 @@ fn Builder::of_table(
     names: Set([]),
     creating: false,
     base_indexes: t.indexes.length(),
+    inline_clustered: false,
+    stmt_name: written,
     ahead: [],
     computed_names: Map([]),
   }
@@ -241,6 +250,8 @@ fn Session::prepare_ahead(
     names: Set([]),
     creating: b.creating,
     base_indexes: b.base_indexes,
+    inline_clustered: b.inline_clustered,
+    stmt_name: b.stmt_name,
     ahead: [],
     computed_names: Map([]),
   }
@@ -826,10 +837,13 @@ fn Session::add_key(
     Some(true) => {
       // two clustered constraints in one statement (captured: msduck
       // gaps-keys clustered-conflicts-6)
-      if b.indexes[b.base_indexes:].iter().any(i => i.clustered) {
+      // the table as written with an inline clustered INDEX (captured:
+      // catalog/inline-index-options)
+      if b.inline_clustered ||
+        b.indexes[b.base_indexes:].iter().any(i => i.clustered) {
         raise @types.sql_error(
           8112,
-          "Cannot add more than one clustered index for constraints on table '\{b.display}'.",
+          "Cannot add more than one clustered index for constraints on table '\{if b.inline_clustered { b.stmt_name } else { b.display }}'.",
           state=0,
         )
       }
@@ -845,7 +859,7 @@ fn Session::add_key(
       true
     }
     Some(false) => false
-    None => primary && !has_clustered
+    None => primary && !has_clustered && !b.inline_clustered
   }
   let seen : Array[Int] = []
   for c in cols {
@@ -1283,6 +1297,7 @@ fn Session::table_from_body(
   db : @store.Db,
   scope : Int,
   as_written? : String? = None,
+  stmt_name? : String? = None,
 ) -> @store.Table raise {
   let b : Builder = {
     id,
@@ -1304,9 +1319,23 @@ fn Session::table_from_body(
     names: Set([]),
     creating: true,
     base_indexes: 0,
+    inline_clustered: false,
+    stmt_name: stmt_name.unwrap_or(as_written.unwrap_or(name)),
     ahead: [],
     computed_names: Map([]),
   }
+  let inline_clustered = body.indexes
+    .iter()
+    .filter(ix => ix.clustered is Some(true))
+    .count()
+  if inline_clustered > 1 {
+    raise @types.sql_error(
+      8112,
+      "Cannot add more than one clustered index for constraints on table '\{b.stmt_name}'.",
+      state=0,
+    )
+  }
+  b.inline_clustered = inline_clustered == 1
   let pk_cols : Set[String] = Set([])
   // PK columns are implicitly NOT NULL.
   for c in body.columns {
@@ -1346,36 +1375,49 @@ fn Session::table_from_body(
   for k in body.constraints {
     self.add_table_constraint(b, db, k, true)
   }
-  for ix in body.indexes {
-    let cols = []
-    for ic in ix.1 {
-      let i = b.col_index(ic.name.name)
-      if i < 0 {
-        raise @types.sql_error(
-          1911,
-          "Column name '\{ic.name.name}' does not exist in the target table or view.",
-        )
+  if body.indexes.length() > 0 {
+    let table = self.finish(b, name)
+    for ix in body.indexes {
+      let col = (n : @ast.Ident) => {
+        let i = b.col_index(n.name)
+        if i < 0 {
+          raise @types.sql_error(
+            1911,
+            "Column name '\{n.name}' does not exist in the target table or view.",
+          )
+        }
+        i
       }
-      cols.push((i, ic.desc))
+      let cols = ix.columns.map(ic => (col(ic.name), ic.desc))
+      let included = ix.included.map(col)
+      let (fill_factor, ignore_dup_key, _) = index_with_options(
+        ix.options,
+        ix.unique,
+      )
+      let (filter, not_null_filter, filter_terms) = self.index_filter(
+        ix.where_,
+        table,
+        ix.unique,
+      )
+      b.indexes.push({
+        index_id: next_index_id(b.indexes),
+        object_id: 0,
+        name: ix.name.name,
+        auto_named: false,
+        unique: ix.unique,
+        primary: false,
+        clustered: ix.clustered is Some(true),
+        columns: cols,
+        included,
+        filter,
+        not_null_filter,
+        filter_terms,
+        fill_factor,
+        ignore_dup_key,
+        is_constraint: false,
+        disabled: false,
+      })
     }
-    b.indexes.push({
-      index_id: next_index_id(b.indexes),
-      object_id: 0,
-      name: ix.0.name,
-      auto_named: false,
-      unique: false,
-      primary: false,
-      clustered: false,
-      columns: cols,
-      included: [],
-      filter: None,
-      not_null_filter: [],
-      filter_terms: [],
-      fill_factor: 0,
-      ignore_dup_key: false,
-      is_constraint: false,
-      disabled: false,
-    })
   }
   renumber_indexes(b, body)
   self.finish(b, name)
@@ -1401,7 +1443,7 @@ fn renumber_indexes(b : Builder, body : @ast.TableBody) -> Unit {
     }
   }
   for ix in body.indexes {
-    starts.push(ix.0.span.start)
+    starts.push(ix.name.span.start)
   }
   if starts.length() != b.indexes.length() {
     return
@@ -1447,7 +1489,15 @@ fn Session::exec_create_table(
     )
   }
   let id = self.server.object_id()
-  let t = self.table_from_body(id, schema, base, ct.body, db, scope)
+  let t = self.table_from_body(
+    id,
+    schema,
+    base,
+    ct.body,
+    db,
+    scope,
+    stmt_name=Some(object_text(ct.name)),
+  )
   self.write(scope, db.create_table(t))
   self.rt.rowcount = 0
   self.done(198)

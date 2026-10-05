@@ -289,8 +289,31 @@ fn W::table_body(self : W, b : TableBody) -> Unit {
     self.table_constraint(k)
   }
   for ix in b.indexes {
-    self.s(" (index " + ident_text(ix.0) + " ")
-    self.index_cols(ix.1)
+    self.s(" (index " + ident_text(ix.name) + " ")
+    if ix.unique {
+      self.s("unique ")
+    }
+    match ix.clustered {
+      Some(true) => self.s("clustered ")
+      Some(false) => self.s("nonclustered ")
+      None => ()
+    }
+    self.index_cols(ix.columns)
+    if ix.included.length() > 0 {
+      self.s(" (include")
+      for c in ix.included {
+        self.s(" " + ident_text(c))
+      }
+      self.close()
+    }
+    match ix.where_ {
+      Some(w) => {
+        self.s(" (where ")
+        self.expr(w)
+        self.close()
+      }
+      None => ()
+    }
     self.close()
   }
 }

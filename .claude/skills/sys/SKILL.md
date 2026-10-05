@@ -34,6 +34,19 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-05 (catalog/storage-catalogs, view-descriptors-storage):
+  sys.partitions has one row per heap (index_id 0) or index, except a
+  disabled nonclustered index (no row); `partition_id = hobt_id`; `rows` is
+  the index's own row count (a filtered index counts matching rows).
+  sys.allocation_units: IN_ROW_DATA (type 1, container = hobt_id) always;
+  LOB_DATA (2, container = partition_id) when the heap/clustered table has a
+  LOB column (an NC index only if it INCLUDEs one); ROW_OVERFLOW_DATA (3)
+  when the largest possible in-row record exceeds 8060 bytes (two
+  varchar(8000)), with 0 pages until something overflows. Empty table: 0/0/0
+  pages; one small data page: total 9, used 2 (data + IAM), data 1, which
+  bitsql reproduces; larger page counts are a row-format model
+  (`session/sysviews_storage.mbt`, decisions.md). System tables have no rows
+  in bitsql's views (SQL Server lists ~200 partitions in a fresh database).
 - 2026-10-03 (sys.time_zone_info, corpus `timezone/`): columns `name
   nvarchar(128)`, `current_utc_offset nvarchar(6)`, `is_currently_dst bit`,
   all NOT NULL, database default collation; 141 rows in a fixed catalog order

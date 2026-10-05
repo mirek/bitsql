@@ -20,6 +20,17 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-05 (corpus `catalog/create-table-trailing-comma`,
+  `catalog/inline-index-options`, `traps/duplicate-key-session-tables`):
+  CREATE TABLE (also `#t`) accepts one trailing comma after the last column,
+  constraint or INDEX; `,,`, a leading comma, `DECLARE @t TABLE(a int,)`,
+  `CREATE TYPE … AS TABLE(a int,)`, TVF `RETURNS @r TABLE(a int,)` and
+  `ALTER TABLE … ADD x int,` are all 102. Inline `INDEX ix [UNIQUE]
+  [CLUSTERED] (cols) [INCLUDE] [WHERE] [WITH]` behaves like CREATE INDEX; an
+  inline CLUSTERED index makes a PRIMARY KEY without CLUSTERED nonclustered
+  (index_id 2), with PK CLUSTERED or two inline CLUSTERED it is 8112 state 0
+  naming the table as written (`'dbo.a4'`). 2627/2601 on a temp table or
+  table variable name the object `dbo.#t` / `dbo.@t`.
 - 2026-10-05 (long literals, corpus `compat/long-literal-unify`): a string
   literal is nvarchar(max) above 4000 characters (`N''`), varchar(max) above
   8000 bytes, and a binary literal varbinary(max) above 8000 bytes; at the

@@ -36,7 +36,7 @@ test "create table with constraints" {
       ),
     ),
     content=(
-      #|(create-table [dbo].[orders] (column [id] BIGINT not-null (identity -1 -1)) (column [guid] UNIQUEIDENTIFIER not-null rowguidcol (constraint [df_guid] (default (paren (call NEWSEQUENTIALID))))) (column [total] DECIMAL(18,2) not-null (constraint df_total (default (paren (paren 0))))) (column [note] NVARCHAR(max) (collate Latin1_General_100_CS_AI) null) (column [ver] ROWVERSION) (constraint [pk_orders] (primary-key clustered ([id]) (with PAD_INDEX=OFF FILLFACTOR=90))) (constraint fk_o_c (foreign-key (cid cx) (references dbo.c (id x) (on-delete set-null) (on-update no-action)))) (constraint ck (check (>= [total] 0))) (index ix_total ((desc total))) (on [PRIMARY]))
+      #|(create-table [dbo].[orders] (column [id] BIGINT not-null (identity -1 -1)) (column [guid] UNIQUEIDENTIFIER not-null rowguidcol (constraint [df_guid] (default (paren (call NEWSEQUENTIALID))))) (column [total] DECIMAL(18,2) not-null (constraint df_total (default (paren (paren 0))))) (column [note] NVARCHAR(max) (collate Latin1_General_100_CS_AI) null) (column [ver] ROWVERSION) (constraint [pk_orders] (primary-key clustered ([id]) (with PAD_INDEX=OFF FILLFACTOR=90))) (constraint fk_o_c (foreign-key (cid cx) (references dbo.c (id x) (on-delete set-null) (on-update no-action)))) (constraint ck (check (>= [total] 0))) (index ix_total nonclustered ((desc total))) (on [PRIMARY]))
     ),
   )
   inspect(
@@ -75,7 +75,7 @@ test "create table with constraints" {
   inspect(
     sx("CREATE TABLE t (a INT,)"),
     content=(
-      #|Msg 102, Level 15, State 1, Line 1: Incorrect syntax near ')'.
+      #|(create-table t (column a INT))
     ),
   )
 }
@@ -583,6 +583,39 @@ test "schema type sequence permissions" {
     sx("GRANT CREATE TABLE, ALTER ANY SCHEMA TO dev"),
     content=(
       #|(grant 'CREATE TABLE' 'ALTER ANY SCHEMA' (to dev))
+    ),
+  )
+}
+
+///|
+test "CREATE TABLE trailing comma (captured: catalog/create-table-trailing-comma)" {
+  inspect(
+    sx("CREATE TABLE dbo.foo(id int,)"),
+    content=(
+      #|(create-table dbo.foo (column id int))
+    ),
+  )
+  inspect(
+    sx("CREATE TABLE t(id int, CONSTRAINT pk PRIMARY KEY (id),)"),
+    content=(
+      #|(create-table t (column id int) (constraint pk (primary-key (id))))
+    ),
+  )
+  inspect(error_numbers("CREATE TABLE t(id int,,)"), content="102")
+  inspect(error_numbers("CREATE TABLE t(,id int)"), content="102")
+  inspect(error_numbers("DECLARE @t TABLE(id int,)"), content="102")
+  inspect(error_numbers("CREATE TYPE dbo.tt AS TABLE(id int,)"), content="102")
+  inspect(error_numbers("ALTER TABLE t ADD x int,"), content="102")
+}
+
+///|
+test "inline INDEX options (captured: catalog/inline-index-options)" {
+  inspect(
+    sx(
+      "CREATE TABLE t(id int, w int, INDEX ix UNIQUE CLUSTERED (id) INCLUDE (w) WHERE w > 0 WITH (FILLFACTOR = 80) ON [PRIMARY])",
+    ),
+    content=(
+      #|(create-table t (column id int) (column w int) (index ix unique clustered (id) (include w) (where (> w 0))))
     ),
   )
 }

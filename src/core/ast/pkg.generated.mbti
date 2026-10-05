@@ -398,6 +398,16 @@ pub(all) struct IndexColumn {
   desc : Bool
 } derive(Eq, @debug.Debug)
 
+pub(all) struct InlineIndex {
+  name : Ident
+  unique : Bool
+  clustered : Bool?
+  columns : Array[IndexColumn]
+  included : Array[Ident]
+  where_ : Expr?
+  options : Array[OptionKV]
+} derive(Eq, @debug.Debug)
+
 pub(all) struct Insert {
   ctes : Array[Cte]
   top : Top?
@@ -701,7 +711,7 @@ pub(all) enum StmtKind {
 pub(all) struct TableBody {
   columns : Array[ColumnDef]
   constraints : Array[TableConstraint]
-  indexes : Array[(Ident, Array[IndexColumn])]
+  indexes : Array[InlineIndex]
 } derive(Eq, @debug.Debug)
 
 pub(all) struct TableConstraint {

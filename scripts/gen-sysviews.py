@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')

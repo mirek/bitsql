@@ -764,6 +764,8 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           )
         }
       }
+    "sys.partitions" => partition_rows(db, out)
+    "sys.allocation_units" => allocation_unit_rows(db, out)
     "sys.index_columns" =>
       for t in tables {
         for ix in t.indexes {

@@ -237,10 +237,14 @@ fn Parser::at_constraint_start(self : Parser) -> Bool {
 
 ///|
 /// Column or table-level element list inside `( ... )` (or bare, for ALTER
-/// TABLE ADD), appended to `body`.
+/// TABLE ADD), appended to `body`. `trailing_comma`: one `,` may end the
+/// list, as CREATE TABLE allows (captured: catalog/create-table-trailing-comma;
+/// table variables, table types, TVF return tables and ALTER TABLE ADD do
+/// not).
 fn Parser::table_elements(
   self : Parser,
   body : @ast.TableBody,
+  trailing_comma? : Bool = false,
 ) -> Unit raise @ast.SyntaxError {
   while true {
     if self.at_constraint_start() {
@@ -248,25 +252,43 @@ fn Parser::table_elements(
     } else if self.is_kw("INDEX") {
       self.pos += 1
       let name = self.ident()
-      ignore(self.eat_kw("UNIQUE"))
-      ignore(self.clustered())
-      let cols = self.index_columns()
-      ignore(self.with_options())
-      body.indexes.push((name, cols))
+      let unique = self.eat_kw("UNIQUE")
+      let clustered = self.clustered()
+      let columns = self.index_columns()
+      let included = if self.eat_kw("INCLUDE") {
+        self.paren_idents()
+      } else {
+        []
+      }
+      let where_ = if self.eat_kw("WHERE") { Some(self.cond()) } else { None }
+      let options = self.with_options()
+      ignore(self.on_filegroup())
+      body.indexes.push({
+        name,
+        unique,
+        clustered,
+        columns,
+        included,
+        where_,
+        options,
+      })
     } else {
       body.columns.push(self.column_def(body.constraints))
     }
-    if !self.eat_punct(",") {
+    if !self.eat_punct(",") || (trailing_comma && self.is_punct(")")) {
       break
     }
   }
 }
 
 ///|
-fn Parser::table_body(self : Parser) -> @ast.TableBody raise @ast.SyntaxError {
+fn Parser::table_body(
+  self : Parser,
+  trailing_comma? : Bool = false,
+) -> @ast.TableBody raise @ast.SyntaxError {
   self.expect_punct("(")
   let body : @ast.TableBody = { columns: [], constraints: [], indexes: [], }
-  self.table_elements(body)
+  self.table_elements(body, trailing_comma~)
   self.expect_punct(")")
   body
 }
@@ -499,7 +521,7 @@ fn Parser::create_table(
   self : Parser,
 ) -> @ast.CreateTable raise @ast.SyntaxError {
   let name = self.object_name()
-  let body = self.table_body()
+  let body = self.table_body(trailing_comma=true)
   let mut on_filegroup = self.on_filegroup()
   if self.eat_kw("TEXTIMAGE_ON") {
     ignore(self.any_ident())

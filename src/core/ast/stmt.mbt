@@ -388,8 +388,21 @@ pub(all) struct TableConstraint {
 pub(all) struct TableBody {
   columns : Array[ColumnDef]
   constraints : Array[TableConstraint]
-  /// Inline `INDEX ix (cols)` definitions (parse only).
-  indexes : Array[(Ident, Array[IndexColumn])]
+  /// Inline `INDEX ix [UNIQUE] [CLUSTERED] (cols) ...` definitions.
+  indexes : Array[InlineIndex]
+} derive(Eq, Debug)
+
+///|
+/// `INDEX name [UNIQUE] [CLUSTERED | NONCLUSTERED] (cols) [INCLUDE (cols)]
+/// [WHERE filter] [WITH (options)]` inside CREATE TABLE.
+pub(all) struct InlineIndex {
+  name : Ident
+  unique : Bool
+  clustered : Bool?
+  columns : Array[IndexColumn]
+  included : Array[Ident]
+  where_ : Expr?
+  options : Array[OptionKV]
 } derive(Eq, Debug)
 
 ///|

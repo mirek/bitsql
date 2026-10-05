@@ -521,17 +521,24 @@ fn duplicate_key(
   let vals = ix.columns
     .map(c => key_text(row[c.0], t.columns[c.0].ty))
     .join(", ")
+  // temp tables (scope 1) and table variables (3) are 'dbo.#t' / 'dbo.@t'
+  // (captured: catalog/inline-index-options, traps/duplicate-key-session-tables)
+  let object = if target.scope is (1 | 3) {
+    t.schema + "." + target.display
+  } else {
+    target.display
+  }
   if ix.is_constraint {
     let kind = if ix.primary { "PRIMARY KEY" } else { "UNIQUE KEY" }
     @types.sql_error(
       2627,
-      "Violation of \{kind} constraint '\{ix.name}'. Cannot insert duplicate key in object '\{target.display}'. The duplicate key value is (\{vals}).",
+      "Violation of \{kind} constraint '\{ix.name}'. Cannot insert duplicate key in object '\{object}'. The duplicate key value is (\{vals}).",
       severity=14,
     )
   } else {
     @types.sql_error(
       2601,
-      "Cannot insert duplicate key row in object '\{target.display}' with unique index '\{ix.name}'. The duplicate key value is (\{vals}).",
+      "Cannot insert duplicate key row in object '\{object}' with unique index '\{ix.name}'. The duplicate key value is (\{vals}).",
       severity=14,
     )
   }
