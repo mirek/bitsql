@@ -7,8 +7,10 @@ fn run_window(
   calls : Array[@ir.WindowCall],
 ) -> Array[Row] raise @types.SqlError {
   let out = rows.map(r => r.copy())
+  let orders : Array[Array[Int]] = []
   for call in calls {
-    let values = window_values(ctx, rows, call)
+    let (values, order) = window_values_ordered(ctx, rows, call)
+    orders.push(order)
     for i, v in values {
       out[i].push(v)
     }
@@ -18,30 +20,39 @@ fn run_window(
   // SELECT a, ROW_NUMBER() OVER(ORDER BY a) without ORDER BY returns a in
   // order; order-token-expanded #032 ties keep that order). With several
   // window specifications the last one decides (unverified).
-  let mut last : @ir.WindowCall? = None
-  for call in calls {
+  let mut last : Int? = None
+  for i, call in calls {
     if !(call.func is (PercentileCont | PercentileDisc)) &&
       (!call.partition.is_empty() || !call.order.is_empty()) {
-      last = Some(call)
+      last = Some(i)
     }
   }
   match last {
-    Some(call) => {
-      let keys : Array[@ir.SortKey] = call.partition.mapi((i, p) => @ir.SortKey::{
-        expr: p,
-        desc: false,
-        collation: call.partition_collations[i],
-      })
-      for k in call.order {
-        keys.push(k)
-      }
-      let keyed = rows.mapi((i, r) => {
-        (keys.map(k => eval(ctx.with_row(r), k.expr)), i)
-      })
-      sort_keyed(keyed, keys).map(kv => out[kv.1])
-    }
+    // the call's own partition-then-order sort (window_values_ordered)
+    Some(i) => orders[i].map(j => out[j])
     None => out
   }
+}
+
+///|
+/// Whether two key rows agree on their first `n` columns (`same_row`).
+fn same_prefix(
+  a : Array[@types.Value],
+  b : Array[@types.Value],
+  n : Int,
+  collations : Array[@types.Collation?],
+) -> Bool raise @types.SqlError {
+  for i in 0..<n {
+    match (a[i], b[i]) {
+      (Null, Null) => continue
+      (Null, _) | (_, Null) => return false
+      (x, y) =>
+        if @types.compare(x, y, collation?=collations[i]) != Some(0) {
+          return false
+        }
+    }
+  }
+  true
 }
 
 ///|
@@ -50,6 +61,18 @@ fn window_values(
   rows : Array[Row],
   call : @ir.WindowCall,
 ) -> Array[@types.Value] raise @types.SqlError {
+  window_values_ordered(ctx, rows, call).0
+}
+
+///|
+/// Window values in input order, plus the input positions sorted by the
+/// call's PARTITION BY then ORDER BY keys (stable): run_window's output
+/// order when this call decides it.
+fn window_values_ordered(
+  ctx : Ctx,
+  rows : Array[Row],
+  call : @ir.WindowCall,
+) -> (Array[@types.Value], Array[Int]) raise @types.SqlError {
   let result = Array::make(rows.length(), @types.Value::Null)
   // the percentile is evaluated once per call, also for no rows (captured:
   // RAND() in it advances the generator once, msduck
@@ -59,35 +82,42 @@ fn window_values(
   } else {
     Null
   }
-  // partitions as lists of row indexes (in input order): sort by the
-  // partition key, then group runs of equal keys (same equality as
-  // same_row: collation-aware, NULLs equal); O(n log n)
-  let parts : Array[(Array[@types.Value], Array[Int])] = []
-  let pkeys : Array[@ir.SortKey] = call.partition.mapi((i, p) => @ir.SortKey::{
+  // one stable sort by PARTITION BY ++ ORDER BY keys: partitions are runs
+  // of equal partition keys (same equality as same_row: collation-aware,
+  // NULLs equal), each ordered by the ORDER BY keys with ties in input
+  // order; O(n log n)
+  let np = call.partition.length()
+  let all_keys : Array[@ir.SortKey] = call.partition.mapi((i, p) => @ir.SortKey::{
     expr: p,
     desc: false,
     collation: call.partition_collations[i],
   })
-  let keyed = rows.mapi((i, r) => {
-    (call.partition.map(p => eval(ctx.with_row(r), p)), i)
-  })
-  for kv in sort_keyed(keyed, pkeys) {
-    match parts.last() {
-      Some(last) if same_row(last.0, kv.0, call.partition_collations) =>
-        last.1.push(kv.1)
-      _ => parts.push((kv.0, [kv.1]))
+  for k in call.order {
+    all_keys.push(k)
+  }
+  let cs = all_keys.map(k => compile(k.expr))
+  let keyed = rows.mapi((i, r) => (cs.map(f => f(ctx, r)), i))
+  let sorted_all = sort_keyed(keyed, all_keys)
+  let parts : Array[(Int, Int)] = []
+  let mut start = 0
+  for j in 1..<=sorted_all.length() {
+    if j == sorted_all.length() ||
+      !same_prefix(
+        sorted_all[j - 1].0,
+        sorted_all[j].0,
+        np,
+        call.partition_collations,
+      ) {
+      if j > start {
+        parts.push((start, j))
+      }
+      start = j
     }
   }
   for p in parts {
-    p.1.sort()
-  }
-  for p in parts {
-    let keyed = p.1.map(i => {
-      (call.order.map(k => eval(ctx.with_row(rows[i]), k.expr)), i)
-    })
-    let sorted = sort_keyed(keyed, call.order)
-    let idx = sorted.map(kv => kv.1)
-    let keys = sorted.map(kv => kv.0)
+    let sorted = sorted_all[p.0:p.1]
+    let idx = sorted.iter().map(kv => kv.1).to_array()
+    let keys = sorted.iter().map(kv => kv.0[np:].to_owned()).to_array()
     let n = idx.length()
     // peer group boundaries [start, end) per position
     let peer_start = Array::make(n, 0)
@@ -118,7 +148,12 @@ fn window_values(
       if peer_start[j] == j {
         dense += 1
       }
-      let row_ctx = ctx.with_row(part_rows[j])
+      let row_ctx = if call.func
+        is (RowNumber | Rank | DenseRank | PercentRank | CumeDist) {
+        ctx
+      } else {
+        ctx.with_row(part_rows[j])
+      }
       let v : @types.Value = match call.func {
         RowNumber => BigInt((j + 1).to_int64())
         Rank => BigInt((peer_start[j] + 1).to_int64())
@@ -267,7 +302,7 @@ fn window_values(
       result[idx[j]] = v
     }
   }
-  result
+  (result, sorted_all.map(kv => kv.1))
 }
 
 ///|

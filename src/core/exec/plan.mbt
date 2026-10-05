@@ -201,6 +201,22 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         }
       }
     }
+    // TOP n ORDER BY: heap selection instead of a full sort (top_n.mbt)
+    Top(Sort(input, keys), count, percent~, ties=[]) => {
+      let rows = run(ctx, input)
+      let ansi = keys.map(ansi_key)
+      let cs = keys.map(k => compile(k.expr))
+      let prepared = rows.map(row => {
+        (order_keys(cs.map(f => f(ctx, row)), keys, ansi), row)
+      })
+      let n = top_count(ctx, count, percent, rows.length())
+      if n * 4 >= rows.length() {
+        sort_prepared(prepared, keys, ansi)
+        prepared[0:n].iter().map(p => p.1).to_array()
+      } else {
+        top_n_prepared(prepared, n, keys, ansi)
+      }
+    }
     Top(input, count, percent~, ties~) => {
       let rows = run(ctx, input)
       top_rows(ctx, rows, count, percent, ties)
@@ -276,6 +292,30 @@ fn top_rows(
   percent : Bool,
   ties : Array[@ir.SortKey],
 ) -> Array[Row] raise @types.SqlError {
+  let n = top_count(ctx, count, percent, rows.length())
+  let mut end = if n > rows.length() { rows.length() } else { n }
+  if !ties.is_empty() && end > 0 {
+    let last = ties.map(k => eval(ctx.with_row(rows[end - 1]), k.expr))
+    while end < rows.length() {
+      let next = ties.map(k => eval(ctx.with_row(rows[end]), k.expr))
+      if compare_keys(last, next, ties) != 0 {
+        break
+      }
+      end += 1
+    }
+  }
+  rows[0:end].to_owned()
+}
+
+///|
+/// The row count of `TOP count [PERCENT]` over `len` input rows, at most
+/// `len`, with the count's errors.
+fn top_count(
+  ctx : Ctx,
+  count : @ir.Expr,
+  percent : Bool,
+  len : Int,
+) -> Int raise @types.SqlError {
   // captured (tail/top-invalid): NULL is 1014, a negative count 127,
   // percent outside 0..100 1031, all class 15
   let invalid = () => {
@@ -297,15 +337,10 @@ fn top_rows(
         severity=15,
       )
     }
-    (p * rows.length().to_double() / 100.0).ceil().to_int()
+    (p * len.to_double() / 100.0).ceil().to_int()
   } else {
     match eval(ctx, count).as_int64() {
-      Some(c) if c >= 0L =>
-        if c > rows.length().to_int64() {
-          rows.length()
-        } else {
-          c.to_int()
-        }
+      Some(c) if c >= 0L => if c > len.to_int64() { len } else { c.to_int() }
       Some(_) =>
         raise @types.sql_error(
           127,
@@ -315,18 +350,11 @@ fn top_rows(
       None => raise invalid()
     }
   }
-  let mut end = if n > rows.length() { rows.length() } else { n }
-  if !ties.is_empty() && end > 0 {
-    let last = ties.map(k => eval(ctx.with_row(rows[end - 1]), k.expr))
-    while end < rows.length() {
-      let next = ties.map(k => eval(ctx.with_row(rows[end]), k.expr))
-      if compare_keys(last, next, ties) != 0 {
-        break
-      }
-      end += 1
-    }
+  if n > len {
+    len
+  } else {
+    n
   }
-  rows[0:end].to_owned()
 }
 
 ///|
@@ -468,26 +496,6 @@ fn compare_for_sort(
 /// default-collation table-ordering-weights).
 fn ansi_key(k : @ir.SortKey) -> Bool {
   k.expr.ty.family() is FString && !k.expr.ty.is_unicode()
-}
-
-///|
-/// DISTINCT / GROUP BY equality: NULLs are equal to each other.
-fn same_row(
-  a : Row,
-  b : Row,
-  collations : Array[@types.Collation?],
-) -> Bool raise @types.SqlError {
-  for i in 0..<a.length() {
-    match (a[i], b[i]) {
-      (Null, Null) => continue
-      (Null, _) | (_, Null) => return false
-      _ =>
-        if @types.compare(a[i], b[i], collation?=collations[i]) != Some(0) {
-          return false
-        }
-    }
-  }
-  true
 }
 
 ///|
