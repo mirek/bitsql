@@ -76,6 +76,7 @@ try {
     for (const [name, sql] of process.env.WORKLOAD === 'requests' ? [] : work) {
       await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
       let total = 0, min = Infinity
+      const cpu0 = cpuNs()
       for (let i = 0; i < reps; i++) {
         const t = performance.now()
         await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
@@ -83,7 +84,9 @@ try {
         total += ms; min = Math.min(min, ms)
       }
       // min is robust against load from other processes on a shared host
-      console.log(`${(total / reps).toFixed(2).padStart(8)} ms mean ${min.toFixed(2).padStart(8)} ms min  ${name}`)
+      // server CPU per query (exact, unlike the sampler's sample counts)
+      const cpu = cpu0 === null ? NaN : (cpuNs() - cpu0) / 1e6 / reps
+      console.log(`${(total / reps).toFixed(2).padStart(8)} ms mean ${min.toFixed(2).padStart(8)} ms min ${cpu.toFixed(2).padStart(8)} ms cpu  ${name}`)
     }
   } finally { await close(c) }
 } finally { await server.stop() }

@@ -52,7 +52,7 @@ def main():
         stacks = [fs for fs in stacks if any(a.focus in f for f in fs)]
         print(f'focus {a.focus}: {len(stacks)} of {total} samples')
     n = len(stacks)
-    print(f'{n} samples ({n / 2000:.2f} s CPU)')
+    print(f'{n} samples (proportions only: SIGPROF samples undercount CPU ~2x; bench/profile.mjs prints exact server CPU)')
     if a.callers:
         c = collections.Counter(); hits = 0
         for fs in stacks:
