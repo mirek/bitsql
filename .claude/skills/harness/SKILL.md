@@ -501,3 +501,12 @@ Start the host with `--database NAME` so the app's database exists at login
   moon.mod, so bump the version only after pushing, or pass `BITSQL_IMAGE`.
   Results are stable to a few percent between runs. SQL Server 2025 starts
   in ~2.6 s here once its image is cached.
+- 2026-10-05: **every release with material performance changes refreshes
+  the README benchmark tables** (knowledge-upkeep). Order: bump moon.mod and
+  `exec/version.mbt`, `scripts/docker-publish.sh` (local images + smoke),
+  `BITSQL_IMAGE=mirek/bitsql:X.Y.Z-amd64 npm run bench:compare`, paste the
+  tables and the version/date sentence into README, commit, then
+  `scripts/docker-publish.sh --push`. A local image has no download size
+  ("n/a"); fill it in from `docker manifest inspect --verbose` after the
+  push, or re-run `bench:compare` with the default tag. Pure bug-fix
+  releases keep the previous tables and their version label.
