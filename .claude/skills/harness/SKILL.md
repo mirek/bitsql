@@ -23,6 +23,7 @@ npm run oracle:stop                # remove the container
 npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
 npm run probe -- out/x.sql oracle  # run a scratch .sql case, print columns/rows/errors/tokens (no expectation)
 npm run bench [-- 20000 80000]     # release-build timings of grouping/subquery/DML shapes (BENCH_ONLY=regexp, BITSQL_BIN)
+npm run bench:compare              # mirek/bitsql:<moon.mod version> container vs mssql/server container (README tables; --only, --starts, --json, BITSQL_IMAGE)
 ```
 
 ## Rules
@@ -482,3 +483,14 @@ Start the host with `--database NAME` so the app's database exists at login
   dump-collation-weights.mjs` regenerates
   `src/core/types/collation_weights_data.mbt` (ignorable code units,
   accent ranks) from the oracle.
+- 2026-10-05: `npm run bench:compare` (harness/bench/compare.mjs) produces the
+  README benchmark tables. It runs containers `bitsql-bench-bitsql`
+  (47340) and `bitsql-bench-mssql` (47341), removes them at the end, and
+  shares its query shapes with `npm run bench` through `bench/shapes.mjs`.
+  Memory and CPU come from the container's cgroup v2 files
+  (`/sys/fs/cgroup/system.slice/docker-<id>.scope`, systemd driver).
+  Download size comes from `docker manifest inspect --verbose`, so it reads
+  "n/a" for a locally built `BITSQL_IMAGE`. The default image tag follows
+  moon.mod, so bump the version only after pushing, or pass `BITSQL_IMAGE`.
+  Results are stable to a few percent between runs. SQL Server 2025 starts
+  in ~2.6 s here once its image is cached.

@@ -202,6 +202,8 @@ Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
 - [x] `mirek/bitsql:0.1.2` (`0.1`, `latest`) pushed 2026-10-05, amd64 + arm64 (amd64 full suite 20685 pass; arm64 quick smoke 570/570)
 - [ ] Local `moon build` on arm64 hosts (Apple silicon, arm64 Linux) still lets the C compiler fuse multiply-add, so float results can differ from SQL Server; `cc-flags` in moon.pkg would fix it but replaces moon's default flags (drops -O2/debug flags)
 - [x] Public visibility on Docker Hub (anonymous manifest pull returns 200, checked 2026-10-05)
+- [x] Container benchmark vs real SQL Server (`npm run bench:compare`, numbers in README.md) 2026-10-05: 12.4 MiB download vs 605 MiB, cold start 116 ms vs 2.66 s, 4.5 MiB idle vs 1.17 GiB, login 2.3 vs 49 ms, schema drop/create 0.14 vs 6.9 ms, parameterized INSERT 5× faster
+- [ ] Executor speed vs SQL Server on set-heavy shapes at 20k rows (same benchmark): GROUP BY/DISTINCT/UNION/ORDER BY/ROW_NUMBER 3–9× slower, UPDATE all rows/UPDATE FROM 4–5× slower, accented-text ORDER BY 35× slower; parameterized point SELECT through sp_executesql 0.16 vs 0.15 ms
 
 ## Limiting factor
 
