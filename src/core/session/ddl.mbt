@@ -102,7 +102,8 @@ fn Session::constraint_error(
         | 1764
         | 1715
         | 1765
-        | 1785 => 1
+        | 1785
+        | 1787 => 1
         _ => 0
       }
   }
@@ -1113,6 +1114,34 @@ fn Session::foreign_key(
       (system_name("FK", b.display, Some(b.columns[cols[0]].name), id), true)
   }
   self.claim_name(b, db, fk_name)
+  // captured (triggers/instead-of-cascade-ddl): an action that would
+  // delete / update this table's rows conflicts with its INSTEAD OF DELETE /
+  // UPDATE triggers (enabled or not)
+  if b.scope == 0 {
+    let (del, upd) = cascade_events(on_delete, on_update)
+    let conflict = db
+      .modules()
+      .iter()
+      .any(m => {
+        m.kind is Trigger &&
+        m.parent == Some(b.id) &&
+        m.instead_of &&
+        (self.trigger_def(m).events
+        .iter()
+        .any(ev => (ev is OnDelete && del) || (ev is OnUpdate && upd)) catch {
+          _ => false
+        })
+      })
+    if conflict {
+      raise self.constraint_error(
+        @types.sql_error(
+          1787,
+          "Cannot define foreign key constraint '\{fk_name}' with cascaded DELETE or UPDATE on table '\{b.display}' because the table has an INSTEAD OF DELETE or UPDATE TRIGGER defined on it.",
+          state=0,
+        ),
+      )
+    }
+  }
   // cycles or multiple cascade paths (captured: msduck gaps-constraints
   // cascade-paths, referential-actions-19..22)
   if b.scope == 0 &&
@@ -1965,4 +1994,17 @@ fn computed_nullable(e : @ast.Expr, b : Builder) -> Bool {
 fn beyond_bigint(digits : String) -> Bool {
   let d = digits.trim_start(chars="0").to_owned()
   d.length() > 19 || (d.length() == 19 && d > "9223372036854775807")
+}
+
+///|
+/// Whether referential actions delete / update the referencing rows:
+/// (ON DELETE CASCADE, any other action).
+fn cascade_events(
+  on_delete : @store.RefAction,
+  on_update : @store.RefAction,
+) -> (Bool, Bool) {
+  (
+    on_delete is Cascade,
+    on_delete is (SetNull | SetDefault) || !(on_update is NoAction),
+  )
 }

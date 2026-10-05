@@ -546,8 +546,17 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   // first conflicting one are output
   let has_refs = fk_referencing(db, t.id)
   let changes : Array[RowChange] = images.map(im => (im.0, im.1, Some(im.2)))
+  let mut cascaded = []
   let fin = if has_refs {
-    self.cascade_actions(target.scope, t.id, applied, changes, "UPDATE")
+    let (fin, nodes) = self.cascade_actions(
+      target.scope,
+      t.id,
+      applied,
+      changes,
+      "UPDATE",
+    )
+    cascaded = nodes
+    fin
   } else {
     applied
   }
@@ -577,11 +586,20 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
       d = insert_checked(target, d, im.0, im.2)
     }
     if has_refs {
-      d = self.cascade_actions(target.scope, t.id, d, changes, "UPDATE")
+      let (fin, nodes) = self.cascade_actions(
+        target.scope,
+        t.id,
+        d,
+        changes,
+        "UPDATE",
+      )
+      d = fin
+      cascaded = nodes
     }
     d
   }
   self.write(target.scope, db)
+  self.fire_cascade_triggers(target.scope, cascaded, pre)
   self.fire_after(
     target,
     OnUpdate,
@@ -752,9 +770,18 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   // self-referencing DELETE of every row succeeds
   let has_refs = fk_referencing(db, t.id)
   let changes : Array[RowChange] = rows.map(r => (r.0, r.1, None))
+  let mut cascaded = []
   let fin = if has_refs {
     let fin = db.delete_rows(t.id, rows.map(r => r.0))
-    self.cascade_actions(target.scope, t.id, fin, changes, "DELETE")
+    let (fin, nodes) = self.cascade_actions(
+      target.scope,
+      t.id,
+      fin,
+      changes,
+      "DELETE",
+    )
+    cascaded = nodes
+    fin
   } else {
     db
   }
@@ -787,10 +814,19 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   } else {
     db = now.delete_rows(t.id, rows.map(r => r.0))
     if has_refs {
-      db = self.cascade_actions(target.scope, t.id, db, changes, "DELETE")
+      let (fin, nodes) = self.cascade_actions(
+        target.scope,
+        t.id,
+        db,
+        changes,
+        "DELETE",
+      )
+      db = fin
+      cascaded = nodes
     }
   }
   self.write(target.scope, db)
+  self.fire_cascade_triggers(target.scope, cascaded, pre)
   self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
   let count = rows.length().to_int64()
   self.rt.rowcount = count

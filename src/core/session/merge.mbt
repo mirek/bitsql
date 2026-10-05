@@ -646,6 +646,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       _ => sequential(start)
     }
   }
+  let mut cascaded = []
   if fk_referencing(db, t.id) {
     let changes : Array[RowChange] = final_ops.filter_map(o => {
       match o {
@@ -654,10 +655,19 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
         MInsert(_, _) => None
       }
     })
-    db = self.cascade_actions(target.scope, t.id, db, changes, "MERGE")
+    let (fin, nodes) = self.cascade_actions(
+      target.scope,
+      t.id,
+      db,
+      changes,
+      "MERGE",
+    )
+    db = fin
+    cascaded = nodes
     self.check_references(target, db, removed, removed_new, "MERGE")
   }
   self.write(target.scope, db)
+  self.fire_cascade_triggers(target.scope, cascaded, pre)
   // AFTER triggers fire per action clause present, even for zero rows, in
   // the order INSERT, UPDATE, DELETE (captured: triggers/merge-after)
   if has_insert {

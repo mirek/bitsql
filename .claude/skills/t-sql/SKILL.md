@@ -590,6 +590,16 @@ mention the correction here.
   foreign keys neither act nor check. UPDATE checks only CHECK/FOREIGN KEY
   constraints over the columns it sets (computed columns over them
   included), so a NOCHECK-violating row stays updatable elsewhere.
+- 2026-10-05 (triggers and referential actions, corpus `triggers/cascade-*`,
+  `instead-of-cascade-ddl`): child tables changed by CASCADE / SET NULL /
+  SET DEFAULT fire their AFTER triggers after all cascades, before the
+  statement's triggers, deepest first (reverse preorder, siblings by FK
+  object_id); only tables with cascaded rows fire; UPDATE then DELETE
+  triggers for a MERGE child, both with @@ROWCOUNT = all its cascaded rows.
+  INSTEAD OF DELETE conflicts with ON DELETE CASCADE, INSTEAD OF UPDATE with
+  any other action (ON DELETE SET NULL/DEFAULT, any ON UPDATE action),
+  disabled FKs included: 2113 (state 1, "This is  because" with two spaces)
+  at CREATE TRIGGER, 1787 + 1750 state 1 at ALTER TABLE ADD (ends the batch).
 - 2026-10-04 (constraint definitions): 1785 (cycles or multiple cascade
   paths) is a table-level analysis: a DELETE reaches a child as a DELETE
   through ON DELETE CASCADE and as an UPDATE through ON DELETE SET
