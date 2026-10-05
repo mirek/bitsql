@@ -199,8 +199,9 @@ Sequelize 67/67, TypeORM 44/46 (2 known), Prisma 40/40 steps match.
   - 2026-10-04: binary 11.3 MB (10.9 MB before TLS), image 35 MB, ~4.6 MiB RSS after TLS logins; distroless/cc already ships libssl3, which `moonbitlang/async/tls` dlopens
 - [x] `mirek/bitsql:0.1.0` (`0.1`, `latest`) pushed to Docker Hub 2026-10-04, amd64 only (with TLS)
 - [x] arm64: `mirek/bitsql:0.1.1` (`0.1`, `latest`) is a linux/amd64 + linux/arm64 manifest list, built by `scripts/docker-publish.sh` (cross gcc in a bookworm container; arm64 smoke-tested under qemu-user: by default a 37 s quick smoke of corpus/smoke + float, analytic and conversion cases; `FULL_ARM64_SMOKE=1` for the whole suite, about 1 h; C built with `-ffp-contract=off`) 2026-10-04
+- [x] `mirek/bitsql:0.1.2` (`0.1`, `latest`) pushed 2026-10-05, amd64 + arm64 (amd64 full suite 20685 pass; arm64 quick smoke 570/570)
 - [ ] Local `moon build` on arm64 hosts (Apple silicon, arm64 Linux) still lets the C compiler fuse multiply-add, so float results can differ from SQL Server; `cc-flags` in moon.pkg would fix it but replaces moon's default flags (drops -O2/debug flags)
-- [ ] Public visibility on Docker Hub (first push created a private repo)
+- [x] Public visibility on Docker Hub (anonymous manifest pull returns 200, checked 2026-10-05)
 
 ## Limiting factor
 
