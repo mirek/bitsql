@@ -503,8 +503,69 @@ pub fn Db::delete_row(self : Db, id : Int, rowid : Int64) -> Db {
 }
 
 ///|
+/// Deletes several rows: the same result as `delete_row` for each, but a
+/// large share of the table is removed by rebuilding the row and index
+/// maps once (O(n)) instead of n path copies.
+pub fn Db::delete_rows(self : Db, id : Int, rowids : Array[Int64]) -> Db {
+  guard self.data.get(id) is Some(d) && self.tables.get(id) is Some(t) else {
+    return self
+  }
+  if rowids.length() < 64 || rowids.length() * 8 < d.rows.size() {
+    let mut db = self
+    for r in rowids {
+      db = db.delete_row(id, r)
+    }
+    return db
+  }
+  let removed : Set[Int64] = Set::from_array(rowids)
+  // index entries map to their row id; disabled indexes are not
+  // maintained (as in `delete_row`)
+  let data : TableData = {
+    rows: d.rows.retain((k, _) => !removed.contains(k)),
+    indexes: d.indexes.mapi((i, ix) => {
+      if t.indexes[i].disabled {
+        ix
+      } else {
+        { map: ix.map.retain((_, r) => !removed.contains(r)), }
+      }
+    }),
+  }
+  { ..self, data: self.data.add(id, data), }
+}
+
+///|
 pub fn Db::update_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
   self.delete_row(id, rowid).insert_row(id, rowid, row)
+}
+
+///|
+/// Whether replacing `old` by `new` leaves every index of `t` as it is:
+/// same membership (filters) and identical key values. Disabled indexes
+/// are not maintained, so a table with one never qualifies.
+pub fn same_index_entries(t : Table, old : Row, new : Row) -> Bool {
+  for ix in t.indexes {
+    if ix.disabled {
+      return false
+    }
+    let covered = ix.covers(old)
+    if covered != ix.covers(new) {
+      return false
+    }
+    if covered && !ix.columns.iter().all(c => old[c.0] == new[c.0]) {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Replaces the row stored under `rowid` without touching the indexes:
+/// only valid when `same_index_entries` holds for the old and new row.
+pub fn Db::replace_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
+  guard self.data.get(id) is Some(d) && d.rows.contains(rowid) else {
+    return self
+  }
+  { ..self, data: self.data.add(id, { ..d, rows: d.rows.add(rowid, row), }), }
 }
 
 ///|

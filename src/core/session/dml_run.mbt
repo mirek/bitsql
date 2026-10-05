@@ -276,6 +276,43 @@ fn Session::dml_scan(
 }
 
 ///|
+/// The database after replacing the image rows (rowid, old, new) as one
+/// set: what deleting every old row and then `insert_checked` of every
+/// new row in order gives, and raising when that would. Rows whose index
+/// entries stay the same (`same_index_entries`) only replace their value;
+/// their keys already coexisted with every other row under each unique
+/// index, so whether some insert would conflict is unchanged. `deleted`
+/// rows are removed first as well. On an error `unique_failure` tells
+/// which row failed.
+fn apply_images(
+  target : Target,
+  db : @store.Db,
+  images : Array[(Int64, Array[@types.Value], Array[@types.Value])],
+  deleted? : Array[Int64] = [],
+) -> @store.Db raise {
+  let t = target.table
+  let keep = images.map(im => @store.same_index_entries(t, im.1, im.2))
+  let gone = deleted.copy()
+  for i, im in images {
+    if !keep[i] {
+      gone.push(im.0)
+    }
+  }
+  let mut d = db.delete_rows(t.id, gone)
+  for i, im in images {
+    if keep[i] {
+      d = d.replace_row(t.id, im.0, im.2)
+    }
+  }
+  for i, im in images {
+    if !keep[i] {
+      d = insert_checked(target, d, im.0, im.2)
+    }
+  }
+  d
+}
+
+///|
 /// Applies new row images with statement-level uniqueness. On a duplicate
 /// key, also returns how many rows SQL Server processed before failing:
 /// the first row whose new key collides when rows are applied one at a
@@ -495,26 +532,26 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     self.done(cmd, count=Some(count))
     return
   }
-  match unique_failure(target, db, images) {
-    Some((k, e)) => {
-      self.output_send(outputs, evaluated[0:k])
-      raise e
-    }
-    None => ()
+  let applied = apply_images(target, db, images) catch {
+    e =>
+      match unique_failure(target, db, images) {
+        Some((k, first)) => {
+          self.output_send(outputs, evaluated[0:k])
+          raise first
+        }
+        None => raise e
+      }
   }
   // foreign keys against the statement's final state: rows before the
   // first conflicting one are output
   let has_refs = fk_referencing(db, t.id)
   let changes : Array[RowChange] = images.map(im => (im.0, im.1, Some(im.2)))
+  let fin = if has_refs {
+    self.cascade_actions(target.scope, t.id, applied, changes, "UPDATE")
+  } else {
+    applied
+  }
   if has_refs {
-    let mut fin = db
-    for im in images {
-      fin = fin.delete_row(t.id, im.0)
-    }
-    for im in images {
-      fin = insert_checked(target, fin, im.0, im.2)
-    }
-    fin = self.cascade_actions(target.scope, t.id, fin, changes, "UPDATE")
     for k, im in images {
       let failed = try {
         self.check_self_references(target, fin, im.2, Some(touched), "UPDATE")
@@ -531,15 +568,18 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   self.output_finish(outputs, evaluated)
   // OUTPUT INTO may have written to the same database
-  let mut db = self.db_of(target.scope)
-  for im in images {
-    db = db.delete_row(t.id, im.0)
-  }
-  for im in images {
-    db = insert_checked(target, db, im.0, im.2)
-  }
-  if has_refs {
-    db = self.cascade_actions(target.scope, t.id, db, changes, "UPDATE")
+  let now = self.db_of(target.scope)
+  let db = if physical_equal(now, db) {
+    fin
+  } else {
+    let mut d = now.delete_rows(t.id, images.map(im => im.0))
+    for im in images {
+      d = insert_checked(target, d, im.0, im.2)
+    }
+    if has_refs {
+      d = self.cascade_actions(target.scope, t.id, d, changes, "UPDATE")
+    }
+    d
   }
   self.write(target.scope, db)
   self.fire_after(
@@ -713,10 +753,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   let has_refs = fk_referencing(db, t.id)
   let changes : Array[RowChange] = rows.map(r => (r.0, r.1, None))
   let fin = if has_refs {
-    let mut fin = db
-    for r in rows {
-      fin = fin.delete_row(t.id, r.0)
-    }
+    let fin = db.delete_rows(t.id, rows.map(r => r.0))
     self.cascade_actions(target.scope, t.id, fin, changes, "DELETE")
   } else {
     db
@@ -742,12 +779,16 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     }
   }
   self.output_finish(outputs, evaluated)
-  db = self.db_of(target.scope)
-  for r in rows {
-    db = db.delete_row(t.id, r.0)
-  }
-  if has_refs {
-    db = self.cascade_actions(target.scope, t.id, db, changes, "DELETE")
+  // OUTPUT INTO may have written to the same database; otherwise the
+  // checked final state is the result (cascades run once)
+  let now = self.db_of(target.scope)
+  if has_refs && physical_equal(now, db) {
+    db = fin
+  } else {
+    db = now.delete_rows(t.id, rows.map(r => r.0))
+    if has_refs {
+      db = self.cascade_actions(target.scope, t.id, db, changes, "DELETE")
+    }
   }
   self.write(target.scope, db)
   self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)

@@ -725,3 +725,43 @@ multi-line banner, and SERVERPROPERTY('ProductVersion') stays 17.0.5005, so
 clients that gate on the product version see no change (knex, Sequelize,
 TypeORM and Prisma ORM suites unchanged). Release images also carry the
 `org.opencontainers.image.version` / `revision` labels (since 0.1.2).
+
+## 2026-10-05: sort keys, hash grouping, set-at-once DML
+
+Profiled with gdb stack sampling (perf and valgrind are unavailable on the
+dev host; see the moonbit skill). A persistent red-black tree in place of
+`store/pmap.mbt` was considered and rejected: the map already is a
+persistent balanced (AVL) tree with the same bounds, and the time went
+elsewhere.
+
+- **Sort keys** (`types/sort_key.mbt`): every sort derives a `SortKey` per
+  value once (integers, date/datetime2 ticks, and linguistic strings as
+  their collation-element levels in one int sequence) instead of
+  re-deriving collation elements in each comparison. Pairs of other kinds
+  compare the original values with `compare`, so the order is `compare`'s
+  by construction; `sort_key_wbtest.mbt` checks every pair over special
+  units and nine collations. Binary collations (space padding is not a
+  prefix order) and SQL sort orders on varchar (NUL padding) get no text
+  key.
+- **Hash grouping**: GROUP BY / DISTINCT / UNION / COUNT(DISTINCT) hash
+  rows of exact keys when each column holds one key kind, keeping the
+  first-appearance numbering; other rows still sort.
+- **Stable merge sort** (`exec/stable_sort.mbt`) for ORDER BY, window and
+  ordered-aggregate sorts: `Array::sort_by` is an unstable quicksort that
+  fell back to heap sort on periodic keys. Ties now keep scan order (the
+  corpus has no case whose result changed).
+- **UPDATE / DELETE / MERGE apply their rows once**: the statement's final
+  state was computed two or three times (uniqueness check, FK check,
+  final write; cascades too, which also advanced the rowversion counter
+  twice). It is now reused unless OUTPUT INTO wrote in between. Rows
+  whose index entries do not change only replace their value
+  (`same_index_entries`), and large deletes rebuild the row and index
+  maps in O(n) (`Db::delete_rows`). Error paths still replay the original
+  row-by-row order, so the failing row and OUTPUT rows are unchanged.
+- **Compiling MERGE** (batch prebind, sp_prepare) no longer runs the
+  source query and matching before stopping at the OUTPUT header.
+
+20k-row shapes (`npm run bench`): ORDER BY accented text 115 → 28 ms,
+ORDER BY 25 → 11, GROUP BY / DISTINCT 29–31 → 16, UNION 54 → 21,
+ROW_NUMBER 52 → 27, UPDATE all rows 123 → 38, UPDATE FROM 125 → 41,
+cascade DELETE 136 → 76, MERGE 82 → 50.

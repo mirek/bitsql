@@ -349,20 +349,54 @@ fn[T] sort_keyed(
   keyed : Array[(Array[@types.Value], T)],
   keys : Array[@ir.SortKey],
 ) -> Array[(Array[@types.Value], T)] raise @types.SqlError {
+  let ansi = keys.map(ansi_key)
+  let prepared = keyed.map(kv => (order_keys(kv.0, keys, ansi), kv))
+  sort_prepared(prepared, keys, ansi)
+  prepared.map(p => p.1)
+}
+
+///|
+/// ORDER BY sort keys of one row's key values.
+fn order_keys(
+  values : Array[@types.Value],
+  keys : Array[@ir.SortKey],
+  ansi : Array[Bool],
+) -> Array[@types.SortKey] {
+  values.mapi((i, v) => {
+    @types.sort_key(v, collation?=keys[i].collation, ansi=ansi[i])
+  })
+}
+
+///|
+/// Sorts (order keys, item) pairs by ORDER BY `keys` in place.
+fn[T] sort_prepared(
+  prepared : Array[(Array[@types.SortKey], T)],
+  keys : Array[@ir.SortKey],
+  ansi : Array[Bool],
+) -> Unit raise @types.SqlError {
   let mut failure : @types.SqlError? = None
-  let out = keyed.copy()
-  out.sort_by((a, b) => {
-    compare_keys(a.0, b.0, keys) catch {
-      e => {
-        failure = Some(e)
-        0
+  stable_sort_by(prepared, (a, b) => {
+    for i, k in keys {
+      let c = @types.compare_sort_keys(
+        a.0[i],
+        b.0[i],
+        collation?=k.collation,
+        ansi=ansi[i],
+      ) catch {
+        e => {
+          failure = Some(e)
+          0
+        }
+      }
+      if c != 0 {
+        return if k.desc { -c } else { c }
       }
     }
+    0
   })
   if failure is Some(e) {
     raise e
   }
-  out
 }
 
 ///|

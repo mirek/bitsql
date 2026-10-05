@@ -11,6 +11,8 @@ pub fn key_comparator(Array[@types.SqlType], Array[Bool]) -> (Array[@types.Value
 
 pub fn qualified_key(String, String) -> String
 
+pub fn same_index_entries(Table, Array[@types.Value], Array[@types.Value]) -> Bool
+
 // Errors
 
 // Types and methods
@@ -51,6 +53,7 @@ pub fn Db::add_type(Self, UserType) -> Self
 pub fn Db::alter_table(Self, Table, convert? : (Array[@types.Value]) -> Array[@types.Value]) -> Self
 pub fn Db::create_table(Self, Table) -> Self
 pub fn Db::delete_row(Self, Int, Int64) -> Self
+pub fn Db::delete_rows(Self, Int, Array[Int64]) -> Self
 pub fn Db::drop_object(Self, Int) -> Self
 pub fn Db::drop_schema(Self, String) -> Self
 pub fn Db::drop_type(Self, Int) -> Self
@@ -67,6 +70,7 @@ pub fn Db::next_schema_id(Self) -> Int
 pub fn Db::next_type_id(Self) -> Int
 pub fn Db::rebase(Self, Self, Self) -> Self?
 pub fn Db::rename_module(Self, Module) -> Self
+pub fn Db::replace_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::replace_table(Self, Table, Array[(Int64, Array[@types.Value])]) -> Self
 pub fn Db::row(Self, Int, Int64) -> Array[@types.Value]?
 pub fn Db::row_count(Self, Int) -> Int
@@ -192,6 +196,7 @@ pub fn[K, V] PMap::add(Self[K, V], K, V) -> Self[K, V]
 pub fn[K, V] PMap::check_invariants(Self[K, V]) -> Bool
 pub fn[K, V] PMap::contains(Self[K, V], K) -> Bool
 pub fn[K, V] PMap::empty((K, K) -> Int) -> Self[K, V]
+pub fn[K, V] PMap::from_sorted(Array[(K, V)], (K, K) -> Int) -> Self[K, V]
 pub fn[K, V] PMap::get(Self[K, V], K) -> V?
 pub fn[K, V] PMap::is_empty(Self[K, V]) -> Bool
 pub fn[K, V] PMap::iter(Self[K, V]) -> Iter[(K, V)]
@@ -199,6 +204,7 @@ pub fn[K, V] PMap::max(Self[K, V]) -> (K, V)?
 pub fn[K, V] PMap::min(Self[K, V]) -> (K, V)?
 pub fn[K, V] PMap::range(Self[K, V], lo? : K, hi? : K, lo_incl? : Bool, hi_incl? : Bool) -> Iter[(K, V)]
 pub fn[K, V] PMap::remove(Self[K, V], K) -> Self[K, V]
+pub fn[K, V] PMap::retain(Self[K, V], (K, V) -> Bool) -> Self[K, V]
 pub fn[K, V] PMap::size(Self[K, V]) -> Int
 
 pub(all) enum RefAction {

@@ -252,3 +252,15 @@ scripts/check.sh                 # everything CI runs; must be green to push
   `-ffp-contract=off` there, the host link line lost `-O2` (and debug builds
   would lose theirs). Release-only flags go into `scripts/docker-publish.sh`,
   which replays moon's dry-run plan.
+- 2026-10-05: `Array::sort_by` is an unstable quicksort that falls back to
+  heap sort on bad pivots (periodic keys hit it); bitsql sorts rows with
+  `exec/stable_sort.mbt`. Native release binaries keep symbol names
+  (`_M0FP45mirek6bitsql4core4exec3run...`), so stacks are readable without
+  debug info.
+- 2026-10-05: profiling: `perf` (perf_event_paranoid=4) and valgrind are
+  unavailable and ptrace_scope=1, so gdb must be the parent. Run the server
+  as `gdb -batch -x script --args host.exe --listen 127.0.0.1:473xx` with
+  `handle SIGUSR2 stop print nopass` and a `while 1 / bt 40 / continue /
+  end` loop, send `kill -USR2 <pid>` every ~30 ms while a client repeats the
+  query, then count frames. SIGINT does not work: moonbitlang/async consumes
+  it and exits, and gdb's `noprint` implies `nostop`.

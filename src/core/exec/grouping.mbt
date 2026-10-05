@@ -1,27 +1,38 @@
 // Sort-based grouping for GROUP BY, DISTINCT, UNION/EXCEPT/INTERSECT and
 // DISTINCT aggregate inputs. Equality is `same_row`'s (collation-aware,
-// NULLs equal to each other); `compare_rows` is the total order whose ties
+// NULLs equal to each other); `compare_key_rows` is the total order whose ties
 // are exactly that equality, so equal rows sort into adjacent runs. Results
 // keep the order of first appearance the linear-search versions produced.
 
 ///|
-/// Order of rows under DISTINCT / GROUP BY equality: column by column, NULL
-/// before any value, values by `@types.compare` under the column's
-/// collation. `compare_rows(a, b, cs) == 0` exactly when `same_row(a, b, cs)`.
-fn compare_rows(
-  a : Row,
-  b : Row,
+/// Sort keys of a row's values under its columns' collations, for the
+/// order of rows under DISTINCT / GROUP BY equality (`compare_key_rows`).
+fn key_row(
+  row : Row,
   collations : Array[@types.Collation?],
-  ansi? : Bool = false,
+  ansi : Bool,
+) -> Array[@types.SortKey] {
+  row.mapi((i, v) => @types.sort_key(v, collation?=collations[i], ansi~))
+}
+
+///|
+/// Order of rows under DISTINCT / GROUP BY equality, on rows of `key_row`
+/// keys made with the same arguments: column by column, NULL before any
+/// value, values by `@types.compare` under the column's collation. 0
+/// exactly when `same_row` holds for the rows.
+fn compare_key_rows(
+  a : Array[@types.SortKey],
+  b : Array[@types.SortKey],
+  collations : Array[@types.Collation?],
+  ansi : Bool,
 ) -> Int raise @types.SqlError {
   for i in 0..<a.length() {
-    let c = match (a[i], b[i]) {
-      (Null, Null) => 0
-      (Null, _) => -1
-      (_, Null) => 1
-      _ =>
-        @types.compare(a[i], b[i], collation?=collations[i], ansi~).unwrap_or(0)
-    }
+    let c = @types.compare_sort_keys(
+      a[i],
+      b[i],
+      collation?=collations[i],
+      ansi~,
+    )
     if c != 0 {
       return c
     }
@@ -30,16 +41,28 @@ fn compare_rows(
 }
 
 ///|
-/// Positions 0..<n sorted by `compare_rows` on their rows, ties by position.
-fn sorted_positions(
-  keys : Array[Row],
+/// Positions 0..<n sorted by `compare_key_rows` on their rows, ties by
+/// position, with each row's sort keys (indexed by position).
+fn sorted_key_positions(
+  rows : Array[Row],
   collations : Array[@types.Collation?],
-  ansi? : Bool = false,
+  ansi : Bool,
+) -> (Array[Int], Array[Array[@types.SortKey]]) raise @types.SqlError {
+  let keys = rows.map(r => key_row(r, collations, ansi))
+  (sort_key_rows(keys, collations, ansi), keys)
+}
+
+///|
+/// Positions of key rows sorted by `compare_key_rows`, ties by position.
+fn sort_key_rows(
+  keys : Array[Array[@types.SortKey]],
+  collations : Array[@types.Collation?],
+  ansi : Bool,
 ) -> Array[Int] raise @types.SqlError {
   let order = Array::makei(keys.length(), i => i)
   let mut failure : @types.SqlError? = None
-  order.sort_by((x, y) => {
-    let c = compare_rows(keys[x], keys[y], collations, ansi~) catch {
+  stable_sort_by(order, (x, y) => {
+    let c = compare_key_rows(keys[x], keys[y], collations, ansi) catch {
       e => {
         failure = Some(e)
         0
@@ -58,23 +81,61 @@ fn sorted_positions(
 }
 
 ///|
+/// Whether every column of the key rows holds one exact key kind (NULLs
+/// aside), so `Eq` / `Hash` on key rows is `compare_key_rows(..) == 0`
+/// and no comparison could raise.
+fn hashable_key_rows(keys : Array[Array[@types.SortKey]]) -> Bool {
+  guard keys.length() > 0 else { return false }
+  let width = keys[0].length()
+  for c in 0..<width {
+    let mut kind = 0
+    for r in keys {
+      let k = r[c].exact_kind()
+      if k < 0 || (k > 0 && kind > 0 && k != kind) {
+        return false
+      }
+      if k > 0 {
+        kind = k
+      }
+    }
+  }
+  true
+}
+
+///|
 /// Group number of every key row: rows that are `same_row`-equal share a
 /// group, and groups are numbered in order of first appearance (the first
 /// row is in group 0, the next row not equal to it in group 1, ...).
-/// Returns (group per row, number of groups). O(n log n) comparisons.
+/// Returns (group per row, number of groups). Hashes exact sort keys when
+/// every column has them, else O(n log n) comparisons.
 fn group_ids(
   keys : Array[Row],
   collations : Array[@types.Collation?],
   ansi? : Bool = false,
 ) -> (Array[Int], Int) raise @types.SqlError {
   let n = keys.length()
-  let order = sorted_positions(keys, collations, ansi~)
+  let ks = keys.map(r => key_row(r, collations, ansi))
+  if hashable_key_rows(ks) {
+    let seen : Map[Array[@types.SortKey], Int] = Map([])
+    let ids = Array::make(n, 0)
+    for i, k in ks {
+      match seen.get(k) {
+        Some(id) => ids[i] = id
+        None => {
+          ids[i] = seen.length()
+          seen.set(k, ids[i])
+        }
+      }
+    }
+    return (ids, seen.length())
+  }
+  let order = sort_key_rows(ks, collations, ansi)
   // each row's run leader: the first (smallest) position of its run
   let leader = Array::make(n, 0)
   let mut start = 0
   for k in 0..<n {
     if k > 0 &&
-      compare_rows(keys[order[k - 1]], keys[order[k]], collations, ansi~) != 0 {
+      compare_key_rows(ks[order[k - 1]], ks[order[k]], collations, ansi) != 0 {
       start = k
     }
     leader[order[k]] = order[start]
@@ -116,7 +177,7 @@ fn distinct_rows(
 ///|
 /// A set of rows for membership tests under `same_row` equality.
 priv struct RowSet {
-  sorted : Array[Row]
+  sorted : Array[Array[@types.SortKey]]
   collations : Array[@types.Collation?]
 }
 
@@ -125,17 +186,18 @@ fn RowSet::new(
   rows : Array[Row],
   collations : Array[@types.Collation?],
 ) -> RowSet raise @types.SqlError {
-  let order = sorted_positions(rows, collations)
-  { sorted: order.map(i => rows[i]), collations, }
+  let (order, keys) = sorted_key_positions(rows, collations, false)
+  { sorted: order.map(i => keys[i]), collations, }
 }
 
 ///|
 fn RowSet::contains(self : RowSet, row : Row) -> Bool raise @types.SqlError {
+  let probe = key_row(row, self.collations, false)
   let mut lo = 0
   let mut hi = self.sorted.length()
   while lo < hi {
     let mid = (lo + hi) / 2
-    let c = compare_rows(self.sorted[mid], row, self.collations)
+    let c = compare_key_rows(self.sorted[mid], probe, self.collations, false)
     if c == 0 {
       return true
     } else if c < 0 {

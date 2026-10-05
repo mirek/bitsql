@@ -169,8 +169,18 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     }
     (w, cond)
   })
-  let target_rows = self.db_of(target.scope).rows(t.id)
-  let source_rows = @exec.run(self.ctx(), source_plan)
+  // compiling (batch prebind, sp_prepare) stops at the OUTPUT header
+  // without reading rows, like the other DML statements
+  let target_rows = if self.compile_only {
+    []
+  } else {
+    self.db_of(target.scope).rows(t.id)
+  }
+  let source_rows = if self.compile_only {
+    []
+  } else {
+    @exec.run(self.ctx(), source_plan)
+  }
   let width_s = source_cols.length()
   let null_target = Array::make(n, @types.Value::Null)
   let null_source = Array::make(width_s, @types.Value::Null)
@@ -592,24 +602,48 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
       MInsert(_, _) => ()
     }
   }
-  for o in final_ops {
-    match o {
-      MUpdate(rowid, _, _, _) | MDelete(rowid, _, _) =>
-        db = db.delete_row(t.id, rowid)
-      MInsert(_, _) => ()
-    }
-  }
-  for o in final_ops {
-    match o {
-      MUpdate(rowid, _, new, _) => db = insert_checked(target, db, rowid, new)
-      MInsert(new, _) => {
-        let rowid = self.server.rowid()
-        if is_db_scope(target.scope) {
-          self.acquire(row_resource(t, rowid, new), X, Transaction)
-        }
-        db = insert_checked(target, db, rowid, new)
+  // one at a time: delete every changed row, then insert in action order
+  let sequential = (start : @store.Db) => {
+    let mut d = start
+    for o in final_ops {
+      match o {
+        MUpdate(rowid, _, _, _) | MDelete(rowid, _, _) =>
+          d = d.delete_row(t.id, rowid)
+        MInsert(_, _) => ()
       }
-      MDelete(_, _, _) => ()
+    }
+    for o in final_ops {
+      match o {
+        MUpdate(rowid, _, new, _) => d = insert_checked(target, d, rowid, new)
+        MInsert(new, _) => {
+          let rowid = self.server.rowid()
+          if is_db_scope(target.scope) {
+            self.acquire(row_resource(t, rowid, new), X, Transaction)
+          }
+          d = insert_checked(target, d, rowid, new)
+        }
+        MDelete(_, _, _) => ()
+      }
+    }
+    d
+  }
+  db = if final_ops.iter().any(o => o is MInsert(_, _)) {
+    sequential(db)
+  } else {
+    // no inserts (no row ids or locks taken): applied as one set, the
+    // sequential pass names the failing row on an error
+    let images = []
+    let deleted = []
+    for o in final_ops {
+      match o {
+        MUpdate(rowid, old, new, _) => images.push((rowid, old, new))
+        MDelete(rowid, _, _) => deleted.push(rowid)
+        MInsert(_, _) => ()
+      }
+    }
+    let start = db
+    apply_images(target, start, images, deleted~) catch {
+      _ => sequential(start)
     }
   }
   if fk_referencing(db, t.id) {

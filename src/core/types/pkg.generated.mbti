@@ -88,6 +88,8 @@ pub fn compare(Value, Value, collation? : Collation, ansi? : Bool) -> Int? raise
 
 pub fn compare_binary(Bytes, Bytes) -> Int
 
+pub fn compare_sort_keys(SortKey, SortKey, collation? : Collation, ansi? : Bool) -> Int raise SqlError
+
 pub fn compare_strings(String, String, Collation, ansi? : Bool) -> Int
 
 pub fn concat_result_type(SqlType, SqlType) -> SqlType
@@ -213,6 +215,8 @@ pub fn round_ticks(Int64, Int) -> Int64
 pub fn round_time_ticks(Int64, Int) -> Int64
 
 pub fn scale_unit(Int) -> Int64
+
+pub fn sort_key(Value, collation? : Collation, ansi? : Bool) -> SortKey
 
 pub fn sql_equal(Value, Value, collation? : Collation, ansi? : Bool) -> Bool? raise SqlError
 
@@ -384,6 +388,17 @@ pub(all) enum Rounding {
   HalfAwayFromZero
   TowardZero
 } derive(Eq, @debug.Debug)
+
+pub enum SortKey {
+  KeyNull
+  KeyInt(Int64, Value)
+  KeyTicks(Int64, Value)
+  KeyText(FixedArray[Int], Value)
+  KeyValue(Value)
+}
+pub fn SortKey::exact_kind(Self) -> Int
+pub impl Eq for SortKey
+pub impl Hash for SortKey
 
 pub(all) enum SqlType {
   Bit

@@ -94,33 +94,13 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     }
     Sort(input, keys) => {
       let rows = run(ctx, input)
-      let keyed = rows.map(row => {
-        (keys.map(k => eval(ctx.with_row(row), k.expr)), row)
+      let ansi = keys.map(ansi_key)
+      let prepared = rows.map(row => {
+        let c = ctx.with_row(row)
+        (order_keys(keys.map(k => eval(c, k.expr)), keys, ansi), row)
       })
-      let mut failure : @types.SqlError? = None
-      keyed.sort_by((a, b) => {
-        for i, k in keys {
-          let c = compare_for_sort(
-            a.0[i],
-            b.0[i],
-            k.collation,
-            ansi=ansi_key(k),
-          ) catch {
-            e => {
-              failure = Some(e)
-              0
-            }
-          }
-          if c != 0 {
-            return if k.desc { -c } else { c }
-          }
-        }
-        0
-      })
-      if failure is Some(e) {
-        raise e
-      }
-      keyed.map(kv => kv.1)
+      sort_prepared(prepared, keys, ansi)
+      prepared.map(p => p.1)
     }
     Limit(input, offset, count) => {
       let rows = run(ctx, input)

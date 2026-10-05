@@ -59,3 +59,22 @@ test "custom comparator: case-insensitive keys collide" {
   assert_eq(m.size(), 1)
   assert_eq(m.get("alice"), Some(2))
 }
+
+///|
+test "retain and from_sorted rebuild balanced maps" {
+  for n in [0, 1, 2, 3, 7, 100, 1000] {
+    let m = @store.PMap::from_sorted(Array::makei(n, i => (i, i * 2)), icmp)
+    assert_true(m.check_invariants())
+    assert_eq(m.size(), n)
+    let odd = m.retain((k, _) => k % 3 != 0)
+    assert_true(odd.check_invariants())
+    assert_eq(
+      odd.iter().collect(),
+      m.iter().filter(kv => kv.0 % 3 != 0).collect(),
+    )
+    // still a working map: later adds and removes keep the invariants
+    let more = odd.add(n + 5, 0).remove(1)
+    assert_true(more.check_invariants())
+    assert_eq(m.size(), n)
+  }
+}

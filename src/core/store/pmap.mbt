@@ -271,3 +271,46 @@ pub fn[K, V] PMap::check_invariants(self : PMap[K, V]) -> Bool {
 
   ok(self.root)
 }
+
+///|
+/// A balanced map of entries already sorted by `cmp` with distinct keys,
+/// built in O(n) (bulk rebuilds after large deletes).
+pub fn[K, V] PMap::from_sorted(
+  entries : Array[(K, V)],
+  cmp : (K, K) -> Int,
+) -> PMap[K, V] {
+  fn build(lo : Int, hi : Int) -> Node[K, V] {
+    if lo >= hi {
+      return Leaf
+    }
+    let mid = lo + (hi - lo) / 2
+    let (k, v) = entries[mid]
+    mk(build(lo, mid), k, v, build(mid + 1, hi))
+  }
+
+  { root: build(0, entries.length()), cmp, }
+}
+
+///|
+/// The entries for which `keep` holds, rebuilt in O(n).
+pub fn[K, V] PMap::retain(
+  self : PMap[K, V],
+  keep : (K, V) -> Bool,
+) -> PMap[K, V] {
+  let out = []
+  fn walk(n : Node[K, V]) -> Unit {
+    match n {
+      Leaf => ()
+      Node(l, k, v, r, _, _) => {
+        walk(l)
+        if keep(k, v) {
+          out.push((k, v))
+        }
+        walk(r)
+      }
+    }
+  }
+
+  walk(self.root)
+  PMap::from_sorted(out, self.cmp)
+}

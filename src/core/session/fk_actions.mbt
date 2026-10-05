@@ -405,9 +405,7 @@ fn Session::cascade_actions(
           )
         }
         let applied : Array[RowChange] = []
-        for ch in child_changes {
-          db = db.delete_row(child.id, ch.0)
-        }
+        db = db.delete_rows(child.id, child_changes.map(ch => ch.0))
         for ch in child_changes {
           match ch.2 {
             None => applied.push(ch)
