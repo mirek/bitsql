@@ -20,6 +20,13 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-05 (long literals, corpus `compat/long-literal-unify`): a string
+  literal is nvarchar(max) above 4000 characters (`N''`), varchar(max) above
+  8000 bytes, and a binary literal varbinary(max) above 8000 bytes; at the
+  limit it is still sized (nvarchar(4000) / varchar(8000)). Unifying
+  nvarchar(3) with nvarchar(max) is nvarchar(max), so VALUES / UNION / CASE
+  keep 4060 characters; a sized varchar(5000) against nvarchar still caps at
+  nvarchar(4000).
 - 2026-10-04 (computed forward references, corpus
   `catalog/computed-forward-refs`): CREATE TABLE / ALTER TABLE ADD resolve
   every column type first (2715, 2705 come before a computed column's 207),

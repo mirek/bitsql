@@ -159,7 +159,9 @@ fn binary_literal(text : String, params? : Bool = false) -> @ir.Expr {
     ((hi << 4) | lo).to_byte()
   })
   let n = if params && n <= 8000 { 8000 } else { n }
-  @ir.Expr::lit(Binary(bytes), VarBinary(Some(@cmp.maximum(1, n))))
+  // longer than 8000 bytes is varbinary(max) (captured: compat/long-literal-unify)
+  let len = if n > 8000 { None } else { Some(@cmp.maximum(1, n)) }
+  @ir.Expr::lit(Binary(bytes), VarBinary(len))
 }
 
 ///|
@@ -179,12 +181,20 @@ fn string_literal(env : Env, s : String, national : Bool) -> @ir.Expr {
     (true, false) if n <= 8000 => 8000
     _ => n
   }
+  // A literal longer than 4000 Unicode / 8000 byte characters is (n)varchar(max)
+  // (captured: compat/long-literal-unify); a sized type would cap it to 4000
+  // when VALUES / UNION / CASE unify it with a short literal.
+  let len = if n > (if national { 4000 } else { 8000 }) {
+    None
+  } else {
+    Some(n)
+  }
   if national {
-    @ir.Expr::lit(String(s), NVarChar(Some(n), env.collation))
+    @ir.Expr::lit(String(s), NVarChar(len, env.collation))
   } else {
     // Characters outside code page 1252 take SQL Server's best fit or '?'
     // (captured: 'Āłx🦆' is 0x416C783F3F).
     let v = @types.to_code_page(s, env.collation)
-    @ir.Expr::lit(String(v), VarChar(Some(n), env.collation))
+    @ir.Expr::lit(String(v), VarChar(len, env.collation))
   }
 }

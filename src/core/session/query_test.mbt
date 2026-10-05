@@ -138,6 +138,25 @@ test "FOR JSON splits text into 2033-character rows" {
 }
 
 ///|
+test "long literals are (n)varchar(max) and survive VALUES/UNION unification" {
+  // captured: harness/corpus/compat/long-literal-unify (the 0.1.3 compat
+  // report stored 4000 of 4060 characters)
+  let s = query_session()
+  let long = String::make(4060, 'x')
+  let r = s.run_batch(
+    "SELECT CAST(LEN(v) AS int) FROM (VALUES (N'foo'), (N'\{long}')) s(v) ORDER BY 1; SELECT CAST(LEN(v) AS int) FROM (SELECT N'a' AS v UNION ALL SELECT N'\{long}') u ORDER BY 1",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(3)], [Int(4060)], [Int(1)], [Int(4060)]])
+  let ascii = String::make(8001, 'y')
+  let r = s.run_batch(
+    "SELECT CAST(LEN(v) AS int) FROM (VALUES ('foo'), ('\{ascii}')) s(v) ORDER BY 1",
+    0,
+  )
+  assert_eq(row_values(r), [[Int(3)], [Int(8001)]])
+}
+
+///|
 test "unique-index seeks return exactly the rows a scan would" {
   let s = @session.Session::new(
     @session.Server::new(),
