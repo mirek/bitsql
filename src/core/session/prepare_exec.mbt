@@ -284,7 +284,7 @@ fn Session::prepare_compile(
         "sp_prepare in T-SQL of this kind of statement",
       )
   }
-  let params = parse_param_decls(decls) catch {
+  let params = self.server.parse_param_decls(decls) catch {
     _ => raise @types.not_supported("sp_prepare in T-SQL with these @params")
   }
   let b = self.bind_params(params, [], owner=None, conv_state=5)

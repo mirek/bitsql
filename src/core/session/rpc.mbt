@@ -1,12 +1,15 @@
 ///|
 /// Parses a parameter declaration list such as "@a int, @b nvarchar(10) OUTPUT".
-fn parse_param_decls(decls : String) -> Array[@ast.Param] raise {
+fn Server::parse_param_decls(
+  self : Server,
+  decls : String,
+) -> Array[@ast.Param] raise {
   if decls.trim().is_empty() {
     return []
   }
   // parenthesized: a trailing comma is 102 near ')' (captured:
   // gaps-rpc-procedures #077)
-  let stmt = @parse.parse_statement(
+  let stmt = self.parse_statement(
     "CREATE PROCEDURE __bitsql_params (" + decls + ") AS RETURN",
   )
   match stmt.kind {
@@ -677,7 +680,7 @@ fn Session::executesql_args(
         Some(214),
       )
   }
-  let params = parse_param_decls(decls) catch {
+  let params = self.server.parse_param_decls(decls) catch {
     e => {
       let err = match e {
         @ast.SyntaxError(..) as se =>
@@ -1530,15 +1533,27 @@ fn Session::check_proc_args(
 /// The PROC / PROCEDURE keyword (as written) when `sql` starts with
 /// CREATE [OR ALTER] PROCEDURE or ALTER PROCEDURE.
 fn proc_keyword_at_start(sql : String) -> String? {
-  let words = sql
-    .split(" ")
-    .flat_map(w => w.split("\n"))
-    .flat_map(w => w.split("\t"))
-    .flat_map(w => w.split("\r"))
-    .filter(w => w != "")
-    .map(w => w.to_owned())
-    .take(4)
-    .collect()
+  // the first four words separated by space, LF, TAB or CR (scanned, not
+  // split: the text can be long and this runs for every sp_executesql)
+  let words : Array[String] = []
+  let n = sql.length()
+  let mut i = 0
+  while i < n && words.length() < 4 {
+    let c = sql.code_unit_at(i)
+    if c == ' ' || c == '\n' || c == '\t' || c == '\r' {
+      i += 1
+      continue
+    }
+    let start = i
+    while i < n {
+      let d = sql.code_unit_at(i)
+      if d == ' ' || d == '\n' || d == '\t' || d == '\r' {
+        break
+      }
+      i += 1
+    }
+    words.push(sql.unsafe_substring(start~, end=i))
+  }
   let upper = words.map(w => w.to_upper())
   let at = match upper {
     ["CREATE", "OR", "ALTER", ..] => 3

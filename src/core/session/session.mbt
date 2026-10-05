@@ -54,6 +54,8 @@ pub struct Server {
   priv db_options : Map[String, DbOptions]
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
+  /// Parsed texts (session/parse_cache.mbt).
+  priv parse_cache : ParseCache
 }
 
 ///|
@@ -102,6 +104,7 @@ pub fn Server::new() -> Server {
     udfs: Map([]),
     db_options: Map([]),
     backups: BackupStore::new(),
+    parse_cache: ParseCache::new(),
   }
 }
 
@@ -792,7 +795,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     None => ()
   }
-  let stmts = @parse.parse_batch(text) catch {
+  let stmts = self.server.parse_batch(text) catch {
     e => {
       // errors found by the parser's error recovery come first (captured:
       // tail/tablevar-hints, 156 then 319)
@@ -851,7 +854,17 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     t.columns[ci].name
   }
-  match precheck_batch(stmts, known, set_column_name~) {
+  let signature = var_signature(known)
+  let precheck = if self.server.prechecked(text, stmts, signature) {
+    None
+  } else {
+    let r = precheck_batch(stmts, known, set_column_name~)
+    if r is None {
+      self.server.remember_prechecked(text, stmts, signature)
+    }
+    r
+  }
+  match precheck {
     Some((e0, line)) => {
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
