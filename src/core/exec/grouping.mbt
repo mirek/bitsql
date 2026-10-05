@@ -107,7 +107,7 @@ fn single_column_ids(
   if keys
     .iter()
     .all(r => r[0] is (Null | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
-    let seen : Map[Int64, Int] = Map([])
+    let seen = IntTable::new(16)
     for i, r in keys {
       if r[0] is Null {
         if null_id < 0 {
@@ -118,13 +118,13 @@ fn single_column_ids(
         continue
       }
       let k = r[0].int64_or(0L)
-      match seen.get(k) {
-        Some(id) => ids[i] = id
-        None => {
-          ids[i] = count
-          seen[k] = count
-          count += 1
-        }
+      let id = seen.get(k)
+      if id >= 0 {
+        ids[i] = id
+      } else {
+        ids[i] = count
+        seen.set(k, count)
+        count += 1
       }
     }
     return Some((ids, count))

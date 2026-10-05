@@ -105,7 +105,17 @@ fn Session::scope_key(self : Session, scope : Int) -> String {
   if scope >= OTHER_DB_SCOPE {
     self.server.database_key(scope - OTHER_DB_SCOPE).unwrap_or("")
   } else {
-    self.rt.database.to_lower()
+    // db_of runs per scan, seek and statement-cache check: lower-case the
+    // current database name once per name (strings are immutable)
+    let name = self.rt.database
+    match self.db_key_cache {
+      Some((seen, key)) if physical_equal(seen, name) => key
+      _ => {
+        let key = name.to_lower()
+        self.db_key_cache = Some((name, key))
+        key
+      }
+    }
   }
 }
 

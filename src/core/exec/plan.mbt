@@ -18,54 +18,10 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         }
       })
     Join(kind, left, right, on, left_width~, right_width~) => {
-      let ls = run(ctx, left)
-      let rs = run(ctx, right)
       let out = []
-      let right_matched = Array::make(rs.length(), false)
-      // equi-join: candidates by binary search over the right rows sorted
-      // on the key (stable, so candidates keep the nested-loop order)
-      let index = match on {
-        Some(p) => equi_index(p, left_width, rs)
-        None => None
-      }
-      let con = on.map(compile)
-      for l in ls {
-        let mut matched = false
-        let candidates = match index {
-          Some(ix) => ix.lookup(l)
-          None => {
-            ctx.rt.charge(rs.length().to_int64() + 1L)
-            Array::makei(rs.length(), j => j)
-          }
-        }
-        if index is Some(_) {
-          ctx.rt.charge(candidates.length().to_int64() + 1L)
-        }
-        for j in candidates {
-          let r = rs[j]
-          let row = l + r
-          let ok = match (con, index) {
-            (_, Some(ix)) if ix.exact => true
-            (Some(p), _) => is_true(p(ctx, row))
-            (None, _) => true
-          }
-          if ok {
-            matched = true
-            right_matched[j] = true
-            out.push(row)
-          }
-        }
-        if !matched && kind is (Left | Full) {
-          out.push(l + Array::make(right_width, @types.Value::Null))
-        }
-      }
-      if kind is (Right | Full) {
-        for j, r in rs {
-          if !right_matched[j] {
-            out.push(Array::make(left_width, @types.Value::Null) + r)
-          }
-        }
-      }
+      join_each(ctx, kind, left, right, on, left_width, right_width, r => {
+        out.push(r)
+      })
       out
     }
     Values(rows) =>
@@ -163,6 +119,10 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       }
       out
     }
+    // scalar aggregate folding its input as it streams (aggregate_fast.mbt)
+    Aggregate(input, keys, aggs, sets~) if keys.is_empty() &&
+      sets.is_empty() &&
+      fast_aggregates(aggs) => stream_aggregate(ctx, input, aggs)
     Aggregate(input, keys, aggs, sets~) =>
       run_aggregate(ctx, run(ctx, input), keys, aggs, sets)
     Window(input, calls) => run_window(ctx, run(ctx, input), calls)
@@ -442,6 +402,12 @@ pub fn stream(
       for p in parts {
         stream(ctx, p, emit)
       }
+    Scan(scope~, id~, rowid=false) =>
+      for kv in (ctx.source)(scope, id) {
+        emit(kv.1)
+      }
+    Join(kind, left, right, on, left_width~, right_width~) =>
+      join_each(ctx, kind, left, right, on, left_width, right_width, emit)
     Recursive(id~, anchor, recursive, max~) =>
       run_recursive(ctx, id, anchor, recursive, max, emit)
     Values(rows) =>
@@ -624,7 +590,7 @@ priv struct EquiIndex {
   /// integer keys (one integer type, so `=` is Int64 equality): hash
   /// chains instead of `keys`; `heads` maps a key to its first right row,
   /// `next` links each row to the next one with that key (ascending)
-  heads : Map[Int64, Int]?
+  heads : IntTable?
   next : Array[Int]
   /// the predicate is exactly this conjunct: candidates satisfy it
   exact : Bool
@@ -666,17 +632,14 @@ fn equi_index(
     let ansi = a.ty.family() == FString && !a.ty.is_unicode()
     if a.ty is (TinyInt | SmallInt | Int | BigInt) {
       // hash join on integer keys (NULL keys join nothing)
-      let heads : Map[Int64, Int] = Map([])
+      let heads = IntTable::new(rs.length())
       let next = Array::make(rs.length(), -1)
       for j = rs.length() - 1; j >= 0; j = j - 1 {
         let r = rs[j]
         if ri < r.length() && !(r[ri] is Null) {
           let k = r[ri].int64_or(0L)
-          match heads.get(k) {
-            Some(h) => next[j] = h
-            None => ()
-          }
-          heads[k] = j
+          next[j] = heads.get(k)
+          heads.set(k, j)
         }
       }
       return Some({
@@ -738,7 +701,7 @@ fn EquiIndex::lookup(
   }
   if self.heads is Some(heads) {
     let out = []
-    let mut j = heads.get(v.int64_or(0L)).unwrap_or(-1)
+    let mut j = heads.get(v.int64_or(0L))
     while j >= 0 {
       out.push(j)
       j = self.next[j]
@@ -795,4 +758,76 @@ pub fn match_pairs(
     }
     hits
   })
+}
+
+///|
+/// Joined rows in nested-loop order, handed to `emit`: every left row (in
+/// order) with its matching right rows (in order), unmatched left rows of
+/// LEFT/FULL joins after their matches, then unmatched right rows of
+/// RIGHT/FULL joins. Both inputs run first, left then right.
+fn join_each(
+  ctx : Ctx,
+  kind : @ir.JoinKind,
+  left : @ir.Plan,
+  right : @ir.Plan,
+  on : @ir.Expr?,
+  left_width : Int,
+  right_width : Int,
+  emit : (Row) -> Unit raise @types.SqlError,
+) -> Unit raise @types.SqlError {
+  let ls = run(ctx, left)
+  let rs = run(ctx, right)
+  let right_matched = Array::make(rs.length(), false)
+  // equi-join: candidates through a hash or sorted index on the key (in
+  // right-row order, as the nested loop finds them)
+  let index = match on {
+    Some(p) => equi_index(p, left_width, rs)
+    None => None
+  }
+  let con = on.map(compile)
+  let exact = index is Some(ix) && ix.exact
+  let check = (row : Row) => {
+    match con {
+      Some(p) if !exact => is_true(p(ctx, row))
+      _ => true
+    }
+  }
+  for l in ls {
+    let mut matched = false
+    match index {
+      Some(ix) => {
+        let candidates = ix.lookup(l)
+        ctx.rt.charge(candidates.length().to_int64() + 1L)
+        for j in candidates {
+          let row = l + rs[j]
+          if check(row) {
+            matched = true
+            right_matched[j] = true
+            emit(row)
+          }
+        }
+      }
+      None => {
+        ctx.rt.charge(rs.length().to_int64() + 1L)
+        for j, r in rs {
+          let row = l + r
+          if check(row) {
+            matched = true
+            right_matched[j] = true
+            emit(row)
+          }
+        }
+      }
+    }
+    if !matched && kind is (Left | Full) {
+      emit(l + Array::make(right_width, @types.Value::Null))
+    }
+  }
+  if kind is (Right | Full) {
+    for j, r in rs {
+      if !right_matched[j] {
+        emit(Array::make(left_width, @types.Value::Null) + r)
+      }
+    }
+  }
 }

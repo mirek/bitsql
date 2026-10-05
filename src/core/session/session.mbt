@@ -390,6 +390,8 @@ pub struct Session {
   /// Data stamps for the executor's statement caches (`data_stamp`): the
   /// table data last seen per (scope, id) and its stamp.
   priv stamps : Map[(Int, Int), (@store.TableData, Int64)]
+  /// (current database name, its lower-case key) for `scope_key`
+  priv mut db_key_cache : (String, String)?
   /// Materialized table rows per (scope, id) for `source` (scan cache).
   priv scans : Map[
     (Int, Int),
@@ -536,6 +538,7 @@ pub fn Session::new(
     tvar_sites: Map([]),
     stamps: Map([]),
     scans: Map([]),
+    db_key_cache: None,
     stamp_seq: 0L,
     fk_cache: [],
     view_tempdb: false,

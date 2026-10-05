@@ -62,7 +62,7 @@ priv struct Decor {
   mut var_values : Array[@types.Value]
   /// input rows and their partition (`build_partition`; None until built)
   mut rows : Array[Row]
-  mut heads : Map[Int64, Int]?
+  mut heads : IntTable?
   mut next : FixedArray[Int]
   mut input_null_eliminated : Bool
   mut input_row_seq : Int64
@@ -288,7 +288,7 @@ fn decorrelated_rows(
     rt.row_seq += d.input_row_seq
   }
   let first = match (key, d.heads) {
-    (Some(k), Some(heads)) => heads.get(k).unwrap_or(-1)
+    (Some(k), Some(heads)) => heads.get(k)
     // a NULL outer key equals no row
     _ => -1
   }
@@ -366,13 +366,14 @@ fn build_partition(sub : Ctx, d : Decor) -> Unit raise @types.SqlError {
   rt.null_eliminated = before || d.input_null_eliminated
   d.input_row_seq = rt.row_seq - seq
   rt.charge(rows.length().to_int64())
-  let heads : Map[Int64, Int] = Map([])
+  let heads = IntTable::new(rows.length())
   let next = FixedArray::make(rows.length(), -1)
   let mut i = rows.length() - 1
   while i >= 0 {
     match rows[i].get(d.inner_col) {
-      Some(v) if v.as_int64() is Some(k) => {
-        next[i] = heads.get(k).unwrap_or(-1)
+      Some(v) if v is (Bit(_) | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_)) => {
+        let k = v.int64_or(0L)
+        next[i] = heads.get(k)
         heads.set(k, i)
       }
       _ => ()
