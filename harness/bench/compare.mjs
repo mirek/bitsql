@@ -162,11 +162,18 @@ async function measure(target) {
       out.reportMs = median(report)
 
       const setup = await timed(() => exact(connection, setupSql(rows)))
-      out.shapes = { rows, setupMs: setup, ms: {} }
+      out.shapes = { rows, setupMs: setup, repetitions: 5, samplesMs: {}, ms: {} }
       for (const [shape, sql] of queries) {
-        const r = await capture(connection, { kind: 'batch', sql }, { rowLimit: 10 })
-        const ms = await timed(() => capture(connection, { kind: 'batch', sql }, { rowLimit: 10 }))
-        out.shapes.ms[shape] = r.errors.length ? null : ms
+        // Every DML shape rolls back; each sample starts with the same data.
+        // Check both warm-up and timed executions, so an error is never a
+        // fast-looking measurement. Retain samples for variability review.
+        await exact(connection, sql)
+        const samples = []
+        for (let i = 0; i < out.shapes.repetitions; i++) {
+          samples.push(await timed(() => exact(connection, sql)))
+        }
+        out.shapes.samplesMs[shape] = samples
+        out.shapes.ms[shape] = median(samples)
       }
       log(`workload done`)
     } finally { await close(connection) }
@@ -238,4 +245,5 @@ console.log(`\n${host.date}, ${host.cpu}, Docker ${host.docker}\n`)
 table('', metrics)
 console.log()
 table(`Shape (${n} rows)`, queries.map(([shape]) => [shape, r => r.shapes.ms[shape], fmtMs]))
+if (results.every(r => r.shapes.repetitions === 5)) console.log('\nQuery/DML shapes: median of 5 timed runs after one warm-up; total is the sum of those medians.')
 console.log(`\nimages: ${results.map(r => `${r.target}=${r.image}`).join(', ')}`)

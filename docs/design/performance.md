@@ -251,3 +251,43 @@ Existing window-functions and order-and-types captures give 37/39 on both
 baseline and candidate: the same two non-allowlisted failures (SUM window
 ordering and COT) remain. Executor unit tests pass (14/14). Full gate passed: 273 MoonBit tests,
 20702 client/corpus passes, 3 skips, no failures.
+
+## Streaming exact grouping keys (2026-10-06, 0.1.11, publication pending)
+
+Single-column grouping hashes the exact equality payload with an unboxed
+32-bit accumulator and a final avalanche, avoiding the generic Hasher.
+It retains sort keys only for representative rows; duplicate keys can be
+freed immediately. SortKey equality still checks collisions. Inexact or
+mixed kinds discard local partial work and use the existing general path.
+No raw-string memo is introduced.
+
+Two sequential interleaved runs of baseline (7f04487), hash-only, and both
+changes, 20k rows and 100 repetitions per query. Mean wall time in ms:
+
+| Shape | Baseline runs | Hash-only runs | Combined runs |
+| --- | --- | --- | --- |
+| GROUP BY v | 5.81 / 5.67 | 5.79 / 5.86 | 5.36 / 5.27 |
+| DISTINCT v | 5.91 / 5.82 | 5.69 / 5.90 | 5.52 / 5.46 |
+| COUNT(DISTINCT v) | 4.79 / 4.81 | 4.79 / 4.70 | 4.47 / 4.52 |
+| UNION | 8.45 / 8.39 | 8.10 / 8.20 | 7.70 / 7.60 |
+| COUNT(DISTINCT CONCAT(N'unique', id)) | 10.47 / 10.45 | 10.16 / 10.18 | 9.85 / 10.17 |
+
+The all-unique check improves too; it caught the rejected raw-string memo
+in 0.1.8. Executor equivalence tests pass (14/14). The full gate against the exact
+amd64 release binary passed: 273 MoonBit tests, 20702 client/corpus passes,
+3 skips, no failures. Arm64 smoke passed 571/571.
+
+Container comparison now takes five checked samples per query/DML shape
+after one warm-up, reports their median, and saves the raw samples in JSON.
+Earlier release comparisons used one timed sample. Every measured execution
+now rejects SQL errors; previously only the warm-up was checked. DML shapes
+roll back between samples. Old JSON still renders with its original meaning.
+
+The exact 0.1.11 amd64 container comparison (five timed samples per shape)
+measured 256 ms total versus SQL Server's 641 ms. UNION was 7.61 versus
+7.49 ms, DISTINCT v 6.16 versus 4.40 ms, and ROW_NUMBER 7.87 versus 5.55 ms.
+All 48 reported medians were recomputed from the 240 raw samples. These
+measurements use a different sampling method from the 0.1.10 table, so the
+interleaved native runs above are the before/after evidence. Both database
+containers ran sequentially after all builds and validation processes ended.
+Images remain local while publication authorization is pending.

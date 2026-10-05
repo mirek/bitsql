@@ -129,17 +129,8 @@ fn single_column_ids(
     }
     return Some((ids, count))
   }
-  let ks = keys.map(r => @types.sort_key(r[0], collation?, ansi~))
+  let ks = Array::make(n, @types.sort_key(Null))
   let mut kind = 0
-  for k in ks {
-    let x = k.exact_kind()
-    if x < 0 || (x > 0 && kind > 0 && x != kind) {
-      return None
-    }
-    if x > 0 {
-      kind = x
-    }
-  }
   // Store representative row positions in unboxed slots. Each incoming key
   // is hashed once, and a new group uses the same probe that found its empty
   // slot (no boxed Map entry or second lookup to insert it).
@@ -149,8 +140,16 @@ fn single_column_ids(
   }
   let slots = FixedArray::make(capacity, -1)
   let mask = capacity - 1
-  for i, k in ks {
-    let mut slot = k.hash() & mask
+  for i, r in keys {
+    let k = @types.sort_key(r[0], collation?, ansi~)
+    let x = k.exact_kind()
+    if x < 0 || (x > 0 && kind > 0 && x != kind) {
+      return None
+    }
+    if x > 0 {
+      kind = x
+    }
+    let mut slot = exact_key_hash(k) & mask
     while slots[slot] >= 0 && ks[slots[slot]] != k {
       slot = (slot + 1) & mask
     }
@@ -158,6 +157,7 @@ fn single_column_ids(
       ids[i] = ids[slots[slot]]
     } else {
       slots[slot] = i
+      ks[i] = k
       ids[i] = count
       count += 1
     }
@@ -376,4 +376,27 @@ fn RowSet::kinds_match(self : RowSet, probe : Array[@types.SortKey]) -> Bool {
     }
   }
   true
+}
+
+///|
+/// Hash only the equality payload, without allocating a generic Hasher.
+/// Slot collisions still use SortKey equality; callers admit exact kinds only.
+fn exact_key_hash(key : @types.SortKey) -> Int {
+  let mut h = 2166136261U
+  match key {
+    KeyNull => ()
+    KeyInt(x, _) | KeyTicks(x, _) => {
+      h = (h ^ x.to_int().reinterpret_as_uint()) * 16777619U
+      h = (h ^ (x >> 32).to_int().reinterpret_as_uint()) * 16777619U
+    }
+    KeyText(ws, _) =>
+      for w in ws {
+        h = (h ^ w.reinterpret_as_uint()) * 16777619U
+      }
+    KeyValue(_) => ()
+  }
+  // Spread high payload bits into the low bits used by the slot mask.
+  h = (h ^ (h >> 16)) * 0x85EBCA6BU
+  h = (h ^ (h >> 13)) * 0xC2B2AE35U
+  (h ^ (h >> 16)).reinterpret_as_int()
 }

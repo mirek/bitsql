@@ -236,6 +236,15 @@ equivalence tests and before/after timings are in `performance.md`.
   checked; full gate passed (273 MoonBit tests, 20702 client/corpus passes,
   3 skips). Unreleased (`performance.md`).
 
+- [~] 0.1.11 preparation: streaming exact grouping keys and an allocation-free
+  hash improve text grouping/distinct/UNION, including the all-unique check;
+  combines the tested ROW_NUMBER scan. Exact amd64 binary passed the full
+  gate (273 MoonBit tests, 20702 client/corpus passes, 3 skips); arm64 smoke
+  passed 571/571. Container benchmark: sum of 24 five-sample medians 256 vs
+  641 ms (2.5×); UNION near parity, text grouping/window/subquery gaps remain.
+  README refreshed; raw timings retained. Registry destination approval is
+  still pending.
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no

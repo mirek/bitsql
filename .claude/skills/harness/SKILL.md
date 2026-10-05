@@ -523,3 +523,10 @@ Start the host with `--database NAME` so the app's database exists at login
   and child digests. Refresh README from the measurements, including registry
   layer sizes after pushing. This avoids rebuilding or re-testing the same
   release binaries solely to publish them (used for 0.1.9 and 0.1.10).
+
+- 2026-10-06: `bench:compare` query/DML shape timings are medians of five
+  runs after one warm-up; JSON preserves `shapes.samplesMs` and `repetitions`.
+  Every execution checks SQL errors and aborts the comparison on failure.
+  DML shapes roll back, preserving data for repeated samples. Earlier
+  comparison JSON without these fields contains one timed sample per shape;
+  `--from` keeps rendering it with the original interpretation.
