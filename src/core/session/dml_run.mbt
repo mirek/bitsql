@@ -334,12 +334,13 @@ fn apply_images(
       gone.push(im.0)
     }
   }
-  let mut d = db.delete_rows(t.id, gone)
+  let replaced = []
   for i, im in images {
     if keep[i] {
-      d = d.replace_row(t.id, im.0, im.2)
+      replaced.push((im.0, im.2))
     }
   }
+  let mut d = db.delete_rows(t.id, gone).replace_rows(t.id, replaced)
   for i, im in images {
     if !keep[i] {
       d = insert_checked(target, d, im.0, im.2)
@@ -612,10 +613,18 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     applied
   }
   if has_refs {
+    let refs = referencing_fks(fin, target.table.id)
     for k, im in images {
       let failed = try {
         self.check_self_references(target, fin, im.2, Some(touched), "UPDATE")
-        self.check_references(target, fin, [im.1], [Some(im.2)], "UPDATE")
+        self.check_references(
+          target,
+          fin,
+          [im.1],
+          [Some(im.2)],
+          "UPDATE",
+          refs~,
+        )
         None
       } catch {
         e => Some(e)
@@ -829,6 +838,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   }
   {
     errdefer self.output_send(outputs, evaluated[:])
+    let refs = if has_refs { referencing_fks(fin, target.table.id) } else { [] }
     for r in rows {
       let image = match view {
         Some(v) =>
@@ -836,7 +846,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
         None => r.1
       }
       if has_refs {
-        self.check_references(target, fin, [r.1], [None], "DELETE")
+        self.check_references(target, fin, [r.1], [None], "DELETE", refs~)
       }
       evaluated.push(
         self.output_eval(outputs, image + extra_idx.map(i => r.2[i])),

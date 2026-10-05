@@ -577,7 +577,10 @@ pub fn same_index_entries(t : Table, old : Row, new : Row) -> Bool {
     if covered != ix.covers(new) {
       return false
     }
-    if covered && !ix.columns.iter().all(c => old[c.0] == new[c.0]) {
+    if covered &&
+      !ix.columns
+      .iter()
+      .all(c => physical_equal(old[c.0], new[c.0]) || old[c.0] == new[c.0]) {
       return false
     }
   }
@@ -592,6 +595,18 @@ pub fn Db::replace_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
     return self
   }
   { ..self, data: self.data.add(id, { ..d, rows: d.rows.add(rowid, row), }), }
+}
+
+///|
+/// `replace_row` of every (rowid, row) in order, in one bulk rebuild of the
+/// table's rows when there are many (`PMap::add_all`).
+pub fn Db::replace_rows(self : Db, id : Int, rows : Array[(Int64, Row)]) -> Db {
+  guard self.data.get(id) is Some(d) else { return self }
+  let present = rows.filter(r => d.rows.contains(r.0))
+  if present.is_empty() {
+    return self
+  }
+  { ..self, data: self.data.add(id, { ..d, rows: d.rows.add_all(present), }), }
 }
 
 ///|

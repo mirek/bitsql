@@ -317,6 +317,9 @@ fn Session::cascade_actions(
         let moves : Array[(Array[@types.Value], Array[@types.Value]?)] = []
         for ch in chs {
           let (_, old, new) = ch
+          if new is Some(n) && untouched(f.ref_columns, old, n) {
+            continue
+          }
           let k = f.ref_columns.map(c => old[c])
           if k.iter().any(v => v is Null) {
             continue
@@ -482,39 +485,44 @@ fn Session::check_references(
   before : Array[Array[@types.Value]],
   after : Array[Array[@types.Value]?],
   verb : String,
+  refs? : Array[(@store.Table, @store.ForeignKey)] = referencing_fks(
+    db,
+    target.table.id,
+  ),
 ) -> Unit raise {
   let t = target.table
-  for child in db.tables() {
-    for fk in child.foreign_keys {
-      if fk.ref_table != t.id || !fk.enabled {
+  for entry in refs {
+    let (child, fk) = entry
+    for i, old in before {
+      let action = if after[i] is None { fk.on_delete } else { fk.on_update }
+      if !(action is NoAction) {
         continue
       }
-      for i, old in before {
-        let action = if after[i] is None { fk.on_delete } else { fk.on_update }
-        if !(action is NoAction) {
-          continue
-        }
-        let key = fk.ref_columns.map(c => old[c])
-        if key.iter().any(v => v is Null) {
-          continue
-        }
-        // key unchanged by an UPDATE: nothing to check
-        match after[i] {
-          Some(new) =>
-            if fk_keys_equal(
-                t,
-                fk.ref_columns,
-                key,
-                fk.ref_columns.map(c => new[c]),
-              ) {
-              continue
-            }
-          None => ()
-        }
-        if self.fk_has_key(db, child, fk.columns, key) &&
-          !self.fk_has_key(db, t, fk.ref_columns, key) {
-          raise self.fk_parent_error(target.scope, verb, fk, child)
-        }
+      // an UPDATE that left the key columns' values in place: nothing to
+      // check (the cheap, allocation-free case of fk_keys_equal below)
+      if after[i] is Some(new) && untouched(fk.ref_columns, old, new) {
+        continue
+      }
+      let key = fk.ref_columns.map(c => old[c])
+      if key.iter().any(v => v is Null) {
+        continue
+      }
+      // key unchanged by an UPDATE: nothing to check
+      match after[i] {
+        Some(new) =>
+          if fk_keys_equal(
+              t,
+              fk.ref_columns,
+              key,
+              fk.ref_columns.map(c => new[c]),
+            ) {
+            continue
+          }
+        None => ()
+      }
+      if self.fk_has_key(db, child, fk.columns, key) &&
+        !self.fk_has_key(db, t, fk.ref_columns, key) {
+        raise self.fk_parent_error(target.scope, verb, fk, child)
       }
     }
   }
@@ -547,4 +555,39 @@ fn Session::check_self_references(
       raise self.fk_child_error(target.scope, verb, fk, t.id, t)
     }
   }
+}
+
+///|
+/// Whether an updated row still holds the very same value objects in
+/// `columns` (UPDATE copies unassigned columns by reference): the key is
+/// unchanged without comparing values.
+fn untouched(
+  columns : Array[Int],
+  old : Array[@types.Value],
+  new : Array[@types.Value],
+) -> Bool {
+  for c in columns {
+    if !physical_equal(old[c], new[c]) {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Enabled foreign keys referencing table `id`, with their tables (in
+/// `check_references`' order); callers checking row by row compute it once.
+fn referencing_fks(
+  db : @store.Db,
+  id : Int,
+) -> Array[(@store.Table, @store.ForeignKey)] {
+  let out = []
+  for child in db.tables() {
+    for fk in child.foreign_keys {
+      if fk.ref_table == id && fk.enabled {
+        out.push((child, fk))
+      }
+    }
+  }
+  out
 }
