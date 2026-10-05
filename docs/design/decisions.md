@@ -911,3 +911,27 @@ correlated 24 → 12 ms, correlated COUNT(*) scalar 33 → 10 ms. The
 uncorrelated scalar shape (`p = (SELECT MAX(p) FROM w2 JOIN w …)`) already
 ran once; its 16–18 ms is the 20k × 20k equi-join itself (`exec/plan.mbt`
 Join: a concatenated row and an ON evaluation per pair), not the subquery.
+
+## 2026-10-05: executor performance push (closures, streaming, hash tables, normalized sort keys)
+
+Profiling (`scripts/profile.sh`) showed ~45% of executor CPU in allocation
+and reference-count release, with per-row interpretive overhead of
+100–580 ns. The executor now compiles expressions into closures per
+operator run (`exec/compile.mbt`), streams scalar aggregates and joins,
+groups through accumulators, hashes integer keys in an open-addressing
+table (`exec/int_table.mbt`), sorts on normalized keys
+(`exec/normalized_sort.mbt`) and selects TOP n with a heap; the techniques,
+the papers they come from and the measured results are in
+`docs/design/performance.md` (BibTeX in `performance.bib`). Equivalence
+arguments that are not obvious have whitebox tests against the code they
+short-cut. Two behavior-adjacent consequences:
+
+- Scalar aggregates of the fast kinds now evaluate their arguments row by
+  row as the input streams (SQL Server's stream aggregate order) instead of
+  after the whole input; a SUM overflow therefore stops before later rows,
+  so a NULL after it never sets the 8153 flag (the previously "assumed"
+  case is now exact). When an input row and an aggregate argument would
+  raise different errors, which one surfaces follows row order.
+- Named built-ins implemented only by the executor no longer consult the
+  session's function chain first; `session/named_pure_wbtest.mbt` fails if
+  the chain ever starts answering one of them.

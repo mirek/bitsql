@@ -9,6 +9,8 @@ the top priority: a false green is worse than an explicit "not supported" error.
 - Design: `docs/design/README.md`. SQL Server behavior references distilled
   from captures: `docs/reference/` (completions, result metadata, sql_variant). Live status and next work:
   `docs/design/roadmap.md`. Amendments: `docs/design/decisions.md`.
+  Executor performance (techniques, papers, measuring, profiling):
+  `docs/design/performance.md`.
 - Before writing MoonBit, use skill **moonbit** (vendored docs in
   `docs/moonbit/`, conventions, gotchas).
 - Before implementing any SQL Server behavior, use skill **implement-feature**:
