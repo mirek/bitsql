@@ -286,13 +286,12 @@ pub fn decimal_union(p1 : Int, s1 : Int, p2 : Int, s2 : Int) -> (Int, Int) {
 }
 
 ///|
-/// Decimal or Numeric: Numeric only when no operand is a Decimal and one is
-/// a Numeric (captured: NUMERIC(10,0)/INT → numeric, DECIMAL(10,0)/2 →
-/// decimal). Mixed DECIMAL/NUMERIC is unverified; bitsql picks decimal.
+/// Decimal or Numeric of an arithmetic result: Numeric when either operand
+/// is a Numeric (captured: NUMERIC(10,0)/INT → numeric, DECIMAL(10,0)/2 →
+/// decimal; query/top-fetch-bigint probe: numeric ± * / % decimal is
+/// numeric in either order, `@decimal + 1.5` is numeric).
 fn decimal_kind(a : SqlType, b : SqlType, p : Int, s : Int) -> SqlType {
-  if a is Decimal(_, _) || b is Decimal(_, _) {
-    Decimal(p, s)
-  } else if a is Numeric(_, _) || b is Numeric(_, _) {
+  if a is Numeric(_, _) || b is Numeric(_, _) {
     Numeric(p, s)
   } else {
     Decimal(p, s)
@@ -505,7 +504,9 @@ pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
   match (a, b) {
     (Decimal(p1, s1) | Numeric(p1, s1), Decimal(p2, s2) | Numeric(p2, s2)) => {
       let (p, s) = decimal_union(p1, s1, p2, s2)
-      return decimal_kind(a, b, p, s)
+      // captured probe: CASE / UNION ALL / COALESCE over decimal and
+      // numeric take the first operand's name
+      return if a is Numeric(_, _) { Numeric(p, s) } else { Decimal(p, s) }
     }
     (Time(x), Time(y)) => return Time(max_int(x, y))
     (DateTime2(x), DateTime2(y)) => return DateTime2(max_int(x, y))

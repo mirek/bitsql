@@ -187,7 +187,8 @@ test "decimal division matches the capture" {
 test "decimal result types match captured metadata" {
   // msduck reference/numeric-arithmetic-context.json and
   // numeric-literal-metadata.json (the binder types integer literals next to
-  // a decimal as decimal(digits, 0), e.g. 2 → numeric(1,0))
+  // a decimal as (digits, 0) of the other operand's name, e.g. 2 next to
+  // a numeric → numeric(1,0); numeric beside decimal is numeric)
   let rt = fn(
     op : @types.ArithOp,
     a : @types.SqlType,
@@ -204,10 +205,12 @@ test "decimal result types match captured metadata" {
   assert_eq(rt(Div, Numeric(10, 0), Numeric(2, 1)), "numeric(17,6)")
   assert_eq(rt(Div, Decimal(10, 0), Int), "decimal(21,11)")
   assert_eq(rt(Div, Numeric(10, 0), Int), "numeric(21,11)")
-  assert_eq(rt(Div, Decimal(5, 2), Numeric(1, 0)), "decimal(9,6)")
+  assert_eq(rt(Div, Decimal(5, 2), Decimal(1, 0)), "decimal(9,6)")
+  assert_eq(rt(Div, Decimal(5, 2), Numeric(1, 0)), "numeric(9,6)")
   assert_eq(rt(Div, Decimal(5, 2), Int), "decimal(16,13)")
   assert_eq(rt(Mul, Numeric(2, 1), Numeric(1, 0)), "numeric(4,1)")
-  assert_eq(rt(Add, Decimal(2, 1), Numeric(1, 0)), "decimal(3,1)")
+  assert_eq(rt(Add, Decimal(2, 1), Decimal(1, 0)), "decimal(3,1)")
+  assert_eq(rt(Add, Decimal(5, 0), Numeric(5, 0)), "numeric(6,0)")
   assert_eq(rt(Div, Numeric(16, 6), Numeric(1, 0)), "numeric(18,8)")
   // documented reduction rules
   assert_eq(rt(Mul, Decimal(38, 10), Decimal(38, 10)), "decimal(38,6)")

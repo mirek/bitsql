@@ -728,7 +728,17 @@ fn int_literal_as_numeric(
     _ => return x
   }
   let digits = @cmp.maximum(1, v.abs().to_string().length())
-  coerce(x, Numeric(digits, 0))
+  // it takes the other operand's name: `@decimal + 1` stays decimal while
+  // numeric beside decimal makes numeric (captured: query/top-fetch-bigint
+  // probe)
+  coerce(
+    x,
+    if other.ty is Decimal(_, _) {
+      Decimal(digits, 0)
+    } else {
+      Numeric(digits, 0)
+    },
+  )
 }
 
 ///|
