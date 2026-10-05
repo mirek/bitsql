@@ -76,15 +76,8 @@ pub fn compare_strings(
       let k = shared_prefix(a, b, collation.version)
       if is_ascii_from(a, k) && is_ascii_from(b, k) {
         compare_ascii(a, b, k, collation, ansi)
-      } else if k == 0 {
-        compare_linguistic(a, b, collation, ansi)
       } else {
-        compare_linguistic(
-          a.unsafe_substring(start=k, end=a.length()),
-          b.unsafe_substring(start=k, end=b.length()),
-          collation,
-          ansi,
-        )
+        compare_linguistic(a, b, k, collation, ansi)
       }
     }
   }
@@ -353,16 +346,6 @@ fn compare_bin(a : String, b : String) -> Int {
 }
 
 ///|
-/// One collation element.
-priv struct Element {
-  primary : Int // 0 = accent-only element
-  secondary : Int // accent rank (accent_weight), 0 = none
-  tertiary : Int // 0 lower / uncased, 1 variant (final sigma), 2 upper
-  kana : Int // 1 = katakana form of a hiragana primary
-  width : Int // 1 = fullwidth form
-}
-
-///|
 /// Latin Extended-A (U+0100..U+017F) lowercase letters: base letter and
 /// combining mark. 0 mark = own letter (see `latin_ext_primary`).
 let latin_ext_a : Array[(Int, Int, Int)] = [
@@ -464,48 +447,47 @@ let latin1_lower : FixedArray[(Int, Int)] = [
 ]
 
 ///|
-/// Lowercase a code unit; returns (lower, is_upper).
-fn fold_case(u : Int) -> (Int, Bool) {
+/// Lowercase a code unit (İ U+0130 stays: the caller handles it). Upper
+/// case is `fold_case(u) != u || u == 0x130`; one Int result, no tuple.
+fn fold_case(u : Int) -> Int {
   if u >= 'A' && u <= 'Z' {
-    (u + 32, true)
+    u + 32
   } else if u >= 0xC0 && u <= 0xDE && u != 0xD7 {
-    (u + 32, true)
+    u + 32
   } else if u == 0x178 {
-    (0xFF, true)
-  } else if u == 0x130 {
-    (0x130, true) // İ handled by the caller
-  } else if u >= 0x100 && u <= 0x137 && u != 0x131 {
+    0xFF
+  } else if u >= 0x100 && u <= 0x137 && u != 0x131 && u != 0x130 {
     if u % 2 == 0 {
-      (u + 1, true)
+      u + 1
     } else {
-      (u, false)
+      u
     }
   } else if u >= 0x139 && u <= 0x148 {
     if u % 2 == 1 {
-      (u + 1, true)
+      u + 1
     } else {
-      (u, false)
+      u
     }
   } else if u >= 0x14A && u <= 0x177 {
     if u % 2 == 0 {
-      (u + 1, true)
+      u + 1
     } else {
-      (u, false)
+      u
     }
   } else if u >= 0x179 && u <= 0x17E {
     if u % 2 == 1 {
-      (u + 1, true)
+      u + 1
     } else {
-      (u, false)
+      u
     }
   } else if u >= 0x391 && u <= 0x3A9 && u != 0x3A2 {
-    (u + 32, true)
+    u + 32
   } else if u >= 0x410 && u <= 0x42F {
-    (u + 32, true)
+    u + 32
   } else if u >= 0x400 && u <= 0x40F {
-    (u + 80, true)
+    u + 80
   } else {
-    (u, false)
+    u
   }
 }
 
@@ -549,270 +531,278 @@ fn is_ignorable(u : Int, version : Int) -> Bool {
 }
 
 ///|
+/// Collation elements are packed into one `Int` each, so building them
+/// allocates nothing per character (the UTS #10 element weights, packed
+/// the way ICU packs its 32-bit collation elements):
+/// - a base element (primary != 0):
+///   `primary << 4 | tertiary << 2 | kana << 1 | width`, primary < 2^19,
+///   tertiary 0 lower / uncased, 1 variant (final sigma), 2 upper, kana 1 =
+///   katakana form of a hiragana primary, width 1 = fullwidth form;
+/// - an accent-only element (primary 0): `-1 - secondary`, the secondary
+///   weight being the accent rank (`accent_weight`).
+/// No element carries both a primary and a secondary weight: accents are
+/// separate elements after their base letter.
+fn pack_element(primary : Int, tertiary : Int, kana_width : Int) -> Int {
+  (primary << 4) | (tertiary << 2) | kana_width
+}
+
+///|
+fn accent_element(mark : Int, version : Int) -> Int {
+  -1 - accent_weight(mark, version)
+}
+
+///|
+/// Weight of packed element `e` at `level`: 0 primary, 1 secondary
+/// (accent), 2 tertiary (case), 3 kana, 4 width.
+fn element_weight(e : Int, level : Int) -> Int {
+  if e < 0 {
+    if level == 1 {
+      -1 - e
+    } else {
+      0
+    }
+  } else {
+    match level {
+      0 => e >> 4
+      1 => 0
+      2 => (e >> 2) & 3
+      3 => (e >> 1) & 1
+      _ => e & 1
+    }
+  }
+}
+
+///|
+/// Latin Extended-A lookup: `base | mark << 8` for U+0100 + i, 0 when the
+/// letter has no decomposition (built from `latin_ext_a`).
+let latin_ext_a_index : FixedArray[Int] = {
+  let t = FixedArray::make(0x80, 0)
+  for e in latin_ext_a {
+    t[e.0 - 0x100] = e.1 | (e.2 << 8)
+  }
+  t
+}
+
+///|
 fn push_letter(
-  out : Array[Element],
+  out : Array[Int],
   base : Int,
   mark : Int,
   upper : Bool,
+  kana_width : Int,
+  version : Int,
 ) -> Unit {
-  out.push({
-    primary: letter_primary(base),
-    secondary: 0,
-    tertiary: if upper {
-      2
-    } else {
-      0
-    },
-    kana: 0,
-    width: 0,
-  })
+  out.push(
+    pack_element(letter_primary(base), if upper { 2 } else { 0 }, kana_width),
+  )
   if mark != 0 {
-    out.push({ primary: 0, secondary: mark, tertiary: 0, kana: 0, width: 0, })
+    out.push(accent_element(mark, version))
   }
 }
 
 ///|
-/// Elements of a string plus the word-sort ignorables (position, unit).
-fn collation_elements(
+/// Is this code unit dropped before element generation? Ignorable units,
+/// except NUL under string sort (SQL sort orders on varchar data give it a
+/// weight below the space; captured: MIN over '', ' ' and CHAR(0) is
+/// CHAR(0); msduck character-extrema #098, #130).
+fn is_ignored(u : Int, version : Int, word_sort : Bool) -> Bool {
+  if u < 0xAD {
+    u == 0 && word_sort
+  } else {
+    is_ignorable(u, version)
+  }
+}
+
+///|
+/// Append the elements of one (not ignored, not word-sort) code unit.
+fn push_unit_elements(
+  out : Array[Int],
+  raw : Int,
+  version : Int,
+  word_sort : Bool,
+) -> Unit {
+  // width: fullwidth ASCII; kana: katakana → hiragana
+  let mut u1 = raw
+  let mut kw = 0
+  if raw >= 0xFF01 && raw <= 0xFF5E {
+    u1 = raw - 0xFEE0
+    kw = 1
+  }
+  if u1 >= 0x30A1 && u1 <= 0x30F6 {
+    u1 -= 0x60
+    kw = kw | 2
+  }
+  if u1 >= 0x300 && u1 <= 0x36F {
+    out.push(accent_element(u1, version))
+    return
+  }
+  let u = fold_case(u1)
+  let upper = u != u1 || u1 == 0x130
+  let t = if upper { 2 } else { 0 }
+  if u >= 'a' && u <= 'z' {
+    push_letter(out, u, 0, upper, kw, version)
+  } else if u >= '0' && u <= '9' {
+    out.push(pack_element(0x8000 + u, 0, kw))
+  } else if u == 0xB9 || u == 0xB2 || u == 0xB3 {
+    let digit : Int = if u == 0xB9 {
+      '1'
+    } else if u == 0xB2 {
+      '2'
+    } else {
+      '3'
+    }
+    out.push(pack_element(0x8000 + digit, 1, kw))
+  } else if u == 0xDF && word_sort {
+    // ß → ss
+    push_letter(out, 's', 0, false, kw, version)
+    push_letter(out, 's', 0, false, kw, version)
+  } else if u == 0xDF {
+    // string sort (SQL_ collation, varchar): ß sorts after 'ss' and before
+    // 'st' but is not equal to 'ss' (captured probe; CHARINDEX('ss',
+    // 'straße') is 0, functions/more#054). Modelled as "ss" with an
+    // accent-level difference.
+    push_letter(out, 's', 0, false, kw, version)
+    push_letter(out, 's', 0x370, false, kw, version)
+  } else if u == 0xE6 && word_sort {
+    push_letter(out, 'a', 0, upper, kw, version)
+    push_letter(out, 'e', 0, upper, kw, version)
+  } else if u == 0x153 && word_sort {
+    push_letter(out, 'o', 0, upper, kw, version)
+    push_letter(out, 'e', 0, upper, kw, version)
+  } else if u == 0x133 && word_sort {
+    push_letter(out, 'i', 0, upper, kw, version)
+    push_letter(out, 'j', 0, upper, kw, version)
+  } else if u == 0xE6 || u == 0x153 || u == 0x133 {
+    // string sort: own letters right after a / o / i
+    let base : Int = if u == 0xE6 {
+      'a'
+    } else if u == 0x153 {
+      'o'
+    } else {
+      'i'
+    }
+    out.push(pack_element(letter_primary(base) + 2, t, kw))
+  } else if u >= 0xE0 && u <= 0xFF && latin1_lower[u - 0xE0].0 != 0 {
+    let entry = latin1_lower[u - 0xE0]
+    push_letter(out, entry.0, entry.1, upper, kw, version)
+  } else if u == 0xFE {
+    // þ after z
+    out.push(pack_element(letter_primary('z') + 4, t, kw))
+  } else if u == 0x130 {
+    // İ = I + dot above
+    push_letter(out, 'i', 0x307, true, kw, version)
+  } else if u == 0x131 {
+    // ı: own letter right after i
+    out.push(pack_element(letter_primary('i') + 1, 0, kw))
+  } else if u >= 0x100 && u <= 0x17F {
+    let d = latin_ext_a_index[u - 0x100]
+    if d != 0 {
+      push_letter(out, d & 0xFF, d >> 8, upper, kw, version)
+    } else {
+      out.push(pack_element(0x20000 + u, t, kw))
+    }
+  } else if u == 0x3C2 {
+    // final sigma: σ with a tertiary variant
+    out.push(pack_element(0x20000 + 0x3C3, 1, kw))
+  } else if u >= 0xD800 && u <= 0xDFFF {
+    out.push(pack_element(0x40000 + u, 0, kw))
+  } else if u < 0x80 || (u >= 0xA0 && u <= 0xBF) || u == 0xD7 || u == 0xF7 {
+    // controls, space, punctuation and symbols
+    out.push(pack_element(0x100 + u, 0, kw))
+  } else {
+    out.push(pack_element(0x20000 + u, t, kw))
+  }
+}
+
+///|
+/// The packed elements of `s` from code unit `start` on (into `out`), plus
+/// the word-sort ignorables as (element position, unit) pairs (into `ws`,
+/// two Ints each). Both buffers are cleared first.
+fn collation_elements_into(
   s : String,
+  start : Int,
   collation : Collation,
   ansi : Bool,
-) -> (Array[Element], Array[(Int, Int)]) {
+  out : Array[Int],
+  ws : Array[Int],
+) -> Unit {
+  out.clear()
+  ws.clear()
   let version = collation.version
   let word_sort = !(ansi && collation.sql_collation)
-  // SQL sort orders on varchar data give NUL a weight below the space
-  // (captured: MIN over '', ' ' and CHAR(0) is CHAR(0); msduck
-  // character-extrema #098, #130)
-  let ignored = (u : Int) => is_ignorable(u, version) && !(u == 0 && !word_sort)
   // pad semantics: drop trailing spaces (and trailing ignorables)
   let mut n = s.length()
-  while n > 0 && (s[n - 1] == ' ' || ignored(s[n - 1].to_int())) {
-    n -= 1
+  while n > start {
+    let u = s[n - 1].to_int()
+    if u == ' ' || is_ignored(u, version, word_sort) {
+      n -= 1
+    } else {
+      break
+    }
   }
-  let out : Array[Element] = []
-  let ws : Array[(Int, Int)] = []
-  for i in 0..<n {
+  for i in start..<n {
     let raw = s[i].to_int()
-    if ignored(raw) {
+    if is_ignored(raw, version, word_sort) {
       continue
     }
     if word_sort && (raw == '-' || raw == '\'') {
-      ws.push((out.length(), raw))
+      ws.push(out.length())
+      ws.push(raw)
       continue
     }
-    // width: fullwidth ASCII
-    let (u0, width) = if raw >= 0xFF01 && raw <= 0xFF5E {
-      (raw - 0xFEE0, 1)
-    } else {
-      (raw, 0)
-    }
-    // kana: katakana → hiragana
-    let (u1, kana) = if u0 >= 0x30A1 && u0 <= 0x30F6 {
-      (u0 - 0x60, 1)
-    } else {
-      (u0, 0)
-    }
-    if u1 >= 0x300 && u1 <= 0x36F {
-      out.push({ primary: 0, secondary: u1, tertiary: 0, kana: 0, width: 0, })
-      continue
-    }
-    let (u, upper) = fold_case(u1)
-    let start = out.length()
-    if u >= 'a' && u <= 'z' {
-      push_letter(out, u, 0, upper)
-    } else if u >= '0' && u <= '9' {
-      out.push({
-        primary: 0x8000 + u,
-        secondary: 0,
-        tertiary: 0,
-        kana: 0,
-        width: 0,
-      })
-    } else if u == 0xB9 || u == 0xB2 || u == 0xB3 {
-      let digit : Int = if u == 0xB9 {
-        '1'
-      } else if u == 0xB2 {
-        '2'
-      } else {
-        '3'
-      }
-      out.push({
-        primary: 0x8000 + digit,
-        secondary: 0,
-        tertiary: 1,
-        kana: 0,
-        width: 0,
-      })
-    } else if u == 0xDF && word_sort {
-      // ß → ss
-      push_letter(out, 's', 0, false)
-      push_letter(out, 's', 0, false)
-    } else if u == 0xDF {
-      // string sort (SQL_ collation, varchar): ß sorts after 'ss' and before
-      // 'st' but is not equal to 'ss' (captured probe; CHARINDEX('ss',
-      // 'straße') is 0, functions/more#054). Modelled as "ss" with an
-      // accent-level difference.
-      push_letter(out, 's', 0, false)
-      push_letter(out, 's', 0x370, false)
-    } else if u == 0xE6 && word_sort {
-      push_letter(out, 'a', 0, upper)
-      push_letter(out, 'e', 0, upper)
-    } else if u == 0x153 && word_sort {
-      push_letter(out, 'o', 0, upper)
-      push_letter(out, 'e', 0, upper)
-    } else if u == 0x133 && word_sort {
-      push_letter(out, 'i', 0, upper)
-      push_letter(out, 'j', 0, upper)
-    } else if u == 0xE6 || u == 0x153 || u == 0x133 {
-      // string sort: own letters right after a / o / i
-      let base : Int = if u == 0xE6 {
-        'a'
-      } else if u == 0x153 {
-        'o'
-      } else {
-        'i'
-      }
-      out.push({
-        primary: letter_primary(base) + 2,
-        secondary: 0,
-        tertiary: if upper {
-          2
-        } else {
-          0
-        },
-        kana: 0,
-        width: 0,
-      })
-    } else if u >= 0xE0 && u <= 0xFF && latin1_lower[u - 0xE0].0 != 0 {
-      let (base, mark) = latin1_lower[u - 0xE0]
-      push_letter(out, base, mark, upper)
-    } else if u == 0xFE {
-      // þ after z
-      out.push({
-        primary: letter_primary('z') + 4,
-        secondary: 0,
-        tertiary: if upper {
-          2
-        } else {
-          0
-        },
-        kana: 0,
-        width: 0,
-      })
-    } else if u == 0x130 {
-      // İ = I + dot above
-      push_letter(out, 'i', 0x307, true)
-    } else if u == 0x131 {
-      // ı: own letter right after i
-      out.push({
-        primary: letter_primary('i') + 1,
-        secondary: 0,
-        tertiary: 0,
-        kana: 0,
-        width: 0,
-      })
-    } else if u >= 0x100 && u <= 0x17F {
-      let mut found = false
-      for e in latin_ext_a {
-        if e.0 == u {
-          push_letter(out, e.1, e.2, upper)
-          found = true
-          break
-        }
-      }
-      if !found {
-        out.push({
-          primary: 0x20000 + u,
-          secondary: 0,
-          tertiary: if upper {
-            2
-          } else {
-            0
-          },
-          kana: 0,
-          width: 0,
-        })
-      }
-    } else if u == 0x3C2 {
-      // final sigma: σ with a tertiary variant
-      out.push({
-        primary: 0x20000 + 0x3C3,
-        secondary: 0,
-        tertiary: 1,
-        kana: 0,
-        width: 0,
-      })
-    } else if u >= 0xD800 && u <= 0xDFFF {
-      out.push({
-        primary: 0x40000 + u,
-        secondary: 0,
-        tertiary: 0,
-        kana: 0,
-        width: 0,
-      })
-    } else if u < 0x80 || (u >= 0xA0 && u <= 0xBF) || u == 0xD7 || u == 0xF7 {
-      // controls, space, punctuation and symbols
-      out.push({
-        primary: 0x100 + u,
-        secondary: 0,
-        tertiary: 0,
-        kana: 0,
-        width: 0,
-      })
-    } else {
-      out.push({
-        primary: 0x20000 + u,
-        secondary: 0,
-        tertiary: if upper {
-          2
-        } else {
-          0
-        },
-        kana: 0,
-        width: 0,
-      })
-    }
-    for j in start..<out.length() {
-      if out[j].primary != 0 {
-        out[j] = { ..out[j], kana, width, }
-      }
-    }
+    push_unit_elements(out, raw, version, word_sort)
   }
-  // accents sort in the table's order, not by code point (captured:
-  // msduck default-collation weights-accented-letter-order: á < à < ä < ā)
-  for k, e in out {
-    if e.secondary != 0 {
-      out[k] = { ..e, secondary: accent_weight(e.secondary, version), }
-    }
-  }
-  (out, ws)
 }
 
 ///|
-fn compare_level(
-  a : Array[Element],
-  b : Array[Element],
-  key : (Element) -> Int,
-  skip_zero_primary : Bool,
-) -> Int {
-  // walks both arrays, skipping accent-only elements when asked, without
-  // building filtered copies
+/// Reusable element buffers: building a string's elements then allocates
+/// nothing in steady state. Core runs one comparison at a time and these
+/// helpers never nest, so two sets (one per operand) suffice.
+priv struct ElementBuffers {
+  elems : Array[Int]
+  ws : Array[Int]
+}
+
+///|
+let buffers_a : ElementBuffers = { elems: [], ws: [], }
+
+///|
+let buffers_b : ElementBuffers = { elems: [], ws: [], }
+
+///|
+/// Drop the storage a very long string left behind.
+fn ElementBuffers::release(self : ElementBuffers) -> Unit {
+  if self.elems.capacity() > 4096 {
+    self.elems.clear()
+    self.elems.shrink_to_fit()
+  }
+  if self.ws.capacity() > 4096 {
+    self.ws.clear()
+    self.ws.shrink_to_fit()
+  }
+}
+
+///|
+/// Compare two element sequences at one level (see `element_weight`),
+/// skipping accent-only elements except at the accent level.
+fn compare_level(a : Array[Int], b : Array[Int], level : Int) -> Int {
+  let skip_accents = level != 1
   let mut i = 0
   let mut j = 0
   while true {
-    if skip_zero_primary {
-      while i < a.length() && a[i].primary == 0 {
+    if skip_accents {
+      while i < a.length() && a[i] < 0 {
         i += 1
       }
-      while j < b.length() && b[j].primary == 0 {
+      while j < b.length() && b[j] < 0 {
         j += 1
       }
     }
     if i >= a.length() || j >= b.length() {
       break
     }
-    let x = key(a[i])
-    let y = key(b[j])
+    let x = element_weight(a[i], level)
+    let y = element_weight(b[j], level)
     if x != y {
       return sign_of(x - y)
     }
@@ -829,28 +819,67 @@ fn compare_level(
 }
 
 ///|
+/// Linguistic comparison of `a` and `b` from code unit `start` on (the
+/// units before it are identical, see `shared_prefix`).
 fn compare_linguistic(
   a : String,
   b : String,
+  start : Int,
   collation : Collation,
   ansi : Bool,
 ) -> Int {
-  let (ea, wa) = collation_elements(a, collation, ansi)
-  let (eb, wb) = collation_elements(b, collation, ansi)
-  let primary = compare_level(ea, eb, e => e.primary, true)
-  // pad semantics under SQL sort orders on varchar: the shorter operand
-  // is space-padded, so a control character (NUL) after the common prefix
-  // sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), msduck
+  let ba = buffers_a
+  let bb = buffers_b
+  collation_elements_into(a, start, collation, ansi, ba.elems, ba.ws)
+  collation_elements_into(b, start, collation, ansi, bb.elems, bb.ws)
+  let r = compare_elements(ba.elems, ba.ws, bb.elems, bb.ws, collation, ansi)
+  ba.release()
+  bb.release()
+  r
+}
+
+///|
+fn compare_elements(
+  ea : Array[Int],
+  wa : Array[Int],
+  eb : Array[Int],
+  wb : Array[Int],
+  collation : Collation,
+  ansi : Bool,
+) -> Int {
+  let primary = compare_level(ea, eb, 0)
+  // pad semantics under SQL sort orders on varchar data: the shorter
+  // operand is space-padded, so a control character (NUL) after the common
+  // prefix sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), msduck
   // character-extrema #098)
   if ansi && collation.sql_collation && primary != 0 {
-    let xs = ea.filter(e => e.primary != 0)
-    let ys = eb.filter(e => e.primary != 0)
-    let n = if xs.length() < ys.length() { xs.length() } else { ys.length() }
-    let prefix = (0).until(n).all(i => xs[i].primary == ys[i].primary)
-    if prefix && xs.length() != ys.length() {
-      let longer_next = if xs.length() > n { xs[n] } else { ys[n] }
-      if longer_next.primary < 0x100 + ' '.to_int() {
-        return if xs.length() > n { -1 } else { 1 }
+    let mut i = 0
+    let mut j = 0
+    let mut prefix = true
+    while true {
+      while i < ea.length() && ea[i] < 0 {
+        i += 1
+      }
+      while j < eb.length() && eb[j] < 0 {
+        j += 1
+      }
+      if i >= ea.length() || j >= eb.length() {
+        break
+      }
+      if ea[i] >> 4 != eb[j] >> 4 {
+        prefix = false
+        break
+      }
+      i += 1
+      j += 1
+    }
+    if prefix {
+      if i < ea.length() {
+        if ea[i] >> 4 < 0x100 + ' '.to_int() {
+          return -1
+        }
+      } else if j < eb.length() && eb[j] >> 4 < 0x100 + ' '.to_int() {
+        return 1
       }
     }
   }
@@ -858,13 +887,13 @@ fn compare_linguistic(
     return primary
   }
   if collation.accent_sensitive {
-    let c = compare_level(ea, eb, e => e.secondary, false)
+    let c = compare_level(ea, eb, 1)
     if c != 0 {
       return c
     }
   }
   if collation.case_sensitive {
-    let c = compare_level(ea, eb, e => e.tertiary, true)
+    let c = compare_level(ea, eb, 2)
     if c != 0 {
       // SQL sort orders on varchar data put upper case first (captured:
       // 'A' < 'a' COLLATE SQL_Latin1_General_CP1_CS_AS, while N'A' > N'a';
@@ -873,13 +902,13 @@ fn compare_linguistic(
     }
   }
   if collation.kana_sensitive {
-    let c = compare_level(ea, eb, e => e.kana, true)
+    let c = compare_level(ea, eb, 3)
     if c != 0 {
       return c
     }
   }
   if collation.width_sensitive {
-    let c = compare_level(ea, eb, e => e.width, true)
+    let c = compare_level(ea, eb, 4)
     if c != 0 {
       return c
     }
@@ -887,13 +916,15 @@ fn compare_linguistic(
   // word-sort ignorables break remaining ties (an unverified detail: they
   // are compared by position, then code unit)
   let n = if wa.length() < wb.length() { wa.length() } else { wb.length() }
-  for i in 0..<n {
-    if wa[i].0 != wb[i].0 {
-      return sign_of(wb[i].0 - wa[i].0)
+  let mut i = 0
+  while i < n {
+    if wa[i] != wb[i] {
+      return sign_of(wb[i] - wa[i])
     }
-    if wa[i].1 != wb[i].1 {
-      return sign_of(wa[i].1 - wb[i].1)
+    if wa[i + 1] != wb[i + 1] {
+      return sign_of(wa[i + 1] - wb[i + 1])
     }
+    i += 2
   }
   sign_of(wa.length() - wb.length())
 }
