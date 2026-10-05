@@ -19,11 +19,13 @@
 struct Memo {
   subqueries : Array[SubqueryMemo]
   lookups : Array[LookupCache]
+  /// work table ids handed to unnested subqueries (exec/decorrelate.mbt)
+  mut decor_ids : Int
 }
 
 ///|
 fn Memo::new() -> Memo {
-  { subqueries: [], lookups: [], }
+  { subqueries: [], lookups: [], decor_ids: 0, }
 }
 
 ///|
@@ -67,6 +69,8 @@ priv struct SubqueryMemo {
   mut row_seq : Int64
   /// IN membership (built on first use; None also when sorting failed)
   mut members : Members?
+  /// correlated plans: the unnesting analysis (None: not analyzed yet)
+  mut decor : Decor??
 }
 
 ///|
@@ -92,6 +96,10 @@ priv struct DepsWalk {
   vars : Array[Int]
   work_tables : Array[Int]
   mut ok : Bool
+  /// with `correlated`, references to the subquery's own outer row (one
+  /// level out) are allowed and their columns collected here
+  outer_cols : Array[Int]
+  mut correlated : Bool
 }
 
 ///|
@@ -99,7 +107,14 @@ fn plan_deps(plan : @ir.Plan) -> Deps? {
   if plan is OneRow {
     return None
   }
-  let w : DepsWalk = { tables: [], vars: [], work_tables: [], ok: true, }
+  let w : DepsWalk = {
+    tables: [],
+    vars: [],
+    work_tables: [],
+    ok: true,
+    outer_cols: [],
+    correlated: false,
+  }
   w.plan(plan, 0, true)
   if w.ok {
     Some({ tables: w.tables, vars: w.vars, })
@@ -228,7 +243,10 @@ fn DepsWalk::plan(
     // variables
     WithParams(args, inner) => {
       exprs(args)
+      let correlated = self.correlated
+      self.correlated = false
       self.plan(inner, 0, false)
+      self.correlated = correlated
     }
     UserTable(_, _) | ForJson(_, _, ..) | ForXml(_, _, _, ..) => self.ok = false
   }
@@ -247,7 +265,14 @@ fn DepsWalk::expr(
   match e.kind {
     Lit(_) | Col(_) => ()
     Var(slot) => if own && !self.vars.contains(slot) { self.vars.push(slot) }
-    OuterCol(d, _) => if d > depth { self.ok = false }
+    OuterCol(d, i) =>
+      if self.correlated && d == depth + 1 {
+        if !self.outer_cols.contains(i) {
+          self.outer_cols.push(i)
+        }
+      } else if d > depth {
+        self.ok = false
+      }
     Cast(a, ..) | Collate(a) | Neg(a) | BitNot(a) | Not(a) | IsNull(a, ..) =>
       self.expr(a, depth, own)
     Arith(_, a, b)
@@ -312,6 +337,12 @@ fn DepsWalk::expr(
 }
 
 ///|
+/// Runs subquery `plan` with the current row as its outer row.
+fn run_direct(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
+  run(ctx.push_outer(ctx.row), plan)
+}
+
+///|
 /// Rows of subquery `plan` run with the current row as its outer row, and
 /// the memo entry when they came from (or went into) the statement memo.
 fn subquery_rows(
@@ -333,6 +364,7 @@ fn subquery_rows(
         null_eliminated: false,
         row_seq: 0L,
         members: None,
+        decor: None,
       }
       // bounded: contexts that never clear (constant folding) cannot grow it
       if memo.subqueries.length() >= memo_limit {
@@ -342,28 +374,53 @@ fn subquery_rows(
       e
     }
   }
-  let direct = () => run(ctx.push_outer(ctx.row), plan)
-  guard entry.deps is Some(deps) else { return (direct(), None) }
+  guard entry.deps is Some(deps) else {
+    // correlated: unnested through a key partition when it can be
+    // (exec/decorrelate.mbt)
+    match decorrelated_rows(ctx, entry) {
+      Some(rows) => return (rows, None)
+      None => return (run_direct(ctx, plan), None)
+    }
+  }
+  // a valid entry whose tables and variables are unchanged (checked
+  // without allocating: this runs once per outer row)
+  if entry.valid &&
+    entry.stamps.length() == deps.tables.length() &&
+    entry.var_values.length() == deps.vars.length() {
+    let mut same = true
+    for i, t in deps.tables {
+      match (ctx.stamp)(t.0, t.1) {
+        Some(s) => if s != entry.stamps[i] { same = false }
+        None => return (run_direct(ctx, plan), None)
+      }
+    }
+    for i, slot in deps.vars {
+      match ctx.vars.get(slot) {
+        Some(v) => if same && v != entry.var_values[i] { same = false }
+        None => return (run_direct(ctx, plan), None)
+      }
+    }
+    if same {
+      if entry.null_eliminated {
+        ctx.rt.null_eliminated = true
+      }
+      ctx.rt.row_seq += entry.row_seq
+      return (entry.rows, Some(entry))
+    }
+  }
   let stamps = []
   for t in deps.tables {
     match (ctx.stamp)(t.0, t.1) {
       Some(s) => stamps.push(s)
-      None => return (direct(), None)
+      None => return (run_direct(ctx, plan), None)
     }
   }
   let var_values = []
   for slot in deps.vars {
     match ctx.vars.get(slot) {
       Some(v) => var_values.push(v)
-      None => return (direct(), None)
+      None => return (run_direct(ctx, plan), None)
     }
-  }
-  if entry.valid && entry.stamps == stamps && entry.var_values == var_values {
-    if entry.null_eliminated {
-      ctx.rt.null_eliminated = true
-    }
-    ctx.rt.row_seq += entry.row_seq
-    return (entry.rows, Some(entry))
   }
   entry.valid = false
   let before = ctx.rt.null_eliminated
@@ -373,7 +430,7 @@ fn subquery_rows(
     errdefer {
       ctx.rt.null_eliminated = before || ctx.rt.null_eliminated
     }
-    direct()
+    run_direct(ctx, plan)
   }
   entry.null_eliminated = ctx.rt.null_eliminated
   ctx.rt.null_eliminated = before || entry.null_eliminated

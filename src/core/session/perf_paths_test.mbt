@@ -212,3 +212,39 @@ test "foreign key checks and cascades through key indexes (CI keys)" {
   assert_eq(texts(d), [[Int(3)], [Int(4)], [Int(1)]])
   assert_eq(messages(d), [547, 3621])
 }
+
+///|
+/// Unnested correlated subqueries (exec/decorrelate.mbt) against the
+/// per-row path: `pid + 0 = outer` is not a plain column key, so the same
+/// query with it runs the subquery per outer row.
+test "unnested correlated subqueries equal the per-row evaluation" {
+  let s = perf_session()
+  ignore(
+    s.run_batch(
+      (
+        #|CREATE TABLE dp (id int PRIMARY KEY, g smallint NULL, lim int NULL);
+        #|INSERT dp SELECT value, CASE WHEN value % 7 = 0 THEN NULL ELSE value % 5 END, value % 4 FROM GENERATE_SERIES(1, 60);
+        #|CREATE TABLE dc (id int PRIMARY KEY, pid int NULL, v int NULL);
+        #|INSERT dc SELECT value, CASE WHEN value % 11 = 0 THEN NULL ELSE value % 23 END, CASE WHEN value % 6 = 0 THEN NULL ELSE value % 9 END FROM GENERATE_SERIES(1, 90);
+      ),
+      0,
+    ),
+  )
+  let shapes = [
+    "SELECT id FROM dp WHERE EXISTS (SELECT 1 FROM dc WHERE dc.pid {k} dp.id) ORDER BY id",
+    "SELECT id FROM dp WHERE NOT EXISTS (SELECT 1 FROM dc WHERE dc.pid {k} dp.g AND dc.v > 2) ORDER BY id",
+    "SELECT id, (SELECT COUNT(*) FROM dc WHERE dc.pid {k} dp.g) FROM dp ORDER BY id",
+    "SELECT id, (SELECT SUM(v) FROM dc WHERE dc.pid {k} dp.g AND dc.v >= dp.lim) FROM dp ORDER BY id",
+    "SELECT id, (SELECT TOP 1 id FROM dc WHERE dc.pid {k} dp.id ORDER BY v DESC, id) FROM dp ORDER BY id",
+    "SELECT id FROM dp WHERE lim IN (SELECT v FROM dc WHERE dc.pid {k} dp.g) ORDER BY id",
+    "SELECT id FROM dp WHERE lim NOT IN (SELECT v FROM dc WHERE dc.pid {k} dp.g) ORDER BY id",
+    "SELECT id, (SELECT COUNT(DISTINCT v) FROM dc WHERE dc.pid {k} dp.g) FROM dp ORDER BY id",
+    "SELECT id, (SELECT v FROM dc WHERE dc.pid {k} dp.id) FROM dp ORDER BY id",
+  ]
+  for shape in shapes {
+    let unnested = s.run_batch(shape.replace_all(old="{k}", new="="), 0)
+    let per_row = s.run_batch(shape.replace_all(old="{k}", new="+ 0 ="), 0)
+    assert_eq(texts(unnested), texts(per_row))
+    assert_eq(messages(unnested), messages(per_row))
+  }
+}

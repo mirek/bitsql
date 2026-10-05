@@ -784,3 +784,37 @@ order is reproducible; no corpus case changed.
 UPDATE FROM 125 → 41, INSERT with FK 39 → 27, cascade DELETE 136 → 65,
 MERGE 82 → 46, 40k-row GENERATE_SERIES load 77 → 51; all 24 shapes 1.08 →
 0.50 s.
+
+## 2026-10-05: unnesting correlated integer-key subqueries
+
+Correlated subqueries whose correlation is `inner column = outer column`
+with both sides integers (`exec/decorrelate.mbt`, hooked into
+`subquery_rows` for plans the uncorrelated memo rejects) are unnested the
+way Neumann & Kemper ("Unnesting Arbitrary Queries", BTW 2015) and
+Galindo-Legaria & Joshi ("Orthogonal Optimization of Subqueries and
+Aggregation", SIGMOD 2001) describe: the topmost Filter under unary
+operators (Project, Aggregate, Sort, TOP, OFFSET, DISTINCT, Window) whose
+input is uncorrelated runs once per statement state and is partitioned by
+the key (hash heads + next chain, buckets in input order, NULL keys in no
+bucket); per outer row the bucket rows get the whole predicate re-applied
+(skipped when it is only the key conjunct) and the original operators above
+the Filter run over them through a negative-id work table. When the
+subquery reads no other outer column, results are kept per key value
+(Neumann's magic-set domain; switched off after 4096 keys with under 25%
+hits). Validity follows the uncorrelated memo: table stamps and variable
+values of everything the subquery reads; the input's and each run's 8153
+flag and row counter are replayed. Errors surface at the same outer row
+(only successful runs are kept). As with seeks, conjuncts are evaluated on
+candidate rows only. Strings, decimals, dates, bit and mixed families stay
+on the per-row path (`cached_lookup` sorted index): hashing them needs
+collation sort keys and conversion-aware keys. Checked by corpus
+`query/subqueries-unnested` (captured) and the session test "unnested
+correlated subqueries equal the per-row evaluation" (`pid + 0 =` forces the
+old path). The uncorrelated memo's reuse check no longer allocates per
+outer row.
+
+20k rows (`npm run bench`, noisy shared host), before → after: EXISTS
+correlated 24 → 12 ms, correlated COUNT(*) scalar 33 → 10 ms. The
+uncorrelated scalar shape (`p = (SELECT MAX(p) FROM w2 JOIN w …)`) already
+ran once; its 16–18 ms is the 20k × 20k equi-join itself (`exec/plan.mbt`
+Join: a concatenated row and an ON evaluation per pair), not the subquery.
