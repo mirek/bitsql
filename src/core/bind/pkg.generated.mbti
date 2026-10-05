@@ -22,6 +22,8 @@ pub fn bind_sources(Env, Array[@ast.TableRef]) -> (@ir.Plan, Array[ColumnRef]) r
 
 pub fn coerce(@ir.Expr, @types.SqlType) -> @ir.Expr raise @types.SqlError
 
+pub fn compound_assignment(Env, @ast.AssignOp, @ir.Expr, @ir.Expr) -> @ir.Expr raise @types.SqlError
+
 pub fn constant_value(@ir.Expr) -> @types.Value?
 
 pub fn float_literal_class(String) -> (Double, Int)?

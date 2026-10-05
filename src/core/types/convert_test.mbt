@@ -113,7 +113,7 @@ test "numeric to integer: truncation and overflow" {
   )
   inspect(
     outcome(() => @types.cast(@types.Int(256), Int, TinyInt)),
-    content="220/1 Arithmetic overflow error for data type tinyint, value = 256.",
+    content="220/2 Arithmetic overflow error for data type tinyint, value = 256.",
   )
   inspect(
     outcome(() => @types.cast(@types.BigInt(3000000000L), BigInt, Int)),
@@ -123,7 +123,7 @@ test "numeric to integer: truncation and overflow" {
   )
   inspect(
     outcome(() => @types.cast(@types.Int(-1), Int, TinyInt)),
-    content="220/1 Arithmetic overflow error for data type tinyint, value = -1.",
+    content="220/2 Arithmetic overflow error for data type tinyint, value = -1.",
   )
   assert_eq(outcome(() => @types.cast(@types.Int(5), Int, Bit)), "ok 1")
   assert_eq(outcome(() => @types.cast(s(" true "), vc(), Bit)), "ok 1")

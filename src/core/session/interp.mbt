@@ -489,25 +489,12 @@ fn Session::bind_assignment(
   }
   let env = self.env()
   let rhs = @bind.bind_expr(env, e)
-  let value_expr = match op {
-    Assign => rhs
-    _ => {
-      let current : @ir.Expr = {
-        kind: Var(info.slot),
-        ty: info.ty,
-        nullable: true,
-      }
-      let aop : @types.ArithOp = match op {
-        AddAssign => Add
-        SubAssign => Sub
-        MulAssign => Mul
-        DivAssign => Div
-        _ => Mod
-      }
-      let ty = @types.arith_result_type(aop, info.ty, rhs.ty)
-      { kind: Arith(aop, current, rhs), ty, nullable: true, }
-    }
+  let current : @ir.Expr = {
+    kind: Var(info.slot),
+    ty: info.ty,
+    nullable: true,
   }
+  let value_expr = @bind.compound_assignment(env, op, current, rhs)
   // compile-time in SQL Server: the error's DONE has CurCmd 253 (captured)
   // (an untyped NULL literal is assignable to anything, xml included)
   let failed = try {

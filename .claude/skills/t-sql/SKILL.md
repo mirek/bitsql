@@ -20,6 +20,23 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-05 (compat report 0.1.3, corpus `dml/compound-assignment`):
+  `x op= e` (+= -= *= /= %= &= |= ^=) in UPDATE SET, MERGE UPDATE SET,
+  SET @v and SELECT @v is exactly `x = x op e`: same result type, string
+  `+=` concatenates, NULL propagates, 245 for `int += 'abc'` is a
+  compile-time error (DONE 253), conversion back to the target type gives
+  220/8115. A column assigned twice in one SET list (any qualification or
+  case; also MERGE) is 264 for the whole batch, naming the catalog column.
+  Bitwise `& | ^`: one operand must be bit/tinyint/smallint/int/bigint; the
+  other may be an integer, binary/varbinary(max), char/nchar/varchar/
+  nvarchar(max) or the NULL constant; the result is the integer operand's
+  type (the higher one for two integers). Otherwise 402 naming both types
+  (`NULL` for the constant, `varchar(max)` style), or 8117 naming the left
+  type when neither side is a possible operand (decimal, float, money, date,
+  guid, sql_variant, xml, text/ntext/image; `6.0`/`3000000000` are numeric).
+  Integer overflow into tinyint is 220 **state 2** from int and smallint
+  (CAST, assignment, column store), into smallint 220 state 1; bigint
+  sources stay 8115. bitsql had int → tinyint as state 1 (corrected).
 - 2026-10-04 (computed forward references, corpus
   `catalog/computed-forward-refs`): CREATE TABLE / ALTER TABLE ADD resolve
   every column type first (2715, 2705 come before a computed column's 207),
