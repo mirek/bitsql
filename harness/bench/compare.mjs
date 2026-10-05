@@ -7,6 +7,7 @@
 //   npm run bench:compare -- --only bitsql         # one target (bitsql|mssql)
 //   npm run bench:compare -- --starts 5 --rows 20000 --json out/bench.json
 //   BITSQL_IMAGE=bitsql:dev npm run bench:compare  # a locally built image
+//   npm run bench:compare -- --from out/bench.json # re-render a --json run
 //
 // Containers: bitsql-bench-bitsql (127.0.0.1:47340) and bitsql-bench-mssql
 // (127.0.0.1:47341), removed at the end. Both run with default settings, as a
@@ -176,41 +177,65 @@ async function measure(target) {
   return out
 }
 
-const results = []
-for (const target of targets) results.push(await measure(target))
-const host = {
-  date: new Date().toISOString().slice(0, 10),
-  cpu: readFileSync('/proc/cpuinfo', 'utf8').match(/model name\s*:\s*(.*)/)?.[1],
-  docker: await docker('version', '--format', '{{.Server.Version}}'),
+// --from re-renders the tables of an earlier --json run without measuring.
+const { host, results } = flags.from ? JSON.parse(readFileSync(resolve(flags.from), 'utf8')) : {
+  results: await (async () => { const out = []; for (const target of targets) out.push(await measure(target)); return out })(),
+  host: {
+    date: new Date().toISOString().slice(0, 10),
+    cpu: readFileSync('/proc/cpuinfo', 'utf8').match(/model name\s*:\s*(.*)/)?.[1],
+    docker: await docker('version', '--format', '{{.Server.Version}}'),
+  },
 }
 if (flags.json) writeFileSync(resolve(flags.json), JSON.stringify({ host, results }, null, 2) + '\n')
 
-// Markdown, ready for README.md.
-const fmtMs = ms => ms == null ? 'error' : ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : ms >= 100 ? `${ms.toFixed(0)} ms` : ms >= 10 ? `${ms.toFixed(1)} ms` : `${ms.toFixed(2)} ms`
+// Markdown, ready for README.md. Every metric is lower-is-better; with both
+// targets, two more columns relate bitsql to SQL Server.
+const fmtMs = ms => ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : ms >= 100 ? `${ms.toFixed(0)} ms` : ms >= 10 ? `${ms.toFixed(1)} ms` : `${ms.toFixed(2)} ms`
 const fmtMiB = b => mib(b) >= 1024 ? `${(mib(b) / 1024).toFixed(2)} GiB` : `${mib(b).toFixed(1)} MiB`
-const rowsOf = [
-  ['Image download (compressed)', r => r.downloadBytes == null ? 'n/a' : fmtMiB(r.downloadBytes)],
-  ['Image size on disk', r => fmtMiB(r.imageBytes)],
-  ['Cold start: `docker run` → first query (median)', r => fmtMs(r.coldStartMs)],
-  ['CPU time until ready', r => fmtMs(r.readyCpuMs)],
-  ['Memory idle after start', r => fmtMiB(r.idle.used)],
-  ['Memory after workload', r => fmtMiB(r.afterWorkload.used)],
-  ['Memory peak (incl. page cache)', r => fmtMiB(r.afterWorkload.peak)],
-  ['Login (new connection, TLS, median)', r => fmtMs(r.loginMs)],
-  ['`SELECT 1` round trip (median)', r => fmtMs(r.selectOneMs)],
-  ['Drop + create 2-table schema (median)', r => fmtMs(r.schemaResetMs)],
-  ['1000 parameterized INSERTs', r => fmtMs(r.insertsMs)],
-  ['1000 parameterized point SELECTs', r => fmtMs(r.pointReadsMs)],
-  ['200 transactions (INSERT + UPDATE)', r => fmtMs(r.transactionsMs)],
-  ['Join + GROUP BY report (median)', r => fmtMs(r.reportMs)],
-  [`Load ${rows} + ${rows} rows (GENERATE_SERIES)`, r => fmtMs(r.shapes.setupMs)],
-  [`${queries.length} query/DML shapes over ${rows} rows (total)`, r => Object.values(r.shapes.ms).includes(null) ? 'error' : fmtMs(Object.values(r.shapes.ms).reduce((a, b) => a + b, 0))],
+const total = r => Object.values(r.shapes.ms).includes(null) ? null : Object.values(r.shapes.ms).reduce((a, b) => a + b, 0)
+const n = results[0].shapes.rows
+const metrics = [
+  ['Image download (compressed)', r => r.downloadBytes, fmtMiB],
+  ['Image size on disk', r => r.imageBytes, fmtMiB],
+  ['Cold start: `docker run` → first query (median)', r => r.coldStartMs, fmtMs],
+  ['CPU time until ready', r => r.readyCpuMs, fmtMs],
+  ['Memory idle after start', r => r.idle.used, fmtMiB],
+  ['Memory after workload', r => r.afterWorkload.used, fmtMiB],
+  ['Memory peak (incl. page cache)', r => r.afterWorkload.peak, fmtMiB],
+  ['Login (new connection, TLS, median)', r => r.loginMs, fmtMs],
+  ['`SELECT 1` round trip (median)', r => r.selectOneMs, fmtMs],
+  ['Drop + create 2-table schema (median)', r => r.schemaResetMs, fmtMs],
+  ['1000 parameterized INSERTs', r => r.insertsMs, fmtMs],
+  ['1000 parameterized point SELECTs', r => r.pointReadsMs, fmtMs],
+  ['200 transactions (INSERT + UPDATE)', r => r.transactionsMs, fmtMs],
+  ['Join + GROUP BY report (median)', r => r.reportMs, fmtMs],
+  [`Load ${n} + ${n} rows (GENERATE_SERIES)`, r => r.shapes.setupMs, fmtMs],
+  [`${queries.length} query/DML shapes over ${n} rows (total)`, total, fmtMs],
 ]
+const bitsql = results.find(r => r.target === 'bitsql')
+const mssql = results.find(r => r.target === 'mssql')
+const compare = bitsql && mssql
+const percent = (b, m) => { const p = 100 * b / m; return `${p < 10 ? p.toFixed(1) : p.toFixed(0)}%` }
+const factor = (b, m) => {
+  const x = Math.max(b, m) / Math.min(b, m)
+  const text = `${x >= 10 ? x.toFixed(0) : x.toFixed(1)}×`
+  return x < 1.05 ? 'same' : b < m ? `${text} better` : `${text} worse`
+}
+function table(title, rows) {
+  const heads = [title, ...results.map(r => r.target === 'bitsql' ? 'bitsql' : 'SQL Server'), ...(compare ? ['% of SQL Server', 'Factor'] : [])]
+  console.log(`| ${heads.join(' | ')} |`)
+  console.log(`| --- | ${heads.slice(1).map(() => '---:').join(' | ')} |`)
+  for (const [label, value, fmt] of rows) {
+    const cells = results.map(r => { const v = value(r); return v == null ? 'n/a' : fmt(v) })
+    if (compare) {
+      const b = value(bitsql), m = value(mssql)
+      cells.push(...(b == null || m == null ? ['n/a', 'n/a'] : [percent(b, m), factor(b, m)]))
+    }
+    console.log(`| ${label} | ${cells.join(' | ')} |`)
+  }
+}
 console.log(`\n${host.date}, ${host.cpu}, Docker ${host.docker}\n`)
-console.log(`| | ${results.map(r => r.target === 'bitsql' ? 'bitsql' : 'SQL Server').join(' | ')} |`)
-console.log(`| --- | ${results.map(() => '---:').join(' | ')} |`)
-for (const [label, f] of rowsOf) console.log(`| ${label} | ${results.map(f).join(' | ')} |`)
-console.log(`\n| Shape (${rows} rows) | ${results.map(r => r.target === 'bitsql' ? 'bitsql' : 'SQL Server').join(' | ')} |`)
-console.log(`| --- | ${results.map(() => '---:').join(' | ')} |`)
-for (const [shape] of queries) console.log(`| ${shape} | ${results.map(r => fmtMs(r.shapes.ms[shape])).join(' | ')} |`)
+table('', metrics)
+console.log()
+table(`Shape (${n} rows)`, queries.map(([shape]) => [shape, r => r.shapes.ms[shape], fmtMs]))
 console.log(`\nimages: ${results.map(r => `${r.target}=${r.image}`).join(', ')}`)

@@ -98,26 +98,28 @@ Emulator error 50108), `--record FILE` (event log for `replay`).
 `mirek/bitsql:0.1.2` vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
 edition, default settings), linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3,
 2026-10-05. Both containers ran one after the other on the same host, and the
-client is tedious over loopback with TLS.
+client is tedious over loopback with TLS. Every metric is lower-is-better;
+"% of SQL Server" is bitsql's value relative to SQL Server's, and "Factor" is
+how many times better or worse bitsql is.
 
-| | bitsql | SQL Server |
-| --- | ---: | ---: |
-| Image download (compressed) | 12.4 MiB | 604.5 MiB |
-| Image size on disk | 33.7 MiB | 1.64 GiB |
-| Cold start: `docker run` → first query (median of 5) | 116 ms | 2.66 s |
-| CPU time until ready | 35.0 ms | 3.04 s |
-| Memory idle after start | 4.5 MiB | 1.17 GiB |
-| Memory after workload | 41.8 MiB | 1.21 GiB |
-| Memory peak (incl. page cache) | 49.4 MiB | 1.24 GiB |
-| Login (new connection, TLS, median) | 2.34 ms | 49.1 ms |
-| `SELECT 1` round trip (median) | 0.10 ms | 0.15 ms |
-| Drop + create 2-table schema (median) | 0.14 ms | 6.91 ms |
-| 1000 parameterized INSERTs | 168 ms | 917 ms |
-| 1000 parameterized point SELECTs | 161 ms | 147 ms |
-| 200 transactions (INSERT + UPDATE) | 79.1 ms | 224 ms |
-| Join + GROUP BY report (median) | 1.19 ms | 0.86 ms |
-| Load 20000 + 20000 rows (GENERATE_SERIES) | 76.0 ms | 51.2 ms |
-| 24 query/DML shapes over 20000 rows (total) | 1.10 s | 700 ms |
+|  | bitsql | SQL Server | % of SQL Server | Factor |
+| --- | ---: | ---: | ---: | ---: |
+| Image download (compressed) | 12.4 MiB | 604.5 MiB | 2.0% | 49× better |
+| Image size on disk | 33.7 MiB | 1.64 GiB | 2.0% | 50× better |
+| Cold start: `docker run` → first query (median of 5) | 116 ms | 2.66 s | 4.4% | 23× better |
+| CPU time until ready | 35.0 ms | 3.04 s | 1.2% | 87× better |
+| Memory idle after start | 4.5 MiB | 1.17 GiB | 0.4% | 267× better |
+| Memory after workload | 41.8 MiB | 1.21 GiB | 3.4% | 30× better |
+| Memory peak (incl. page cache) | 49.4 MiB | 1.24 GiB | 3.9% | 26× better |
+| Login (new connection, TLS, median) | 2.34 ms | 49.1 ms | 4.8% | 21× better |
+| `SELECT 1` round trip (median) | 0.10 ms | 0.15 ms | 67% | 1.5× better |
+| Drop + create 2-table schema (median) | 0.14 ms | 6.91 ms | 2.1% | 48× better |
+| 1000 parameterized INSERTs | 168 ms | 917 ms | 18% | 5.4× better |
+| 1000 parameterized point SELECTs | 161 ms | 147 ms | 109% | 1.1× worse |
+| 200 transactions (INSERT + UPDATE) | 79.1 ms | 224 ms | 35% | 2.8× better |
+| Join + GROUP BY report (median) | 1.19 ms | 0.86 ms | 139% | 1.4× worse |
+| Load 20000 + 20000 rows (GENERATE_SERIES) | 76.0 ms | 51.2 ms | 148% | 1.5× worse |
+| 24 query/DML shapes over 20000 rows (total) | 1.10 s | 700 ms | 157% | 1.6× worse |
 
 bitsql's advantage is startup, footprint, logins, schema churn and small
 writes, which is where integration test suites spend most of their time.
@@ -125,32 +127,32 @@ SQL Server's optimizer is still faster on set-heavy queries over tens of
 thousands of rows, typically 2–10× (accented-text sorting is 35×). Per-shape
 timings for the `npm run bench` shapes:
 
-| Shape (20000 rows) | bitsql | SQL Server |
-| --- | ---: | ---: |
-| GROUP BY p (997 groups) | 8.86 ms | 2.87 ms |
-| GROUP BY v (5003 groups) | 27.6 ms | 5.25 ms |
-| SELECT DISTINCT v | 28.5 ms | 4.66 ms |
-| COUNT(DISTINCT v) | 23.6 ms | 3.92 ms |
-| UNION | 54.1 ms | 8.12 ms |
-| EXCEPT | 20.8 ms | 7.08 ms |
-| INTERSECT | 9.05 ms | 4.22 ms |
-| IN (uncorrelated subquery) | 7.50 ms | 4.99 ms |
-| NOT IN (uncorrelated subquery) | 6.82 ms | 3.21 ms |
-| EXISTS (correlated, unindexed) | 17.3 ms | 4.92 ms |
-| scalar subquery (correlated) | 24.5 ms | 5.01 ms |
-| scalar subquery (uncorrelated) | 12.7 ms | 4.64 ms |
-| equi-join | 5.60 ms | 5.37 ms |
-| ORDER BY v | 24.6 ms | 2.74 ms |
-| ORDER BY v after a shared non-ASCII prefix | 23.8 ms | 3.21 ms |
-| ORDER BY accented text | 116 ms | 3.32 ms |
-| ROW_NUMBER over v | 52.5 ms | 6.22 ms |
-| DELETE WHERE IN (subquery) | 32.4 ms | 103 ms |
-| UPDATE FROM join | 137 ms | 31.4 ms |
-| UPDATE all rows | 133 ms | 28.3 ms |
-| INSERT with FOREIGN KEY | 39.8 ms | 48.3 ms |
-| DELETE parent rows (FK checked) | 68.5 ms | 123 ms |
-| DELETE with ON DELETE CASCADE | 147 ms | 237 ms |
-| MERGE | 78.0 ms | 50.3 ms |
+| Shape (20000 rows) | bitsql | SQL Server | % of SQL Server | Factor |
+| --- | ---: | ---: | ---: | ---: |
+| GROUP BY p (997 groups) | 8.86 ms | 2.87 ms | 309% | 3.1× worse |
+| GROUP BY v (5003 groups) | 27.6 ms | 5.25 ms | 525% | 5.3× worse |
+| SELECT DISTINCT v | 28.5 ms | 4.66 ms | 612% | 6.1× worse |
+| COUNT(DISTINCT v) | 23.6 ms | 3.92 ms | 600% | 6.0× worse |
+| UNION | 54.1 ms | 8.12 ms | 666% | 6.7× worse |
+| EXCEPT | 20.8 ms | 7.08 ms | 294% | 2.9× worse |
+| INTERSECT | 9.05 ms | 4.22 ms | 215% | 2.1× worse |
+| IN (uncorrelated subquery) | 7.50 ms | 4.99 ms | 150% | 1.5× worse |
+| NOT IN (uncorrelated subquery) | 6.82 ms | 3.21 ms | 212% | 2.1× worse |
+| EXISTS (correlated, unindexed) | 17.3 ms | 4.92 ms | 352% | 3.5× worse |
+| scalar subquery (correlated) | 24.5 ms | 5.01 ms | 489% | 4.9× worse |
+| scalar subquery (uncorrelated) | 12.7 ms | 4.64 ms | 275% | 2.7× worse |
+| equi-join | 5.60 ms | 5.37 ms | 104% | same |
+| ORDER BY v | 24.6 ms | 2.74 ms | 898% | 9.0× worse |
+| ORDER BY v after a shared non-ASCII prefix | 23.8 ms | 3.21 ms | 739% | 7.4× worse |
+| ORDER BY accented text | 116 ms | 3.32 ms | 3488% | 35× worse |
+| ROW_NUMBER over v | 52.5 ms | 6.22 ms | 843% | 8.4× worse |
+| DELETE WHERE IN (subquery) | 32.4 ms | 103 ms | 32% | 3.2× better |
+| UPDATE FROM join | 137 ms | 31.4 ms | 436% | 4.4× worse |
+| UPDATE all rows | 133 ms | 28.3 ms | 469% | 4.7× worse |
+| INSERT with FOREIGN KEY | 39.8 ms | 48.3 ms | 82% | 1.2× better |
+| DELETE parent rows (FK checked) | 68.5 ms | 123 ms | 56% | 1.8× better |
+| DELETE with ON DELETE CASCADE | 147 ms | 237 ms | 62% | 1.6× better |
+| MERGE | 78.0 ms | 50.3 ms | 155% | 1.6× worse |
 
 To reproduce (pulls both images; uses containers `bitsql-bench-*` on ports
 47340/47341 and removes them afterwards):
@@ -159,6 +161,7 @@ To reproduce (pulls both images; uses containers `bitsql-bench-*` on ports
 cd harness && npm install
 npm run bench:compare                            # prints these tables
 npm run bench:compare -- --starts 5 --json out/bench-compare.json
+npm run bench:compare -- --from out/bench-compare.json   # re-render tables only
 BITSQL_IMAGE=bitsql:dev npm run bench:compare -- --only bitsql
 ```
 

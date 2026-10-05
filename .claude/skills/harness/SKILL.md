@@ -23,7 +23,7 @@ npm run oracle:stop                # remove the container
 npm run parse-diff                 # parser vs SQL Server syntax errors on every captured batch (no server needed)
 npm run probe -- out/x.sql oracle  # run a scratch .sql case, print columns/rows/errors/tokens (no expectation)
 npm run bench [-- 20000 80000]     # release-build timings of grouping/subquery/DML shapes (BENCH_ONLY=regexp, BITSQL_BIN)
-npm run bench:compare              # mirek/bitsql:<moon.mod version> container vs mssql/server container (README tables; --only, --starts, --json, BITSQL_IMAGE)
+npm run bench:compare              # mirek/bitsql:<moon.mod version> container vs mssql/server container (README tables; --only, --starts, --json, --from FILE re-renders, BITSQL_IMAGE)
 ```
 
 ## Rules
