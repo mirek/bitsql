@@ -97,64 +97,67 @@ Emulator error 50108), `--record FILE` (event log for `replay`).
 
 ## Benchmarks
 
-`mirek/bitsql:0.1.3` vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
+`mirek/bitsql:0.1.4` vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
 edition, default settings), linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3,
 2026-10-05. Both containers ran one after the other on the same host, and the
 client is tedious over loopback with TLS. Every metric is lower-is-better;
 "% of SQL Server" is bitsql's value relative to SQL Server's, and "Factor" is
-how many times better or worse bitsql is.
+how many times better or worse bitsql is. Cold start is the median of 5.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | 12.4 MiB | 604.5 MiB | 2.0% | 49× better |
+| Image download (compressed) | 12.4 MiB | 604.5 MiB | 2.1% | 49× better |
 | Image size on disk | 33.7 MiB | 1.64 GiB | 2.0% | 50× better |
-| Cold start: `docker run` → first query (median of 5) | 121 ms | 2.73 s | 4.4% | 22× better |
-| CPU time until ready | 34.7 ms | 2.95 s | 1.2% | 85× better |
-| Memory idle after start | 4.3 MiB | 1.17 GiB | 0.4% | 282× better |
-| Memory after workload | 46.1 MiB | 1.21 GiB | 3.7% | 27× better |
-| Memory peak (incl. page cache) | 48.3 MiB | 1.24 GiB | 3.8% | 26× better |
-| Login (new connection, TLS, median) | 2.30 ms | 49.1 ms | 4.7% | 21× better |
-| `SELECT 1` round trip (median) | 0.10 ms | 0.14 ms | 70% | 1.4× better |
-| Drop + create 2-table schema (median) | 0.16 ms | 7.03 ms | 2.3% | 43× better |
-| 1000 parameterized INSERTs | 161 ms | 923 ms | 17% | 5.7× better |
-| 1000 parameterized point SELECTs | 154 ms | 139 ms | 111% | 1.1× worse |
-| 200 transactions (INSERT + UPDATE) | 76.3 ms | 230 ms | 33% | 3.0× better |
-| Join + GROUP BY report (median) | 1.17 ms | 0.85 ms | 137% | 1.4× worse |
-| Load 20000 + 20000 rows (GENERATE_SERIES) | 73.8 ms | 49.3 ms | 150% | 1.5× worse |
-| 24 query/DML shapes over 20000 rows (total) | 1.09 s | 674 ms | 161% | 1.6× worse |
+| Cold start: `docker run` → first query (median) | 125 ms | 2.84 s | 4.4% | 23× better |
+| CPU time until ready | 35.0 ms | 3.38 s | 1.0% | 96× better |
+| Memory idle after start | 4.7 MiB | 1.17 GiB | 0.4% | 253× better |
+| Memory after workload | 50.8 MiB | 1.22 GiB | 4.1% | 25× better |
+| Memory peak (incl. page cache) | 50.9 MiB | 1.24 GiB | 4.0% | 25× better |
+| Login (new connection, TLS, median) | 2.53 ms | 49.4 ms | 5.1% | 20× better |
+| `SELECT 1` round trip (median) | 0.10 ms | 0.15 ms | 64% | 1.6× better |
+| Drop + create 2-table schema (median) | 0.15 ms | 6.64 ms | 2.3% | 44× better |
+| 1000 parameterized INSERTs | 159 ms | 930 ms | 17% | 5.8× better |
+| 1000 parameterized point SELECTs | 158 ms | 144 ms | 109% | 1.1× worse |
+| 200 transactions (INSERT + UPDATE) | 76.7 ms | 222 ms | 35% | 2.9× better |
+| Join + GROUP BY report (median) | 1.14 ms | 0.89 ms | 128% | 1.3× worse |
+| Load 20000 + 20000 rows (GENERATE_SERIES) | 49.8 ms | 50.1 ms | 99% | same |
+| 24 query/DML shapes over 20000 rows (total) | 511 ms | 695 ms | 73% | 1.4× better |
 
-bitsql's advantage is startup, footprint, logins, schema churn and small
-writes, which is where integration test suites spend most of their time.
-SQL Server's optimizer is still faster on set-heavy queries over tens of
-thousands of rows, typically 2–10× (accented-text sorting is 36×). Per-shape
-timings for the `npm run bench` shapes:
+bitsql's advantage is startup, footprint, logins, schema churn and writes,
+which is where integration test suites spend most of their time. Since 0.1.4
+the 24 set-heavy shapes below run faster than SQL Server in total (0.1.3 took
+1.09 s, 1.6× slower), and bulk loads are on par. SQL Server's optimizer is
+still faster on individual queries over tens of thousands of rows: sorting,
+grouping and correlated subqueries are typically 2–5× faster there
+(accented-text sorting 8×). Per-shape timings for the `npm run bench`
+shapes:
 
 | Shape (20000 rows) | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| GROUP BY p (997 groups) | 8.86 ms | 2.98 ms | 298% | 3.0× worse |
-| GROUP BY v (5003 groups) | 28.4 ms | 5.07 ms | 560% | 5.6× worse |
-| SELECT DISTINCT v | 28.5 ms | 4.63 ms | 615% | 6.2× worse |
-| COUNT(DISTINCT v) | 23.4 ms | 3.67 ms | 637% | 6.4× worse |
-| UNION | 53.7 ms | 8.63 ms | 622% | 6.2× worse |
-| EXCEPT | 22.6 ms | 6.75 ms | 334% | 3.3× worse |
-| INTERSECT | 8.02 ms | 3.89 ms | 206% | 2.1× worse |
-| IN (uncorrelated subquery) | 7.97 ms | 4.63 ms | 172% | 1.7× worse |
-| NOT IN (uncorrelated subquery) | 6.61 ms | 2.94 ms | 225% | 2.2× worse |
-| EXISTS (correlated, unindexed) | 18.9 ms | 4.57 ms | 414% | 4.1× worse |
-| scalar subquery (correlated) | 24.5 ms | 4.51 ms | 543% | 5.4× worse |
-| scalar subquery (uncorrelated) | 12.8 ms | 4.28 ms | 300% | 3.0× worse |
-| equi-join | 5.42 ms | 4.85 ms | 112% | 1.1× worse |
-| ORDER BY v | 24.2 ms | 2.49 ms | 971% | 9.7× worse |
-| ORDER BY v after a shared non-ASCII prefix | 23.6 ms | 2.89 ms | 816% | 8.2× worse |
-| ORDER BY accented text | 109 ms | 3.02 ms | 3618% | 36× worse |
-| ROW_NUMBER over v | 50.7 ms | 5.56 ms | 912% | 9.1× worse |
-| DELETE WHERE IN (subquery) | 34.5 ms | 97.5 ms | 35% | 2.8× better |
-| UPDATE FROM join | 132 ms | 30.8 ms | 428% | 4.3× worse |
-| UPDATE all rows | 132 ms | 27.1 ms | 488% | 4.9× worse |
-| INSERT with FOREIGN KEY | 38.4 ms | 48.0 ms | 80% | 1.2× better |
-| DELETE parent rows (FK checked) | 69.6 ms | 119 ms | 59% | 1.7× better |
-| DELETE with ON DELETE CASCADE | 146 ms | 228 ms | 64% | 1.6× better |
-| MERGE | 79.0 ms | 48.8 ms | 162% | 1.6× worse |
+| GROUP BY p (997 groups) | 5.73 ms | 2.95 ms | 194% | 1.9× worse |
+| GROUP BY v (5003 groups) | 13.6 ms | 5.66 ms | 241% | 2.4× worse |
+| SELECT DISTINCT v | 10.5 ms | 4.84 ms | 216% | 2.2× worse |
+| COUNT(DISTINCT v) | 7.28 ms | 3.86 ms | 189% | 1.9× worse |
+| UNION | 21.8 ms | 7.96 ms | 274% | 2.7× worse |
+| EXCEPT | 19.7 ms | 6.95 ms | 283% | 2.8× worse |
+| INTERSECT | 8.62 ms | 4.10 ms | 210% | 2.1× worse |
+| IN (uncorrelated subquery) | 7.29 ms | 4.93 ms | 148% | 1.5× worse |
+| NOT IN (uncorrelated subquery) | 6.73 ms | 3.15 ms | 214% | 2.1× worse |
+| EXISTS (correlated, unindexed) | 17.8 ms | 4.85 ms | 368% | 3.7× worse |
+| scalar subquery (correlated) | 25.0 ms | 4.81 ms | 519% | 5.2× worse |
+| scalar subquery (uncorrelated) | 13.7 ms | 4.63 ms | 295% | 3.0× worse |
+| equi-join | 5.39 ms | 5.03 ms | 107% | 1.1× worse |
+| ORDER BY v | 6.47 ms | 2.70 ms | 240% | 2.4× worse |
+| ORDER BY v after a shared non-ASCII prefix | 13.0 ms | 3.16 ms | 413% | 4.1× worse |
+| ORDER BY accented text | 26.9 ms | 3.31 ms | 814% | 8.1× worse |
+| ROW_NUMBER over v | 20.5 ms | 5.97 ms | 344% | 3.4× worse |
+| DELETE WHERE IN (subquery) | 18.9 ms | 102 ms | 19% | 5.4× better |
+| UPDATE FROM join | 42.8 ms | 31.6 ms | 135% | 1.4× worse |
+| UPDATE all rows | 39.1 ms | 27.8 ms | 141% | 1.4× worse |
+| INSERT with FOREIGN KEY | 27.3 ms | 48.0 ms | 57% | 1.8× better |
+| DELETE parent rows (FK checked) | 44.8 ms | 122 ms | 37% | 2.7× better |
+| DELETE with ON DELETE CASCADE | 64.6 ms | 234 ms | 28% | 3.6× better |
+| MERGE | 43.6 ms | 51.1 ms | 85% | 1.2× better |
 
 To reproduce (pulls both images; uses containers `bitsql-bench-*` on ports
 47340/47341 and removes them afterwards):
