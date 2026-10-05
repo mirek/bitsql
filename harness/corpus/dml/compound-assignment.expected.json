@@ -1,0 +1,778 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "998f3904de25aa68",
+  "steps": [
+    null,
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "s",
+              "type": "NVarChar",
+              "length": 40,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"d","type":"DecimalN","length":17,"precision":6,"scale":2,"flags":9,"collation":null},
+            {"name":"b","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"vb","type":"VarBinary","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [
+            [1,2,"a!",3,6,{"kind":"binary","value":"0f"}],
+            [2,11,null,null,4,null],
+            [3,7,"x",2.25,2,{"kind":"binary","value":"000000ff"}],
+            [4,9,"y",3,2,{"kind":"binary","value":"0000000f"}],
+            [5,30,"z",4,7,{"kind":"binary","value":"000000f0"}],
+            [6,0,"w",5,6,{"kind":"binary","value":"10"}],
+            [7,7,"v",6,200,{"kind":"binary","value":"11"}],
+            [8,2,"u",7,255,{"kind":"binary","value":"22"}]
+          ]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":2,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":8,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":8,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"COLMETADATA","columns":6},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":1},
+        {"name":"NBCROW","count":1},
+        {"name":"ROW","count":6},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 18
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 402,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The data types varbinary and varbinary are incompatible in the '|' operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 264,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The column name 'value' is specified more than once in the SET clause or column list of an INSERT. A column cannot be assigned more than one value in the same clause. Modify the clause to make sure that a column is updated only once. If this statement updates or inserts columns into a view, column aliasing can conceal the duplication in your code."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":264},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 264,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 2,
+          "message": "The column name 'value' is specified more than once in the SET clause or column list of an INSERT. A column cannot be assigned more than one value in the same clause. Modify the clause to make sure that a column is updated only once. If this statement updates or inserts columns into a view, column aliasing can conceal the duplication in your code."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":264},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 264,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 2,
+          "message": "The column name 'value' is specified more than once in the SET clause or column list of an INSERT. A column cannot be assigned more than one value in the same clause. Modify the clause to make sure that a column is updated only once. If this statement updates or inserts columns into a view, column aliasing can conceal the duplication in your code."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":264},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[1,6],[2,null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":2},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 4
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":220,"state":2,"class":16,"lineNumber":1,"message":"Arithmetic overflow error for data type tinyint, value = 355."}],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":197}],
+      "stream": [{"name":"ERROR","number":220},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":197}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Conversion failed when converting the varchar value 'abc' to data type int."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":245},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8134,"state":1,"class":16,"lineNumber":1,"message":"Divide by zero error encountered."}],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":197}],
+      "stream": [{"name":"ERROR","number":8134},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":197}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"d","type":"DecimalN","length":17,"precision":6,"scale":2,"flags":9,"collation":null},
+            {"name":"value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[2.25,18]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":197},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":197},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "op",
+              "type": "VarChar",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [[1,"+=",-2],[2,"-=",7],[3,"*=",30],[4,"/=",4],[5,"%=",1],[6,"&=",2],[7,"|=",7],[8,"^=",5],[9,"+=",null]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":9,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":9,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":198},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":9,"curCmd":195},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":279},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":9,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":198},
+        {"name":"DONE","status":17,"curCmd":195},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"DONE","status":17,"curCmd":279},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ORDER","columns":[1]},
+        {"name":"ROW","count":9},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 27
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"old_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"new_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "op",
+              "type": "VarChar",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[7,14,"-=x"],[4,8,"/=x"],[2,4,"&=x"],[5,10,"^=x"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":4,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":279}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ROW","count":4},{"name":"DONE","status":16,"curCmd":279}],
+      "rowCount": 4
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Conversion failed when converting the varchar value 'q' to data type int."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":245},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"o","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"x","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"m","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "s",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[2,7,5,1,"abcd",null]]
+        },
+        {
+          "columns": [
+            {"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"o","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"x","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"m","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "s",
+              "type": "NVarChar",
+              "length": 20,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[0,15,4,5,"abcde"]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":null,"more":false}
+      ],
+      "errors": [{"number":220,"state":2,"class":16,"lineNumber":6,"message":"Arithmetic overflow error for data type tinyint, value = 260."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":6},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":5},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"ERROR","number":220},
+        {"name":"DONE","status":2,"curCmd":193}
+      ],
+      "rowCount": 10
+    },
+    {
+      "sets": [{"columns":[{"name":"a","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[-24]]}],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":8,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":8,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 10
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 402,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 2,
+          "message": "The data types varbinary and varbinary are incompatible in the '|' operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"v","type":"VarBinary","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],
+          "rows": [[{"kind":"binary","value":"000000ff"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 3
+    },
+    {
+      "sets": [
+        {"columns":[{"name":"i","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[241]]},
+        {"columns":[{"name":"i","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[[254]]}
+      ],
+      "done": [
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 5
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"bt","type":"IntN","length":1,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"sb","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"cb","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"vi","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"nb","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[0,7,"5",2,null,true]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":6},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":402,"state":1,"class":16,"lineNumber":1,"message":"The data types decimal and int are incompatible in the '&' operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8117,"state":1,"class":16,"lineNumber":1,"message":"Operand data type numeric is invalid for '|' operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8117},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":402,"state":1,"class":16,"lineNumber":1,"message":"The data types NULL and NULL are incompatible in the '^' operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 402,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The data types varchar and nvarchar are incompatible in the '&' operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 402,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "The data types sql_variant and int are incompatible in the '&' operator."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":402,"state":1,"class":16,"lineNumber":2,"message":"The data types decimal and int are incompatible in the '&' operator."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":402},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":220,"state":1,"class":16,"lineNumber":2,"message":"Arithmetic overflow error for data type smallint, value = 33000."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [{"name":"DONE","status":17,"curCmd":193},{"name":"ERROR","number":220},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8115,"state":2,"class":16,"lineNumber":2,"message":"Arithmetic overflow error converting expression to data type int."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [{"name":"DONE","status":17,"curCmd":193},{"name":"ERROR","number":8115},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":8115,"state":8,"class":16,"lineNumber":1,"message":"Arithmetic overflow error converting numeric to data type numeric."}],
+      "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":197}],
+      "stream": [{"name":"ERROR","number":8115},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":197}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 245,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 2,
+          "message": "Conversion failed when converting the varchar value 'abc' to data type int."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+      ],
+      "stream": [{"name":"DONE","status":17,"curCmd":193},{"name":"ERROR","number":245},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":220,"state":2,"class":16,"lineNumber":2,"message":"Arithmetic overflow error for data type tinyint, value = 256."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}
+      ],
+      "stream": [{"name":"DONE","status":17,"curCmd":193},{"name":"ERROR","number":220},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

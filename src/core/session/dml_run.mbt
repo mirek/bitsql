@@ -409,6 +409,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
   }
   let top = self.dml_top(u.top)
   // bind SET clauses against the full source row
+  let width = env.columns.length()
   let sets = []
   for s in u.sets {
     match s.target {
@@ -459,12 +460,26 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             severity=15,
           )
         }
+        // `col op= e` is `col = col op e`: the current value is appended to
+        // the source row (slot `width`) while it is evaluated
         let rhs = if s.value.kind is Default {
           None
         } else {
-          Some(@bind.bind_expr(env, s.value))
+          let current : @ir.Expr = {
+            kind: Col(width),
+            ty: c.ty,
+            nullable: c.nullable,
+          }
+          Some(
+            @bind.compound_assignment(
+              env,
+              s.op,
+              current,
+              @bind.bind_expr(env, s.value),
+            ),
+          )
         }
-        if rhs is Some(b) && s.op is Assign {
+        if rhs is Some(b) {
           if !(b.kind is Lit(Null) && b.ty is Int) {
             @types.check_store(b.ty, c.ty)
           }
@@ -624,17 +639,8 @@ fn Session::update_row(
       Some(b) =>
         match op {
           Assign => (@exec.eval(ctx, b), b.ty)
-          _ => {
-            let aop : @types.ArithOp = match op {
-              AddAssign => Add
-              SubAssign => Sub
-              MulAssign => Mul
-              DivAssign => Div
-              _ => Mod
-            }
-            let rt = @types.arith_result_type(aop, c.ty, b.ty)
-            (@types.arith(aop, old[ci], c.ty, @exec.eval(ctx, b), b.ty), rt)
-          }
+          // compound: `b` reads the column's current value one past the row
+          _ => (@exec.eval(self.ctx().with_row(full + [old[ci]]), b), b.ty)
         }
     }
     row[ci] = self.to_column(target, c, v, ty)

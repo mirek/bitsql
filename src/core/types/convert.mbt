@@ -452,14 +452,15 @@ fn to_integer(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
         Some(n) => {
           if n < lo || n > hi {
             // captured (output/conversion-overflow): bigint sources give
-            // 8115/2; int → smallint/tinyint 220/1, smallint → tinyint 220/2
+            // 8115/2; → smallint 220/1, → tinyint 220/2 from any integer
+            // (also int: dml/compound-assignment, CAST(256 AS tinyint))
             raise match (from, to) {
               (BigInt, _) => overflow_expression(to)
               (_, TinyInt | SmallInt) =>
                 sql_error(
                   220,
                   "Arithmetic overflow error for data type \{to.message_name()}, value = \{n}.",
-                  state=if from is SmallInt { 2 } else { 1 },
+                  state=if to is TinyInt { 2 } else { 1 },
                 )
               _ => overflow_expression(to)
             }

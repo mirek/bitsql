@@ -1623,7 +1623,7 @@ fn bind_select_query(
           grouped,
           written~,
         )
-        let value = compound_assign(info, op, rhs)
+        let value = compound_assign(env, info, op, rhs)
         targets.push((info.slot, info.ty))
         exprs.push(value)
         result.push(@ir.ResultColumn::{
@@ -1772,22 +1772,12 @@ fn bind_select_query(
 ///|
 /// `@v = e` / `@v += e` as the value to store.
 fn compound_assign(
+  env : Env,
   info : VarInfo,
   op : @ast.AssignOp,
   rhs : @ir.Expr,
 ) -> @ir.Expr raise @types.SqlError {
-  let aop : @types.ArithOp = match op {
-    Assign => return rhs
-    AddAssign => Add
-    SubAssign => Sub
-    MulAssign => Mul
-    DivAssign => Div
-    ModAssign => Mod
-    _ => raise @types.not_supported("bitwise compound assignment in SELECT")
-  }
-  let current = mk(Var(info.slot), info.ty, true)
-  let ty = @types.arith_result_type(aop, info.ty, rhs.ty)
-  mk(Arith(aop, current, rhs), ty, true)
+  compound_assignment(env, op, mk(Var(info.slot), info.ty, true), rhs)
 }
 
 ///|

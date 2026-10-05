@@ -6,6 +6,7 @@ fn precheck_batch(
   stmts : Array[@ast.Stmt],
   params : Map[String, @bind.VarInfo],
   in_proc? : Bool = false,
+  set_column_name? : (@ast.TableRef, String) -> String = (_, n) => n,
 ) -> (@types.SqlError, Int)? {
   let declared : Set[String] = Set([])
   let temp_creates : Set[String] = Set([])
@@ -374,6 +375,35 @@ fn precheck_batch(
       | Delete({ target, top, .. })
       | Merge({ target, top, .. }) if failure is None => {
         failure = target_hint_error(target, line)
+        // a column assigned twice in one SET list: 264 for the whole batch
+        // (captured: dml/compound-assignment)
+        if failure is None {
+          let lists = match s.kind {
+            Update(u) => [u.sets]
+            Merge(m) =>
+              m.whens.filter_map(w => {
+                guard w.action is MergeUpdate(sets) else { None }
+                Some(sets)
+              })
+            _ => []
+          }
+          for sets in lists {
+            if duplicate_set_column(sets) is Some(spelled) {
+              // named as in the catalog (captured)
+              let name = set_column_name(target, spelled)
+              failure = Some(
+                (
+                  @types.sql_error(
+                    264,
+                    "The column name '\{name}' is specified more than once in the SET clause or column list of an INSERT. A column cannot be assigned more than one value in the same clause. Modify the clause to make sure that a column is updated only once. If this statement updates or inserts columns into a view, column aliasing can conceal the duplication in your code.",
+                  ),
+                  line,
+                ),
+              )
+              break
+            }
+          }
+        }
         // INDEX hints on an INSERT/UPDATE/DELETE target (a view too):
         // 1069 for the whole batch; the FROM occurrence may carry them
         // (captured: tail5/b2-hints)
@@ -1032,4 +1062,20 @@ fn select_shape_error(q : @ast.Query) -> (@types.SqlError, Bool)? {
       true,
     ),
   )
+}
+
+///|
+/// The first column a SET list assigns more than once (by its last name part,
+/// case-insensitively), spelled as at its first assignment.
+fn duplicate_set_column(sets : Array[@ast.SetClause]) -> String? {
+  let seen : Map[String, String] = Map([])
+  for s in sets {
+    guard s.target is SetColumn(parts) else { continue }
+    let name = parts[parts.length() - 1].name
+    match seen.get(name.to_lower()) {
+      Some(first) => return Some(first)
+      None => seen[name.to_lower()] = name
+    }
+  }
+  None
 }

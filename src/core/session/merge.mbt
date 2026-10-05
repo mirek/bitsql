@@ -428,9 +428,22 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
               None =>
                 raise @types.sql_error(207, "Invalid column name '\{name}'.")
             }
-            let b = @bind.bind_expr(env, sc.value)
-            let v = @exec.eval(ctx, b)
-            row[ci] = self.to_column(target, t.columns[ci], v, b.ty)
+            let c = t.columns[ci]
+            let rhs = @bind.bind_expr(env, sc.value)
+            let (v, ty) = if sc.op is Assign {
+              (@exec.eval(ctx, rhs), rhs.ty)
+            } else {
+              // `col op= e` is `col = col op e`: the column's current value
+              // is read one past the target + source row
+              let current : @ir.Expr = {
+                kind: Col(env.columns.length()),
+                ty: c.ty,
+                nullable: c.nullable,
+              }
+              let b = @bind.compound_assignment(env, sc.op, current, rhs)
+              (@exec.eval(self.ctx().with_row(old + s + [old[ci]]), b), b.ty)
+            }
+            row[ci] = self.to_column(target, c, v, ty)
           }
           for i, c in t.columns {
             if c.computed is Some(expr) {

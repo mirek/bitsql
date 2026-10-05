@@ -261,3 +261,37 @@ test "NEXT VALUE FOR: one value per row, new values per row and statement" {
     [[Int(5L), Int(5L)], [Int(6L), Int(0L)]],
   )
 }
+
+///|
+test "compound assignment: UPDATE/MERGE/SET apply the operator (dml/compound-assignment)" {
+  let s = query_session()
+  ignore(
+    s.run_batch(
+      "CREATE TABLE ca (id int PRIMARY KEY, v int); INSERT ca VALUES (1, 6), (2, 4), (3, 6), (4, 1)",
+      0,
+    ),
+  )
+  ignore(
+    s.run_batch(
+      "UPDATE ca SET v &= 3 WHERE id = 1; UPDATE ca SET v |= 3 WHERE id = 2; UPDATE ca SET v ^= 3 WHERE id = 3",
+      0,
+    ),
+  )
+  let m = s.run_batch(
+    "MERGE ca AS t USING (VALUES (4, -3)) AS s(id, v) ON t.id = s.id WHEN MATCHED THEN UPDATE SET v += s.v;",
+    0,
+  )
+  assert_eq(messages(m), [])
+  let r = s.run_batch(
+    "DECLARE @a int = 6; SET @a &= 3; SELECT id, v, @a FROM ca ORDER BY id", 0,
+  )
+  assert_eq(row_values(r), [
+    [Int(1), Int(2), Int(2)],
+    [Int(2), Int(7), Int(2)],
+    [Int(3), Int(5), Int(2)],
+    [Int(4), Int(-2), Int(2)],
+  ])
+  assert_eq(messages(s.run_batch("SELECT 1; UPDATE ca SET v = 1, V += 2", 0)), [
+    264,
+  ])
+}

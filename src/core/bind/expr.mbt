@@ -184,73 +184,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         BitNot => mk(BitNot(a), a.ty, a.nullable)
       }
     }
-    Binary(op, l, r) => {
-      let a = bind_expr(env, l)
-      let b = bind_expr(env, r)
-      // captured: NULL + NULL (also over derived NULL columns) stays the
-      // NULL constant: untyped, assignable anywhere, 8133 in a CASE
-      if op is (Add | Sub | Mul | Div | Mod) &&
-        is_untyped_null(a) &&
-        is_untyped_null(b) {
-        return mk(Lit(Null), Int, true)
-      }
-      variant_operator_check(op, a, b)
-      // an untyped NULL next to a string concatenates as varchar(1)
-      // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
-      // varchar(3); msduck character-concat #022)
-      let null_str = (x : @ir.Expr, other : @ir.Expr) => {
-        if op is Add && is_untyped_null(x) && other.ty.family() == FString {
-          mk(Lit(Null), VarChar(Some(1), env.collation), true)
-        } else {
-          x
-        }
-      }
-      let (a, b) = (null_str(a, b), null_str(b, a))
-      let (a, b) = if op is (Add | Sub | Mul | Div | Mod) {
-        (int_literal_as_numeric(a, b), int_literal_as_numeric(b, a))
-      } else {
-        (a, b)
-      }
-      match op {
-        Add | Sub | Mul | Div | Mod => {
-          let aop : @types.ArithOp = match op {
-            Add => Add
-            Sub => Sub
-            Mul => Mul
-            Div => Div
-            _ => Mod
-          }
-          // captured: text + 'x' is 402 "… incompatible in the add operator"
-          if a.ty.is_lob() || b.ty.is_lob() {
-            raise @types.lob_operator_error(a.ty, b.ty, aop.name())
-          }
-          let ty = @types.arith_result_type(aop, a.ty, b.ty)
-          // captured: exact-numeric arithmetic is nullable even over NOT
-          // NULL operands (overflow may yield NULL); float and string `+`
-          // are not (query/README probe: id + 1 IntN 33, f * 2 Float 32)
-          fold_arith(
-            mk(
-              Arith(aop, a, b),
-              ty,
-              a.nullable || b.nullable || may_overflow(ty),
-            ),
-          )
-        }
-        BitAnd | BitOr | BitXor => {
-          let ty = @types.common_type(a.ty, b.ty)
-          let bop : @ir.BitOp = match op {
-            BitAnd => And
-            BitOr => Or
-            _ => Xor
-          }
-          mk(
-            BitOp(bop, coerce(a, ty), coerce(b, ty)),
-            ty,
-            a.nullable || b.nullable,
-          )
-        }
-      }
-    }
+    Binary(op, l, r) => binary(env, op, bind_expr(env, l), bind_expr(env, r))
     Compare(op, l, r) => {
       let (o, _) = cmp_op(op)
       compare(env, o, l, r)
@@ -779,5 +713,156 @@ fn conversion_type(
       )
     }
     e => raise e
+  }
+}
+
+///|
+/// `a op b` over bound operands (arithmetic, string `+`, bitwise).
+fn binary(
+  env : Env,
+  op : @ast.BinOp,
+  a : @ir.Expr,
+  b : @ir.Expr,
+) -> @ir.Expr raise @types.SqlError {
+  // captured: NULL + NULL (also over derived NULL columns) stays the
+  // NULL constant: untyped, assignable anywhere, 8133 in a CASE
+  if op is (Add | Sub | Mul | Div | Mod) &&
+    is_untyped_null(a) &&
+    is_untyped_null(b) {
+    return mk(Lit(Null), Int, true)
+  }
+  if !(op is (BitAnd | BitOr | BitXor)) {
+    variant_operator_check(op, a, b)
+  }
+  // an untyped NULL next to a string concatenates as varchar(1)
+  // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
+  // varchar(3); msduck character-concat #022)
+  let null_str = (x : @ir.Expr, other : @ir.Expr) => {
+    if op is Add && is_untyped_null(x) && other.ty.family() == FString {
+      mk(Lit(Null), VarChar(Some(1), env.collation), true)
+    } else {
+      x
+    }
+  }
+  let (a, b) = (null_str(a, b), null_str(b, a))
+  let (a, b) = if op is (Add | Sub | Mul | Div | Mod) {
+    (int_literal_as_numeric(a, b), int_literal_as_numeric(b, a))
+  } else {
+    (a, b)
+  }
+  match op {
+    Add | Sub | Mul | Div | Mod => {
+      let aop : @types.ArithOp = match op {
+        Add => Add
+        Sub => Sub
+        Mul => Mul
+        Div => Div
+        _ => Mod
+      }
+      // captured: text + 'x' is 402 "… incompatible in the add operator"
+      if a.ty.is_lob() || b.ty.is_lob() {
+        raise @types.lob_operator_error(a.ty, b.ty, aop.name())
+      }
+      let ty = @types.arith_result_type(aop, a.ty, b.ty)
+      // captured: exact-numeric arithmetic is nullable even over NOT
+      // NULL operands (overflow may yield NULL); float and string `+`
+      // are not (query/README probe: id + 1 IntN 33, f * 2 Float 32)
+      fold_arith(
+        mk(Arith(aop, a, b), ty, a.nullable || b.nullable || may_overflow(ty)),
+      )
+    }
+    BitAnd | BitOr | BitXor => {
+      let ty = bitwise_type(op, a, b)
+      let bop : @ir.BitOp = match op {
+        BitAnd => And
+        BitOr => Or
+        _ => Xor
+      }
+      mk(BitOp(bop, coerce(a, ty), coerce(b, ty)), ty, a.nullable || b.nullable)
+    }
+  }
+}
+
+///|
+/// The value `x op= rhs` stores: `x op rhs`, bound exactly like the binary
+/// expression (captured: dml/compound-assignment; result type, bitwise
+/// operators, string concatenation, 402 for varbinary |= varbinary).
+pub fn compound_assignment(
+  env : Env,
+  op : @ast.AssignOp,
+  current : @ir.Expr,
+  rhs : @ir.Expr,
+) -> @ir.Expr raise @types.SqlError {
+  let bop : @ast.BinOp = match op {
+    Assign => return rhs
+    AddAssign => Add
+    SubAssign => Sub
+    MulAssign => Mul
+    DivAssign => Div
+    ModAssign => Mod
+    AndAssign => BitAnd
+    OrAssign => BitOr
+    XorAssign => BitXor
+  }
+  binary(env, bop, current, rhs)
+}
+
+///|
+/// Result type of `a & b` / `a | b` / `a ^ b` (captured probes, dml/
+/// compound-assignment): one operand must be an integer type (bit..bigint);
+/// the other may also be binary/varbinary (rowversion), character or the
+/// untyped NULL, and the result is the integer operand's type (the higher
+/// one when both are integers). Otherwise 402 naming both types, or 8117
+/// naming the left one when neither is even a possible bitwise operand.
+fn bitwise_type(
+  op : @ast.BinOp,
+  a : @ir.Expr,
+  b : @ir.Expr,
+) -> @types.SqlType raise @types.SqlError {
+  let is_int = (e : @ir.Expr) => {
+    !is_untyped_null(e) && e.ty is (Bit | TinyInt | SmallInt | Int | BigInt)
+  }
+  let operand = (e : @ir.Expr) => {
+    is_untyped_null(e) ||
+    e.ty
+    is (Bit
+    | TinyInt
+    | SmallInt
+    | Int
+    | BigInt
+    | Binary(_)
+    | VarBinary(_)
+    | RowVersion
+    | Char(_, _)
+    | VarChar(_, _)
+    | NChar(_, _)
+    | NVarChar(_, _))
+  }
+  let name = (e : @ir.Expr) => {
+    if is_untyped_null(e) {
+      "NULL"
+    } else {
+      e.ty.clash_name()
+    }
+  }
+  let sym = match op {
+    BitAnd => "&"
+    BitOr => "|"
+    _ => "^"
+  }
+  match (is_int(a), is_int(b)) {
+    (true, true) => @types.common_type(a.ty, b.ty)
+    (true, false) if operand(b) => a.ty
+    (false, true) if operand(a) => b.ty
+    _ if !operand(a) && !operand(b) =>
+      raise @types.sql_error(
+        8117,
+        "Operand data type \{name(a)} is invalid for '\{sym}' operator.",
+      )
+    _ =>
+      raise @types.sql_error(
+        402,
+        "The data types \{name(a)} and \{name(b)} are incompatible in the '\{sym}' operator.",
+      )
   }
 }

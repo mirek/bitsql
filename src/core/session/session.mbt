@@ -843,7 +843,15 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     m
   }
-  match precheck_batch(stmts, known) {
+  let set_column_name = (target : @ast.TableRef, name : String) => {
+    guard target.kind is Table(obj, ..) &&
+      self.find_table(obj) is Some((_, t)) &&
+      t.column_index(name) is Some(ci) else {
+      return name
+    }
+    t.columns[ci].name
+  }
+  match precheck_batch(stmts, known, set_column_name~) {
     Some((e0, line)) => {
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
