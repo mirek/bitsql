@@ -91,6 +91,70 @@ fn hashable_key_rows(keys : Array[Array[@types.SortKey]]) -> Bool {
 }
 
 ///|
+/// `group_ids` of one-column key rows without a key array per row: integer
+/// values hashed as Int64 (KeyInt equality), other exact sort keys hashed
+/// directly; NULLs form one group. None when the column has inexact keys or
+/// mixed key kinds (the caller's general path decides those).
+fn single_column_ids(
+  keys : Array[Row],
+  collation : @types.Collation?,
+  ansi : Bool,
+) -> (Array[Int], Int)? {
+  let n = keys.length()
+  let ids = Array::make(n, 0)
+  let mut count = 0
+  let mut null_id = -1
+  if keys
+    .iter()
+    .all(r => r[0] is (Null | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
+    let seen : Map[Int64, Int] = Map([])
+    for i, r in keys {
+      if r[0] is Null {
+        if null_id < 0 {
+          null_id = count
+          count += 1
+        }
+        ids[i] = null_id
+        continue
+      }
+      let k = r[0].int64_or(0L)
+      match seen.get(k) {
+        Some(id) => ids[i] = id
+        None => {
+          ids[i] = count
+          seen[k] = count
+          count += 1
+        }
+      }
+    }
+    return Some((ids, count))
+  }
+  let ks = keys.map(r => @types.sort_key(r[0], collation?, ansi~))
+  let mut kind = 0
+  for k in ks {
+    let x = k.exact_kind()
+    if x < 0 || (x > 0 && kind > 0 && x != kind) {
+      return None
+    }
+    if x > 0 {
+      kind = x
+    }
+  }
+  let seen : Map[@types.SortKey, Int] = Map([])
+  for i, k in ks {
+    match seen.get(k) {
+      Some(id) => ids[i] = id
+      None => {
+        ids[i] = count
+        seen[k] = count
+        count += 1
+      }
+    }
+  }
+  Some((ids, count))
+}
+
+///|
 /// Group number of every key row: rows that are `same_row`-equal share a
 /// group, and groups are numbered in order of first appearance (the first
 /// row is in group 0, the next row not equal to it in group 1, ...).
@@ -102,6 +166,12 @@ fn group_ids(
   ansi? : Bool = false,
 ) -> (Array[Int], Int) raise @types.SqlError {
   let n = keys.length()
+  if n > 0 && keys[0].length() == 1 {
+    match single_column_ids(keys, collations[0], ansi) {
+      Some(r) => return r
+      None => ()
+    }
+  }
   let ks = keys.map(r => key_row(r, collations, ansi))
   if hashable_key_rows(ks) {
     let seen : Map[Array[@types.SortKey], Int] = Map([])
