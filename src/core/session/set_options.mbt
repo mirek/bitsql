@@ -422,13 +422,24 @@ fn Session::check_index_options(
   if self.session_flags.is_empty() {
     return
   }
-  let special = t.indexes
-    .iter()
-    .any(ix => {
-      ix.filter is Some(_) ||
-      ix.columns.iter().any(c => t.columns[c.0].computed is Some(_)) ||
-      ix.included.iter().any(c => t.columns[c].computed is Some(_))
-    })
+  // plain loops: this runs for every row a statement writes
+  let mut special = false
+  for ix in t.indexes {
+    if ix.filter is Some(_) {
+      special = true
+      break
+    }
+    for c in ix.columns {
+      if t.columns[c.0].computed is Some(_) {
+        special = true
+      }
+    }
+    for c in ix.included {
+      if t.columns[c].computed is Some(_) {
+        special = true
+      }
+    }
+  }
   if !special {
     return
   }

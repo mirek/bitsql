@@ -503,6 +503,32 @@ pub fn Db::delete_row(self : Db, id : Int, rowid : Int64) -> Db {
 }
 
 ///|
+/// Inserts several rows: the same result as `insert_row` for each in
+/// order, with the row and index maps merged in bulk (`PMap::add_all`).
+pub fn Db::insert_rows(self : Db, id : Int, rows : Array[(Int64, Row)]) -> Db {
+  guard self.data.get(id) is Some(d) && self.tables.get(id) is Some(t) else {
+    return self
+  }
+  if rows.is_empty() {
+    return self
+  }
+  let indexes = t.indexes.mapi((i, ix) => {
+    let entries = []
+    for r in rows {
+      if in_index(ix, r.1) {
+        entries.push((index_key(ix, r.1, r.0), r.0))
+      }
+    }
+    if entries.is_empty() {
+      d.indexes[i]
+    } else {
+      { map: d.indexes[i].map.add_all(entries), }
+    }
+  })
+  { ..self, data: self.data.add(id, { rows: d.rows.add_all(rows), indexes, }), }
+}
+
+///|
 /// Deletes several rows: the same result as `delete_row` for each, but a
 /// large share of the table is removed by rebuilding the row and index
 /// maps once (O(n)) instead of n path copies.

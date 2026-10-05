@@ -63,6 +63,7 @@ pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
 pub fn Db::get_module(Self, Int) -> Module?
 pub fn Db::get_type(Self, Int) -> UserType?
 pub fn Db::insert_row(Self, Int, Int64, Array[@types.Value]) -> Self
+pub fn Db::insert_rows(Self, Int, Array[(Int64, Array[@types.Value])]) -> Self
 pub fn Db::lookup(Self, String, String) -> Int?
 pub fn Db::lookup_type(Self, String, String) -> UserType?
 pub fn Db::modules(Self) -> Array[Module]
@@ -193,6 +194,7 @@ pub struct PMap[K, V] {
   // private fields
 }
 pub fn[K, V] PMap::add(Self[K, V], K, V) -> Self[K, V]
+pub fn[K, V] PMap::add_all(Self[K, V], Array[(K, V)]) -> Self[K, V]
 pub fn[K, V] PMap::check_invariants(Self[K, V]) -> Bool
 pub fn[K, V] PMap::contains(Self[K, V], K) -> Bool
 pub fn[K, V] PMap::empty((K, K) -> Int) -> Self[K, V]

@@ -314,3 +314,66 @@ pub fn[K, V] PMap::retain(
   walk(self.root)
   PMap::from_sorted(out, self.cmp)
 }
+
+///|
+/// `add` of every entry in order (a later entry replaces an earlier one
+/// with an equal key, as do entries replacing existing keys). Many entries
+/// relative to the map are merged in one O(n + m log m) rebuild.
+pub fn[K, V] PMap::add_all(
+  self : PMap[K, V],
+  entries : Array[(K, V)],
+) -> PMap[K, V] {
+  let m = entries.length()
+  if m < 64 || m * 8 < self.size() {
+    let mut out = self
+    for e in entries {
+      out = out.add(e.0, e.1)
+    }
+    return out
+  }
+  let cmp = self.cmp
+  // sort positions by key, ties by position; keep the last of equal keys
+  let order = Array::makei(m, i => i)
+  order.sort_by((x, y) => {
+    let c = cmp(entries[x].0, entries[y].0)
+    if c != 0 {
+      c
+    } else {
+      x.compare(y)
+    }
+  })
+  let fresh = []
+  for k, i in order {
+    if k + 1 < m && cmp(entries[i].0, entries[order[k + 1]].0) == 0 {
+      continue
+    }
+    fresh.push(entries[i])
+  }
+  let old = self.iter().collect()
+  let merged = []
+  let mut i = 0
+  let mut j = 0
+  while i < old.length() || j < fresh.length() {
+    if j >= fresh.length() {
+      merged.push(old[i])
+      i += 1
+    } else if i >= old.length() {
+      merged.push(fresh[j])
+      j += 1
+    } else {
+      let c = cmp(old[i].0, fresh[j].0)
+      if c < 0 {
+        merged.push(old[i])
+        i += 1
+      } else {
+        // an equal key takes the new entry (as `add` replaces it)
+        merged.push(fresh[j])
+        j += 1
+        if c == 0 {
+          i += 1
+        }
+      }
+    }
+  }
+  PMap::from_sorted(merged, cmp)
+}

@@ -78,3 +78,28 @@ test "retain and from_sorted rebuild balanced maps" {
     assert_eq(m.size(), n)
   }
 }
+
+///|
+test "add_all equals repeated add" {
+  let mut x = 11
+  for size in [0, 10, 100, 1000] {
+    let mut base : @store.PMap[Int, Int] = @store.PMap::empty(icmp)
+    for i in 0..<size {
+      base = base.add(i * 3, i)
+    }
+    for m in [5, 70, 300, 2000] {
+      let entries = []
+      for k in 0..<m {
+        x = (x * 1103515245 + 12345) & 0x7fffffff
+        entries.push((x % (4 * size + 50), k))
+      }
+      let mut expected = base
+      for e in entries {
+        expected = expected.add(e.0, e.1)
+      }
+      let got = base.add_all(entries)
+      assert_true(got.check_invariants())
+      assert_eq(got.iter().collect(), expected.iter().collect())
+    }
+  }
+}

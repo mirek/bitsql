@@ -101,6 +101,11 @@ fn text_key(s : String, collation : Collation, ansi : Bool) -> FixedArray[Int]? 
   if !(collation.kind is Linguistic) || (ansi && collation.sql_collation) {
     return None
   }
+  if is_ascii_from(s, 0) {
+    return Some(
+      ascii_text_key(s, collation, !(ansi && collation.sql_collation)),
+    )
+  }
   let (es, ws) = collation_elements(s, collation, ansi)
   let out : Array[Int] = []
   let level = (key : (Element) -> Int, skip_zero_primary : Bool) => {
@@ -179,4 +184,71 @@ pub impl Hash for SortKey with fn hash_combine(self, h) {
     }
     KeyValue(_) => h.combine_int(-1)
   }
+}
+
+///|
+/// `text_key` of an all-ASCII string without building collation elements:
+/// the same integers `collation_elements` gives such strings (no accents,
+/// width or kana forms; only NUL can be ignorable, under word sort).
+fn ascii_text_key(
+  s : String,
+  collation : Collation,
+  word_sort : Bool,
+) -> FixedArray[Int] {
+  let mut n = s.length()
+  while n > 0 && (s[n - 1] == ' ' || (word_sort && s[n - 1].to_int() == 0)) {
+    n -= 1
+  }
+  let primary : Array[Int] = []
+  let tertiary : Array[Int] = []
+  let ws : Array[Int] = []
+  for i in 0..<n {
+    let u = s[i].to_int()
+    if word_sort && (u == 0 || u == '-' || u == '\'') {
+      if u != 0 {
+        ws.push(0x3FFFFFFF - primary.length())
+        ws.push(u + 1)
+      }
+      continue
+    }
+    if u >= 'A' && u <= 'Z' {
+      primary.push(letter_primary(u + 32))
+      tertiary.push(2)
+    } else if u >= 'a' && u <= 'z' {
+      primary.push(letter_primary(u))
+      tertiary.push(0)
+    } else if u >= '0' && u <= '9' {
+      primary.push(0x8000 + u)
+      tertiary.push(0)
+    } else {
+      primary.push(0x100 + u)
+      tertiary.push(0)
+    }
+  }
+  let out : Array[Int] = []
+  for p in primary {
+    out.push(p + 1)
+  }
+  out.push(0)
+  let plain = (sensitive : Bool) => {
+    if sensitive {
+      for _ in primary {
+        out.push(1)
+      }
+      out.push(0)
+    }
+  }
+  plain(collation.accent_sensitive)
+  if collation.case_sensitive {
+    for t in tertiary {
+      out.push(t + 1)
+    }
+    out.push(0)
+  }
+  plain(collation.kana_sensitive)
+  plain(collation.width_sensitive)
+  for w in ws {
+    out.push(w)
+  }
+  FixedArray::from_array(out)
 }

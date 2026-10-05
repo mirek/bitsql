@@ -41,18 +41,6 @@ fn compare_key_rows(
 }
 
 ///|
-/// Positions 0..<n sorted by `compare_key_rows` on their rows, ties by
-/// position, with each row's sort keys (indexed by position).
-fn sorted_key_positions(
-  rows : Array[Row],
-  collations : Array[@types.Collation?],
-  ansi : Bool,
-) -> (Array[Int], Array[Array[@types.SortKey]]) raise @types.SqlError {
-  let keys = rows.map(r => key_row(r, collations, ansi))
-  (sort_key_rows(keys, collations, ansi), keys)
-}
-
-///|
 /// Positions of key rows sorted by `compare_key_rows`, ties by position.
 fn sort_key_rows(
   keys : Array[Array[@types.SortKey]],
@@ -175,9 +163,14 @@ fn distinct_rows(
 }
 
 ///|
-/// A set of rows for membership tests under `same_row` equality.
+/// A set of rows for membership tests under `same_row` equality: hashed
+/// exact keys when every column has them (a probe row with another key
+/// kind is compared row by row), else binary search over sorted keys.
 priv struct RowSet {
   sorted : Array[Array[@types.SortKey]]
+  hashed : Set[Array[@types.SortKey]]?
+  // exact key kind per column (0 when every key is NULL)
+  kinds : Array[Int]
   collations : Array[@types.Collation?]
 }
 
@@ -186,13 +179,46 @@ fn RowSet::new(
   rows : Array[Row],
   collations : Array[@types.Collation?],
 ) -> RowSet raise @types.SqlError {
-  let (order, keys) = sorted_key_positions(rows, collations, false)
-  { sorted: order.map(i => keys[i]), collations, }
+  let keys = rows.map(r => key_row(r, collations, false))
+  let hashed = if hashable_key_rows(keys) {
+    Some(Set::from_array(keys))
+  } else {
+    None
+  }
+  let kinds = Array::make(collations.length(), 0)
+  if hashed is Some(_) {
+    for r in keys {
+      for c, k in r {
+        if kinds[c] == 0 {
+          kinds[c] = k.exact_kind()
+        }
+      }
+    }
+  }
+  // hashed sets keep their rows unsorted (probes of another kind scan)
+  let sorted = if hashed is Some(_) {
+    keys
+  } else {
+    let order = sort_key_rows(keys, collations, false)
+    order.map(i => keys[i])
+  }
+  { sorted, hashed, kinds, collations, }
 }
 
 ///|
 fn RowSet::contains(self : RowSet, row : Row) -> Bool raise @types.SqlError {
   let probe = key_row(row, self.collations, false)
+  if self.hashed is Some(set) {
+    if self.kinds_match(probe) {
+      return set.contains(probe)
+    }
+    for k in self.sorted {
+      if compare_key_rows(k, probe, self.collations, false) == 0 {
+        return true
+      }
+    }
+    return false
+  }
   let mut lo = 0
   let mut hi = self.sorted.length()
   while lo < hi {
@@ -207,4 +233,17 @@ fn RowSet::contains(self : RowSet, row : Row) -> Bool raise @types.SqlError {
     }
   }
   false
+}
+
+///|
+/// Whether hashing answers for `probe`: each column's key is NULL or of
+/// the set's kind in that column.
+fn RowSet::kinds_match(self : RowSet, probe : Array[@types.SortKey]) -> Bool {
+  for c, k in probe {
+    let kind = k.exact_kind()
+    if kind < 0 || (kind > 0 && self.kinds[c] > 0 && self.kinds[c] != kind) {
+      return false
+    }
+  }
+  true
 }

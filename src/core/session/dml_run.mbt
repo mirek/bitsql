@@ -1138,6 +1138,14 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   let inserted_rows = []
   let evaluated = []
   let mut dup_ignored = false
+  // many rows are checked against the starting state plus a pending set
+  // and written at the end, unless a later row's checks could read an
+  // earlier row of this statement (self-references, IGNORE_DUP_KEY)
+  let pending = PendingInserts::new(t)
+  let mut buffered = source.length() >= 64 &&
+    instead.is_empty() &&
+    !t.foreign_keys.iter().any(fk => fk.ref_table == t.id) &&
+    !t.indexes.iter().any(ix => ix.unique && ix.ignore_dup_key)
   for ri, src in source {
     self.rt.next_row()
     let row = Array::make(t.columns.length(), @types.Value::Null)
@@ -1227,12 +1235,19 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         // insert of the same key, or a range lock covering it
         self.acquire(row_resource(t, rowid, row), X, Transaction)
       }
-      db = insert_checked(target, db, rowid, row)
+      if buffered && !pending.add(target, db, rowid, row) {
+        db = pending.flush(db, t.id)
+        buffered = false
+      }
+      if !buffered {
+        db = insert_checked(target, db, rowid, row)
+      }
       evaluated.push(self.output_eval(outputs, image))
       inserted_rows.push(row)
     }
     step()
   }
+  db = pending.flush(db, t.id)
   let all_columns = Array::makei(t.columns.length(), i => i)
   if !instead.is_empty() {
     self.run_triggers(target, instead, [], inserted_rows, all_columns, pre)

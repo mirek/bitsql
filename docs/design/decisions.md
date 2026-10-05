@@ -760,8 +760,27 @@ elsewhere.
   row-by-row order, so the failing row and OUTPUT rows are unchanged.
 - **Compiling MERGE** (batch prebind, sp_prepare) no longer runs the
   source query and matching before stopping at the OUTPUT header.
+- **Multi-row INSERT** (64+ rows, no self-referencing FK, no
+  IGNORE_DUP_KEY): each row's unique keys are checked, index by index as
+  `insert_checked` does, against the statement's starting state plus a
+  hash of pending exact keys, and the rows are merged into the maps once
+  (`PendingInserts`, `Db::insert_rows`, `PMap::add_all`). A key without
+  an exact sort key writes the pending rows and continues row by row.
+  Nothing else in the loop reads the target's own rows.
+- EXCEPT / INTERSECT membership hashes exact keys; all-ASCII strings get
+  their text key without building collation elements; per-row
+  `check_index_options` no longer allocates closures (INSERT with FK
+  45 → 27 ms).
 
-20k-row shapes (`npm run bench`): ORDER BY accented text 115 → 28 ms,
-ORDER BY 25 → 11, GROUP BY / DISTINCT 29–31 → 16, UNION 54 → 21,
-ROW_NUMBER 52 → 27, UPDATE all rows 123 → 38, UPDATE FROM 125 → 41,
-cascade DELETE 136 → 76, MERGE 82 → 50.
+Tie order changed: ORDER BY ties now come out in scan order where the
+quicksort scrambled them. SQL Server's own tie order is plan-dependent
+(probe 2026-10-05: `ORDER BY v` over a temp table with a clustered key
+returned one tie group ascending and the next descending), so neither
+order is reproducible; no corpus case changed.
+
+20k-row shapes (`npm run bench`), before → after: ORDER BY accented text
+115 → 28 ms, ORDER BY 25 → 9, GROUP BY / DISTINCT 29–31 → 13–16, UNION
+54 → 17, EXCEPT 23 → 16, ROW_NUMBER 52 → 25, UPDATE all rows 123 → 43,
+UPDATE FROM 125 → 41, INSERT with FK 39 → 27, cascade DELETE 136 → 65,
+MERGE 82 → 46, 40k-row GENERATE_SERIES load 77 → 51; all 24 shapes 1.08 →
+0.50 s.

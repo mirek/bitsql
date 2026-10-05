@@ -504,26 +504,115 @@ fn insert_checked(
     }
     let key = ix.columns.map(c => row[c.0])
     if db.find_key(t.id, i, key) is Some(_) {
-      let vals = ix.columns
-        .map(c => key_text(row[c.0], t.columns[c.0].ty))
-        .join(", ")
-      if ix.is_constraint {
-        let kind = if ix.primary { "PRIMARY KEY" } else { "UNIQUE KEY" }
-        raise @types.sql_error(
-          2627,
-          "Violation of \{kind} constraint '\{ix.name}'. Cannot insert duplicate key in object '\{target.display}'. The duplicate key value is (\{vals}).",
-          severity=14,
-        )
-      } else {
-        raise @types.sql_error(
-          2601,
-          "Cannot insert duplicate key row in object '\{target.display}' with unique index '\{ix.name}'. The duplicate key value is (\{vals}).",
-          severity=14,
-        )
-      }
+      raise duplicate_key(target, ix, row)
     }
   }
   db.insert_row(t.id, rowid, row)
+}
+
+///|
+/// 2627 / 2601 for a row whose key `ix` already holds.
+fn duplicate_key(
+  target : Target,
+  ix : @store.Index,
+  row : Array[@types.Value],
+) -> @types.SqlError {
+  let t = target.table
+  let vals = ix.columns
+    .map(c => key_text(row[c.0], t.columns[c.0].ty))
+    .join(", ")
+  if ix.is_constraint {
+    let kind = if ix.primary { "PRIMARY KEY" } else { "UNIQUE KEY" }
+    @types.sql_error(
+      2627,
+      "Violation of \{kind} constraint '\{ix.name}'. Cannot insert duplicate key in object '\{target.display}'. The duplicate key value is (\{vals}).",
+      severity=14,
+    )
+  } else {
+    @types.sql_error(
+      2601,
+      "Cannot insert duplicate key row in object '\{target.display}' with unique index '\{ix.name}'. The duplicate key value is (\{vals}).",
+      severity=14,
+    )
+  }
+}
+
+///|
+/// Rows an INSERT has checked but not yet written: `insert_checked` of
+/// each in turn equals checking each against the statement's starting
+/// state plus the pending keys, then one `Db::insert_rows`. Pending keys
+/// are exact sort keys under the index columns' collations, equal exactly
+/// when the index comparator calls them equal.
+priv struct PendingInserts {
+  rows : Array[(Int64, Array[@types.Value])]
+  keys : Array[Set[Array[@types.SortKey]]]
+}
+
+///|
+fn PendingInserts::new(t : @store.Table) -> PendingInserts {
+  { rows: [], keys: t.indexes.map(_ => Set([])), }
+}
+
+///|
+/// Checks and queues one row as `insert_checked` would against `db` plus
+/// the pending rows (raising its error). False, with nothing queued, when
+/// a key has no exact sort key: the caller writes the pending rows and
+/// continues with `insert_checked`.
+fn PendingInserts::add(
+  self : PendingInserts,
+  target : Target,
+  db : @store.Db,
+  rowid : Int64,
+  row : Array[@types.Value],
+) -> Bool raise {
+  let t = target.table
+  let keys : Array[Array[@types.SortKey]?] = []
+  for ix in t.indexes {
+    // disabled indexes never receive rows, so only `db` holds their keys
+    if !ix.unique || ix.disabled || !ix.covers(row) {
+      keys.push(None)
+      continue
+    }
+    let key = ix.columns.map(c => {
+      @types.sort_key(row[c.0], collation?=t.columns[c.0].ty.collation())
+    })
+    if key.iter().any(k => k.exact_kind() < 0) {
+      return false
+    }
+    keys.push(Some(key))
+  }
+  for i, ix in t.indexes {
+    if !ix.unique || !ix.covers(row) {
+      continue
+    }
+    let dup = db.find_key(t.id, i, ix.columns.map(c => row[c.0])) is Some(_) ||
+      (keys[i] is Some(k) && self.keys[i].contains(k))
+    if dup {
+      raise duplicate_key(target, ix, row)
+    }
+  }
+  for i, k in keys {
+    if k is Some(key) {
+      self.keys[i].add(key)
+    }
+  }
+  self.rows.push((rowid, row))
+  true
+}
+
+///|
+/// `db` with the pending rows written; the buffer is emptied.
+fn PendingInserts::flush(
+  self : PendingInserts,
+  db : @store.Db,
+  id : Int,
+) -> @store.Db {
+  let out = db.insert_rows(id, self.rows)
+  self.rows.clear()
+  for k in self.keys {
+    k.clear()
+  }
+  out
 }
 
 ///|

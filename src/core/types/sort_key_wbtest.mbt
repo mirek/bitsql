@@ -48,6 +48,13 @@ test "text sort keys order like compare_strings" {
   for s in all_strings(["a", "-", " ", "\u{e1}", "B", "'"], 3) {
     strings.push(s)
   }
+  // every ASCII unit (the direct ASCII path), alone and around letters
+  for u in 0..<128 {
+    let c = u.unsafe_to_char().to_string()
+    strings.push(c)
+    strings.push("a" + c + "B")
+    strings.push(c + "-" + c)
+  }
   let values = strings.map(s => Value::String(s))
   values.push(Null)
   for
