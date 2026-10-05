@@ -147,6 +147,11 @@ pub fn compile(e : @ir.Expr) -> Compiled {
         }
       }
     }
+    Call(Named(name), [arg]) if name == "CHAR" || name == "NCHAR" => {
+      let ca = compile(arg)
+      let ansi = name == "CHAR"
+      (c, r) => char_value(ca(c, r), ansi)
+    }
     Call(f, args) => {
       let cs = args.map(compile)
       (c, r) => call_values(c, f, cs.map(g => g(c, r)), args, e)

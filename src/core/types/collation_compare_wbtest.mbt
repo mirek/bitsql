@@ -121,6 +121,24 @@ fn element_test_units() -> Array[Int] {
 }
 
 ///|
+test "leading Latin primaries agree with full element comparison" {
+  let strings : Array[String] = []
+  for u in 0..<0x180 {
+    let ch = u.unsafe_to_char().to_string()
+    strings.push(ch + "a")
+    strings.push(ch + "z ")
+  }
+  let cases = [
+    ("SQL_Latin1_General_CP1_CS_AS", false),
+    ("SQL_Latin1_General_CP1_CS_AS", true),
+    ("Latin1_General_100_CS_AS_KS_WS", false),
+    ("Latin1_General_100_CI_AI", true),
+  ]
+  let (_, mismatches) = fast_path_mismatches(strings, cases)
+  assert_eq(mismatches, 0)
+}
+
+///|
 let element_test_collations : Array[String] = [
   "SQL_Latin1_General_CP1_CI_AS", "SQL_Latin1_General_CP1_CS_AS", "Latin1_General_CI_AI",
   "Latin1_General_CS_AS_KS_WS", "Latin1_General_100_CI_AI", "Latin1_General_100_CS_AS_KS_WS",

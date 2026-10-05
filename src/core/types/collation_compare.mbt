@@ -77,6 +77,33 @@ pub fn compare_strings(
       if is_ascii_from(a, k) && is_ascii_from(b, k) {
         compare_ascii(a, b, k, collation, ansi)
       } else {
+        // Unequal first primary weights decide the entire comparison,
+        // regardless of the remaining primary/secondary/case levels. A
+        // zero table entry means the unit is unknown here, ignorable,
+        // word-sort punctuation or a potentially trimmed space.
+        if k < a.length() && k < b.length() {
+          let ua = a[k].to_int()
+          let ub = b[k].to_int()
+          if ua < 0x180 && ub < 0x180 {
+            let word_sort = !(ansi && collation.sql_collation)
+            let weights = if collation.version == 0 {
+              if word_sort {
+                leading_primary_v0
+              } else {
+                leading_primary_sql_v0
+              }
+            } else if word_sort {
+              leading_primary_v100
+            } else {
+              leading_primary_sql_v100
+            }
+            let pa = weights[ua]
+            let pb = weights[ub]
+            if pa != 0 && pb != 0 && pa != pb {
+              return sign_of(pa - pb)
+            }
+          }
+        }
         compare_linguistic(a, b, k, collation, ansi)
       }
     }
@@ -713,6 +740,40 @@ fn push_unit_elements(
     out.push(pack_element(0x20000 + u, t, kw))
   }
 }
+
+///|
+/// First primary for ASCII / Latin-1 / Latin Extended-A, derived from the
+/// same element generator as the full comparison. Never decide from a
+/// space (it may be trimmed), ignorable unit or word-sort punctuation.
+fn leading_primaries(version : Int, word_sort : Bool) -> FixedArray[Int] {
+  let table = FixedArray::make(0x180, 0)
+  let elements : Array[Int] = []
+  for raw in 0..<table.length() {
+    if raw == ' ' ||
+      is_ignored(raw, version, word_sort) ||
+      (word_sort && (raw == '-' || raw == '\'')) {
+      continue
+    }
+    elements.clear()
+    push_unit_elements(elements, raw, version, word_sort)
+    if elements.length() > 0 && elements[0] >= 0 {
+      table[raw] = elements[0] >> 4
+    }
+  }
+  table
+}
+
+///|
+let leading_primary_v0 : FixedArray[Int] = leading_primaries(0, true)
+
+///|
+let leading_primary_sql_v0 : FixedArray[Int] = leading_primaries(0, false)
+
+///|
+let leading_primary_v100 : FixedArray[Int] = leading_primaries(100, true)
+
+///|
+let leading_primary_sql_v100 : FixedArray[Int] = leading_primaries(100, false)
 
 ///|
 /// The packed elements of `s` from code unit `start` on (into `out`), plus

@@ -60,7 +60,12 @@ Measured but not paper-derived:
   prebind plan, seekable UPDATE/DELETE WHERE (decisions.md 2026-10-05).
 - Executor-only named built-ins (`NCHAR`, `DATEADD`, …) skip the session's
   catalog function chain (`exec/named_pure.mbt`, guarded by
-  `session/named_pure_wbtest.mbt`).
+  `session/named_pure_wbtest.mbt`). Compiled unary `CHAR`/`NCHAR`
+  calls also skip the argument array and named-function dispatch, sharing
+  the scalar helper with interpreted evaluation. Private fixed tables reuse
+  immutable CHAR results and NCHAR's Latin-1 range (256 entries each, sharing
+  the strings where their code points agree). Exhaustive UTF-16/code-page
+  equivalence and operand-error coverage: `exec/compile_wbtest.mbt` (2026-10-05).
 
 Every change is checked against the full captured corpus; the ones with a
 non-obvious equivalence argument have a whitebox test against the code
@@ -147,3 +152,39 @@ A raw-string memo in front of the collation-key map was also measured and
 rejected: repeated-string queries improved 10–25%, but the all-unique
 check regressed from 11.42 to 14.01 ms. Keep a high-cardinality check when
 evaluating caches for grouping.
+
+## Accented-text sorting (2026-10-05, 0.1.9)
+
+Profiling the accented ORDER BY shape attributed ~20% of CPU samples to
+linguistic comparison and ~19% to generic string-function dispatch. Two
+changes address those costs:
+
+- Unequal leading primary weights decide a linguistic comparison before
+  building either full element sequence. Four small tables for ASCII,
+  Latin-1 and Latin Extended-A are derived from the existing element
+  generator (version 0/100, word/string sort). Spaces, ignorables and
+  word-sort punctuation cannot decide this way, and equal or unknown
+  weights use the existing comparison. The added reference test checks
+  2,359,296 pairs, alongside the existing mixed-string tests.
+- Compiled CHAR/NCHAR use the scalar helper directly, with shared immutable
+  results for CHAR and NCHAR's Latin-1 range (described above). The exhaustive
+  character-domain test checks the former implementation's result and
+  preserves operand errors; characters outside the cached range still use
+  the same conversion and allocation path.
+
+Sequential interleaved release-binary runs, 50 repetitions per shape,
+20k rows, best minimum wall time in ms:
+
+| Shape | 0.1.8 | 0.1.9 |
+| --- | ---: | ---: |
+| ORDER BY v | 1.33 | 1.34 |
+| ORDER BY v after a shared non-ASCII prefix | 2.08 | 2.15 |
+| ORDER BY accented text | 6.89 | 3.04 |
+
+The collation change alone measured 5.40 ms for accented ORDER BY. Follow-up
+checks (one run per binary, 30 repetitions, same query with a different
+character function) measured NCHAR(1024 + id % 30), outside the cached
+range, at 6.89 → 5.01 ms; CHAR(224 + id % 30) at 6.97 → 3.25 ms.
+At 80k rows the original accented shape measured 49.05 → 31.10 ms
+(20 repetitions). An initial run overlapped a worker's test compilation and
+was discarded; all reported timings were collected with workers idle.

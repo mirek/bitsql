@@ -927,20 +927,7 @@ fn call_string(
       }
       String(cap_pieces(pieces, e.ty))
     }
-    "NCHAR" | "CHAR" => {
-      if any_null {
-        return Some(Null)
-      }
-      let n = int_of(v[0]).unwrap_or(-1L)
-      let limit = if name == "CHAR" { 255L } else { 0xFFFFL }
-      if n < 0L || n > limit {
-        Null
-      } else if name == "CHAR" {
-        String(@types.cp1252_decode(n.to_int()).unsafe_to_char().to_string())
-      } else {
-        String(n.to_int().unsafe_to_char().to_string())
-      }
-    }
+    "NCHAR" | "CHAR" => char_value(v[0], name == "CHAR")
     "ASCII" | "UNICODE" =>
       match str(0) {
         Some(s) if s.length() > 0 => {
@@ -1109,4 +1096,40 @@ fn code_points(s : String) -> Int {
     }
   }
   n
+}
+
+///|
+// Only immutable String values escape these private tables. Cache the common
+// Unicode range and share its entries wherever the CHAR code page agrees.
+let nchar_latin1_values : FixedArray[@types.Value] = FixedArray::makei(256, n => {
+  String(n.unsafe_to_char().to_string())
+})
+
+///|
+let char_values : FixedArray[@types.Value] = FixedArray::makei(256, n => {
+  let unit = @types.cp1252_decode(n)
+  if unit < 256 {
+    nchar_latin1_values[unit]
+  } else {
+    String(unit.unsafe_to_char().to_string())
+  }
+})
+
+///|
+/// Shared scalar implementation for interpreted and compiled CHAR/NCHAR.
+fn char_value(
+  v : @types.Value,
+  ansi : Bool,
+) -> @types.Value raise @types.SqlError {
+  let n = int_of(v).unwrap_or(-1L)
+  let limit = if ansi { 255L } else { 0xFFFFL }
+  if n < 0L || n > limit {
+    Null
+  } else if ansi {
+    char_values[n.to_int()]
+  } else if n < 256L {
+    nchar_latin1_values[n.to_int()]
+  } else {
+    String(n.to_int().unsafe_to_char().to_string())
+  }
 }

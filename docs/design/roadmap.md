@@ -218,6 +218,12 @@ cover collation comparisons, temporal key equivalence, NULLs and group
 numbering. See `performance.md` for measurements and the rejected raw-string
 cache experiment. Beating SQL Server on every benchmark remains open.
 
+The next performance follow-up adds early decisions from unequal leading
+linguistic primary weights and compiled CHAR/NCHAR calls with immutable
+single-character results. Reference-equivalence tests and isolated/combined
+measurements are in `performance.md`; the remaining benchmark gaps continue
+to guide work.
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no
