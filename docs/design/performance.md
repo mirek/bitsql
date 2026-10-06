@@ -1027,5 +1027,8 @@ variation and near-parity accented sorting keep the optimization goal
 open. Evidence: `_build/compact-point-controls.txt` and
 `_build/compact-release-point-controls.txt`.
 
-Publication pending after the source commit; tested filesystem layers will
-be checked unchanged when applying the source revision labels.
+Published as `0.1.21`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:c190684ca358195d7917de600154c3052b61031f6ef66411fe68ef9a0cf3bb28`.
+Both images carry source revision `cec168e8b23f1f293e9b9b55146938ed18a9a52f`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.4997 MiB compressed.

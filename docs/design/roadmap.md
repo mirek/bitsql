@@ -372,7 +372,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   verified against raw samples. Published as `0.1.20`, `0.1` and `latest`;
   all three amd64 + arm64 registry manifests verified (`performance.md`).
 
-- [ ] 0.1.21 validated, publication pending: compact short ASCII keys under the exact default
+- [x] 0.1.21 published: compact short ASCII keys under the exact default
   CI collation. Controlled text grouping gains about 19–20%, DISTINCT
   15–16%, COUNT DISTINCT 20–24%, and ROW_NUMBER 26–27%. Full-column
   validation preserves general comparison fallback; adverse interior
@@ -382,4 +382,6 @@ project: the breadth of transaction and error semantics in phases 5–6.
   2/2. Container text grouping, DISTINCT, COUNT DISTINCT and ROW_NUMBER now
   beat SQL Server. Accented sorting is near parity; container point reads
   are slower, but exact-binary controls do not reproduce a regression.
-  All medians verified against raw samples; publication pending.
+  All medians verified against raw samples. Published as `0.1.21`, `0.1`
+  and `latest`; all three amd64 + arm64 registry manifests verified
+  (`performance.md`).
