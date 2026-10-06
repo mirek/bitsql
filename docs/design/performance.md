@@ -370,7 +370,7 @@ matches. Context scope would avoid keeping an old whole-database snapshot
 alive for a session's lifetime. It needs mutation/rollback/cross-database
 validation before implementation can be accepted.
 
-## Context-scoped stamp reader (2026-10-06, 0.1.13, publication pending)
+## Context-scoped stamp reader (2026-10-06, 0.1.13)
 
 Each execution context now owns a bounded table-stamp reader (at most 64
 entries). Every probe resolves `db_of` normally. If scope or immutable Db
@@ -471,4 +471,7 @@ samples. Total shape medians: 244 ms vs SQL Server 668 ms. Scalar uncorrelated:
 4.26 vs 4.65 ms; NOT IN: 1.86 vs 3.17 ms; DELETE WHERE IN: 11.2 vs 102 ms;
 MERGE: 27.0 vs 31.6 ms. Text grouping and ROW_NUMBER remain clearly slower;
 EXISTS is 5.05 vs 4.90 ms. README reflects this final revised comparison,
-not the eager variant. Publication remains pending registry authorization.
+not the eager variant. Published after explicit registry authorization on
+2026-10-06: `0.1.13`, `0.1` and `latest` have identical amd64 + arm64
+manifest lists, digest
+`sha256:0949be20d29855ddb5abbd74e42bbc8535a1fe88243b88d946e8cc352f936a0b`.

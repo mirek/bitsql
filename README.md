@@ -97,7 +97,7 @@ Emulator error 50108), `--record FILE` (event log for `replay`).
 
 ## Benchmarks
 
-Locally built `mirek/bitsql:0.1.13-amd64` (publication pending) vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
+`mirek/bitsql:0.1.13-amd64` vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
 edition, default settings), linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3,
 2026-10-06 (Europe/Zurich). Both containers ran one after the other on the same host, and the
 client is tedious over loopback with TLS. Every metric is lower-is-better;

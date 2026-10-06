@@ -264,8 +264,9 @@ equivalence tests and before/after timings are in `performance.md`.
   remains in other write controls. Final 0.1.13 exact amd64 gate passed
   (275 MoonBit tests, 20702 client/corpus passes, 3 skips); arm64 571/571.
   Container total 244 vs 668 ms, scalar uncorrelated 4.26 vs 4.65 ms,
-  DELETE WHERE IN 11.2 vs 102 ms. README refreshed. Publication pending
-  registry authorization (`performance.md`).
+  DELETE WHERE IN 11.2 vs 102 ms. README refreshed. Published 2026-10-06
+  as `0.1.13`, `0.1` and `latest`; identical amd64 + arm64 manifests verified
+  (`performance.md`).
 
 ## Limiting factor
 
