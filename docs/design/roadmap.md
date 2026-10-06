@@ -386,7 +386,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   and `latest`; all three amd64 + arm64 registry manifests verified
   (`performance.md`).
 
-- [ ] 0.1.22 validated, publication pending: prepare integer arithmetic bounds and string
+- [x] 0.1.22 published: prepare integer arithmetic bounds and string
   concatenation settings once per compiled expression. Accented TOP-N sort
   gains about 7–12% in final controls; arithmetic expression workloads also
   improve. Other families retain direct fallback calls; small float/money
@@ -396,4 +396,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
   query/DML shapes beat SQL Server (227 vs 671 ms total); accented sorting
   wins 2.63 vs 3.28 ms. Point reads still trail 134 vs 123 ms; new per-batch
   CPU measurements correlate spikes with higher server CPU, cause still
-  open. Medians verified against raw samples; publication pending.
+  open. Medians verified against raw samples. Published as `0.1.22`, `0.1`
+  and `latest`; all three amd64 + arm64 manifests verified (`performance.md`).

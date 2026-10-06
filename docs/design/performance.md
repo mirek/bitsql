@@ -1098,5 +1098,8 @@ that localizes the investigation but does not establish a cause or remove
 the latency gap. The optimization goal remains open. Evidence:
 `harness/out/bench-compare-0.1.22.json`, `_build/bench-0.1.22.txt`.
 
-Publication pending after the source commit; tested filesystem layers will
-be checked unchanged when applying the source revision labels.
+Published as `0.1.22`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:38af195130cbbe3498164f26050b15edca609f373191cc0ea0f0a58d9c2198e1`.
+Both images carry source revision `42784c5157c38efe09aac2ce36f57ad2b631530c`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.5013 MiB compressed.
