@@ -261,3 +261,33 @@ seven source rows: six candidates change tie order, while removing any one of
 four other candidates restores input order. SQL candidate sorting remains under
 investigation. No CREATE VECTOR INDEX execution, graph builder, or VECTOR_SEARCH
 execution is enabled by this pruning-only checkpoint.
+
+### Verified traversal core (2026-10-07)
+
+The actual Vector Index Seek plan exposes query-time parameters distinct from
+build-time L=48/M=8: `L = GREATEST(5, TOP_N * 3 / 2)` and
+`M = GREATEST(4, L / 6)`, using integer arithmetic. A variable TOP_N retains
+those scalar expressions in the plan. TOP_N values 0, 1, 2, 3, 5, 7, 9, 10,
+11, 16, 31, 48, 100, 101 and 1000 confirmed the boundaries. In particular,
+TOP_N=10 uses L=15/M=4, not the build parameters.
+
+`vector-search-traversal.cases.json` captures each graph and its search results
+in the same database. Twelve seeded fixtures cover all three metrics, dimensions
+3/8/16, signed primary keys, 20–500 rows, random/self/zero queries, and nine
+TOP_N values from 0 to 1000. The graph dump includes pending reciprocal edges.
+The generator derives 12 pure-core tests containing 324 searches: 252 compare
+exact keys and distances; 72 all-tied cosine/dot zero-query results compare
+captured count and distances plus distinct, valid source keys. No exact-scan
+fallback is used. Starting at StartId, traversal expands the nearest M unvisited
+frontier nodes together, merges their neighbors, retains the nearest L, and
+repeats until no frontier node remains unvisited. Distances are cached.
+
+An independent rebuild repeated every non-tied search result. Six larger graph
+dumps changed, and six all-tied selections in cosine-3-500 changed their keys.
+Consequently these raw graph captures are investigative fixtures, not a claim
+that graph bytes or tied selections reproduce across builds. The component
+uses primary-key order for equal distances. This does not resolve the separate
+builder candidate-sort contract, where tie order changes non-tied graph edges.
+Mixed tied/non-tied exploration needs further capture coverage. Graph
+construction and SQL binding/execution remain unfinished; integration must
+also retain the key lookup with the index rather than rebuilding it per query.

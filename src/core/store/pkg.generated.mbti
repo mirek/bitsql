@@ -15,6 +15,8 @@ pub fn same_index_entries(Table, Array[@types.Value], Array[@types.Value]) -> Bo
 
 pub fn vector_prune(Array[VectorCandidate], VectorMetric) -> Array[Int] raise @types.SqlError
 
+pub fn vector_search(Array[VectorNode], Int, @types.VectorData, VectorMetric, Int) -> Array[VectorCandidate] raise @types.SqlError
+
 // Errors
 
 // Types and methods
@@ -280,6 +282,12 @@ pub(all) enum VectorMetric {
   Euclidean
   Dot
 } derive(Eq, @debug.Debug)
+
+pub(all) struct VectorNode {
+  key : Int
+  vector : @types.VectorData
+  neighbors : Array[Int]
+}
 
 // Type aliases
 pub type Row = Array[@types.Value]
