@@ -7,6 +7,7 @@
 //     (the per-request workload of compare.mjs: SELECT 1 round trips,
 //     parameterized inserts and point SELECTs through sp_executesql, small
 //     transactions, the join + GROUP BY report)
+//   WORKLOAD=requests POINTS_ONLY=1 REPS=30 isolates point reads after setup.
 import { spawnEmulator, emulatorConfig } from '../src/emulator.mjs'
 import { connect, close } from '../src/client.mjs'
 import { capture } from '../src/capture-core.mjs'
@@ -52,6 +53,7 @@ async function requests(c) {
       for (let i = 0; i < 1000; i++) await exact(c, 'SELECT id, email, name, balance FROM customers WHERE id = @id', [{ name: '@id', type: 'int', value: 1 + (i * 7) % 1000 }])
     })
   }
+  if (process.env.POINTS_ONLY === '1') return
   await timed('200 transactions', async () => {
     for (let i = 0; i < 200; i++) await exact(c, `BEGIN TRAN;
       INSERT orders (customer_id, total, status) VALUES (@c, @t, 'new');

@@ -66,7 +66,8 @@ fn map_expr(
         n,
         Some({ ..o, order_by: o.order_by.map(i => { ..i, expr: m(i.expr), }), }),
       )
-    other => other
+    // No child changed, and Expr's fields are immutable.
+    _ => return e
   }
   { kind, span: e.span, }
 }

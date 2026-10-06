@@ -102,6 +102,11 @@ fn exposed_names(
 fn check_exposed_names(
   from : Array[@ast.TableRef],
 ) -> Unit raise @types.SqlError {
+  // A single leaf exposes at most one name; a join can still expose many.
+  if from.is_empty() ||
+    (from.length() == 1 && !(from[0].kind is Join(_, _, _, ..))) {
+    return
+  }
   let names : Array[(String, String, Bool)] = []
   for r in from {
     exposed_names(r, names)
@@ -1381,7 +1386,6 @@ fn bind_select_query(
   }
   let (source, cols) = bind_from(env, s.from)
   let inner = env.with_source(cols, source)
-  let written = written_names(s.from)
   let mut plan = match s.where_ {
     Some(w) => {
       if has_aggregate(w) {
@@ -1418,6 +1422,8 @@ fn bind_select_query(
     s.having is Some(_) ||
     item_exprs.iter().any(e => e is Some(x) && has_aggregate(x)) ||
     order_by.iter().any(o => has_aggregate(o.expr))
+  // These names are only used to diagnose ungrouped columns.
+  let written = if grouped { written_names(s.from) } else { Map([]) }
   let mut items = item_exprs
   let mut having = s.having
   let mut orders = order_by.map(o => o.expr)
@@ -1538,7 +1544,9 @@ fn bind_select_query(
   // output position of each select item's first column (wildcards expand)
   let item_pos : Array[Int] = []
   for idx, item in s.items {
-    item_pos.push(exprs.length())
+    if !order_by.is_empty() {
+      item_pos.push(exprs.length())
+    }
     match item.kind {
       Star(qualifier) => {
         if cols.is_empty() {

@@ -1103,3 +1103,65 @@ were verified at `sha256:38af195130cbbe3498164f26050b15edca609f373191cc0ea0f0a58
 Both images carry source revision `42784c5157c38efe09aac2ce36f57ad2b631530c`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.5013 MiB compressed.
+
+
+## 2026-10-06: 0.1.23 binder allocation reduction
+
+A point-only profile of 0.1.22 attributes 19.2% of inclusive CPU samples to
+prebinding, including 14.4% in SELECT binding. The diagnostic workload now
+accepts `POINTS_ONLY=1` to exclude its transaction/report tail; setup,
+SELECT 1 and inserts still contribute some samples. Allocation/freeing and
+cycle scanning appear in the profile, but this does not establish the cause
+of intermittent point-read spikes. Evidence:
+`_build/point-only-profile-0.1.22.txt` (100 batches).
+
+The candidate reuses immutable leaf Expr wrappers after the rewrite callback
+has declined replacement. Existing nested payload sharing, callbacks,
+traversal boundaries and error ordering remain unchanged. It also skips
+exposed-name collection for a single non-join FROM leaf, builds diagnostic
+object names only for grouped queries, and records projection positions
+only when ORDER BY exists. Joins, grouping diagnostics and ORDER BY retain
+the complete existing checks. No cross-request bound-plan cache is added.
+
+Sequential candidate/baseline/baseline/candidate controls (80 batches of
+1000 point reads per process) measured median server CPU 31.80 / 34.21 /
+34.25 / 32.81 ms and mean CPU 33.87 / 36.07 / 34.87 / 32.95 ms. Median wall
+time was 83.12 / 83.97 / 84.76 / 82.54 ms: about 4–7% lower median CPU and
+1–3% lower latency, with intermittent spikes still present. These are
+native binary controls, not the published container comparison. The shorter
+12-batch controls had noisy wall/total CPU results, so they are retained
+rather than substituted for the longer measurements. Full-request controls
+showed no stable transaction/report change. Broad 24-shape controls were
+mostly similar, with small candidate costs in several shapes (notably the
+join, ASCII sort and cascading delete); the first candidate run was elevated
+more broadly. No broad executor speedup is claimed. Evidence:
+`_build/bind-allocation-point-controls.txt`,
+`_build/bind-allocation-long-controls.txt`,
+`_build/bind-allocation-request-controls.txt`,
+`_build/bind-allocation-shape-controls.txt`.
+
+The exact amd64 release gate passed: 293 MoonBit tests and 20704
+client/corpus passes, three expected skips, no failures. The expanded
+short ARM64 smoke passed 904/904, and the same selectors passed 904/904
+against the live SQL Server oracle. They include exposed-name errors,
+grouped diagnostics, sequence/window rewrites, query ordering, JSON and
+architecture-sensitive arithmetic cases. No SQL expectations changed.
+Evidence: `_build/check-0.1.23.log`, `_build/arm64-0.1.23.log`,
+`_build/oracle-0.1.23.log`.
+
+The fresh container comparison totals 225.68 vs SQL Server's 671.90 ms
+across 24 query/DML shapes; all 24 win. Point reads now win narrowly:
+116.83 vs 122.83 ms. The five bitsql batches were 116.83, 123.76, 116.37,
+117.55 and 110.27 ms, with container CPU 36.40, 37.74, 36.81, 35.82 and
+36.27 ms (median 36.40); SQL Server's CPU median was 55.84 ms. Every other
+headline timing also wins in this run. This achieves the current benchmark
+target, but does not prove the intermittent spikes seen in earlier runs
+are eliminated. The controlled native improvement is smaller than the
+change between the two container medians, so do not attribute the entire
+container improvement to these edits.
+
+All 48 shape medians, both cold-start medians and both point wall/CPU
+medians were checked against five finite, nonnegative raw samples. Builds
+and tests ended, and both benchmark ports were clear before measurement.
+Evidence: `harness/out/bench-compare-0.1.23.json`, `_build/bench-0.1.23.txt`.
+Publication pending.

@@ -490,6 +490,9 @@ Start the host with `--database NAME` so the app's database exists at login
   wall time plus server CPU from `/proc/<pid>/schedstat`; the wall time is
   mostly tedious and TLS, so compare CPU. `report.py --focus FUNC` keeps
   only samples with FUNC on the stack (e.g. `rpc__executesql`).
+  Add `POINTS_ONLY=1` to stop after the point-read batches (setup, SELECT 1
+  and inserts still run), excluding the transaction/report workloads from
+  a longer point-read profile.
 - 2026-10-05: `npm run bench:compare` (harness/bench/compare.mjs) produces the
   README benchmark tables. It runs containers `bitsql-bench-bitsql`
   (47340) and `bitsql-bench-mssql` (47341), removes them at the end, and
