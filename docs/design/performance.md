@@ -477,7 +477,7 @@ manifest lists, digest
 `sha256:0949be20d29855ddb5abbd74e42bbc8535a1fe88243b88d946e8cc352f936a0b`.
 
 
-## Normalized window prefixes and adaptive grouping (2026-10-06, 0.1.15 candidate)
+## Normalized window prefixes and adaptive grouping (2026-10-06, 0.1.15)
 
 ROW_NUMBER reuses the normalized partition prefix after the same stable sort,
 without reconstructing keyed tuples or comparing linguistic partition values
@@ -530,3 +530,20 @@ sequentially with no concurrent builds/tests/benchmarks. Evidence:
 `_build/adaptive-group-final-controls.txt`. The profile helper now rejects SQL
 errors during setup, warm-up and every timed run; an invalid-column probe
 confirmed nonzero exit. Full release validation and container comparison pending.
+
+
+Final release validation: the exact amd64 binary passed `scripts/check.sh`
+(280 MoonBit tests, 20703 client/corpus passes, three skips, no failures).
+The exact arm64 binary passed 572/572 smoke cases including the 0.1.14 JSON
+compatibility case. After builds, tests and worker activity stopped, the isolated
+container comparison measured 243 ms vs SQL Server 669 ms across the 24 shapes.
+All 48 medians were verified against 240 raw samples. GROUP BY v: 5.56 vs
+5.05 ms; DISTINCT v: 5.71 vs 4.54; COUNT(DISTINCT v): 4.30 vs 3.89; UNION:
+6.76 vs 7.96; ROW_NUMBER: 7.03 vs 5.97; EXISTS: 5.12 vs 4.93. All other
+shape medians beat SQL Server, though accented ORDER BY is near parity.
+Four clear gaps plus the near-tied EXISTS remain; the optimization goal is not
+complete. The total is nearly unchanged from 0.1.13 because write timings
+dominate it; individual targeted gains should not be presented as a large
+end-to-end improvement. README tables reflect this exact container run.
+Evidence: `harness/out/bench-compare-0.1.15.json`, `_build/bench-0.1.15.txt`,
+`_build/check-0.1.15.log`, `_build/arm64-0.1.15.log`.

@@ -306,5 +306,8 @@ project: the breadth of transaction and error semantics in phases 5–6.
   and adaptively cache repeated text grouping keys (UNION about 18%, ordinary
   text grouping 4–5%, long repeated text about 29%). Unique and low-duplication
   controls stable after rejecting late cache activation; raw-unique SQL-equal
-  strings show a small overhead. Executor tests 20/20. Full release validation
-  and container comparison pending; see `performance.md`.
+  strings show a small overhead. Full exact amd64 gate passed: 280 MoonBit
+  tests, 20703 client/corpus passes, three skips. Arm64 smoke 572/572.
+  Container total 243 vs 669 ms; UNION 6.76 vs 7.96 ms, ROW_NUMBER 7.03
+  vs 5.97 ms. Four clear gaps and near-tied EXISTS remain. Publication next;
+  see `performance.md`.
