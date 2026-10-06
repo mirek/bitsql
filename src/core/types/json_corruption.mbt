@@ -22,12 +22,15 @@ pub fn JsonData::checked_text(self : JsonData) -> String raise SqlError {
   if self.corrupted {
     raise json_corruption_error(8)
   }
+  if self.raw_strings {
+    self.root.validate_raw_strings()
+  }
   self.text
 }
 
 ///|
 pub fn JsonData::is_corrupt(self : JsonData) -> Bool {
-  self.corrupted
+  self.corrupted || (self.raw_strings && self.root.has_invalid_raw_strings())
 }
 
 ///|

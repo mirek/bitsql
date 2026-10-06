@@ -1,0 +1,220 @@
+{
+  "cases": [
+    {
+      "name": "euro-tail-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20acx',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "euro-tail-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20acx',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "euro-tail-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20acx',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "euro-tail-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20acx',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-tail-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\ud83d\ude00x',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-tail-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\ud83d\ude00x',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-tail-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\ud83d\ude00x',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-tail-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\ud83d\ude00x',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-middle-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-middle-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-middle-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-middle-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-tail-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0x',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-tail-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0x',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-tail-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0x',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-tail-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0x',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-pair-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-pair-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-pair-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-pair-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "mixed-2-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20ac\u03c0',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "mixed-2-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20ac\u03c0',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "mixed-3-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,JSON_VALUE(substring_matches,'$[0].value') AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20ac\u03c0',N'\\C{3}');"
+        }
+      ]
+    },
+    {
+      "name": "mixed-3-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,CAST(substring_matches AS nvarchar(max)) AS v,JSON_VALUE(substring_matches,'$[0].length') AS n FROM REGEXP_MATCHES(N'\u20ac\u03c0',N'\\C{3}');"
+        }
+      ]
+    }
+  ]
+}

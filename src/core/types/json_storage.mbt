@@ -4,7 +4,11 @@
 
 ///|
 fn json_storage_string(text : String) -> Int {
-  let n = utf8_length(text)
+  json_storage_string_length(utf8_length(text))
+}
+
+///|
+fn json_storage_string_length(n : Int) -> Int {
   if n == 0 {
     return 0
   }
@@ -39,6 +43,7 @@ fn json_storage_number(text : String) -> Int raise SqlError {
 ///|
 priv enum JsonStorageNode {
   NScalar(Int, String)
+  NRawString(Bytes)
   NDeleted
   NArray(Array[JsonStorageNode], Int)
   NCorruptArray(Array[JsonStorageNode], Int)
@@ -304,6 +309,10 @@ fn JsonAllocator::clone_node(
   match node {
     NCorruptArray(_, _) => raise json_corruption_error(8)
     NDeleted => NDeleted
+    NRawString(bytes) => {
+      ignore(self.allocate(json_storage_string_length(bytes.length())))
+      node
+    }
     NScalar(bytes, _) => {
       ignore(self.allocate(bytes))
       node
@@ -359,6 +368,12 @@ fn JsonAllocator::replace(
   after : JsonStorageNode,
 ) -> JsonStorageNode raise SqlError {
   match (before, after) {
+    (NRawString(old), NScalar(bytes, _)) => {
+      if bytes > json_storage_string_length(old.length()) {
+        ignore(self.allocate(bytes))
+      }
+      after
+    }
     (NScalar(old, _), NScalar(bytes, _)) => {
       if bytes > old {
         ignore(self.allocate(bytes))
@@ -549,6 +564,7 @@ fn JsonAllocator::update(
 pub struct JsonData {
   priv text : String
   priv corrupted : Bool
+  priv raw_strings : Bool
   priv wide : Bool
   priv root : JsonStorageNode
   priv end : Int
@@ -563,7 +579,14 @@ fn JsonData::from_canonical(
   canonical : String,
   force_wide? : Bool = false,
 ) -> JsonData raise SqlError {
-  let tree = json_storage_tree(canonical)
+  JsonData::from_tree(json_storage_tree(canonical), force_wide~)
+}
+
+///|
+fn JsonData::from_tree(
+  tree : JsonStorageNode,
+  force_wide? : Bool = false,
+) -> JsonData raise SqlError {
   let wide = force_wide || tree.requires_wide(Set([]))
   let state : JsonAllocator = {
     wide,
@@ -587,8 +610,9 @@ fn JsonData::from_canonical(
     )
   }
   {
-    text: canonical,
-    corrupted: false,
+    text: root.to_text(),
+    corrupted: root.has_corruption(),
+    raw_strings: root.has_raw_strings(),
     wide,
     root,
     end: state.end,
@@ -674,6 +698,7 @@ pub fn JsonData::modified(
   {
     text: root.to_text(),
     corrupted: root.has_corruption(),
+    raw_strings: root.has_raw_strings(),
     wide: self.wide,
     root,
     end: state.end,
@@ -705,8 +730,17 @@ fn JsonStorageNode::write(
   self : JsonStorageNode,
   out : StringBuilder,
   navigation? : Bool = false,
+  scalar? : Bool = false,
 ) -> Unit {
   match self {
+    NRawString(bytes) => {
+      let end = if scalar {
+        json_raw_prefix(bytes).unwrap_or(bytes.length())
+      } else {
+        bytes.length()
+      }
+      write_json_type_string(out, @utf8.decode_lossy(bytes[:end]))
+    }
     NScalar(_, text) => out.write_string(text)
     NDeleted => ()
     NCorruptArray(_, _) if navigation => out.write_string("[]")
@@ -716,7 +750,7 @@ fn JsonStorageNode::write(
         if i > 0 {
           out.write_char(',')
         }
-        child.write(out, navigation~)
+        child.write(out, navigation~, scalar~)
       }
       out.write_char(']')
     }
@@ -733,7 +767,7 @@ fn JsonStorageNode::write(
         first = false
         write_json_type_string(out, key)
         out.write_char(':')
-        value.write(out, navigation~)
+        value.write(out, navigation~, scalar~)
       }
       out.write_char('}')
     }

@@ -26,6 +26,7 @@ fn json_contains(
     raise @types.not_supported("JSON_CONTAINS argument representation")
   }
   data.validate_path(path)
+  data.validate_raw_path(path)
   let selections = match
     json(() => @json.contains_values(data.navigation_text(), path)) {
     None => return Null

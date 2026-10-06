@@ -441,6 +441,11 @@ fn call_values(
           )
         (Null, _) => Null
         (String(doc), String(path)) => {
+          let doc = if v[0] is NativeJson(data) {
+            data.scalar_text(path)
+          } else {
+            doc
+          }
           let r = json(() => {
             @json.json_value(
               doc,
@@ -485,8 +490,8 @@ fn call_values(
           }
           match r {
             Some(s) =>
-              if args[0].ty is Json {
-                NativeJson(@types.JsonData::parse(s))
+              if v[0] is NativeJson(data) {
+                NativeJson(data.query_result(p, s, v.length() == 3))
               } else {
                 String(s)
               }

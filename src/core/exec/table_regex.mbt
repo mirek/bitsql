@@ -19,24 +19,21 @@ fn regex_table(
   let program = @regex.compile(pattern, flags)
   let bytes = @utf8.encode(@types.replace_lone_surrogates(source))
   ctx.rt.charge(bytes.length().to_int64())
-  let positions : Map[Int, Int] = Map([])
+  // Every nonempty prefix of a valid UTF-8 scalar decodes to one character,
+  // including an incomplete final prefix. Precompute end positions once.
+  let prefix_chars = Array::make(bytes.length() + 1, 0)
   let mut cursor = 0
   let mut size = 0
   while cursor < bytes.length() {
-    positions[cursor] = size
-    cursor = @regex.next_boundary(bytes, cursor)
+    let next = @regex.next_boundary(bytes, cursor)
     size += 1
-  }
-  positions[bytes.length()] = size
-  let position = (offset : Int) => {
-    match positions.get(offset) {
-      Some(n) => n
-      None =>
-        raise @types.not_supported(
-          "regular expression captures that split UTF-8 characters",
-        )
+    for i in (cursor + 1)..<(next + 1) {
+      prefix_chars[i] = size
     }
+    cursor = next
   }
+  let mut position_byte = 0
+  let mut position_chars = 0
   let mut at = 0
   let mut copied = 0
   let mut ordinal = 0L
@@ -44,8 +41,15 @@ fn regex_table(
     let (a, b) = m.groups[0].unwrap()
     if kind is RegexMatches {
       ordinal += 1L
-      let start = @cmp.minimum(position(a) + 1, size)
-      let end = @cmp.maximum(start, position(b))
+      position_chars += regex_text(bytes, position_byte, a).char_length()
+      position_byte = a
+      let start = if a == bytes.length() {
+        position_chars
+      } else {
+        position_chars + 1
+      }
+      let end = @cmp.maximum(start, prefix_chars[b])
+      let raw_strings : Array[(String, Bytes)] = []
       let parts = StringBuilder()
       parts.write_char('[')
       let first = if m.groups.length() > 1 { 1 } else { 0 }
@@ -60,8 +64,26 @@ fn regex_table(
             )
           Some((x, y)) => {
             let text = @json.quote(regex_text(bytes, x, y))
-            let s = @cmp.minimum(position(x) + 1, size)
-            let len = position(y) - position(x)
+            let s = if x == bytes.length() {
+              start.max(size)
+            } else {
+              start + regex_text(bytes, a, x).char_length()
+            }
+            let mut len = 0
+            for i in x..<y {
+              if (bytes[i].to_int() & 0xC0) != 0x80 {
+                len += 1
+              }
+            }
+            if x != y {
+              len = len.max(1)
+            }
+            raw_strings.push(
+              (
+                "$[" + (j - first).to_string() + "].value",
+                bytes[x:y].to_owned(),
+              ),
+            )
             parts.write_string(
               "{\"value\":\{text},\"start\":\{s},\"length\":\{len}}",
             )
@@ -74,7 +96,9 @@ fn regex_table(
         Int(start),
         Int(end),
         String(regex_text(bytes, a, b)),
-        NativeJson(@types.JsonData::parse(parts.to_string())),
+        NativeJson(
+          @types.JsonData::parse_raw_strings(parts.to_string(), raw_strings),
+        ),
       ])
     } else if a != b || (a > copied && a < bytes.length()) {
       ordinal += 1L

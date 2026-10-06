@@ -18,8 +18,8 @@ fn json_value_returning(
     raise @types.not_supported("typed JSON_VALUE argument representation")
   }
   let p = json(() => @json.parse_path(path, native=true))
-  guard json(() => @json.json_value_typed(data.navigation_text(), path))
-    is Some(row) &&
+  let doc = data.scalar_text(path)
+  guard json(() => @json.json_value_typed(doc, path)) is Some(row) &&
     row.value is Some(text) else {
     return Null
   }

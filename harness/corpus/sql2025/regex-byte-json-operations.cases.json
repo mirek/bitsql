@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "name": "contains-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(substring_matches,N'','$[0].value') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "contains-replacement",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(substring_matches,N'\ufffd','$[0].value') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "contains-character",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(substring_matches,N'\u03c0','$[0].value') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "open-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT o.v FROM REGEXP_MATCHES(N'\u03c0',N'\\C') CROSS APPLY OPENJSON(substring_matches) WITH(v nvarchar(max) '$.value') o;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "modify-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_MODIFY(substring_matches,'$[0].start',9) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "modify-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_MODIFY(substring_matches,'$[0].value',N'x') AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "modify-delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_MODIFY(substring_matches,'$[0].value',NULL) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "array-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_QUERY(substring_matches,'$[0].value' WITH ARRAY WRAPPER) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "json-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(substring_matches AS json) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    }
+  ]
+}

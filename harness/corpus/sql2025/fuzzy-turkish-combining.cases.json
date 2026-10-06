@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "name": "turkish_100_ci_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CI_AS,b) AS ed,CASE WHEN a COLLATE Turkish_100_CI_AS=b THEN 1 ELSE 0 END AS equal_value FROM (VALUES (0,N'\u00e7',N'c\u0327'),(1,N'\u00c7',N'C\u0327'),(2,N'\u011f',N'g\u0306'),(3,N'\u011e',N'G\u0306'),(4,N'\u00f6',N'o\u0308'),(5,N'\u00d6',N'O\u0308'),(6,N'\u015f',N's\u0327'),(7,N'\u015e',N'S\u0327'),(8,N'\u00fc',N'u\u0308'),(9,N'\u00dc',N'U\u0308'),(10,N'\u0130',N'I\u0307'),(11,N'\u0131',N'i\u0307'),(12,N'\u00e9',N'e\u0301'),(13,N'\u00e2',N'a\u0302'),(14,N'\u00ee',N'i\u0302'),(15,N'\u00ce',N'I\u0302'),(16,N'\uff49',N'i'),(17,N'\uff29',N'\u0131'),(18,N'\ufb03',N'ffi')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_ci_ai",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CI_AI,b) AS ed,CASE WHEN a COLLATE Turkish_100_CI_AI=b THEN 1 ELSE 0 END AS equal_value FROM (VALUES (0,N'\u00e7',N'c\u0327'),(1,N'\u00c7',N'C\u0327'),(2,N'\u011f',N'g\u0306'),(3,N'\u011e',N'G\u0306'),(4,N'\u00f6',N'o\u0308'),(5,N'\u00d6',N'O\u0308'),(6,N'\u015f',N's\u0327'),(7,N'\u015e',N'S\u0327'),(8,N'\u00fc',N'u\u0308'),(9,N'\u00dc',N'U\u0308'),(10,N'\u0130',N'I\u0307'),(11,N'\u0131',N'i\u0307'),(12,N'\u00e9',N'e\u0301'),(13,N'\u00e2',N'a\u0302'),(14,N'\u00ee',N'i\u0302'),(15,N'\u00ce',N'I\u0302'),(16,N'\uff49',N'i'),(17,N'\uff29',N'\u0131'),(18,N'\ufb03',N'ffi')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_cs_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CS_AS,b) AS ed,CASE WHEN a COLLATE Turkish_100_CS_AS=b THEN 1 ELSE 0 END AS equal_value FROM (VALUES (0,N'\u00e7',N'c\u0327'),(1,N'\u00c7',N'C\u0327'),(2,N'\u011f',N'g\u0306'),(3,N'\u011e',N'G\u0306'),(4,N'\u00f6',N'o\u0308'),(5,N'\u00d6',N'O\u0308'),(6,N'\u015f',N's\u0327'),(7,N'\u015e',N'S\u0327'),(8,N'\u00fc',N'u\u0308'),(9,N'\u00dc',N'U\u0308'),(10,N'\u0130',N'I\u0307'),(11,N'\u0131',N'i\u0307'),(12,N'\u00e9',N'e\u0301'),(13,N'\u00e2',N'a\u0302'),(14,N'\u00ee',N'i\u0302'),(15,N'\u00ce',N'I\u0302'),(16,N'\uff49',N'i'),(17,N'\uff29',N'\u0131'),(18,N'\ufb03',N'ffi')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_cs_ai",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CS_AI,b) AS ed,CASE WHEN a COLLATE Turkish_100_CS_AI=b THEN 1 ELSE 0 END AS equal_value FROM (VALUES (0,N'\u00e7',N'c\u0327'),(1,N'\u00c7',N'C\u0327'),(2,N'\u011f',N'g\u0306'),(3,N'\u011e',N'G\u0306'),(4,N'\u00f6',N'o\u0308'),(5,N'\u00d6',N'O\u0308'),(6,N'\u015f',N's\u0327'),(7,N'\u015e',N'S\u0327'),(8,N'\u00fc',N'u\u0308'),(9,N'\u00dc',N'U\u0308'),(10,N'\u0130',N'I\u0307'),(11,N'\u0131',N'i\u0307'),(12,N'\u00e9',N'e\u0301'),(13,N'\u00e2',N'a\u0302'),(14,N'\u00ee',N'i\u0302'),(15,N'\u00ce',N'I\u0302'),(16,N'\uff49',N'i'),(17,N'\uff29',N'\u0131'),(18,N'\ufb03',N'ffi')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    }
+  ]
+}

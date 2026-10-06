@@ -1,0 +1,74 @@
+{
+  "cases": [
+    {
+      "name": "turkish_100_ci_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CI_AS,b) AS ed,EDIT_DISTANCE_SIMILARITY(a COLLATE Turkish_100_CI_AS,b) AS es,JARO_WINKLER_DISTANCE(a COLLATE Turkish_100_CI_AS,b) AS jd,JARO_WINKLER_SIMILARITY(a COLLATE Turkish_100_CI_AS,b) AS js FROM (VALUES (0,N'I',N'\u0131'),(1,N'I',N'i'),(2,N'\u0130',N'i'),(3,N'\u0130',N'\u0131'),(4,N'I',N'\u0130'),(5,N'\u0131',N'i'),(6,N'I',N'I\u0307'),(7,N'\u0130',N'I\u0307'),(8,N'i',N'i\u0307'),(9,N'\u015f',N's'),(10,N'\u011f',N'g'),(11,N'\u00e7',N'c'),(12,N'\u00f6',N'o'),(13,N'\u00fc',N'u'),(14,N'\u00e2',N'a'),(15,N'\u00e9',N'e'),(16,N'\u00df',N'ss'),(17,N'\u00e6',N'ae'),(18,N'ISIK',N'\u0131\u015f\u0131k'),(19,N'\u0130S\u0130M',N'isim'),(20,N'Istanbul',N'istanbul'),(21,N'\u0130stanbul',N'istanbul'),(22,N'a\u00ad',N'a'),(23,N'a\u200b',N'a')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_cs_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CS_AS,b) AS ed,EDIT_DISTANCE_SIMILARITY(a COLLATE Turkish_100_CS_AS,b) AS es,JARO_WINKLER_DISTANCE(a COLLATE Turkish_100_CS_AS,b) AS jd,JARO_WINKLER_SIMILARITY(a COLLATE Turkish_100_CS_AS,b) AS js FROM (VALUES (0,N'I',N'\u0131'),(1,N'I',N'i'),(2,N'\u0130',N'i'),(3,N'\u0130',N'\u0131'),(4,N'I',N'\u0130'),(5,N'\u0131',N'i'),(6,N'I',N'I\u0307'),(7,N'\u0130',N'I\u0307'),(8,N'i',N'i\u0307'),(9,N'\u015f',N's'),(10,N'\u011f',N'g'),(11,N'\u00e7',N'c'),(12,N'\u00f6',N'o'),(13,N'\u00fc',N'u'),(14,N'\u00e2',N'a'),(15,N'\u00e9',N'e'),(16,N'\u00df',N'ss'),(17,N'\u00e6',N'ae'),(18,N'ISIK',N'\u0131\u015f\u0131k'),(19,N'\u0130S\u0130M',N'isim'),(20,N'Istanbul',N'istanbul'),(21,N'\u0130stanbul',N'istanbul'),(22,N'a\u00ad',N'a'),(23,N'a\u200b',N'a')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_ci_ai",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CI_AI,b) AS ed,EDIT_DISTANCE_SIMILARITY(a COLLATE Turkish_100_CI_AI,b) AS es,JARO_WINKLER_DISTANCE(a COLLATE Turkish_100_CI_AI,b) AS jd,JARO_WINKLER_SIMILARITY(a COLLATE Turkish_100_CI_AI,b) AS js FROM (VALUES (0,N'I',N'\u0131'),(1,N'I',N'i'),(2,N'\u0130',N'i'),(3,N'\u0130',N'\u0131'),(4,N'I',N'\u0130'),(5,N'\u0131',N'i'),(6,N'I',N'I\u0307'),(7,N'\u0130',N'I\u0307'),(8,N'i',N'i\u0307'),(9,N'\u015f',N's'),(10,N'\u011f',N'g'),(11,N'\u00e7',N'c'),(12,N'\u00f6',N'o'),(13,N'\u00fc',N'u'),(14,N'\u00e2',N'a'),(15,N'\u00e9',N'e'),(16,N'\u00df',N'ss'),(17,N'\u00e6',N'ae'),(18,N'ISIK',N'\u0131\u015f\u0131k'),(19,N'\u0130S\u0130M',N'isim'),(20,N'Istanbul',N'istanbul'),(21,N'\u0130stanbul',N'istanbul'),(22,N'a\u00ad',N'a'),(23,N'a\u200b',N'a')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_cs_ai",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_CS_AI,b) AS ed,EDIT_DISTANCE_SIMILARITY(a COLLATE Turkish_100_CS_AI,b) AS es,JARO_WINKLER_DISTANCE(a COLLATE Turkish_100_CS_AI,b) AS jd,JARO_WINKLER_SIMILARITY(a COLLATE Turkish_100_CS_AI,b) AS js FROM (VALUES (0,N'I',N'\u0131'),(1,N'I',N'i'),(2,N'\u0130',N'i'),(3,N'\u0130',N'\u0131'),(4,N'I',N'\u0130'),(5,N'\u0131',N'i'),(6,N'I',N'I\u0307'),(7,N'\u0130',N'I\u0307'),(8,N'i',N'i\u0307'),(9,N'\u015f',N's'),(10,N'\u011f',N'g'),(11,N'\u00e7',N'c'),(12,N'\u00f6',N'o'),(13,N'\u00fc',N'u'),(14,N'\u00e2',N'a'),(15,N'\u00e9',N'e'),(16,N'\u00df',N'ss'),(17,N'\u00e6',N'ae'),(18,N'ISIK',N'\u0131\u015f\u0131k'),(19,N'\u0130S\u0130M',N'isim'),(20,N'Istanbul',N'istanbul'),(21,N'\u0130stanbul',N'istanbul'),(22,N'a\u00ad',N'a'),(23,N'a\u200b',N'a')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_bin2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,EDIT_DISTANCE(a COLLATE Turkish_100_BIN2,b) AS ed,EDIT_DISTANCE_SIMILARITY(a COLLATE Turkish_100_BIN2,b) AS es,JARO_WINKLER_DISTANCE(a COLLATE Turkish_100_BIN2,b) AS jd,JARO_WINKLER_SIMILARITY(a COLLATE Turkish_100_BIN2,b) AS js FROM (VALUES (0,N'I',N'\u0131'),(1,N'I',N'i'),(2,N'\u0130',N'i'),(3,N'\u0130',N'\u0131'),(4,N'I',N'\u0130'),(5,N'\u0131',N'i'),(6,N'I',N'I\u0307'),(7,N'\u0130',N'I\u0307'),(8,N'i',N'i\u0307'),(9,N'\u015f',N's'),(10,N'\u011f',N'g'),(11,N'\u00e7',N'c'),(12,N'\u00f6',N'o'),(13,N'\u00fc',N'u'),(14,N'\u00e2',N'a'),(15,N'\u00e9',N'e'),(16,N'\u00df',N'ss'),(17,N'\u00e6',N'ae'),(18,N'ISIK',N'\u0131\u015f\u0131k'),(19,N'\u0130S\u0130M',N'isim'),(20,N'Istanbul',N'istanbul'),(21,N'\u0130stanbul',N'istanbul'),(22,N'a\u00ad',N'a'),(23,N'a\u200b',N'a')) v(id,a,b) ORDER BY id;"
+        }
+      ]
+    }
+  ]
+}

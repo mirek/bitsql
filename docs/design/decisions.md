@@ -1110,3 +1110,15 @@ the host owns socket closure. Ordinary SELECT detects corrupted native values
 before row emission and bypasses SQL TRY/CATCH, matching batch/RPC captures.
 The harness permits only explicitly opted-in ECONNRESET captures, with primary
 reuse failure accepted only when that primary request disconnected.
+
+### Raw UTF-8 strings in native JSON (2026-10-06)
+
+REGEXP_MATCHES group values can contain sliced UTF-8 sequences. Native JSON
+therefore stores raw strings as bytes alongside ordinary normalized scalars.
+Allocation uses byte lengths. Navigation, scalar extraction, text conversion
+and native wire output have distinct captured outcomes; validation happens at
+the consumer rather than rejecting the producer. JSON_QUERY and mutations
+preserve untouched raw nodes. Valid complete strings retain the ordinary path.
+Regex position bookkeeping precomputes prefix counts once to avoid quadratic
+prefix decoding. Evidence and remaining JSON context boundaries are in the
+SQL 2025 reference's raw-group section.

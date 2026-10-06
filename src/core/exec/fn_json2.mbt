@@ -224,7 +224,7 @@ fn call_json2(
           )
         (String(doc), String(path)) => {
           let doc = match v[0] {
-            NativeJson(data) => data.checked_text()
+            NativeJson(data) => data.mutation_text()
             _ => doc
           }
           let raw = v[3] is String("j")

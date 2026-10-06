@@ -1,0 +1,98 @@
+{
+  "cases": [
+    {
+      "name": "properties",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT c,COLLATIONPROPERTY(c,'LCID') AS lcid,COLLATIONPROPERTY(c,'CodePage') AS cp,COLLATIONPROPERTY(c,'ComparisonStyle') AS style,COLLATIONPROPERTY(c,'Version') AS version FROM (VALUES ('Turkish_CI_AS'),('Turkish_100_CI_AS'),('Turkish_100_CS_AS'),('Turkish_100_CI_AI'),('Turkish_100_CS_AI'),('Turkish_100_BIN2'),('Turkish_100_CI_AS_SC'),('Turkish_100_CI_AS_SC_UTF8')) v(c) ORDER BY c;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_ci_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS AS s,UPPER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS) AS u,LOWER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS) AS l;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v varchar(64)=CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS AS varchar(64)); SELECT CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS AS varchar(64)) AS v,CONVERT(varbinary(max),CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS AS varchar(64))) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT s FROM (VALUES (N'I'),(N'\u0131'),(N'i'),(N'\u0130'),(N'h'),(N'j'),(N'g'),(N'\u011f'),(N's'),(N'\u015f'),(N'c'),(N'\u00e7'),(N'o'),(N'\u00f6'),(N'u'),(N'\u00fc')) v(s) ORDER BY s COLLATE Turkish_100_CI_AS,s COLLATE Latin1_General_100_BIN2;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_cs_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS AS s,UPPER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS) AS u,LOWER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS) AS l;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v varchar(64)=CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS AS varchar(64)); SELECT CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS AS varchar(64)) AS v,CONVERT(varbinary(max),CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CS_AS AS varchar(64))) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT s FROM (VALUES (N'I'),(N'\u0131'),(N'i'),(N'\u0130'),(N'h'),(N'j'),(N'g'),(N'\u011f'),(N's'),(N'\u015f'),(N'c'),(N'\u00e7'),(N'o'),(N'\u00f6'),(N'u'),(N'\u00fc')) v(s) ORDER BY s COLLATE Turkish_100_CS_AS,s COLLATE Latin1_General_100_BIN2;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_ci_ai",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI AS s,UPPER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI) AS u,LOWER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI) AS l;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v varchar(64)=CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI AS varchar(64)); SELECT CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI AS varchar(64)) AS v,CONVERT(varbinary(max),CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AI AS varchar(64))) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT s FROM (VALUES (N'I'),(N'\u0131'),(N'i'),(N'\u0130'),(N'h'),(N'j'),(N'g'),(N'\u011f'),(N's'),(N'\u015f'),(N'c'),(N'\u00e7'),(N'o'),(N'\u00f6'),(N'u'),(N'\u00fc')) v(s) ORDER BY s COLLATE Turkish_100_CI_AI,s COLLATE Latin1_General_100_BIN2;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_bin2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2 AS s,UPPER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2) AS u,LOWER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2) AS l;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v varchar(64)=CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2 AS varchar(64)); SELECT CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2 AS varchar(64)) AS v,CONVERT(varbinary(max),CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_BIN2 AS varchar(64))) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT s FROM (VALUES (N'I'),(N'\u0131'),(N'i'),(N'\u0130'),(N'h'),(N'j'),(N'g'),(N'\u011f'),(N's'),(N'\u015f'),(N'c'),(N'\u00e7'),(N'o'),(N'\u00f6'),(N'u'),(N'\u00fc')) v(s) ORDER BY s COLLATE Turkish_100_BIN2,s COLLATE Latin1_General_100_BIN2;"
+        }
+      ]
+    },
+    {
+      "name": "turkish_100_ci_as_sc_utf8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8 AS s,UPPER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8) AS u,LOWER(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8) AS l;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v varchar(64)=CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8 AS varchar(64)); SELECT CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8 AS varchar(64)) AS v,CONVERT(varbinary(max),CAST(N'I\u0130i\u0131\u011e\u011f\u015e\u015f\u00c7\u00e7\u00d6\u00f6\u00dc\u00fc\u00c2\u00e2\u00c9\u00e9' COLLATE Turkish_100_CI_AS_SC_UTF8 AS varchar(64))) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT s FROM (VALUES (N'I'),(N'\u0131'),(N'i'),(N'\u0130'),(N'h'),(N'j'),(N'g'),(N'\u011f'),(N's'),(N'\u015f'),(N'c'),(N'\u00e7'),(N'o'),(N'\u00f6'),(N'u'),(N'\u00fc')) v(s) ORDER BY s COLLATE Turkish_100_CI_AS_SC_UTF8,s COLLATE Latin1_General_100_BIN2;"
+        }
+      ]
+    }
+  ]
+}

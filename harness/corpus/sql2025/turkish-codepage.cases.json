@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "name": "bmp-encode",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "WITH n AS (SELECT TOP (65536) CONVERT(int,ROW_NUMBER() OVER (ORDER BY (SELECT NULL))-1) AS u FROM sys.all_columns a CROSS JOIN sys.all_columns b) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(1),CONVERT(varchar(1),NCHAR(u) COLLATE Turkish_100_CI_AS)),2),'') WITHIN GROUP (ORDER BY u) AS encoded FROM n;"
+        }
+      ]
+    },
+    {
+      "name": "byte-decode",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE CURRENT COLLATE Turkish_100_CI_AS;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "WITH n AS (SELECT TOP (65536) CONVERT(int,ROW_NUMBER() OVER (ORDER BY (SELECT NULL))-1) AS u FROM sys.all_columns a CROSS JOIN sys.all_columns b) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(2),CONVERT(nvarchar(1),CONVERT(varchar(1),CONVERT(binary(1),u)))),2),'') WITHIN GROUP (ORDER BY u) AS decoded FROM n WHERE u<256;"
+        }
+      ]
+    }
+  ]
+}

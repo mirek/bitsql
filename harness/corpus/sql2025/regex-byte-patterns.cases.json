@@ -1,0 +1,244 @@
+{
+  "cases": [
+    {
+      "name": "greek-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{2}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C{3}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C$');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C(.*)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'(..)(\\C)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'(\\C)?(\\C)?');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'(?:(\\C)|x)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "greek-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0\u03c0',N'\\C*?');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'\\C{2}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'\\C{3}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'\\C$');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'\\C(.*)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'(..)(\\C)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'(\\C)?(\\C)?');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'(?:(\\C)|x)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "euro-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'a\u20acb',N'\\C*?');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{2}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C{3}');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C$');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C(.*)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'(..)(\\C)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'(\\C)?(\\C)?');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'(?:(\\C)|x)');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "emoji-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'x\ud83d\ude00y',N'\\C*?');",
+          "captureDisconnect": true
+        }
+      ]
+    }
+  ]
+}

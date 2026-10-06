@@ -1,0 +1,64 @@
+{
+  "cases": [
+    {
+      "name": "query-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_QUERY(substring_matches,'$') AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "query-item",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_QUERY(substring_matches,'$[0]') AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "query-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_QUERY(substring_matches,'$[0].value') AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "typed-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_VALUE(substring_matches,'$[0].value' RETURNING nvarchar(max)) AS v FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT o.* FROM REGEXP_MATCHES(N'\u03c0',N'\\C') CROSS APPLY OPENJSON(substring_matches,'$[0]') AS o;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "contains",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(substring_matches,N'x','$.value') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    }
+  ]
+}
