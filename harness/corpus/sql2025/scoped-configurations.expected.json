@@ -1,0 +1,185 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "5c24cb6d4018bf65",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"configuration_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"value_for_secondary","type":"Variant","length":8009,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_value_default","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": [
+            [1,"MAXDOP",0,null,true],
+            [2,"LEGACY_CARDINALITY_ESTIMATION",false,null,true],
+            [3,"PARAMETER_SNIFFING",true,null,true],
+            [4,"QUERY_OPTIMIZER_HOTFIXES",false,null,true],
+            [6,"IDENTITY_CACHE",true,null,true],
+            [7,"INTERLEAVED_EXECUTION_TVF",true,null,true],
+            [8,"BATCH_MODE_MEMORY_GRANT_FEEDBACK",true,null,true],
+            [9,"BATCH_MODE_ADAPTIVE_JOINS",true,null,true],
+            [10,"TSQL_SCALAR_UDF_INLINING",true,null,true],
+            [11,"ELEVATE_ONLINE","OFF",null,true],
+            [12,"ELEVATE_RESUMABLE","OFF",null,true],
+            [13,"OPTIMIZE_FOR_AD_HOC_WORKLOADS",false,null,true],
+            [14,"XTP_PROCEDURE_EXECUTION_STATISTICS",false,null,true],
+            [15,"XTP_QUERY_EXECUTION_STATISTICS",false,null,true],
+            [16,"ROW_MODE_MEMORY_GRANT_FEEDBACK",true,null,true],
+            [17,"ISOLATE_SECURITY_POLICY_CARDINALITY",false,null,true],
+            [18,"BATCH_MODE_ON_ROWSTORE",true,null,true],
+            [19,"DEFERRED_COMPILATION_TV",true,null,true],
+            [20,"ACCELERATED_PLAN_FORCING",true,null,true],
+            [21,"GLOBAL_TEMPORARY_TABLE_AUTO_DROP",true,null,true],
+            [22,"LIGHTWEIGHT_QUERY_PROFILING",true,null,true],
+            [23,"VERBOSE_TRUNCATION_WARNINGS",true,null,true],
+            [24,"LAST_QUERY_PLAN_STATS",false,null,true],
+            [25,"PAUSED_RESUMABLE_INDEX_ABORT_DURATION_MINUTES",1440,null,true],
+            [27,"EXEC_QUERY_STATS_FOR_SCALAR_FUNCTIONS",true,null,true],
+            [28,"PARAMETER_SENSITIVE_PLAN_OPTIMIZATION",true,null,true],
+            [29,"ASYNC_STATS_UPDATE_WAIT_AT_LOW_PRIORITY",false,null,true],
+            [31,"CE_FEEDBACK",true,null,true],
+            [33,"MEMORY_GRANT_FEEDBACK_PERSISTENCE",true,null,true],
+            [34,"MEMORY_GRANT_FEEDBACK_PERCENTILE_GRANT",true,null,true],
+            [35,"OPTIMIZED_PLAN_FORCING",true,null,true],
+            [37,"DOP_FEEDBACK",true,null,true],
+            [38,"LEDGER_DIGEST_STORAGE_ENDPOINT","OFF",null,true],
+            [39,"FORCE_SHOWPLAN_RUNTIME_PARAMETER_COLLECTION",false,null,true],
+            [40,"READABLE_SECONDARY_TEMPORARY_STATS_AUTO_CREATE",true,null,true],
+            [41,"READABLE_SECONDARY_TEMPORARY_STATS_AUTO_UPDATE",true,null,true],
+            [42,"OPTIMIZED_SP_EXECUTESQL",false,null,true],
+            [44,"FULLTEXT_INDEX_VERSION",2,null,true],
+            [46,"CE_FEEDBACK_FOR_EXPRESSIONS",true,null,true],
+            [47,"OPTIONAL_PARAMETER_OPTIMIZATION",true,null,true],
+            [48,"PREVIEW_FEATURES",false,null,true]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":41,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":41,"curCmd":193}],
+      "stream": [
+        {"name":"COLMETADATA","columns":5},
+        {"name":"ORDER","columns":[1]},
+        {"name":"NBCROW","count":41},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 41
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"configuration_id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"value_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"secondary_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"value_length","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"value_collation","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [
+            [1,"int",null,4,null],
+            [2,"bit",null,1,null],
+            [3,"bit",null,1,null],
+            [4,"bit",null,1,null],
+            [6,"bit",null,1,null],
+            [7,"bit",null,1,null],
+            [8,"bit",null,1,null],
+            [9,"bit",null,1,null],
+            [10,"bit",null,1,null],
+            [11,"nvarchar",null,32,"SQL_Latin1_General_CP1_CI_AS"],
+            [12,"nvarchar",null,32,"SQL_Latin1_General_CP1_CI_AS"],
+            [13,"bit",null,1,null],
+            [14,"bit",null,1,null],
+            [15,"bit",null,1,null],
+            [16,"bit",null,1,null],
+            [17,"bit",null,1,null],
+            [18,"bit",null,1,null],
+            [19,"bit",null,1,null],
+            [20,"bit",null,1,null],
+            [21,"bit",null,1,null],
+            [22,"bit",null,1,null],
+            [23,"bit",null,1,null],
+            [24,"bit",null,1,null],
+            [25,"int",null,4,null],
+            [27,"bit",null,1,null],
+            [28,"bit",null,1,null],
+            [29,"bit",null,1,null],
+            [31,"bit",null,1,null],
+            [33,"bit",null,1,null],
+            [34,"bit",null,1,null],
+            [35,"bit",null,1,null],
+            [37,"bit",null,1,null],
+            [38,"nvarchar",null,2004,"SQL_Latin1_General_CP1_CI_AS"],
+            [39,"bit",null,1,null],
+            [40,"bit",null,1,null],
+            [41,"bit",null,1,null],
+            [42,"bit",null,1,null],
+            [44,"smallint",null,2,null],
+            [46,"bit",null,1,null],
+            [47,"bit",null,1,null],
+            [48,"bit",null,1,null]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":41,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":41,"curCmd":193}],
+      "stream": [
+        {"name":"COLMETADATA","columns":5},
+        {"name":"ORDER","columns":[1]},
+        {"name":"NBCROW","count":41},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 41
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

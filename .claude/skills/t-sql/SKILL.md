@@ -1635,3 +1635,9 @@ and `XACT_STATE()` advertises nullable smallint width.
   escalated lock shows as 32 OBJECT X rows in sys.dm_tran_locks (lock
   partitioning). Details and why bitsql does not escalate: decisions.md
   2026-10-05 "lock grants per (table, session)".
+
+- 2026-10-06: SQL Server 2025 fuzzy functions have collation-aware character
+  normalization, same-family string argument restrictions, and position-based
+  Jaro transposition counting for repeated letters. Captures and implementation
+  traps: docs/reference/sql2025.md (sql2025/fuzzy-*). Preview enablement is
+  required; compatibility level 170 is not required.

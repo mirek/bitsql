@@ -60,6 +60,7 @@ pub(all) struct Catalog {
   )? raise @types.SqlError
   /// The current database's compatibility level (SOUNDEX below 110 keeps
   /// the old H/W rule).
+  preview_features : () -> Bool
   compat_level : () -> Int
 }
 
@@ -108,6 +109,7 @@ pub fn Catalog::empty() -> Catalog {
     function: _ => None,
     user_type: _ => false,
     system_tvf: (_, _) => None,
+    preview_features: () => false,
     compat_level: () => 170,
   }
 }

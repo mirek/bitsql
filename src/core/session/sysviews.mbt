@@ -702,6 +702,38 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           ]),
         )
       }
+    "sys.database_scoped_configurations" => {
+      let db_name = if self.view_tempdb { "tempdb" } else { self.rt.database }
+      let preview = self.server
+        .db_options(db_name)
+        .flag(db_name, "PREVIEW_FEATURES")
+      for seed in seed_scoped_configurations {
+        let is_preview = seed[0] == Int(48)
+        out.push(
+          vrow([
+            ("configuration_id", seed[0]),
+            ("name", seed[1]),
+            (
+              "value",
+              if is_preview {
+                Variant(Bit(preview), Bit)
+              } else {
+                seed[2]
+              },
+            ),
+            ("value_for_secondary", seed[3]),
+            (
+              "is_value_default",
+              if is_preview {
+                Bit(!preview)
+              } else {
+                seed[4]
+              },
+            ),
+          ]),
+        )
+      }
+    }
     "sys.databases" => {
       // server-wide: every database, in database_id order; user databases
       // take the settings of a fresh database (the last seed row)

@@ -70,6 +70,18 @@ fn Parser::alter_database(
   // ALTER DATABASE SCOPED CONFIGURATION is a different statement
   if self.is_kw("SCOPED") && self.is_kw_at(1, "CONFIGURATION") {
     self.pos += 2
+    if self.is_kw("SET") && self.is_kw_at(1, "PREVIEW_FEATURES") {
+      self.pos += 2
+      self.expect_punct("=")
+      let enabled = if self.eat_kw("ON") {
+        true
+      } else if self.eat_kw("OFF") {
+        false
+      } else {
+        raise self.error()
+      }
+      return AlterDatabase(target=None, PreviewFeatures(enabled))
+    }
     self.skip_clause()
     return AlterDatabase(target=None, OtherAction("SCOPED CONFIGURATION"))
   }

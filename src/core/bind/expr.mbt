@@ -318,7 +318,19 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       let nullable = els is None ||
         branches.iter().any(b => b.1.nullable) ||
         (els is Some(x) && x.nullable)
-      adopt_collation(env, fold_case(branches, els, t, nullable))
+      let unfolded = mk(
+        Case(
+          branches.map(b => (b.0, coerce(b.1, t))),
+          els.map(x => coerce(x, t)),
+        ),
+        t,
+        nullable,
+      )
+      if coercibility(env, unfolded) is NoCollation(_, _, _) {
+        unfolded
+      } else {
+        adopt_collation(env, fold_case(branches, els, t, nullable))
+      }
     }
     Cast(inner, tn, try_~) => {
       let a = bind_expr(env, inner)
@@ -731,7 +743,7 @@ fn binary(
     is_untyped_null(b) {
     return mk(Lit(Null), Int, true)
   }
-  if !(op is (BitAnd | BitOr | BitXor)) {
+  if !(op is (BitAnd | BitOr | BitXor | ConcatSql)) {
     variant_operator_check(op, a, b)
   }
   // an untyped NULL next to a string concatenates as varchar(1)
@@ -751,6 +763,7 @@ fn binary(
     (a, b)
   }
   match op {
+    ConcatSql => bind_concat_operator(env, a, b)
     Add | Sub | Mul | Div | Mod => {
       let aop : @types.ArithOp = match op {
         Add => Add

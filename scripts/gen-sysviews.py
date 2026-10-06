@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')
@@ -217,6 +217,23 @@ def main():
     w('')
     w('///|')
     w(f'let seed_type_columns : Array[String] = [{", ".join(mbt_str(n) for n in seed["types"]["columns"])}]')
+    scoped = json.load(open(os.path.join(CORPUS, 'sql2025/scoped-configurations.expected.json')))['steps']
+    scoped_rows = scoped[0]['sets'][0]['rows']
+    scoped_types = scoped[1]['sets'][0]['rows']
+    w('')
+    w('///|')
+    w('// Captured defaults; mutable settings are overlaid by view_rows.')
+    w('let seed_scoped_configurations : Array[Array[@types.Value]] = [')
+    for row, props in zip(scoped_rows, scoped_types):
+        assert row[0] == props[0] and row[3] is None
+        ty = {'int': 'Int', 'bit': 'Bit', 'smallint': 'SmallInt'}.get(props[1])
+        if props[1] == 'nvarchar':
+            assert props[4] == 'SQL_Latin1_General_CP1_CI_AS'
+            ty = f'NVarChar(Some({props[3] // 2}), coll_default)'
+        assert ty is not None
+        payload = value(row[2], ty)
+        w(f'  [Int({row[0]}), String({mbt_str(row[1])}), Variant({payload}, {ty}), Null, Bit(true)],')
+    w(']')
     with open(OUT, 'w') as f:
         f.write('\n'.join(out) + '\n')
     system(types_by_view)

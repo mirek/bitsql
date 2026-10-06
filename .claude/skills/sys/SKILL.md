@@ -1343,3 +1343,8 @@ For practical client compatibility, implement in this order:
 16. `sys.computed_columns` — computed column metadata
 17. `sys.views` — view metadata
 18. System functions (OBJECT_ID, SCHEMA_NAME, etc.)
+
+- 2026-10-06: `sys.database_scoped_configurations` descriptors and defaults
+  are captured in catalog/view-descriptors-scoped and sql2025/scoped-configurations.
+  PREVIEW_FEATURES is database-scoped, shared across sessions, and uses a bit
+  sql_variant; details and transaction behavior are in docs/reference/sql2025.md.

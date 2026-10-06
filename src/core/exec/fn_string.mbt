@@ -626,6 +626,32 @@ fn call_string(
   let any_null = v.iter().any(x => x is Null)
   let str = (i : Int) => text(v[i], args[i].ty, dates~)
   let r : @types.Value = match name {
+    "CONCAT_OPERATOR" => {
+      if any_null {
+        return Some(Null)
+      }
+      match (v[0], v[1]) {
+        (Binary(a), Binary(b)) => {
+          let bytes = a + b
+          let limit = match e.ty {
+            VarBinary(Some(n)) | Binary(n) => n
+            _ => bytes.length()
+          }
+          Binary(bytes[0:@cmp.minimum(limit, bytes.length())].to_owned())
+        }
+        _ => {
+          guard str(0) is Some(a) && str(1) is Some(b) else {
+            return Some(Null)
+          }
+          @types.cast(
+            String(a + b),
+            NVarChar(None, collation_of(e.ty)),
+            e.ty,
+            dates~,
+          )
+        }
+      }
+    }
     "LEN" =>
       match str(0) {
         // `_SC` collations count a surrogate pair as one character

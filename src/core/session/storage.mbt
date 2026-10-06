@@ -525,6 +525,11 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
     },
     sequence: name => self.sequence_binding(name),
     system_tvf: (name, args) => self.system_tvf(name, args),
+    preview_features: () => {
+      self.server
+      .db_options(self.rt.database)
+      .flag(self.rt.database, "PREVIEW_FEATURES")
+    },
     compat_level: () => self.server.db_options(self.rt.database).compat_level,
   }
 }

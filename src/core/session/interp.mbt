@@ -221,7 +221,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let conversion_abort = [241, 245, 295, 8114, 8169, 8672, 3952, 650].contains(
       e.number(),
     ) ||
-    is_identity_overflow(e)
+    is_identity_overflow(e) ||
+    (e.number() == 226 && e.state() == 7 && self.cur_cmd == 253)
   let xact_rollback = (
       (self.xact_abort && !raiserror && e.severity() > 10) || conversion_abort
     ) &&

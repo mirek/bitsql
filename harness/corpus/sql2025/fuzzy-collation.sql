@@ -1,0 +1,103 @@
+-- Fuzzy matching collation, transposition and limit rules.
+-- @step setup
+ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES = ON;
+-- @step batch
+SELECT EDIT_DISTANCE(N'A' COLLATE Latin1_General_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'A' COLLATE Latin1_General_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'A' COLLATE Latin1_General_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'é' COLLATE Latin1_General_100_CI_AS,N'e') AS ed, EDIT_DISTANCE_SIMILARITY(N'é' COLLATE Latin1_General_100_CI_AS,N'e') AS es, JARO_WINKLER_DISTANCE(N'é' COLLATE Latin1_General_100_CI_AS,N'e') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'ß' COLLATE Latin1_General_100_CI_AS,N'ss') AS ed, EDIT_DISTANCE_SIMILARITY(N'ß' COLLATE Latin1_General_100_CI_AS,N'ss') AS es, JARO_WINKLER_DISTANCE(N'ß' COLLATE Latin1_General_100_CI_AS,N'ss') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'æ' COLLATE Latin1_General_100_CI_AS,N'ae') AS ed, EDIT_DISTANCE_SIMILARITY(N'æ' COLLATE Latin1_General_100_CI_AS,N'ae') AS es, JARO_WINKLER_DISTANCE(N'æ' COLLATE Latin1_General_100_CI_AS,N'ae') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'I' COLLATE Latin1_General_100_CI_AS,N'ı') AS ed, EDIT_DISTANCE_SIMILARITY(N'I' COLLATE Latin1_General_100_CI_AS,N'ı') AS es, JARO_WINKLER_DISTANCE(N'I' COLLATE Latin1_General_100_CI_AS,N'ı') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a	' COLLATE Latin1_General_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a	' COLLATE Latin1_General_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a	' COLLATE Latin1_General_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a ' COLLATE Latin1_General_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a ' COLLATE Latin1_General_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a ' COLLATE Latin1_General_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'A' COLLATE Latin1_General_100_CS_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'A' COLLATE Latin1_General_100_CS_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'A' COLLATE Latin1_General_100_CS_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'é' COLLATE Latin1_General_100_CS_AS,N'e') AS ed, EDIT_DISTANCE_SIMILARITY(N'é' COLLATE Latin1_General_100_CS_AS,N'e') AS es, JARO_WINKLER_DISTANCE(N'é' COLLATE Latin1_General_100_CS_AS,N'e') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'ß' COLLATE Latin1_General_100_CS_AS,N'ss') AS ed, EDIT_DISTANCE_SIMILARITY(N'ß' COLLATE Latin1_General_100_CS_AS,N'ss') AS es, JARO_WINKLER_DISTANCE(N'ß' COLLATE Latin1_General_100_CS_AS,N'ss') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'æ' COLLATE Latin1_General_100_CS_AS,N'ae') AS ed, EDIT_DISTANCE_SIMILARITY(N'æ' COLLATE Latin1_General_100_CS_AS,N'ae') AS es, JARO_WINKLER_DISTANCE(N'æ' COLLATE Latin1_General_100_CS_AS,N'ae') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'I' COLLATE Latin1_General_100_CS_AS,N'ı') AS ed, EDIT_DISTANCE_SIMILARITY(N'I' COLLATE Latin1_General_100_CS_AS,N'ı') AS es, JARO_WINKLER_DISTANCE(N'I' COLLATE Latin1_General_100_CS_AS,N'ı') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a	' COLLATE Latin1_General_100_CS_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a	' COLLATE Latin1_General_100_CS_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a	' COLLATE Latin1_General_100_CS_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a ' COLLATE Latin1_General_100_CS_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a ' COLLATE Latin1_General_100_CS_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a ' COLLATE Latin1_General_100_CS_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'A' COLLATE Latin1_General_100_CI_AI,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'A' COLLATE Latin1_General_100_CI_AI,N'a') AS es, JARO_WINKLER_DISTANCE(N'A' COLLATE Latin1_General_100_CI_AI,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'é' COLLATE Latin1_General_100_CI_AI,N'e') AS ed, EDIT_DISTANCE_SIMILARITY(N'é' COLLATE Latin1_General_100_CI_AI,N'e') AS es, JARO_WINKLER_DISTANCE(N'é' COLLATE Latin1_General_100_CI_AI,N'e') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'ß' COLLATE Latin1_General_100_CI_AI,N'ss') AS ed, EDIT_DISTANCE_SIMILARITY(N'ß' COLLATE Latin1_General_100_CI_AI,N'ss') AS es, JARO_WINKLER_DISTANCE(N'ß' COLLATE Latin1_General_100_CI_AI,N'ss') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'æ' COLLATE Latin1_General_100_CI_AI,N'ae') AS ed, EDIT_DISTANCE_SIMILARITY(N'æ' COLLATE Latin1_General_100_CI_AI,N'ae') AS es, JARO_WINKLER_DISTANCE(N'æ' COLLATE Latin1_General_100_CI_AI,N'ae') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'I' COLLATE Latin1_General_100_CI_AI,N'ı') AS ed, EDIT_DISTANCE_SIMILARITY(N'I' COLLATE Latin1_General_100_CI_AI,N'ı') AS es, JARO_WINKLER_DISTANCE(N'I' COLLATE Latin1_General_100_CI_AI,N'ı') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a	' COLLATE Latin1_General_100_CI_AI,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a	' COLLATE Latin1_General_100_CI_AI,N'a') AS es, JARO_WINKLER_DISTANCE(N'a	' COLLATE Latin1_General_100_CI_AI,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a ' COLLATE Latin1_General_100_CI_AI,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a ' COLLATE Latin1_General_100_CI_AI,N'a') AS es, JARO_WINKLER_DISTANCE(N'a ' COLLATE Latin1_General_100_CI_AI,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'A' COLLATE Latin1_General_BIN2,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'A' COLLATE Latin1_General_BIN2,N'a') AS es, JARO_WINKLER_DISTANCE(N'A' COLLATE Latin1_General_BIN2,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'é' COLLATE Latin1_General_BIN2,N'e') AS ed, EDIT_DISTANCE_SIMILARITY(N'é' COLLATE Latin1_General_BIN2,N'e') AS es, JARO_WINKLER_DISTANCE(N'é' COLLATE Latin1_General_BIN2,N'e') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'ß' COLLATE Latin1_General_BIN2,N'ss') AS ed, EDIT_DISTANCE_SIMILARITY(N'ß' COLLATE Latin1_General_BIN2,N'ss') AS es, JARO_WINKLER_DISTANCE(N'ß' COLLATE Latin1_General_BIN2,N'ss') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'æ' COLLATE Latin1_General_BIN2,N'ae') AS ed, EDIT_DISTANCE_SIMILARITY(N'æ' COLLATE Latin1_General_BIN2,N'ae') AS es, JARO_WINKLER_DISTANCE(N'æ' COLLATE Latin1_General_BIN2,N'ae') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'I' COLLATE Latin1_General_BIN2,N'ı') AS ed, EDIT_DISTANCE_SIMILARITY(N'I' COLLATE Latin1_General_BIN2,N'ı') AS es, JARO_WINKLER_DISTANCE(N'I' COLLATE Latin1_General_BIN2,N'ı') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a	' COLLATE Latin1_General_BIN2,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a	' COLLATE Latin1_General_BIN2,N'a') AS es, JARO_WINKLER_DISTANCE(N'a	' COLLATE Latin1_General_BIN2,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a ' COLLATE Latin1_General_BIN2,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a ' COLLATE Latin1_General_BIN2,N'a') AS es, JARO_WINKLER_DISTANCE(N'a ' COLLATE Latin1_General_BIN2,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'A' COLLATE Turkish_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'A' COLLATE Turkish_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'A' COLLATE Turkish_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'é' COLLATE Turkish_100_CI_AS,N'e') AS ed, EDIT_DISTANCE_SIMILARITY(N'é' COLLATE Turkish_100_CI_AS,N'e') AS es, JARO_WINKLER_DISTANCE(N'é' COLLATE Turkish_100_CI_AS,N'e') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'ß' COLLATE Turkish_100_CI_AS,N'ss') AS ed, EDIT_DISTANCE_SIMILARITY(N'ß' COLLATE Turkish_100_CI_AS,N'ss') AS es, JARO_WINKLER_DISTANCE(N'ß' COLLATE Turkish_100_CI_AS,N'ss') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'æ' COLLATE Turkish_100_CI_AS,N'ae') AS ed, EDIT_DISTANCE_SIMILARITY(N'æ' COLLATE Turkish_100_CI_AS,N'ae') AS es, JARO_WINKLER_DISTANCE(N'æ' COLLATE Turkish_100_CI_AS,N'ae') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'I' COLLATE Turkish_100_CI_AS,N'ı') AS ed, EDIT_DISTANCE_SIMILARITY(N'I' COLLATE Turkish_100_CI_AS,N'ı') AS es, JARO_WINKLER_DISTANCE(N'I' COLLATE Turkish_100_CI_AS,N'ı') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a	' COLLATE Turkish_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a	' COLLATE Turkish_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a	' COLLATE Turkish_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE(N'a ' COLLATE Turkish_100_CI_AS,N'a') AS ed, EDIT_DISTANCE_SIMILARITY(N'a ' COLLATE Turkish_100_CI_AS,N'a') AS es, JARO_WINKLER_DISTANCE(N'a ' COLLATE Turkish_100_CI_AS,N'a') AS jd;
+-- @step batch
+SELECT EDIT_DISTANCE('CA' COLLATE Latin1_General_100_CI_AS,'ABC',0) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('CA' COLLATE Latin1_General_100_CI_AS,'ABC',1) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('CA' COLLATE Latin1_General_100_CI_AS,'ABC',2) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('abcdef' COLLATE Latin1_General_100_CI_AS,'badcfe',0) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('abcdef' COLLATE Latin1_General_100_CI_AS,'badcfe',1) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('abcdef' COLLATE Latin1_General_100_CI_AS,'badcfe',2) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('ab' COLLATE Latin1_General_100_CI_AS,'ba',0) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('ab' COLLATE Latin1_General_100_CI_AS,'ba',1) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('ab' COLLATE Latin1_General_100_CI_AS,'ba',2) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('aaaa' COLLATE Latin1_General_100_CI_AS,'bbbb',0) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('aaaa' COLLATE Latin1_General_100_CI_AS,'bbbb',1) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('aaaa' COLLATE Latin1_General_100_CI_AS,'bbbb',2) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('a' COLLATE Latin1_General_100_CI_AS,'abcd',0) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('a' COLLATE Latin1_General_100_CI_AS,'abcd',1) AS d;
+-- @step batch
+SELECT EDIT_DISTANCE('a' COLLATE Latin1_General_100_CI_AS,'abcd',2) AS d;

@@ -417,3 +417,9 @@ project: the breadth of transaction and error semantics in phases 5–6.
 - [x] SQL Server 2025 optional-length SUBSTRING and Base64 encode/decode: oracle-backed `sql2025/substring-optional-length`, `base64`, and `base64-padding` differential cases pass (2026-10-06); result metadata and argument/padding errors captured. Full feature audit remains open.
 
 - [x] SQL Server 2025 bigint DATEADD: widened intermediate arithmetic, range errors, time wrapping and signed-minimum nanosecond behavior; 139 batches in `sql2025/dateadd-bigint*.sql` pass (2026-10-06).
+
+- [x] SQL Server 2025 `||` concatenation: parser, binder and executor, typed conversions, NULL behavior, binary/character metadata, computed columns, collation errors and truncation; four `sql2025/concat-*` differential cases pass (2026-10-06).
+
+- [x] SQL Server 2025 preview configuration: ON/OFF state, transaction rejection/rollback and `sys.database_scoped_configurations` default rows/variant metadata. Three focused differential cases and the full gate pass (2026-10-06).
+
+- [ ] SQL Server 2025 fuzzy matching: all four functions implemented with captured metadata, type errors, normalization and algorithms; 256-pair algorithm capture passes. Turkish collation and expanded Unicode/collation verification remain open; full gate passes (2026-10-06).

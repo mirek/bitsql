@@ -59,9 +59,9 @@ fn session_dependent_cast(from : @types.SqlType, to : @types.SqlType) -> Bool {
 /// Deterministic built-ins (bind/fn_string.mbt names) that SQL Server
 /// evaluates at compile time when their arguments are constant.
 let foldable_fns : Set[String] = Set([
-  "LEN", "DATALENGTH", "UPPER", "LOWER", "REVERSE", "LTRIM", "RTRIM", "TRIM", "LEFT",
-  "RIGHT", "SUBSTRING", "REPLACE", "REPLICATE", "SPACE", "CHARINDEX", "CONCAT", "CONCAT_WS",
-  "NCHAR", "CHAR", "ASCII", "UNICODE", "STUFF",
+  "CONCAT_OPERATOR", "LEN", "DATALENGTH", "UPPER", "LOWER", "REVERSE", "LTRIM", "RTRIM",
+  "TRIM", "LEFT", "RIGHT", "SUBSTRING", "REPLACE", "REPLICATE", "SPACE", "CHARINDEX",
+  "CONCAT", "CONCAT_WS", "NCHAR", "CHAR", "ASCII", "UNICODE", "STUFF",
 ])
 
 ///|

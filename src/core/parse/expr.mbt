@@ -170,6 +170,7 @@ fn Parser::bin_op(self : Parser) -> (@ast.BinOp, Int)? {
     "-" => Some((Sub, 1))
     "&" => Some((BitAnd, 1))
     "|" => Some((BitOr, 1))
+    "||" => Some((ConcatSql, 1))
     "^" => Some((BitXor, 1))
     _ => None
   }

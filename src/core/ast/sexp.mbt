@@ -77,6 +77,7 @@ pub fn TypeName::to_sexp(self : TypeName) -> String {
 ///|
 fn bin_text(op : BinOp) -> String {
   match op {
+    ConcatSql => "||"
     Add => "+"
     Sub => "-"
     Mul => "*"

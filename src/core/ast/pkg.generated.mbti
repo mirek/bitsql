@@ -24,6 +24,7 @@ pub fn SyntaxError::state(Self) -> Int
 // Types and methods
 pub(all) enum AlterDatabaseAction {
   Collate(Ident)
+  PreviewFeatures(Bool)
   SetOptions(Array[DatabaseOption])
   OtherAction(String)
 } derive(Eq, @debug.Debug)
@@ -63,6 +64,7 @@ pub(all) struct BackupOption {
 } derive(Eq, @debug.Debug)
 
 pub(all) enum BinOp {
+  ConcatSql
   Add
   Sub
   Mul

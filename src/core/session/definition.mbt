@@ -61,7 +61,7 @@ fn def_class(e : @ast.Expr) -> Int {
         _ => 45
       }
     Unary(Plus, x) => def_class(x)
-    Binary(Add | Sub, _, _) => 50
+    Binary(Add | Sub | ConcatSql, _, _) => 50
     Binary(Mul | Div | Mod, _, _) => 60
     Binary(BitAnd | BitOr | BitXor, _, _) => 70
     _ => 90
@@ -231,6 +231,7 @@ fn def_expr(e : @ast.Expr) -> String {
     Unary(BitNot, x) => "~" + def_wrap(x, 89)
     Binary(op, l, r) => {
       let (sym, p) = match op {
+        ConcatSql => ("||", 50)
         Add => ("+", 50)
         Sub => ("-", 50)
         Mul => ("*", 60)

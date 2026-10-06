@@ -49,6 +49,7 @@ pub(all) enum UnaryOp {
 ///|
 /// Arithmetic / string / bitwise operators.
 pub(all) enum BinOp {
+  ConcatSql
   Add
   Sub
   Mul

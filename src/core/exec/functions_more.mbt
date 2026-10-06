@@ -32,6 +32,9 @@ fn call_more(
     is Some(r) {
     return r
   }
+  if call_fuzzy(ctx, name, v, args) is Some(r) {
+    return r
+  }
   if call_base64(name, v) is Some(r) {
     return r
   }

@@ -182,6 +182,7 @@ fn coercibility_in(e : @ir.Expr, col : ColumnCoercibility) -> Coercibility {
       let label = match f {
         // captured: "CHOOSE operator", "concat operator"
         Named("CHOOSE") => "CHOOSE"
+        Named("CONCAT_OPERATOR") => "concat"
         Named(n) => n.to_lower()
         _ => "function"
       }
@@ -455,5 +456,28 @@ fn adopt_collation(env : Env, e : @ir.Expr) -> @ir.Expr {
     Explicit(c) | Implicit(c) if c != current =>
       { ..e, ty: e.ty.with_collation(c), }
     _ => e
+  }
+}
+
+///|
+/// || performs an ANSI conversion that exposes unresolved varchar collation
+/// immediately (457); Unicode expressions retain the deferred label (451).
+fn concat_operator_collation(
+  env : Env,
+  a : @ir.Expr,
+  b : @ir.Expr,
+  unicode : Bool,
+) -> @types.Collation raise @types.SqlError {
+  let c = combine(coercibility(env, a), coercibility(env, b), "concat") catch {
+    ExplicitConflict(x, y) => raise conflict_error(y, x, "concat")
+  }
+  match c {
+    Explicit(c) | Implicit(c) => c
+    NoCollation(x, y, op) if !unicode =>
+      raise err(
+        457,
+        "Implicit conversion of varchar value to varchar cannot be performed because the collation of the value is unresolved due to a collation conflict between \"\{x.name}\" and \"\{y.name}\" in \{op} operator.",
+      )
+    _ => env.collation
   }
 }

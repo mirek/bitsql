@@ -81,6 +81,7 @@ pub(all) struct Catalog {
   function : (@ast.ObjectName) -> UserFunction? raise @types.SqlError
   user_type : (@ast.TypeName) -> Bool
   system_tvf : (String, Array[@types.Value]) -> (Array[ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError
+  preview_features : () -> Bool
   compat_level : () -> Int
 }
 pub fn Catalog::empty() -> Self

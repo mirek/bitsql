@@ -1104,6 +1104,7 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
           })
           .join("") +
           ")"
+        PreviewFeatures(v) => "(preview-features " + v.to_string() + ")"
         OtherAction(w) => "(other " + w + ")"
       }
       self.s("(alter-database " + t + " " + a + ")")

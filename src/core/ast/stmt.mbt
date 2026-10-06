@@ -149,6 +149,8 @@ pub(all) enum StmtKind {
 pub(all) enum AlterDatabaseAction {
   /// `COLLATE name`
   Collate(Ident)
+  /// Database-scoped SQL Server 2025 preview feature switch.
+  PreviewFeatures(Bool)
   /// `SET option [=] value [, ...] [WITH termination]`
   SetOptions(Array[DatabaseOption])
   /// Anything else (MODIFY, ADD FILE, SCOPED CONFIGURATION, ...): its

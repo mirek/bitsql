@@ -180,6 +180,22 @@ fn Session::exec_alter_database(
   target : @ast.Ident?,
   action : @ast.AlterDatabaseAction,
 ) -> Unit raise {
+  if action is PreviewFeatures(enabled) {
+    self.cur_cmd = 253
+    if self.rt.trancount > 0 {
+      raise @types.sql_error(
+        226,
+        "ALTER DATABASE SCOPED CONFIGURATION statement not allowed within multi-statement transaction.",
+        state=7,
+      )
+    }
+    let name = self.rt.database
+    self.server.db_options[name.to_lower()] = self.server
+      .db_options(name)
+      .with_flag("PREVIEW_FEATURES", enabled)
+    self.done(253)
+    return
+  }
   // compile-time checks
   match action {
     Collate(c) => ignore(resolve_collation(c))
@@ -199,6 +215,7 @@ fn Session::exec_alter_database(
           }
         }
       }
+    PreviewFeatures(_) => ()
     OtherAction(w) => raise @types.not_supported("ALTER DATABASE \{w}")
   }
   // master stays alterable: it is the case database of process-isolated
@@ -258,7 +275,7 @@ fn Session::exec_alter_database(
       }
       self.server.db_options[name.to_lower()] = o
     }
-    OtherAction(_) => ()
+    PreviewFeatures(_) | OtherAction(_) => ()
   }
   self.done(215)
 }

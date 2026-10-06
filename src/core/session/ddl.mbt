@@ -575,6 +575,7 @@ fn Session::add_column(
   }
   let mut alias_type : Int? = None
   let mut alias_nullable : Bool? = None
+  let mut concat_nullable : Bool? = None
   let (ty, computed) = match (c.type_, c.computed) {
     (Some(t), _) => {
       let decl = self.decl_type(t, collation) catch {
@@ -640,6 +641,9 @@ fn Session::add_column(
         }),
       )
       let bound = @bind.bind_expr(env, e)
+      if strip_parens(e).kind is Binary(ConcatSql, _, _) {
+        concat_nullable = Some(bound.nullable)
+      }
       if c.persisted && bound_nondeterministic(bound) {
         raise nondeterministic()
       }
@@ -660,7 +664,7 @@ fn Session::add_column(
   }
   let nullable = match (c.nullable, c.computed) {
     (Some(n), _) => n
-    (None, Some(e)) => computed_nullable(e, b)
+    (None, Some(e)) => concat_nullable.unwrap_or(computed_nullable(e, b))
     (None, None) if alias_nullable is Some(n) &&
       !pk_cols.contains(c.name.name.to_lower()) => n
     (None, None) =>
@@ -753,7 +757,8 @@ fn Session::add_column(
     default_auto: false,
     computed,
     result_nullable: match (c.nullable, c.computed) {
-      (Some(false), Some(e)) => computed_nullable(e, b)
+      (Some(false), Some(e)) =>
+        concat_nullable.unwrap_or(computed_nullable(e, b))
       _ => nullable
     },
     persisted: c.persisted,
