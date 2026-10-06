@@ -356,3 +356,13 @@ project: the breadth of transaction and error semantics in phases 5–6.
   not reproduce a GROUP BY regression. Total shapes: 234 vs 677 ms.
   Published as `0.1.19`, `0.1` and `latest`; all three amd64 + arm64
   registry manifests verified (`performance.md`).
+
+- [~] 0.1.20 validated: compiled EXISTS/scalar subqueries pass their outer row without
+  copying Ctx first; empty correlated matches avoid an unused context.
+  Controlled EXISTS gains about 23–24%; scalar subqueries also improve.
+  Point-SELECT comparison now retains five batches and reports their median.
+  Exact gate: 287 MoonBit tests, 20703 client/corpus passes (three skips),
+  arm64 572/572. Container EXISTS wins (3.66 vs 4.66 ms); total shapes 229
+  vs 645 ms. DISTINCT/ROW_NUMBER trail about 6–7%; text GROUP BY, accented
+  sorting and point reads are near parity. All shape and point medians
+  verified against raw samples. Publication next (`performance.md`).

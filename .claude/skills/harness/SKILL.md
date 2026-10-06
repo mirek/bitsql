@@ -545,3 +545,14 @@ Start the host with `--database NAME` so the app's database exists at login
   showed TIME-WAIT at local 127.0.0.1:47340 (peer was an ephemeral emulator
   port). Waiting until that state disappeared allowed the comparison to start.
   LISTEN-only checks miss this; do not remove another process to clear it.
+
+- 2026-10-06: `bench:compare` now stores five 1000-query point-SELECT batches
+  (`pointReadsSamplesMs`, `pointReadsRepetitions`) after one full warm-up and
+  reports their median. This read-only workload was near parity and its prior
+  single batch varied between runs. Old JSON without samples retains the old
+  table label; do not compare the two methodologies as an isolated code gain.
+
+- 2026-10-06: Node 24 processes show Linux `comm` as `MainThread` here
+  (confirmed during the 0.1.20 gate), so filtering `ps` by `comm == node`
+  misses live harness/benchmark work. Inspect the executable in `args` too
+  (`node` or an absolute path ending `/node`) before timing on the shared host.

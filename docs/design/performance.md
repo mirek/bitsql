@@ -875,3 +875,78 @@ were verified at `sha256:a10828a1480160eeaaef75ba5f9067718478733431f7d9bdf88bd5c
 Both images carry source revision `962904b5491c79ebe63c831ce6c2108d6a9f075f`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.4946 MiB compressed.
+
+
+## Compiled subquery rows and deferred contexts (2026-10-06, 0.1.20)
+
+Compiled EXISTS and scalar subqueries pass their current row directly into
+the existing memo/decorrelation machinery. Previously the fallback interpreter
+first copied the full Ctx record with that row, then subquery execution
+copied it again to push the row onto its outer stack and clear the current
+row. The first copy is redundant: dependency checks use tables/variables,
+while correlation and direct execution now receive the explicit row. Scalar
+cardinality/value handling is extracted unchanged from the interpreter.
+Interpreted calls, IN and quantified comparisons keep a wrapper passing
+`ctx.row`, so their semantics remain unchanged.
+
+Correlated lookups also defer constructing the subquery context until after
+an empty-match early return. The first partition build still receives its
+proper outer context; later empty matches replay the same row-counter/NULL
+warning effects and work-budget charge without allocating an unused context.
+Tests compare compiled and interpreted execution through cache hits,
+missing stamps, table/variable changes, explicit cache clears, NULL warnings,
+UDF effects/errors, scalar cardinality errors, nested outer references and
+work limits. The supplied row deliberately differs from `ctx.row`.
+
+Sequential native 20k-row controls, 100 repetitions, first change alone:
+EXISTS 4.96/5.00 → 4.56/4.48 ms; correlated scalar 3.08/3.11 → 2.68/2.71;
+uncorrelated scalar 4.11/4.13 → 3.68/3.68. GROUP BY, DISTINCT, IN, ROW_NUMBER
+and DELETE controls remained roughly stable (`_build/subquery-row-bench.txt`).
+
+A second candidate combined deferred empty-match contexts with direct-column
+projection/grouping specializations. EXISTS improved further to 3.79/3.85
+from 5.00/5.02 (about 23–24%); scalar timings were 2.63/2.65 and 3.63/3.75.
+Column-only, computed-projection, computed-group and unique-group controls
+did not show a repeatable benefit from the column specializations, so those
+specializations and their dedicated test were removed before release. Only
+the subquery changes remain. Evidence: `_build/direct-projection-bench.txt`;
+final selected-code validation and measurements follow below.
+
+The container comparator now retains five 1000-query point-SELECT samples
+and reports their median after one full warm-up batch. Every execution still
+checks SQL errors. Earlier versions recorded one batch, which varied enough
+to flip the near-parity result; old JSON renders with its original label.
+Syntax checking and an old-file render verified backward compatibility.
+
+
+Final selected-code controls (the projection experiment removed), 100 repeats:
+EXISTS 5.04/4.99 → 3.80/3.82 ms, correlated scalar 3.10/3.14 → 2.67/2.69,
+uncorrelated scalar 4.10/4.13 → 3.64/3.65. GROUP BY v 4.16/4.36 → 4.34/4.21,
+DISTINCT 3.78/3.88 → 3.82/3.82 and ROW_NUMBER 5.64/5.67 → 5.65/5.68 were
+roughly stable. Evidence: `_build/subquery-final-bench.txt`.
+
+The exact amd64 release binary passed the full gate: 287 MoonBit tests,
+20703 client/corpus passes, three skips, no failures. ARM64 passed 572/572;
+the JSON compatibility case also matched the SQL Server oracle. Benchmark
+ports and Node/build processes were checked after all tests ended; all
+measurements ran sequentially. Node's Linux `comm` is `MainThread` here, so
+activity checks now inspect its executable argument too (harness skill).
+
+All 48 shape medians match their 240 raw samples. The two point-read medians
+match their ten samples, five per engine. EXISTS now beats SQL Server, 3.66
+vs 4.66 ms; scalar subqueries are 2.69 vs 4.59 and 3.68 vs 4.27. Total shapes
+are 228.88 vs 644.61 ms (about 2.8x). DISTINCT (4.56 vs 4.26) and ROW_NUMBER
+(5.89 vs 5.54) remain about 6–7% behind in this run; GROUP BY v (4.80 vs 4.74)
+and accented sorting (3.11 vs 3.03) are near parity. These controls were
+stable in the final before/after comparison; SQL Server's timings also
+changed. README preserves the complete fresh comparison.
+
+The five-batch point-read medians are 121.75 vs 119.70 ms, about 2% apart.
+The raw batches range 109.56–123.27 for bitsql and 114.92–130.02 for SQL
+Server. This methodology differs from previous releases' single batch; it
+must not be presented as a code-only speedup. The optimization goal remains
+open, including the remaining text/window gaps and near-parity workloads.
+
+Evidence: `harness/out/bench-compare-0.1.20.json`, `_build/bench-0.1.20.txt`,
+`_build/check-0.1.20.log`, `_build/arm64-0.1.20.log`,
+`_build/json-oracle-0.1.20.log`.

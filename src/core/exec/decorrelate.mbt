@@ -222,6 +222,7 @@ fn analyze_decor(plan : @ir.Plan, wid : Int) -> Decor? {
 fn decorrelated_rows(
   ctx : Ctx,
   entry : SubqueryMemo,
+  current : Row,
 ) -> Array[Row]? raise @types.SqlError {
   let decor = match entry.decor {
     Some(d) => d
@@ -260,7 +261,7 @@ fn decorrelated_rows(
   }
   let rt = ctx.rt
   // the subquery's `OuterCol(1, j)` is the current row's column j
-  guard ctx.row.get(d.outer_col) is Some(outer) else { return None }
+  guard current.get(d.outer_col) is Some(outer) else { return None }
   let key = outer.as_int64()
   if d.per_key {
     let hit = match key {
@@ -277,9 +278,8 @@ fn decorrelated_rows(
       return Some(r.rows)
     }
   }
-  let sub = ctx.push_outer(ctx.row)
   if d.heads is None {
-    build_partition(sub, d)
+    build_partition(ctx.push_outer(current), d)
   } else {
     // the input's effects, as if it ran again
     if d.input_null_eliminated {
@@ -296,6 +296,7 @@ fn decorrelated_rows(
     rt.charge(1L)
     return Some([])
   }
+  let sub = ctx.push_outer(current)
   let before = rt.null_eliminated
   let seq = rt.row_seq
   rt.null_eliminated = false

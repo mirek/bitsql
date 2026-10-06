@@ -147,9 +147,16 @@ async function measure(target) {
       out.insertsMs = await timed(async () => {
         for (let i = 0; i < 1000; i++) await exact(connection, insert, [{ name: '@email', type: 'nvarchar(200)', value: `user${i}@example.com` }, { name: '@name', type: 'nvarchar(100)', value: `User ${i}` }])
       })
-      out.pointReadsMs = await timed(async () => {
+      const pointReads = async () => {
         for (let i = 0; i < 1000; i++) await exact(connection, 'SELECT id, email, name, balance FROM customers WHERE id = @id', [{ name: '@id', type: 'int', value: 1 + (i * 7) % 1000 }])
-      })
+      }
+      await pointReads()
+      out.pointReadsRepetitions = 5
+      out.pointReadsSamplesMs = []
+      for (let i = 0; i < out.pointReadsRepetitions; i++) {
+        out.pointReadsSamplesMs.push(await timed(pointReads))
+      }
+      out.pointReadsMs = median(out.pointReadsSamplesMs)
       out.transactionsMs = await timed(async () => {
         for (let i = 0; i < 200; i++) await exact(connection, `BEGIN TRAN;
           INSERT orders (customer_id, total, status) VALUES (@c, @t, 'new');
@@ -213,7 +220,7 @@ const metrics = [
   ['`SELECT 1` round trip (median)', r => r.selectOneMs, fmtMs],
   ['Drop + create 2-table schema (median)', r => r.schemaResetMs, fmtMs],
   ['1000 parameterized INSERTs', r => r.insertsMs, fmtMs],
-  ['1000 parameterized point SELECTs', r => r.pointReadsMs, fmtMs],
+  [results.every(r => r.pointReadsRepetitions === 5 && r.pointReadsSamplesMs?.length === 5) ? '1000 parameterized point SELECTs (median of 5)' : '1000 parameterized point SELECTs', r => r.pointReadsMs, fmtMs],
   ['200 transactions (INSERT + UPDATE)', r => r.transactionsMs, fmtMs],
   ['Join + GROUP BY report (median)', r => r.reportMs, fmtMs],
   [`Load ${n} + ${n} rows (GENERATE_SERIES)`, r => r.shapes.setupMs, fmtMs],
@@ -247,3 +254,7 @@ console.log()
 table(`Shape (${n} rows)`, queries.map(([shape]) => [shape, r => r.shapes.ms[shape], fmtMs]))
 if (results.every(r => r.shapes.repetitions === 5)) console.log('\nQuery/DML shapes: median of 5 timed runs after one warm-up; total is the sum of those medians.')
 console.log(`\nimages: ${results.map(r => `${r.target}=${r.image}`).join(', ')}`)
+
+if (results.every(r => r.pointReadsRepetitions === 5 && r.pointReadsSamplesMs?.length === 5)) {
+  console.log('Point SELECTs: median of five 1000-query batches after one full warm-up batch; all executions check SQL errors.')
+}

@@ -339,8 +339,12 @@ fn DepsWalk::expr(
 
 ///|
 /// Runs subquery `plan` with the current row as its outer row.
-fn run_direct(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
-  run(ctx.push_outer(ctx.row), plan)
+fn run_direct(
+  ctx : Ctx,
+  plan : @ir.Plan,
+  row : Row,
+) -> Array[Row] raise @types.SqlError {
+  run(ctx.push_outer(row), plan)
 }
 
 ///|
@@ -349,6 +353,17 @@ fn run_direct(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
 fn subquery_rows(
   ctx : Ctx,
   plan : @ir.Plan,
+) -> (Array[Row], SubqueryMemo?) raise @types.SqlError {
+  subquery_rows_at(ctx, plan, ctx.row)
+}
+
+///|
+/// Compiled expressions pass their row directly, avoiding a context copy before
+/// the subquery pushes that row onto its outer stack and clears the current row.
+fn subquery_rows_at(
+  ctx : Ctx,
+  plan : @ir.Plan,
+  row : Row,
 ) -> (Array[Row], SubqueryMemo?) raise @types.SqlError {
   let memo = ctx.rt.memo
   let entry = match
@@ -378,9 +393,9 @@ fn subquery_rows(
   guard entry.deps is Some(deps) else {
     // correlated: unnested through a key partition when it can be
     // (exec/decorrelate.mbt)
-    match decorrelated_rows(ctx, entry) {
+    match decorrelated_rows(ctx, entry, row) {
       Some(rows) => return (rows, None)
-      None => return (run_direct(ctx, plan), None)
+      None => return (run_direct(ctx, plan, row), None)
     }
   }
   // a valid entry whose tables and variables are unchanged (checked
@@ -392,13 +407,13 @@ fn subquery_rows(
     for i, t in deps.tables {
       match (ctx.stamp)(t.0, t.1) {
         Some(s) => if s != entry.stamps[i] { same = false }
-        None => return (run_direct(ctx, plan), None)
+        None => return (run_direct(ctx, plan, row), None)
       }
     }
     for i, slot in deps.vars {
       match ctx.vars.get(slot) {
         Some(v) => if same && v != entry.var_values[i] { same = false }
-        None => return (run_direct(ctx, plan), None)
+        None => return (run_direct(ctx, plan, row), None)
       }
     }
     if same {
@@ -413,14 +428,14 @@ fn subquery_rows(
   for t in deps.tables {
     match (ctx.stamp)(t.0, t.1) {
       Some(s) => stamps.push(s)
-      None => return (run_direct(ctx, plan), None)
+      None => return (run_direct(ctx, plan, row), None)
     }
   }
   let var_values = []
   for slot in deps.vars {
     match ctx.vars.get(slot) {
       Some(v) => var_values.push(v)
-      None => return (run_direct(ctx, plan), None)
+      None => return (run_direct(ctx, plan, row), None)
     }
   }
   entry.valid = false
@@ -431,7 +446,7 @@ fn subquery_rows(
     errdefer {
       ctx.rt.null_eliminated = before || ctx.rt.null_eliminated
     }
-    run_direct(ctx, plan)
+    run_direct(ctx, plan, row)
   }
   entry.null_eliminated = ctx.rt.null_eliminated
   ctx.rt.null_eliminated = before || entry.null_eliminated

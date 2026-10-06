@@ -156,6 +156,10 @@ pub fn compile(e : @ir.Expr) -> Compiled {
       let cs = args.map(compile)
       (c, r) => call_values(c, f, cs.map(g => g(c, r)), args, e)
     }
+    Exists(plan) =>
+      (c, r) => of_bool(Some(!subquery_rows_at(c, plan, r).0.is_empty()))
+    Subquery(plan) =>
+      (c, r) => scalar_subquery_value(subquery_rows_at(c, plan, r).0)
     _ => (c, r) => eval(c.with_row(r), e)
   }
 }

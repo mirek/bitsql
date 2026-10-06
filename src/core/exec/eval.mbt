@@ -214,19 +214,7 @@ pub fn eval(ctx : Ctx, e : @ir.Expr) -> @types.Value raise @types.SqlError {
     }
     Call(f, args) => call(ctx, f, args, e)
     Global(g) => global(ctx, g)
-    Subquery(plan) => {
-      let rows = subquery_rows(ctx, plan).0
-      if rows.length() > 1 {
-        raise @types.sql_error(
-          512, "Subquery returned more than 1 value. This is not permitted when the subquery follows =, !=, <, <= , >, >= or when the subquery is used as an expression.",
-        )
-      }
-      if rows.is_empty() {
-        Null
-      } else {
-        rows[0][0]
-      }
-    }
+    Subquery(plan) => scalar_subquery_value(subquery_rows(ctx, plan).0)
     Exists(plan) => of_bool(Some(!subquery_rows(ctx, plan).0.is_empty()))
     InQuery(a, plan, negated~, collation~) => {
       let va = eval(ctx, a)
@@ -328,5 +316,21 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     DbTs => Binary(Bytes::make(8, b'\x00'))
     ProcId => Int(0)
     CursorRows => Int(rt.cursor_rows)
+  }
+}
+
+///|
+fn scalar_subquery_value(
+  rows : Array[Row],
+) -> @types.Value raise @types.SqlError {
+  if rows.length() > 1 {
+    raise @types.sql_error(
+      512, "Subquery returned more than 1 value. This is not permitted when the subquery follows =, !=, <, <= , >, >= or when the subquery is used as an expression.",
+    )
+  }
+  if rows.is_empty() {
+    Null
+  } else {
+    rows[0][0]
   }
 }
