@@ -18,6 +18,8 @@ fn Parser::on_filegroup(self : Parser) -> @ast.Ident? raise @ast.SyntaxError {
 /// `WITH ( name = value, ... )` or legacy `WITH FILLFACTOR = n`.
 fn Parser::with_options(
   self : Parser,
+  json_index? : Bool = false,
+  alter_index? : Bool = false,
 ) -> Array[@ast.OptionKV] raise @ast.SyntaxError {
   let out = []
   if !self.is_kw("WITH") {
@@ -26,6 +28,17 @@ fn Parser::with_options(
   if self.is_punct_at(1, "(") {
     self.pos += 2
     while true {
+      if json_index &&
+        self.is_kw("OPTIMIZE_FOR_ARRAY_SEARCH") &&
+        self.is_punct_at(1, "=") &&
+        !self.is_kw_at(2, "ON") &&
+        !self.is_kw_at(2, "OFF") {
+        self.pos += 2
+        raise self.error()
+      }
+      if alter_index {
+        self.check_alter_index_option()
+      }
       out.push(self.option_kv())
       if !self.eat_punct(",") {
         break
@@ -56,13 +69,14 @@ fn Parser::alter_index(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     }
     "REBUILD" | "REORGANIZE" => {
       self.pos += 1
-      self.with_options()
+      self.with_options(alter_index=true)
     }
     "SET" => {
       self.pos += 1
       self.expect_punct("(")
       let out = []
       while true {
+        self.check_alter_index_option()
         out.push(self.option_kv())
         if !self.eat_punct(",") {
           break
@@ -74,6 +88,21 @@ fn Parser::alter_index(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
     _ => raise self.error()
   }
   AlterIndex(index~, table~, action~, options~)
+}
+
+///|
+fn Parser::check_alter_index_option(
+  self : Parser,
+) -> Unit raise @ast.SyntaxError {
+  if self.is_kw("OPTIMIZE_FOR_ARRAY_SEARCH") {
+    raise @ast.SyntaxError(
+      number=155,
+      severity=15,
+      state=1,
+      message="'OPTIMIZE_FOR_ARRAY_SEARCH' is not a recognized ALTER INDEX option.",
+      span=self.peek().span,
+    )
+  }
 }
 
 ///|
@@ -646,22 +675,62 @@ fn Parser::alter_table(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
 fn Parser::create_index(
   self : Parser,
 ) -> @ast.CreateIndex raise @ast.SyntaxError {
-  let unique = self.eat_kw("UNIQUE")
-  let clustered = self.clustered()
-  let columnstore = self.eat_kw("COLUMNSTORE")
+  let json = self.eat_kw("JSON")
+  let unique = !json && self.eat_kw("UNIQUE")
+  let clustered = if json { None } else { self.clustered() }
+  let columnstore = !json && self.eat_kw("COLUMNSTORE")
   self.expect_kw("INDEX")
   let name = self.ident()
   self.expect_kw("ON")
   let table = self.object_name()
-  let columns = if self.is_punct("(") { self.index_columns() } else { [] }
+  let columns : Array[@ast.IndexColumn] = if json {
+    self.expect_punct("(")
+    let name = self.ident()
+    self.expect_punct(")")
+    [{ name, desc: false, }]
+  } else if self.is_punct("(") {
+    self.index_columns()
+  } else {
+    []
+  }
+  let json_paths = if json {
+    let paths = []
+    if self.eat_kw("FOR") {
+      self.expect_punct("(")
+      while true {
+        let token = self.peek()
+        if !(token.kind is (Str | NStr)) {
+          raise self.error()
+        }
+        self.pos += 1
+        paths.push(token.text)
+        if !self.eat_punct(",") {
+          break
+        }
+      }
+      self.expect_punct(")")
+    } else {
+      paths.push("$")
+    }
+    Some(paths)
+  } else {
+    None
+  }
+  if json && (self.is_kw("INCLUDE") || self.is_kw("WHERE")) {
+    raise self.error()
+  }
   let included = if self.eat_kw("INCLUDE") { self.paren_idents() } else { [] }
   let where_ = if self.eat_kw("WHERE") { Some(self.cond()) } else { None }
-  let options = self.with_options()
+  let options = self.with_options(json_index=json)
+  if json && self.is_kw("ON") {
+    raise self.error()
+  }
   let on_filegroup = self.on_filegroup()
   {
     unique,
     clustered,
     columnstore,
+    json_paths,
     name,
     table,
     columns,

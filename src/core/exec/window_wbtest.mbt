@@ -178,6 +178,7 @@ test "row number prefix reuse preserves expression evaluation and failures" {
     },
     user_table: no_user_table,
     seek: no_seek,
+    seek_json: no_json_seek,
     stamp: no_stamp,
   }
   for ansi in [false, true] {
@@ -254,6 +255,7 @@ test "direct window columns preserve materialized-key results and failures" {
     user_fn: no_user_fn,
     user_table: no_user_table,
     seek: no_seek,
+    seek_json: no_json_seek,
     stamp: no_stamp,
   }
   for

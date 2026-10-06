@@ -1,0 +1,272 @@
+{
+  "cases": [
+    {
+      "name": "last-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[1,2]' AS json),N'$[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[1,2]',N'$[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "list-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[1,2]' AS json),N'$[0,1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "list-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[1,2]',N'$[0,1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-missing-first-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[{}, {\"x\":2}]' AS json),N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-missing-first-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[{}, {\"x\":2}]',N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-missing-last-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[{\"x\":2},{}]' AS json),N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-missing-last-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[{\"x\":2},{}]',N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-outside-range-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[1,2]' AS json),N'strict $[0 to 5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-outside-range-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[1,2]',N'strict $[0 to 5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-outside-list-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[1,2]' AS json),N'strict $[0,5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "strict-outside-list-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[1,2]',N'strict $[0,5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-wildcard-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[]' AS json),N'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-wildcard-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[]',N'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-object-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'{}' AS json),N'$.*') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-object-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'{}',N'$.*') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-element-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[null]' AS json),N'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-element-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[null]',N'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "missing-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'{}' AS json),N'strict $.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "missing-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'{}',N'strict $.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-empty-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[]' AS json),N'$[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-empty-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[]',N'$[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "reverse-last-native",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(CAST(N'[1,2]' AS json),N'$[last to 0]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "reverse-last-text",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(N'[1,2]',N'$[last to 0]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "contains-bad-column-index-False-variable-False",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p nvarchar(20)=N'bad'; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'bad')=1;"
+        }
+      ]
+    },
+    {
+      "name": "contains-bad-column-index-False-variable-True",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p nvarchar(20)=N'bad'; SELECT id FROM t WHERE JSON_CONTAINS(j,2,@p)=1;"
+        }
+      ]
+    },
+    {
+      "name": "contains-bad-column-index-True-variable-False",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p nvarchar(20)=N'bad'; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'bad')=1;"
+        }
+      ]
+    },
+    {
+      "name": "contains-bad-column-index-True-variable-True",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @p nvarchar(20)=N'bad'; SELECT id FROM t WHERE JSON_CONTAINS(j,2,@p)=1;"
+        }
+      ]
+    }
+  ]
+}

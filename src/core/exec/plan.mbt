@@ -526,6 +526,23 @@ fn seek_rows(
   }
 
   split(pred)
+  if json_index_candidates(ctx, scope, id, conj) is Some(found) {
+    let out = []
+    let predicate = compile(pred)
+    for kv in found {
+      let row = if rowid {
+        let r = kv.1.copy()
+        r.push(BigInt(kv.0))
+        r
+      } else {
+        kv.1
+      }
+      if is_true(predicate(ctx, row)) {
+        out.push(row)
+      }
+    }
+    return Some(out)
+  }
   let key : Array[(Int, @types.Value)] = []
   // each pinned column's `=` comparison, for the statement lookup cache
   let colls : Array[@types.Collation?] = []

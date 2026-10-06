@@ -1,0 +1,170 @@
+{
+  "cases": [
+    {
+      "name": "primary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) ON [PRIMARY];"
+        }
+      ]
+    },
+    {
+      "name": "default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) ON [default];"
+        }
+      ]
+    },
+    {
+      "name": "missing-filegroup",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) ON [missing];"
+        }
+      ]
+    },
+    {
+      "name": "change-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(k) WITH(DROP_EXISTING=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,c.name AS column_name FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') AND i.type=9;"
+        }
+      ]
+    },
+    {
+      "name": "ordinary-to-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE INDEX ix ON t(id);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(DROP_EXISTING=ON);"
+        }
+      ]
+    },
+    {
+      "name": "json-to-ordinary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE INDEX ix ON t(id) WITH(DROP_EXISTING=ON);"
+        }
+      ]
+    },
+    {
+      "name": "alter-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t SET (ALLOW_ROW_LOCKS=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT allow_row_locks FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH (OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "no-recompute",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(STATISTICS_NORECOMPUTE=ON);"
+        }
+      ]
+    },
+    {
+      "name": "view",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VIEW v AS SELECT id,j FROM dbo.t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON v(j);"
+        }
+      ]
+    }
+  ]
+}

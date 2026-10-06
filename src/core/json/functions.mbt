@@ -156,8 +156,15 @@ pub fn json_query(
 /// JSON null), 0 when it does not or when the document is not a valid
 /// JSON object or array (captured json3 probes: `{"a":1,"b":x}` with `$.a`
 /// is 0). Nesting deeper than 128 still raises 13606. Strict and lax agree.
-pub fn json_path_exists(doc : String, path : String) -> Int raise JsonError {
-  let p = parse_path(path)
+pub fn json_path_exists(
+  doc : String,
+  path : String,
+  native? : Bool = false,
+) -> Int raise JsonError {
+  if native {
+    return if contains_values(doc, path) is Some(_) { 1 } else { 0 }
+  }
+  let p = { ..parse_path(path), strict: false, }
   let s : Scanner = { text: doc, pos: 0, doc_state: 1, }
   s.ws()
   if !(s.peek() is (0x7B | 0x5B)) {

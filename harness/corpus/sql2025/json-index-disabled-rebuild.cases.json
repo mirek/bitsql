@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "name": "primary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2}'); CREATE JSON INDEX ix ON t(j); ALTER INDEX ALL ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX pk ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,is_disabled FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t;"
+        }
+      ]
+    },
+    {
+      "name": "all",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2}'); CREATE JSON INDEX ix ON t(j); ALTER INDEX ALL ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ALL ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,is_disabled FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t;"
+        }
+      ]
+    },
+    {
+      "name": "json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2}'); CREATE JSON INDEX ix ON t(j); ALTER INDEX ALL ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,is_disabled FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t;"
+        }
+      ]
+    }
+  ]
+}

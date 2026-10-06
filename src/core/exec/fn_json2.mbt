@@ -186,7 +186,13 @@ fn call_json2(
           )
         (Null, _) => Some(Null)
         (String(doc), String(path)) =>
-          Some(Int(json(() => @json.json_path_exists(doc, path))))
+          Some(
+            Int(
+              json(() => {
+                @json.json_path_exists(doc, path, native=args[0].ty is Json)
+              }),
+            ),
+          )
         _ =>
           raise @types.not_supported("JSON_PATH_EXISTS on non-character input")
       }

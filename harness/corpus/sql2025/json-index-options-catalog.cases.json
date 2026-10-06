@@ -1,0 +1,140 @@
+{
+  "cases": [
+    {
+      "name": "default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "padded",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(PAD_INDEX=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "fill",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(FILLFACTOR=80);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "no-row-locks",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(ALLOW_ROW_LOCKS=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "no-page-locks",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(ALLOW_PAGE_LOCKS=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "row",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(DATA_COMPRESSION=ROW);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    },
+    {
+      "name": "page",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(DATA_COMPRESSION=PAGE);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,is_padded,allow_row_locks,allow_page_locks,fill_factor,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't'); SELECT index_id,rows,data_compression,data_compression_desc FROM sys.partitions WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT name,stats_id,auto_created,user_created,no_recompute FROM sys.stats WHERE object_id=OBJECT_ID(N't') ORDER BY stats_id;"
+        }
+      ]
+    }
+  ]
+}

@@ -664,3 +664,29 @@ fn JsonStorageNode::to_text(self : JsonStorageNode) -> String {
   self.write(out)
   out.to_string()
 }
+
+///|
+/// Concrete paths of live native values, including containers and JSON null.
+/// Index maintenance reads the immutable storage tree, without reparsing text.
+pub fn JsonData::index_paths(self : JsonData) -> Array[String] {
+  let out = []
+  fn walk(node : JsonStorageNode, path : String) -> Unit {
+    if node is NDeleted {
+      return
+    }
+    out.push(path)
+    match node {
+      NObject(children, _) =>
+        for (key, child) in children {
+          walk(child, path + "." + @json.quote(key))
+        }
+      NArray(children, _) =>
+        for i, child in children {
+          walk(child, path + "[" + i.to_string() + "]")
+        }
+      _ => ()
+    }
+  }
+  walk(self.root, "$")
+  out
+}

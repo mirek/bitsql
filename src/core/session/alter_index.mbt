@@ -6,8 +6,8 @@
 /// disabled nonclustered index holds no rows and enforces nothing (a
 /// duplicate in a disabled unique index is accepted, REBUILD then fails
 /// with 1505 + 3621); REORGANIZE of a disabled index is 1973; REBUILD
-/// enables it. Disabling a clustered index (which disables the table and
-/// its other indexes) and SET (...) raise emulator errors.
+/// enables it. A disabled clustered index prevents query plans; its dependent
+/// indexes remain disabled after rebuilding the clustered index.
 fn Session::exec_alter_index(
   self : Session,
   index : @ast.Ident?,
@@ -41,24 +41,78 @@ fn Session::exec_alter_index(
       }
   }
   let indexes = t.indexes.copy()
+  let has_json = targets.any(k => indexes[k].json is Some(_))
+  if action == "SET" && has_json {
+    self.cur_cmd = 253
+    raise @types.sql_error(
+      13688, "One or more of the specified ALTER INDEX options is invalid for a JSON index.",
+    )
+  }
+  if action == "REBUILD" &&
+    has_json &&
+    t.indexes.any(ix => ix.clustered && ix.disabled) {
+    self.cur_cmd = 253
+    if index is None {
+      if disabled_cluster_error(t, object_text(table)) is Some(e) {
+        raise e
+      }
+    } else {
+      let k = targets[0]
+      raise @types.sql_error(
+        1987,
+        "Cannot alter JSON index '\{indexes[k].name}' on table '\{object_text(table)}' because its clustered index is disabled.",
+      )
+    }
+  }
   match action {
     "DISABLE" =>
-      for k in targets {
-        if indexes[k].clustered {
-          raise @types.not_supported(
-            "ALTER INDEX ... DISABLE of a clustered index",
-          )
+      if targets.any(k => indexes[k].clustered) {
+        for k, ix in indexes {
+          if !ix.clustered && !ix.disabled {
+            self.info(
+              3750,
+              1,
+              "Warning: Index '\{ix.name}' on table '\{object_text(table)}' was disabled as a result of disabling the clustered index on the table.",
+              self.stmt_line,
+            )
+          }
+          indexes[k] = { ..ix, disabled: true, }
         }
-        indexes[k] = { ..indexes[k], disabled: true, }
+      } else {
+        for k in targets {
+          indexes[k] = { ..indexes[k], disabled: true, }
+        }
       }
     "REBUILD" => {
       let mut fill_factor : Int? = None
+      let mut compression : Int? = None
       for o in options {
         match o.name {
           "FILLFACTOR" =>
             fill_factor = Some(
               @string.parse_int(o.value.unwrap_or("0")) catch {
                 _ => 0
+              },
+            )
+          "ONLINE" if has_json && o.value.unwrap_or("").to_upper() == "ON" => {
+            self.cur_cmd = 253
+            raise @types.sql_error(
+              153,
+              "Invalid usage of the option ONLINE in the ALTER INDEX REBUILD statement.",
+              state=37,
+              severity=15,
+            )
+          }
+          "DATA_COMPRESSION" if has_json =>
+            compression = Some(
+              match o.value.unwrap_or("").to_upper() {
+                "PAGE" => 2
+                "ROW" => 1
+                "NONE" => 0
+                other =>
+                  raise @types.not_supported(
+                    "ALTER INDEX DATA_COMPRESSION = \{other}",
+                  )
               },
             )
           "ONLINE" | "MAXDOP" | "SORT_IN_TEMPDB" => ()
@@ -72,6 +126,10 @@ fn Session::exec_alter_index(
           ..indexes[k],
           disabled: false,
           fill_factor: fill_factor.unwrap_or(indexes[k].fill_factor),
+          json: indexes[k].json.map(j => {
+            ..j,
+            compression: compression.unwrap_or(j.compression),
+          }),
         }
         if ix.unique && indexes[k].disabled {
           // its errors complete with CurCmd 253 (captured)
@@ -104,4 +162,22 @@ fn Session::exec_alter_index(
   )
   self.rt.rowcount = 0
   self.done(337)
+}
+
+///|
+fn disabled_cluster_error(
+  t : @store.Table,
+  display : String,
+) -> @types.SqlError? {
+  for ix in t.indexes {
+    if ix.clustered && ix.disabled {
+      return Some(
+        @types.sql_error(
+          8655,
+          "The query processor is unable to produce a plan because the index '\{ix.name}' on table or view '\{display}' is disabled.",
+        ),
+      )
+    }
+  }
+  None
 }

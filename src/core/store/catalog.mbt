@@ -36,6 +36,7 @@ pub(all) struct Column {
 
 ///|
 pub(all) struct Index {
+  json : JsonIndex?
   /// sys.indexes.index_id: 1 = clustered, 2.. nonclustered (the lowest free
   /// id is reused after DROP INDEX).
   index_id : Int
@@ -317,4 +318,15 @@ pub(all) struct UserType {
   /// Table types: the type table (its id is type_table_object_id).
   table : Table?
   created : Int64
+} derive(Debug)
+
+///|
+pub(all) struct JsonIndex {
+  paths : Array[String]
+  prefixes : Array[String]
+  array_search : Bool
+  padded : Bool
+  row_locks : Bool
+  page_locks : Bool
+  compression : Int
 } derive(Debug)

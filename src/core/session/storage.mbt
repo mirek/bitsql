@@ -450,6 +450,9 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       let real = self.deref_synonym(name)
       match self.find_table(real) {
         Some((scope, t)) => {
+          if disabled_cluster_error(t, object_text(name)) is Some(e) {
+            raise e
+          }
           // through a synonym, columns are qualified by the synonym's name
           let shown = if physical_equal(real, name) {
             t.name
@@ -678,7 +681,7 @@ fn Session::seek(
   }
   // a disabled index is not used (ALTER INDEX … DISABLE)
   for i, ix in t.indexes {
-    if !ix.unique || ix.disabled || ix.filter is Some(_) {
+    if ix.json is Some(_) || !ix.unique || ix.disabled || ix.filter is Some(_) {
       continue
     }
     if covered(ix) is Some(vals) {
@@ -695,7 +698,7 @@ fn Session::seek(
     }
   }
   for i, ix in t.indexes {
-    if ix.unique || ix.disabled || ix.filter is Some(_) {
+    if ix.json is Some(_) || ix.unique || ix.disabled || ix.filter is Some(_) {
       continue
     }
     let ansi = ix.columns

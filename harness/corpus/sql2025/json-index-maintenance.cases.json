@@ -1,0 +1,276 @@
+{
+  "cases": [
+    {
+      "name": "root-mutations",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',JSON_QUERY(N'[2,3]')) WHERE id=2; UPDATE t SET j.modify('$.s',N'Beta') WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',NULL) WHERE id=1; DELETE t WHERE id=2; INSERT t VALUES(5,N'{\"a\":[2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "subset-mutations",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',JSON_QUERY(N'[2,3]')) WHERE id=2; UPDATE t SET j.modify('$.s',N'Beta') WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',NULL) WHERE id=1; DELETE t WHERE id=2; INSERT t VALUES(5,N'{\"a\":[2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "array-optimized-mutations",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',JSON_QUERY(N'[2,3]')) WHERE id=2; UPDATE t SET j.modify('$.s',N'Beta') WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',NULL) WHERE id=1; DELETE t WHERE id=2; INSERT t VALUES(5,N'{\"a\":[2]}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',JSON_QUERY(N'[2]')) WHERE id=2;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SAVE TRAN s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE t WHERE id=1; UPDATE t SET j.modify('$.a',NULL) WHERE id=2;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ROLLBACK TRAN s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "disable-write-rebuild",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j); ALTER INDEX ix ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET j.modify('$.a',JSON_QUERY(N'[2]')) WHERE id=2; DELETE t WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "bulk-delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t SELECT value,CAST(CASE WHEN value%2=0 THEN N'{\"a\":[2]}' ELSE N'{\"b\":2}' END AS json) FROM GENERATE_SERIES(1,160);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE t WHERE id<=100; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "TRUNCATE TABLE t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_PATH_EXISTS(j,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,N'alpha','$.s')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.b')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "case-and-unicode",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"A\":2,\"\u00e1\ud83d\ude00\":2}'),(2,N'{\"a\":2}'),(3,N'{\"a\":{\"x\":2}}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.A')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,N'$.\"\u00e1\ud83d\ude00\"')=1 ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "strict-and-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2],\"s\":\"Alpha\"}'),(2,N'{\"b\":2}'),(3,N'{\"a\":[]}'),(4,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'strict $.a[*]')=1 ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]') IS NULL ORDER BY id; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=0 ORDER BY id;"
+        }
+      ]
+    }
+  ]
+}

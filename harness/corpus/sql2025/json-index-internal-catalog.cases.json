@@ -1,0 +1,160 @@
+{
+  "cases": [
+    {
+      "name": "empty-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "empty-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "null-member",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":null}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "nested",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":{\"b\":1},\"c\":[]}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[1,2,3]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "array-objects",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[{\"a\":1},{\"a\":2}]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"a\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "mixed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "subset",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}'); CREATE JSON INDEX ix ON t(j) FOR ('$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "array-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "compression",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}'); CREATE JSON INDEX ix ON t(j) WITH(DATA_COMPRESSION=PAGE);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "disabled",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":2,\"b\":[1,2]}'); CREATE JSON INDEX ix ON t(j); ALTER INDEX ix ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT internal_type,internal_type_desc,OBJECT_NAME(parent_id) AS parent_name,parent_minor_id FROM sys.internal_tables WHERE parent_id=OBJECT_ID(N't'); SELECT i.name,i.index_id,i.type_desc,i.is_unique,i.is_disabled FROM sys.indexes i JOIN sys.internal_tables t ON t.object_id=i.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY i.index_id; SELECT p.index_id,p.rows,p.data_compression,p.data_compression_desc FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    }
+  ]
+}

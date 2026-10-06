@@ -1,0 +1,131 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "4d8a9529cc54ab3d",
+  "steps": [
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":198},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":744}
+      ],
+      "stream": [{"name":"DONE","status":1,"curCmd":198},{"name":"DONE","status":0,"curCmd":744}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"stats_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"auto_created","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"user_created","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"no_recompute","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"has_filter","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "filter_definition",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_temporary","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_incremental","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"has_persisted_sample","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stats_generation_method","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "stats_generation_method_desc",
+              "type": "VarChar",
+              "length": 80,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"auto_drop","type":"BitN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"replica_role_id","type":"IntN","length":1,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "replica_role_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "replica_name",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["pk",1,false,false,false,false,null,false,false,false,0,"Sort based statistics",false,1,"PRIMARY",null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [
+        {"name":"COLMETADATA","columns":16},
+        {"name":"ORDER","columns":[2]},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

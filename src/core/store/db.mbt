@@ -244,12 +244,25 @@ pub fn key_comparator(
 }
 
 ///|
-fn index_key(ix : Index, row : Row, rowid : Int64) -> Array[@types.Value] {
+fn index_keys(
+  ix : Index,
+  row : Row,
+  rowid : Int64,
+) -> Array[Array[@types.Value]] {
+  if ix.json is Some(options) {
+    guard ix.columns is [(column, _)] && row[column] is NativeJson(data) else {
+      return []
+    }
+    return data
+      .index_paths()
+      .filter(path => options.prefixes.any(prefix => path.has_prefix(prefix)))
+      .map(path => [String(path), BigInt(rowid)])
+  }
   let key = ix.columns.map(c => row[c.0])
   if !ix.unique {
     key.push(BigInt(rowid))
   }
-  key
+  [key]
 }
 
 ///|
@@ -260,6 +273,15 @@ fn in_index(ix : Index, row : Row) -> Bool {
 
 ///|
 fn empty_index(t : Table, ix : Index) -> IndexData {
+  if ix.json is Some(_) {
+    return {
+      map: PMap::empty(
+        key_comparator([NVarChar(None, @types.json_collation), BigInt], [
+          false, false,
+        ]),
+      ),
+    }
+  }
   let types = ix.columns.map(c => t.columns[c.0].ty)
   let desc = ix.columns.map(c => c.1)
   if !ix.unique {
@@ -306,7 +328,9 @@ pub fn Db::alter_table(
     let mut d = empty_index(t, ix)
     for kv in rows.iter() {
       if in_index(ix, kv.1) {
-        d = { map: d.map.add(index_key(ix, kv.1, kv.0), kv.0), }
+        for key in index_keys(ix, kv.1, kv.0) {
+          d = { map: d.map.add(key, kv.0), }
+        }
       }
     }
     d
@@ -344,7 +368,9 @@ pub fn Db::replace_table(
     let mut d = empty_index(t, ix)
     for kv in rows {
       if in_index(ix, kv.1) {
-        d = { map: d.map.add(index_key(ix, kv.1, kv.0), kv.0), }
+        for key in index_keys(ix, kv.1, kv.0) {
+          d = { map: d.map.add(key, kv.0), }
+        }
       }
     }
     d
@@ -471,7 +497,11 @@ pub fn Db::insert_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
   for i, ix in t.indexes {
     indexes.push(
       if in_index(ix, row) {
-        { map: d.indexes[i].map.add(index_key(ix, row, rowid), rowid), }
+        let mut map = d.indexes[i].map
+        for key in index_keys(ix, row, rowid) {
+          map = map.add(key, rowid)
+        }
+        { map, }
       } else {
         d.indexes[i]
       },
@@ -493,7 +523,11 @@ pub fn Db::delete_row(self : Db, id : Int, rowid : Int64) -> Db {
   for i, ix in t.indexes {
     indexes.push(
       if in_index(ix, row) {
-        { map: d.indexes[i].map.remove(index_key(ix, row, rowid)), }
+        let mut map = d.indexes[i].map
+        for key in index_keys(ix, row, rowid) {
+          map = map.remove(key)
+        }
+        { map, }
       } else {
         d.indexes[i]
       },
@@ -516,7 +550,9 @@ pub fn Db::insert_rows(self : Db, id : Int, rows : Array[(Int64, Row)]) -> Db {
     let entries = []
     for r in rows {
       if in_index(ix, r.1) {
-        entries.push((index_key(ix, r.1, r.0), r.0))
+        for key in index_keys(ix, r.1, r.0) {
+          entries.push((key, r.0))
+        }
       }
     }
     if entries.is_empty() {
@@ -654,4 +690,24 @@ fn Db::lob_mark(self : Db, t : Table) -> Table {
   } else {
     { ..t, lob_used: used, }
   }
+}
+
+///|
+/// Candidate row ids for a concrete JSON path prefix. Residual predicates
+/// decide scalar comparisons and advanced accessor semantics.
+pub fn Db::seek_json_path(
+  self : Db,
+  id : Int,
+  index : Int,
+  prefix : String,
+) -> Array[Int64] {
+  guard self.data.get(id) is Some(d) else { return [] }
+  let rows : Set[Int64] = Set([])
+  for (key, rowid) in d.indexes[index].map.range(lo=[String(prefix)]) {
+    guard key[0] is String(path) && path.has_prefix(prefix) else { break }
+    rows.add(rowid)
+  }
+  let out = rows.to_array()
+  out.sort()
+  out
 }

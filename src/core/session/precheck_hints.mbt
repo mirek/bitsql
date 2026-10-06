@@ -63,9 +63,17 @@ fn HintCheck::stmt(self : HintCheck, s : @ast.Stmt) -> Unit {
         }
       }
     SetVar(_, _, e) | Print(e) => self.expr(e, line)
-    Insert({ source: InsertQuery(q), .. }) => self.query(q, line)
-    Update({ from, where_, .. }) | Delete({ from, where_, .. }) =>
+    Insert({ target, source, .. }) => {
+      self.disabled_target(target, line)
+      if source is InsertQuery(q) {
+        self.query(q, line)
+      }
+    }
+    Update({ target, from, where_, .. })
+    | Delete({ target, from, where_, .. }) => {
+      self.disabled_target(target, line)
       self.from_list(from, where_, line)
+    }
     If(c, a, b) => {
       self.expr(c, line)
       self.stmt(a)
@@ -167,7 +175,7 @@ fn HintCheck::from_list(
   }
   for r in tables {
     match r.kind {
-      Table(name, alias_~, hints~) if !hints.is_empty() => {
+      Table(name, alias_~, hints~) => {
         let is_cte = name.parts.length() == 1 &&
           ctes.contains(name.base().to_lower())
         self.table_hints(name, alias_, hints, preds, line, is_cte)
@@ -381,6 +389,10 @@ fn HintCheck::table_hints(
     }
   }
   let table = self.session.find_table(name).map(x => x.1)
+  if table is Some(t) && disabled_cluster_error(t, object_text(name)) is Some(e) {
+    self.fail(e, line)
+    return
+  }
   let is_view = table is None &&
     self.session.find_module(name) is Some(m) &&
     m.kind is View
@@ -452,6 +464,31 @@ fn HintCheck::table_hints(
             return
           }
         }
+      }
+      let iname = if text.has_prefix("[") && text.has_suffix("]") {
+        text.unsafe_substring(start=1, end=text.length() - 1)
+      } else {
+        text
+      }
+      if t.indexes
+        .iter()
+        .find_first(ix => {
+          if n >= 0 {
+            ix.index_id == n
+          } else {
+            ix.name.to_lower() == iname.to_lower()
+          }
+        })
+        is Some(ix) &&
+        ix.disabled {
+        self.fail(
+          @types.sql_error(
+            315,
+            "Index \"\{ix.name}\" on table \"\{base}\" (specified in the FROM clause) is disabled or resides in a filegroup which is not online.",
+          ),
+          line,
+        )
+        return
       }
     }
     if zero && index_args.length() > 1 {
@@ -547,5 +584,19 @@ fn HintCheck::table_hints(
       @types.not_supported("FORCESEEK with this predicate or index"),
       line,
     )
+  }
+}
+
+///|
+fn HintCheck::disabled_target(
+  self : HintCheck,
+  target : @ast.TableRef,
+  line : Int,
+) -> Unit {
+  if self.phase == 2 &&
+    target.kind is Table(name, ..) &&
+    self.session.find_table(name) is Some((_, t)) &&
+    disabled_cluster_error(t, object_text(name)) is Some(e) {
+    self.fail(e, line)
   }
 }

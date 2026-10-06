@@ -154,6 +154,8 @@ pub(all) struct Ctx {
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[
     (Int64, Array[@types.Value]),
   ]?
+  /// JSON index path candidates, with the full predicate applied afterward.
+  seek_json : (Int, Int, Int, String) -> Array[(Int64, Array[@types.Value])]?
   /// Data version of table (scope, id): equal stamps identify the same
   /// immutable table data; None when the table's rows cannot be
   /// tracked (catalog views), which disables statement caches for it.
@@ -222,4 +224,14 @@ pub fn Runtime::charge(self : Runtime, n : Int64) -> Unit raise @types.SqlError 
 /// Starts evaluating a new row's expressions.
 pub fn Runtime::next_row(self : Runtime) -> Unit {
   self.row_seq += 1L
+}
+
+///|
+pub fn no_json_seek(
+  _scope : Int,
+  _id : Int,
+  _column : Int,
+  _path : String,
+) -> Array[(Int64, Array[@types.Value])]? {
+  None
 }

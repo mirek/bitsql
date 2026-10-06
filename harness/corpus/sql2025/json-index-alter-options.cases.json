@@ -1,0 +1,174 @@
+{
+  "cases": [
+    {
+      "name": "reorganize",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REORGANIZE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-online-off",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH(ONLINE=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-online-on",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH(ONLINE=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-fill",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH(FILLFACTOR=70);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-compression",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH(DATA_COMPRESSION=PAGE);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-maxdop",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD WITH(MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "set-page",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t SET(ALLOW_PAGE_LOCKS=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "set-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t SET(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "rebuild-all",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ALL ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "disable-all",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ALL ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,fill_factor,is_disabled,allow_row_locks,allow_page_locks,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    }
+  ]
+}

@@ -170,6 +170,7 @@ fn Session::exec_query(
     }
     _ => @bind.bind_query(self.env(), q)
   }
+  self.check_json_index_paths(bound.plan)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))
   self.cur_cmd = 193

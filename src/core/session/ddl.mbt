@@ -924,6 +924,7 @@ fn Session::add_key(
     filter_terms: [],
     fill_factor: 0,
     ignore_dup_key: false,
+    json: None,
     is_constraint: true,
     disabled: false,
   })
@@ -1419,6 +1420,7 @@ fn Session::table_from_body(
         filter_terms,
         fill_factor,
         ignore_dup_key,
+        json: None,
         is_constraint: false,
         disabled: false,
       })

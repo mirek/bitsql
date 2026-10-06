@@ -243,6 +243,10 @@ fn table_storage(
     Some(_) => ()
   }
   for ix in t.indexes {
+    // Native JSON index partitions belong to internal tables, not this object.
+    if ix.json is Some(_) {
+      continue
+    }
     // a disabled nonclustered index has no partition (captured)
     if ix.disabled && !ix.clustered {
       continue

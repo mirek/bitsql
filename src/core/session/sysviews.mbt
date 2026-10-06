@@ -756,9 +756,9 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         out.push(m)
       }
     }
-    "sys.indexes" =>
+    "sys.indexes" | "sys.json_indexes" =>
       for t in tables {
-        if !t.indexes.iter().any(ix => ix.clustered) {
+        if key == "sys.indexes" && !t.indexes.iter().any(ix => ix.clustered) {
           out.push(
             vrow([
               ("object_id", i(t.id)),
@@ -773,15 +773,37 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           )
         }
         for ix in t.indexes {
+          if key == "sys.json_indexes" && ix.json is None {
+            continue
+          }
           out.push(
             vrow([
               ("object_id", i(t.id)),
               ("name", s(ix.name)),
               ("index_id", i(ix.index_id)),
-              ("type", TinyInt(if ix.clustered { 1 } else { 2 })),
+              (
+                "type",
+                TinyInt(
+                  if ix.json is Some(_) {
+                    9
+                  } else if ix.clustered {
+                    1
+                  } else {
+                    2
+                  },
+                ),
+              ),
               (
                 "type_desc",
-                s(if ix.clustered { "CLUSTERED" } else { "NONCLUSTERED" }),
+                s(
+                  if ix.json is Some(_) {
+                    "JSON"
+                  } else if ix.clustered {
+                    "CLUSTERED"
+                  } else {
+                    "NONCLUSTERED"
+                  },
+                ),
               ),
               ("is_unique", b(ix.unique)),
               ("data_space_id", i(1)),
@@ -790,12 +812,62 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               ("fill_factor", TinyInt(ix.fill_factor)),
               ("ignore_dup_key", b(ix.ignore_dup_key)),
               ("is_disabled", b(ix.disabled)),
-              ("allow_row_locks", b(true)),
-              ("allow_page_locks", b(true)),
+              ("is_padded", b(ix.json.map(j => j.padded).unwrap_or(false))),
+              (
+                "allow_row_locks",
+                b(ix.json.map(j => j.row_locks).unwrap_or(true)),
+              ),
+              (
+                "allow_page_locks",
+                b(ix.json.map(j => j.page_locks).unwrap_or(true)),
+              ),
+              (
+                "optimize_for_array_search",
+                b(ix.json.map(j => j.array_search).unwrap_or(false)),
+              ),
               ("has_filter", b(ix.filter is Some(_))),
               ("filter_definition", opt_s(ix.filter.map(definition_text))),
             ]),
           )
+        }
+      }
+    "sys.stats" =>
+      for t in tables {
+        for ix in t.indexes {
+          if ix.json is Some(_) {
+            continue
+          }
+          out.push(
+            vrow([
+              ("object_id", i(t.id)),
+              ("name", s(ix.name)),
+              ("stats_id", i(ix.index_id)),
+              ("auto_created", b(false)),
+              ("user_created", b(false)),
+              ("no_recompute", b(false)),
+              ("stats_generation_method_desc", s("Sort based statistics")),
+              ("replica_role_id", i(1)),
+              ("replica_role_desc", s("PRIMARY")),
+              ("has_filter", b(ix.filter is Some(_))),
+              ("filter_definition", opt_s(ix.filter)),
+            ]),
+          )
+        }
+      }
+    "sys.json_index_paths" =>
+      for t in tables {
+        for ix in t.indexes {
+          if ix.json is Some(j) {
+            for path in j.paths {
+              out.push(
+                vrow([
+                  ("object_id", i(t.id)),
+                  ("index_id", i(ix.index_id)),
+                  ("path", s(path)),
+                ]),
+              )
+            }
+          }
         }
       }
     "sys.partitions" => partition_rows(db, out)
@@ -812,7 +884,10 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
                 ("index_id", i(ix.index_id)),
                 ("index_column_id", i(n)),
                 ("column_id", i(t.columns[c.0].column_id)),
-                ("key_ordinal", TinyInt(k + 1)),
+                (
+                  "key_ordinal",
+                  TinyInt(if ix.json is Some(_) { 0 } else { k + 1 }),
+                ),
                 ("partition_ordinal", TinyInt(0)),
                 ("is_descending_key", b(c.1)),
                 ("is_included_column", b(false)),

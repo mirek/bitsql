@@ -496,7 +496,8 @@ mutation discrepancies documented above still apply to native modify.
 
 ## Not emulated
 
-JSON indexes and CLR arguments
+Broader JSON index option/concurrency/internal-storage behavior remains under
+audit (see below). CLR arguments remain unsupported
 (13666; hierarchyid/geometry/geography/vector are 50100, and
 `geometry::Point(...)` static method calls do not parse).
 
@@ -528,7 +529,7 @@ scalar calls, variables, table filters/updates, errors and TRY/CATCH. The focuse
 run passes all 308 cases including scoped preview completions and adjacent
 vector/JSON regressions. JSON indexes and the shared storage gaps remain open.
 
-## JSON index investigation (2026-10-06)
+## JSON indexes (2026-10-06)
 
 `sql2025/json-index-contracts.cases.json` captures 26 initial contracts. JSON
 indexes work with PREVIEW_FEATURES ON or OFF, report index type 9 / JSON, and
@@ -536,11 +537,10 @@ start at index_id 1216000. The oracle requires a clustered primary key (13672),
 not merely a unique clustered index; non-json columns fail with 13680. Duplicate
 index names yield 1913 state 3, and a second JSON index on one column yields
 13681. Overlapping/duplicate paths yield 13683 state 1; wildcard paths yield
-13683 state 2. ONLINE=ON fails with 153 state 35. Repeated FILLFACTOR options
+13683 state 2. Both ONLINE=ON and ONLINE=OFF fail with 153 state 35
+on this pinned oracle. Repeated FILLFACTOR options
 are accepted with the last value retained. DROP/recreate, DISABLE/REBUILD and
-indexed document updates are captured. Implementation remains open, including
-27 newly recorded parser disagreements. These cases are investigative and
-unregistered; index_id rules beyond the first index require further captures.
+indexed document updates are implemented from these captures.
 
 The 12 `sql2025/json-index-catalog-lifecycle` cases additionally capture
 `sys.json_indexes` and `sys.index_columns`: JSON key_ordinal is zero and
@@ -550,7 +550,7 @@ a new index gives 1216002 (not the lowest free slot). Ordinary indexes do
 not consume that range. Creation rolls back with its transaction. A JSON
 index prevents dropping the primary key (3767 then 3727) and its document
 column (5074 then 4922). Rename and explicit INDEX hints work; a disabled
-index hint raises 315. These add 12 parser gaps, for 39 JSON index gaps total.
+index hint raises 315. These behaviors are implemented.
 
 The 19 `sql2025/json-index-paths` cases capture `sys.json_index_paths`
 (object_id int, index_id int, path varchar(8000) with UTF-8 BIN2 collation).
@@ -560,5 +560,90 @@ than raw text: `$.a` overlaps `$."a".b`, but not `$.ab`. `$.a` and `$.A`
 conflict in the captured default CI database; other database collations still
 need verification. Literal array indexes are accepted; last/object wildcards
 fail with 13683 state 3. Rebuilding with DROP_EXISTING replaces the path set.
-Together the three investigative files contain 57 cases and expose 58 parser
-gaps. All 57 cases also pass second oracle runs for determinism.
+These first three files contain 57 cases, verified on repeat oracle runs.
+Their 58 parser disagreements are resolved.
+
+The 18 validation cases additionally cover grammar, option diagnostics, and
+missing columns/indexes (1911 state 7, DROP_EXISTING 13685 state 2). JSON index
+syntax accepts one unsorted document column; INCLUDE/WHERE and UNIQUE forms
+are rejected. IGNORE_DUP_KEY is 153 state 35. PAD_INDEX is accepted and is_padded
+reflects it. Eight option/catalog cases show that JSON indexes have no partition
+or statistics row under the base table; `json-index-statistics.sql` captures the
+ordinary primary-key statistics row alongside them. Generated descriptors for
+all three new views come from `catalog/view-descriptors-json-indexes.sql`.
+
+The immutable store maintains concrete path-to-row entries from live native
+JSON nodes, including containers and JSON nulls. Filtered index roots restrict
+which paths are stored. Positive JSON_CONTAINS and JSON_PATH_EXISTS predicates
+can seek a concrete prefix; the original predicate checks each candidate.
+Uncovered paths fall back to a scan. Eight maintenance cases cover indexed
+mutation, deleted/reinserted paths, bulk deletion, snapshots, disable/rebuild,
+truncate, subset roots and Unicode. Two white-box checks compare indexed
+execution with a forced scan and verify that the optimized execution does not
+read the table through its scan source. All 152 focused cases pass.
+
+This is not a completed audit of JSON indexes: value-based/range access,
+broader options, collation-dependent overlap validation,
+internal tables and storage, and concurrency/locking details still need captures
+and implementation review. No container release is implied by this checkpoint.
+
+### Native JSON_PATH_EXISTS and indexed errors (2026-10-06)
+
+The 28 `sql2025/json-path-exists-native` cases distinguish native and text
+inputs. Native inputs accept last/list accessors, treat a resolved empty
+wildcard as existing, and return zero when strict traversal encounters a
+missing branch or out-of-range list/range element. Text inputs reject last/list
+accessors and ignore strict mode for existence testing, including ranges.
+Native behavior uses the containment selection walker, testing for a resolved
+selection rather than its cardinality.
+
+For indexed document predicates, SQL Server validates literal malformed paths
+before result metadata and earlier DECLARE completion. Variable paths and
+unindexed column paths retain runtime error timing. Evidence also includes
+`sql2025/json-index-query-errors.sql`. The planning check preserves this
+boundary; runtime candidate pruning must not conceal path or comparison-mode
+errors.
+
+### Index options and disabled clustered keys (2026-10-06)
+
+Thirty cases in `json-index-placement-alter`, `json-index-alter-options`,
+`json-index-disabled-table` and `json-index-disabled-rebuild` establish the
+following additional contracts. Trailing `ON filegroup` is a syntax error 156;
+STATISTICS_NORECOMPUTE on CREATE is 153 state 35. DROP_EXISTING cannot convert
+ordinary to JSON (13685 state 1) or JSON to ordinary (10682 state 2); changing
+the indexed JSON column succeeds. Creating a JSON index on a view raises 13678.
+ALTER SET lock options fail with 13688; OPTIMIZE_FOR_ARRAY_SEARCH in ALTER is
+syntax error 155. REBUILD accepts FILLFACTOR, MAXDOP, PAGE compression and
+ONLINE=OFF, but ONLINE=ON is 153 state 37. REORGANIZE succeeds.
+
+Disabling the clustered primary key also disables dependent JSON indexes and
+emits warning 3750. SELECT and DML fail before result metadata with 8655, while
+TRUNCATE succeeds and retains disabled state. A batch containing primary-key
+REBUILD followed by SELECT fails compilation before either runs. Rebuilding
+only the primary key in a separate batch restores access, leaving the JSON
+index disabled. Rebuilding only the JSON index while its clustered key is
+disabled gives 1987; ALL REBUILD gives 8655 and leaves both disabled. These
+captured behaviors are implemented. Wider dependencies (foreign keys, indexed
+views), option combinations and concurrent lifecycle operations remain open.
+
+### Internal index catalog captures, pending implementation (2026-10-06)
+
+Seventeen investigative cases in `json-index-internal-catalog`,
+`json-index-internal-details`, `json-index-internal-key-types` and
+`catalog/view-descriptors-json-internal` capture the next open surface. Each
+JSON index owns a `sys.internal_tables` row: internal_type 235,
+JSON_INDEX_TABLE, parent_minor_id equal to its JSON index_id. Its internal
+clustered index is named after the JSON index (id 1); a posting-column
+nonclustered index has id 2. OPTIMIZE_FOR_ARRAY_SEARCH adds id 3,
+`json_index_search_optimization_nci`. Internal columns hold the path, array
+position, sql_variant scalar, status, overflow path/value, and one posting
+column per clustered primary-key component. Their types and keys are captured,
+not inferred from the public JSON index columns.
+
+Internal partition row counts follow indexed scalar leaves (including JSON
+null), excluding empty containers and duplicate object keys. The exact rules
+for repeated values and retained disabled storage still need investigation.
+PAGE compression is visible on the internal partitions. Disabling the JSON
+index retains the clustered internal partition but removes its nonclustered
+partitions. These captures are not registered as passing and do not close the
+internal-storage or array-search implementation work.

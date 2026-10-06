@@ -239,3 +239,10 @@ DONE. Alone (including repeated settings), the batch ends with DONE 253.
 Before or after SELECT it adds no completion; in dynamic SQL and procedures
 only the ordinary result/module completions remain. Evidence: eight cases in
 `sql2025/preview-completions.cases.json`.
+
+### CREATE JSON INDEX (2026-10-06)
+
+Successful creation completes with CurCmd 744. Captured creation/validation
+errors complete with 253; ordinary DROP INDEX and ALTER INDEX retain their
+existing command completions. Evidence: `sql2025/json-index-contracts` and
+`json-index-validation`.

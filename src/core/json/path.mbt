@@ -338,3 +338,25 @@ pub fn parse_path(
   }
   { strict, append, steps, }
 }
+
+///|
+/// Canonical concrete prefix, stopping before the first multi-value accessor.
+pub fn Path::concrete_prefix(self : Path) -> String {
+  let out = StringBuilder()
+  out.write_char('$')
+  for step in self.steps {
+    match step {
+      Key(key) => {
+        out.write_char('.')
+        out.write_string(quote(key))
+      }
+      Index(i) => {
+        out.write_char('[')
+        out.write_string(i.to_string())
+        out.write_char(']')
+      }
+      _ => break
+    }
+  }
+  out.to_string()
+}

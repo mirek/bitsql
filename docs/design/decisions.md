@@ -1030,3 +1030,27 @@ See the JSON reference for the 255 oracle cases. Scoped PREVIEW_FEATURES
 changes have no statement completion token, verified in eight batch/module
 contexts (`sql2025/preview-completions`); the existing batch-final fallback
 supplies DONE when no other statement completes.
+
+### Maintained native JSON indexes (2026-10-06)
+
+JSON indexes reuse immutable index maps but have multiple concrete path keys
+per row. Native values expose live paths directly from their storage tree;
+creation/rebuild, individual/bulk writes, deletion, snapshots and rebasing
+maintain those entries. Query execution can seek a concrete path prefix,
+then reapply the complete predicate. Subset indexes are used only when an
+indexed root covers the requested prefix. A separate runtime callback keeps
+JSON path candidates distinct from ordinary key equality lookups. Two tests
+compare the indexed plan with a forced scan and observe scan-source access.
+
+Native JSON_PATH_EXISTS uses containment selection: resolved empty wildcards
+count as existing and strict missing branches return zero. The old text-input
+path remains separate. Indexed literal-path errors are validated before result
+metadata; see the JSON reference for captures and remaining index audit scope.
+
+
+The JSON index lifecycle also requires disabled-clustered-table checks. Binder
+catalog lookup and DML target resolution reject access; the batch precheck
+catches references before a preceding REBUILD can execute. DDL lookup stays
+available so a separate primary-key REBUILD and TRUNCATE can work. Thirty
+additional oracle cases cover placement/options and this dependency; broader
+foreign-key/indexed-view dependencies remain in the open audit.

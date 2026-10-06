@@ -24,7 +24,7 @@ pub fn isjson(String, ty? : IsJsonType) -> Int raise JsonError
 
 pub fn json_modify(String, String, String?) -> String raise JsonError
 
-pub fn json_path_exists(String, String) -> Int raise JsonError
+pub fn json_path_exists(String, String, native? : Bool) -> Int raise JsonError
 
 pub fn json_query(String, path? : String, lob? : Bool, json_type? : Bool) -> String? raise JsonError
 
@@ -75,6 +75,7 @@ pub(all) struct Path {
   append : Bool
   steps : Array[Step]
 } derive(Eq, @debug.Debug)
+pub fn Path::concrete_prefix(Self) -> String
 
 pub(all) enum Step {
   Key(String)

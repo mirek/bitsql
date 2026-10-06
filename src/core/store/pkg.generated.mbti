@@ -82,6 +82,7 @@ pub fn Db::schema_id(Self, String) -> Int?
 pub fn Db::schema_name(Self, Int) -> String?
 pub fn Db::schema_names(Self) -> Array[(String, Int)]
 pub fn Db::seek(Self, Int, Int, lo? : Array[@types.Value], hi? : Array[@types.Value]) -> Array[Int64]
+pub fn Db::seek_json_path(Self, Int, Int, String) -> Array[Int64]
 pub fn Db::set_xprop(Self, ExtendedProperty) -> Self
 pub fn Db::table(Self, Int) -> Table?
 pub fn Db::table_data(Self, Int) -> TableData?
@@ -134,6 +135,7 @@ pub(all) struct Identity {
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Index {
+  json : JsonIndex?
   index_id : Int
   object_id : Int
   name : String
@@ -156,6 +158,16 @@ pub fn Index::covers(Self, Array[@types.Value]) -> Bool
 pub struct IndexData {
   // private fields
 }
+
+pub(all) struct JsonIndex {
+  paths : Array[String]
+  prefixes : Array[String]
+  array_search : Bool
+  padded : Bool
+  row_locks : Bool
+  page_locks : Bool
+  compression : Int
+} derive(@debug.Debug)
 
 pub(all) struct Module {
   id : Int

@@ -26,6 +26,8 @@ pub fn like_match(String, String, Int?, @types.Collation, Bool) -> Bool
 
 pub fn match_pairs(Ctx, @ir.Expr, Array[Array[@types.Value]], Int, Array[Array[@types.Value]]) -> Array[Array[Int]] raise @types.SqlError
 
+pub fn no_json_seek(Int, Int, Int, String) -> Array[(Int64, Array[@types.Value])]?
+
 pub fn no_seek(Int, Int, Array[(Int, @types.Value)]) -> Array[(Int64, Array[@types.Value])]?
 
 pub fn no_stamp(Int, Int) -> Int64?
@@ -55,6 +57,7 @@ pub(all) struct Ctx {
   user_fn : (Int, Array[@types.Value]) -> @types.Value raise @types.SqlError
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[(Int64, Array[@types.Value])]?
+  seek_json : (Int, Int, Int, String) -> Array[(Int64, Array[@types.Value])]?
   stamp : (Int, Int) -> Int64?
 }
 pub fn Ctx::push_outer(Self, Array[@types.Value]) -> Self

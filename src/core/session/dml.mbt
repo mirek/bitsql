@@ -15,6 +15,9 @@ fn Session::dml_target(self : Session, r : @ast.TableRef) -> Target raise {
     Table(name, alias_~, ..) =>
       match self.find_table(self.deref_synonym(name)) {
         Some((scope, t)) => {
+          if disabled_cluster_error(t, object_text(name)) is Some(e) {
+            raise e
+          }
           if scope >= OTHER_DB_SCOPE {
             self.check_other_db_target(scope, t)
           }

@@ -1021,8 +1021,12 @@ fn Parser::create_or_alter(
       self.pos += 1
       self.alter_table()
     }
-    "UNIQUE" | "CLUSTERED" | "NONCLUSTERED" | "INDEX" | "COLUMNSTORE" if mode
-      is Create => CreateIndex(self.create_index())
+    "UNIQUE"
+    | "CLUSTERED"
+    | "NONCLUSTERED"
+    | "INDEX"
+    | "COLUMNSTORE"
+    | "JSON" if mode is Create => CreateIndex(self.create_index())
     "INDEX" if mode is Alter => {
       self.pos += 1
       self.alter_index()

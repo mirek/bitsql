@@ -1348,3 +1348,9 @@ For practical client compatibility, implement in this order:
   are captured in catalog/view-descriptors-scoped and sql2025/scoped-configurations.
   PREVIEW_FEATURES is database-scoped, shared across sessions, and uses a bit
   sql_variant; details and transaction behavior are in docs/reference/sql2025.md.
+
+- 2026-10-06 (SQL 2025 JSON index corpus): generated descriptors now include
+  sys.json_indexes, sys.json_index_paths and sys.stats. JSON indexes use type 9
+  and have no partition/statistics row under their base table. Path metadata
+  preserves the original path spelling in UTF-8 varchar(8000). Full captured
+  catalog, lifecycle, option and native-path findings: docs/reference/json.md.

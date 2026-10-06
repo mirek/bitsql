@@ -605,6 +605,12 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
     }
     CreateIndex(ix) => {
       self.s("(create-index")
+      if ix.json_paths is Some(paths) {
+        self.atom("json")
+        for path in paths {
+          self.atom(quote(path))
+        }
+      }
       if ix.unique {
         self.atom("unique")
       }

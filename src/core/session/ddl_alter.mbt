@@ -534,6 +534,19 @@ fn Session::alter_drop(
       .iter()
       .find_first(ix => ix.is_constraint && ix.name.to_lower() == key) {
       Some(ix) => {
+        if ix.primary && t.indexes.any(index => index.json is Some(_)) {
+          self.pending.push(
+            @types.sql_error(
+              3767,
+              "Could not drop the primary key constraint '\{ix.name}' because the table has a JSON index.",
+            ),
+          )
+          raise @types.sql_error(
+            3727,
+            "Could not drop constraint. See previous errors.",
+            state=0,
+          )
+        }
         found = true
         for other in self.db_of(scope).tables() {
           if other.id == t.id {
@@ -1007,6 +1020,10 @@ fn Session::exec_create_index(
   self : Session,
   ci : @ast.CreateIndex,
 ) -> Unit raise {
+  if ci.json_paths is Some(paths) {
+    self.exec_create_json_index(ci, paths)
+    return
+  }
   if ci.columnstore {
     raise @types.not_supported("columnstore indexes")
   }
@@ -1037,6 +1054,13 @@ fn Session::exec_create_index(
     raise @types.sql_error(
       1913,
       "The operation failed because an index or statistics with name '\{ci.name.name}' already exists on table '\{object_text(ci.table)}'.",
+    )
+  }
+  if existing is Some(k) && t.indexes[k].json is Some(_) {
+    raise @types.sql_error(
+      10682,
+      "Cannot convert the JSON index '\{ci.name.name}' to a relational index by using the DROP_EXISTING option.",
+      state=2,
     )
   }
   // DROP_EXISTING rebuilds the index in place (same index_id)
@@ -1141,6 +1165,7 @@ fn Session::exec_create_index(
     filter_terms: terms,
     fill_factor,
     ignore_dup_key,
+    json: None,
     is_constraint: false,
     disabled: false,
   }

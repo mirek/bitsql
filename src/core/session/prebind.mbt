@@ -72,14 +72,23 @@ fn Session::prebind_stmt(
     Select({ body: Select(sel), .. }) if sel.items.length() > 0 &&
       sel.items.iter().all(i => i.kind is Assign(_, _, _)) =>
       attempt(() => self.compile_statement(s))
-    Select(q) =>
-      attempt(() => {
+    Select(q) => {
+      let mut indexed_error : @types.SqlError? = None
+      let result = attempt(() => {
         let out_len = self.out.length()
         let cur_cmd = self.cur_cmd
         let error = self.rt.error
         let bound = @bind.bind_query(self.env(), q)
+        self.check_json_index_paths(bound.plan) catch {
+          e => indexed_error = Some(e)
+        }
         self.keep_prebound(q, bound, out_len, cur_cmd, error)
       })
+      match indexed_error {
+        Some(e) => Some(([e], line))
+        None => result
+      }
+    }
     Insert(_) | Update(_) | Delete(_) | Merge(_) | Print(_) =>
       attempt(() => self.compile_statement(s))
     SetVarMethod(name, meth, args) =>

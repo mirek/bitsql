@@ -106,6 +106,7 @@ fn subquery_execution_trace(
     },
     user_table: no_user_table,
     seek: no_seek,
+    seek_json: no_json_seek,
     stamp: (_, _) => if stamped { Some(revision) } else { None },
   }
   let f = compile(expr)

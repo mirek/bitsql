@@ -296,6 +296,9 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
     user_fn: (id, args) => self.call_scalar_udf(id, args),
     user_table: (id, args) => self.call_table_udf(id, args),
     seek: (scope, id, key) => self.seek(scope, id, key),
+    seek_json: (scope, id, column, path) => {
+      self.seek_json(scope, id, column, path)
+    },
     stamp: self.stamp_reader(),
   }
 }
