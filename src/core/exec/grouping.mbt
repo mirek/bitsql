@@ -94,12 +94,14 @@ fn hashable_key_rows(keys : Array[Array[@types.SortKey]]) -> Bool {
 /// Group ids of a flat column, without a key array per value: integer
 /// values hashed as Int64 (KeyInt equality), other exact sort keys hashed
 /// directly; NULLs form one group. None when the column has inexact keys or
-/// mixed key kinds (the caller's general path decides those).
+/// mixed key kinds (the caller's general path decides those). Also returns
+/// the canonical keys already computed at representative input positions, or
+/// an empty array for the integer path (which does not materialize keys).
 fn single_value_ids(
   values : Array[@types.Value],
   collation : @types.Collation?,
   ansi : Bool,
-) -> (Array[Int], Int)? {
+) -> (Array[Int], Int, Array[@types.SortKey])? {
   let n = values.length()
   let ids = Array::make(n, 0)
   let mut count = 0
@@ -127,7 +129,7 @@ fn single_value_ids(
         count += 1
       }
     }
-    return Some((ids, count))
+    return Some((ids, count, []))
   }
   let ks = Array::make(n, @types.sort_key(Null))
   let mut kind = 0
@@ -204,7 +206,7 @@ fn single_value_ids(
       cache[s] = ids[i]
     }
   }
-  Some((ids, count))
+  Some((ids, count, ks))
 }
 
 ///|
@@ -221,7 +223,7 @@ fn group_ids(
   let n = keys.length()
   if n > 0 && keys[0].length() == 1 {
     match single_value_ids(keys.map(r => r[0]), collations[0], ansi) {
-      Some(r) => return r
+      Some((ids, count, _)) => return (ids, count)
       None => ()
     }
   }
@@ -456,18 +458,35 @@ fn exact_key_hash(key : @types.SortKey) -> Int {
 
 ///|
 /// Single-column projection followed by DISTINCT, without intermediate rows.
+/// An initially empty `prepared` receives one exact canonical key per output
+/// row on the fast path; fallback leaves it empty, so sorting rekeys the rows.
 fn distinct_values(
   values : Array[@types.Value],
   collation : @types.Collation?,
+  prepared? : Array[@types.SortKey]? = None,
 ) -> Array[Row] raise @types.SqlError {
-  let (ids, _) = match single_value_ids(values, collation, false) {
-    Some(result) => result
-    None => group_ids_general(values.map(v => [v]), [collation], false)
+  let (ids, canonical) = match single_value_ids(values, collation, false) {
+    Some((ids, _, keys)) => (ids, Some(keys))
+    None => {
+      if prepared is Some(out) {
+        out.clear()
+      }
+      (group_ids_general(values.map(v => [v]), [collation], false).0, None)
+    }
   }
   let out : Array[Row] = []
   for i, value in values {
     if ids[i] == out.length() {
       out.push([value])
+      if prepared is Some(keys) && canonical is Some(source) {
+        keys.push(
+          if source.is_empty() {
+            @types.sort_key(value)
+          } else {
+            source[i]
+          },
+        )
+      }
     } else {
       let kept = out[ids[i]]
       match (kept[0], value) {

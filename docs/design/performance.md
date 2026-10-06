@@ -787,3 +787,85 @@ were verified at `sha256:b95402f8549b5d4fedb705d69b37c6c452f3bacc9ce144e49cd8002
 Both images carry source revision `982cf1bc852fb7239a1ce048596aa39b43ee2a94`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.4926 MiB compressed.
+
+
+## Reusing DISTINCT grouping keys for sorting (2026-10-06, 0.1.19)
+
+Single-column DISTINCT already computes canonical collation keys while
+hashing. A following sort on that output column, with the same collation
+and non-ANSI comparison, can reuse them instead of computing and allocating
+another set of keys. The grouping helper returns its existing key array;
+ordinary callers discard it. DISTINCT retains representative keys and sorts
+with the existing `compare_sort_keys` comparator and stable sort. Integer
+grouping does not build canonical keys, so DISTINCT prepares only its final
+integer representatives. Binary/ANSI collation differences, mixed types and
+other inexact values keep the original materialized sort fallback, without
+re-evaluating projection expressions. Different representative spellings
+remain canonical-equal; output still uses the existing DISTINCT spelling
+rule. The former Sort body is extracted unchanged as `sort_rows`.
+
+Expanded executor equivalence tests compare both directions, matching and
+mismatched collations, NULLs, temporal and mixed integer kinds, decimal and
+variant fallbacks, expression errors/traces, row evaluation counts and input
+immutability against the old DISTINCT-then-sort path.
+
+An initial optional key-collection branch showed a small GROUP BY slowdown
+in some runs; moving that collection after grouping did not consistently
+resolve it. The final design returns already-built keys and leaves the
+hashing loop unchanged. Reversed-order baseline/candidate controls show
+unrelated grouping, COUNT DISTINCT, UNION and ROW_NUMBER roughly stable.
+
+Sequential native measurements, 20k input rows, 100 repetitions per query:
+
+| Query | 0.1.18 means (ms) | Candidate means (ms) |
+| --- | ---: | ---: |
+| GROUP BY p | 1.07 / 1.04 | 1.05 / 1.02 |
+| GROUP BY v | 4.21 / 4.41 | 4.29 / 4.28 |
+| DISTINCT v | 4.41 / 4.51 | 3.75 / 3.86 |
+| COUNT DISTINCT v | 3.22 / 3.24 | 3.25 / 3.24 |
+| UNION | 5.96 / 6.07 | 5.96 / 5.93 |
+| ROW_NUMBER | 5.68 / 5.73 | 5.61 / 5.70 |
+| Unique DISTINCT id | 7.38 / 7.55 | 6.61 / 6.62 |
+| DISTINCT v descending | 4.61 / 4.71 | 4.05 / 4.03 |
+| Decimal DISTINCT fallback | 10.44 / 10.44 | 10.40 / 10.44 |
+| ANSI DISTINCT fallback | 6.65 / 6.59 | 6.57 / 6.57 |
+| Binary DISTINCT fallback | 7.97 / 7.99 | 8.00 / 8.00 |
+| DISTINCT 80-character prefix | 22.89 / 22.84 | 20.78 / 20.20 |
+
+Long-prefix controls (20 repetitions, outer COUNT to avoid wire-output cost):
+1024-character repeated text 172.55/172.05 → 156.30/156.23 ms;
+1024-character unique text 303.97/302.41 → 208.62/208.45;
+unique short text 6.45/6.31 → 3.94/3.99. Thus key reuse still wins when
+comparing long shared prefixes, rather than merely shifting cost to sorting.
+All benchmarks ran sequentially after compilation/tests ended; every query
+was checked for SQL errors.
+Evidence: `_build/distinct-keys-return-bench.txt`,
+`_build/distinct-keys-long-controls.txt`; earlier candidates are recorded in
+`_build/distinct-keys-bench.txt` and `_build/distinct-keys-final-bench.txt`.
+Release gate and container comparison follow below.
+
+
+The exact amd64 release binary passed the full gate: 286 MoonBit tests,
+20703 client/corpus passes, three skips, no failures. ARM64 passed 572/572;
+the JSON compatibility case also matched the SQL Server oracle. After all
+builds/tests ended, all benchmark ports and processes were clear. The
+container comparison ran sequentially; all 48 medians match 240 raw samples.
+
+DISTINCT now beats SQL Server: 4.107 vs 4.723 ms. ROW_NUMBER is 5.893 vs
+6.006; EXISTS is essentially tied at 4.954 vs 4.938. Text GROUP BY is 5.053
+vs 4.872 (about 4% slower), while the 1000 point-SELECT workload is 140 vs
+145 ms. Total shape medians are 234.17 vs 676.50 ms, about 2.9x. README
+retains the complete fresh comparison, including the slight GROUP BY loss.
+
+Because GROUP BY shifted relative to 0.1.18 despite stable native controls,
+its exact prior release binary was extracted from its image using an owned
+stopped container (removed immediately). Sequential 100-repeat comparisons
+of those exact release binaries did not reproduce a regression: GROUP BY v
+was 4.34/4.36 → 4.20/4.13 ms, DISTINCT 4.57/4.53 → 3.82/3.65, and COUNT
+DISTINCT 3.43/3.38 → 3.33/3.30. Other controls stayed roughly stable. The
+near-parity container metrics remain variable; a single cross-release table
+is not proof of a causal regression or gain. The optimization goal stays open.
+
+Evidence: `harness/out/bench-compare-0.1.19.json`, `_build/bench-0.1.19.txt`,
+`_build/check-0.1.19.log`, `_build/arm64-0.1.19.log`,
+`_build/json-oracle-0.1.19.log`, `_build/release-distinct-controls.txt`.

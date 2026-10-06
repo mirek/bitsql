@@ -1,5 +1,5 @@
 ///|
-test "flat DISTINCT projection preserves rows effects warnings and errors" {
+test "flat DISTINCT projection and sorting preserve rows effects and errors" {
   let trace : Array[@types.Value] = []
   let ctx : Ctx = {
     rt: Runtime::new(database="master", spid=51, now=0L, seed=1L),
@@ -78,6 +78,37 @@ test "flat DISTINCT projection preserves rows effects warnings and errors" {
         assert_eq(ctx.rt.row_seq, expected_rows)
         assert_eq(trace, expected_trace)
         assert_eq(source.map(p => p.1), values.map(v => [v]))
+        for desc in [false, true] {
+          for sort_coll in [Some(coll), Some(@types.latin1_general_100_bin2)] {
+            let key : @ir.SortKey = {
+              expr: { kind: Col(0), ty, nullable: true, },
+              desc,
+              collation: sort_coll,
+            }
+            trace.clear()
+            ctx.rt.row_seq = 0L
+            let expected = Ok(
+              sort_rows(ctx, distinct_rows(run(ctx, project), [Some(coll)]), [
+                key,
+              ]),
+            ) catch {
+              e => Err(e)
+            }
+            let expected_rows = ctx.rt.row_seq
+            let expected_trace = trace.copy()
+            trace.clear()
+            ctx.rt.row_seq = 0L
+            let actual = Ok(
+              run(ctx, Sort(Distinct(project, [Some(coll)]), [key])),
+            ) catch {
+              e => Err(e)
+            }
+            assert_eq(actual, expected)
+            assert_eq(ctx.rt.row_seq, expected_rows)
+            assert_eq(trace, expected_trace)
+            assert_eq(source.map(p => p.1), values.map(v => [v]))
+          }
+        }
       }
     }
   }

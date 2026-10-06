@@ -49,7 +49,7 @@ fn run_aggregate_fast(
     let f = compile(key)
     let values = rows.map(r => f(ctx, r))
     let (ids, _) = match single_value_ids(values, key.ty.collation(), false) {
-      Some(result) => result
+      Some((ids, count, _)) => (ids, count)
       None =>
         group_ids_general(values.map(v => [v]), [key.ty.collation()], false)
     }

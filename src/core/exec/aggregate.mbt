@@ -79,7 +79,7 @@ fn count_inputs(
   let coll = arg.ty.collation()
   let ansi = !arg.ty.is_unicode()
   match single_value_ids(values, coll, ansi) {
-    Some((_, count)) => count
+    Some((_, count, _)) => count
     None => group_ids_general(values.map(v => [v]), [coll], ansi).1
   }
 }

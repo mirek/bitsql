@@ -53,22 +53,25 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       }
       out
     }
-    Sort(input, keys) => {
+    Sort(Distinct(Project(input, [expr]), [collation]), [key]) if key.expr.kind
+      is Col(0) &&
+      key.collation == collation &&
+      !ansi_key(key) => {
       let rows = run(ctx, input)
-      let ansi = keys.map(ansi_key)
-      let cs = keys.map(k => compile(k.expr))
-      let values = rows.map(row => cs.map(f => f(ctx, row)))
-      match sort_order(values, keys) {
-        Some(order) => order.map(i => rows[i])
-        None => {
-          let prepared = rows.mapi((i, row) => {
-            (order_keys(values[i], keys, ansi), row)
-          })
-          sort_prepared(prepared, keys, ansi)
-          prepared.map(p => p.1)
-        }
+      let f = compile(expr)
+      let values = rows.map(row => {
+        ctx.rt.next_row()
+        f(ctx, row)
+      })
+      let prepared : Array[@types.SortKey] = []
+      let out = distinct_values(values, collation, prepared=Some(prepared))
+      if prepared.length() == out.length() {
+        sort_single_keys(prepared, collation, key.desc).map(i => out[i])
+      } else {
+        sort_rows(ctx, out, [key])
       }
     }
+    Sort(input, keys) => sort_rows(ctx, run(ctx, input), keys)
     Limit(input, offset, count) => {
       let rows = run(ctx, input)
       // captured (query/top-fetch-bigint): bigint counts are not clamped
@@ -848,4 +851,54 @@ fn join_each(
       }
     }
   }
+}
+
+///|
+fn sort_rows(
+  ctx : Ctx,
+  rows : Array[Row],
+  keys : Array[@ir.SortKey],
+) -> Array[Row] raise @types.SqlError {
+  let ansi = keys.map(ansi_key)
+  let cs = keys.map(k => compile(k.expr))
+  let values = rows.map(row => cs.map(f => f(ctx, row)))
+  match sort_order(values, keys) {
+    Some(order) => order.map(i => rows[i])
+    None => {
+      let prepared = rows.mapi((i, row) => {
+        (order_keys(values[i], keys, ansi), row)
+      })
+      sort_prepared(prepared, keys, ansi)
+      prepared.map(p => p.1)
+    }
+  }
+}
+
+///|
+/// One exact homogeneous grouping key per distinct representative. The source
+/// values may use different spellings, but their canonical keys compare equal.
+fn sort_single_keys(
+  keys : Array[@types.SortKey],
+  collation : @types.Collation?,
+  desc : Bool,
+) -> Array[Int] raise @types.SqlError {
+  let order = Array::makei(keys.length(), i => i)
+  let mut failure : @types.SqlError? = None
+  stable_sort_by(order, (i, j) => {
+    let c = @types.compare_sort_keys(keys[i], keys[j], collation?) catch {
+      e => {
+        failure = Some(e)
+        0
+      }
+    }
+    if desc {
+      -c
+    } else {
+      c
+    }
+  })
+  if failure is Some(e) {
+    raise e
+  }
+  order
 }
