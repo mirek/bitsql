@@ -62,3 +62,9 @@ include it. The exact arm64 binary passed the 571-case standard QEMU smoke
 and the new JSON case separately (572 cases total). Expectations were also
 rechecked on the SQL Server oracle. Browser tests still need an application
 rerun. No performance experiment is included in this compatibility release.
+
+Published 2026-10-06 from revision
+`36169ca92d3a382cbbf86c61cba5c80e41d91184`. Registry tags `0.1.14`, `0.1`
+and `latest` have identical amd64 + arm64 manifest lists, digest
+`sha256:c2b4d1b3e60dcc56200585dd6266c0f746206fea2df45a071e4198763166acdf`.
+The image filesystem layers were unchanged when the revision labels were added.

@@ -291,7 +291,8 @@ project: the breadth of transaction and error semantics in phases 5–6.
   fixed for 0.1.14, with a 50-step oracle regression. Full exact amd64 gate:
   275 MoonBit tests, 20702 existing client/corpus passes (3 skips); new JSON
   allowlist case passed separately on amd64 and arm64. Arm64 standard smoke:
-  571/571. Publication follows validation.
+  571/571. Published as `0.1.14`, `0.1` and `latest`; identical amd64 +
+  arm64 registry manifests verified.
 - [x] Unordered clustered/covering-index scans and MERGE trigger identity order
   investigated and documented as compatibility gaps; retained oracle probes
   outside the passing allowlist. Use ORDER BY for listings and compare audit
