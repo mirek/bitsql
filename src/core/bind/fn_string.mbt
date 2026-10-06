@@ -110,7 +110,7 @@ fn bind_string_fn(
       named(name, [as_string_arg(x, env), as_int_arg(n)], sized_like(base, len))
     }
     "SUBSTRING" => {
-      arity_n(name, args, 3)
+      arity_189(name, args, 2, 3)
       let x = b(0)
       if is_null_lit(x) {
         raise null_arg(1, "substring")
@@ -119,6 +119,17 @@ fn bind_string_fn(
         raise bad_arg_type(x.ty, 1, "substring")
       }
       let start = b(1)
+      if args.length() == 2 {
+        let base = match x.ty {
+          Binary(l) => @types.SqlType::VarBinary(Some(l))
+          VarBinary(l) => @types.SqlType::VarBinary(l)
+          Image => @types.SqlType::VarBinary(None)
+          _ => string_arg_type(x, env)
+        }
+        let bound = [x, as_int_arg(start)]
+        check_deferred_collation(env, "substring", bound)
+        return Some(named("SUBSTRING", bound, base))
+      }
       let n = b(2)
       let k = fold_int(n)
       if k is Some(v) && v < 0L {

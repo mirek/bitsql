@@ -434,9 +434,12 @@ fn dateadd(
     @types.cast(v[2], args[2].ty, t, dates~)
   }
   let amount = add_amount(v[1])
-  if amount < @bigint.BigInt::from_int(-2147483648) ||
-    amount > @bigint.BigInt::from_int(2147483647) {
-    raise add_overflow(t)
+  if amount < date_big(-9223372036854775807L - 1L) ||
+    amount > date_big(9223372036854775807L) {
+    raise @types.overflow_expression(BigInt)
+  }
+  if amount < date_big(-2147483648L) || amount > date_big(2147483647L) {
+    return dateadd_bigint(p, amount, x, t)
   }
   let n = amount.to_int64()
   let months : Int64? = match p {

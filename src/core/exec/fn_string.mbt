@@ -746,13 +746,17 @@ fn call_string(
         return Some(Null)
       }
       let start = int_of(v[1]).unwrap_or(1L)
-      let len = int_of(v[2]).unwrap_or(0L)
+      let len = if v.length() == 2 { 0L } else { int_of(v[2]).unwrap_or(0L) }
       if len < 0L {
         raise substring_length_error()
       }
       let slice = (total : Int) => {
         let from = @cmp.maximum(start, 1L)
-        let to = @cmp.minimum(start + len, total.to_int64() + 1L)
+        let to = if v.length() == 2 {
+          total.to_int64() + 1L
+        } else {
+          @cmp.minimum(start + len, total.to_int64() + 1L)
+        }
         if to <= from {
           (0, 0)
         } else {

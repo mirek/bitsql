@@ -1,0 +1,871 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "7b8410dce8344e9d",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "encoded",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"decoded","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["SGVsbG8=",{"kind":"binary","value":"48656c6c6f"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "standard",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "url_safe",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"url_decoded","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["++//","--__",{"kind":"binary","value":"fbff"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "empty_encoded",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"empty_decoded","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "null_encoded",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"null_decoded","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["",{"kind":"binary","value":""},null,null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "encoded",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"decoded","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {
+              "name": "max_encoded",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"max_decoded","type":"VarBinary","length":65535,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["AQIDBA==",{"kind":"binary","value":"01020304"},"AQIDBA==",{"kind":"binary","value":"01020304"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":4},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "one",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "two",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "three",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "url_one",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["AQ==","AQI=","AQID","AQ"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"no_padding","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"padding","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"spaces","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[{"kind":"binary","value":"01"},{"kind":"binary","value":"01"},{"kind":"binary","value":"01"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":20,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":21,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":23,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type varchar is invalid for argument 1 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type nvarchar is invalid for argument 1 of base64_decode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[null,null]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["AQ=="]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["AQ"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":189,"state":1,"class":15,"lineNumber":1,"message":"The base64_encode function requires 1 to 2 arguments."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":189},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":174,"state":1,"class":15,"lineNumber":1,"message":"The base64_decode function requires 1 argument(s)."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":174},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "large_capacity",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "fixed_binary",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"fixed_char","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["AQ==","AQAA",{"kind":"binary","value":"01"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":3},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type varchar is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type varchar is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[{"kind":"binary","value":"01"},{"kind":"binary","value":"00"},{"kind":"binary","value":"0000"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":21,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":21,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":23,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],
+          "rows": [[{"kind":"binary","value":"01"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":20,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type decimal is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "threshold",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["AQ=="]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":1},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"spaced_padding","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"two_bytes","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [[{"kind":"binary","value":"01"},{"kind":"binary","value":"0102"}]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":21,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [{"columns":[{"name":"","type":"VarBinary","length":8000,"precision":null,"scale":null,"flags":33,"collation":null}],"rows":[]}],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":9803,"state":20,"class":16,"lineNumber":1,"message":"Invalid data for type \"Base64Decode\"."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":9803},{"name":"DONE","status":2,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type float is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type bigint is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type sql_variant is invalid for argument 1 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type image is invalid for argument 1 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type text is invalid for argument 1 of base64_decode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {
+              "name": "bit_flag",
+              "type": "VarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [["AQ"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type smallint is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 8116,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Argument data type tinyint is invalid for argument 2 of base64_encode function."
+        }
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"encoded_bytes","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"decoded_bytes","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": [["8004","6001"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 2
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

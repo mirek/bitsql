@@ -409,3 +409,11 @@ project: the breadth of transaction and error semantics in phases 5–6.
   is met, with earlier intermittent spikes still an unresolved limitation
   (`performance.md`). Published as `0.1.23`, `0.1` and `latest`; all three
   amd64 + arm64 registry manifests verified.
+
+## SQL Server 2025 feature completeness (2026-10-06)
+
+- [ ] Complete the [SQL Server 2025 audit](sql2025-audit.md), covering all user-requested language, type, vector/AI, optimizer, locking and operational additions. Initial oracle-backed `sql2025/` probes pass JSON/CURRENT_DATE and expose seven other differences; these probes are only smoke coverage.
+
+- [x] SQL Server 2025 optional-length SUBSTRING and Base64 encode/decode: oracle-backed `sql2025/substring-optional-length`, `base64`, and `base64-padding` differential cases pass (2026-10-06); result metadata and argument/padding errors captured. Full feature audit remains open.
+
+- [x] SQL Server 2025 bigint DATEADD: widened intermediate arithmetic, range errors, time wrapping and signed-minimum nanosecond behavior; 139 batches in `sql2025/dateadd-bigint*.sql` pass (2026-10-06).

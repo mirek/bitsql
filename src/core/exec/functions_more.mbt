@@ -32,6 +32,9 @@ fn call_more(
     is Some(r) {
     return r
   }
+  if call_base64(name, v) is Some(r) {
+    return r
+  }
   if call_string(name, v, args, e, dates=ctx.rt.dates) is Some(r) {
     return r
   }
