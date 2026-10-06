@@ -293,6 +293,19 @@ fn xml_compare_check(
   a : @ir.Expr,
   b : @ir.Expr,
 ) -> Unit raise @types.SqlError {
+  if a.ty is Vector(_) || b.ty is Vector(_) {
+    if (a.ty is Vector(_) && b.ty is Vector(_)) ||
+      (
+        op_name == "equal to" &&
+        (a.ty.family() == FString || b.ty.family() == FString)
+      ) {
+      raise err(
+        8117,
+        "Operand data type vector is invalid for \{op_name} operator.",
+      )
+    }
+    raise @types.not_supported("comparison between vectors and other types")
+  }
   if a.ty is Xml && b.ty is Xml {
     raise xml_not_comparable()
   }
@@ -460,6 +473,9 @@ fn may_be_xml(e : @ast.Expr) -> Bool {
 /// ORDER BY an xml value: 305 (captured: xml/type#047).
 fn xml_sort_check(keys : Array[@ir.SortKey]) -> Unit raise @types.SqlError {
   for k in keys {
+    if k.expr.ty is Vector(_) {
+      raise vector_not_comparable()
+    }
     if k.expr.ty is Xml {
       raise xml_not_comparable()
     }
@@ -476,7 +492,7 @@ fn xml_distinct_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
   for c in columns {
-    if c.ty is (Xml | Json) {
+    if c.ty is (Xml | Json | Vector(_)) {
       raise err(
         421,
         "The \{c.ty.base_name()} data type cannot be selected as DISTINCT because it is not comparable.",
@@ -491,7 +507,7 @@ fn xml_set_op_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
   for c in columns {
-    if c.ty is (Xml | Json) {
+    if c.ty is (Xml | Json | Vector(_)) {
       raise err(
         5335,
         "The data type \{c.ty.base_name()} cannot be used as an operand to the UNION, INTERSECT or EXCEPT operators because it is not comparable.",

@@ -22,9 +22,10 @@ pub fn ObjectName::base(self : ObjectName) -> String {
 }
 
 ///|
-/// Syntactic type argument: a number kept as raw text, or `max`.
+/// Syntactic type argument: a raw number, `max`, or a vector base type.
 pub(all) enum TypeArg {
   Num(String)
+  Named(String)
   Max
 } derive(Eq, Debug)
 

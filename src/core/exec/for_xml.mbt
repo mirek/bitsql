@@ -138,6 +138,7 @@ fn xml_value(
   ty : @types.SqlType,
 ) -> XVal raise @types.SqlError {
   match v {
+    Vector(_) => raise @types.not_supported("FOR XML serialization of vectors")
     Variant(inner, base) => xml_value(inner, base)
     Xml(x) => XNodes(x)
     String(s) => XText(s)

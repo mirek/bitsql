@@ -27,6 +27,39 @@ pub fn cast(
   if from is Xml || to is Xml {
     return cast_xml(v, from, to, style)
   }
+  if from is Vector(_) || to is Vector(_) {
+    return match (v, to) {
+      (Null, _) => Null
+      (String(s), Vector(n)) => Vector(vector_parse(s, n))
+      (Vector(data), Vector(n)) => {
+        if data.dimensions() != n {
+          raise sql_error(
+            42204,
+            "The vector dimensions \{data.dimensions()} and \{n} do not match.",
+            state=1,
+          )
+        }
+        v
+      }
+      (Vector(data), _) => {
+        let text = data.to_text()
+        let length = match to {
+          Char(n, _)
+          | NChar(n, _)
+          | VarChar(Some(n), _)
+          | NVarChar(Some(n), _) => n
+          _ => text.length()
+        }
+        if text.length() > length {
+          raise sql_error(
+            42211, "Truncation of vector is not allowed during the conversion. Ensure the vector size is appropriate before conversion.",
+          )
+        }
+        cast(String(text), NVarChar(None, default_collation), to)
+      }
+      _ => raise internal("vector conversion")
+    }
+  }
   if from is Json || to is Json {
     return match (v, to) {
       (Null, _) => Null
@@ -77,6 +110,7 @@ pub fn cast(
     FGuid => to_guid(v, from)
     FVariant => raise internal("variant target")
     FXml => raise internal("xml target")
+    FVector => raise internal("vector target")
     FJson => raise internal("json target")
   }
 }

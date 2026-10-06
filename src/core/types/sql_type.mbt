@@ -55,6 +55,8 @@ pub(all) enum SqlType {
   /// the SQL Server 2025 json type (values are `Value::String` holding the
   /// canonical text, json_type.mbt)
   Json
+  /// Native SQL Server 2025 float32 vector, with fixed dimensions.
+  Vector(Int)
   /// deprecated LOB types (lob.mbt): text and ntext keep `Value::String`,
   /// image `Value::Binary`
   Text(Collation)
@@ -79,6 +81,7 @@ pub(all) enum TypeFamily {
   FVariant
   FXml
   FJson
+  FVector
 } derive(Debug, Eq)
 
 ///|
@@ -102,6 +105,7 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
     UniqueIdentifier => FGuid
     Variant => FVariant
     Xml => FXml
+    Vector(_) => FVector
     Json => FJson
   }
 }
@@ -165,6 +169,7 @@ pub fn SqlType::base_name(self : SqlType) -> String {
     RowVersion => "timestamp"
     Variant => "sql_variant"
     Xml => "xml"
+    Vector(_) => "vector"
     Json => "json"
     Text(_) => "text"
     NText(_) => "ntext"
@@ -183,6 +188,7 @@ pub fn SqlType::to_sql(self : SqlType) -> String {
   }
 
   match self {
+    Vector(n) => "vector(\{n})"
     Decimal(p, s) | Numeric(p, s) => "\{self.base_name()}(\{p},\{s})"
     Char(n, _) | NChar(n, _) | Binary(n) => "\{self.base_name()}(\{n})"
     VarChar(n, _) | NVarChar(n, _) | VarBinary(n) =>
@@ -237,6 +243,7 @@ pub fn SqlType::precision_scale(self : SqlType) -> (Int, Int)? {
 /// captured message texts.
 pub fn SqlType::is_valid(self : SqlType) -> Bool {
   match self {
+    Vector(n) => n >= 1 && n <= 1998
     Decimal(p, s) | Numeric(p, s) => p >= 1 && p <= 38 && s >= 0 && s <= p
     Char(n, _) | Binary(n) | VarChar(Some(n), _) | VarBinary(Some(n)) =>
       n >= 1 && n <= 8000

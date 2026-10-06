@@ -9,6 +9,9 @@ fn call_more(
   args : Array[@ir.Expr],
   e : @ir.Expr,
 ) -> @types.Value raise @types.SqlError {
+  if call_vector(name, v, args) is Some(result) {
+    return result
+  }
   if name == "ROWCOUNT_BIG" {
     return BigInt(ctx.rt.rowcount)
   }

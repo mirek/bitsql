@@ -401,6 +401,9 @@ fn aborts_batch(
   n == 8169 ||
   n == 8672 ||
   n == 529 ||
+  // Native vector input overflow aborts following statements (vector-json).
+  n == 42241 ||
+  (n == 42204 && e.state() == 4) ||
   // USE of a missing database, also inside dynamic SQL (captured: corpus
   // orm/dynamic-use)
   n == 911 ||

@@ -1,0 +1,323 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": {
+    "17-small": {
+      "case": "8c5e1e5e606cb405",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"i","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+                {"name":"a","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+                {"name":"b","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+              ],
+              "rows": [
+                [0,1.2924799919128418,-9.818129539489746],
+                [1,0.7570400238037109,-8.409460067749023],
+                [2,-0.4812699854373932,7.394909858703613],
+                [3,-1.718999981880188,-3.7759499549865723],
+                [4,9.230910301208496,4.630189895629883],
+                [5,2.6762900352478027,5.274400234222412],
+                [6,-2.0711801052093506,6.411089897155762],
+                [7,6.4905500411987305,-3.6618199348449707],
+                [8,-0.9851599931716919,9.352959632873535],
+                [9,6.378940105438232,-0.9311000108718872],
+                [10,-3.007080078125,8.161290168762207],
+                [11,8.268969535827637,8.052499771118164],
+                [12,6.749080181121826,4.4868998527526855],
+                [13,2.554719924926758,-5.780660152435303],
+                [14,1.6668299436569214,-9.155799865722656],
+                [15,-7.926770210266113,3.073499917984009],
+                [16,-9.626460075378418,0.6435199975967407]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":17,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":17,"curCmd":193}
+          ],
+          "stream": [
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"COLMETADATA","columns":3},
+            {"name":"ROW","count":17},
+            {"name":"DONE","status":16,"curCmd":193}
+          ],
+          "rowCount": 18
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "32-small": {
+      "case": "e1e0cd539bd31cc5",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"i","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+                {"name":"a","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+                {"name":"b","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+              ],
+              "rows": [
+                [0,8.177909851074219,-1.6915600299835205],
+                [1,-9.212909698486328,-7.116690158843994],
+                [2,2.8485701084136963,-9.060460090637207],
+                [3,-3.9983301162719727,4.087790012359619],
+                [4,9.190970420837402,2.2482099533081055],
+                [5,-9.357449531555176,5.565810203552246],
+                [6,-8.015439987182617,8.567259788513184],
+                [7,6.27977991104126,3.0357799530029297],
+                [8,7.112189769744873,-1.2830499410629272],
+                [9,5.7685699462890625,3.458590030670166],
+                [10,-2.9235498905181885,-0.13139000535011292],
+                [11,-7.8091301918029785,0.2564699947834015],
+                [12,2.969870090484619,7.34250020980835],
+                [13,-0.09557999670505524,0.9611499905586243],
+                [14,0.6210200190544128,-5.272960186004639],
+                [15,-0.33355000615119934,-9.837349891662598],
+                [16,-1.511620044708252,-8.970970153808594],
+                [17,-7.495059967041016,6.828780174255371],
+                [18,3.517240047454834,3.142359972000122],
+                [19,0.3803200125694275,-9.217220306396484],
+                [20,1.3299800157546997,7.698339939117432],
+                [21,-7.731919765472412,7.101830005645752],
+                [22,-4.170179843902588,-8.62516975402832],
+                [23,-1.7799299955368042,-4.816830158233643],
+                [24,1.5743199586868286,8.065279960632324],
+                [25,-6.296949863433838,-0.6077100038528442],
+                [26,6.963490009307861,-9.123760223388672],
+                [27,-5.508570194244385,-2.983030080795288],
+                [28,-3.019929885864258,6.097040176391602],
+                [29,8.640819549560547,4.379350185394287],
+                [30,0.31060001254081726,-7.289090156555176],
+                [31,-8.050169944763184,-5.006309986114502]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":32,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":32,"curCmd":193}
+          ],
+          "stream": [
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"COLMETADATA","columns":3},
+            {"name":"ROW","count":32},
+            {"name":"DONE","status":16,"curCmd":193}
+          ],
+          "rowCount": 33
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "65-mixed": {
+      "case": "b2798d5504ad859c",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {"name":"i","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+                {"name":"a","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null},
+                {"name":"b","type":"FloatN","length":8,"precision":null,"scale":null,"flags":1,"collation":null}
+              ],
+              "rows": [
+                [0,6.261390209197998,-1.3832500422861216e-10],
+                [1,-5.9077301025390625,6.030630111694336],
+                [2,-1.5549900256317528e-10,-4.5887199595640027e-10],
+                [3,-3.923829872132245e-10,-61223899136],
+                [4,90753998848,-6.873719926581146e-10],
+                [5,2.8343799114227295,-99280699392],
+                [6,49789898752,-66240798720],
+                [7,53859500032,42767101952],
+                [8,9.97350025177002,32842899456],
+                [9,6.280789777157736e-10,-9806799872],
+                [10,-9.029120445251465,-5.201060138126934e-10],
+                [11,-71610302464,93806198784],
+                [12,-1.517429931707781e-10,-1.7906300053827096e-10],
+                [13,-3.8419500913988713e-10,-49690001408],
+                [14,-2.1949500550455525e-10,-8.14352035522461],
+                [15,-38302199808,9.659459898614386e-10],
+                [16,-5.057079792022705,-85064802304],
+                [17,-6.155129909515381,-8.602880074981556e-10],
+                [18,2.7963001358877193e-10,5.2279999773752195e-11],
+                [19,6.481090109033971e-10,4.514149887224761e-10],
+                [20,-0.24417999386787415,40611700736],
+                [21,-0.48622000217437744,-3.5021300315856934],
+                [22,-51584700416,1.955400008579744e-10],
+                [23,3.502269983291626,-2.5556701199747067e-10],
+                [24,-4.696199893951416,7.396770000457764],
+                [25,4.6402997970581055,1.3214800357818604],
+                [26,9.838680267333984,-2.4688701083519504e-10],
+                [27,-7.379399868945313e-10,1.1971200419846895e-10],
+                [28,4.717419788136112e-10,4.051539897918701],
+                [29,-6.562339782714844,87569596416],
+                [30,-24512800768,-2.643850088119507],
+                [31,-8.377349853515625,-2.2861700033072196e-10],
+                [32,-8.162639617919922,9.043579773937438e-10],
+                [33,81726398464,9.61525969955801e-10],
+                [34,9.154959678649902,1.0393499949579166e-10],
+                [35,20073598976,-1.3633399964518844e-10],
+                [36,2.786900043487549,27799099392],
+                [37,7.956389904022217,-3.388780117034912],
+                [38,-1.9397499561309814,-60559400960],
+                [39,-8.040069580078125,58070401024],
+                [40,-9.376109888492579e-10,-4.851379853398896e-10],
+                [41,-5.022680049648898e-10,44422000640],
+                [42,-4.688679999809153e-10,-72709799936],
+                [43,-2.935079956856157e-10,-88963801088],
+                [44,-2.615269899368286,-83436699648],
+                [45,85631696896,-1.8425200254412744e-10],
+                [46,8057699840,55867498496],
+                [47,-84633796608,-83383902208],
+                [48,1.5577600002288818,-60285300736],
+                [49,-9.300399894662803e-10,-86330802176],
+                [50,6.072150005032029e-10,9.164510261783221e-10],
+                [51,3.1456298676957317e-10,-7.164939880371094],
+                [52,-6.069060254354497e-10,-9.111920356750488],
+                [53,-4.48729997604147e-10,7.689229965209961],
+                [54,7.928829814929372e-10,4.729519844055176],
+                [55,9943000064,4.924610137939453],
+                [56,-2.803400012130197e-10,59568898048],
+                [57,-56272801792,-7.7729902267456055],
+                [58,2.998270034790039,-1.590149998664856],
+                [59,-2.3669800758361816,-43164200960],
+                [60,-17456500736,-8622600192],
+                [61,-9.670969580710675e-10,0.9299200177192688],
+                [62,-53347901440,-1.497439949815771e-10],
+                [63,-5.82958984375,7.197250018187162e-10],
+                [64,9.993929862976074,-51445501952]
+              ]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":65,"more":false}],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":65,"curCmd":193}
+          ],
+          "stream": [
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"COLMETADATA","columns":3},
+            {"name":"ROW","count":65},
+            {"name":"DONE","status":16,"curCmd":193}
+          ],
+          "rowCount": 66
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    }
+  }
+}

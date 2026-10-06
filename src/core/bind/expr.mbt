@@ -17,6 +17,12 @@ pub fn coerce(
   if e.ty == ty {
     return e
   }
+  if e.ty is Vector(source) && ty is Vector(target) && source != target {
+    raise err(
+      42204,
+      "The vector dimensions \{source} and \{target} do not match.",
+    )
+  }
   if !@types.can_convert_implicitly(e.ty, ty) {
     raise @types.implicit_conversion_error(e.ty, ty)
   }
@@ -471,6 +477,12 @@ fn conversion(
   // image)) is 529, msduck concat-text-conversion#148)
   if a.kind is Lit(Null) && a.ty is Int && !(t is Int) {
     return { kind: Lit(Null), ty: t, nullable: true, }
+  }
+  if a.ty is Vector(source) && t is Vector(target) && source != target {
+    raise err(
+      42204,
+      "The vector dimensions \{source} and \{target} do not match.",
+    )
   }
   if !@types.can_convert_explicitly(a.ty, t) {
     raise @types.explicit_conversion_error(a.ty, t)

@@ -1,0 +1,95 @@
+{
+  "source": "Cancellation probes identify distance reduction trees: opposite large components and unit background",
+  "cases": [
+    {
+      "name": "3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(3)),CAST('[1,1,1]' AS vector(3))) AS int) AS retained_ones FROM GENERATE_SERIES(0,2) i CROSS JOIN GENERATE_SERIES(0,2) j CROSS JOIN GENERATE_SERIES(0,2) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(4)),CAST('[1,1,1,1]' AS vector(4))) AS int) AS retained_ones FROM GENERATE_SERIES(0,3) i CROSS JOIN GENERATE_SERIES(0,3) j CROSS JOIN GENERATE_SERIES(0,3) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(8)),CAST('[1,1,1,1,1,1,1,1]' AS vector(8))) AS int) AS retained_ones FROM GENERATE_SERIES(0,7) i CROSS JOIN GENERATE_SERIES(0,7) j CROSS JOIN GENERATE_SERIES(0,7) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "9",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(9)),CAST('[1,1,1,1,1,1,1,1,1]' AS vector(9))) AS int) AS retained_ones FROM GENERATE_SERIES(0,8) i CROSS JOIN GENERATE_SERIES(0,8) j CROSS JOIN GENERATE_SERIES(0,8) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(16)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(16))) AS int) AS retained_ones FROM GENERATE_SERIES(0,15) i CROSS JOIN GENERATE_SERIES(0,15) j CROSS JOIN GENERATE_SERIES(0,15) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "17",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(17)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(17))) AS int) AS retained_ones FROM GENERATE_SERIES(0,16) i CROSS JOIN GENERATE_SERIES(0,16) j CROSS JOIN GENERATE_SERIES(0,16) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(32)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(32))) AS int) AS retained_ones FROM GENERATE_SERIES(0,31) i CROSS JOIN GENERATE_SERIES(0,31) j CROSS JOIN GENERATE_SERIES(0,31) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "33",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(33)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(33))) AS int) AS retained_ones FROM GENERATE_SERIES(0,32) i CROSS JOIN GENERATE_SERIES(0,32) j CROSS JOIN GENERATE_SERIES(0,32) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(64)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(64))) AS int) AS retained_ones FROM GENERATE_SERIES(0,63) i CROSS JOIN GENERATE_SERIES(0,63) j CROSS JOIN GENERATE_SERIES(0,63) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    },
+    {
+      "name": "65",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT i.value AS i,j.value AS j,CAST(-VECTOR_DISTANCE('dot',CAST('['+STRING_AGG(CASE WHEN k.value=i.value THEN '1e30' WHEN k.value=j.value THEN '-1e30' ELSE '1' END,',') WITHIN GROUP (ORDER BY k.value)+']' AS vector(65)),CAST('[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]' AS vector(65))) AS int) AS retained_ones FROM GENERATE_SERIES(0,64) i CROSS JOIN GENERATE_SERIES(0,64) j CROSS JOIN GENERATE_SERIES(0,64) k WHERE i.value<j.value GROUP BY i.value,j.value ORDER BY i.value,j.value;"
+        }
+      ]
+    }
+  ]
+}

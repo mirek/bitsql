@@ -411,6 +411,7 @@ fn type_ids(t : @types.SqlType) -> (Int, Int, Int, Int, Int) {
     Xml => (241, 241, -1, 0, 0)
     // captured: json4 (sys.columns, sys.types)
     Json => (244, 244, -1, 0, 0)
+    Vector(n) => (165, 255, 8 + 4 * n, 0, 0)
     // sys.types: the 16-byte text pointer
     Text(_) => (35, 35, 16, 0, 0)
     NText(_) => (99, 99, 16, 0, 0)
@@ -1312,6 +1313,10 @@ fn Session::fill_type_info(
       r["character_octet_length"] = i(-1)
       r["character_set_name"] = s("UNICODE")
       r["collation_name"] = s(c.name)
+    }
+    Vector(n) => {
+      r["character_maximum_length"] = i(8 + 4 * n)
+      r["character_octet_length"] = i(8 + 4 * n)
     }
     Binary(n) | VarBinary(Some(n)) => {
       r["character_maximum_length"] = i(n)

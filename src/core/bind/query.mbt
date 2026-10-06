@@ -1043,6 +1043,9 @@ fn Grouping::add_key(
     )
   }
   let b = bind_expr(self.inner, e)
+  if b.ty is Vector(_) {
+    raise vector_not_comparable()
+  }
   if b.ty is Xml {
     raise xml_not_comparable()
   }

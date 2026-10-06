@@ -66,7 +66,7 @@ pub fn TypeName::to_sexp(self : TypeName) -> String {
   } else {
     let args = self.args.map(a => {
       match a {
-        Num(n) => n
+        Num(n) | Named(n) => n
         Max => "max"
       }
     })

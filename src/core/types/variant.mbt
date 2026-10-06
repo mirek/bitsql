@@ -16,7 +16,8 @@ pub fn variant_can_hold(t : SqlType) -> Bool {
   | VarBinary(None)
   | RowVersion
   | Xml
-  | Json))
+  | Json
+  | Vector(_)))
 }
 
 ///|
@@ -83,7 +84,7 @@ pub fn assign(
 pub fn check_assign(from : SqlType, to : SqlType) -> Unit raise SqlError {
   // xml never converts implicitly to another type, and only strings and
   // binary convert to it (captured: xml/type 257/206)
-  if (from is (Xml | Json) || to is (Xml | Json)) &&
+  if (from is (Xml | Json) || to is (Xml | Json | Vector(_))) &&
     !can_convert_implicitly(from, to) {
     raise implicit_conversion_error(from, to)
   }
@@ -135,7 +136,7 @@ fn variant_rank(t : SqlType) -> Int {
     FString => 3
     FBinary => 2
     FGuid => 1
-    FVariant | FXml | FJson => 0
+    FVariant | FXml | FJson | FVector => 0
   }
 }
 
@@ -333,6 +334,7 @@ fn fixed_storage(t : SqlType) -> Int {
     VarChar(n, _) | VarBinary(n) => n.unwrap_or(0)
     NVarChar(n, _) => n.unwrap_or(0) * 2
     RowVersion => 8
+    Vector(n) => 8 + 4 * n
     Variant | Xml | Json | Text(_) | NText(_) | Image => 0
   }
 }

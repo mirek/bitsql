@@ -208,7 +208,7 @@ fn describe_facts(
   let c = bq.columns[j]
   // captured (json4): json is described as varchar(max)
   // Latin1_General_100_BIN2_UTF8, the type TDS 7.4 clients receive
-  let c = if c.ty is Json {
+  let c = if c.ty is (Json | Vector(_)) {
     { ..c, ty: VarChar(None, @types.json_collation), }
   } else {
     c

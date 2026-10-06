@@ -276,6 +276,8 @@ pub fn variant_can_hold(SqlType) -> Bool
 
 pub fn variant_data_length(Value, SqlType) -> Int
 
+pub fn vector_parse(String, Int) -> VectorData raise SqlError
+
 pub fn xml_error(@xml.XmlError) -> SqlError
 
 // Errors
@@ -435,6 +437,7 @@ pub(all) enum SqlType {
   Variant
   Xml
   Json
+  Vector(Int)
   Text(Collation)
   NText(Collation)
   Image
@@ -467,6 +470,7 @@ pub(all) enum TypeFamily {
   FVariant
   FXml
   FJson
+  FVector
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Value {
@@ -490,11 +494,21 @@ pub(all) enum Value {
   Guid(Bytes)
   Variant(Value, SqlType)
   Xml(@xml.Xml)
+  Vector(VectorData)
 } derive(Eq, @debug.Debug)
 pub fn Value::as_decimal(Self) -> Decimal?
 pub fn Value::as_int64(Self) -> Int64?
 pub fn Value::int64_or(Self, Int64) -> Int64
 pub fn Value::is_null(Self) -> Bool
+
+pub struct VectorData {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn VectorData::dimensions(Self) -> Int
+pub fn VectorData::distance(Self, Self, String) -> Double raise SqlError
+pub fn VectorData::norm(Self, String) -> Double raise SqlError
+pub fn VectorData::normalize(Self, String) -> Self raise SqlError
+pub fn VectorData::to_text(Self) -> String
 
 // Type aliases
 pub type Arithmetic = (Value, Value) -> Value raise SqlError

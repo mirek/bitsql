@@ -91,7 +91,7 @@ fn def_type(t : @ast.TypeName) -> String {
     t.args
     .map(a => {
       match a {
-        Num(n) => n
+        Num(n) | Named(n) => n
         Max => "max"
       }
     })

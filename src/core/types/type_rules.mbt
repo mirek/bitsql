@@ -15,6 +15,8 @@ pub fn precedence(t : SqlType) -> Int {
     // captured (json4): every other type converts to json in CASE /
     // COALESCE / UNION ALL (206 "int is incompatible with json", also for
     // sql_variant and xml)
+    // Native vectors have special common-type rules below.
+    Vector(_) => -1
     Json => 29
     Variant => 28
     Xml => 27
@@ -96,6 +98,8 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
   match (ff, tf) {
     // json: only character types convert to it implicitly; it converts to
     // nothing implicitly (captured json4: 257 to strings, 206 otherwise)
+    (FString, FVector) | (FVector, FString | FJson) => true
+    (FVector, _) | (_, FVector) => false
     (FString, FJson) => true
     (FJson, _) | (_, FJson) => false
     // sql_variant: anything it can hold converts to it implicitly; it
@@ -138,6 +142,7 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     (FVariant, _) => true
     (FXml, FString | FBinary) => true
     // captured json4: json converts explicitly to character types only
+    (FVector, FString) => true
     (FJson, FString) => true
     (FString, FBinary) => true
     (FDateTime, t) if is_numeric_family(t) => is_legacy_datetime(from)
@@ -358,6 +363,15 @@ pub fn arith_result_type(
     raise variant_arith_error(op, a, b)
   }
   // captured (xml/type, json4): xml + xml is 8117, xml + nvarchar 402
+  if a is Vector(_) || b is Vector(_) {
+    if a is Vector(_) && b is Vector(_) {
+      raise invalid_operand_error(a, op)
+    }
+    if op is Add && (a.family() == FString || b.family() == FString) {
+      raise invalid_operand_error(if a is Vector(_) { a } else { b }, op)
+    }
+    raise not_supported("arithmetic between vectors and other types")
+  }
   if a is (Xml | Json) || b is (Xml | Json) {
     if a == b {
       raise invalid_operand_error(a, op)
@@ -492,6 +506,32 @@ fn string_len_units_bin(t : SqlType) -> Int {
 /// the collation of `a` is kept (collation precedence and 468 conflicts are
 /// the binder's job).
 pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
+  // Vector/string common types use the native byte length, not the JSON
+  // display length. Binary versus varbinary also has distinct clash direction.
+  // Captured: sql2025/vector-{combinations,precedence}.
+  if a is Vector(_) || b is Vector(_) {
+    if a is Vector(x) && b is Vector(y) {
+      return Vector(max_int(x, y))
+    }
+    let vector = if a is Vector(_) { a } else { b }
+    let other = if a is Vector(_) { b } else { a }
+    guard vector is Vector(n) else { raise internal("vector common type") }
+    match other {
+      Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _) =>
+        return common_type(
+          VarChar(
+            Some(8 + 4 * n),
+            other.collation().unwrap_or(default_collation),
+          ),
+          other,
+        )
+      Json => return Json
+      Binary(length) => raise type_clash_error(vector, VarBinary(Some(length)))
+      VarBinary(_) => raise type_clash_error(other, vector)
+      Int | Xml | Variant => raise type_clash_error(vector, other)
+      _ => raise not_supported("common type of vector and \{other.to_sql()}")
+    }
+  }
   // a LOB wins by precedence (captured: CASE .. text .. ELSE 'x' is text)
   if a.is_lob() || b.is_lob() {
     let hi = higher(a, b)

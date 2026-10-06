@@ -1426,7 +1426,7 @@ fn odbc_column(
       (-150, "sql_variant", 0, 8000, None, Some(10), -150, None, Some(8000), 39)
     // probed on SQL Server 17.0.5005 (sp_columns of xml NULL / NOT NULL);
     // json columns are skipped by the caller
-    Xml | Json =>
+    Xml | Json | Vector(_) =>
       (
         -10,
         "xml",
@@ -1522,7 +1522,7 @@ fn Session::sp_columns(
         raise @types.not_supported("sp_columns of a column of an alias type")
       }
       // captured (json4): sp_columns leaves json columns out
-      if c.ty is Json {
+      if c.ty is (Json | Vector(_)) {
         continue
       }
       let (dt_, tn, prec, len, scale, radix, sqlt, sub, octet, ss) = odbc_column(

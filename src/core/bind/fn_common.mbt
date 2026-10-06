@@ -155,7 +155,7 @@ fn string_len(t : @types.SqlType) -> Int? {
     | SmallDateTime
     | UniqueIdentifier => Some(40)
     // variant and xml arguments are rejected before (fn_variant.mbt guard)
-    Variant | Xml | Json => None
+    Variant | Xml | Json | Vector(_) => None
     // LOB arguments count as max (captured: CONCAT_WS('', text) is
     // varchar(max)); functions that reject them check first (lob_args)
     Text(_) | NText(_) | Image => None

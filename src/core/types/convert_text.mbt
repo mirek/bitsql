@@ -66,6 +66,7 @@ pub fn render(
   dates? : DateSettings = default_date_settings,
 ) -> String raise SqlError {
   match v {
+    Vector(data) => data.to_text()
     Null => raise internal("render of NULL")
     String(s) => s
     Bit(b) => if b { "1" } else { "0" }

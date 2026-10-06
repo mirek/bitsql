@@ -6,6 +6,7 @@ fn precheck_batch(
   stmts : Array[@ast.Stmt],
   params : Map[String, @bind.VarInfo],
   in_proc? : Bool = false,
+  before? : Array[(@types.SqlError, Int)] = [],
   set_column_name? : (@ast.TableRef, String) -> String = (_, n) => n,
 ) -> (@types.SqlError, Int)? {
   let declared : Set[String] = Set([])
@@ -37,6 +38,33 @@ fn precheck_batch(
     walk_expr(e, fn(x) {
       match x.kind {
         Var(n) => check_name(n, x.span.line)
+        // The native function advertises 3..4 but rejects four arguments;
+        // nonempty calls outside that range emit both 174 and 189.
+        // Captured: sql2025/vector-distance-{special,options,extremes}.
+        Call(c) if failure is None &&
+          c.name.parts.length() == 1 &&
+          c.name.base().to_lower() == "vector_distance" &&
+          c.args.length() != 3 => {
+          let fixed = @types.sql_error(
+            174,
+            "The vector_distance function requires 3 argument(s).",
+            state=6,
+            severity=15,
+          )
+          let ranged = @types.sql_error(
+            189,
+            "The vector_distance function requires 3 to 4 arguments.",
+            severity=15,
+          )
+          if c.args.length() == 4 {
+            failure = Some((fixed, x.span.line))
+          } else {
+            if c.args.length() > 0 {
+              before.push((fixed, x.span.line))
+            }
+            failure = Some((ranged, x.span.line))
+          }
+        }
         // captured: ranking and offset functions with the wrong number of
         // arguments are 4114 / 10755 (class 15) for the whole batch
         // (msduck-runs count-ranking-declarations#054, tail/window-arity)

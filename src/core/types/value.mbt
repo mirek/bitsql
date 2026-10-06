@@ -50,6 +50,7 @@ pub(all) enum Value {
   Variant(Value, SqlType)
   /// xml: a parsed fragment, or a `nodes()` context reference into one
   Xml(@xml.Xml)
+  Vector(VectorData)
 } derive(Debug, Eq)
 
 ///|

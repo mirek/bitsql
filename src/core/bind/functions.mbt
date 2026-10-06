@@ -102,7 +102,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       // OPENJSON and ISNULL(CAST(NULL AS nvarchar(5)), k nvarchar(10)) are
       // flags 33; msduck openjson-isnull carrier-as-replacement)
       let cut = !known(b[0]) && try_fold(b[1]) is None && truncates(b[1].ty, ty)
-      let nullable = ty is (Xml | Json | Image) ||
+      let nullable = ty is (Xml | Json | Image | Vector(_)) ||
         !(known(b[0]) || known(b[1])) ||
         cut
       mk(Call(IsNull, [first, second]), ty, nullable)

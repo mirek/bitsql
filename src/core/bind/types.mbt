@@ -128,8 +128,49 @@ pub fn resolve_type(
       }
       Json
     }
+    "vector" if t.schema is None || t.schema.unwrap().name.to_lower() == "sys" => {
+      match t.args.get(1) {
+        Some(Named(base)) if base.to_lower() == "float32" => ()
+        Some(Named(base)) =>
+          raise @types.sql_error(
+            195,
+            "'\{base.to_lower()}' is not a recognized vector base type.",
+            severity=15,
+          )
+        Some(_) =>
+          raise @types.sql_error(
+            2715,
+            "Column, parameter, or variable #1: Cannot find data type \{t.name}.",
+            state=3,
+          )
+        None => ()
+      }
+      guard len is Some(n) else {
+        raise @types.sql_error(
+          2715,
+          "Column, parameter, or variable #1: Cannot find data type \{t.name}.",
+          state=3,
+        )
+      }
+      if n < 1 {
+        raise @types.sql_error(
+          1001,
+          "Line 1: Length or precision specification \{n} is invalid.",
+          severity=15,
+        )
+      }
+      if n > 1998 {
+        raise @types.sql_error(
+          2717,
+          "The size (\{n}) given to the type 'vector' exceeds the maximum allowed (1998).",
+          state=3,
+          severity=15,
+        )
+      }
+      Vector(n)
+    }
     // CLR system types exist in SQL Server but are not emulated
-    "hierarchyid" | "geometry" | "geography" | "vector" if t.schema is None ||
+    "hierarchyid" | "geometry" | "geography" if t.schema is None ||
       t.schema.unwrap().name.to_lower() == "sys" =>
       raise @types.not_supported("the \{t.name.to_lower()} data type")
     _ =>

@@ -876,10 +876,11 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     t.columns[ci].name
   }
   let signature = var_signature(known)
+  let before : Array[(@types.SqlError, Int)] = []
   let precheck = if self.server.prechecked(text, stmts, signature) {
     None
   } else {
-    let r = precheck_batch(stmts, known, set_column_name~)
+    let r = precheck_batch(stmts, known, set_column_name~, before~)
     if r is None {
       self.server.remember_prechecked(text, stmts, signature)
     }
@@ -887,6 +888,9 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
   }
   match precheck {
     Some((e0, line)) => {
+      for (error, error_line) in before {
+        self.message(error, error_line)
+      }
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
       // column 207; msduck count-null-compilation)

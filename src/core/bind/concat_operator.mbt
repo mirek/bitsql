@@ -12,6 +12,16 @@ fn bind_concat_operator(
   }
   let a = left.ty
   let b = right.ty
+  if a is Vector(_) || b is Vector(_) {
+    if (a is Vector(_) && b is Vector(_)) ||
+      a.family() == FString ||
+      b.family() == FString {
+      raise err(
+        8117, "Operand data type vector is invalid for concat operator.",
+      )
+    }
+    raise @types.not_supported("vector concatenation with other types")
+  }
   let null_a = is_untyped_null(left)
   let null_b = is_untyped_null(right)
   let binary_a = a.family() == FBinary

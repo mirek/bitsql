@@ -924,10 +924,20 @@ fn Parser::type_name(self : Parser) -> @ast.TypeName raise @ast.SyntaxError {
       if t.kind is IntNum {
         self.pos += 1
         args.push(Num(t.text))
+      } else if name.name.to_lower() == "vector" &&
+        args.length() == 1 &&
+        t.kind is Word {
+        self.pos += 1
+        args.push(Named(t.text))
       } else if t.is_kw("MAX") {
         self.pos += 1
         args.push(Max)
       } else {
+        raise self.error()
+      }
+      if name.name.to_lower() == "vector" &&
+        args.length() == 2 &&
+        self.is_punct(",") {
         raise self.error()
       }
       if !self.eat_punct(",") {

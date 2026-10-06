@@ -113,12 +113,18 @@ fn xml_compile_error(e : @types.SqlError) -> Bool {
     | 5335
     | 13636 => true
     n if n >= 6800 && n < 6900 => true
+    42204 if e.state() == 1 => true
+    189 if m.has_prefix("The vector_distance function") => true
     174 =>
+      m.has_prefix("The vector_distance function") ||
+      m.has_prefix("The vector_norm function") ||
+      m.has_prefix("The vector_normalize function") ||
+      m.has_prefix("The vectorproperty function") ||
       m.has_prefix("The value function") ||
       m.has_prefix("The query function") ||
       m.has_prefix("The exist function")
     402 | 8116 | 8117 | 257 | 206 | 529 =>
-      m.contains("xml") || m.contains("json")
+      m.contains("xml") || m.contains("json") || m.contains("vector")
     _ => false
   }
 }
