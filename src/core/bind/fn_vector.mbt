@@ -23,14 +23,14 @@ fn bind_vector_fn(
           if i == 0 {
             VarChar(Some(1), env.collation)
           } else {
-            Vector(1)
+            Vector(1, Float32)
           },
         )
       }
       let valid = if i == 0 {
         arg.ty is (Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _))
       } else {
-        arg.ty is Vector(_)
+        arg.ty is Vector(_, _)
       }
       if !valid {
         raise bad_arg_type(arg.ty, i + 1, "vector_distance")
@@ -49,9 +49,9 @@ fn bind_vector_fn(
     raise bad_arg_type(VarBinary(Some(1)), 1, "vectorproperty", state=36)
   }
   if bare {
-    source = @ir.Expr::lit(Null, Vector(1))
+    source = @ir.Expr::lit(Null, Vector(1, Float32))
   }
-  if !(source.ty is Vector(_)) {
+  if !(source.ty is Vector(_, _)) {
     raise bad_arg_type(source.ty, 1, name.to_lower())
   }
   let mut option = bind_expr(env, call.args[1])
@@ -60,6 +60,9 @@ fn bind_vector_fn(
   }
   if !(option.ty is (Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _))) {
     raise bad_arg_type(option.ty, 2, name.to_lower())
+  }
+  if source.ty is Vector(_, Float16) && name != "VECTORPROPERTY" {
+    raise @types.vector_half_norm_error(name.to_lower())
   }
   let ty : @types.SqlType = match name {
     "VECTORPROPERTY" => Variant

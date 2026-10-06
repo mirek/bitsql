@@ -20,7 +20,9 @@ fn module_parameters(
 ) -> Array[(String, @types.SqlType?, Bool, Bool)]? {
   let stmts = @parse.parse_batch(m.definition) catch { _ => return None }
   let resolve = (t : @ast.TypeName) => {
-    try @bind.resolve_type(t, Declaration, @types.default_collation) catch {
+    try
+      @bind.resolve_type(t, Declaration, @types.default_collation, preview=true)
+    catch {
       _ => None
     } noraise {
       ty => Some(ty)

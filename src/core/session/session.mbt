@@ -821,6 +821,10 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       // errors found by the parser's error recovery come first (captured:
       // tail/tablevar-hints, 156 then 319)
       let all = @parse.batch_errors(text)
+      if all.length() == 1 &&
+        vector_decl_reference_error(text, all[0]) is Some(extra) {
+        all.push(extra)
+      }
       if all.length() > 1 && self.try_depth == 0 {
         for extra in all[:all.length() - 1] {
           self.message(
@@ -875,14 +879,15 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     t.columns[ci].name
   }
+  let preview = self.preview_enabled()
   let signature = var_signature(known)
   let before : Array[(@types.SqlError, Int)] = []
-  let precheck = if self.server.prechecked(text, stmts, signature) {
+  let precheck = if self.server.prechecked(text, stmts, signature, preview) {
     None
   } else {
-    let r = precheck_batch(stmts, known, set_column_name~, before~)
+    let r = precheck_batch(stmts, known, set_column_name~, before~, preview~)
     if r is None {
-      self.server.remember_prechecked(text, stmts, signature)
+      self.server.remember_prechecked(text, stmts, signature, preview)
     }
     r
   }

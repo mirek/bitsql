@@ -778,7 +778,12 @@ fn bind_table_function(
           let jc : Array[@ir.OpenJsonColumn] = []
           let cs : Array[ColumnRef] = []
           for c in schema {
-            let ty = resolve_type(c.type_, Declaration, env.collation)
+            let ty = resolve_type(
+              c.type_,
+              Declaration,
+              env.collation,
+              preview=(env.catalog.preview_features)(),
+            )
             if c.as_json && !(ty is (NVarChar(None, _) | Json)) {
               raise err(
                 13618, "AS JSON option can be specified only for column of nvarchar(max) type in WITH clause.",
@@ -1043,7 +1048,7 @@ fn Grouping::add_key(
     )
   }
   let b = bind_expr(self.inner, e)
-  if b.ty is Vector(_) {
+  if b.ty is Vector(_, _) {
     raise vector_not_comparable()
   }
   if b.ty is Xml {

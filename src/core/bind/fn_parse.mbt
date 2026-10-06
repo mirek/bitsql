@@ -24,7 +24,12 @@ fn bind_parse(
   }
   // captured: a user alias type is 10761 naming it as written
   // (msduck parse-try-parse#076)
-  let t = resolve_type(tn, Conversion, env.collation) catch {
+  let t = resolve_type(
+    tn,
+    Conversion,
+    env.collation,
+    preview=(env.catalog.preview_features)(),
+  ) catch {
     e =>
       if (env.catalog.user_type)(tn) {
         let name = match tn.schema {

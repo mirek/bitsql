@@ -101,7 +101,7 @@ smoke_arm64_quick() {
   local bin=$1 log
   local -a sel=(smoke)
   mapfile -t -O 1 sel < <(sed 's/\s\+#\s.*$//' harness/allowlist.txt |
-    grep -E '^(analytic|conversion|msduck-runs/statistical)')
+    grep -E '^(analytic|conversion|msduck-runs/statistical|sql2025/vector)')
   log=$(cd harness && BITSQL_BIN="$bin" npm run --silent diff -- "${sel[@]}" 2>&1)
   local summary
   summary=$(grep -E '^emulator: ' <<<"$log")

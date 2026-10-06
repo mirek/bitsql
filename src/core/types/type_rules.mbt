@@ -16,7 +16,7 @@ pub fn precedence(t : SqlType) -> Int {
     // COALESCE / UNION ALL (206 "int is incompatible with json", also for
     // sql_variant and xml)
     // Native vectors have special common-type rules below.
-    Vector(_) => -1
+    Vector(_, _) => -1
     Json => 29
     Variant => 28
     Xml => 27
@@ -363,12 +363,12 @@ pub fn arith_result_type(
     raise variant_arith_error(op, a, b)
   }
   // captured (xml/type, json4): xml + xml is 8117, xml + nvarchar 402
-  if a is Vector(_) || b is Vector(_) {
-    if a is Vector(_) && b is Vector(_) {
+  if a is Vector(_, _) || b is Vector(_, _) {
+    if a is Vector(_, _) && b is Vector(_, _) {
       raise invalid_operand_error(a, op)
     }
     if op is Add && (a.family() == FString || b.family() == FString) {
-      raise invalid_operand_error(if a is Vector(_) { a } else { b }, op)
+      raise invalid_operand_error(if a is Vector(_, _) { a } else { b }, op)
     }
     raise not_supported("arithmetic between vectors and other types")
   }
@@ -509,18 +509,23 @@ pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
   // Vector/string common types use the native byte length, not the JSON
   // display length. Binary versus varbinary also has distinct clash direction.
   // Captured: sql2025/vector-{combinations,precedence}.
-  if a is Vector(_) || b is Vector(_) {
-    if a is Vector(x) && b is Vector(y) {
-      return Vector(max_int(x, y))
+  if a is Vector(_, _) || b is Vector(_, _) {
+    if a is Vector(x, first) && b is Vector(y, second) {
+      if first != second {
+        raise vector_base_conversion_error(Float16, Float32)
+      }
+      return Vector(max_int(x, y), first)
     }
-    let vector = if a is Vector(_) { a } else { b }
-    let other = if a is Vector(_) { b } else { a }
-    guard vector is Vector(n) else { raise internal("vector common type") }
+    let vector = if a is Vector(_, _) { a } else { b }
+    let other = if a is Vector(_, _) { b } else { a }
+    guard vector is Vector(n, base) else {
+      raise internal("vector common type")
+    }
     match other {
       Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _) =>
         return common_type(
           VarChar(
-            Some(8 + 4 * n),
+            Some(8 + base.bytes() * n),
             other.collation().unwrap_or(default_collation),
           ),
           other,

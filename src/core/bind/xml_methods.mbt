@@ -128,7 +128,12 @@ fn value_method_type(
   }
   let span : @ast.Span = { start: 0, end: 0, line: 0, col: 0, }
   let tn : @ast.TypeName = { schema: None, name, args, span, }
-  resolve_type(tn, Conversion, env.collation) catch {
+  resolve_type(
+    tn,
+    Conversion,
+    env.collation,
+    preview=(env.catalog.preview_features)(),
+  ) catch {
     _ => raise invalid()
   }
 }
@@ -293,8 +298,8 @@ fn xml_compare_check(
   a : @ir.Expr,
   b : @ir.Expr,
 ) -> Unit raise @types.SqlError {
-  if a.ty is Vector(_) || b.ty is Vector(_) {
-    if (a.ty is Vector(_) && b.ty is Vector(_)) ||
+  if a.ty is Vector(_, _) || b.ty is Vector(_, _) {
+    if (a.ty is Vector(_, _) && b.ty is Vector(_, _)) ||
       (
         op_name == "equal to" &&
         (a.ty.family() == FString || b.ty.family() == FString)
@@ -473,7 +478,7 @@ fn may_be_xml(e : @ast.Expr) -> Bool {
 /// ORDER BY an xml value: 305 (captured: xml/type#047).
 fn xml_sort_check(keys : Array[@ir.SortKey]) -> Unit raise @types.SqlError {
   for k in keys {
-    if k.expr.ty is Vector(_) {
+    if k.expr.ty is Vector(_, _) {
       raise vector_not_comparable()
     }
     if k.expr.ty is Xml {
@@ -492,7 +497,7 @@ fn xml_distinct_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
   for c in columns {
-    if c.ty is (Xml | Json | Vector(_)) {
+    if c.ty is (Xml | Json | Vector(_, _)) {
       raise err(
         421,
         "The \{c.ty.base_name()} data type cannot be selected as DISTINCT because it is not comparable.",
@@ -507,7 +512,7 @@ fn xml_set_op_check(
   columns : Array[@ir.ResultColumn],
 ) -> Unit raise @types.SqlError {
   for c in columns {
-    if c.ty is (Xml | Json | Vector(_)) {
+    if c.ty is (Xml | Json | Vector(_, _)) {
       raise err(
         5335,
         "The data type \{c.ty.base_name()} cannot be used as an operand to the UNION, INTERSECT or EXCEPT operators because it is not comparable.",

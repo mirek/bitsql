@@ -3,6 +3,7 @@
 /// SQL contracts: harness/corpus/sql2025/vector-{functions,contracts,json}.
 pub struct VectorData {
   priv components : Array[Double]
+  priv base_type : VectorBase
 } derive(Debug, Eq)
 
 ///|
@@ -81,6 +82,7 @@ fn JsonTypeParser::vector_reject(self : JsonTypeParser) -> Unit raise SqlError {
 /// The native json type's decimal canonicalization is not applicable here.
 fn JsonTypeParser::vector_number(
   self : JsonTypeParser,
+  base : VectorBase,
 ) -> Double raise SqlError {
   let start = self.pos
   let digit = () => self.peek() >= 48 && self.peek() <= 57
@@ -127,8 +129,12 @@ fn JsonTypeParser::vector_number(
   let rounded = Float::from_double(number).to_double()
   if rounded.is_inf() || rounded.is_nan() {
     raise sql_error(
-      42241, "Input JSON contains out-of-range values for float32.",
+      42241,
+      "Input JSON contains out-of-range values for \{base.name()}.",
     )
+  }
+  if base == Float16 {
+    return vector_half(rounded)
   }
   if rounded == 0.0 {
     0.0
@@ -141,9 +147,10 @@ fn JsonTypeParser::vector_number(
 pub fn vector_parse(
   text : String,
   dimensions : Int,
+  base? : VectorBase = Float32,
 ) -> VectorData raise SqlError {
-  if dimensions < 1 || dimensions > 1998 {
-    raise not_supported("invalid float32 vector descriptor")
+  if dimensions < 1 || dimensions > (if base == Float16 { 3996 } else { 1998 }) {
+    raise not_supported("invalid \{base.name()} vector descriptor")
   }
   let p : JsonTypeParser = { b: @utf8.encode(text), pos: 0, }
   p.ws()
@@ -160,7 +167,7 @@ pub fn vector_parse(
     if !(p.peek() == 45 || (p.peek() >= 48 && p.peek() <= 57)) {
       p.vector_reject()
     }
-    components.push(p.vector_number())
+    components.push(p.vector_number(base))
     if components.length() > 3996 {
       raise emulator_error(
         EMU_WORK_BUDGET,
@@ -189,7 +196,7 @@ pub fn vector_parse(
       state=4,
     )
   }
-  { components, }
+  { components, base_type: base, }
 }
 
 ///|
@@ -197,6 +204,9 @@ pub fn VectorData::norm(
   self : VectorData,
   kind : String,
 ) -> Double raise SqlError {
+  if self.base_type == Float16 {
+    raise vector_half_norm_error("vector_norm")
+  }
   let option = kind.to_lower()
   if !(option is ("norm1" | "norm2" | "norminf")) {
     raise sql_error(
@@ -260,11 +270,15 @@ pub fn VectorData::normalize(
   self : VectorData,
   kind : String,
 ) -> VectorData raise SqlError {
+  if self.base_type == Float16 {
+    raise vector_half_norm_error("vector_normalize")
+  }
   let norm = Float::from_double(self.norm(kind)).to_double()
   if norm == 0.0 {
     return self
   }
   {
+    base_type: self.base_type,
     components: self.components.map(v => {
       Float::from_double(v / norm).to_double()
     }),
@@ -385,16 +399,23 @@ pub fn VectorData::distance(
       state=3,
     )
   }
+  if self.base_type != other.base_type {
+    raise sql_error(
+      42243, "VECTOR_DISTANCE function does not support different base types for vector arguments.",
+    )
+  }
   let a = self.components
   let b = other.components
   let value = match kind {
-    "dot" => -vector_dot(a, b, false)
+    "dot" => -vector_dot(a, b, self.base_type == Float16)
     "euclidean" => {
       let difference = Array::make(a.length(), 0.0)
       for i in 0..<a.length() {
         difference[i] = vector_f32(a[i] - b[i])
       }
-      vector_f32(vector_dot(difference, difference, false).sqrt())
+      vector_f32(
+        vector_dot(difference, difference, self.base_type == Float16).sqrt(),
+      )
     }
     _ => {
       let aa = vector_dot(a, a, true)
@@ -426,4 +447,66 @@ pub fn VectorData::distance(
     )
   }
   value
+}
+
+///|
+pub fn VectorData::base(self : VectorData) -> VectorBase {
+  self.base_type
+}
+
+///|
+pub fn vector_base_conversion_error(
+  from : VectorBase,
+  to : VectorBase,
+) -> SqlError {
+  sql_error(
+    42238,
+    "Conversion of vector from data type \{from.name()} to \{to.name()} is not allowed.",
+  )
+}
+
+///|
+pub fn vector_half_norm_error(function : String) -> SqlError {
+  sql_error(
+    42246,
+    "\{function} function does not support vector with base type float16.",
+  )
+}
+
+///|
+// SQL parses binary32 first. Normal binary16 values round away 13 fraction
+// bits; subnormals round to units of 2^-24, using nearest/even in both paths.
+fn vector_half(value : Double) -> Double raise SqlError {
+  let bits = Float::from_double(value).reinterpret_as_uint()
+  let magnitude = bits & 0x7fffffff
+  let positive = if value < 0.0 { -value } else { value }
+  let rounded = if magnitude < 0x38800000 {
+    let units = positive * 16777216.0
+    let floor = units.to_int()
+    let fraction = units - floor.to_double()
+    let integer = if fraction > 0.5 || (fraction == 0.5 && floor % 2 == 1) {
+      floor + 1
+    } else {
+      floor
+    }
+    integer.to_double() / 16777216.0
+  } else {
+    let rounded_bits = (magnitude + 0xfff + ((magnitude >> 13) & 1)) &
+      0xffffe000
+    Float::reinterpret_from_uint(rounded_bits).to_double()
+  }
+  if rounded > 65504.0 {
+    raise sql_error(
+      42241,
+      "Input JSON contains out-of-range values for float16.",
+      state=2,
+    )
+  }
+  if rounded == 0.0 {
+    0.0
+  } else if value < 0.0 {
+    -rounded
+  } else {
+    rounded
+  }
 }

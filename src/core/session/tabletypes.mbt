@@ -76,7 +76,12 @@ fn Session::decl_type(
       ScalarDecl(b, Some(ut.id), Some(ut.nullable))
     _ =>
       ScalarDecl(
-        @bind.resolve_type(tn, Declaration, collation) catch {
+        @bind.resolve_type(
+          tn,
+          Declaration,
+          collation,
+          preview=self.preview_enabled(),
+        ) catch {
           @types.SqlError(number=2715, state~, ..) =>
             raise missing_type(tn, state)
           e => raise e
@@ -214,7 +219,12 @@ fn Session::alias_base(
   name : @ast.ObjectName,
 ) -> @types.SqlType raise @types.SqlError {
   let mut invalid = false
-  let ty = @bind.resolve_type(bt, Declaration, @types.default_collation) catch {
+  let ty = @bind.resolve_type(
+    bt,
+    Declaration,
+    @types.default_collation,
+    preview=self.preview_enabled(),
+  ) catch {
     @types.SqlError(number=2715, state~, ..) => raise missing_type(bt, state)
     @types.SqlError(number=2716, ..) as e => {
       invalid = true

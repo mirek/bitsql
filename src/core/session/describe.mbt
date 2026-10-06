@@ -182,6 +182,7 @@ fn Session::describe_batch(
               v.type_,
               Declaration,
               @types.default_collation,
+              preview=self.preview_enabled(),
             )
             vars[v.name.to_lower()] = { slot: vars.length(), ty, }
           }
@@ -208,7 +209,7 @@ fn describe_facts(
   let c = bq.columns[j]
   // captured (json4): json is described as varchar(max)
   // Latin1_General_100_BIN2_UTF8, the type TDS 7.4 clients receive
-  let c = if c.ty is (Json | Vector(_)) {
+  let c = if c.ty is (Json | Vector(_, _)) {
     { ..c, ty: VarChar(None, @types.json_collation), }
   } else {
     c

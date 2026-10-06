@@ -12,8 +12,8 @@ fn bind_concat_operator(
   }
   let a = left.ty
   let b = right.ty
-  if a is Vector(_) || b is Vector(_) {
-    if (a is Vector(_) && b is Vector(_)) ||
+  if a is Vector(_, _) || b is Vector(_, _) {
+    if (a is Vector(_, _) && b is Vector(_, _)) ||
       a.family() == FString ||
       b.family() == FString {
       raise err(

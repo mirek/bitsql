@@ -81,8 +81,8 @@ come only from captured SQL Server outputs (`scripts/gen-vector-tests.py`).
 ## Open contracts
 
 Preview float16 supports 3996 dimensions and two bytes/component plus an
-eight-byte header; it is not implemented yet. Captures also retain additional
-errors after failed declarations. `VECTOR_DISTANCE` advertises 3–4 arguments
+eight-byte header. Both bases and the captured additional diagnostics after
+failed declarations are now implemented. `VECTOR_DISTANCE` advertises 3–4 arguments
 in error 189, but all captured four-argument calls fail with 174 state 6.
 Nonempty calls outside that range emit both errors. Batch behavior is covered;
 stored-module diagnostic sequencing needs more captures. Embedding generation,
@@ -90,7 +90,7 @@ external models, approximate vector indexes/search and remaining conversion,
 collation, aggregate and operator contexts are not complete.
 
 2026-10-06: `vector-float16`, `vector-float16-values` and
-`vector-float16-distances` add evidence for the next implementation stage.
+`vector-float16-distances` verify the implemented float16 path.
 SQL Server rejects both NORM and NORMALIZE on float16 with compile-time 42246,
 including typed NULL. Mixed float32/float16 conversions fail at compilation
 with 42238, while mixed-base DISTANCE raises 42243 after result metadata.
@@ -99,12 +99,21 @@ values in `vector-float16-values` distinguish direct binary16 rounding).
 Half overflow is 42241 state 2; overflow before the half conversion is state 1.
 Half columns expose scale 1 and retain readable data after PREVIEW_FEATURES is
 turned off; only new float16 declarations are rejected with 195. These captures
-are not registered as passing until float16 is implemented. Container release
-validation must include the vector rounding corpus on ARM64 as well as amd64.
+are registered in the passing suite. Container release validation now includes
+the vector corpus in its ARM64 smoke as well as the complete amd64 suite.
 
 The 288 float16 distance pairs also distinguish its reduction kernel: a
-prototype using the two-register cosine layout for **all three** float16
-metrics matches every captured result. Reusing the four-register float32
-dot/Euclidean layout differs on 26 dot and 12 Euclidean results. This is
-oracle-derived evidence for the next implementation, not a claim that the
-float16 path is already shipped.
+implementation uses the two-register cosine layout for **all three** float16
+metrics and matches every captured result. Reusing the four-register float32
+dot/Euclidean layout differs on 26 dot and 12 Euclidean results. `vector-dimension-limits` also verifies
+1998-dimensional float32 and 3996-dimensional float16 values over TDS.
+
+`vector-float16-contracts` pins diagnostic precedence: CAST/TRY_CAST/coercion
+reject the base conversion before a dimension mismatch; DISTANCE checks its
+metric, then dimensions, then base agreement, after NULL short-circuiting.
+NORM/NORMALIZE argument type checks precede the float16 restriction. Existing
+columns remain readable with preview off. `vector-preview` repeats identical
+batch text across ON/OFF transitions; the successful-precheck cache therefore
+includes preview state. Descriptor resolution receives that state in conversion,
+declaration, module and describe paths; reflection of existing module parameter
+types resolves float16 independently of the current switch.

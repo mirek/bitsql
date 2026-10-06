@@ -33,7 +33,7 @@ fn call_vector(
           "dimensions" => Variant(SmallInt(data.dimensions()), SmallInt)
           "basetype" =>
             Variant(
-              String("float32"),
+              String(data.base().name()),
               NVarChar(
                 Some(7),
                 args[1].ty.collation().unwrap_or(@types.default_collation),

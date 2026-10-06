@@ -276,7 +276,11 @@ pub fn variant_can_hold(SqlType) -> Bool
 
 pub fn variant_data_length(Value, SqlType) -> Int
 
-pub fn vector_parse(String, Int) -> VectorData raise SqlError
+pub fn vector_base_conversion_error(VectorBase, VectorBase) -> SqlError
+
+pub fn vector_half_norm_error(String) -> SqlError
+
+pub fn vector_parse(String, Int, base? : VectorBase) -> VectorData raise SqlError
 
 pub fn xml_error(@xml.XmlError) -> SqlError
 
@@ -437,7 +441,7 @@ pub(all) enum SqlType {
   Variant
   Xml
   Json
-  Vector(Int)
+  Vector(Int, VectorBase)
   Text(Collation)
   NText(Collation)
   Image
@@ -501,9 +505,17 @@ pub fn Value::as_int64(Self) -> Int64?
 pub fn Value::int64_or(Self, Int64) -> Int64
 pub fn Value::is_null(Self) -> Bool
 
+pub(all) enum VectorBase {
+  Float32
+  Float16
+} derive(Eq, @debug.Debug)
+pub fn VectorBase::bytes(Self) -> Int
+pub fn VectorBase::name(Self) -> String
+
 pub struct VectorData {
   // private fields
 } derive(Eq, @debug.Debug)
+pub fn VectorData::base(Self) -> VectorBase
 pub fn VectorData::dimensions(Self) -> Int
 pub fn VectorData::distance(Self, Self, String) -> Double raise SqlError
 pub fn VectorData::norm(Self, String) -> Double raise SqlError

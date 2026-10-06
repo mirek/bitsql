@@ -27,11 +27,14 @@ pub fn cast(
   if from is Xml || to is Xml {
     return cast_xml(v, from, to, style)
   }
-  if from is Vector(_) || to is Vector(_) {
+  if from is Vector(_, _) || to is Vector(_, _) {
     return match (v, to) {
       (Null, _) => Null
-      (String(s), Vector(n)) => Vector(vector_parse(s, n))
-      (Vector(data), Vector(n)) => {
+      (String(s), Vector(n, base)) => Vector(vector_parse(s, n, base~))
+      (Vector(data), Vector(n, base)) => {
+        if data.base() != base {
+          raise vector_base_conversion_error(data.base(), base)
+        }
         if data.dimensions() != n {
           raise sql_error(
             42204,

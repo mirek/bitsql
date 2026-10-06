@@ -56,7 +56,7 @@ pub(all) enum SqlType {
   /// canonical text, json_type.mbt)
   Json
   /// Native SQL Server 2025 float32 vector, with fixed dimensions.
-  Vector(Int)
+  Vector(Int, VectorBase)
   /// deprecated LOB types (lob.mbt): text and ntext keep `Value::String`,
   /// image `Value::Binary`
   Text(Collation)
@@ -105,7 +105,7 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
     UniqueIdentifier => FGuid
     Variant => FVariant
     Xml => FXml
-    Vector(_) => FVector
+    Vector(_, _) => FVector
     Json => FJson
   }
 }
@@ -169,7 +169,7 @@ pub fn SqlType::base_name(self : SqlType) -> String {
     RowVersion => "timestamp"
     Variant => "sql_variant"
     Xml => "xml"
-    Vector(_) => "vector"
+    Vector(_, _) => "vector"
     Json => "json"
     Text(_) => "text"
     NText(_) => "ntext"
@@ -188,7 +188,8 @@ pub fn SqlType::to_sql(self : SqlType) -> String {
   }
 
   match self {
-    Vector(n) => "vector(\{n})"
+    Vector(n, Float32) => "vector(\{n})"
+    Vector(n, Float16) => "vector(\{n},float16)"
     Decimal(p, s) | Numeric(p, s) => "\{self.base_name()}(\{p},\{s})"
     Char(n, _) | NChar(n, _) | Binary(n) => "\{self.base_name()}(\{n})"
     VarChar(n, _) | NVarChar(n, _) | VarBinary(n) =>
@@ -243,7 +244,8 @@ pub fn SqlType::precision_scale(self : SqlType) -> (Int, Int)? {
 /// captured message texts.
 pub fn SqlType::is_valid(self : SqlType) -> Bool {
   match self {
-    Vector(n) => n >= 1 && n <= 1998
+    Vector(n, base) =>
+      n >= 1 && n <= (if base == Float16 { 3996 } else { 1998 })
     Decimal(p, s) | Numeric(p, s) => p >= 1 && p <= 38 && s >= 0 && s <= p
     Char(n, _) | Binary(n) | VarChar(Some(n), _) | VarBinary(Some(n)) =>
       n >= 1 && n <= 8000
@@ -264,5 +266,27 @@ pub fn SqlType::with_collation(self : SqlType, c : Collation) -> SqlType {
     Text(_) => Text(c)
     NText(_) => NText(c)
     t => t
+  }
+}
+
+///|
+pub(all) enum VectorBase {
+  Float32
+  Float16
+} derive(Debug, Eq)
+
+///|
+pub fn VectorBase::name(self : VectorBase) -> String {
+  match self {
+    Float32 => "float32"
+    Float16 => "float16"
+  }
+}
+
+///|
+pub fn VectorBase::bytes(self : VectorBase) -> Int {
+  match self {
+    Float32 => 4
+    Float16 => 2
   }
 }

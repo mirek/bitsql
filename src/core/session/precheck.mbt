@@ -6,6 +6,7 @@ fn precheck_batch(
   stmts : Array[@ast.Stmt],
   params : Map[String, @bind.VarInfo],
   in_proc? : Bool = false,
+  preview? : Bool = false,
   before? : Array[(@types.SqlError, Int)] = [],
   set_column_name? : (@ast.TableRef, String) -> String = (_, n) => n,
 ) -> (@types.SqlError, Int)? {
@@ -18,6 +19,7 @@ fn precheck_batch(
     types[k] = v.ty
   }
   let mut failure : (@types.SqlError, Int)? = None
+  let vector_declaration_errors : Array[(@types.SqlError, Int)] = []
   fn check_name(name : String, line : Int) -> Unit {
     if failure is None && !declared.contains(name.to_lower()) {
       failure = Some(
@@ -189,9 +191,19 @@ fn precheck_batch(
           }
           declared.add(v.name.to_lower())
           try
-            @bind.resolve_type(v.type_, Declaration, @types.default_collation)
+            @bind.resolve_type(
+              v.type_,
+              Declaration,
+              @types.default_collation,
+              preview~,
+            )
           catch {
-            _ => ()
+            e =>
+              if v.type_.name.to_lower() == "vector" &&
+                e.number() is (1001 | 195 | 2717) {
+                declared.remove(v.name.to_lower())
+                vector_declaration_errors.push((e, line))
+              }
           } noraise {
             ty => types[v.name.to_lower()] = ty
           }
@@ -501,8 +513,16 @@ fn precheck_batch(
   for s in stmts {
     stmt(s)
   }
+  if !vector_declaration_errors.is_empty() {
+    if failure is None {
+      failure = vector_declaration_errors.pop()
+    }
+    for e in vector_declaration_errors {
+      before.push(e)
+    }
+  }
   if failure is None {
-    failure = precheck_xml(stmts, types)
+    failure = precheck_xml(stmts, types, preview)
   }
   if failure is None {
     failure = precheck_json(stmts)

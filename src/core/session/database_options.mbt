@@ -470,3 +470,10 @@ fn DbOptions::apply_row(
   }
   ignore(name)
 }
+
+///|
+fn Session::preview_enabled(self : Session) -> Bool {
+  self.server
+  .db_options(self.rt.database)
+  .flag(self.rt.database, "PREVIEW_FEATURES")
+}

@@ -156,7 +156,13 @@ fn Session::exec_create_sequence(
 ) -> Unit raise {
   let written = object_text(name)
   let ty = match type_ {
-    Some(t) => @bind.resolve_type(t, Declaration, @types.default_collation)
+    Some(t) =>
+      @bind.resolve_type(
+        t,
+        Declaration,
+        @types.default_collation,
+        preview=self.preview_enabled(),
+      )
     None => BigInt
   }
   guard seq_bounds(ty) is Some(bounds) else {

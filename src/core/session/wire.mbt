@@ -103,7 +103,7 @@ pub fn type_info(t : @types.SqlType, nullable : Bool) -> @tds.TypeInfo {
     Xml => Xml
     // captured (json4): json travels as varchar(max) with collation
     // Latin1_General_100_BIN2_UTF8 to TDS 7.4 clients
-    Json | Vector(_) =>
+    Json | Vector(_, _) =>
       BigVarChar(@tds.MAX_LEN, collation_bytes(@types.json_collation))
     Text(_) => TextLob(coll(t))
     NText(_) => NTextLob(coll(t))

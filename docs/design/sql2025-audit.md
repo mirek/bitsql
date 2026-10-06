@@ -11,9 +11,9 @@ pushes and container publication on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
-| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Binary DATALENGTH and other roadmap gaps remain. |
+| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Binary DATALENGTH and other roadmap gaps remain. Native modify, JSON_CONTAINS and JSON indexes need explicit audit. |
 | Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Partial-byte captures, lone-surrogate patterns and remaining RE2/SQL edge audits are still open; full gate passed 2026-10-06. |
-| Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 storage, JSON conversion, TDS 7.4 fallback, catalogs, norms, normalization, properties and exact distance kernels are implemented. Focused verification passes 110 registered float32 cases; additional captures retain declaration diagnostics and preview float16 gaps. Float16, broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
+| Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 and preview float16 storage, JSON conversion, TDS 7.4 fallback, catalogs, properties and base-specific distance kernels are implemented. Float32 norms/normalization work; float16 receives SQL Server’s captured 42246 rejection. All 150 vector cases pass focused verification, including declaration diagnostics, preview transitions and maximum dimensions. Broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
 | SUBSTRING optional length | Initially rejected with 174. Two-argument form now passes the expanded differential case, which includes metadata, binary, NULL, negative/zero starts, trailing spaces and argument errors. |
 | DATEADD bigint | Implemented with widened intermediate arithmetic; 139 oracle batches pass across numeric argument types, temporal types/scales, range errors, time wrapping and signed extremes. Full gate passed 2026-10-06. |
@@ -74,3 +74,16 @@ open work. Float16 NORM/NORMALIZE are rejected by SQL Server itself; float16
 distance requires a distinct accumulation layout. Details and evidence are in
 [the vector reference](../reference/vector.md). This checkpoint does not complete
 the 2025 audit or publish a new container.
+
+## Float16 vector checkpoint (2026-10-06)
+
+`scripts/check.sh` passed after moving the additional failed-declaration
+reference diagnostic into the session layer: 1,108 MoonBit tests, all-backend
+core checks, and 21,163 client/corpus tests passed with three pre-existing skips
+and no failures (21,166 total). All 150 registered vector cases ran. The parser
+continues to report syntax diagnostics only. The vector core has 728 generated
+oracle-derived tests, including the 288 float16 distance pairs.
+
+The release script now includes all registered vector cases in its ARM64 smoke.
+No new container is published at this checkpoint. The broader SQL/JSON, regex,
+fuzzy, vector search/embedding and operational requirements remain open.

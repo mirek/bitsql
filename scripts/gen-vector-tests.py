@@ -57,15 +57,15 @@ for c in cases:
             out += [f'  assert_eq(v{i}.norm({q(kind)}), {d(row[3*i+j])})']
     out += ['}']
 # Distance inputs and outputs are paired directly from the recorded batches.
-def distance_case(label, sql, step):
+def distance_case(label, sql, step, base="Float32"):
     global count
-    inputs=re.findall(r"vector\((\d+)\)='([^']*)'",sql)
+    inputs=re.findall(r"vector\((\d+)(?:,float16)?\)='([^']*)'",sql)
     metrics=re.findall(r"VECTOR_DISTANCE\('([^']*)',@a,@b\)",sql)
     if len(inputs)!=2 or not metrics:return
     count+=1
     out.extend(['', '///|', f'test "vector oracle distance {label}" {{'])
     for name,(dim,text) in zip(['a','b'],inputs):
-        out.append(f'  let {name} = @types.vector_parse({q(text)}, {dim})')
+        out.append(f'  let {name} = @types.vector_parse({q(text)}, {dim}, base={base})')
     if step['errors']:
         error=step['errors'][0]
         out.extend([f'  try a.distance(b, {q(metrics[0])}) catch {{', f'    e => {{ assert_eq(e.number(), {error["number"]}); assert_eq(e.state(), {error["state"]}); assert_eq(e.message(), {q(error["message"])}) }}', '  } noraise { _ => fail("Expected SQL Server distance error") }'])
@@ -90,5 +90,27 @@ for name in ['distance-special','distance-extremes']:
     expected=json.loads((corpus/f'vector-{name}.expected.json').read_text())['steps']
     for i,(step,e) in enumerate(zip(sql,expected,strict=True)):
         distance_case(f'{name} {i}',step,e)
+name='float16-distances'
+cases=json.loads((corpus/f'vector-{name}.cases.json').read_text())['cases']
+expected=json.loads((corpus/f'vector-{name}.expected.json').read_text())['cases']
+for c in cases:
+    for i,(step,e) in enumerate(zip(c['steps'],expected[c['name']]['steps'],strict=True)):
+        distance_case(f'{name} {c["name"]} {i}',step['sql'],e,'Float16')
+name='float16-values'
+steps=re.split(r'-- @step batch\n',(corpus/f'vector-{name}.sql').read_text())[1:]
+expected=json.loads((corpus/f'vector-{name}.expected.json').read_text())['steps']
+for i,(sql,e) in enumerate(zip(steps,expected,strict=True)):
+    m=re.search(r"DECLARE @v vector\((\d+),float16\)='([^']*)'; SELECT @v AS v",sql)
+    if not m:continue
+    count+=1;dim,value=m.groups()
+    out.extend(['', '///|',f'test "vector oracle float16 input {i}" {{'])
+    expr=f'@types.vector_parse({q(value)}, {dim}, base=Float16)'
+    if e['errors']:
+        error=e['errors'][0]
+        out.extend([f'  try {expr} catch {{',f'    e => {{ assert_eq(e.number(), {error["number"]}); assert_eq(e.state(), {error["state"]}); assert_eq(e.message(), {q(error["message"])}) }}','  } noraise { _ => fail("Expected SQL Server float16 input error") }'])
+    else:
+        row=e['sets'][0]['rows'][0]
+        out.extend([f'  let v = {expr}', f'  assert_eq(v.to_text(), {q(row[0])})',f'  assert_eq(8 + v.base().bytes() * v.dimensions(), {row[1]})',f'  assert_eq(v.base().name(), {q(row[2])})'])
+    out.append('}')
 (root/'src/core/types/vector_test.mbt').write_text('\n'.join(out)+'\n')
 print(count,'oracle vector tests')

@@ -9,6 +9,7 @@
 fn precheck_xml(
   stmts : Array[@ast.Stmt],
   types : Map[String, @types.SqlType],
+  preview : Bool,
 ) -> (@types.SqlError, Int)? {
   // every variable of the batch (137 is checked before this runs)
   let vars : Map[String, @bind.VarInfo] = Map([])
@@ -20,7 +21,11 @@ fn precheck_xml(
     if failure is Some(_) {
       return
     }
-    let env = @bind.Env::new(vars)
+    let base = @bind.Catalog::empty()
+    let env = @bind.Env::new(vars, catalog={
+      ..base,
+      preview_features: () => preview,
+    })
     f(env) catch {
       e => if xml_compile_error(e) { failure = Some((e, line)) }
     }
@@ -113,6 +118,7 @@ fn xml_compile_error(e : @types.SqlError) -> Bool {
     | 5335
     | 13636 => true
     n if n >= 6800 && n < 6900 => true
+    42238 | 42246 => true
     42204 if e.state() == 1 => true
     189 if m.has_prefix("The vector_distance function") => true
     174 =>

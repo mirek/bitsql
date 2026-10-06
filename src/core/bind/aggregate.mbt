@@ -48,7 +48,7 @@ fn agg_result_type(
     (Min | Max, Some(t)) =>
       match t {
         // captured: xml/type (MAX(xml) is 8117)
-        Bit | Xml | Json | Vector(_) =>
+        Bit | Xml | Json | Vector(_, _) =>
           raise invalid_operand(t, if f is Min { "min" } else { "max" })
         _ => t
       }

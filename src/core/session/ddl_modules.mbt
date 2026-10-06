@@ -259,12 +259,14 @@ fn Session::exec_create_procedure(
       prm.type_,
       Declaration,
       @types.default_collation,
+      preview=self.preview_enabled(),
     ) catch {
       _ => Int
     }
     vars[prm.name.to_lower()] = { slot: i, ty, }
   }
-  match precheck_batch(p.body, vars, in_proc=true) {
+  match
+    precheck_batch(p.body, vars, in_proc=true, preview=self.preview_enabled()) {
     Some((e, _)) => raise e
     None => ()
   }
@@ -304,6 +306,7 @@ fn Session::exec_create_function(
       prm.type_,
       Declaration,
       @types.default_collation,
+      preview=self.preview_enabled(),
     ) catch {
       _ => Int
     }
@@ -317,7 +320,8 @@ fn Session::exec_create_function(
     }
     InlineTable(_) => []
   }
-  match precheck_batch(body, vars, in_proc=true) {
+  match
+    precheck_batch(body, vars, in_proc=true, preview=self.preview_enabled()) {
     Some((e, _)) => raise e
     None => ()
   }

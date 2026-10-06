@@ -16,9 +16,9 @@ priv struct ParsedBatch {
   stmts : Array[@ast.Stmt]
   /// Variable signatures (name and type of each known variable, in the
   /// frame's order) under which `precheck_batch` found nothing: it is a
-  /// pure function of the statements and those types (its catalog
+  /// pure function of the statements, those types and the preview switch (its catalog
   /// callback only names the column of a failure).
-  prechecked : Array[Array[(String, @types.SqlType)]]
+  prechecked : Array[(Bool, Array[(String, @types.SqlType)])]
 }
 
 ///|
@@ -100,10 +100,11 @@ fn Server::prechecked(
   text : String,
   stmts : Array[@ast.Stmt],
   signature : Array[(String, @types.SqlType)],
+  preview : Bool,
 ) -> Bool {
   match self.parse_cache.batches.get(text) {
     Some(p) if physical_equal(p.stmts, stmts) =>
-      p.prechecked.iter().any(s => s == signature)
+      p.prechecked.iter().any(s => s == (preview, signature))
     _ => false
   }
 }
@@ -114,11 +115,12 @@ fn Server::remember_prechecked(
   text : String,
   stmts : Array[@ast.Stmt],
   signature : Array[(String, @types.SqlType)],
+  preview : Bool,
 ) -> Unit {
   match self.parse_cache.batches.get(text) {
     Some(p) if physical_equal(p.stmts, stmts) &&
       p.prechecked.length() < PRECHECK_SIGNATURES =>
-      p.prechecked.push(signature)
+      p.prechecked.push((preview, signature))
     _ => ()
   }
 }

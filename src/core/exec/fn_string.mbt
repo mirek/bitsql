@@ -314,7 +314,7 @@ fn temporal_bytes(scale : Int, base : Int) -> Int {
 ///|
 fn datalength(v : @types.Value, t : @types.SqlType) -> Int64? {
   let n = match v {
-    Vector(data) => 8 + 4 * data.dimensions()
+    Vector(data) => 8 + data.base().bytes() * data.dimensions()
     Null => return None
     String(s) =>
       if t.is_unicode() {

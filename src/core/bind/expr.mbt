@@ -17,7 +17,10 @@ pub fn coerce(
   if e.ty == ty {
     return e
   }
-  if e.ty is Vector(source) && ty is Vector(target) && source != target {
+  if e.ty is Vector(_, source) && ty is Vector(_, target) && source != target {
+    raise @types.vector_base_conversion_error(source, target)
+  }
+  if e.ty is Vector(source, _) && ty is Vector(target, _) && source != target {
     raise err(
       42204,
       "The vector dimensions \{source} and \{target} do not match.",
@@ -478,7 +481,10 @@ fn conversion(
   if a.kind is Lit(Null) && a.ty is Int && !(t is Int) {
     return { kind: Lit(Null), ty: t, nullable: true, }
   }
-  if a.ty is Vector(source) && t is Vector(target) && source != target {
+  if a.ty is Vector(_, source) && t is Vector(_, target) && source != target {
+    raise @types.vector_base_conversion_error(source, target)
+  }
+  if a.ty is Vector(source, _) && t is Vector(target, _) && source != target {
     raise err(
       42204,
       "The vector dimensions \{source} and \{target} do not match.",
@@ -724,7 +730,12 @@ fn conversion_type(
   env : Env,
   tn : @ast.TypeName,
 ) -> @types.SqlType raise @types.SqlError {
-  resolve_type(tn, Conversion, env.collation) catch {
+  resolve_type(
+    tn,
+    Conversion,
+    env.collation,
+    preview=(env.catalog.preview_features)(),
+  ) catch {
     @types.SqlError(number=2715, ..) => {
       let written = match tn.schema {
         Some(s) => s.name + "." + tn.name

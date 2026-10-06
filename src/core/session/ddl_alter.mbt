@@ -650,7 +650,12 @@ fn Session::alter_column(
       }
     None => self.scope_collation(scope)
   }
-  let ty = @bind.resolve_type(type_, Declaration, collation)
+  let ty = @bind.resolve_type(
+    type_,
+    Declaration,
+    collation,
+    preview=self.preview_enabled(),
+  )
   // captured (json4/type-columns): json → nvarchar(max) is 257 (no 3621)
   if (old.ty is Json || ty is Json) &&
     old.ty != ty &&
