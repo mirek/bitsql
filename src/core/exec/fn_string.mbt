@@ -312,20 +312,10 @@ fn temporal_bytes(scale : Int, base : Int) -> Int {
 }
 
 ///|
-fn datalength(
-  v : @types.Value,
-  t : @types.SqlType,
-) -> Int64? raise @types.SqlError {
+fn datalength(v : @types.Value, t : @types.SqlType) -> Int64? {
   let n = match v {
     Vector(data) => 8 + data.base().bytes() * data.dimensions()
-    NativeJson(data) =>
-      match data.storage_bytes() {
-        Some(n) => n
-        None =>
-          raise @types.not_supported(
-            "DATALENGTH of native JSON retaining mutation allocations",
-          )
-      }
+    NativeJson(data) => data.storage_bytes()
     Null => return None
     String(s) =>
       if t.is_unicode() {

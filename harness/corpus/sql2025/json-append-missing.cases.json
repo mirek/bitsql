@@ -1,0 +1,172 @@
+{
+  "cases": [
+    {
+      "name": "variable-ON-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "variable-ON-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"b\":1}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "variable-OFF-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "variable-OFF-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"b\":1}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "column-ON-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE ja(j json); INSERT ja VALUES(N'{}'); UPDATE ja SET j=JSON_MODIFY(j,'append $.a',1); SELECT j,DATALENGTH(j) AS bytes FROM ja;"
+        }
+      ]
+    },
+    {
+      "name": "column-ON-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE ja(j json); INSERT ja VALUES(N'{\"b\":1}'); UPDATE ja SET j=JSON_MODIFY(j,'append $.a',1); SELECT j,DATALENGTH(j) AS bytes FROM ja;"
+        }
+      ]
+    },
+    {
+      "name": "column-OFF-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE ja(j json); INSERT ja VALUES(N'{}'); UPDATE ja SET j=JSON_MODIFY(j,'append $.a',1); SELECT j,DATALENGTH(j) AS bytes FROM ja;"
+        }
+      ]
+    },
+    {
+      "name": "column-OFF-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE ja(j json); INSERT ja VALUES(N'{\"b\":1}'); UPDATE ja SET j=JSON_MODIFY(j,'append $.a',1); SELECT j,DATALENGTH(j) AS bytes FROM ja;"
+        }
+      ]
+    },
+    {
+      "name": "text-ON-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "text-ON-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"b\":1}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "text-OFF-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "text-OFF-nonempty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"b\":1}'; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

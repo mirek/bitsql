@@ -1,0 +1,265 @@
+{
+  "cases": [
+    {
+      "name": "padding-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"x\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-512",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-1024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "padding-4096",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"p\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}'); SELECT DATALENGTH(j) AS before_bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.z',1); SELECT DATALENGTH(j) AS after_bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1}}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-9",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-10",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-12",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-13",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-14",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-container-15",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jg(j json); INSERT jg VALUES(N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}'); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg; UPDATE jg SET j=JSON_MODIFY(j,'$.a',JSON_QUERY(j,'$.a')); SELECT DATALENGTH(j) AS bytes FROM jg;"
+        }
+      ]
+    }
+  ]
+}

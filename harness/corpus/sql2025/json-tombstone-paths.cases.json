@@ -1,0 +1,274 @@
+{
+  "cases": [
+    {
+      "name": "deleted-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-append-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-append-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-append-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-append-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-$.a.b-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-$.a.b-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-append-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-append-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-append-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-append-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-$.a.b-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-$.a.b-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-append-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-append-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-append-strict-$.a-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-append-strict-$.a-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'append strict $.a',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-$.a.b-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',1); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-$.a.b-NULL",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT @j AS before_j,DATALENGTH(@j) AS before_bytes; SET @j=JSON_MODIFY(@j,N'$.a.b',NULL); SELECT @j AS after_j,DATALENGTH(@j) AS after_bytes;"
+        }
+      ]
+    }
+  ]
+}

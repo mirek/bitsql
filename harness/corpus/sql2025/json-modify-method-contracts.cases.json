@@ -1,0 +1,238 @@
+{
+  "cases": [
+    {
+      "name": "variable-type-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "variable-type-nvarchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":1}'; SET @j.modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "variable-type-xml",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j xml=N'<a/>'; SET @j.modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "variable-type-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j int=1; SET @j.modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "method-modify",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "method-MODIFY",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.MODIFY('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "method-Modify",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.Modify('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "method-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.missing('$.a',2); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "args-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a'); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-three",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',1,2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-null-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(NULL,1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-int-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(1,1); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-null-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(N'$.a',NULL); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-json-null-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(N'$.a',CAST(NULL AS json)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "args-json-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(N'$.a',CAST(N'[1,2]' AS json)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-document",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; SET @j.modify('$.a',1); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "missing-variable",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SET @missing.modify('$.a',1);"
+        }
+      ]
+    },
+    {
+      "name": "expression-context",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SELECT @j.modify('$.a',2) AS result;"
+        }
+      ]
+    },
+    {
+      "name": "copy-and-rowcount",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; DECLARE @copy json=@j; SET @j.modify('$.a',2); SELECT @j AS j,@copy AS original,@@ROWCOUNT AS n,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "column-expression",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json,p nvarchar(20),v int); INSERT jm VALUES(1,N'{\"a\":1}',N'$.a',2),(2,N'{\"a\":3}',N'$.a',4); UPDATE jm SET j.modify(p,v); SELECT id,j,DATALENGTH(j) AS bytes FROM jm ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "column-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(NULL); UPDATE jm SET j.modify('$.a',1); SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "column-alias-output",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); INSERT jm VALUES(1,N'{\"a\":1}'); UPDATE t SET j.modify('$.a',2) OUTPUT deleted.j,inserted.j FROM jm AS t WHERE id=1; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "column-multiple-methods",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":1,\"b\":2}'); UPDATE jm SET j.modify('$.a',3),j.modify('$.b',4); SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "column-mixed-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int,j json); INSERT jm VALUES(1,N'{\"a\":1}'); UPDATE jm SET id=2,j.modify('$.a',3); SELECT id,j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "column-unknown-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":1}'); UPDATE jm SET j.missing('$.a',3);"
+        }
+      ]
+    }
+  ]
+}

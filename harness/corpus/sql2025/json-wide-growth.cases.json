@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "name": "object-1010",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),1010-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new0',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new1',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new2',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new3',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new4',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new5',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new6',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new7',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new8',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new9',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new10',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new11',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new12',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new13',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new14',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new15',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new16',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new17',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "object-1023",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),1023-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new0',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new1',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new2',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new3',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new4',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new5',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new6',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new7',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new8',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new9',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new10',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new11',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new12',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new13',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new14',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new15',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new16',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new17',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "object-1024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),1024-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new0',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new1',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new2',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new3',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new4',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new5',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new6',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new7',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new8',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new9',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new10',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new11',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new12',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new13',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new14',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new15',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new16',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new17',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "object-1025",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),1025-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new0',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new1',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new2',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new3',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new4',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new5',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new6',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new7',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new8',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new9',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new10',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new11',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new12',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new13',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new14',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new15',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new16',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new17',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "array-65520",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65520-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "array-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "array-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65536-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'append $',1); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

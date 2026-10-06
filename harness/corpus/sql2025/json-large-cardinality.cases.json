@@ -1,0 +1,112 @@
+{
+  "cases": [
+    {
+      "name": "array-32767",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32767-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-32767",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32767-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "array-32768",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-32768",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "array-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "array-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65536-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65536-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "array-65537",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65537-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-65537",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65537-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "array-100000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),100000-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    },
+    {
+      "name": "object-100000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),100000-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,LEN(CAST(@j AS nvarchar(max))) AS text_length;"
+        }
+      ]
+    }
+  ]
+}

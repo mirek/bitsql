@@ -380,12 +380,11 @@ pub fn Decimal::zero() -> Self
 pub impl Show for Decimal
 
 pub struct JsonData {
-  text : String
-  storage_bytes : Int?
+  // private fields
 } derive(Eq, @debug.Debug)
-pub fn JsonData::modified(String) -> Self raise SqlError
+pub fn JsonData::modified(Self, String, String) -> Self raise SqlError
 pub fn JsonData::parse(String) -> Self raise SqlError
-pub fn JsonData::storage_bytes(Self) -> Int?
+pub fn JsonData::storage_bytes(Self) -> Int
 pub fn JsonData::text(Self) -> String
 
 pub(all) struct Language {

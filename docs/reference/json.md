@@ -307,12 +307,6 @@ xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
   "near 'RETURNING'" for JSON_ARRAY / JSON_ARRAYAGG); `JSON_ARRAY(RETURNING
   JSON)` is 102 near 'JSON'.
 
-## Not emulated
-
-DATALENGTH of json values retaining mutation allocations, CLR arguments
-(13666; hierarchyid/geometry/geography/vector are 50100, and
-`geometry::Point(...)` static method calls do not parse).
-
 ### Native binary construction sizes (2026-10-06)
 
 `sql2025/json-binary-size.cases.json` and `json-binary-boundaries.cases.json`
@@ -351,10 +345,8 @@ result JSON. The older `json4/type-datalength.sql` also passes.
 
 `sql2025/json-function-storage.sql` shows JSON_MODIFY retaining allocation just
 like the native modify method. JSON_QUERY rebuilds its selected result, even
-for `$`: a modified 70-byte value rebuilds in 63 bytes. Modified values currently
-retain explicitly unknown storage provenance, so their DATALENGTH raises an
-Emulator error instead of reporting a freshly rebuilt size. Mutation allocation
-and the modify method remain unfinished.
+for `$`: a modified 70-byte value rebuilds in 63 bytes. The allocator now retains this state through JSON_MODIFY; the native modify
+statement forms still need implementation.
 
 `sql2025/json-mutation-column-allocation.cases.json` adds 37 mutation sequences,
 all reproduced in a second oracle run. Shrinking a string does not reserve its
@@ -379,3 +371,62 @@ to modified storage without captures. JSON_CONTAINS and CREATE JSON INDEX are
 also listed among the
 [2025 JSON additions](https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver17#sql-server-2025-changes)
 and remain part of the feature audit.
+
+### Retained mutation storage and slot order (2026-10-06)
+
+The implemented allocator matches the 839 captured transitions in
+`sql2025/json-modify-allocation.cases.json`, `json-dictionary-allocation.cases.json`,
+`json-allocation-growth.cases.json` and `json-allocation-sequences.cases.json`.
+These include scalar/array/object replacement, shared/new keys, repeated
+identical container replacement, capacity boundaries and mixed mutation chains.
+The core has 303 generated storage tests: 236 construction tests plus 67
+mutation sequences containing 669 operations, with immutable-copy assertions.
+
+- Scalar payloads reuse their current bytes when the replacement fits;
+  growing appends a new payload. Shrinking does not retain reusable capacity
+  for a later growth. Replacing a container allocates fresh live payloads even
+  when its visible text is unchanged; dead input storage is not copied.
+- Containers retain spare slots. Growth adds `max(2, min(15, floor(6n/5)))`
+  slots to capacity n and appends a new container payload. The old payload is
+  retained. The property dictionary uses the same capacity growth; it expands
+  in place only when it is the final payload, otherwise a new table is appended.
+- Scalar property insertion registers its key before allocating the value.
+  Container insertion clones its value first. This ordering can change whether
+  the dictionary grows in place. Dictionary entries survive property deletion.
+- Deletion leaves an empty property slot; insertion fills the first empty slot
+  before appending. Preserve physical slot order when rendering native JSON.
+  Text-only editing gets reinsertion order wrong. Evidence:
+  `json-property-slots.sql` and mixed mutation sequences.
+- `json-allocation-lifetime.sql` verifies 2,200 repeated container replacements
+  retaining 22,064 bytes, copying a modified native value into another document,
+  transaction rollback and independent variable copies. No compaction occurs
+  in these captured sequences, including after the value exceeds inline size.
+- A lax append targeting a deleted property leaves it deleted. A genuinely
+  missing final property raises the captured 13656 state 8 feature-switch error
+  on the pinned oracle, even with PREVIEW_FEATURES ON; text JSON still creates
+  the array. Strict missing/deleted paths raise 13608 state 5, and strict append
+  to JSON null raises 13621 state 2. Evidence: `json-tombstone-paths.cases.json`
+  and `json-append-missing.cases.json` (variables, columns and both preview states).
+
+This is an allocation model, not a serializer for native SQL Server pages.
+The native modify statement forms and other JSON audit items remain open.
+
+### Large storage boundaries still under investigation (2026-10-06)
+
+`json-wide-storage`, `json-dictionary-index`, `json-wide-growth`,
+`json-wide-transitions` and `json-large-cardinality` capture further boundaries
+not yet implemented in the allocation model. Fresh dictionaries above 1,024
+unique keys add two bytes per key, including keys spread across many objects.
+Fresh arrays above 65,535 elements add two bytes compared with the small-array
+formula. Mutation transitions are state-dependent: adding the 1,025th key can
+install the dictionary index immediately or defer it to a later operation,
+depending on retained capacity. Large-array transitions also differ between
+root and nested arrays. These are known size discrepancies, not verified
+support. Four object captures at 65,535 or more members timed out; missing
+expectations do not establish SQL Server rejection or a passing emulator case.
+
+## Not emulated
+
+Native `.modify()` statements, JSON_CONTAINS, JSON indexes and CLR arguments
+(13666; hierarchyid/geometry/geography/vector are 50100, and
+`geometry::Point(...)` static method calls do not parse).

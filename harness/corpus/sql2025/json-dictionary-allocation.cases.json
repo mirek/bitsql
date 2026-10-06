@@ -1,0 +1,166 @@
+{
+  "cases": [
+    {
+      "name": "root-members-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1}}'),(2,N'{\"a\":{\"z\":1}}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0}'),(2,N'{\"a\":{\"z\":1},\"k0\":0}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-9",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-15",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-17",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-31",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-33",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-63",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61,\"k62\":62}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61,\"k62\":62}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "root-members-65",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jd(id int PRIMARY KEY,j json); INSERT jd VALUES(1,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61,\"k62\":62,\"k63\":63}'),(2,N'{\"a\":{\"z\":1},\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"k17\":17,\"k18\":18,\"k19\":19,\"k20\":20,\"k21\":21,\"k22\":22,\"k23\":23,\"k24\":24,\"k25\":25,\"k26\":26,\"k27\":27,\"k28\":28,\"k29\":29,\"k30\":30,\"k31\":31,\"k32\":32,\"k33\":33,\"k34\":34,\"k35\":35,\"k36\":36,\"k37\":37,\"k38\":38,\"k39\":39,\"k40\":40,\"k41\":41,\"k42\":42,\"k43\":43,\"k44\":44,\"k45\":45,\"k46\":46,\"k47\":47,\"k48\":48,\"k49\":49,\"k50\":50,\"k51\":51,\"k52\":52,\"k53\":53,\"k54\":54,\"k55\":55,\"k56\":56,\"k57\":57,\"k58\":58,\"k59\":59,\"k60\":60,\"k61\":61,\"k62\":62,\"k63\":63}');\nSELECT DATALENGTH(j) AS bytes FROM jd WHERE id=1;\nUPDATE jd SET j=JSON_MODIFY(j,'$.z',1) WHERE id=1; UPDATE jd SET j=JSON_MODIFY(j,'$.y',1) WHERE id=2;\nSELECT id,DATALENGTH(j) AS bytes FROM jd ORDER BY id;"
+        }
+      ]
+    }
+  ]
+}

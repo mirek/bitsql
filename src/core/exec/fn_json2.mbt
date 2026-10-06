@@ -213,7 +213,13 @@ fn call_json2(
             e => raise if json_doc { json_type_error(e) } else { e }
           }
           if json_doc {
-            Some(NativeJson(@types.JsonData::modified(out)))
+            guard v[0] is NativeJson(data) else {
+              raise @types.emulator_error(
+                @types.EMU_INTERNAL,
+                "native JSON mutation input",
+              )
+            }
+            Some(NativeJson(data.modified(out, path)))
           } else {
             Some(String(out))
           }

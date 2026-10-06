@@ -1474,3 +1474,3409 @@ test "native JSON construction storage json-binary-boundaries string-controls" {
     50,
   )
 }
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-0" {
+  let original = @types.JsonData::parse("{\"a\":\"\"}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 46),
+    ("$.a", "{\"a\":\"\"}", 46),
+    ("$.a", "{\"a\":\"w\"}", 49),
+    ("$.a", "{\"a\":\"\"}", 49),
+    ("$.a", "{\"a\":\"\"}", 49),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":\"\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-1" {
+  let original = @types.JsonData::parse("{\"a\":\"x\"}")
+  let mut value = original
+  let mut previous_size = 46
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 46),
+    ("$.a", "{\"a\":\"z\"}", 46),
+    ("$.a", "{\"a\":\"ww\"}", 50),
+    ("$.a", "{\"a\":\"v\"}", 50),
+    ("$.a", "{\"a\":\"\"}", 50),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 46)
+  assert_eq(original.text(), "{\"a\":\"x\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-7" {
+  let original = @types.JsonData::parse("{\"a\":\"xxxxxxx\"}")
+  let mut value = original
+  let mut previous_size = 52
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 52),
+    ("$.a", "{\"a\":\"zzzzzzz\"}", 61),
+    ("$.a", "{\"a\":\"wwwwwwww\"}", 71),
+    ("$.a", "{\"a\":\"vvvvvvv\"}", 71),
+    ("$.a", "{\"a\":\"\"}", 71),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 52)
+  assert_eq(original.text(), "{\"a\":\"xxxxxxx\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-8" {
+  let original = @types.JsonData::parse("{\"a\":\"xxxxxxxx\"}")
+  let mut value = original
+  let mut previous_size = 53
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 53),
+    ("$.a", "{\"a\":\"zzzzzzzz\"}", 63),
+    ("$.a", "{\"a\":\"wwwwwwwww\"}", 74),
+    ("$.a", "{\"a\":\"vvvvvvvv\"}", 74),
+    ("$.a", "{\"a\":\"\"}", 74),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 53)
+  assert_eq(original.text(), "{\"a\":\"xxxxxxxx\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-15" {
+  let original = @types.JsonData::parse("{\"a\":\"xxxxxxxxxxxxxxx\"}")
+  let mut value = original
+  let mut previous_size = 60
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 60),
+    ("$.a", "{\"a\":\"zzzzzzzzzzzzzzz\"}", 77),
+    ("$.a", "{\"a\":\"wwwwwwwwwwwwwwww\"}", 95),
+    ("$.a", "{\"a\":\"vvvvvvvvvvvvvvv\"}", 95),
+    ("$.a", "{\"a\":\"\"}", 95),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 60)
+  assert_eq(original.text(), "{\"a\":\"xxxxxxxxxxxxxxx\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-16" {
+  let original = @types.JsonData::parse("{\"a\":\"xxxxxxxxxxxxxxxx\"}")
+  let mut value = original
+  let mut previous_size = 61
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 61),
+    ("$.a", "{\"a\":\"zzzzzzzzzzzzzzzz\"}", 79),
+    ("$.a", "{\"a\":\"wwwwwwwwwwwwwwwww\"}", 98),
+    ("$.a", "{\"a\":\"vvvvvvvvvvvvvvvv\"}", 98),
+    ("$.a", "{\"a\":\"\"}", 98),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 61)
+  assert_eq(original.text(), "{\"a\":\"xxxxxxxxxxxxxxxx\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-31" {
+  let original = @types.JsonData::parse(
+    "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  )
+  let mut value = original
+  let mut previous_size = 76
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 76),
+    ("$.a", "{\"a\":\"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\"}", 109),
+    ("$.a", "{\"a\":\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"}", 143),
+    ("$.a", "{\"a\":\"vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\"}", 143),
+    ("$.a", "{\"a\":\"\"}", 143),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 76)
+  assert_eq(original.text(), "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-127" {
+  let original = @types.JsonData::parse(
+    "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  )
+  let mut value = original
+  let mut previous_size = 172
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 172),
+    (
+      "$.a", "{\"a\":\"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\"}",
+      301,
+    ),
+    (
+      "$.a", "{\"a\":\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"}",
+      432,
+    ),
+    (
+      "$.a", "{\"a\":\"vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\"}",
+      432,
+    ),
+    ("$.a", "{\"a\":\"\"}", 432),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 172)
+  assert_eq(
+    original.text(),
+    "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-modify-allocation string-capacity-128" {
+  let original = @types.JsonData::parse(
+    "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  )
+  let mut value = original
+  let mut previous_size = 174
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"y\"}", 174),
+    (
+      "$.a", "{\"a\":\"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\"}",
+      305,
+    ),
+    (
+      "$.a", "{\"a\":\"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"}",
+      437,
+    ),
+    (
+      "$.a", "{\"a\":\"vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\"}",
+      437,
+    ),
+    ("$.a", "{\"a\":\"\"}", 437),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 174)
+  assert_eq(
+    original.text(),
+    "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-null" {
+  let original = @types.JsonData::parse("{\"a\":null}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 46),
+    ("$.a", "{\"a\":536870912}", 55),
+    ("$.a", "{\"a\":1.5}", 55),
+    ("$.a", "{\"a\":1}", 55),
+    ("$.a", "{}", 55),
+    ("$.a", "{\"a\":\"abc\"}", 60),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":null}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-bool" {
+  let original = @types.JsonData::parse("{\"a\":true}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 46),
+    ("$.a", "{\"a\":536870912}", 55),
+    ("$.a", "{\"a\":1.5}", 55),
+    ("$.a", "{\"a\":1}", 55),
+    ("$.a", "{}", 55),
+    ("$.a", "{\"a\":\"abc\"}", 60),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":true}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-inline" {
+  let original = @types.JsonData::parse("{\"a\":0}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 46),
+    ("$.a", "{\"a\":536870912}", 55),
+    ("$.a", "{\"a\":1.5}", 55),
+    ("$.a", "{\"a\":1}", 55),
+    ("$.a", "{}", 55),
+    ("$.a", "{\"a\":\"abc\"}", 60),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":0}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-int64" {
+  let original = @types.JsonData::parse("{\"a\":536870912}")
+  let mut value = original
+  let mut previous_size = 52
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 52),
+    ("$.a", "{\"a\":536870912}", 61),
+    ("$.a", "{\"a\":1.5}", 61),
+    ("$.a", "{\"a\":1}", 61),
+    ("$.a", "{}", 61),
+    ("$.a", "{\"a\":\"abc\"}", 66),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 52)
+  assert_eq(original.text(), "{\"a\":536870912}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-decimal" {
+  let original = @types.JsonData::parse("{\"a\":1.25}")
+  let mut value = original
+  let mut previous_size = 52
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 52),
+    ("$.a", "{\"a\":536870912}", 61),
+    ("$.a", "{\"a\":1.5}", 61),
+    ("$.a", "{\"a\":1}", 61),
+    ("$.a", "{}", 61),
+    ("$.a", "{\"a\":\"abc\"}", 66),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 52)
+  assert_eq(original.text(), "{\"a\":1.25}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-string" {
+  let original = @types.JsonData::parse("{\"a\":\"abc\"}")
+  let mut value = original
+  let mut previous_size = 48
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 48),
+    ("$.a", "{\"a\":536870912}", 57),
+    ("$.a", "{\"a\":1.5}", 57),
+    ("$.a", "{\"a\":1}", 57),
+    ("$.a", "{}", 57),
+    ("$.a", "{\"a\":\"abc\"}", 62),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 48)
+  assert_eq(original.text(), "{\"a\":\"abc\"}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-empty-array" {
+  let original = @types.JsonData::parse("{\"a\":[]}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 46),
+    ("$.a", "{\"a\":536870912}", 55),
+    ("$.a", "{\"a\":1.5}", 55),
+    ("$.a", "{\"a\":1}", 55),
+    ("$.a", "{}", 55),
+    ("$.a", "{\"a\":\"abc\"}", 60),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":[]}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-array" {
+  let original = @types.JsonData::parse("{\"a\":[1,2]}")
+  let mut value = original
+  let mut previous_size = 55
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 58),
+    ("$.a", "{\"a\":536870912}", 67),
+    ("$.a", "{\"a\":1.5}", 67),
+    ("$.a", "{\"a\":1}", 67),
+    ("$.a", "{}", 67),
+    ("$.a", "{\"a\":\"abc\"}", 72),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 55)
+  assert_eq(original.text(), "{\"a\":[1,2]}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-empty-object" {
+  let original = @types.JsonData::parse("{\"a\":{}}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 46),
+    ("$.a", "{\"a\":536870912}", 55),
+    ("$.a", "{\"a\":1.5}", 55),
+    ("$.a", "{\"a\":1}", 55),
+    ("$.a", "{}", 55),
+    ("$.a", "{\"a\":\"abc\"}", 60),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":{}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation replace-object" {
+  let original = @types.JsonData::parse("{\"a\":{\"k\":1}}")
+  let mut value = original
+  let mut previous_size = 64
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":\"x\"}", 67),
+    ("$.a", "{\"a\":536870912}", 76),
+    ("$.a", "{\"a\":1.5}", 76),
+    ("$.a", "{\"a\":1}", 76),
+    ("$.a", "{}", 76),
+    ("$.a", "{\"a\":\"abc\"}", 81),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 64)
+  assert_eq(original.text(), "{\"a\":{\"k\":1}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation insert-empty" {
+  let original = @types.JsonData::parse("{}")
+  let mut value = original
+  let mut previous_size = 18
+  let mutations : Array[(String, String, Int)] = [
+    ("$.new", "{\"new\":1}", 59),
+    ("$.new", "{\"new\":2}", 59),
+    ("$.new", "{}", 59),
+    ("$.new", "{\"new\":3}", 59),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 18)
+  assert_eq(original.text(), "{}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation insert-one" {
+  let original = @types.JsonData::parse("{\"a\":1}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.new", "{\"a\":1,\"new\":1}", 86),
+    ("$.new", "{\"a\":1,\"new\":2}", 86),
+    ("$.new", "{\"a\":1}", 86),
+    ("$.new", "{\"a\":1,\"new\":3}", 86),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":1}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation insert-two" {
+  let original = @types.JsonData::parse("{\"a\":1,\"b\":2}")
+  let mut value = original
+  let mut previous_size = 60
+  let mutations : Array[(String, String, Int)] = [
+    ("$.new", "{\"a\":1,\"b\":2,\"new\":1}", 109),
+    ("$.new", "{\"a\":1,\"b\":2,\"new\":2}", 109),
+    ("$.new", "{\"a\":1,\"b\":2}", 109),
+    ("$.new", "{\"a\":1,\"b\":2,\"new\":3}", 109),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 60)
+  assert_eq(original.text(), "{\"a\":1,\"b\":2}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation insert-nested" {
+  let original = @types.JsonData::parse("{\"a\":1,\"b\":{\"c\":2}}")
+  let mut value = original
+  let mut previous_size = 81
+  let mutations : Array[(String, String, Int)] = [
+    ("$.new", "{\"a\":1,\"b\":{\"c\":2},\"new\":1}", 138),
+    ("$.new", "{\"a\":1,\"b\":{\"c\":2},\"new\":2}", 138),
+    ("$.new", "{\"a\":1,\"b\":{\"c\":2}}", 138),
+    ("$.new", "{\"a\":1,\"b\":{\"c\":2},\"new\":3}", 138),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 81)
+  assert_eq(original.text(), "{\"a\":1,\"b\":{\"c\":2}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation dictionary-known-key" {
+  let original = @types.JsonData::parse("{\"a\":{\"b\":1}}")
+  let mut value = original
+  let mut previous_size = 64
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b", "{\"a\":{\"b\":1},\"b\":2}", 86),
+    ("$.b", "{\"a\":{\"b\":1}}", 86),
+    ("$.b", "{\"a\":{\"b\":1},\"b\":3}", 86),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 64)
+  assert_eq(original.text(), "{\"a\":{\"b\":1}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation dictionary-nested-known" {
+  let original = @types.JsonData::parse("{\"a\":{\"b\":1}}")
+  let mut value = original
+  let mut previous_size = 64
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a.b", "{\"a\":{\"b\":2}}", 64),
+    ("$.a.b", "{\"a\":{}}", 64),
+    ("$.a.b", "{\"a\":{\"b\":3}}", 64),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 64)
+  assert_eq(original.text(), "{\"a\":{\"b\":1}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation dictionary-nested-new" {
+  let original = @types.JsonData::parse("{\"a\":{\"b\":1}}")
+  let mut value = original
+  let mut previous_size = 64
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a.c", "{\"a\":{\"b\":1,\"c\":2}}", 105),
+    ("$.a.c", "{\"a\":{\"b\":1}}", 105),
+    ("$.a.c", "{\"a\":{\"b\":1,\"c\":3}}", 105),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 64)
+  assert_eq(original.text(), "{\"a\":{\"b\":1}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation dictionary-missing-parent" {
+  let original = @types.JsonData::parse("{\"a\":{\"b\":1}}")
+  let mut value = original
+  let mut previous_size = 64
+  let mutations : Array[(String, String, Int)] = [
+    ("$.missing.x", "{\"a\":{\"b\":1}}", 64),
+    ("$.missing.x", "{\"a\":{\"b\":1}}", 64),
+    ("$.missing.x", "{\"a\":{\"b\":1}}", 64),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 64)
+  assert_eq(original.text(), "{\"a\":{\"b\":1}}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-$[0]" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("$[0]", "[3,2]", 30),
+    ("$[0]", "[null,2]", 30),
+    ("$[0]", "[4,2]", 30),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-$[1]" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("$[1]", "[1,3]", 30),
+    ("$[1]", "[1,null]", 30),
+    ("$[1]", "[1,4]", 30),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-$[2]" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("$[2]", "[1,2]", 30),
+    ("$[2]", "[1,2]", 30),
+    ("$[2]", "[1,2]", 30),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-$[3]" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("$[3]", "[1,2]", 30),
+    ("$[3]", "[1,2]", 30),
+    ("$[3]", "[1,2]", 30),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-append-$" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("append $", "[1,2,3]", 50),
+    ("append $", "[1,2,3,null]", 50),
+    ("append $", "[1,2,3,null,4]", 86),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation array-strict-$[0]" {
+  let original = @types.JsonData::parse("[1,2]")
+  let mut value = original
+  let mut previous_size = 30
+  let mutations : Array[(String, String, Int)] = [
+    ("strict $[0]", "[3,2]", 30),
+    ("strict $[0]", "[null,2]", 30),
+    ("strict $[0]", "[4,2]", 30),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 30)
+  assert_eq(original.text(), "[1,2]")
+}
+
+///|
+test "native JSON mutation json-modify-allocation document-$.a" {
+  let original = @types.JsonData::parse("{\"a\":1}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":{\"b\":2}}", 84),
+    ("$.a", "{\"a\":[1,2]}", 96),
+    ("$.a", "{\"a\":{\"c\":3}}", 109),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":1}")
+}
+
+///|
+test "native JSON mutation json-modify-allocation document-strict-$.a" {
+  let original = @types.JsonData::parse("{\"a\":1}")
+  let mut value = original
+  let mut previous_size = 43
+  let mutations : Array[(String, String, Int)] = [
+    ("strict $.a", "{\"a\":{\"b\":2}}", 84),
+    ("strict $.a", "{\"a\":[1,2]}", 96),
+    ("strict $.a", "{\"a\":{\"c\":3}}", 109),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 43)
+  assert_eq(original.text(), "{\"a\":1}")
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-00" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\"}", 181,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      355,
+    ),
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":1,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      355,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":1,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      379,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":1,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      379,
+    ),
+    (
+      "$.b", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      379,
+    ),
+    (
+      "$.a", "{\"a\":[1,2,3],\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      395,
+    ),
+    (
+      "$.a", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      395,
+    ),
+    (
+      "$.b.x", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      395,
+    ),
+    (
+      "$.a[0]", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      395,
+    ),
+    (
+      "$.b.x", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      395,
+    ),
+    (
+      "$.c", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":[{\"x\":1},{\"y\":2}]}",
+      427,
+    ),
+    (
+      "append $.a", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":[{\"x\":1},{\"y\":2}]}",
+      427,
+    ),
+    (
+      "append $.a", "{\"a\":0,\"b\":0,\"s\":\"abcdefgh\",\"c\":[{\"x\":1},{\"y\":2}]}",
+      427,
+    ),
+    (
+      "$.b", "{\"a\":0,\"b\":[],\"s\":\"abcdefgh\",\"c\":[{\"x\":1},{\"y\":2}]}",
+      427,
+    ),
+    (
+      "append $.a", "{\"a\":0,\"b\":[],\"s\":\"abcdefgh\",\"c\":[{\"x\":1},{\"y\":2}]}",
+      427,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-01" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\"}", 181,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      234,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      244,
+    ),
+    (
+      "$.a[0]", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},2,3],\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      428,
+    ),
+    (
+      "$.b.x", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},2,3],\"b\":{\"y\":true},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      428,
+    ),
+    (
+      "$.c", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},2,3],\"b\":{\"y\":true},\"s\":\"abcdefgh\",\"c\":536870912}",
+      437,
+    ),
+    (
+      "$.s", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},2,3],\"b\":{\"y\":true},\"s\":1,\"c\":536870912}",
+      437,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"y\":true},\"s\":1,\"c\":536870912}",
+      460,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"y\":\"x\"},\"s\":1,\"c\":536870912}",
+      463,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{},\"y\":\"x\"},\"s\":1,\"c\":536870912}",
+      463,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"s\":1,\"c\":536870912}",
+      877,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"s\":1,\"c\":536870912}",
+      877,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"s\":1,\"c\":536870912}",
+      877,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{\"y\":\"z\"}},\"s\":1,\"c\":536870912}",
+      900,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{\"y\":\"z\"}},\"s\":1,\"c\":536870912}",
+      900,
+    ),
+    ("$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"s\":1,\"c\":536870912}", 900),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-02" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":0,\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    (
+      "$.b.y", "{\"a\":0,\"b\":{\"x\":1,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\"}",
+      312,
+    ),
+    (
+      "$.s", "{\"a\":0,\"b\":{\"x\":1,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":[1,2,3]}",
+      328,
+    ),
+    (
+      "$.b.y", "{\"a\":0,\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":[1,2,3]}",
+      362,
+    ),
+    (
+      "$.s", "{\"a\":0,\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":0}",
+      362,
+    ),
+    (
+      "$.a[0]", "{\"a\":0,\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":0}",
+      362,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":0}",
+      385,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      516,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      539,
+    ),
+    (
+      "$.c", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{}}",
+      722,
+    ),
+    (
+      "$.c", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2}},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      738,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":536870912,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      747,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":536870912,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      747,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":[1,2,3],\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      763,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":[1,2,3],\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      763,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":[1,2,3],\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1}}",
+      763,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-03" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":\"abcdefgh\"}", 218,
+    ),
+    ("$.s", "{\"a\":[1,2,3],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":false}", 218),
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":false,\"c\":{\"x\":1}}",
+      271,
+    ),
+    (
+      "$.a[0]", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},2,3],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":false,\"c\":{\"x\":1}}",
+      515,
+    ),
+    (
+      "$.s", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},2,3],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":\"\",\"c\":{\"x\":1}}",
+      515,
+    ),
+    (
+      "$.b.y", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},2,3],\"b\":{\"x\":{\"y\":\"z\"},\"y\":[]},\"s\":\"\",\"c\":{\"x\":1}}",
+      537,
+    ),
+    (
+      "$.b.y", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},2,3],\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"\",\"c\":{\"x\":1}}",
+      560,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"\",\"c\":{\"x\":1}}",
+      569,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"\",\"c\":{\"x\":1}}",
+      569,
+    ),
+    (
+      "$.s", "{\"a\":-536870913,\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":{\"y\":\"z\"},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.b.x", "{\"a\":-536870913,\"b\":{\"x\":\"\",\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.b.y", "{\"a\":-536870913,\"b\":{\"x\":\"\",\"y\":false},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.b.x", "{\"a\":-536870913,\"b\":{\"x\":0,\"y\":false},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+    (
+      "$.b.x", "{\"a\":-536870913,\"b\":{\"x\":0,\"y\":false},\"s\":[1,2,3],\"c\":{\"x\":1}}",
+      585,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-04" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":{\"x\":{\"y\":\"z\"}}},\"s\":\"abcdefgh\"}",
+      218,
+    ),
+    ("$.b", "{\"a\":[1,2,3],\"s\":\"abcdefgh\"}", 218),
+    ("$.s", "{\"a\":[1,2,3],\"s\":0}", 218),
+    (
+      "$.s", "{\"a\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      412,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      438,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      438,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.a[0]", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.b.x", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.b.y", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.b.x", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      498,
+    ),
+    (
+      "$.s", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":[1,2,3]}",
+      514,
+    ),
+    (
+      "$.b.x", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}]],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":[1,2,3]}",
+      514,
+    ),
+    (
+      "append $.a", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}],-536870913],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":[1,2,3]}",
+      523,
+    ),
+    (
+      "$.s", "{\"a\":[\"\",2,3,[{\"x\":1},{\"y\":2}],-536870913],\"c\":{\"x\":{\"y\":\"z\"}},\"s\":[]}",
+      523,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-05" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":\"\"},\"s\":\"abcdefgh\"}", 124),
+    ("$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":false},\"s\":\"abcdefgh\"}", 124),
+    ("$.b", "{\"a\":[1,2,3],\"b\":\"x\",\"s\":\"abcdefgh\"}", 127),
+    (
+      "append $.a", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}],\"b\":\"x\",\"s\":\"abcdefgh\"}",
+      349,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}],\"b\":\"x\",\"s\":\"abcdefgh\",\"c\":\"x\"}",
+      395,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}],\"b\":\"x\",\"s\":\"abcdefgh\",\"c\":false}",
+      395,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":false}",
+      421,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"\"],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":false}",
+      421,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"\"],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      430,
+    ),
+    (
+      "$.a", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      462,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      872,
+    ),
+    (
+      "$.a", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      904,
+    ),
+    (
+      "$.b.y", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      904,
+    ),
+    (
+      "$.b.y", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":\"x\",\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      904,
+    ),
+    (
+      "$.b", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":false,\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      904,
+    ),
+    (
+      "append $.a", "{\"a\":[{\"x\":1},{\"y\":2},1],\"b\":false,\"s\":{\"x\":{\"y\":\"z\"}},\"c\":536870912}",
+      924,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-06" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":-536870913}",
+      208,
+    ),
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":-536870913}",
+      218,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,\"\"],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":-536870913}",
+      246,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3,\"\"],\"b\":{\"x\":1},\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      270,
+    ),
+    (
+      "$.a", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      286,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      286,
+    ),
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      302,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,null],\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      330,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,null,{\"x\":1}],\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1},\"c\":-536870913}",
+      340,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,null,{\"x\":1}],\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1},\"c\":true}",
+      340,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1},\"c\":true}",
+      356,
+    ),
+    (
+      "$.s", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":[1,2,3],\"s\":[1,2,3],\"c\":true}",
+      372,
+    ),
+    ("$.b", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":1,\"s\":[1,2,3],\"c\":true}", 372),
+    ("$.s", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":1,\"s\":{},\"c\":true}", 372),
+    ("$.b", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":{},\"s\":{},\"c\":true}", 372),
+    ("$.a[0]", "{\"a\":{\"q0\":0,\"q1\":1},\"b\":{},\"s\":{},\"c\":true}", 372),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-07" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":1,\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    ("$.a[0]", "{\"a\":1,\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    ("$.a", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    ("$.a[0]", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    (
+      "$.c", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "$.a[0]", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "$.a[0]", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "append $.a", "{\"a\":\"\",\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "$.a", "{\"a\":[],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "$.b.x", "{\"a\":[],\"b\":{\"x\":false},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      261,
+    ),
+    (
+      "$.b.x", "{\"a\":[],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}},\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      505,
+    ),
+    (
+      "$.b", "{\"a\":[],\"b\":false,\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      505,
+    ),
+    (
+      "$.b.y", "{\"a\":[],\"b\":false,\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      505,
+    ),
+    (
+      "$.b.x", "{\"a\":[],\"b\":false,\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      505,
+    ),
+    (
+      "$.b.y", "{\"a\":[],\"b\":false,\"s\":\"abcdefgh\",\"c\":{\"x\":{\"y\":\"z\"}}}",
+      505,
+    ),
+    ("$.c", "{\"a\":[],\"b\":false,\"s\":\"abcdefgh\",\"c\":false}", 505),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-08" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}", 181),
+    (
+      "append $.a", "{\"a\":[1,2,3,[1,2,3]],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}",
+      225,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,[1,2,3],[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}",
+      257,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,[1,2,3],[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      494,
+    ),
+    (
+      "$.b", "{\"a\":[1,2,3,[1,2,3],[{\"x\":1},{\"y\":2}]],\"b\":-536870913,\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      503,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":1},\"b\":-536870913,\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      513,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":1},\"b\":-536870913,\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      513,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":1},\"b\":{\"x\":{\"y\":\"z\"}},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      536,
+    ),
+    (
+      "$.c", "{\"a\":{\"x\":1},\"b\":{\"x\":{\"y\":\"z\"}},\"s\":\"abcdefgh\",\"c\":-536870913}",
+      545,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":1},\"b\":{\"x\":[1,2,3]},\"s\":\"abcdefgh\",\"c\":-536870913}",
+      561,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":1},\"b\":{\"x\":[1,2,3]},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      971,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":1},\"b\":{\"x\":[1,2,3]},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      971,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"x\":1},\"b\":{\"x\":[1,2,3]},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      971,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":1},\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      987,
+    ),
+    (
+      "$.a", "{\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      987,
+    ),
+    (
+      "append $.a", "{\"b\":[1,2,3],\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"c\":-536870913}",
+      987,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-09" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      255,
+    ),
+    ("$.a", "{\"a\":[],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 255),
+    ("append $.a", "{\"a\":[\"\"],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 267),
+    (
+      "append $.a", "{\"a\":[\"\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      697,
+    ),
+    (
+      "$.c", "{\"a\":[\"\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      871,
+    ),
+    (
+      "$.a[0]", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      871,
+    ),
+    (
+      "$.b.y", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":{\"x\":1,\"y\":false},\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      896,
+    ),
+    (
+      "$.b", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":[1,2,3],\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      912,
+    ),
+    (
+      "$.b.y", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}],\"b\":[1,2,3],\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      912,
+    ),
+    (
+      "append $.a", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":[1,2,3],\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.b.x", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":[1,2,3],\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.b.x", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":[1,2,3],\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.b", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":false,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.b", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":true,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.b.x", "{\"a\":[0,{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"x\"],\"b\":true,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+    (
+      "$.a", "{\"a\":true,\"b\":true,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      935,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-10" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "append $.a", "{\"a\":[1,2,3,{\"x\":1}],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      162,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3,{\"x\":1}],\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}",
+      171,
+    ),
+    (
+      "$.a", "{\"a\":536870912,\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}", 180,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}",
+      906,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}",
+      906,
+    ),
+    ("$.a", "{\"a\":[],\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}", 906),
+    ("$.a[0]", "{\"a\":[],\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}", 906),
+    (
+      "append $.a", "{\"a\":[1],\"b\":{\"x\":-536870913},\"s\":\"abcdefgh\"}", 918,
+    ),
+    ("$.s", "{\"a\":[1],\"b\":{\"x\":-536870913},\"s\":{}}", 918),
+    ("append $.a", "{\"a\":[1,1],\"b\":{\"x\":-536870913},\"s\":{}}", 918),
+    (
+      "$.b.x", "{\"a\":[1,1],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}},\"s\":{}}",
+      982,
+    ),
+    (
+      "$.a[0]", "{\"a\":[[],1],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}},\"s\":{}}",
+      982,
+    ),
+    (
+      "$.b.y", "{\"a\":[[],1],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}},\"s\":{}}",
+      982,
+    ),
+    (
+      "$.c", "{\"a\":[[],1],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}},\"s\":{}}",
+      982,
+    ),
+    ("$.b", "{\"a\":[[],1],\"b\":-536870913,\"s\":{}}", 991),
+    ("$.a[0]", "{\"a\":[536870912,1],\"b\":-536870913,\"s\":{}}", 1000),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-11" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a", "{\"a\":-536870913,\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 133),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      244,
+    ),
+    (
+      "$.b.y", "{\"a\":-536870913,\"b\":{\"x\":1,\"y\":true},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      269,
+    ),
+    (
+      "$.s", "{\"a\":-536870913,\"b\":{\"x\":1,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":\"\"}",
+      513,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":{\"x\":1,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":\"\"}",
+      513,
+    ),
+    (
+      "$.b.x", "{\"a\":-536870913,\"b\":{\"x\":false,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":\"\"}",
+      513,
+    ),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"x\":false,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":1}",
+      513,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":false,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":1}",
+      513,
+    ),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"x\":false,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":\"x\"}",
+      516,
+    ),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"x\":false,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      548,
+    ),
+    (
+      "$.b.x", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2},\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      570,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2},\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      570,
+    ),
+    (
+      "$.a", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2},\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      602,
+    ),
+    (
+      "append $.a", "{\"a\":[{\"x\":1},{\"y\":2},[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2},\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      654,
+    ),
+    (
+      "$.b.x", "{\"a\":[{\"x\":1},{\"y\":2},[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":-536870913,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":[{\"x\":1},{\"y\":2}]}",
+      663,
+    ),
+    (
+      "$.c", "{\"a\":[{\"x\":1},{\"y\":2},[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":-536870913,\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":false}",
+      663,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-12" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.s", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":[1,2,3]}", 140),
+    ("$.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1},\"s\":[1,2,3]}", 234),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1},\"s\":[1,2,3]}",
+      234,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1}},\"s\":[1,2,3]}",
+      280,
+    ),
+    (
+      "$.c", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1}},\"s\":[1,2,3],\"c\":-536870913}",
+      332,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":[1,2,3],\"c\":-536870913}",
+      463,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":[1,2,3],\"c\":-536870913}",
+      463,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{\"y\":\"z\"}},\"s\":[1,2,3],\"c\":-536870913}",
+      486,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":[1,2,3],\"c\":-536870913}",
+      617,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{},\"s\":[1,2,3],\"c\":-536870913}",
+      617,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{},\"s\":[1,2,3],\"c\":-536870913}",
+      617,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":true},\"s\":[1,2,3],\"c\":-536870913}",
+      633,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":false},\"s\":[1,2,3],\"c\":-536870913}",
+      633,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":false},\"s\":1,\"c\":-536870913}",
+      633,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{}},\"s\":1,\"c\":-536870913}",
+      633,
+    ),
+    (
+      "$.c", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":{}},\"s\":1,\"c\":[]}", 633,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-13" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a[0]", "{\"a\":[\"x\",2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 127),
+    ("$.a[0]", "{\"a\":[{},2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 127),
+    (
+      "append $.a", "{\"a\":[{},2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      286,
+    ),
+    (
+      "$.b", "{\"a\":[{},2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"s\":\"abcdefgh\"}",
+      480,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"s\":\"abcdefgh\"}",
+      489,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"s\":\"abcdefgh\"}",
+      489,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"s\":\"abcdefgh\"}",
+      489,
+    ),
+    (
+      "append $.a", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"s\":\"abcdefgh\"}",
+      489,
+    ),
+    (
+      "$.b.y", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":\"abcdefgh\"}",
+      572,
+    ),
+    (
+      "append $.a", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":\"abcdefgh\"}",
+      572,
+    ),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1321,
+    ),
+    (
+      "append $.a", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1321,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1321,
+    ),
+    (
+      "$.s", "{\"a\":-536870913,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"y\":{\"x\":1}},\"s\":1,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1321,
+    ),
+    (
+      "$.b", "{\"a\":-536870913,\"b\":false,\"s\":1,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1321,
+    ),
+    ("$.c", "{\"a\":-536870913,\"b\":false,\"s\":1,\"c\":false}", 1321),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-14" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.a[0]", "{\"a\":[{},2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 124),
+    (
+      "$.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      218,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"x\":1,\"y\":-536870913},\"s\":\"abcdefgh\"}",
+      249,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"s\":\"abcdefgh\"}",
+      975,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"s\":\"abcdefgh\"}",
+      975,
+    ),
+    ("$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":\"abcdefgh\"}", 975),
+    ("$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":\"abcdefgh\"}", 975),
+    (
+      "$.s", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":[{\"x\":1},{\"y\":2}]}",
+      1007,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":[{\"x\":1},{\"y\":2}]}",
+      1007,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":[{\"x\":1},{\"y\":2}]}",
+      1007,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":{\"y\":\"z\"}},\"b\":1,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1203,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-15" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":false},\"s\":\"abcdefgh\"}",
+      181,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":[{\"x\":1},{\"y\":2}],\"y\":false},\"s\":\"abcdefgh\"}",
+      213,
+    ),
+    ("$.b", "{\"a\":[1,2,3],\"b\":[],\"s\":\"abcdefgh\"}", 213),
+    (
+      "append $.a", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1}],\"b\":[],\"s\":\"abcdefgh\"}",
+      265,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1}],\"b\":[],\"s\":\"abcdefgh\",\"c\":0}",
+      308,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1}],\"b\":[],\"s\":[1,2,3],\"c\":0}",
+      324,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3,{\"q0\":0,\"q1\":1}],\"b\":[],\"s\":[1,2,3],\"c\":0}",
+      324,
+    ),
+    ("$.a", "{\"a\":0,\"b\":[],\"s\":[1,2,3],\"c\":0}", 324),
+    ("$.c", "{\"a\":0,\"b\":[],\"s\":[1,2,3],\"c\":0}", 324),
+    ("$.b", "{\"a\":0,\"b\":\"\",\"s\":[1,2,3],\"c\":0}", 324),
+    (
+      "$.c", "{\"a\":0,\"b\":\"\",\"s\":[1,2,3],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+    (
+      "$.b.x", "{\"a\":0,\"b\":\"\",\"s\":[1,2,3],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+    (
+      "$.s", "{\"a\":0,\"b\":\"\",\"s\":0,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+    (
+      "$.b.y", "{\"a\":0,\"b\":\"\",\"s\":0,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+    (
+      "$.a[0]", "{\"a\":0,\"b\":\"\",\"s\":0,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+    (
+      "$.b", "{\"a\":0,\"b\":[],\"s\":0,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}}",
+      510,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-16" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":[{\"x\":1},{\"y\":2}]},\"s\":\"abcdefgh\"}",
+      227,
+    ),
+    ("$.b", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 237),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      262,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":\"x\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      692,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":\"\",\"y\":\"x\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      692,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":\"\",\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      715,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,1],\"b\":{\"x\":\"\",\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      743,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,1,{}],\"b\":{\"x\":\"\",\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      743,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3,1,{}],\"b\":{\"x\":536870912,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      752,
+    ),
+    (
+      "$.a[0]", "{\"a\":[null,2,3,1,{}],\"b\":{\"x\":536870912,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      752,
+    ),
+    (
+      "$.b.y", "{\"a\":[null,2,3,1,{}],\"b\":{\"x\":536870912,\"y\":{\"q0\":0,\"q1\":1}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      768,
+    ),
+    (
+      "$.a[0]", "{\"a\":[false,2,3,1,{}],\"b\":{\"x\":536870912,\"y\":{\"q0\":0,\"q1\":1}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      768,
+    ),
+    (
+      "append $.a", "{\"a\":[false,2,3,1,{},-536870913],\"b\":{\"x\":536870912,\"y\":{\"q0\":0,\"q1\":1}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      777,
+    ),
+    (
+      "$.s", "{\"a\":[false,2,3,1,{},-536870913],\"b\":{\"x\":536870912,\"y\":{\"q0\":0,\"q1\":1}},\"s\":false}",
+      777,
+    ),
+    (
+      "$.c", "{\"a\":[false,2,3,1,{},-536870913],\"b\":{\"x\":536870912,\"y\":{\"q0\":0,\"q1\":1}},\"s\":false,\"c\":false}",
+      820,
+    ),
+    (
+      "$.b", "{\"a\":[false,2,3,1,{},-536870913],\"b\":[{\"x\":1},{\"y\":2}],\"s\":false,\"c\":false}",
+      852,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-17" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":1},\"s\":\"abcdefgh\"}", 181),
+    ("$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}", 181),
+    (
+      "append $.a", "{\"a\":[1,2,3,{\"x\":{\"y\":\"z\"}}],\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}",
+      232,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}",
+      426,
+    ),
+    (
+      "append $.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"b\":{\"x\":1,\"y\":0},\"s\":\"abcdefgh\"}",
+      426,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"b\":{\"x\":1,\"y\":1},\"s\":\"abcdefgh\"}",
+      426,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"b\":{\"x\":1,\"y\":{}},\"s\":\"abcdefgh\"}",
+      426,
+    ),
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1,\"y\":{}},\"s\":\"abcdefgh\"}",
+      557,
+    ),
+    (
+      "$.s", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1,\"y\":{}},\"s\":true}",
+      557,
+    ),
+    (
+      "$.b.y", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1,\"y\":[1,2,3]},\"s\":true}",
+      573,
+    ),
+    (
+      "$.b.y", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3}},\"s\":true}",
+      601,
+    ),
+    (
+      "$.b.y", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1},\"s\":true}",
+      601,
+    ),
+    (
+      "append $.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1},\"s\":true}",
+      601,
+    ),
+    (
+      "append $.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1},\"s\":true}",
+      601,
+    ),
+    (
+      "$.b", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":true}",
+      601,
+    ),
+    (
+      "$.s", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-18" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "append $.a", "{\"a\":[1,2,3,null],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 152,
+    ),
+    ("$.b", "{\"a\":[1,2,3,null],\"b\":{},\"s\":\"abcdefgh\"}", 152),
+    ("$.a[0]", "{\"a\":[{},2,3,null],\"b\":{},\"s\":\"abcdefgh\"}", 152),
+    (
+      "$.b.x", "{\"a\":[{},2,3,null],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":\"abcdefgh\"}",
+      362,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":\"abcdefgh\"}",
+      371,
+    ),
+    (
+      "$.s", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":[1,2,3]}",
+      387,
+    ),
+    (
+      "$.c", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":[1,2,3],\"c\":536870912}",
+      439,
+    ),
+    (
+      "$.a[0]", "{\"a\":-536870913,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":[1,2,3],\"c\":536870912}",
+      439,
+    ),
+    (
+      "$.a", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4}},\"s\":[1,2,3],\"c\":536870912}",
+      439,
+    ),
+    (
+      "$.b.y", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":1}},\"s\":[1,2,3],\"c\":536870912}",
+      452,
+    ),
+    (
+      "append $.a", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":1}},\"s\":[1,2,3],\"c\":536870912}",
+      452,
+    ),
+    (
+      "$.a[0]", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":1}},\"s\":[1,2,3],\"c\":536870912}",
+      452,
+    ),
+    (
+      "$.b.y", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":[1,2,3]},\"s\":[1,2,3],\"c\":536870912}",
+      468,
+    ),
+    (
+      "$.c", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":[1,2,3]},\"s\":[1,2,3],\"c\":[]}",
+      468,
+    ),
+    (
+      "append $.a", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":[1,2,3]},\"s\":[1,2,3],\"c\":[]}",
+      468,
+    ),
+    (
+      "$.b.y", "{\"a\":true,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":1},\"s\":[1,2,3],\"c\":[]}",
+      468,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-19" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":536870912}",
+      208,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":\"\"},\"s\":\"abcdefgh\",\"c\":536870912}",
+      208,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":\"\",\"y\":true},\"s\":\"abcdefgh\",\"c\":536870912}",
+      233,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3],\"b\":{\"x\":\"\",\"y\":true},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      477,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":\"\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      477,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,false],\"b\":{\"x\":\"\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      505,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,false,[{\"x\":1},{\"y\":2}]],\"b\":{\"x\":\"\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      537,
+    ),
+    (
+      "$.a", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":\"\"},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      569,
+    ),
+    (
+      "$.b", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      592,
+    ),
+    (
+      "$.b", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      615,
+    ),
+    (
+      "$.a[0]", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},{\"y\":2}],\"b\":{\"x\":{\"y\":\"z\"}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1005,
+    ),
+    (
+      "$.b", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},{\"y\":2}],\"b\":false,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1005,
+    ),
+    (
+      "$.a[0]", "{\"a\":[[{\"x\":1},{\"y\":2}],{\"y\":2}],\"b\":false,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1037,
+    ),
+    (
+      "$.b.x", "{\"a\":[[{\"x\":1},{\"y\":2}],{\"y\":2}],\"b\":false,\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1037,
+    ),
+    (
+      "$.b", "{\"a\":[[{\"x\":1},{\"y\":2}],{\"y\":2}],\"b\":\"\",\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1037,
+    ),
+    (
+      "append $.a", "{\"a\":[[{\"x\":1},{\"y\":2}],{\"y\":2},[]],\"b\":\"\",\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9},\"c\":536870912}",
+      1057,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-20" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b", "{\"a\":[1,2,3],\"b\":[1,2,3],\"s\":\"abcdefgh\"}", 140),
+    ("$.a[0]", "{\"a\":[{},2,3],\"b\":[1,2,3],\"s\":\"abcdefgh\"}", 140),
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":[1,2,3],\"s\":\"abcdefgh\"}",
+      271,
+    ),
+    (
+      "$.b.x", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":[1,2,3],\"s\":\"abcdefgh\"}",
+      271,
+    ),
+    (
+      "$.a[0]", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":[1,2,3],\"s\":\"abcdefgh\"}",
+      271,
+    ),
+    ("$.a", "{\"a\":0,\"b\":[1,2,3],\"s\":\"abcdefgh\"}", 271),
+    ("append $.a", "{\"a\":0,\"b\":[1,2,3],\"s\":\"abcdefgh\"}", 271),
+    (
+      "$.s", "{\"a\":0,\"b\":[1,2,3],\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      402,
+    ),
+    (
+      "$.a", "{\"a\":536870912,\"b\":[1,2,3],\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      411,
+    ),
+    (
+      "$.b", "{\"a\":536870912,\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      542,
+    ),
+    (
+      "$.a[0]", "{\"a\":536870912,\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      542,
+    ),
+    (
+      "$.c", "{\"a\":536870912,\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[]}",
+      653,
+    ),
+    (
+      "append $.a", "{\"a\":536870912,\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[]}",
+      653,
+    ),
+    (
+      "append $.a", "{\"a\":536870912,\"b\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[]}",
+      653,
+    ),
+    (
+      "$.b", "{\"a\":536870912,\"b\":{\"x\":{\"y\":\"z\"}},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[]}",
+      679,
+    ),
+    (
+      "$.b", "{\"a\":536870912,\"b\":1,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[]}",
+      679,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-21" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\"}",
+      255,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\"}",
+      414,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      535,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3}],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      719,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},null],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      719,
+    ),
+    (
+      "$.a[0]", "{\"a\":[1,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},null],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      719,
+    ),
+    (
+      "$.a[0]", "{\"a\":[0,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},null],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      719,
+    ),
+    (
+      "$.b.y", "{\"a\":[0,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},null],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      744,
+    ),
+    (
+      "$.a[0]", "{\"a\":[536870912,2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},null],\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      753,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":1},\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      763,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":1},\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      801,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":1},\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      824,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":1},\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":false,\"c\":{\"x\":1}}",
+      824,
+    ),
+    (
+      "$.a", "{\"a\":0,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":false,\"c\":{\"x\":1}}",
+      824,
+    ),
+    (
+      "$.s", "{\"a\":0,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":{\"x\":1}}",
+      827,
+    ),
+    (
+      "$.c", "{\"a\":0,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4},\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      827,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-22" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      245,
+    ),
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      255,
+    ),
+    ("$.c", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":1}", 255),
+    (
+      "$.b", "{\"a\":[1,2,3],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},\"s\":\"abcdefgh\",\"c\":1}",
+      439,
+    ),
+    (
+      "append $.a", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3},\"s\":\"abcdefgh\",\"c\":1}",
+      476,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"abcdefgh\",\"c\":1}",
+      662,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"\",\"c\":1}",
+      662,
+    ),
+    (
+      "$.c", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":\"\",\"c\":0}",
+      662,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"x\":true},\"s\":\"\",\"c\":0}",
+      662,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"\",\"x\":true},\"s\":\"\",\"c\":0}",
+      662,
+    ),
+    (
+      "$.a[0]", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"\",\"x\":true},\"s\":\"\",\"c\":0}",
+      1076,
+    ),
+    (
+      "$.s", "{\"a\":[{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},2,3,536870912],\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"\",\"x\":true},\"s\":{},\"c\":0}",
+      1076,
+    ),
+    (
+      "$.a", "{\"a\":1,\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"\",\"x\":true},\"s\":{},\"c\":0}",
+      1076,
+    ),
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"y\":\"\",\"x\":true},\"s\":{},\"c\":0}",
+      1207,
+    ),
+    (
+      "$.b", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":1},\"s\":{},\"c\":0}",
+      1217,
+    ),
+    (
+      "$.b.x", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":{\"x\":{\"y\":\"z\"}}},\"s\":{},\"c\":0}",
+      1240,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-23" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "append $.a", "{\"a\":[1,2,3,[1,2,3]],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      168,
+    ),
+    (
+      "$.s", "{\"a\":[1,2,3,[1,2,3]],\"b\":{\"x\":1},\"s\":[{\"x\":1},{\"y\":2}]}",
+      271,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3,[1,2,3]],\"b\":{\"x\":1,\"y\":\"x\"},\"s\":[{\"x\":1},{\"y\":2}]}",
+      296,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3,[1,2,3]],\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"y\":\"x\"},\"s\":[{\"x\":1},{\"y\":2}]}",
+      1022,
+    ),
+    (
+      "$.a", "{\"a\":1,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"y\":\"x\"},\"s\":[{\"x\":1},{\"y\":2}]}",
+      1022,
+    ),
+    (
+      "$.c", "{\"a\":1,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"y\":\"x\"},\"s\":[{\"x\":1},{\"y\":2}]}",
+      1022,
+    ),
+    (
+      "$.s", "{\"a\":1,\"b\":{\"x\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"y\":\"x\"},\"s\":[]}",
+      1022,
+    ),
+    ("$.b.x", "{\"a\":1,\"b\":{\"x\":\"x\",\"y\":\"x\"},\"s\":[]}", 1025),
+    (
+      "$.c", "{\"a\":1,\"b\":{\"x\":\"x\",\"y\":\"x\"},\"s\":[],\"c\":[{\"x\":1},{\"y\":2}]}",
+      1100,
+    ),
+    (
+      "$.b.y", "{\"a\":1,\"b\":{\"x\":\"x\",\"y\":true},\"s\":[],\"c\":[{\"x\":1},{\"y\":2}]}",
+      1100,
+    ),
+    (
+      "$.c", "{\"a\":1,\"b\":{\"x\":\"x\",\"y\":true},\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}",
+      1122,
+    ),
+    (
+      "$.b.x", "{\"a\":1,\"b\":{\"x\":{\"x\":1},\"y\":true},\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}",
+      1132,
+    ),
+    (
+      "$.b", "{\"a\":1,\"b\":[],\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}", 1132,
+    ),
+    ("$.b", "{\"a\":1,\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}", 1132),
+    (
+      "append $.a", "{\"a\":1,\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}", 1132,
+    ),
+    ("$.b.y", "{\"a\":1,\"s\":[],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2}}", 1132),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-24" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.s", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":1}", 124),
+    (
+      "$.a[0]", "{\"a\":[[{\"x\":1},{\"y\":2}],2,3],\"b\":{\"x\":1},\"s\":1}", 227,
+    ),
+    ("$.a[0]", "{\"a\":[[1,2,3],2,3],\"b\":{\"x\":1},\"s\":1}", 243),
+    (
+      "$.c", "{\"a\":[[1,2,3],2,3],\"b\":{\"x\":1},\"s\":1,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}}",
+      530,
+    ),
+    (
+      "append $.a", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"x\":1},\"s\":1,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9}}",
+      689,
+    ),
+    (
+      "$.c", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":{\"x\":1},\"s\":1,\"c\":[{\"x\":1},{\"y\":2}]}",
+      721,
+    ),
+    (
+      "$.b", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":-536870913,\"s\":1,\"c\":[{\"x\":1},{\"y\":2}]}",
+      730,
+    ),
+    (
+      "$.b", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":1,\"c\":[{\"x\":1},{\"y\":2}]}",
+      746,
+    ),
+    (
+      "$.s", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":true,\"c\":[{\"x\":1},{\"y\":2}]}",
+      746,
+    ),
+    (
+      "$.c", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":true,\"c\":{\"x\":1}}",
+      756,
+    ),
+    (
+      "$.b.x", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":true,\"c\":{\"x\":1}}",
+      756,
+    ),
+    (
+      "$.b.x", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":true,\"c\":{\"x\":1}}",
+      756,
+    ),
+    (
+      "$.s", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"b\":[1,2,3],\"s\":{},\"c\":{\"x\":1}}",
+      756,
+    ),
+    (
+      "append $.a", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{}],\"b\":[1,2,3],\"s\":{},\"c\":{\"x\":1}}",
+      756,
+    ),
+    (
+      "append $.a", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{},[{\"x\":1},{\"y\":2}]],\"b\":[1,2,3],\"s\":{},\"c\":{\"x\":1}}",
+      788,
+    ),
+    (
+      "$.a[0]", "{\"a\":[[1,2,3],2,3,\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",{},[{\"x\":1},{\"y\":2}]],\"b\":[1,2,3],\"s\":{},\"c\":{\"x\":1}}",
+      804,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-25" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.s", "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":{}}", 124),
+    ("$.a", "{\"a\":\"x\",\"b\":{\"x\":1},\"s\":{}}", 127),
+    (
+      "$.b.x", "{\"a\":\"x\",\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":{}}",
+      258,
+    ),
+    (
+      "$.a[0]", "{\"a\":\"x\",\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":{}}",
+      258,
+    ),
+    (
+      "$.s", "{\"a\":\"x\",\"b\":{\"x\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"},\"s\":true}",
+      258,
+    ),
+    ("$.b", "{\"a\":\"x\",\"b\":1,\"s\":true}", 258),
+    ("$.a[0]", "{\"a\":\"x\",\"b\":1,\"s\":true}", 258),
+    ("$.a[0]", "{\"a\":\"x\",\"b\":1,\"s\":true}", 258),
+    ("$.b", "{\"a\":\"x\",\"b\":\"x\",\"s\":true}", 261),
+    ("$.b.x", "{\"a\":\"x\",\"b\":\"x\",\"s\":true}", 261),
+    (
+      "$.s", "{\"a\":\"x\",\"b\":\"x\",\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      691,
+    ),
+    (
+      "$.b.y", "{\"a\":\"x\",\"b\":\"x\",\"s\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      691,
+    ),
+    ("$.s", "{\"a\":\"x\",\"b\":\"x\",\"s\":{\"x\":1}}", 701),
+    ("$.a[0]", "{\"a\":\"x\",\"b\":\"x\",\"s\":{\"x\":1}}", 701),
+    ("$.b", "{\"a\":\"x\",\"b\":false,\"s\":{\"x\":1}}", 701),
+    ("$.b.x", "{\"a\":\"x\",\"b\":false,\"s\":{\"x\":1}}", 701),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-26" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.a[0]", "{\"a\":[536870912,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 133,
+    ),
+    ("$.s", "{\"a\":[536870912,2,3],\"b\":{\"x\":1},\"s\":536870912}", 133),
+    (
+      "$.c", "{\"a\":[536870912,2,3],\"b\":{\"x\":1},\"s\":536870912,\"c\":{}}",
+      244,
+    ),
+    (
+      "$.c", "{\"a\":[536870912,2,3],\"b\":{\"x\":1},\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      674,
+    ),
+    (
+      "$.b.x", "{\"a\":[536870912,2,3],\"b\":{\"x\":\"x\"},\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      677,
+    ),
+    (
+      "$.b.y", "{\"a\":[536870912,2,3],\"b\":{\"x\":\"x\",\"y\":0},\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      702,
+    ),
+    (
+      "$.b.x", "{\"a\":[536870912,2,3],\"b\":{\"x\":0,\"y\":0},\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      702,
+    ),
+    (
+      "$.b", "{\"a\":[536870912,2,3],\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      702,
+    ),
+    (
+      "append $.a", "{\"a\":[536870912,2,3,true],\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      730,
+    ),
+    (
+      "$.b", "{\"a\":[536870912,2,3,true],\"b\":0,\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      730,
+    ),
+    (
+      "append $.a", "{\"a\":[536870912,2,3,true,{\"q0\":0,\"q1\":1,\"q2\":2}],\"b\":0,\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      752,
+    ),
+    (
+      "$.b.y", "{\"a\":[536870912,2,3,true,{\"q0\":0,\"q1\":1,\"q2\":2}],\"b\":0,\"s\":536870912,\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      752,
+    ),
+    (
+      "$.s", "{\"a\":[536870912,2,3,true,{\"q0\":0,\"q1\":1,\"q2\":2}],\"b\":0,\"s\":[1,2,3],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      768,
+    ),
+    (
+      "$.a", "{\"a\":-536870913,\"b\":0,\"s\":[1,2,3],\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15}}",
+      777,
+    ),
+    ("$.c", "{\"a\":-536870913,\"b\":0,\"s\":[1,2,3],\"c\":536870912}", 786),
+    ("$.b.y", "{\"a\":-536870913,\"b\":0,\"s\":[1,2,3],\"c\":536870912}", 786),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-27" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":\"x\"},\"s\":\"abcdefgh\"}", 127),
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":\"x\",\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      223,
+    ),
+    (
+      "$.b.x", "{\"a\":[1,2,3],\"b\":{\"x\":{},\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      223,
+    ),
+    ("$.b", "{\"a\":[1,2,3],\"b\":{\"q0\":0,\"q1\":1},\"s\":\"abcdefgh\"}", 247),
+    (
+      "append $.a", "{\"a\":[1,2,3,\"x\"],\"b\":{\"q0\":0,\"q1\":1},\"s\":\"abcdefgh\"}",
+      278,
+    ),
+    (
+      "$.b.y", "{\"a\":[1,2,3,\"x\"],\"b\":{\"q0\":0,\"q1\":1,\"y\":\"\"},\"s\":\"abcdefgh\"}",
+      306,
+    ),
+    (
+      "$.a[0]", "{\"a\":[[1,2,3],2,3,\"x\"],\"b\":{\"q0\":0,\"q1\":1,\"y\":\"\"},\"s\":\"abcdefgh\"}",
+      322,
+    ),
+    (
+      "$.b.y", "{\"a\":[[1,2,3],2,3,\"x\"],\"b\":{\"q0\":0,\"q1\":1,\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      325,
+    ),
+    (
+      "$.a", "{\"a\":\"\",\"b\":{\"q0\":0,\"q1\":1,\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      325,
+    ),
+    (
+      "$.a", "{\"a\":true,\"b\":{\"q0\":0,\"q1\":1,\"y\":\"x\"},\"s\":\"abcdefgh\"}",
+      325,
+    ),
+    (
+      "$.b.y", "{\"a\":true,\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}},\"s\":\"abcdefgh\"}",
+      1043,
+    ),
+    (
+      "$.b.x", "{\"a\":true,\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"x\":{}},\"s\":\"abcdefgh\"}",
+      1043,
+    ),
+    (
+      "$.c", "{\"a\":true,\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"x\":{}},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      1086,
+    ),
+    (
+      "$.a", "{\"a\":{\"x\":1},\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"x\":{}},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      1096,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"x\":1},\"b\":{\"q0\":0,\"q1\":1,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"x\":{}},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      1227,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"x\":1},\"b\":{\"q0\":0,\"q1\":1,\"y\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"x\":{}},\"s\":\"abcdefgh\",\"c\":\"\"}",
+      1227,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-28" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.a[0]", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 134,
+    ),
+    (
+      "$.a[0]", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 144,
+    ),
+    (
+      "$.b.y", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"abcdefgh\"}",
+      260,
+    ),
+    (
+      "$.s", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2}}",
+      294,
+    ),
+    (
+      "$.b.x", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2}}",
+      310,
+    ),
+    (
+      "$.c", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":{\"q0\":0,\"q1\":1,\"q2\":2},\"c\":\"\"}",
+      493,
+    ),
+    (
+      "$.s", "{\"a\":[{\"x\":1},2,3],\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":\"\"}",
+      496,
+    ),
+    (
+      "$.a[0]", "{\"a\":[false,2,3],\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":\"\"}",
+      496,
+    ),
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":\"\"}",
+      627,
+    ),
+    (
+      "$.c", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"x\":[1,2,3],\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      627,
+    ),
+    (
+      "$.b", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1},\"s\":\"x\",\"c\":1}",
+      643,
+    ),
+    (
+      "$.b.y", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      694,
+    ),
+    (
+      "append $.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      694,
+    ),
+    (
+      "$.a[0]", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      694,
+    ),
+    (
+      "append $.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"x\":{\"y\":\"z\"}}},\"s\":\"x\",\"c\":1}",
+      694,
+    ),
+    (
+      "$.b.x", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":{\"q0\":0,\"q1\":1,\"y\":{\"x\":{\"y\":\"z\"}},\"x\":true},\"s\":\"x\",\"c\":1}",
+      694,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-29" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.b.y", "{\"a\":[1,2,3],\"b\":{\"x\":1,\"y\":false},\"s\":\"abcdefgh\"}",
+      181,
+    ),
+    ("$.a", "{\"a\":\"\",\"b\":{\"x\":1,\"y\":false},\"s\":\"abcdefgh\"}", 181),
+    (
+      "$.s", "{\"a\":\"\",\"b\":{\"x\":1,\"y\":false},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      312,
+    ),
+    (
+      "$.b", "{\"a\":\"\",\"b\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15},\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      742,
+    ),
+    (
+      "$.b", "{\"a\":\"\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      742,
+    ),
+    (
+      "append $.a", "{\"a\":\"\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      742,
+    ),
+    (
+      "$.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      873,
+    ),
+    (
+      "$.b.x", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      873,
+    ),
+    (
+      "$.b.x", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      873,
+    ),
+    (
+      "append $.a", "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      873,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      1529,
+    ),
+    (
+      "$.c", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[1,2,3]}",
+      1588,
+    ),
+    (
+      "$.s", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[1,2,3]}",
+      1588,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[1,2,3]}",
+      1588,
+    ),
+    (
+      "append $.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[1,2,3]}",
+      1588,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":[1,2,3]}",
+      1588,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-30" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    (
+      "$.a", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      227,
+    ),
+    (
+      "$.c", "{\"a\":[{\"x\":1},{\"y\":2}],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      280,
+    ),
+    (
+      "$.a[0]", "{\"a\":[0,{\"y\":2}],\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      280,
+    ),
+    (
+      "$.a", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":{\"x\":1},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      454,
+    ),
+    (
+      "$.b", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":{},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      454,
+    ),
+    (
+      "$.b.y", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":{\"y\":0},\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      470,
+    ),
+    (
+      "$.b", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":true,\"s\":\"abcdefgh\",\"c\":{\"x\":1}}",
+      470,
+    ),
+    (
+      "$.c", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":true,\"s\":\"abcdefgh\",\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+    (
+      "$.s", "{\"a\":{\"q0\":0,\"q1\":1,\"q2\":2},\"b\":true,\"s\":536870912,\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+    (
+      "$.a", "{\"a\":{},\"b\":true,\"s\":536870912,\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+    (
+      "$.a[0]", "{\"a\":{},\"b\":true,\"s\":536870912,\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+    (
+      "$.a", "{\"a\":[],\"b\":true,\"s\":536870912,\"c\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      601,
+    ),
+    ("$.c", "{\"a\":[],\"b\":true,\"s\":536870912,\"c\":536870912}", 601),
+    ("$.s", "{\"a\":[],\"b\":true,\"c\":536870912}", 601),
+    ("$.b.y", "{\"a\":[],\"b\":true,\"c\":536870912}", 601),
+    ("$.s", "{\"a\":[],\"b\":true,\"c\":536870912}", 601),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}
+
+///|
+test "native JSON mutation json-allocation-sequences alloc-sequence-31" {
+  let original = @types.JsonData::parse(
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+  let mut value = original
+  let mut previous_size = 124
+  let mutations : Array[(String, String, Int)] = [
+    ("append $.a", "{\"a\":[1,2,3,[]],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 152),
+    ("$.b", "{\"a\":[1,2,3,[]],\"b\":1,\"s\":\"abcdefgh\"}", 152),
+    ("$.b", "{\"a\":[1,2,3,[]],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 162),
+    (
+      "$.a[0]", "{\"a\":[{\"q0\":0,\"q1\":1},2,3,[]],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      254,
+    ),
+    (
+      "append $.a", "{\"a\":[{\"q0\":0,\"q1\":1},2,3,[],1],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+      254,
+    ),
+    ("$.a", "{\"a\":{\"x\":1},\"b\":{\"x\":1},\"s\":\"abcdefgh\"}", 264),
+    ("$.b.x", "{\"a\":{\"x\":1},\"b\":{\"x\":\"x\"},\"s\":\"abcdefgh\"}", 267),
+    ("$.a[0]", "{\"a\":{\"x\":1},\"b\":{\"x\":\"x\"},\"s\":\"abcdefgh\"}", 267),
+    ("$.a[0]", "{\"a\":{\"x\":1},\"b\":{\"x\":\"x\"},\"s\":\"abcdefgh\"}", 267),
+    ("$.b.x", "{\"a\":{\"x\":1},\"b\":{\"x\":true},\"s\":\"abcdefgh\"}", 267),
+    (
+      "$.c", "{\"a\":{\"x\":1},\"b\":{\"x\":true},\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1028,
+    ),
+    (
+      "$.b", "{\"a\":{\"x\":1},\"b\":0,\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1028,
+    ),
+    (
+      "$.a[0]", "{\"a\":{\"x\":1},\"b\":0,\"s\":\"abcdefgh\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1028,
+    ),
+    (
+      "$.s", "{\"a\":{\"x\":1},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1159,
+    ),
+    (
+      "$.b.x", "{\"a\":{\"x\":1},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1159,
+    ),
+    (
+      "append $.a", "{\"a\":{\"x\":1},\"b\":0,\"s\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"c\":{\"q0\":0,\"q1\":1,\"q2\":2,\"q3\":3,\"q4\":4,\"q5\":5,\"q6\":6,\"q7\":7,\"q8\":8,\"q9\":9,\"q10\":10,\"q11\":11,\"q12\":12,\"q13\":13,\"q14\":14,\"q15\":15,\"q16\":16,\"q17\":17,\"q18\":18,\"q19\":19,\"q20\":20,\"q21\":21,\"q22\":22,\"q23\":23,\"q24\":24,\"q25\":25,\"q26\":26,\"q27\":27,\"q28\":28,\"q29\":29,\"q30\":30,\"q31\":31}}",
+      1159,
+    ),
+  ]
+  for (path, canonical, size) in mutations {
+    let previous = value
+    value = value.modified(canonical, path)
+    assert_eq(value.text(), canonical)
+    assert_eq(value.storage_bytes(), size)
+    assert_eq(previous.storage_bytes(), previous_size)
+    previous_size = size
+  }
+  assert_eq(original.storage_bytes(), 124)
+  assert_eq(
+    original.text(),
+    "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
+  )
+}

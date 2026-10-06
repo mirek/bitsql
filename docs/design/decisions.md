@@ -992,7 +992,11 @@ or deleting values, while JSON_QUERY rebuilds its result. Evidence is in
 `sql2025/json-function-storage.sql` and the mutation allocation captures.
 
 Fresh construction records its oracle-verified size. Native assignment retains
-that provenance; textual conversion and reparsing construct new storage. Until
-mutation allocation is modeled, modified values carry an unknown size and
-DATALENGTH raises an explicit Emulator error. This interim state prevents a
-false size result without claiming completion of mutation support.
+that provenance; textual conversion and reparsing construct new storage.
+JSON_MODIFY now carries an immutable allocation tree, dictionary capacity and
+location, and retained byte count. Deleted property slots preserve native
+rendering order and are reused before new slots. Shared arrays and key sets are
+never mutated after publication, preserving assignments and transaction snapshots.
+The first construction-only checkpoint used an unknown-size marker; the captured
+mutation model replaces that interim state. See the JSON reference for evidence
+and the native modify statement forms that remain unfinished.
