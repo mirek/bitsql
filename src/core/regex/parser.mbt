@@ -20,7 +20,7 @@ fn Parser::peek(self : Parser) -> Int {
 }
 
 ///|
-fn Parser::take(self : Parser) -> Int raise @types.SqlError {
+fn Parser::take(self : Parser) -> Int {
   let c = self.peek()
   if c < 0 {
     return c
@@ -34,7 +34,7 @@ fn Parser::take(self : Parser) -> Int raise @types.SqlError {
     }
   }
   if c >= 0xD800 && c <= 0xDFFF {
-    raise @types.not_supported("lone surrogates in regular expression patterns")
+    return 0xFFFD
   }
   c
 }
@@ -580,7 +580,7 @@ pub fn compile(
   flags : String,
 ) -> Program raise @types.SqlError {
   let p : Parser = {
-    text: pattern,
+    text: @types.replace_lone_surrogates(pattern),
     pos: 0,
     fold: false,
     dotall: false,

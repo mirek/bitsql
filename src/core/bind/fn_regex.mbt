@@ -89,6 +89,9 @@ fn bind_regex_fn(
         !bare_null {
         raise bad_arg_type(x.ty, j + 1, name.to_lower())
       }
+      if slot == 4 && x.ty is (NChar(_, _) | NVarChar(_, _)) && !bare_null {
+        raise bad_arg_type(x.ty, j + 1, name.to_lower())
+      }
       args[slot] = if bare_null {
         coerce(x, VarChar(Some(1), env.collation))
       } else {
@@ -163,7 +166,10 @@ fn bind_regex_table(
         state=(if fname == "REGEXP_MATCHES" { 22 } else { 25 }) + i,
       )
     }
-    if !(e.ty is (Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _))) &&
+    if (
+        !(e.ty is (Char(_, _) | NChar(_, _) | VarChar(_, _) | NVarChar(_, _))) ||
+        (i == 2 && e.ty is (NChar(_, _) | NVarChar(_, _)))
+      ) &&
       !bare_null {
       raise err(
         8116,

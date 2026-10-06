@@ -89,7 +89,7 @@ pub fn json_type_normalize(text : String) -> String raise SqlError {
 }
 
 ///|
-fn replace_lone_surrogates(s : String) -> String {
+pub fn replace_lone_surrogates(s : String) -> String {
   let n = s.length()
   let mut clean = true
   let mut i = 0

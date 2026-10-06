@@ -17,7 +17,7 @@ fn regex_table(
     raise @types.not_supported("non-string regular expression arguments")
   }
   let program = @regex.compile(pattern, flags)
-  let bytes = @utf8.encode(source)
+  let bytes = @utf8.encode(@types.replace_lone_surrogates(source))
   ctx.rt.charge(bytes.length().to_int64())
   let positions : Map[Int, Int] = Map([])
   let mut cursor = 0

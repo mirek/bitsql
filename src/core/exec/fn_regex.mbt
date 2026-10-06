@@ -1,24 +1,15 @@
 ///|
-fn regex_text(
-  bytes : Bytes,
-  start : Int,
-  end : Int,
-) -> String raise @types.SqlError {
-  @utf8.decode(bytes[start:end]) catch {
-    _ =>
-      raise @types.not_supported(
-        "regular expression captures that split UTF-8 characters",
-      )
-  }
+fn regex_text(bytes : Bytes, start : Int, end : Int) -> String {
+  @utf8.decode_lossy(bytes[start:end])
 }
 
 ///|
 fn regex_replacement(
-  replacement : String,
+  replacement : Bytes,
   bytes : Bytes,
   m : @regex.Match,
-) -> String raise @types.SqlError {
-  let out = StringBuilder()
+  out : Buffer,
+) -> Unit {
   let mut i = 0
   while i < replacement.length() {
     let c = replacement[i].to_int()
@@ -27,21 +18,20 @@ fn regex_replacement(
       if next >= 49 && next <= 57 {
         let group = next - 48
         if group < m.groups.length() && m.groups[group] is Some((a, b)) {
-          out.write_string(regex_text(bytes, a, b))
+          out.write_bytes(bytes[a:b])
         }
         i += 2
         continue
       }
       if next == 92 {
-        out.write_char('\\')
+        out.write_byte(replacement[i])
         i += 2
         continue
       }
     }
-    out.write_char(c.unsafe_to_char())
+    out.write_byte(replacement[i])
     i += 1
   }
-  out.to_string()
 }
 
 ///|
@@ -79,7 +69,10 @@ fn call_regex(
   @regex.validate_control(name, "GROUP", group.to_int64())
   @regex.validate_control(name, "RETURN_OPTION", return_option.to_int64())
   let program = @regex.compile(pattern, flags)
-  let bytes = @utf8.encode(source)
+  let bytes = @utf8.encode(@types.replace_lone_surrogates(source))
+  let replacement_bytes = @utf8.encode(
+    @types.replace_lone_surrogates(replacement),
+  )
   let mut at = 0
   let mut char_pos = 1
   while at <= bytes.length() && char_pos < start {
@@ -88,8 +81,8 @@ fn call_regex(
   }
   let mut count = 0
   let mut copied = 0
-  let output = StringBuilder()
-  let mut output_length = 0
+  let output = Buffer()
+  let mut changed = false
   while program.find(bytes, at, n => ctx.rt.charge(n)) is Some(m) {
     let (a, b) = m.groups[0].unwrap()
     count += 1
@@ -98,18 +91,17 @@ fn call_regex(
     }
     if name == "REGEXP_REPLACE" {
       if occurrence == 0 || occurrence == count {
-        let prefix = regex_text(bytes, copied, a)
-        let insert = regex_replacement(replacement, bytes, m)
-        output_length += prefix.length() + insert.length()
-        ctx.rt.charge(insert.length().to_int64())
-        if output_length > 8_000_000 {
+        changed = true
+        output.write_bytes(bytes[copied:a])
+        let before = output.length()
+        regex_replacement(replacement_bytes, bytes, m, output)
+        ctx.rt.charge((output.length() - before).to_int64())
+        if output.length() > 8_000_000 {
           raise @types.emulator_error(
             @types.EMU_WORK_BUDGET,
             "regular expression replacement exceeded the output budget",
           )
         }
-        output.write_string(prefix)
-        output.write_string(insert)
         copied = b
         if occurrence != 0 {
           break
@@ -153,8 +145,12 @@ fn call_regex(
       "REGEXP_INSTR" => Int(0)
       "REGEXP_SUBSTR" => Null
       _ => {
-        output.write_string(regex_text(bytes, copied, bytes.length()))
-        let result = output.to_string()
+        output.write_bytes(bytes[copied:bytes.length()])
+        let result = if changed {
+          @utf8.decode_lossy(output.to_bytes())
+        } else {
+          source
+        }
         let target : @types.SqlType = match e.ty {
           Char(n, c) | VarChar(Some(n), c) => VarChar(Some(n), c)
           NChar(n, c) | NVarChar(Some(n), c) => NVarChar(Some(n), c)

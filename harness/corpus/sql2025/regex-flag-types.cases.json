@@ -1,0 +1,265 @@
+{
+  "cases": [
+    {
+      "name": "char-count",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT('x','.',1,CAST('c' AS char(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "char-substr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR('x','.',1,1,CAST('c' AS char(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "char-instr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_INSTR('x','.',1,1,0,CAST('c' AS char(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "char-replace",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE('x','.','y',1,0,CAST('c' AS char(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "char-like",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REGEXP_LIKE('x','.',CAST('c' AS char(1))) THEN 1 ELSE 0 END AS n;"
+        }
+      ]
+    },
+    {
+      "name": "char-matches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES('x','.',CAST('c' AS char(1)));"
+        }
+      ]
+    },
+    {
+      "name": "char-split",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE('x','.',CAST('c' AS char(1)));"
+        }
+      ]
+    },
+    {
+      "name": "nchar-count",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT('x','.',1,CAST('c' AS nchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nchar-substr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR('x','.',1,1,CAST('c' AS nchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "nchar-instr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_INSTR('x','.',1,1,0,CAST('c' AS nchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nchar-replace",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE('x','.','y',1,0,CAST('c' AS nchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "nchar-like",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REGEXP_LIKE('x','.',CAST('c' AS nchar(1))) THEN 1 ELSE 0 END AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nchar-matches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES('x','.',CAST('c' AS nchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "nchar-split",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE('x','.',CAST('c' AS nchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "varchar-count",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT('x','.',1,CAST('c' AS varchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-substr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR('x','.',1,1,CAST('c' AS varchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-instr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_INSTR('x','.',1,1,0,CAST('c' AS varchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-replace",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE('x','.','y',1,0,CAST('c' AS varchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-like",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REGEXP_LIKE('x','.',CAST('c' AS varchar(1))) THEN 1 ELSE 0 END AS n;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-matches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES('x','.',CAST('c' AS varchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "varchar-split",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE('x','.',CAST('c' AS varchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-count",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT('x','.',1,CAST('c' AS nvarchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-substr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR('x','.',1,1,CAST('c' AS nvarchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-instr",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_INSTR('x','.',1,1,0,CAST('c' AS nvarchar(1))) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-replace",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE('x','.','y',1,0,CAST('c' AS nvarchar(1))) AS s;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-like",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN REGEXP_LIKE('x','.',CAST('c' AS nvarchar(1))) THEN 1 ELSE 0 END AS n;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-matches",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES('x','.',CAST('c' AS nvarchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-split",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE('x','.',CAST('c' AS nvarchar(1)));"
+        }
+      ]
+    },
+    {
+      "name": "surrogate-flags",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x',N'.',1,CAST(NCHAR(55296) AS nvarchar(10))) AS n;"
+        }
+      ]
+    }
+  ]
+}

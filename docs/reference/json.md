@@ -333,8 +333,32 @@ DATALENGTH implementation or a claim to serialize the native format:
   coefficient, with at least one limb. Decimal scale remains significant.
 
 The canonical representation suffices for these construction captures,
-including duplicate member names keeping the first value. In-place mutation,
-large property dictionaries and allocation behavior still need verification.
+including duplicate member names keeping the first value. It does not suffice
+after mutation: `sql2025/json-storage-mutation.sql` verifies that changing
+`{"a":"abcdefgh","b":1}` to `{"a":"x","b":1}` with `.modify()` retains
+70 bytes, while a text round trip rebuilds it in 63 bytes. Growing that string
+to sixteen characters increases allocated size to 88 (rebuilt: 78); replacing
+an out-of-line integer with an inline one retains its allocation. Deleting a
+property also retains storage. Both column and variable mutation work on the
+oracle. Large property dictionaries and precise allocation transitions still
+need verification; native JSON needs storage state beyond canonical text.
+
+`sql2025/json-mutation-column-allocation.cases.json` adds 37 mutation sequences,
+all reproduced in a second oracle run. Shrinking a string does not reserve its
+former length for later reuse: growing it again appends the new payload.
+Deletion leaves reusable object slots and dictionary entries; reinserting the
+same inline property can leave DATALENGTH unchanged. Array append grows capacity
+in steps (a two-element inline array grows from 30 to 50 bytes for its third
+element, stays at 50 for its fourth, then grows to 86 for its fifth).
+
+The parallel variable capture `json-mutation-allocation.cases.json` is
+investigative evidence, **not a stable compatibility contract**: two sequences
+dropped their connections, and some others raised internal LOB errors 22002 or
+22020. The captured 22002 for `$[1]` did not recur on an independent run. A
+127/128-byte string transition also produced error 596 and killed its session
+in a probe. Do not encode these unstable errors as deterministic SQL behavior
+or count the missing expectations as passes. Corresponding persisted-column
+sequences completed normally.
 Microsoft documents a native
 [json modify method](https://learn.microsoft.com/en-us/sql/t-sql/data-types/json-data-type?view=sql-server-ver17#the-modify-method)
 with in-place updates, so construction-only evidence must not be generalized
