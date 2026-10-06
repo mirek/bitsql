@@ -356,6 +356,15 @@ fn[T] sort_keyed(
     Some(order) => return order.map(i => keyed[i])
     None => ()
   }
+  sort_keyed_general(keyed, keys)
+}
+
+///|
+/// General sort after normalized-key encoding is unavailable.
+fn[T] sort_keyed_general(
+  keyed : Array[(Array[@types.Value], T)],
+  keys : Array[@ir.SortKey],
+) -> Array[(Array[@types.Value], T)] raise @types.SqlError {
   let ansi = keys.map(ansi_key)
   let prepared = keyed.map(kv => (order_keys(kv.0, keys, ansi), kv))
   sort_prepared(prepared, keys, ansi)

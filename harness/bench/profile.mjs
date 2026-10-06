@@ -72,14 +72,14 @@ try {
   const c = await connect(config)
   try {
     if (process.env.WORKLOAD === 'requests') await requests(c)
-    else await capture(c, { kind: 'batch', sql: setupSql(n) }, { rowLimit: 1 })
+    else await exact(c, setupSql(n))
     for (const [name, sql] of process.env.WORKLOAD === 'requests' ? [] : work) {
-      await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
+      await exact(c, sql)
       let total = 0, min = Infinity
       const cpu0 = cpuNs()
       for (let i = 0; i < reps; i++) {
         const t = performance.now()
-        await capture(c, { kind: 'batch', sql }, { rowLimit: 10 })
+        await exact(c, sql)
         const ms = performance.now() - t
         total += ms; min = Math.min(min, ms)
       }

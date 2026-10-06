@@ -140,7 +140,46 @@ fn single_column_ids(
   }
   let slots = FixedArray::make(capacity, -1)
   let mask = capacity - 1
+  // Exact text repeats can reuse a group without allocating another collation
+  // key. Wait for observed duplication: an unconditional cache penalizes
+  // unique input. Stop using it if the distribution subsequently changes.
+  let mut raw_cache : Map[String, Int]? = None
+  let mut next_probe = 1024
+  let mut probes = 0
+  let mut hits = 0
   for i, r in keys {
+    if i == next_probe {
+      next_probe = if next_probe > n / 2 { n } else { next_probe * 2 }
+      // Seeding revisits the prefix: leave at least as much input to reuse it.
+      if kind == 3 && count * 4 < i * 3 && n - i >= i {
+        let cache : Map[String, Int] = Map([])
+        for j in 0..<i {
+          if keys[j][0] is String(s) {
+            cache[s] = ids[j]
+          }
+        }
+        raw_cache = Some(cache)
+        next_probe = n
+      }
+    }
+    if raw_cache is Some(cache) && r[0] is String(s) {
+      let id = cache.get(s).unwrap_or(-1)
+      probes += 1
+      if id >= 0 {
+        hits += 1
+      }
+      if probes == 1024 {
+        if hits < 128 {
+          raw_cache = None
+        }
+        probes = 0
+        hits = 0
+      }
+      if id >= 0 {
+        ids[i] = id
+        continue
+      }
+    }
     let k = @types.sort_key(r[0], collation?, ansi~)
     let x = k.exact_kind()
     if x < 0 || (x > 0 && kind > 0 && x != kind) {
@@ -160,6 +199,9 @@ fn single_column_ids(
       ks[i] = k
       ids[i] = count
       count += 1
+    }
+    if raw_cache is Some(cache) && r[0] is String(s) {
+      cache[s] = ids[i]
     }
   }
   Some((ids, count))

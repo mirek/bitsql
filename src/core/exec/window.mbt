@@ -104,6 +104,16 @@ fn window_values_ordered(
     all_keys.push(k)
   }
   let cs = all_keys.map(k => compile(k.expr))
+  if call.func is RowNumber && all_keys[0:np].iter().all(k => !ansi_key(k)) {
+    let values = rows.map(r => cs.map(f => f(ctx, r)))
+    if row_numbers_normalized(values, all_keys, np, result) is Some(order) {
+      return (result, order)
+    }
+    // Encoding failed; use the general comparator without trying it again.
+    let sorted = sort_keyed_general(values.mapi((i, v) => (v, i)), all_keys)
+    row_numbers(sorted, np, call.partition_collations, result)
+    return (result, sorted.map(kv => kv.1))
+  }
   let keyed = rows.mapi((i, r) => (cs.map(f => f(ctx, r)), i))
   let sorted_all = sort_keyed(keyed, all_keys)
   if call.func is RowNumber {
@@ -562,4 +572,47 @@ fn row_numbers(
     }
     result[kv.1] = BigInt((j - start + 1).to_int64())
   }
+}
+
+///|
+/// Reuse exact normalized partition prefixes while retaining the full stable
+/// sort. Partition equality uses ansi=false, so ANSI partition keys retain
+/// the original path. None leaves result untouched and values reusable.
+fn row_numbers_normalized(
+  values : Array[Array[@types.Value]],
+  keys : Array[@ir.SortKey],
+  np : Int,
+  result : Array[@types.Value],
+) -> Array[Int]? {
+  for i in 0..<np {
+    if ansi_key(keys[i]) {
+      return None
+    }
+  }
+  let ends : Array[Int] = []
+  guard normalized_keys(values, keys, prefix=Some((np, ends))) is Some(ks) else {
+    return None
+  }
+  let order = Array::makei(values.length(), i => i)
+  stable_sort_by(order, (i, j) => compare_normalized(ks[i], ks[j]))
+  let mut start = 0
+  for j, at in order {
+    if j > 0 {
+      let prev = order[j - 1]
+      let mut same = ends[prev] == ends[at]
+      if same {
+        for k in 0..<ends[at] {
+          if ks[prev][k] != ks[at][k] {
+            same = false
+            break
+          }
+        }
+      }
+      if !same {
+        start = j
+      }
+    }
+    result[at] = BigInt((j - start + 1).to_int64())
+  }
+  Some(order)
 }

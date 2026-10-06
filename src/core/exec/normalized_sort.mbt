@@ -26,13 +26,19 @@ fn push_int64(out : Array[Int], x : Int64) -> Unit {
 fn normalized_keys(
   values : Array[Array[@types.Value]],
   keys : Array[@ir.SortKey],
+  prefix? : (Int, Array[Int])? = None,
 ) -> Array[Array[Int]]? {
   let ansi = keys.map(ansi_key)
+  let prefix_columns = match prefix {
+    Some((n, _)) => n
+    None => -1
+  }
   // key kind per column: 0 none yet, 1 integers, 2 ticks, 3 text
   let kinds = Array::make(keys.length(), 0)
   let out = []
   for row in values {
     let buf : Array[Int] = Array(capacity=keys.length() * 4)
+    let mut prefix_end = 0
     for i, v in row {
       let start = buf.length()
       let kind = match v {
@@ -89,6 +95,12 @@ fn normalized_keys(
           buf[j] = buf[j].lnot()
         }
       }
+      if i + 1 == prefix_columns {
+        prefix_end = buf.length()
+      }
+    }
+    if prefix is Some((_, ends)) {
+      ends.push(prefix_end)
     }
     out.push(buf)
   }

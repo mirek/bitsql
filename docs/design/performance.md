@@ -405,7 +405,7 @@ builds/tests/benchmarks. Mean wall time in ms:
 | Scalar correlated | 3.47 / 3.41 | 3.45 / 3.41 | 3.09 / 3.16 |
 | Scalar uncorrelated | 4.93 / 4.93 | 4.89 / 4.84 | 4.11 / 4.15 |
 
-Next ROW_NUMBER experiment (read-only review, not implemented): retain each
+ROW_NUMBER follow-up design (implemented in the 0.1.15 candidate below): retain each
 normalized key's offset after its partition columns, stable-sort the existing
 position array, and compare adjacent normalized prefixes for boundaries.
 This could avoid re-comparing linguistic values and rebuilding keyed tuples
@@ -475,3 +475,58 @@ not the eager variant. Published after explicit registry authorization on
 2026-10-06: `0.1.13`, `0.1` and `latest` have identical amd64 + arm64
 manifest lists, digest
 `sha256:0949be20d29855ddb5abbd74e42bbc8535a1fe88243b88d946e8cc352f936a0b`.
+
+
+## Normalized window prefixes and adaptive grouping (2026-10-06, 0.1.15 candidate)
+
+ROW_NUMBER reuses the normalized partition prefix after the same stable sort,
+without reconstructing keyed tuples or comparing linguistic partition values
+again. ANSI partition keys keep the existing path; an encoding failure reuses
+the evaluated values in the general comparator. Tests compare ranks and output
+permutations, expression evaluation traces, NULLs, ties, multiple keys, DESC,
+linguistic equivalence, binary/ANSI and mixed-type/error fallbacks.
+
+Two interleaved native runs (100 repetitions, 20k rows) measured ROW_NUMBER
+7.53/7.29 ms before versus 6.76/6.76 ms after. Ordinary ORDER BY controls stayed
+stable. With 60 repetitions, all-unique partitions improved 13.62/13.55 to
+12.97/12.49 ms and a single partition 7.14/7.03 to 6.65/6.53 ms. Long prefixes,
+ANSI, binary and decimal fallback controls were approximately unchanged.
+Evidence: `_build/window-prefix-bench-0.1.14.txt` and
+`_build/window-prefix-controls-0.1.14.txt`.
+
+Single-column exact text grouping now optionally caches raw-string group ids
+once observed duplicate groups justify it. All-unique input never allocates the
+cache. Activation checks powers of two from 1024 rows, requires fewer than 75%
+as many groups as rows, and requires at least as much input remaining as was
+read. A 1024-probe interval with fewer than 128 hits disables the cache if the
+distribution changes. Cache misses retain the canonical collation-key path;
+first-appearance group numbering and comparison errors remain unchanged.
+Expanded pairwise SQL-comparison tests cover 12k rows across linguistic and
+binary collations, ANSI modes and NULLs; separate tests cover unique input,
+distribution changes, the 5003-group workload and a late mixed-type error.
+
+The first version allowed late activation, regressing 12k distinct values in
+20k rows from 9.47/9.28 to 10.75/10.55 ms. Requiring half the input to remain
+removed that regression. Final controlled native results (mean ms; grouping
+baseline already includes the window change):
+
+| Shape | Before | After |
+| --- | ---: | ---: |
+| GROUP BY v | 5.35 | 5.12 |
+| DISTINCT v | 5.61 | 5.32 |
+| COUNT(DISTINCT v) | 4.46 | 4.29 |
+| UNION | 7.72 | 6.36 |
+| All-unique text | 9.94 / 9.93 | 9.90 / 10.06 |
+| Repeats then unique | 10.21 / 10.25 | 10.05 / 10.32 |
+| 12k distinct values | 9.96 / 9.52 | 9.44 / 9.36 |
+| Long repeated text | 20.37 / 20.49 | 14.36 / 14.61 |
+| Raw-unique trailing-space equivalents | 65.37 / 66.58 | 68.35 / 67.97 |
+
+The last control exposes a small cost when SQL-equal strings do not repeat
+exactly (roughly 2–4% here); it is retained as a tradeoff, not called a win.
+Integer grouping, EXCEPT and the window optimization stayed stable. Timings ran
+sequentially with no concurrent builds/tests/benchmarks. Evidence:
+`_build/adaptive-group-final-bench.txt` and
+`_build/adaptive-group-final-controls.txt`. The profile helper now rejects SQL
+errors during setup, warm-up and every timed run; an invalid-column probe
+confirmed nonzero exit. Full release validation and container comparison pending.

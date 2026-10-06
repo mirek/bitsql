@@ -234,26 +234,26 @@ equivalence tests and before/after timings are in `performance.md`.
   existing sort, boundary comparisons, and output order: direct scan measured
   7–8% lower mean time on 2026-10-06; equivalence tests and targeted captures
   checked; full gate passed (273 MoonBit tests, 20702 client/corpus passes,
-  3 skips). Unreleased (`performance.md`).
+  3 skips). Included in published 0.1.13 (`performance.md`).
 
-- [~] 0.1.11 preparation: streaming exact grouping keys and an allocation-free
+- [x] 0.1.11 preparation: streaming exact grouping keys and an allocation-free
   hash improve text grouping/distinct/UNION, including the all-unique check;
   combines the tested ROW_NUMBER scan. Exact amd64 binary passed the full
   gate (273 MoonBit tests, 20702 client/corpus passes, 3 skips); arm64 smoke
   passed 571/571. Container benchmark: sum of 24 five-sample medians 256 vs
   641 ms (2.5×); UNION near parity, text grouping/window/subquery gaps remain.
-  README refreshed; raw timings retained. Registry destination approval is
-  still pending.
+  README refreshed; raw timings retained. These optimizations shipped
+  cumulatively in 0.1.13 after registry authorization.
 
-- [~] 0.1.12 prepared: integer IN/NOT IN hash membership with unchanged
+- [x] 0.1.12 prepared: integer IN/NOT IN hash membership with unchanged
   conversion-aware fallback, NULL semantics, and memo invalidation. Executor
   equivalence tests pass; isolated repeated IN time improves about 27%, NOT IN
   about 11–16%. Exact amd64 release gate: 274 MoonBit tests, 20702 client
   passes, 3 skips; arm64 571/571. Container IN 3.11 vs 4.88 ms, NOT IN 2.39
-  vs 3.12 ms, 24 shapes 247 vs 669 ms. README refreshed; publication pending
-  registry authorization (`performance.md`).
+  vs 3.12 ms, 24 shapes 247 vs 669 ms. README refreshed; shipped cumulatively
+  in 0.1.13 after registry authorization (`performance.md`).
 
-- [~] Canonical database-key lookup avoids redundant lowercase conversion
+- [x] Canonical database-key lookup avoids redundant lowercase conversion
   in db_of/tx_part. Session tests pass (36); isolated timings show small
   uncorrelated-query gains. Context-scoped stamp reader now passes 37 session
   tests, including write/rollback/database/scope transitions. Combined candidate
@@ -299,3 +299,12 @@ project: the breadth of transaction and error semantics in phases 5–6.
   events by business keys. SQL Server 2025 four-row MERGE results differ from
   the report's 2022 observations; do not hard-code the two-row plan.
   See `docs/reference/compatibility-2026-10-05.md`.
+
+## Current performance follow-up
+
+- [~] 0.1.15: reuse normalized ROW_NUMBER partition prefixes (8–10% native gain)
+  and adaptively cache repeated text grouping keys (UNION about 18%, ordinary
+  text grouping 4–5%, long repeated text about 29%). Unique and low-duplication
+  controls stable after rejecting late cache activation; raw-unique SQL-equal
+  strings show a small overhead. Executor tests 20/20. Full release validation
+  and container comparison pending; see `performance.md`.

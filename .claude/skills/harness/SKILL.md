@@ -530,3 +530,7 @@ Start the host with `--database NAME` so the app's database exists at login
   DML shapes roll back, preserving data for repeated samples. Earlier
   comparison JSON without these fields contains one timed sample per shape;
   `--from` keeps rendering it with the original interpretation.
+
+- 2026-10-06: `bench/profile.mjs` now fails on SQL errors in setup, warm-up
+  and every timed execution, matching the comparison runner. Failed queries
+  must never appear as fast measurements.

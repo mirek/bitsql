@@ -11,7 +11,7 @@ test "text grouping agrees with pairwise SQL comparison" {
     ] {
     let collation = @types.Collation::parse(name).unwrap()
     for ansi in [false, true] {
-      let rows : Array[Row] = Array::makei(400, i => {
+      let rows : Array[Row] = Array::makei(12000, i => {
         if i % 13 == 0 {
           [Null]
         } else {
@@ -127,4 +127,59 @@ test "integer RowSet agrees with general keys including conversions and errors" 
       assert_eq(fast.contains([Int(n)]), reference.contains([Int(n)]))
     }
   }
+}
+
+///|
+test "adaptive text grouping handles unique input and changing distributions" {
+  for mode in 0..<3 {
+    let rows : Array[Row] = Array::makei(20000, i => {
+      let k = if mode == 0 {
+        i
+      } else if mode == 1 && i >= 4096 {
+        i
+      } else if mode == 1 {
+        i % 17
+      } else {
+        i % 5003
+      }
+      [String("v" + k.to_string())]
+    })
+    let reference : Map[@types.SortKey, Int] = Map([])
+    let expected = rows.map(r => {
+      let k = @types.sort_key(r[0])
+      match reference.get(k) {
+        Some(id) => id
+        None => {
+          let id = reference.length()
+          reference[k] = id
+          id
+        }
+      }
+    })
+    let (ids, count) = group_ids(rows, [None])
+    assert_eq(ids, expected)
+    assert_eq(count, reference.length())
+  }
+}
+
+///|
+test "adaptive text grouping retains mixed-kind comparison errors" {
+  let rows : Array[Row] = Array::makei(4096, _ => [String("not a number")])
+  rows.push([Int(1)])
+  let actual = try {
+    ignore(group_ids(rows, [None]))
+    Ok(())
+  } catch {
+    e => Err(e)
+  }
+  let expected = try {
+    ignore(
+      sort_key_rows(rows.map(r => key_row(r, [None], false)), [None], false),
+    )
+    Ok(())
+  } catch {
+    e => Err(e)
+  }
+  assert_eq(actual, expected)
+  assert_true(actual is Err(_))
 }
