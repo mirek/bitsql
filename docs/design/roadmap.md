@@ -346,7 +346,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   a regression against 0.1.17. Published as `0.1.18`, `0.1` and `latest`;
   all three amd64 + arm64 registry manifests verified (`performance.md`).
 
-- [~] 0.1.19 validated: reuse canonical grouping keys for matching single-column
+- [x] 0.1.19 published: reuse canonical grouping keys for matching single-column
   DISTINCT sorts; preserve collation/type fallbacks and expression effects.
   Controlled DISTINCT improves 14–15%, unique long text about 31%, with
   unrelated controls roughly stable. Exact gate: 286 MoonBit tests, 20703
@@ -354,4 +354,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
   wins (4.11 vs 4.72 ms); GROUP BY trails about 4%, EXISTS is tied, and
   ROW_NUMBER/point SELECTs are near parity. Exact release-binary controls do
   not reproduce a GROUP BY regression. Total shapes: 234 vs 677 ms.
-  Publication next (`performance.md`).
+  Published as `0.1.19`, `0.1` and `latest`; all three amd64 + arm64
+  registry manifests verified (`performance.md`).

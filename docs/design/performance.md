@@ -869,3 +869,9 @@ is not proof of a causal regression or gain. The optimization goal stays open.
 Evidence: `harness/out/bench-compare-0.1.19.json`, `_build/bench-0.1.19.txt`,
 `_build/check-0.1.19.log`, `_build/arm64-0.1.19.log`,
 `_build/json-oracle-0.1.19.log`, `_build/release-distinct-controls.txt`.
+
+Published as `0.1.19`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:a10828a1480160eeaaef75ba5f9067718478733431f7d9bdf88bd5c508e1c6c9`.
+Both images carry source revision `962904b5491c79ebe63c831ce6c2108d6a9f075f`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.4946 MiB compressed.
