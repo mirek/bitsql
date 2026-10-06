@@ -405,7 +405,7 @@ builds/tests/benchmarks. Mean wall time in ms:
 | Scalar correlated | 3.47 / 3.41 | 3.45 / 3.41 | 3.09 / 3.16 |
 | Scalar uncorrelated | 4.93 / 4.93 | 4.89 / 4.84 | 4.11 / 4.15 |
 
-ROW_NUMBER follow-up design (implemented in the 0.1.15 candidate below): retain each
+ROW_NUMBER follow-up design (implemented in 0.1.15 below): retain each
 normalized key's offset after its partition columns, stable-sort the existing
 position array, and compare adjacent normalized prefixes for boundaries.
 This could avoid re-comparing linguistic values and rebuilding keyed tuples
@@ -529,7 +529,7 @@ sequentially with no concurrent builds/tests/benchmarks. Evidence:
 `_build/adaptive-group-final-bench.txt` and
 `_build/adaptive-group-final-controls.txt`. The profile helper now rejects SQL
 errors during setup, warm-up and every timed run; an invalid-column probe
-confirmed nonzero exit. Full release validation and container comparison pending.
+confirmed nonzero exit. Final release results follow.
 
 
 Final release validation: the exact amd64 binary passed `scripts/check.sh`
@@ -547,3 +547,10 @@ dominate it; individual targeted gains should not be presented as a large
 end-to-end improvement. README tables reflect this exact container run.
 Evidence: `harness/out/bench-compare-0.1.15.json`, `_build/bench-0.1.15.txt`,
 `_build/check-0.1.15.log`, `_build/arm64-0.1.15.log`.
+
+
+Published 0.1.15 from revision `56cf74a7e12627de8f30fe87827c372d6de5a634`.
+The tested filesystem layers were unchanged when revision labels were added.
+`0.1.15`, `0.1` and `latest` have identical amd64 + arm64 registry manifests,
+digest `sha256:0681ff73eb82e316b7b3a02c46c6c8de67c63cc3cc70a714cc0f3204730d5444`.
+The amd64 registry layers total 12.4909 MiB compressed (README rounds to 12.5).

@@ -302,12 +302,13 @@ project: the breadth of transaction and error semantics in phases 5–6.
 
 ## Current performance follow-up
 
-- [~] 0.1.15: reuse normalized ROW_NUMBER partition prefixes (8–10% native gain)
+- [x] 0.1.15: reuse normalized ROW_NUMBER partition prefixes (8–10% native gain)
   and adaptively cache repeated text grouping keys (UNION about 18%, ordinary
   text grouping 4–5%, long repeated text about 29%). Unique and low-duplication
   controls stable after rejecting late cache activation; raw-unique SQL-equal
   strings show a small overhead. Full exact amd64 gate passed: 280 MoonBit
   tests, 20703 client/corpus passes, three skips. Arm64 smoke 572/572.
   Container total 243 vs 669 ms; UNION 6.76 vs 7.96 ms, ROW_NUMBER 7.03
-  vs 5.97 ms. Four clear gaps and near-tied EXISTS remain. Publication next;
-  see `performance.md`.
+  vs 5.97 ms. Published amd64 + arm64 as `0.1.15`, `0.1` and `latest`;
+  all three registry manifests verified. Four clear gaps and near-tied EXISTS
+  remain; see `performance.md`.
