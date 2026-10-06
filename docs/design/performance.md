@@ -611,3 +611,10 @@ and ROW_NUMBER 7.19 vs 6.07. EXISTS is effectively tied (4.94 vs 4.91 ms).
 The full optimization goal remains open. README now reflects this run.
 Evidence: `harness/out/bench-compare-0.1.16.json`, `_build/bench-0.1.16.txt`,
 `_build/check-0.1.16.log`, `_build/arm64-0.1.16.log`.
+
+
+Published 0.1.16 from revision `d8f8fa7f3a458239d5272806d340e5210b04677c`.
+The revision-label update preserved the tested filesystem layers. Tags
+`0.1.16`, `0.1` and `latest` have identical amd64 + arm64 registry manifests,
+digest `sha256:31799811a93e9b131fdf58a5b8e5ed5df01bbbf175d29b1258206345ea35d09b`.
+The amd64 compressed registry layers total 12.4913 MiB.

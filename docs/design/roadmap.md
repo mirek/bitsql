@@ -313,7 +313,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   all three registry manifests verified. Four clear gaps and near-tied EXISTS
   remain; see `performance.md`.
 
-- [~] 0.1.16 validated: flat COUNT/COUNT_BIG DISTINCT inputs remove unused
+- [x] 0.1.16 published: flat COUNT/COUNT_BIG DISTINCT inputs remove unused
   row/value tuples and representative arrays; shared flat single-column grouping
   improves GROUP BY/DISTINCT/UNION too. Native COUNT DISTINCT improves about 24%;
   unique, nullable, grouped and fallback controls show no regression. Equivalence
@@ -321,4 +321,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
   281 MoonBit tests, 20703 client/corpus passes (three skips); arm64 572/572.
   Container COUNT DISTINCT now beats SQL Server, 3.31 vs 3.92 ms. Total shapes:
   234 vs 672 ms. Three clear gaps remain (text GROUP BY, DISTINCT, ROW_NUMBER);
-  EXISTS is near parity. Publication next (`performance.md`).
+  EXISTS is near parity. Published as `0.1.16`, `0.1` and `latest`; all three
+  amd64 + arm64 registry manifests verified (`performance.md`).
