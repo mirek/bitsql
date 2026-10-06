@@ -324,7 +324,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   EXISTS is near parity. Published as `0.1.16`, `0.1` and `latest`; all three
   amd64 + arm64 registry manifests verified (`performance.md`).
 
-- [~] 0.1.17 validated: normalize direct ROW_NUMBER column keys without
+- [x] 0.1.17 published: normalize direct ROW_NUMBER column keys without
   per-row key arrays, assemble window output in its final order, and skip exact
   shared normalized-key prefixes during sorting. Combined native ROW_NUMBER
   improves 13–14%; long-prefix sort/window controls improve 5–7%, with other
@@ -332,4 +332,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
   passes (three skips); arm64 572/572. Container ROW_NUMBER 6.01 vs SQL
   Server 5.60 ms, total shapes 235 vs 639 ms. Text GROUP BY, DISTINCT and
   ROW_NUMBER still trail; EXISTS and accented ORDER BY are near parity.
-  Publication next (`performance.md`).
+  Published as `0.1.17`, `0.1` and `latest`; all three amd64 + arm64
+  registry manifests verified (`performance.md`).

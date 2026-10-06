@@ -692,3 +692,10 @@ The optimization goal remains open. README includes the full current run,
 without substituting slower SQL Server values from an earlier run.
 Evidence: `harness/out/bench-compare-0.1.17.json`, `_build/bench-0.1.17.txt`,
 `_build/check-0.1.17.log`, `_build/arm64-0.1.17.log`.
+
+Published as `0.1.17`, `0.1` and `latest`, with amd64 + arm64 manifests
+verified at the same digest:
+`sha256:b7df528afb8a658be09b8c689bed84f9e795201d5036f3ee90cdb28983930795`.
+Both images carry revision `b16b333068687eb09fa141d2cfa7a61c5f4d33f8`;
+revision stamping preserved the tested filesystem layers. The amd64 registry
+layers total 12.4916 MiB compressed (README rounds to 12.5).
