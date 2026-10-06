@@ -726,7 +726,7 @@ JSON_QUERY. Strict traversal through a missing or wrong-kind branch gives
 its distinct walker. All 48 cases pass; the combined run with json3/json4
 passes 63 cases, including native result metadata and scalar width behavior.
 
-### Other native path entry points, pending correction (2026-10-06)
+### Other native path entry points (2026-10-06)
 
 The 64 `sql2025/json-native-path-entrypoints` captures distinguish OPENJSON,
 its WITH column paths, and JSON_MODIFY. OPENJSON resolves a single `last`
@@ -740,7 +740,8 @@ On the pinned oracle, JSON_MODIFY with `last` changes the first array element,
 whereas a list leaves the document unchanged in lax mode and raises 13608 in
 strict mode. Wildcard/range accessors give 13660 state 5. These are observed
 build-specific contracts, not interchangeable with the ordinary/typed
-extraction rules. The cases remain investigative and unregistered.
+extraction rules. The OPENJSON cases are now registered; mutation cases
+remain investigative.
 
 The 96 `sql2025/json-native-openjson-accessors` cases extend this contract:
 `last to last` selects the final element. Lax lists skip missing indexes; strict
@@ -779,4 +780,40 @@ non-singleton range give OPENJSON 13665 (root state 5, column state 3), or
 mutation 13660 state 5. `[last to 0]` additionally exposes entry-point/error
 precedence differences (13660 state 1 versus 13665/13660 state 3/5) and needs
 separate treatment. Lists containing repeated `last` preserve the ordinary
-list contracts above. These captures are investigative, not passing coverage.
+list contracts above. The OPENJSON cases are now registered; the mutation cases remain investigative.
+
+Native OPENJSON implementation checkpoint: all 200 root/WITH accessor cases
+pass, including 32 `sql2025/json-native-openjson-reversed` cases. The focused
+run with json3/json4 passes 215 cases. Root selection requires one container;
+WITH columns choose the first selection. Native empty objects produce no WITH
+rows. Reversed `last to n` root diagnostics do not depend on array length;
+strict column `last to 0` uses 13660 state 1, while the captured `last to 3`
+uses 13665 state 3. Native selection is separate from the text walker. The
+remaining 160 captured JSON_MODIFY/native-method cases still need correction.
+
+The 32 `sql2025/json-native-mutation-missing` cases cover TRY/CATCH and
+post-error values. A missing member of a fresh empty root followed by an array accessor raises
+catchable 22020 state 1, severity 17 for native `.modify()`, even with ordinary
+`[0]`; the original value and allocation survive. The corresponding function
+is a no-op. Missing nested members in existing containers do not share that
+method error. Lax append through a missing object member raises 13656 state 8;
+missing array elements and wrong-kind/null parents remain unchanged. These
+cases extend the pending mutation implementation work.
+
+The 32 missing-parent/catchability cases reproduce on a second oracle run.
+They bring the pending mutation accessor set to 192 cases.
+
+The 16 `sql2025/json-native-method-missing-root` cases refine the error
+condition: missing paths in nonempty roots, including roots whose existing
+member is null or an empty object, do not raise 22020. Empty root arrays and
+objects do, including multi-step paths without advanced accessors. Empty
+nested containers do not. Do not generalize this to all missing root members.
+The follow-up empty-storage captures check retained-allocation provenance.
+
+The 32 `sql2025/json-native-method-empty-storage` cases isolate storage
+provenance. Fresh `{}`/`[]` use 18 bytes and even a single-step method insert
+or delete raises 22020 state 1, severity 17. Empty objects produced by deleting
+the last member retain 43 bytes in these fixtures: missing paths are no-ops,
+and a new member inserts normally (68 bytes here). Function deletion and
+method deletion retain the same behavior. Mutation must consult native storage
+provenance, not infer this diagnostic from text equality with `{}` or `[]`.

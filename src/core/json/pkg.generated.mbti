@@ -30,11 +30,15 @@ pub fn json_query(String, path? : String, lob? : Bool, json_type? : Bool, array_
 
 pub fn json_value(String, String, lob? : Bool, json_type? : Bool) -> String? raise JsonError
 
-pub fn json_value_kind(String, String) -> Int? raise JsonError
+pub fn json_value_kind(String, String, native? : Bool) -> Int? raise JsonError
 
 pub fn json_value_typed(String, String) -> OpenJsonRow? raise JsonError
 
 pub fn openjson(String, path? : String, json_type? : Bool) -> Array[OpenJsonRow] raise JsonError
+
+pub fn openjson_column(String, String, Bool) -> String? raise JsonError
+
+pub fn openjson_fragment(String, String) -> String? raise JsonError
 
 pub fn parse_path(String, allow_append? : Bool, native? : Bool) -> Path raise JsonError
 

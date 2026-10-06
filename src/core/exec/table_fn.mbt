@@ -58,9 +58,20 @@ fn stream_table_fn(
       guard path is Some(path) else { return }
       let jt = args[0].ty is Json
       let all = json(() => @json.openjson(doc, path~, json_type=jt))
+      // Native empty objects, like empty arrays, produce no WITH rows.
+      if jt && all.is_empty() {
+        return
+      }
       // an object selection is one row; an array gives one row per element
       // (captured: query/table-functions step 2)
-      let elements = match json(() => @json.json_query(doc, path~)) {
+      let fragment = json(() => {
+        if jt {
+          @json.openjson_fragment(doc, path)
+        } else {
+          @json.json_query(doc, path~)
+        }
+      })
+      let elements = match fragment {
         Some(t) if t.has_prefix("{") =>
           [@json.OpenJsonRow::{ key: "", value: Some(t), ty: 5, }]
         _ => all
@@ -74,7 +85,9 @@ fn stream_table_fn(
               // scalar elements are not JSON text; only containers have paths
               if el.ty == 4 || el.ty == 5 {
                 let got = try {
-                  if c.as_json {
+                  if jt {
+                    json(() => @json.openjson_column(item, c.path, c.as_json))
+                  } else if c.as_json {
                     json(() => @json.json_query(item, path=c.path))
                   } else {
                     json(() => @json.json_value(item, c.path))
@@ -96,7 +109,8 @@ fn stream_table_fn(
                 let got = if jt &&
                   c.ty is Json &&
                   !c.as_json &&
-                  json(() => @json.json_value_kind(item, c.path)) != Some(1) {
+                  json(() => @json.json_value_kind(item, c.path, native=jt)) !=
+                  Some(1) {
                   None
                 } else {
                   got

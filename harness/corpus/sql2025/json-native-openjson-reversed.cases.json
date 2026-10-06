@@ -1,0 +1,292 @@
+{
+  "cases": [
+    {
+      "name": "size-0-end-0-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-0-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-0-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-0-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-3-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-3-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-3-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-0-end-3-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-0-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-0-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-0-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-0-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-3-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-3-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-3-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-1-end-3-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-0-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-0-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-0-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-0-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-3-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-3-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-3-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-3-end-3-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-0-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-0-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-0-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-0-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-3-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-3-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-3-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 3]');"
+        }
+      ]
+    },
+    {
+      "name": "size-5-end-3-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[0,1,2,3,4]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 3]');"
+        }
+      ]
+    }
+  ]
+}

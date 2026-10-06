@@ -238,7 +238,14 @@ pub fn json_path_exists(
 ///|
 /// The kind code (0 null .. 5 object) of the single value a lax path
 /// selects, or None (OPENJSON WITH json columns parse only strings).
-pub fn json_value_kind(doc : String, path : String) -> Int? raise JsonError {
+pub fn json_value_kind(
+  doc : String,
+  path : String,
+  native? : Bool = false,
+) -> Int? raise JsonError {
+  if native {
+    return native_openjson_row(doc, path, true).map(r => r.ty)
+  }
   let p = parse_path(path)
   if p.is_multi() {
     return None
@@ -300,6 +307,12 @@ pub fn openjson(
   path? : String = "$",
   json_type? : Bool = false,
 ) -> Array[OpenJsonRow] raise JsonError {
+  if json_type {
+    return match openjson_fragment(doc, path) {
+      Some(fragment) => openjson(fragment)
+      None => []
+    }
+  }
   let p = parse_path(path)
   if p.is_multi() {
     raise JsonError(

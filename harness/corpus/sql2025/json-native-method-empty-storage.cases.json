@@ -1,0 +1,292 @@
+{
+  "cases": [
+    {
+      "name": "fresh-object-root.missing-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root.missing-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root.missing.x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root.missing.x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root[0]-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root[0]-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root[0].x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-object-root[0].x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root.missing-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root.missing-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root.missing.x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root.missing.x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root[0]-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root[0]-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root[0].x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "fresh-array-root[0].x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root.missing-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root.missing-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root.missing.x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root.missing.x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root[0]-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root[0]-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root[0].x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "deleted-object-root[0].x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root.missing-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root.missing-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root.missing.x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root.missing.x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$.missing.x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root[0]-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root[0]-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0]',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root[0].x-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "function-deleted-root[0].x-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j=JSON_MODIFY(@j,'$.a',NULL); SELECT DATALENGTH(@j) AS before_bytes; BEGIN TRY SET @j.modify('$[0].x',NULL); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

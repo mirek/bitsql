@@ -1,0 +1,292 @@
+{
+  "cases": [
+    {
+      "name": "missing-key-index-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-index-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-index-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('$.a[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-index-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('append $.a[0]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-last-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-last-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-last-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-last-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-list-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[0,1]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-list-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[0,1]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-list-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('$.a[0,1]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-key-list-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; BEGIN TRY SET @j.modify('append $.a[0,1]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-nested-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{}]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-nested-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{}]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-nested-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{}]}'; BEGIN TRY SET @j.modify('$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-nested-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{}]}'; BEGIN TRY SET @j.modify('append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-index-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-index-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-index-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; BEGIN TRY SET @j.modify('$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-index-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; BEGIN TRY SET @j.modify('append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-parent-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-parent-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-parent-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; BEGIN TRY SET @j.modify('$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-parent-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; BEGIN TRY SET @j.modify('append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-parent-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-parent-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-parent-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; BEGIN TRY SET @j.modify('$.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-parent-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; BEGIN TRY SET @j.modify('append $.a[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-intermediate-function-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-intermediate-function-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; BEGIN TRY SET @j=JSON_MODIFY(@j,'append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-intermediate-method-set",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; BEGIN TRY SET @j.modify('$.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "null-intermediate-method-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; BEGIN TRY SET @j.modify('append $.a[0].b[last]',4); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}
