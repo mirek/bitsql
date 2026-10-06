@@ -556,3 +556,10 @@ Start the host with `--database NAME` so the app's database exists at login
   (confirmed during the 0.1.20 gate), so filtering `ps` by `comm == node`
   misses live harness/benchmark work. Inspect the executable in `args` too
   (`node` or an absolute path ending `/node`) before timing on the shared host.
+
+- 2026-10-06: point-read batches also retain `pointReadsCpuSamplesMs` and
+  their median `pointReadsCpuMs` from container cgroup counters. Reads occur
+  outside each timed batch; the wall-time methodology is unchanged. These
+  are total container CPU deltas, including background work, not exclusive
+  query CPU. Use them to investigate latency outliers without replacing the
+  recorded wall-time samples or selecting a favorable rerun.

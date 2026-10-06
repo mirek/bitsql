@@ -67,3 +67,58 @@ test "compiled CHAR and NCHAR preserve interpreted values and errors" {
     assert_eq(actual, expected)
   }
 }
+
+///|
+test "prepared compiled arithmetic preserves operand evaluation and deferred errors" {
+  let ctx : Ctx = {
+    rt: Runtime::new(database="master", spid=51, now=0L, seed=1L),
+    vars: [],
+    row: [],
+    outer: [],
+    source: (_, _) => [],
+    ext: (_, _) => None,
+    user_fn: no_user_fn,
+    user_table: no_user_table,
+    seek: no_seek,
+    stamp: no_stamp,
+  }
+  let zero : @ir.Expr = { kind: Lit(Int(0)), ty: Int, nullable: false, }
+  let one : @ir.Expr = { kind: Lit(Int(1)), ty: Int, nullable: false, }
+  let null : @ir.Expr = { kind: Lit(Null), ty: Int, nullable: true, }
+  let bad : @ir.Expr = {
+    kind: Arith(Div, one, zero),
+    ty: Int,
+    nullable: false,
+  }
+  let invalid : @ir.Expr = {
+    kind: Arith(Add, { kind: Lit(Bit(true)), ty: Bit, nullable: false, }, {
+      kind: Lit(Bit(false)),
+      ty: Bit,
+      nullable: false,
+    }),
+    ty: Bit,
+    nullable: false,
+  }
+  for
+    pair in [
+      (null, bad),
+      (bad, null),
+      (bad, invalid),
+      (invalid, bad),
+      (null, one),
+      (one, zero),
+    ] {
+    let ops : Array[@types.ArithOp] = [Add, Sub, Mul, Div, Mod]
+    for op in ops {
+      let expr : @ir.Expr = {
+        kind: Arith(op, pair.0, pair.1),
+        ty: Int,
+        nullable: true,
+      }
+      let compiled = compile(expr)
+      let actual = Ok(compiled(ctx, [])) catch { e => Err(e) }
+      let expected = Ok(eval(ctx, expr)) catch { e => Err(e) }
+      assert_eq(actual, expected)
+    }
+  }
+}

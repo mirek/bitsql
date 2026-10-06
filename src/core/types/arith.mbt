@@ -61,30 +61,13 @@ pub fn arith_typed(
   }
   match rt.family() {
     FString =>
-      match (a, b) {
-        (String(x), String(y)) => {
-          let joined = if rt.is_unicode() {
-            x + y
-          } else {
-            to_code_page(x + y, rt.collation().unwrap_or(default_collation))
-          }
-          let cap = match rt {
-            VarChar(Some(n), _)
-            | NVarChar(Some(n), _)
-            | Char(n, _)
-            | NChar(n, _) => n
-            _ => joined.length()
-          }
-          String(
-            if joined.length() > cap {
-              joined.unsafe_substring(start=0, end=cap)
-            } else {
-              joined
-            },
-          )
-        }
-        _ => raise internal("concatenation of non-strings")
-      }
+      string_arith(
+        a,
+        b,
+        rt.is_unicode(),
+        rt.collation().unwrap_or(default_collation),
+        string_arith_limit(rt),
+      )
     FBinary =>
       match (a, b) {
         (Binary(x), Binary(y)) => {
@@ -121,6 +104,19 @@ fn int_arith(
   b : Value,
   rt : SqlType,
 ) -> Value raise SqlError {
+  let (lo, hi) = int_range(rt)
+  int_arith_with_range(op, a, b, rt, lo, hi)
+}
+
+///|
+fn int_arith_with_range(
+  op : ArithOp,
+  a : Value,
+  b : Value,
+  rt : SqlType,
+  lo : Int64,
+  hi : Int64,
+) -> Value raise SqlError {
   let is_int = (v : Value) => {
     v is (Bit(_) | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))
   }
@@ -132,7 +128,6 @@ fn int_arith(
   if op is (Div | Mod) && y == 0L {
     raise divide_by_zero_error()
   }
-  let (lo, hi) = int_range(rt)
   // operands within ±2^31 (every int/smallint/tinyint, most bigints):
   // exact in Int64 (|x * y| <= 2^62), no BigInt allocation
   if x >= -2147483648L &&
@@ -340,5 +335,38 @@ pub fn negate(v : Value, t : SqlType) -> Value raise SqlError {
         }
         None => raise invalid_operand_error(t, Sub)
       }
+  }
+}
+
+///|
+fn string_arith_limit(rt : SqlType) -> Int? {
+  match rt {
+    VarChar(Some(n), _) | NVarChar(Some(n), _) | Char(n, _) | NChar(n, _) =>
+      Some(n)
+    _ => None
+  }
+}
+
+///|
+fn string_arith(
+  a : Value,
+  b : Value,
+  unicode : Bool,
+  collation : Collation,
+  limit : Int?,
+) -> Value raise SqlError {
+  match (a, b) {
+    (String(x), String(y)) => {
+      let joined = if unicode { x + y } else { to_code_page(x + y, collation) }
+      let cap = limit.unwrap_or(joined.length())
+      String(
+        if joined.length() > cap {
+          joined.unsafe_substring(start=0, end=cap)
+        } else {
+          joined
+        },
+      )
+    }
+    _ => raise internal("concatenation of non-strings")
   }
 }

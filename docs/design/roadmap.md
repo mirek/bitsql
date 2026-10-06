@@ -385,3 +385,15 @@ project: the breadth of transaction and error semantics in phases 5–6.
   All medians verified against raw samples. Published as `0.1.21`, `0.1`
   and `latest`; all three amd64 + arm64 registry manifests verified
   (`performance.md`).
+
+- [ ] 0.1.22 validated, publication pending: prepare integer arithmetic bounds and string
+  concatenation settings once per compiled expression. Accented TOP-N sort
+  gains about 7–12% in final controls; arithmetic expression workloads also
+  improve. Other families retain direct fallback calls; small float/money
+  control costs remain documented (`performance.md`). Exact gate: 293
+  MoonBit tests, 20704 client/corpus passes (three skips), short ARM64
+  arithmetic smoke 883/883, live SQL Server 312/312. All 24 container
+  query/DML shapes beat SQL Server (227 vs 671 ms total); accented sorting
+  wins 2.63 vs 3.28 ms. Point reads still trail 134 vs 123 ms; new per-batch
+  CPU measurements correlate spikes with higher server CPU, cause still
+  open. Medians verified against raw samples; publication pending.

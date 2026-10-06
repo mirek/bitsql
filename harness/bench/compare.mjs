@@ -153,10 +153,16 @@ async function measure(target) {
       await pointReads()
       out.pointReadsRepetitions = 5
       out.pointReadsSamplesMs = []
+      out.pointReadsCpuSamplesMs = []
       for (let i = 0; i < out.pointReadsRepetitions; i++) {
+        // Read counters outside the wall-time interval. This is total container
+        // CPU (including background work), not query-exclusive CPU time.
+        const cpuBefore = cgroup(id).cpuMs
         out.pointReadsSamplesMs.push(await timed(pointReads))
+        out.pointReadsCpuSamplesMs.push(cgroup(id).cpuMs - cpuBefore)
       }
       out.pointReadsMs = median(out.pointReadsSamplesMs)
+      out.pointReadsCpuMs = median(out.pointReadsCpuSamplesMs)
       out.transactionsMs = await timed(async () => {
         for (let i = 0; i < 200; i++) await exact(connection, `BEGIN TRAN;
           INSERT orders (customer_id, total, status) VALUES (@c, @t, 'new');

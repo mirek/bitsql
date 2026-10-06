@@ -208,6 +208,8 @@ pub fn pow10(Int) -> @bigint.BigInt
 
 pub fn precedence(SqlType) -> Int
 
+pub fn prepare_arith(ArithOp, SqlType, SqlType, SqlType) -> ((Value, Value) -> Value raise SqlError)?
+
 pub fn render(Value, SqlType, Int?, target? : String, dates? : DateSettings) -> String raise SqlError
 
 pub fn render_temporal(Value, SqlType, Int?, target? : String, dates? : DateSettings) -> String raise SqlError
@@ -493,5 +495,6 @@ pub fn Value::int64_or(Self, Int64) -> Int64
 pub fn Value::is_null(Self) -> Bool
 
 // Type aliases
+pub type Arithmetic = (Value, Value) -> Value raise SqlError
 
 // Traits

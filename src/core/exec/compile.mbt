@@ -45,10 +45,19 @@ pub fn compile(e : @ir.Expr) -> Compiled {
       }
       match rt {
         Some(rt) =>
-          (c, r) => {
-            let va = ca(c, r)
-            let vb = cb(c, r)
-            @types.arith_typed(op, va, ta, vb, tb, rt)
+          match @types.prepare_arith(op, ta, tb, rt) {
+            Some(arithmetic) =>
+              (c, r) => {
+                let va = ca(c, r)
+                let vb = cb(c, r)
+                arithmetic(va, vb)
+              }
+            None =>
+              (c, r) => {
+                let va = ca(c, r)
+                let vb = cb(c, r)
+                @types.arith_typed(op, va, ta, vb, tb, rt)
+              }
           }
         None =>
           (c, r) => {

@@ -1032,3 +1032,71 @@ were verified at `sha256:c190684ca358195d7917de600154c3052b61031f6ef66411fe68ef9
 Both images carry source revision `cec168e8b23f1f293e9b9b55146938ed18a9a52f`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.4997 MiB compressed.
+
+### 0.1.22 prepared arithmetic (2026-10-06)
+
+The remaining accented TOP-N sort profile attributed about 46% of samples
+to compiled key-expression evaluation, including about 29% to generic
+arithmetic, versus 17% to heap selection. The workload computes
+`NCHAR(224 + id % 30) + v`; its types and result bounds do not change per
+row. Evidence: `_build/accent-profile-0.1.21.txt` (1600 SIGPROF samples;
+proportions, not exact CPU time).
+
+Compiled expressions now prepare integer bounds and character-concatenation
+settings once. Both paths reuse the existing integer/string routines;
+NULL handling, overflow checks, truncation and code-page conversion remain
+shared. Operands still evaluate left-to-right before the operation. Other
+families and implicit conversions retain the direct `arith_typed` call.
+An initial generic fallback closure added about 4–6% to a float control;
+it was removed before release instead of adding an extra call per row.
+
+The 240 captured checked-integer cases also exercise the prepared path.
+A types matrix compares values/NULLs/errors across arithmetic families,
+including integer extrema, Unicode/ANSI strings, binary and legacy dates;
+an executor test checks deferred type errors and operand error order.
+All 61 types tests and 32 executor tests pass. No SQL expectations changed.
+
+Sequential 20k-row controls, baseline/candidate/candidate/baseline, show
+accented sorting 3.19/3.15 → 2.97/2.78 ms (7–12%; first candidate run also
+had elevated unrelated controls). Integer grouping, ROW_NUMBER and UPDATE
+remain roughly stable. Arithmetic-only controls improve modulo aggregation
+0.86/0.83 → 0.71/0.70, nested integer arithmetic 1.18/1.13 → 0.86/0.85,
+Unicode expression aggregation 4.47/4.21 → 3.86/3.77, and ANSI concatenation
+4.64/4.55 → 4.37/4.37. Decimal, binary and implicit-conversion controls are
+roughly stable; float/money still show small 1–3% costs in these runs, so
+this is not a universal speedup claim. Legacy-date arithmetic is unchanged
+or slightly faster. Evidence: `_build/prepared-final-bench.txt` (120 reps)
+and `_build/prepared-final-controls.txt` (100 reps). The superseded closure
+controls remain in `_build/prepared-arith-controls.txt`.
+
+The container comparator additionally records per-batch cgroup CPU deltas
+(`pointReadsCpuSamplesMs`, `pointReadsCpuMs`). Counter reads occur outside
+the wall-time interval; they include all container background work. These
+help diagnose the earlier point-read variation without changing the
+five-batch wall-time median or selecting a favorable rerun. Syntax checking
+passes and re-rendering 0.1.21 JSON is byte-identical to the original table.
+
+The exact amd64 release gate passed: 293 MoonBit tests and 20704
+client/corpus passes, three expected skips, no failures. The expanded
+short ARM64 arithmetic smoke passed 883/883; the targeted live SQL Server
+oracle check passed 312/312. Evidence: `_build/check-0.1.22.log`,
+`_build/arm64-0.1.22.log`, `_build/oracle-0.1.22.log`.
+The fresh container comparison sums to 226.62 vs SQL Server's 670.56 ms
+(about 3x). All 24 query/DML shapes now win in this run. Accented sorting
+is 2.63 vs 3.28 ms; SQL Server's timings also changed, so the controlled
+before/after gains above are the code-change evidence. All 48 shape
+medians, both cold-start medians, both point wall-time medians and both
+point CPU medians were verified against their five raw samples. All build
+and test processes ended before measurement, and the test connections'
+TIME-WAIT state on benchmark ports was allowed to expire.
+
+Point SELECTs still trail: 134.15 vs 123.13 ms. Bitsql wall batches are
+120.32, 157.49, 169.30, 134.15, 111.51 ms, with container CPU deltas
+38.99, 59.86, 67.29, 47.42, 38.72 ms. SQL Server's wall median is 123.13
+and CPU median 57.88 ms. The slower bitsql batches also consume more CPU;
+that localizes the investigation but does not establish a cause or remove
+the latency gap. The optimization goal remains open. Evidence:
+`harness/out/bench-compare-0.1.22.json`, `_build/bench-0.1.22.txt`.
+
+Publication pending after the source commit; tested filesystem layers will
+be checked unchanged when applying the source revision labels.

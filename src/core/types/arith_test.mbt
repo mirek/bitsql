@@ -59,6 +59,19 @@ test "checked integer arithmetic matches the capture" {
       int_operand(r, tb),
       tb,
     )
+    let operation = @types.prepare_arith(
+      op_of(op),
+      ta,
+      tb,
+      @types.arith_result_type(op_of(op), ta, tb),
+    ).unwrap()
+    let prepared = try operation(int_operand(l, ta), int_operand(r, tb)) catch {
+      e => "\{e.number()}/\{e.state()}"
+    } noraise {
+      Null => "NULL"
+      v => repr(v)
+    }
+    assert_eq(prepared, expected)
     if got != expected {
       failures.push(
         "\{lt} \{l} \{op} \{rt} \{r}: got \{got}, expected \{expected}",
