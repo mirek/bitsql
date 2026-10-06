@@ -72,6 +72,16 @@ fn exposed_names(
 ) -> Unit {
   let corr = (a : @ast.Ident) => out.push((a.name.to_lower(), a.name, false))
   match r.kind {
+    VectorSearch(v) => {
+      match v.source_alias {
+        Some(a) => corr(a)
+        None =>
+          out.push((v.table.base().to_lower(), object_text(v.table), true))
+      }
+      if v.alias_ is Some(a) {
+        corr(a)
+      }
+    }
     Table(name, alias_~, ..) =>
       match alias_ {
         Some(a) => corr(a)
@@ -489,6 +499,16 @@ fn bind_table_ref(
           deferred=Some(env.deferred),
         ),
       )
+    }
+    VectorSearch(_) => {
+      if !(env.catalog.preview_features)() {
+        raise @types.sql_error(
+          156,
+          "Incorrect syntax near the keyword 'TABLE'.",
+          severity=15,
+        )
+      }
+      raise @types.not_supported("vector index search")
     }
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
       match legacy_hint_ref(env, r) {

@@ -730,6 +730,19 @@ fn W::table_ref(self : W, t : TableRef) -> Unit {
       self.alias_cols(Some(alias_), columns)
       self.close()
     }
+    VectorSearch(v) => {
+      self.open("vector-search")
+      self.atom(v.table.to_sexp())
+      self.alias_cols(v.source_alias, [])
+      self.atom(ident_text(v.column))
+      self.sp()
+      self.expr(v.query)
+      self.atom(quote(v.metric))
+      self.sp()
+      self.expr(v.top)
+      self.alias_cols(v.alias_, [])
+      self.close()
+    }
     TableFunc(n, args, openjson_with~, alias_~, columns~) => {
       self.open("tvf")
       self.atom(n.to_sexp())

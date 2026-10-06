@@ -676,14 +676,15 @@ fn Parser::create_index(
   self : Parser,
 ) -> @ast.CreateIndex raise @ast.SyntaxError {
   let json = self.eat_kw("JSON")
-  let unique = !json && self.eat_kw("UNIQUE")
-  let clustered = if json { None } else { self.clustered() }
-  let columnstore = !json && self.eat_kw("COLUMNSTORE")
+  let vector = !json && self.eat_kw("VECTOR")
+  let unique = !json && !vector && self.eat_kw("UNIQUE")
+  let clustered = if json || vector { None } else { self.clustered() }
+  let columnstore = !json && !vector && self.eat_kw("COLUMNSTORE")
   self.expect_kw("INDEX")
   let name = self.ident()
   self.expect_kw("ON")
   let table = self.object_name()
-  let columns : Array[@ast.IndexColumn] = if json {
+  let columns : Array[@ast.IndexColumn] = if json || vector {
     self.expect_punct("(")
     let name = self.ident()
     self.expect_punct(")")
@@ -716,12 +717,16 @@ fn Parser::create_index(
   } else {
     None
   }
-  if json && (self.is_kw("INCLUDE") || self.is_kw("WHERE")) {
+  if (json || vector) && (self.is_kw("INCLUDE") || self.is_kw("WHERE")) {
     raise self.error()
   }
   let included = if self.eat_kw("INCLUDE") { self.paren_idents() } else { [] }
   let where_ = if self.eat_kw("WHERE") { Some(self.cond()) } else { None }
-  let options = self.with_options(json_index=json)
+  let options = if vector {
+    self.vector_index_options()
+  } else {
+    self.with_options(json_index=json)
+  }
   if json && self.is_kw("ON") {
     raise self.error()
   }
@@ -731,6 +736,7 @@ fn Parser::create_index(
     clustered,
     columnstore,
     json_paths,
+    vector,
     name,
     table,
     columns,

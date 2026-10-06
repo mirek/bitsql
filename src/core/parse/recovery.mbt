@@ -21,6 +21,26 @@ pub fn batch_errors(src : String) -> Array[@ast.SyntaxError] {
     e => e
   }
   let errors = [first]
+  // Once CREATE VECTOR INDEX has entered its column grammar, WITH starts
+  // a fresh CTE diagnostic even with fewer than three accepted tokens.
+  // A rejected modifier (CREATE UNIQUE VECTOR INDEX) never enters it.
+  let vector_index = match token_index(p, first) {
+    Some(i) => {
+      let mut found = false
+      let mut j = i - 1
+      while j >= 0 && p.toks[j].text != ";" {
+        if p.toks[j].is_kw("CREATE") {
+          found = j + 2 < i &&
+            p.toks[j + 1].is_kw("VECTOR") &&
+            p.toks[j + 2].is_kw("INDEX")
+          break
+        }
+        j -= 1
+      }
+      found
+    }
+    None => false
+  }
   let eof = p.toks.length() - 1 // index of the Eof token
   let mut last = first
   while recoverable(last.number()) {
@@ -50,7 +70,8 @@ pub fn batch_errors(src : String) -> Array[@ast.SyntaxError] {
       } catch {
         e =>
           match token_index(p, e) {
-            Some(j) if j - q >= 3 => reported = Some(e)
+            Some(j) if j - q >= 3 || (vector_index && e.number() == 319) =>
+              reported = Some(e)
             Some(j) if j >= q => q = j + 1
             _ => q = q + 1
           }

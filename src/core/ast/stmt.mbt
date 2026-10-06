@@ -441,6 +441,7 @@ pub(all) enum AlterTableAction {
 ///|
 pub(all) struct CreateIndex {
   json_paths : Array[String]?
+  vector : Bool
   unique : Bool
   clustered : Bool?
   columnstore : Bool

@@ -108,6 +108,7 @@ fn json_auto_sources(
     Derived(_, alias_~, ..) => add(alias_, "", true)
     Values(_, alias_~, ..) => add(Some(alias_), "", true)
     TableFunc(n, _, alias_~, ..) => add(alias_, n.base(), false)
+    VectorSearch(v) => add(v.source_alias, v.table.base(), true)
     Nodes(_, _, alias_~, ..) => add(alias_, "", false)
     Pivot(_, _, alias_~) => add(Some(alias_), "", true)
     Join(_, l, rr, ..) => {

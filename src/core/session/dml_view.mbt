@@ -101,6 +101,7 @@ fn from_leaves(from : Array[@ast.TableRef]) -> Array[@ast.TableRef] {
 ///|
 fn leaf_qualifier(r : @ast.TableRef) -> String? {
   match r.kind {
+    VectorSearch(_) => None
     Table(name, alias_~, ..) =>
       Some(
         match alias_ {

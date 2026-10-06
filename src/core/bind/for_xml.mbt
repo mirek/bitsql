@@ -209,6 +209,7 @@ fn auto_tables(r : @ast.TableRef, out : Array[(String, String)]) -> Unit {
     Derived(_, alias_~, ..) => add(alias_, "")
     Values(_, alias_~, ..) => add(Some(alias_), "")
     TableFunc(n, _, alias_~, ..) => add(alias_, n.base())
+    VectorSearch(v) => add(v.source_alias, v.table.base())
     Nodes(_, _, alias_~, ..) => add(alias_, "")
     Pivot(_, _, alias_~) => add(Some(alias_), "")
     Join(_, l, rr, ..) => {

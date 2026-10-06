@@ -1020,6 +1020,25 @@ fn Session::exec_create_index(
   self : Session,
   ci : @ast.CreateIndex,
 ) -> Unit raise {
+  if ci.vector {
+    if !self.preview_enabled() {
+      raise @types.sql_error(
+        343,
+        "Unknown object type 'VECTOR' used in a CREATE, DROP, or ALTER statement.",
+        state=2,
+        severity=15,
+      )
+    }
+    if !ci.options.any(o => o.name == "METRIC") {
+      raise @types.sql_error(
+        153,
+        "Invalid usage of the option metric in the CREATE VECTOR INDEX statement.",
+        state=7,
+        severity=15,
+      )
+    }
+    raise @types.not_supported("vector index construction")
+  }
   if ci.json_paths is Some(paths) {
     self.exec_create_json_index(ci, paths)
     return

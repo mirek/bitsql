@@ -4,6 +4,40 @@ fn error_numbers(sql : String) -> String {
 }
 
 ///|
+test "vector grammar diagnostics from sql2025 captures" {
+  inspect(
+    error_numbers("CREATE VECTOR INDEX vi ON t(v ASC) WITH(METRIC='cosine');"),
+    content="156 319",
+  )
+  inspect(
+    error_numbers("CREATE VECTOR INDEX vi ON t(v,id) WITH(METRIC='cosine');"),
+    content="102 319",
+  )
+  inspect(
+    error_numbers(
+      "CREATE UNIQUE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');",
+    ),
+    content="102",
+  )
+  inspect(
+    error_numbers("SELECT TOP(2) WITH APPROXIMATE id FROM t;"),
+    content="102",
+  )
+  inspect(
+    error_numbers(
+      "SELECT id FROM VECTOR_SEARCH(COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2);",
+    ),
+    content="102",
+  )
+  inspect(
+    error_numbers(
+      "SELECT s.id,r.distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) AS r;",
+    ),
+    content="",
+  )
+}
+
+///|
 test "syntax error recovery (captured: tail5/b1-syntax-recovery)" {
   inspect(
     error_numbers("DECLARE @t TABLE(a int); UPDATE @t WITH (ROWLOCK) SET a = 1"),

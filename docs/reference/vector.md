@@ -120,8 +120,9 @@ types resolves float16 independently of the current switch.
 
 ## Approximate index/search captures (2026-10-07)
 
-These contracts are investigative, not implemented or registered as passing
-emulator cases. `vector-index-probe.sql`, `vector-index-ddl.cases.json` (18)
+These contracts are investigative, not registered as passing emulator cases.
+The parser now represents CREATE VECTOR INDEX and VECTOR_SEARCH explicitly;
+construction and execution still raise unsupported errors. `vector-index-probe.sql`, `vector-index-ddl.cases.json` (18)
 and `vector-search-contracts.cases.json` (14) reproduce in a 33-case oracle
 repeat against 17.0.5005.3.
 
@@ -154,3 +155,74 @@ cover evolving Azure capabilities. Do not infer their current index format,
 minimum-row requirements, DML support or scan fallback for this pinned server.
 Our oracle rejects SELECT TOP WITH APPROXIMATE and the
 ALLOW_STALE_VECTOR_INDEX database-scoped configuration.
+
+### Expanded grammar and graph evidence (2026-10-07)
+
+Another 77 investigative cases were captured and repeated: `vector-index-contexts`
+(20), `vector-search-graph` (15), `vector-index-grammar` (25),
+`vector-search-grammar` (16), and `vector-graph-internal.sql` (1). Together with
+the earlier 33, these establish 110 oracle index/search cases, not implemented
+feature coverage. The grammar accepts metric/type case and trailing spaces,
+N-prefixed literals and MAXDOP; vector options and argument ordering have their
+own diagnostics. VECTOR_SEARCH has distinct source and result aliases: source
+columns bind through the TABLE alias, while distance binds through the outer
+alias. Query dimension mismatch is reported after result metadata.
+
+The 20-row cosine fixture demonstrably differs from exact nearest-neighbor
+scanning. `vector-graph-internal.sql` records its actual graph edges by reading
+only the isolated fixture's allocated internal-table pages with DBCC PAGE.
+The output strips page numbers, object IDs and memory addresses. Two independent
+builds produced identical edges. Nodes 3, 6 and 7 have no incoming edges in this
+fixture; a scan fallback would hide observable approximate-search behavior.
+
+The isolated fixture's cached generated build SQL establishes the following
+algorithm structure (the internal query has no XML plan in this capture):
+
+- Choose a start row nearest VECTOR_AVERAGE of a repeatable non-NULL source
+  sample. StartId is the primary-key value, not a row ordinal.
+- Seed the graph with an all-pairs neighborhood over the first batch in key
+  order plus the start row. The initial batch limit is 256, adjusted down when
+  a smaller page/DOP least common multiple permits it.
+- Prune distance-ordered candidates with the internal diskannprune aggregate,
+  with maximum degree 48. Later batches search the existing graph with L=48,
+  M=8 before pruning; this is not generic randomly initialized Vamana.
+- Add reciprocal edges from later batches to prior rows. Accumulate pending
+  edges until 56 bytes, then reprune the merged neighbors. The seed pruned
+  buffer reserves 192 bytes, corresponding to 48 four-byte keys.
+
+The pruning prototype matches 18/20 and 94/100 complete ordered neighbor lists.
+Its two alpha passes (1 and float32 1.2), float32 occlusion ratios and zero-distance
+handling explain the non-tied edges; candidate ordering for equal distances
+remains unresolved. Using captured SQL sort order resolves some of the remaining
+lists, showing why a stable primary-key tie breaker cannot be assumed. The
+100-row source 83 also differs beyond simple candidate ties; pruning is still
+a hypothesis requiring further oracle evidence.
+These findings guide implementation; they do not justify claiming a working
+index. Ordinary SQL cannot call diskannprune (195), including with QUERYTRACEON
+8744. No server-wide trace flag or configuration was changed for these probes.
+
+The 500-row page probe distinguishes pruned neighbors from pending reciprocal
+neighbors. Search must traverse both: omitting pending neighbors loses rows
+492–494 from the captured top ten. A bounded frontier of 48 over the captured
+actual graph reproduces the existing 20-, 100- and 500-row cosine results;
+this alone does not establish every search parameter.
+
+Build-time M=8 has an observable role: expanding up to eight frontier candidates
+together, then pruning the final frontier plus visited candidates, reproduces
+240 of 243 newly inserted neighbor lists in the 500-row prototype. Expanding
+one candidate at a time loses several distant build edges. The complete
+prototype matches 476/500 neighbor sets but only 334 ordered lists; reciprocal
+pending order and the seed/pruning differences remain open. A MAXDOP=1 repeat
+of the 100-row oracle graph produced the same edges as the default build.
+These larger graph probes remain scratch investigation, not registered passing
+emulator tests.
+
+A separate 257-row seed-only probe matches 238 complete prototype neighbor
+lists. Substituting that captured seed into the 500-row build prototype raises
+agreement to 496/500 neighbor sets and 241/243 newly inserted lists. The two
+remaining new-row differences (sources 375 and 397) include candidates already
+present in both the visited set and final frontier; they isolate a pruning
+nuance rather than a missing search traversal. Sweeping nearby frontier and
+expansion widths makes L=48/M=8 the best observed build match, consistent with
+the captured generated query. The second-pass occlusion behavior still needs
+to be established before promoting this prototype into the emulator.

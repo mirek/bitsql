@@ -338,6 +338,12 @@ fn Parser::top(
     }
   }
   let percent = self.eat_kw("PERCENT")
+  // This oracle build recognizes WITH here but rejects the newer Azure
+  // APPROXIMATE modifier at its own token, before parsing the select list.
+  if self.is_kw("WITH") && self.is_kw_at(1, "APPROXIMATE") {
+    self.pos += 1
+    raise self.error()
+  }
   let with_ties = if self.is_kw("WITH") && self.is_kw_at(1, "TIES") {
     self.pos += 2
     true
@@ -863,6 +869,11 @@ fn Parser::table_primary(self : Parser) -> @ast.TableRef raise @ast.SyntaxError 
     }
   }
   let name = self.object_name()
+  if eq_upper_name(name, "VECTOR_SEARCH") &&
+    self.is_punct("(") &&
+    (self.is_kw_at(1, "TABLE") || self.is_punct_at(2, "=")) {
+    return self.vector_search_ref(start)
+  }
   let np = name.parts.length()
   if self.is_punct("(") &&
     np >= 2 &&

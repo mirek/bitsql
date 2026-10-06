@@ -1,0 +1,6599 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": {
+    "catalog": {
+      "case": "4495fe85f982d09e",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "name",
+                  "type": "NVarChar",
+                  "length": 256,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 13,
+                    "version": 0,
+                    "sortId": 52,
+                    "codepage": "CP1252"
+                  }
+                },
+                {
+                  "name": "index_id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "type",
+                  "type": "TinyInt",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "type_desc",
+                  "type": "NVarChar",
+                  "length": 120,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 1,
+                    "version": 0,
+                    "sortId": 0,
+                    "codepage": "CP1252"
+                  }
+                },
+                {
+                  "name": "is_unique",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "data_space_id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": null
+                },
+                {
+                  "name": "ignore_dup_key",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_primary_key",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_unique_constraint",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "fill_factor",
+                  "type": "TinyInt",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "is_padded",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_disabled",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_hypothetical",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_ignored_in_optimization",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "allow_row_locks",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "allow_page_locks",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "has_filter",
+                  "type": "Bit",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 32,
+                  "collation": null
+                },
+                {
+                  "name": "filter_definition",
+                  "type": "NVarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 13,
+                    "version": 0,
+                    "sortId": 52,
+                    "codepage": "CP1252"
+                  }
+                },
+                {
+                  "name": "auto_created",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "vector_index_type",
+                  "type": "NVarChar",
+                  "length": 120,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 1,
+                    "version": 0,
+                    "sortId": 0,
+                    "codepage": "CP1252"
+                  }
+                },
+                {
+                  "name": "distance_metric",
+                  "type": "NVarChar",
+                  "length": 120,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 1,
+                    "version": 0,
+                    "sortId": 0,
+                    "codepage": "CP1252"
+                  }
+                },
+                {
+                  "name": "build_parameters",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 11,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 96,
+                    "version": 2,
+                    "sortId": 0,
+                    "codepage": "utf-8"
+                  }
+                }
+              ],
+              "rows": [
+                [
+                  "vi",
+                  1152000,
+                  8,
+                  "VECTOR",
+                  false,
+                  1,
+                  false,
+                  false,
+                  false,
+                  0,
+                  false,
+                  false,
+                  false,
+                  false,
+                  true,
+                  true,
+                  false,
+                  null,
+                  false,
+                  "DiskANN",
+                  "COSINE",
+                  "{\"StartId\":\"2\", \"L\":\"48\", \"M\":\"8\", \"R\":\"48\"}"
+                ]
+              ]
+            },
+            {
+              "columns": [
+                {
+                  "name": "index_id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "index_column_id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "column_id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "key_ordinal",
+                  "type": "TinyInt",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "partition_ordinal",
+                  "type": "TinyInt",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "is_descending_key",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "is_included_column",
+                  "type": "BitN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "column_store_order_ordinal",
+                  "type": "IntN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                },
+                {
+                  "name": "data_clustering_ordinal",
+                  "type": "IntN",
+                  "length": 1,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": null
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  1,
+                  1,
+                  1,
+                  0,
+                  false,
+                  false,
+                  0,
+                  0
+                ],
+                [
+                  1152000,
+                  1,
+                  2,
+                  0,
+                  0,
+                  false,
+                  false,
+                  0,
+                  0
+                ]
+              ]
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 2,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 2,
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "COLMETADATA",
+              "columns": 22
+            },
+            {
+              "name": "NBCROW",
+              "count": 1
+            },
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 9
+            },
+            {
+              "name": "ORDER",
+              "columns": [
+                1,
+                2
+              ]
+            },
+            {
+              "name": "ROW",
+              "count": 2
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 3
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "update-none": {
+      "case": "8399e63d9dabce2c",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 42231,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Data modification statement failed because table 't' has a vector index on it."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 42231
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "delete-none": {
+      "case": "81bdeb742a2e804d",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 42231,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Data modification statement failed because table 't' has a vector index on it."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 42231
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "insert-empty": {
+      "case": "58607db25d210462",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 42231,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Data modification statement failed because table 't' has a vector index on it."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 42231
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "update-tag": {
+      "case": "c425921b9dbc4ca6",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 42231,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Data modification statement failed because table 't' has a vector index on it."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 42231
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "drop-vector-column": {
+      "case": "23fb5d18804b2ee5",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 5074,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The index 'vi' is dependent on column 'v'."
+            },
+            {
+              "number": 4922,
+              "state": 9,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "ALTER TABLE DROP COLUMN v failed because one or more objects access this column."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 5074
+            },
+            {
+              "name": "ERROR",
+              "number": 4922
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "drop-pk": {
+      "case": "1c3509e4817ee504",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 3768,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Could not drop the primary key constraint 'PK_t' because the table has a vector index."
+            },
+            {
+              "number": 3727,
+              "state": 0,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Could not drop constraint. See previous errors."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 3768
+            },
+            {
+              "name": "ERROR",
+              "number": 3727
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "second-column": {
+      "case": "d12f4db6a7bfad5d",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 216
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 216
+            },
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "preview-off-search": {
+      "case": "a2a52006cb9c2a12",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 156,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "Incorrect syntax near the keyword 'TABLE'."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 156
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "metadata-star": {
+      "case": "a0e31b4c8ebd719f",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "distance",
+                  "type": "Float",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "v",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 96,
+                    "version": 2,
+                    "sortId": 0,
+                    "codepage": "utf-8"
+                  }
+                },
+                {
+                  "name": "tag",
+                  "type": "VarChar",
+                  "length": 20,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 9,
+                  "collation": {
+                    "buffer": {
+                      "kind": "missing"
+                    },
+                    "lcid": 1033,
+                    "flags": 13,
+                    "version": 0,
+                    "sortId": 52,
+                    "codepage": "CP1252"
+                  }
+                }
+              ],
+              "rows": [
+                [
+                  0,
+                  1,
+                  "[1.0000000e+000,0.0000000e+000,0.0000000e+000]",
+                  "a"
+                ],
+                [
+                  0.2928932309150696,
+                  2,
+                  "[1.0000000e+000,1.0000000e+000,0.0000000e+000]",
+                  "b"
+                ],
+                [
+                  1,
+                  3,
+                  "[0.0000000e+000,1.0000000e+000,0.0000000e+000]",
+                  "c"
+                ]
+              ]
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 4
+            },
+            {
+              "name": "ORDER",
+              "columns": [
+                2
+              ]
+            },
+            {
+              "name": "ROW",
+              "count": 3
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 4
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "dimension": {
+      "case": "a6709ad733ef070b",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "distance",
+                  "type": "Float",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                }
+              ],
+              "rows": []
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 42204,
+              "state": 3,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The vector dimensions 3 and 2 do not match."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 2
+            },
+            {
+              "name": "ERROR",
+              "number": 42204
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "string-query": {
+      "case": "51e6e6f5a3aaab34",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 8116,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Argument data type varchar is invalid for argument 3 of vector_distance function."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 8116
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "top-variable": {
+      "case": "74dce929007a6aa3",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "distance",
+                  "type": "Float",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  2,
+                  0.2928932309150696
+                ]
+              ]
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 2,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 2,
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 2
+            },
+            {
+              "name": "ROW",
+              "count": 2
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 3
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "top-expression": {
+      "case": "c99c49f355c8efd6",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 102,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "Incorrect syntax near '+'."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 102
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "query-column": {
+      "case": "47319106ad781d01",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 4104,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The multi-part identifier \"s.v\" could not be bound."
+            },
+            {
+              "number": 4104,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The multi-part identifier \"s.v\" could not be bound."
+            },
+            {
+              "number": 4104,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "The multi-part identifier \"s.v\" could not be bound."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 4104
+            },
+            {
+              "name": "ERROR",
+              "number": 4104
+            },
+            {
+              "name": "ERROR",
+              "number": 4104
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "no-inner-alias": {
+      "case": "12f41cdabb9efd01",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "distance",
+                  "type": "Float",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  2,
+                  0.2928932309150696
+                ],
+                [
+                  3,
+                  1
+                ]
+              ]
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 2
+            },
+            {
+              "name": "ROW",
+              "count": 3
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 4
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "outer-qualified": {
+      "case": "02746882793fb357",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 207,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Invalid column name 'id'."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 207
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "inner-distance": {
+      "case": "7789f1a5fa6bfcd9",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 207,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Invalid column name 'distance'."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 207
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "metric-case": {
+      "case": "49ed40f95ac54054",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "Int",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                },
+                {
+                  "name": "distance",
+                  "type": "Float",
+                  "length": null,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 8,
+                  "collation": null
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  2,
+                  0.2928932309150696
+                ],
+                [
+                  3,
+                  1
+                ]
+              ]
+            }
+          ],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": 1,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 1,
+              "curCmd": 193
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 193
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 17,
+              "curCmd": 193
+            },
+            {
+              "name": "COLMETADATA",
+              "columns": 2
+            },
+            {
+              "name": "ROW",
+              "count": 3
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 193
+            }
+          ],
+          "rowCount": 4
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    },
+    "metric-variable": {
+      "case": "e6d041cc4f5648e7",
+      "steps": [
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": 3,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": 3,
+              "curCmd": 195
+            }
+          ],
+          "stream": [
+            {
+              "name": "DONE",
+              "status": 1,
+              "curCmd": 198
+            },
+            {
+              "name": "DONE",
+              "status": 16,
+              "curCmd": 195
+            }
+          ],
+          "rowCount": 3
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "doneInProc",
+              "rowCount": null,
+              "more": true
+            },
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [],
+          "info": [
+            {
+              "number": 8625,
+              "state": 0,
+              "class": 0,
+              "lineNumber": 1,
+              "message": "Warning: The join order has been enforced because a local join hint is used."
+            }
+          ],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONEINPROC",
+              "more": true,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": false,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 743
+            }
+          ],
+          "stream": [
+            {
+              "name": "INFO",
+              "number": 8625
+            },
+            {
+              "name": "DONEINPROC",
+              "status": 1,
+              "curCmd": 186
+            },
+            {
+              "name": "DONE",
+              "status": 0,
+              "curCmd": 743
+            }
+          ],
+          "rowCount": 0
+        },
+        {
+          "sets": [],
+          "done": [
+            {
+              "kind": "done",
+              "rowCount": null,
+              "more": false
+            }
+          ],
+          "errors": [
+            {
+              "number": 102,
+              "state": 1,
+              "class": 15,
+              "lineNumber": 1,
+              "message": "Incorrect syntax near '@m'."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {
+              "name": "DONE",
+              "more": false,
+              "sqlError": true,
+              "attention": false,
+              "serverError": false,
+              "rowCount": {
+                "kind": "missing"
+              },
+              "curCmd": 253
+            }
+          ],
+          "stream": [
+            {
+              "name": "ERROR",
+              "number": 102
+            },
+            {
+              "name": "DONE",
+              "status": 2,
+              "curCmd": 253
+            }
+          ],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "trancount",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              },
+              {
+                "name": "xact_state",
+                "type": "IntN",
+                "length": 2,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "columns": [
+              {
+                "name": "reusable",
+                "type": "Int",
+                "length": null,
+                "precision": null,
+                "scale": null,
+                "flags": 32,
+                "collation": null
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "done": [
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": true
+          },
+          {
+            "kind": "done",
+            "rowCount": 1,
+            "more": false
+          }
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {
+            "name": "DONE",
+            "more": true,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          },
+          {
+            "name": "DONE",
+            "more": false,
+            "sqlError": false,
+            "attention": false,
+            "serverError": false,
+            "rowCount": 1,
+            "curCmd": 193
+          }
+        ],
+        "stream": [
+          {
+            "name": "COLMETADATA",
+            "columns": 2
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 17,
+            "curCmd": 193
+          },
+          {
+            "name": "COLMETADATA",
+            "columns": 1
+          },
+          {
+            "name": "ROW",
+            "count": 1
+          },
+          {
+            "name": "DONE",
+            "status": 16,
+            "curCmd": 193
+          }
+        ],
+        "rowCount": 2
+      }
+    }
+  }
+}

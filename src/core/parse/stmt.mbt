@@ -1026,6 +1026,7 @@ fn Parser::create_or_alter(
     | "NONCLUSTERED"
     | "INDEX"
     | "COLUMNSTORE"
+    | "VECTOR"
     | "JSON" if mode is Create => CreateIndex(self.create_index())
     "INDEX" if mode is Alter => {
       self.pos += 1

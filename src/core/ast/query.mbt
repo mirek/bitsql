@@ -153,7 +153,19 @@ pub(all) struct TableRef {
 } derive(Eq, Debug)
 
 ///|
+pub(all) struct VectorSearch {
+  table : ObjectName
+  source_alias : Ident?
+  column : Ident
+  query : Expr
+  metric : String
+  top : Expr
+  alias_ : Ident?
+} derive(Eq, Debug)
+
+///|
 pub(all) enum TableRefKind {
+  VectorSearch(VectorSearch)
   Table(ObjectName, alias_~ : Ident?, hints~ : Array[TableHint])
   /// Table variable `@t`.
   TableVar(String, alias_~ : Ident?, hints~ : Array[TableHint])

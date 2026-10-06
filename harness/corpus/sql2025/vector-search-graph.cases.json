@@ -1,0 +1,319 @@
+{
+  "cases": [
+    {
+      "name": "cosine-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(0) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('cosine',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "cosine-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(1) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('cosine',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "cosine-20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(20) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('cosine',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "cosine-100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(100) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('cosine',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "cosine-500",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(500) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('cosine',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(0) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('euclidean',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(1) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('euclidean',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(20) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('euclidean',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(100) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('euclidean',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-500",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(500) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('euclidean',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(0) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('dot',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(1) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('dot',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-20",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(20) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('dot',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(100) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('dot',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-500",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); WITH nums AS (SELECT TOP(500) ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS n FROM sys.all_columns) INSERT t SELECT n,CONCAT('[',((n*47)%997)/997.0,',',((n*71)%991)/991.0,',',((n*113)%983)/983.0,']') FROM nums;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT index_id,build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[0.251,0.391,0.733]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=10) ORDER BY distance,s.id; SELECT TOP(10) id,VECTOR_DISTANCE('dot',v,@q) AS distance FROM t ORDER BY distance,id;"
+        }
+      ]
+    }
+  ]
+}
