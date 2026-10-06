@@ -50,6 +50,41 @@ fn agg_inputs(
 }
 
 ///|
+/// COUNT needs cardinality, not the value/row pairs and representative rows
+/// retained for other aggregates. Evaluate arguments in the same order and
+/// preserve NULL warnings before doing DISTINCT comparisons.
+fn count_inputs(
+  ctx : Ctx,
+  call : @ir.AggCall,
+  rows : ArrayView[Row],
+) -> Int raise @types.SqlError {
+  guard call.arg is Some(arg) else { return rows.length() }
+  let ca = compile(arg)
+  let values : Array[@types.Value] = []
+  let mut n = 0
+  for row in rows {
+    let v = ca(ctx, row)
+    if v is Null {
+      ctx.rt.null_eliminated = true
+    } else {
+      n += 1
+      if call.distinct {
+        values.push(v)
+      }
+    }
+  }
+  if !call.distinct || n < 2 {
+    return n
+  }
+  let coll = arg.ty.collation()
+  let ansi = !arg.ty.is_unicode()
+  match single_value_ids(values, coll, ansi) {
+    Some((_, count)) => count
+    None => group_ids_general(values.map(v => [v]), [coll], ansi).1
+  }
+}
+
+///|
 fn sum_values(
   values : Array[(@types.Value, Row)],
   arg_ty : @types.SqlType,
@@ -207,10 +242,7 @@ pub fn eval_aggregate(
 ) -> @types.Value raise @types.SqlError {
   match call.func {
     Count | CountBig => {
-      let n = match call.arg {
-        None => rows.length()
-        Some(_) => agg_inputs(ctx, call, rows).length()
-      }
+      let n = count_inputs(ctx, call, rows)
       if call.func is Count {
         Int(n)
       } else {

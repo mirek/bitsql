@@ -554,3 +554,60 @@ The tested filesystem layers were unchanged when revision labels were added.
 `0.1.15`, `0.1` and `latest` have identical amd64 + arm64 registry manifests,
 digest `sha256:0681ff73eb82e316b7b3a02c46c6c8de67c63cc3cc70a714cc0f3204730d5444`.
 The amd64 registry layers total 12.4909 MiB compressed (README rounds to 12.5).
+
+
+## Flat count and grouping inputs (2026-10-06, 0.1.16)
+
+COUNT/COUNT_BIG with an argument formerly retained `(value, row)` tuples,
+constructed one-element key rows for DISTINCT, and built representative tuples
+only to take their length. The count-specific path now evaluates arguments
+once in the same order, records NULL elimination as before, retains only values
+when DISTINCT is needed, and returns the grouping cardinality. Inexact/mixed
+key kinds use the same general grouping comparison path on those values,
+without reevaluating expressions or retrying exact-key normalization.
+
+The single-column exact grouping helper takes a flat value array. Other
+single-column GROUP BY/DISTINCT callers adapt their rows once; measurements
+show the contiguous-value traversal pays for that temporary pointer array.
+The existing canonical grouping rules, adaptive raw-string cache and group
+numbering remain unchanged. Equivalence tests compare counts, NULL-warning
+state, expression-call traces and errors against `agg_inputs`, including
+empty/all-NULL inputs, numeric/temporal/binary/variant values, mixed-type errors,
+linguistic and binary collations, ANSI modes, and large repeated text inputs.
+
+Two sequential interleaved native runs (100 repetitions, 20k rows, mean ms):
+
+| Shape | 0.1.15 baseline | Candidate |
+| --- | ---: | ---: |
+| GROUP BY p | 1.78 / 1.75 | 1.52 / 1.54 |
+| GROUP BY v | 5.15 / 5.06 | 4.61 / 4.91 |
+| DISTINCT v | 5.38 / 5.26 | 4.92 / 4.91 |
+| COUNT(DISTINCT v) | 4.20 / 4.18 | 3.18 / 3.22 |
+| UNION | 6.31 / 6.24 | 5.83 / 5.76 |
+| EXCEPT | 5.85 / 5.84 | 5.79 / 5.79 |
+| INTERSECT | 2.38 / 2.29 | 2.26 / 2.21 |
+
+Controls (60 repetitions): all-unique COUNT DISTINCT improved 10.01/9.77 to
+9.07/9.19 ms; grouped COUNT DISTINCT 5.05/4.90 to 4.13/4.20; nullable COUNT
+DISTINCT 4.84/4.75 to 3.81/3.85. Decimal, float and ANSI fallback controls
+improved slightly, and window COUNT stayed approximately unchanged. All timed
+queries checked for SQL errors; no builds, tests or benchmarks overlapped.
+Evidence: `_build/flat-count-bench.txt`, `_build/flat-count-controls.txt`.
+Final release validation and container results follow.
+
+
+The exact amd64 release binary passed the full gate: 281 MoonBit tests,
+20703 client/corpus passes, three skips and no failures. Arm64 passed 572/572
+smoke cases. The first benchmark attempt failed to bind 47340 before collecting
+any timings. After confirming the process exited and both ports/container names
+were free, the isolated retry completed. All 48 medians match their 240 raw
+samples. COUNT DISTINCT now beats SQL Server (3.31 vs 3.92 ms), as does UNION
+(5.93 vs 8.15 ms). Total shape medians: 234 vs 672 ms, about 2.9x. This is the
+observed complete-workload result, not a claim that all write timing changes
+came from this optimization.
+
+Three clear gaps remain: GROUP BY v 5.41 vs 5.03 ms, DISTINCT v 5.59 vs 4.63,
+and ROW_NUMBER 7.19 vs 6.07. EXISTS is effectively tied (4.94 vs 4.91 ms).
+The full optimization goal remains open. README now reflects this run.
+Evidence: `harness/out/bench-compare-0.1.16.json`, `_build/bench-0.1.16.txt`,
+`_build/check-0.1.16.log`, `_build/arm64-0.1.16.log`.

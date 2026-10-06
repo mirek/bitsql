@@ -91,25 +91,25 @@ fn hashable_key_rows(keys : Array[Array[@types.SortKey]]) -> Bool {
 }
 
 ///|
-/// `group_ids` of one-column key rows without a key array per row: integer
+/// Group ids of a flat column, without a key array per value: integer
 /// values hashed as Int64 (KeyInt equality), other exact sort keys hashed
 /// directly; NULLs form one group. None when the column has inexact keys or
 /// mixed key kinds (the caller's general path decides those).
-fn single_column_ids(
-  keys : Array[Row],
+fn single_value_ids(
+  values : Array[@types.Value],
   collation : @types.Collation?,
   ansi : Bool,
 ) -> (Array[Int], Int)? {
-  let n = keys.length()
+  let n = values.length()
   let ids = Array::make(n, 0)
   let mut count = 0
   let mut null_id = -1
-  if keys
+  if values
     .iter()
-    .all(r => r[0] is (Null | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
+    .all(v => v is (Null | TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_))) {
     let seen = IntTable::new(16)
-    for i, r in keys {
-      if r[0] is Null {
+    for i, v in values {
+      if v is Null {
         if null_id < 0 {
           null_id = count
           count += 1
@@ -117,7 +117,7 @@ fn single_column_ids(
         ids[i] = null_id
         continue
       }
-      let k = r[0].int64_or(0L)
+      let k = v.int64_or(0L)
       let id = seen.get(k)
       if id >= 0 {
         ids[i] = id
@@ -147,14 +147,14 @@ fn single_column_ids(
   let mut next_probe = 1024
   let mut probes = 0
   let mut hits = 0
-  for i, r in keys {
+  for i, v in values {
     if i == next_probe {
       next_probe = if next_probe > n / 2 { n } else { next_probe * 2 }
       // Seeding revisits the prefix: leave at least as much input to reuse it.
       if kind == 3 && count * 4 < i * 3 && n - i >= i {
         let cache : Map[String, Int] = Map([])
         for j in 0..<i {
-          if keys[j][0] is String(s) {
+          if values[j] is String(s) {
             cache[s] = ids[j]
           }
         }
@@ -162,7 +162,7 @@ fn single_column_ids(
         next_probe = n
       }
     }
-    if raw_cache is Some(cache) && r[0] is String(s) {
+    if raw_cache is Some(cache) && v is String(s) {
       let id = cache.get(s).unwrap_or(-1)
       probes += 1
       if id >= 0 {
@@ -180,7 +180,7 @@ fn single_column_ids(
         continue
       }
     }
-    let k = @types.sort_key(r[0], collation?, ansi~)
+    let k = @types.sort_key(v, collation?, ansi~)
     let x = k.exact_kind()
     if x < 0 || (x > 0 && kind > 0 && x != kind) {
       return None
@@ -200,7 +200,7 @@ fn single_column_ids(
       ids[i] = count
       count += 1
     }
-    if raw_cache is Some(cache) && r[0] is String(s) {
+    if raw_cache is Some(cache) && v is String(s) {
       cache[s] = ids[i]
     }
   }
@@ -220,11 +220,22 @@ fn group_ids(
 ) -> (Array[Int], Int) raise @types.SqlError {
   let n = keys.length()
   if n > 0 && keys[0].length() == 1 {
-    match single_column_ids(keys, collations[0], ansi) {
+    match single_value_ids(keys.map(r => r[0]), collations[0], ansi) {
       Some(r) => return r
       None => ()
     }
   }
+  group_ids_general(keys, collations, ansi)
+}
+
+///|
+/// General comparison path after single-column exact grouping is unavailable.
+fn group_ids_general(
+  keys : Array[Row],
+  collations : Array[@types.Collation?],
+  ansi : Bool,
+) -> (Array[Int], Int) raise @types.SqlError {
+  let n = keys.length()
   let ks = keys.map(r => key_row(r, collations, ansi))
   if hashable_key_rows(ks) {
     let seen : Map[Array[@types.SortKey], Int] = Map([])

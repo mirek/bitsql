@@ -534,3 +534,9 @@ Start the host with `--database NAME` so the app's database exists at login
 - 2026-10-06: `bench/profile.mjs` now fails on SQL errors in setup, warm-up
   and every timed execution, matching the comparison runner. Failed queries
   must never appear as fast measurements.
+
+- 2026-10-06: a benchmark Docker launch can fail binding 47340 despite a
+  preceding LISTEN-only check. Inspect all TCP states with `ss -tanp` for
+  47340/47341 and Docker container names. Retry only after the old process is
+  confirmed terminal and the ports/names are free; never stop someone else's
+  service. A launch failure before timings does not yield benchmark results.
