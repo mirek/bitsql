@@ -1,0 +1,823 @@
+{
+  "cases": [
+    {
+      "name": "integer-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[65535]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[65536]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-65536]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--65537",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-65537]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-131071",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[131071]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-131072",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[131072]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--131072",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-131072]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--131073",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-131073]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-262143",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[262143]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-262144",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[262144]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--262144",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-262144]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--262145",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-262145]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-524287",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[524287]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-524288",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[524288]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--524288",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-524288]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--524289",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-524289]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-1048575",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1048575]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-1048576",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1048576]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--1048576",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1048576]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--1048577",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1048577]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-2097151",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2097151]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-2097152",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2097152]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--2097152",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2097152]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--2097153",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2097153]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-4194303",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4194303]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-4194304",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4194304]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--4194304",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4194304]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--4194305",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4194305]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-8388607",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[8388607]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-8388608",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[8388608]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--8388608",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-8388608]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--8388609",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-8388609]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-16777215",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[16777215]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-16777216",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[16777216]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--16777216",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-16777216]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--16777217",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-16777217]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-33554431",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[33554431]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-33554432",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[33554432]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--33554432",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-33554432]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--33554433",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-33554433]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-67108863",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[67108863]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-67108864",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[67108864]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--67108864",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-67108864]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--67108865",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-67108865]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-134217727",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[134217727]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-134217728",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[134217728]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--134217728",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-134217728]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--134217729",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-134217729]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-268435455",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[268435455]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-268435456",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[268435456]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--268435456",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-268435456]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--268435457",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-268435457]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-536870911",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[536870911]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-536870912",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[536870912]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--536870912",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-536870912]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--536870913",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-536870913]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-1073741823",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1073741823]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-1073741824",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1073741824]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--1073741824",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1073741824]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--1073741825",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1073741825]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-2147483647",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2147483647]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-2147483648",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2147483648]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--2147483648",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2147483648]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--2147483649",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2147483649]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-4294967295",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4294967295]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer-4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4294967296]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4294967296]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "integer--4294967297",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4294967297]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-4294967295",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[429496729.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--4294967295",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-429496729.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[429496729.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-429496729.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-18446744073709551615",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1844674407370955161.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--18446744073709551615",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1844674407370955161.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-18446744073709551616",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1844674407370955161.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--18446744073709551616",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1844674407370955161.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-79228162514264337593543950335",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[7922816251426433759354395033.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--79228162514264337593543950335",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-7922816251426433759354395033.5]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-79228162514264337593543950336",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[7922816251426433759354395033.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "decimal--79228162514264337593543950336",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-7922816251426433759354395033.6]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "strings-repeat",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"x\",\"x\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "strings-different",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"x\",\"y\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "objects-repeat-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[{\"a\":1},{\"a\":2}]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-value-same",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"x\":\"x\"}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nested-distinct",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"b\":1}}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"A\":1}}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "many-empties",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[[],{},[],{}]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-empty-repeat",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\",\"\",\"\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nested-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[[null]]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "numeric-values",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,2,3,4]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-controls",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\\u0000\",\"\\n\",\"\\\"\",\"\\\\\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    }
+  ]
+}

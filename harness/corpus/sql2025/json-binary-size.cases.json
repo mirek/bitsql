@@ -1,0 +1,1309 @@
+{
+  "cases": [
+    {
+      "name": "empty-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "empty-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-true",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[true]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-true",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":true}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-false",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[false]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-false",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":false}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[0]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":0}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-negative",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-negative",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":-1}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"x\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":\"x\"}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-empty-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-empty-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":\"\"}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[[]]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "array-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[{}]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "object-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null,\"k32\":null,\"k33\":null,\"k34\":null,\"k35\":null,\"k36\":null,\"k37\":null,\"k38\":null,\"k39\":null,\"k40\":null,\"k41\":null,\"k42\":null,\"k43\":null,\"k44\":null,\"k45\":null,\"k46\":null,\"k47\":null,\"k48\":null,\"k49\":null,\"k50\":null,\"k51\":null,\"k52\":null,\"k53\":null,\"k54\":null,\"k55\":null,\"k56\":null,\"k57\":null,\"k58\":null,\"k59\":null,\"k60\":null,\"k61\":null,\"k62\":null,\"k63\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null,\"k32\":null,\"k33\":null,\"k34\":null,\"k35\":null,\"k36\":null,\"k37\":null,\"k38\":null,\"k39\":null,\"k40\":null,\"k41\":null,\"k42\":null,\"k43\":null,\"k44\":null,\"k45\":null,\"k46\":null,\"k47\":null,\"k48\":null,\"k49\":null,\"k50\":null,\"k51\":null,\"k52\":null,\"k53\":null,\"k54\":null,\"k55\":null,\"k56\":null,\"k57\":null,\"k58\":null,\"k59\":null,\"k60\":null,\"k61\":null,\"k62\":null,\"k63\":null,\"k64\":null,\"k65\":null,\"k66\":null,\"k67\":null,\"k68\":null,\"k69\":null,\"k70\":null,\"k71\":null,\"k72\":null,\"k73\":null,\"k74\":null,\"k75\":null,\"k76\":null,\"k77\":null,\"k78\":null,\"k79\":null,\"k80\":null,\"k81\":null,\"k82\":null,\"k83\":null,\"k84\":null,\"k85\":null,\"k86\":null,\"k87\":null,\"k88\":null,\"k89\":null,\"k90\":null,\"k91\":null,\"k92\":null,\"k93\":null,\"k94\":null,\"k95\":null,\"k96\":null,\"k97\":null,\"k98\":null,\"k99\":null,\"k100\":null,\"k101\":null,\"k102\":null,\"k103\":null,\"k104\":null,\"k105\":null,\"k106\":null,\"k107\":null,\"k108\":null,\"k109\":null,\"k110\":null,\"k111\":null,\"k112\":null,\"k113\":null,\"k114\":null,\"k115\":null,\"k116\":null,\"k117\":null,\"k118\":null,\"k119\":null,\"k120\":null,\"k121\":null,\"k122\":null,\"k123\":null,\"k124\":null,\"k125\":null,\"k126\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null,\"k32\":null,\"k33\":null,\"k34\":null,\"k35\":null,\"k36\":null,\"k37\":null,\"k38\":null,\"k39\":null,\"k40\":null,\"k41\":null,\"k42\":null,\"k43\":null,\"k44\":null,\"k45\":null,\"k46\":null,\"k47\":null,\"k48\":null,\"k49\":null,\"k50\":null,\"k51\":null,\"k52\":null,\"k53\":null,\"k54\":null,\"k55\":null,\"k56\":null,\"k57\":null,\"k58\":null,\"k59\":null,\"k60\":null,\"k61\":null,\"k62\":null,\"k63\":null,\"k64\":null,\"k65\":null,\"k66\":null,\"k67\":null,\"k68\":null,\"k69\":null,\"k70\":null,\"k71\":null,\"k72\":null,\"k73\":null,\"k74\":null,\"k75\":null,\"k76\":null,\"k77\":null,\"k78\":null,\"k79\":null,\"k80\":null,\"k81\":null,\"k82\":null,\"k83\":null,\"k84\":null,\"k85\":null,\"k86\":null,\"k87\":null,\"k88\":null,\"k89\":null,\"k90\":null,\"k91\":null,\"k92\":null,\"k93\":null,\"k94\":null,\"k95\":null,\"k96\":null,\"k97\":null,\"k98\":null,\"k99\":null,\"k100\":null,\"k101\":null,\"k102\":null,\"k103\":null,\"k104\":null,\"k105\":null,\"k106\":null,\"k107\":null,\"k108\":null,\"k109\":null,\"k110\":null,\"k111\":null,\"k112\":null,\"k113\":null,\"k114\":null,\"k115\":null,\"k116\":null,\"k117\":null,\"k118\":null,\"k119\":null,\"k120\":null,\"k121\":null,\"k122\":null,\"k123\":null,\"k124\":null,\"k125\":null,\"k126\":null,\"k127\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null,\"k32\":null,\"k33\":null,\"k34\":null,\"k35\":null,\"k36\":null,\"k37\":null,\"k38\":null,\"k39\":null,\"k40\":null,\"k41\":null,\"k42\":null,\"k43\":null,\"k44\":null,\"k45\":null,\"k46\":null,\"k47\":null,\"k48\":null,\"k49\":null,\"k50\":null,\"k51\":null,\"k52\":null,\"k53\":null,\"k54\":null,\"k55\":null,\"k56\":null,\"k57\":null,\"k58\":null,\"k59\":null,\"k60\":null,\"k61\":null,\"k62\":null,\"k63\":null,\"k64\":null,\"k65\":null,\"k66\":null,\"k67\":null,\"k68\":null,\"k69\":null,\"k70\":null,\"k71\":null,\"k72\":null,\"k73\":null,\"k74\":null,\"k75\":null,\"k76\":null,\"k77\":null,\"k78\":null,\"k79\":null,\"k80\":null,\"k81\":null,\"k82\":null,\"k83\":null,\"k84\":null,\"k85\":null,\"k86\":null,\"k87\":null,\"k88\":null,\"k89\":null,\"k90\":null,\"k91\":null,\"k92\":null,\"k93\":null,\"k94\":null,\"k95\":null,\"k96\":null,\"k97\":null,\"k98\":null,\"k99\":null,\"k100\":null,\"k101\":null,\"k102\":null,\"k103\":null,\"k104\":null,\"k105\":null,\"k106\":null,\"k107\":null,\"k108\":null,\"k109\":null,\"k110\":null,\"k111\":null,\"k112\":null,\"k113\":null,\"k114\":null,\"k115\":null,\"k116\":null,\"k117\":null,\"k118\":null,\"k119\":null,\"k120\":null,\"k121\":null,\"k122\":null,\"k123\":null,\"k124\":null,\"k125\":null,\"k126\":null,\"k127\":null,\"k128\":null,\"k129\":null,\"k130\":null,\"k131\":null,\"k132\":null,\"k133\":null,\"k134\":null,\"k135\":null,\"k136\":null,\"k137\":null,\"k138\":null,\"k139\":null,\"k140\":null,\"k141\":null,\"k142\":null,\"k143\":null,\"k144\":null,\"k145\":null,\"k146\":null,\"k147\":null,\"k148\":null,\"k149\":null,\"k150\":null,\"k151\":null,\"k152\":null,\"k153\":null,\"k154\":null,\"k155\":null,\"k156\":null,\"k157\":null,\"k158\":null,\"k159\":null,\"k160\":null,\"k161\":null,\"k162\":null,\"k163\":null,\"k164\":null,\"k165\":null,\"k166\":null,\"k167\":null,\"k168\":null,\"k169\":null,\"k170\":null,\"k171\":null,\"k172\":null,\"k173\":null,\"k174\":null,\"k175\":null,\"k176\":null,\"k177\":null,\"k178\":null,\"k179\":null,\"k180\":null,\"k181\":null,\"k182\":null,\"k183\":null,\"k184\":null,\"k185\":null,\"k186\":null,\"k187\":null,\"k188\":null,\"k189\":null,\"k190\":null,\"k191\":null,\"k192\":null,\"k193\":null,\"k194\":null,\"k195\":null,\"k196\":null,\"k197\":null,\"k198\":null,\"k199\":null,\"k200\":null,\"k201\":null,\"k202\":null,\"k203\":null,\"k204\":null,\"k205\":null,\"k206\":null,\"k207\":null,\"k208\":null,\"k209\":null,\"k210\":null,\"k211\":null,\"k212\":null,\"k213\":null,\"k214\":null,\"k215\":null,\"k216\":null,\"k217\":null,\"k218\":null,\"k219\":null,\"k220\":null,\"k221\":null,\"k222\":null,\"k223\":null,\"k224\":null,\"k225\":null,\"k226\":null,\"k227\":null,\"k228\":null,\"k229\":null,\"k230\":null,\"k231\":null,\"k232\":null,\"k233\":null,\"k234\":null,\"k235\":null,\"k236\":null,\"k237\":null,\"k238\":null,\"k239\":null,\"k240\":null,\"k241\":null,\"k242\":null,\"k243\":null,\"k244\":null,\"k245\":null,\"k246\":null,\"k247\":null,\"k248\":null,\"k249\":null,\"k250\":null,\"k251\":null,\"k252\":null,\"k253\":null,\"k254\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nulls-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "ones-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "members-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"k0\":null,\"k1\":null,\"k2\":null,\"k3\":null,\"k4\":null,\"k5\":null,\"k6\":null,\"k7\":null,\"k8\":null,\"k9\":null,\"k10\":null,\"k11\":null,\"k12\":null,\"k13\":null,\"k14\":null,\"k15\":null,\"k16\":null,\"k17\":null,\"k18\":null,\"k19\":null,\"k20\":null,\"k21\":null,\"k22\":null,\"k23\":null,\"k24\":null,\"k25\":null,\"k26\":null,\"k27\":null,\"k28\":null,\"k29\":null,\"k30\":null,\"k31\":null,\"k32\":null,\"k33\":null,\"k34\":null,\"k35\":null,\"k36\":null,\"k37\":null,\"k38\":null,\"k39\":null,\"k40\":null,\"k41\":null,\"k42\":null,\"k43\":null,\"k44\":null,\"k45\":null,\"k46\":null,\"k47\":null,\"k48\":null,\"k49\":null,\"k50\":null,\"k51\":null,\"k52\":null,\"k53\":null,\"k54\":null,\"k55\":null,\"k56\":null,\"k57\":null,\"k58\":null,\"k59\":null,\"k60\":null,\"k61\":null,\"k62\":null,\"k63\":null,\"k64\":null,\"k65\":null,\"k66\":null,\"k67\":null,\"k68\":null,\"k69\":null,\"k70\":null,\"k71\":null,\"k72\":null,\"k73\":null,\"k74\":null,\"k75\":null,\"k76\":null,\"k77\":null,\"k78\":null,\"k79\":null,\"k80\":null,\"k81\":null,\"k82\":null,\"k83\":null,\"k84\":null,\"k85\":null,\"k86\":null,\"k87\":null,\"k88\":null,\"k89\":null,\"k90\":null,\"k91\":null,\"k92\":null,\"k93\":null,\"k94\":null,\"k95\":null,\"k96\":null,\"k97\":null,\"k98\":null,\"k99\":null,\"k100\":null,\"k101\":null,\"k102\":null,\"k103\":null,\"k104\":null,\"k105\":null,\"k106\":null,\"k107\":null,\"k108\":null,\"k109\":null,\"k110\":null,\"k111\":null,\"k112\":null,\"k113\":null,\"k114\":null,\"k115\":null,\"k116\":null,\"k117\":null,\"k118\":null,\"k119\":null,\"k120\":null,\"k121\":null,\"k122\":null,\"k123\":null,\"k124\":null,\"k125\":null,\"k126\":null,\"k127\":null,\"k128\":null,\"k129\":null,\"k130\":null,\"k131\":null,\"k132\":null,\"k133\":null,\"k134\":null,\"k135\":null,\"k136\":null,\"k137\":null,\"k138\":null,\"k139\":null,\"k140\":null,\"k141\":null,\"k142\":null,\"k143\":null,\"k144\":null,\"k145\":null,\"k146\":null,\"k147\":null,\"k148\":null,\"k149\":null,\"k150\":null,\"k151\":null,\"k152\":null,\"k153\":null,\"k154\":null,\"k155\":null,\"k156\":null,\"k157\":null,\"k158\":null,\"k159\":null,\"k160\":null,\"k161\":null,\"k162\":null,\"k163\":null,\"k164\":null,\"k165\":null,\"k166\":null,\"k167\":null,\"k168\":null,\"k169\":null,\"k170\":null,\"k171\":null,\"k172\":null,\"k173\":null,\"k174\":null,\"k175\":null,\"k176\":null,\"k177\":null,\"k178\":null,\"k179\":null,\"k180\":null,\"k181\":null,\"k182\":null,\"k183\":null,\"k184\":null,\"k185\":null,\"k186\":null,\"k187\":null,\"k188\":null,\"k189\":null,\"k190\":null,\"k191\":null,\"k192\":null,\"k193\":null,\"k194\":null,\"k195\":null,\"k196\":null,\"k197\":null,\"k198\":null,\"k199\":null,\"k200\":null,\"k201\":null,\"k202\":null,\"k203\":null,\"k204\":null,\"k205\":null,\"k206\":null,\"k207\":null,\"k208\":null,\"k209\":null,\"k210\":null,\"k211\":null,\"k212\":null,\"k213\":null,\"k214\":null,\"k215\":null,\"k216\":null,\"k217\":null,\"k218\":null,\"k219\":null,\"k220\":null,\"k221\":null,\"k222\":null,\"k223\":null,\"k224\":null,\"k225\":null,\"k226\":null,\"k227\":null,\"k228\":null,\"k229\":null,\"k230\":null,\"k231\":null,\"k232\":null,\"k233\":null,\"k234\":null,\"k235\":null,\"k236\":null,\"k237\":null,\"k238\":null,\"k239\":null,\"k240\":null,\"k241\":null,\"k242\":null,\"k243\":null,\"k244\":null,\"k245\":null,\"k246\":null,\"k247\":null,\"k248\":null,\"k249\":null,\"k250\":null,\"k251\":null,\"k252\":null,\"k253\":null,\"k254\":null,\"k255\":null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"x\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"x\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-15",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-15",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-31",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-31",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-32",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-63",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-63",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-64",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-512",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-512",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-1024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-1024",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-4096",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-4096",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "string-5000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "key-5000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\": null}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[127]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--127",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-127]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[128]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--128",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-128]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[255]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--255",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-255]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[256]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--256",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-256]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-32767",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[32767]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--32767",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-32767]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-32768",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[32768]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--32768",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-32768]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[65535]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-65535]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[65536]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-65536]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-2147483647",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2147483647]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--2147483647",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2147483647]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-2147483648",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[2147483648]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--2147483648",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-2147483648]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-4294967295",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4294967295]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--4294967295",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4294967295]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[4294967296]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--4294967296",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-4294967296]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-9223372036854775807",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[9223372036854775807]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--9223372036854775807",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-9223372036854775807]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int-9223372036854775808",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[9223372036854775808]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "int--9223372036854775808",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[-9223372036854775808]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[0.0]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[0.00]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1.0]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1.00]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1.0000000000]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[0.1]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-6",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[0.1234567890123456789012345678901234567]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-7",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1e0]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1e2]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-9",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1e-2]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-10",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1.2345678901234567890123456789]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "number-11",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[1234567890123456789012345678]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1,\"a\":2}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nested-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[[1]]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nested-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"a\":1}}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "nested-same-keys",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"a\":1,\"b\":2},\"b\":3}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\u03c0\ud83d\ude00\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"\u03c0\ud83d\ude00\":1}'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    },
+    {
+      "name": "escaped-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'[\"\\u0061\"]'; SELECT DATALENGTH(@j) AS bytes,CAST(@j AS nvarchar(max)) AS text;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,742 @@
+{
+  "cases": [
+    {
+      "name": "greek-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'\\C') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'\\C',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'\\C',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'\\C',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'\\C',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'\\C',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "greek-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "greek-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'(\\C)(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(\\C)',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(\\C)',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(\\C)',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(\\C)',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(\\C)',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "greek-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'\\C+') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C+',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'\\C+',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C+',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C+',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'\\C+',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C+',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C+',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'\\C+',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C+',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C+',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'\\C+',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C+',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C+',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'\\C+',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C+',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C+',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C+',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'\\C+');"
+        }
+      ]
+    },
+    {
+      "name": "greek-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'\\C{2}') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C{2}',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C{2}',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C{2}',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C{2}',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'\\C{2}',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'\\C{2}',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C{2}',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'\\C{2}',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "greek-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\u03c0',N'(\\C)(.*)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(.*)',1,1) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,1,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(.*)',1,2) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,2,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(.*)',1,3) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,3,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(.*)',1,4) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,4,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\u03c0',N'(\\C)(.*)',1,5) AS s,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,5,0) AS a,REGEXP_INSTR(N'\u03c0',N'(\\C)(.*)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)(.*)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\u03c0',N'(\\C)(.*)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\u03c0',N'(\\C)(.*)');"
+        }
+      ]
+    },
+    {
+      "name": "euro-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'\\C') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "euro-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "euro-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'(\\C)(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(\\C)',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(\\C)',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(\\C)',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(\\C)',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(\\C)',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "euro-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'\\C+') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C+',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C+',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C+',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C+',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C+',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C+',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C+',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C+',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'\\C+');"
+        }
+      ]
+    },
+    {
+      "name": "euro-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'\\C{2}') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C{2}',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C{2}',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C{2}',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C{2}',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'\\C{2}',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'\\C{2}',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C{2}',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'\\C{2}',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "euro-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'x\u20acy',N'(\\C)(.*)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(.*)',1,1) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,1,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(.*)',1,2) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,2,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(.*)',1,3) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,3,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(.*)',1,4) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,4,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'x\u20acy',N'(\\C)(.*)',1,5) AS s,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,5,0) AS a,REGEXP_INSTR(N'x\u20acy',N'(\\C)(.*)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)(.*)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'x\u20acy',N'(\\C)(.*)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'x\u20acy',N'(\\C)(.*)');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'\\C') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'(\\C)(\\C)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(\\C)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)(\\C)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)(\\C)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-3",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'\\C+') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C+',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C+',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C+',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C+',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C+',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C+',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C+',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C+',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'\\C+');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-4",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'\\C{2}') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C{2}',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C{2}',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C{2}',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C{2}',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'\\C{2}',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'\\C{2}',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C{2}',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'\\C{2}',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'\\C{2}');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_COUNT(N'\ud83d\ude00',N'(\\C)(.*)') AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,1) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,1,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,1,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,2) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,2,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,2,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,3) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,3,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,3,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,4) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,4,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,4,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_SUBSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,5) AS s,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,5,0) AS a,REGEXP_INSTR(N'\ud83d\ude00',N'(\\C)(.*)',1,5,1) AS b;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)(.*)',N'X') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT REGEXP_REPLACE(N'\ud83d\ude00',N'(\\C)(.*)',N'\\1') AS s;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_SPLIT_TO_TABLE(N'\ud83d\ude00',N'(\\C)(.*)');"
+        }
+      ]
+    }
+  ]
+}

@@ -312,3 +312,33 @@ xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
 DATALENGTH of json values (SQL Server's binary size), CLR arguments
 (13666; hierarchyid/geometry/geography/vector are 50100, and
 `geometry::Point(...)` static method calls do not parse).
+
+### Native binary size evidence awaiting implementation (2026-10-06)
+
+`sql2025/json-binary-size.cases.json` and `json-binary-boundaries.cases.json`
+provide 236 captured sizes and canonical strings. A prototype matches all 236
+with the following inferred accounting; this is not yet the emulator's
+DATALENGTH implementation or a claim to serialize the native format:
+
+- Start with 18 bytes. Empty containers contribute zero additional bytes;
+  nonempty arrays add 4 + 4n, nonempty objects add 4 + 6n, plus child payloads.
+- Property names are shared across the entire document, case-sensitively. If
+  there are any, add 4 + 8k plus the string payload of each distinct key.
+- Empty strings are inline. A nonempty string costs its UTF-8 byte length,
+  a one-byte tag, and a base-128 variable-length length field. String **values**
+  are not deduplicated, and do not share payloads with property names.
+- Null and booleans are inline, as are integers from -2^29 through 2^29 - 1.
+  Other signed 64-bit integers add nine bytes. Larger integers and decimal
+  values add five bytes plus four per 32-bit limb of the absolute unscaled
+  coefficient, with at least one limb. Decimal scale remains significant.
+
+The canonical representation suffices for these construction captures,
+including duplicate member names keeping the first value. In-place mutation,
+large property dictionaries and allocation behavior still need verification.
+Microsoft documents a native
+[json modify method](https://learn.microsoft.com/en-us/sql/t-sql/data-types/json-data-type?view=sql-server-ver17#the-modify-method)
+with in-place updates, so construction-only evidence must not be generalized
+to modified storage without captures. JSON_CONTAINS and CREATE JSON INDEX are
+also listed among the
+[2025 JSON additions](https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver17#sql-server-2025-changes)
+and remain part of the feature audit.
