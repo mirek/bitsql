@@ -956,3 +956,76 @@ were verified at `sha256:dd7b268e593753e586015324e6607fe8ac0c78848386a86cbb99a2f
 Both images carry source revision `2f8d43274dbdf42c74ff9c350defedc802b063ed`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.4967 MiB compressed.
+
+### 0.1.21 compact short ASCII keys (2026-10-06)
+
+Grouping and normalized window/sort keys can encode at most eight UTF-16
+units of ASCII letters/digits (plus trailing spaces) as one left-aligned
+Int64 under the exact default English CI collation. The whole column must
+qualify; NULL retains a separate tag. Other collations, ANSI sorting,
+punctuation, embedded spaces, NUL, non-ASCII and longer values retain the
+existing comparison path. This avoids allocating collation-weight arrays
+for the common short-key workload without changing comparison semantics.
+
+`compact_text_wbtest.mbt` compares about 100,000 packed/comparator pairs,
+checks grouping against general keys, stable ascending/descending sorts,
+multiple keys and mapped columns, and unsupported values at boundary and
+interior positions. Oracle capture `traps/compact-text-keys.sql` passes on
+both 0.1.20 and the candidate. Separate reduced probes exposed existing
+non-ASCII ordering / unsupported-collation differences, documented in
+`fidelity-traps.md`; they remain outside the allowlist.
+
+Sequential native controls (20k rows, 100 repetitions, baseline/candidate/
+candidate/baseline) show GROUP BY v 4.38/4.29 → 3.53/3.43 ms, DISTINCT
+3.88/3.83 → 3.24/3.25, COUNT DISTINCT 3.37/3.25 → 2.55/2.60, and ROW_NUMBER
+5.79/5.71 → 4.26/4.20. Integer grouping and text ORDER BY controls remain
+roughly stable. Evidence: `_build/compact-text-final-bench.txt`.
+
+The initial implementation added 10–23% to probes with one unsupported
+final value and was revised before release: boundary probes reject early,
+sort preparation reads original rows directly, and compact grouping
+pre-sizes its table. Boundary probes only reject; full validation still
+checks every value, so an unsupported interior value cannot silently use
+the packed encoding. Interior exceptions can still cost an extra scan.
+The final 40-repetition fallback controls retain ANSI, binary-collation and
+decimal timings. Unique grouping improves about 9–12%; unique DISTINCT is
+7.98/7.97 → 8.21/7.95 ms (one small regression, one tie). Final-value
+exceptions are near baseline: COUNT DISTINCT 3.64/3.61 → 3.74/3.62, grouping
+2.45/2.45 → 2.50/2.42, ROW_NUMBER 6.89/7.03 → 7.14/7.01. A deliberately
+unsupported penultimate value still costs roughly 0.4 ms in COUNT DISTINCT
+and 0.3–0.5 ms in ROW_NUMBER. The 1024-character ROW_NUMBER control adds
+about 2–3%. These are retained limitations, not universal speedup claims.
+Evidence: `_build/compact-text-final-controls.txt`. The container
+comparison follows below.
+
+The exact amd64 release binary passed the full gate: 291 MoonBit tests,
+20704 client/corpus passes, three expected skips, no failures. ARM64 passed
+573/573 in the short QEMU smoke, including the JSON and compact-key cases.
+Both cases also matched the live SQL Server oracle (2/2).
+Evidence: `_build/check-0.1.21.log`, `_build/arm64-0.1.21.log`,
+`_build/oracle-0.1.21.log`.
+
+The fresh container comparison sums to 228.01 vs SQL Server's 643.31 ms
+(about 2.8x). Text grouping now wins 4.29 vs 4.68, DISTINCT 3.62 vs 4.36,
+COUNT DISTINCT 2.96 vs 3.63, and ROW_NUMBER 4.43 vs 5.51. Accented sorting
+is near parity (3.05 vs 3.01). All 48 shape medians were checked against
+240 raw samples, and both point-read medians against their five batches.
+Builds/tests ended before measurement; the gate's TIME-WAIT connection on
+47340 was allowed to expire before the sequential container run.
+Evidence: `harness/out/bench-compare-0.1.21.json`, `_build/bench-0.1.21.txt`.
+
+Point reads in that run were 149.37 vs 116.67 ms (bitsql batches
+117.98, 144.04, 154.69, 167.06, 149.37). Because this was worse than 0.1.20,
+focused sequential baseline/candidate/candidate/baseline controls followed.
+Native controls also showed spikes in the old binary. Exact old/new
+container binaries, run directly with one warm-up and five 1000-query
+batches, gave old medians 106.63/104.38 vs new 104.26/106.46 ms; server CPU
+medians were 35.74/33.98 vs 34.91/33.65 ms. These do not reproduce a code
+regression, but do not explain the container spike. README retains the
+original container result, not a favorable replacement. Point-read
+variation and near-parity accented sorting keep the optimization goal
+open. Evidence: `_build/compact-point-controls.txt` and
+`_build/compact-release-point-controls.txt`.
+
+Publication pending after the source commit; tested filesystem layers will
+be checked unchanged when applying the source revision labels.

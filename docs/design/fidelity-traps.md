@@ -7,6 +7,8 @@ new trap, add a row here *and* a corpus case.
 | Feature | Representation | Trap |
 | --- | --- | --- |
 | Collation | Per-column collation on every comparison | Default `*_CI_AS` is case-insensitive, and trailing spaces are ignored in `=` comparisons |
+| Dotted/dotless I ordering | Known default-collation gap (2026-10-06) | SQL Server orders N'ı' before N'İ' under SQL_Latin1_General_CP1_CI_AS; bitsql preserves the opposite fixture order. Oracle probe `traps/dotted-dotless-i-order.sql` remains outside the allowlist. Compact ASCII keys exclude both characters. |
+| Turkish collation | Unsupported collation (2026-10-06) | `traps/turkish-i-order.sql` succeeds on SQL Server but bitsql rejects Turkish_CI_AS with error 448. This is separate from the default-collation I ordering gap. |
 | `datetime2` / `datetimeoffset` | `Int64` ticks of 100 ns plus offset minutes | Never use a millisecond clock in the core: millisecond precision silently breaks comparisons |
 | Legacy `datetime` (if present) | Ticks rounded to 1/300 s | Values round to .000, .003 or .007 |
 | `uniqueidentifier` | 16 raw bytes | Mixed-endian wire format; SQL Server sorts by the last 6 bytes first, so `ORDER BY` on a GUID is a classic false green |

@@ -96,7 +96,7 @@ fn hashable_key_rows(keys : Array[Array[@types.SortKey]]) -> Bool {
 /// directly; NULLs form one group. None when the column has inexact keys or
 /// mixed key kinds (the caller's general path decides those). Also returns
 /// the canonical keys already computed at representative input positions, or
-/// an empty array for the integer path (which does not materialize keys).
+/// an empty array for integer/default-collation compact text paths.
 fn single_value_ids(
   values : Array[@types.Value],
   collation : @types.Collation?,
@@ -127,6 +127,28 @@ fn single_value_ids(
         ids[i] = count
         seen.set(k, count)
         count += 1
+      }
+    }
+    return Some((ids, count, []))
+  }
+  if compact_words(values, collation, ansi) is Some(words) {
+    let seen = IntTable::new(n)
+    for i, v in values {
+      if v is Null {
+        if null_id < 0 {
+          null_id = count
+          count += 1
+        }
+        ids[i] = null_id
+      } else {
+        let id = seen.get(words[i])
+        if id >= 0 {
+          ids[i] = id
+        } else {
+          ids[i] = count
+          seen.set(words[i], count)
+          count += 1
+        }
       }
     }
     return Some((ids, count, []))

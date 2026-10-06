@@ -34,10 +34,22 @@ fn normalized_keys(
     Some((n, _)) => n
     None => -1
   }
+  let packed = keys.mapi((i, key) => {
+    if key.expr.ty.family() is FString &&
+      compact_collation(key.collation, ansi[i]) {
+      let column = match columns {
+        Some(cs) => cs[i]
+        None => i
+      }
+      compact_row_words(values, column)
+    } else {
+      None
+    }
+  })
   // key kind per column: 0 none yet, 1 integers, 2 ticks, 3 text
   let kinds = Array::make(keys.length(), 0)
   let out = []
-  for row in values {
+  for at, row in values {
     let buf : Array[Int] = Array(capacity=keys.length() * 4)
     let mut prefix_end = 0
     let width = match columns {
@@ -64,6 +76,11 @@ fn normalized_keys(
           buf.push(1)
           push_int64(buf, x)
           1
+        }
+        String(_) if packed[i] is Some(words) => {
+          buf.push(1)
+          push_int64(buf, words[at])
+          3
         }
         _ =>
           match @types.sort_key(v, collation?=keys[i].collation, ansi=ansi[i]) {
