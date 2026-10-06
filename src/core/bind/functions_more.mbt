@@ -8,6 +8,9 @@ fn bind_call_more(
   name : String,
   call : @ast.FuncCall,
 ) -> @ir.Expr? raise @types.SqlError {
+  if bind_regex_fn(env, name, call) is Some(e) {
+    return Some(e)
+  }
   if bind_fuzzy_fn(env, name, call) is Some(e) {
     return Some(e)
   }

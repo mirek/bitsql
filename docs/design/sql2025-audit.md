@@ -12,7 +12,7 @@ pushes and container publication on 2026-10-06.
 | Requirement | Evidence and outstanding work |
 | --- | --- |
 | Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Binary DATALENGTH and other roadmap gaps remain. |
-| Regex scalar and table functions | REGEXP_REPLACE/REGEXP_COUNT smoke fails: unsupported. Implement all listed functions, metadata, errors, flags and boundaries. |
+| Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Partial-byte captures, lone-surrogate patterns and remaining RE2/SQL edge audits are still open; full gate passed 2026-10-06. |
 | Vector type, distance functions, embedding generation, approximate indexes/search | Vector declaration/distance smoke fails: unsupported. External model integration belongs at the host boundary; preview features need separately configured captures. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
 | SUBSTRING optional length | Initially rejected with 174. Two-argument form now passes the expanded differential case, which includes metadata, binary, NULL, negative/zero starts, trailing spaces and argument errors. |
@@ -49,3 +49,12 @@ alone are not proof that a case was included in the full gate.
 
 This checkpoint does not complete Turkish collation support, the other open
 2025 requirements, or container publication.
+
+## Regex checkpoint (2026-10-06)
+
+`scripts/check.sh` passed: 380 MoonBit tests, all-backend core checks, and
+21,013 client/corpus tests passed with 3 pre-existing skips and no failures
+(21,016 total). The log confirms all 284 registered regex cases ran: 13 SQL
+files plus 271 generated Unicode boundary/fold cases. The regex core has 87
+oracle-derived unit tests. This checkpoint retains the open edge audits and
+other 2025 requirements above; it does not satisfy container publication.

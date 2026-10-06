@@ -451,9 +451,7 @@ fn bind_table_ref(
       }
       let cols = []
       for j in 0..<width {
-        let t = unify_non_null(
-          bound.map(r => (r[j].ty, r[j].kind is Lit(Null))),
-        )
+        let t = unify_non_null(bound.map(r => (r[j].ty, is_untyped_null(r[j]))))
         let nullable = bound.iter().any(r => r[j].nullable)
         cols.push(ColumnRef::{
           untyped_null: bound.iter().all(r => is_untyped_null(r[j])),
@@ -733,7 +731,10 @@ fn bind_table_function(
       None => ()
     }
   }
-  if fname != "OPENJSON" && fname != "STRING_SPLIT" {
+  if fname != "OPENJSON" &&
+    fname != "STRING_SPLIT" &&
+    fname != "REGEXP_MATCHES" &&
+    fname != "REGEXP_SPLIT_TO_TABLE" {
     match bind_user_tvf(env, name, args, alias_, columns) {
       Some(r) => return r
       None =>
@@ -743,6 +744,23 @@ fn bind_table_function(
     }
   }
   let (plan, cols) : (@ir.Plan, Array[ColumnRef]) = match fname {
+    "REGEXP_MATCHES" | "REGEXP_SPLIT_TO_TABLE" => {
+      let (kind, bound, ty) = bind_regex_table(penv, name, args)
+      (
+        TableFunc(kind, bound),
+        if fname == "REGEXP_MATCHES" {
+          [
+            col("match_id", BigInt, false),
+            col("start_position", Int, false),
+            col("end_position", Int, false),
+            col("match_value", ty, bound[0].nullable),
+            col("substring_matches", Json, false),
+          ]
+        } else {
+          [col("value", ty, bound[0].nullable), col("ordinal", BigInt, false)]
+        },
+      )
+    }
     "OPENJSON" => {
       arity_range(fname, args, 1, 2)
       let bound = args.map(a => bind_expr(penv, a))

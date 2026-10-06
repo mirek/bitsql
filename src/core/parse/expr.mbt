@@ -63,6 +63,9 @@ fn Parser::cmp_op(self : Parser) -> @ast.CmpOp? {
 /// EXISTS, or a bare scalar (parenthesised condition).
 fn Parser::predicate(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
   let start = self.start()
+  if self.is_kw("REGEXP_LIKE") {
+    return self.name_expr()
+  }
   if self.is_kw("EXISTS") {
     self.pos += 1
     self.expect_punct("(")
@@ -70,7 +73,7 @@ fn Parser::predicate(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
     self.expect_punct(")")
     return mk(Exists(q), self.span_from(start))
   }
-  let left = self.scalar()
+  let left = self.binary(1)
   if self.cmp_op() is Some(op) {
     self.pos += 1
     let quant : @ast.Quantifier? = if self.is_punct_at(1, "(") {
@@ -180,7 +183,35 @@ fn Parser::bin_op(self : Parser) -> (@ast.BinOp, Int)? {
 /// Scalar expression: arithmetic / bitwise / string operators (Pratt), no
 /// comparisons or boolean operators at the top level.
 fn Parser::scalar(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
-  self.binary(1)
+  let expression = self.binary(1)
+  if regex_predicate_span(expression) is Some(span) {
+    raise @ast.SyntaxError(
+      number=156,
+      severity=15,
+      state=1,
+      message="Incorrect syntax near the keyword 'REGEXP_LIKE'.",
+      span~,
+    )
+  }
+  expression
+}
+
+///|
+/// Parentheses can contain a search condition; reject a regex predicate when
+/// that parenthesized result is used as a scalar. CASE/IIF parse their own
+/// condition and value operands separately.
+fn regex_predicate_span(e : @ast.Expr) -> @ast.Span? {
+  match e.kind {
+    Call(c) if c.name.parts.length() == 1 &&
+      c.name.base().to_upper() == "REGEXP_LIKE" => Some(c.name.span)
+    Unary(_, x) | Not(x) | Paren(x) => regex_predicate_span(x)
+    Binary(_, a, b) | Compare(_, a, b) | And(a, b) | Or(a, b) =>
+      match regex_predicate_span(a) {
+        Some(span) => Some(span)
+        None => regex_predicate_span(b)
+      }
+    _ => None
+  }
 }
 
 ///|
@@ -313,6 +344,15 @@ fn Parser::primary(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
 
 ///|
 fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
+  if self.is_kw("REGEXP_LIKE") {
+    raise @ast.SyntaxError(
+      number=156,
+      severity=15,
+      state=1,
+      message="Incorrect syntax near the keyword 'REGEXP_LIKE'.",
+      span=self.peek().span,
+    )
+  }
   let start = self.start()
   let t = self.peek()
   match t.kind {
@@ -665,6 +705,18 @@ fn Parser::call(
     }
   }
   check_datepart(name, args)
+  for i in 0..<args.length() {
+    if !(i == 0 && eq_upper_name(name, "IIF")) &&
+      regex_predicate_span(args[i]) is Some(span) {
+      raise @ast.SyntaxError(
+        number=156,
+        severity=15,
+        state=1,
+        message="Incorrect syntax near the keyword 'REGEXP_LIKE'.",
+        span~,
+      )
+    }
+  }
   check_isjson_option(name, args)
   self.expect_punct(")")
   let within_group = if self.is_kw("WITHIN") && self.is_kw_at(1, "GROUP") {

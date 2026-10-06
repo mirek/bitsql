@@ -10,5 +10,6 @@ ARG BASE=gcr.io/distroless/cc-debian12:nonroot
 FROM ${BASE}
 ARG BITSQL_BIN=_build/native/release/build/host/host.exe
 COPY ${BITSQL_BIN} /bitsql
+COPY docs/reference/vendor/re2/LICENSE /usr/share/licenses/bitsql/re2-LICENSE
 EXPOSE 1433
 ENTRYPOINT ["/bitsql", "--listen", "0.0.0.0:1433"]

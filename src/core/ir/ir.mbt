@@ -416,6 +416,9 @@ pub(all) enum TableFn {
   OpenJsonWith(Array[OpenJsonColumn])
   /// STRING_SPLIT; args: string, separator; `ordinal` adds the column.
   StringSplit(ordinal~ : Bool)
+  /// SQL 2025 regex tables; args: source, pattern, flags.
+  RegexMatches
+  RegexSplit
   /// GENERATE_SERIES; args: start, stop, step (all of the `value` type).
   GenerateSeries(@types.SqlType)
   /// xml `nodes()`; args: the xml value, the XQuery text, sql:variable /

@@ -4,3 +4,6 @@ To the extent possible under law, the authors listed in [AUTHORS.md](./AUTHORS.m
 
 For more information, please see:
 https://creativecommons.org/publicdomain/zero/1.0/
+
+Third-party RE2 Unicode tables and their generated MoonBit representation
+retain their BSD license; see [the attribution and license](docs/reference/vendor/re2/README.md).

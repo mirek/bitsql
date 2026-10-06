@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mirek/bitsql/core/regex"
+
+import {
+  "mirek/bitsql/core/types",
+}
+
+// Values
+pub fn compile(String, String) -> Program raise @types.SqlError
+
+pub fn next_boundary(Bytes, Int) -> Int
+
+pub fn validate_control(String, String, Int64) -> Unit raise @types.SqlError
+
+// Errors
+
+// Types and methods
+pub struct Match {
+  groups : Array[(Int, Int)?]
+}
+
+pub struct Program {
+  groups : Int
+  // private fields
+}
+pub fn Program::find(Self, Bytes, Int, (Int64) -> Unit raise @types.SqlError) -> Match? raise @types.SqlError
+
+// Type aliases
+
+// Traits

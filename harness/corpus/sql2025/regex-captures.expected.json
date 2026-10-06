@@ -1,0 +1,824 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "e608f96485d37f1c",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            ["1",1,4,"ab12","[{\"value\":\"ab\",\"start\":1,\"length\":2},{\"value\":\"12\",\"start\":3,\"length\":2}]"],
+            ["2",5,8,"cd34","[{\"value\":\"cd\",\"start\":5,\"length\":2},{\"value\":\"34\",\"start\":7,\"length\":2}]"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"aaa","[{\"value\":\"a\",\"start\":3,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"aaa","[{\"value\":\"a\",\"start\":3,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            ["1",1,2,"ab","[{\"value\":\"a\",\"start\":1,\"length\":1},{\"value\":\"b\",\"start\":2,\"length\":1}]"],
+            ["2",2,2,"","[{\"value\":\"\",\"start\":2,\"length\":0},{\"value\":\"\",\"start\":2,\"length\":0}]"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,1,"a","[{\"value\":\"a\",\"start\":1,\"length\":1}]"],["2",1,1,"","[{\"value\":\"\",\"start\":1,\"length\":0}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,2,"aa","[{\"value\":\"a\",\"start\":2,\"length\":1}]"],["2",2,2,"","[{\"value\":\"\",\"start\":2,\"length\":0}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            ["1",1,2,"ab","[{\"value\":\"a\",\"start\":1,\"length\":1},{\"value\":\"b\",\"start\":2,\"length\":1}]"],
+            ["2",2,2,"","[{\"value\":null,\"start\":null,\"length\":null},{\"value\":null,\"start\":null,\"length\":null}]"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 1,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,1,"b","[{\"value\":null,\"start\":null,\"length\":null},{\"value\":\"b\",\"start\":1,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            [
+              "1",
+              1,
+              3,
+              "abc",
+              "[{\"value\":\"ab\",\"start\":1,\"length\":2},{\"value\":\"ab\",\"start\":1,\"length\":2},{\"value\":\"c\",\"start\":3,\"length\":1}]"
+            ]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,2,"ab","[{\"value\":\"a\",\"start\":1,\"length\":1},{\"value\":\"b\",\"start\":2,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 2,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,2,"ab","[{\"value\":\"ab\",\"start\":1,\"length\":2},{\"value\":\"\",\"start\":2,\"length\":0}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,2,"ab","[{\"value\":\"a\",\"start\":1,\"length\":1},{\"value\":\"b\",\"start\":2,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"abb","[{\"value\":\"abb\",\"start\":1,\"length\":3},{\"value\":\"b\",\"start\":3,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            ["1",1,3,"aaa","[{\"value\":\"aaa\",\"start\":1,\"length\":3},{\"value\":\"a\",\"start\":3,\"length\":1}]"],
+            ["2",3,3,"","[{\"value\":\"\",\"start\":3,\"length\":0},{\"value\":null,\"start\":null,\"length\":null}]"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":2,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 2
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"abc","[{\"value\":\"abc\",\"start\":1,\"length\":3}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"abc","[{\"value\":\"abc\",\"start\":1,\"length\":3}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"aaa","[{\"value\":\"aa\",\"start\":1,\"length\":2},{\"value\":\"a\",\"start\":3,\"length\":1}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"aaa","[{\"value\":\"a\",\"start\":1,\"length\":1},{\"value\":\"aa\",\"start\":2,\"length\":2}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [["1",1,3,"abc","[{\"value\":\"abc\",\"start\":1,\"length\":3}]"]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"match_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"start_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {"name":"end_position","type":"Int","length":null,"precision":null,"scale":null,"flags":0,"collation":null},
+            {
+              "name": "match_value",
+              "type": "VarChar",
+              "length": 3,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "substring_matches",
+              "type": "VarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 0,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+            }
+          ],
+          "rows": [
+            ["1",1,1,"a","[{\"value\":\"a\",\"start\":1,\"length\":1}]"],
+            ["2",2,2,"","[{\"value\":\"\",\"start\":2,\"length\":0}]"],
+            ["3",3,3,"","[{\"value\":\"\",\"start\":3,\"length\":0}]"],
+            ["4",3,3,"","[{\"value\":\"\",\"start\":3,\"length\":0}]"]
+          ]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":4,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":4,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"ROW","count":4},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 4
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

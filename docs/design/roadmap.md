@@ -423,3 +423,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
 - [x] SQL Server 2025 preview configuration: ON/OFF state, transaction rejection/rollback and `sys.database_scoped_configurations` default rows/variant metadata. Three focused differential cases and the full gate pass (2026-10-06).
 
 - [ ] SQL Server 2025 fuzzy matching: all four functions implemented with captured metadata, type errors, normalization and algorithms; 256-pair algorithm capture passes. Turkish collation and expanded Unicode/collation verification remain open; full gate passes (2026-10-06).
+
+- [ ] SQL Server 2025 regex: all seven SQL functions plus pure byte/character VM implemented; 13 SQL files and 271 Unicode boundary/fold cases pass differential verification. SQL Server agrees with Unicode 15.0. Partial-byte captures, lone-surrogate patterns and remaining syntax/SQL edge audits stay open. Full gate passed: 380 MoonBit tests, 21,013 client tests, 3 pre-existing skips (2026-10-06).

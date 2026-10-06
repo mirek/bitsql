@@ -31,6 +31,7 @@ fn stream_table_fn(
     }
   }
   match f {
+    RegexMatches | RegexSplit => regex_table(ctx, f, args, emit)
     XmlNodes =>
       for r in xml_nodes_rows(ctx, args) {
         emit(r)
