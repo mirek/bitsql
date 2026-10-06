@@ -95,6 +95,19 @@ Server options (append them after the image name): `--version`, `--listen HOST:P
 `--max-request-work N` (runaway-request budget; a request past it fails with
 Emulator error 50108), `--record FILE` (event log for `replay`).
 
+## Row ordering compatibility
+
+Queries without `ORDER BY` can return a different row order from SQL Server.
+In particular, bitsql scans can retain insertion order where SQL Server chooses
+an ordered clustered or covering unique-index scan. Add `ORDER BY` on the
+required keys to table listings and other order-sensitive queries.
+
+`MERGE` can also expose a different order through a trigger's `inserted` table,
+changing identity assignment in an audit table. Compare audit events by business
+keys and contents, rather than assuming identity order follows the source rows.
+Captured examples and the SQL Server version differences are recorded in
+[the compatibility findings](docs/reference/compatibility-2026-10-05.md).
+
 ## Benchmarks
 
 `mirek/bitsql:0.1.13-amd64` vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer
@@ -108,7 +121,7 @@ the total sums those medians. Earlier tables used one timed run per shape.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
+| Image download (compressed) | 12.5 MiB | 604.5 MiB | 2.1% | 48.4× smaller |
 | Image size on disk | 33.9 MiB | 1.64 GiB | 2.0% | 49× better |
 | Cold start: `docker run` → first query (median) | 134 ms | 2.71 s | 4.9% | 20× better |
 | CPU time until ready | 34.7 ms | 3.09 s | 1.1% | 89× better |

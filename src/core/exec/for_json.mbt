@@ -86,11 +86,10 @@ fn json_scalar(
     // significant digits, float with 16
     Money(_) => @types.render(v, ty, Some(2))
     Float(_) => @types.render(v, ty, Some(if ty is Real { 1 } else { 2 }))
-    Binary(b) => {
-      let buf = StringBuilder()
-      json_escape(base64(b), buf)
-      buf.to_string()
-    }
+    Binary(b) =>
+      // The base64 alphabet needs no JSON escaping; SQL Server leaves its
+      // slash literal, unlike a slash in a character value.
+      "\"" + base64(b) + "\""
     String(s) => {
       let buf = StringBuilder()
       json_escape(s, buf)
@@ -102,23 +101,16 @@ fn json_scalar(
     | DateTimeOffset(_, _)
     | DateTime(_, _)
     | SmallDateTime(_, _) => {
-      // ISO 8601: style 121 with 'T' and no space before the offset
-      let t = @types.render(v, ty, Some(121))
-      let sb = StringBuilder()
-      let mut first = true
-      for i in 0..<t.length() {
-        let c = t.code_unit_at(i).to_int()
-        if c == 0x20 {
-          if first && !(v is Time(_)) {
-            sb.write_char('T')
-          }
-          first = false
-        } else {
-          sb.write_char(c.unsafe_to_char())
-        }
+      // Style 126 preserves the offset and declared nonzero fractions,
+      // while omitting an all-zero fraction (including smalldatetime).
+      let rendered = @types.render(v, ty, Some(126))
+      let t = if v is DateTimeOffset(_, 0) {
+        rendered[:rendered.length() - 6].to_owned() + "Z"
+      } else {
+        rendered
       }
       let buf = StringBuilder()
-      json_escape(sb.to_string(), buf)
+      json_escape(t, buf)
       buf.to_string()
     }
     _ => {

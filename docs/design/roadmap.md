@@ -284,3 +284,17 @@ project: the breadth of transaction and error semantics in phases 5–6.
 | Long tail delays the RAM payoff | Allowlist routing gives speed gains early |
 | Lock behavior diverges due to access paths | Seek on sargable predicates; conservative `WholeTable` fallback |
 | Target app suite not available in this repo | Build the corpus from msduck captures + traps first; capture the app as soon as access is given |
+
+## External compatibility report follow-up (2026-10-06)
+
+- [x] JSON UTC datetimeoffset, zero temporal fractions and binary slash rendering:
+  fixed for 0.1.14, with a 50-step oracle regression. Full exact amd64 gate:
+  275 MoonBit tests, 20702 existing client/corpus passes (3 skips); new JSON
+  allowlist case passed separately on amd64 and arm64. Arm64 standard smoke:
+  571/571. Publication follows validation.
+- [x] Unordered clustered/covering-index scans and MERGE trigger identity order
+  investigated and documented as compatibility gaps; retained oracle probes
+  outside the passing allowlist. Use ORDER BY for listings and compare audit
+  events by business keys. SQL Server 2025 four-row MERGE results differ from
+  the report's 2022 observations; do not hard-code the two-row plan.
+  See `docs/reference/compatibility-2026-10-05.md`.
