@@ -33,7 +33,7 @@ fn W::output(self : W, outs : Array[OutputClause]) -> Unit {
 fn W::set_clauses(self : W, sets : Array[SetClause]) -> Unit {
   self.s(" (set")
   for c in sets {
-    self.s(" (" + assign_text(c.op) + " ")
+    self.s(" (" + (if c.mutator { "mutate" } else { assign_text(c.op) }) + " ")
     match c.target {
       SetColumn(p) => self.s(parts_text(p))
       SetVariable(v) => self.s(v)

@@ -1009,3 +1009,13 @@ current JSON text after mutation. Widening rebuilds live storage before the
 operation; ordinary edits retain dead allocation. See the JSON reference and
 `sql2025/json-global-wide-format` / `json-wide-transitions` captures. The model
 remains separate from any binary page serializer.
+
+### Native JSON statement mutators (2026-10-06)
+
+A SET-clause mutator is marked in the AST rather than treated as an expression
+method call: JSON methods remain invalid in expression contexts. Its dedicated
+binder shares JSON_MODIFY value/path type checks but retains method diagnostics
+and NULL-path no-op behavior. UPDATE and MERGE supply the current target value
+explicitly; MERGE binds mutators before scanning, including empty targets.
+Variable mutations participate in batch prebinding and preserve SET completion
+behavior. Captures and remaining storage limitations are in the JSON reference.

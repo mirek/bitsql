@@ -241,6 +241,23 @@ fn precheck_batch(
         }
         temp_creates.add(base.to_lower())
       }
+      SetVarMethod(n, _, args) => {
+        if failure is None && !declared.contains(n.to_lower()) {
+          failure = Some(
+            (
+              @types.sql_error(
+                137,
+                "Must declare the scalar variable \"\{n}\".",
+                severity=15,
+              ),
+              line,
+            ),
+          )
+        }
+        for a in args {
+          expr(a, line)
+        }
+      }
       SetVar(n, _, e) => {
         check_name(n, line)
         expr(e, line)
@@ -428,6 +445,10 @@ fn precheck_batch(
             _ => []
           }
           for sets in lists {
+            // Method targets need their column type; defer to statement binding.
+            if sets.any(s => s.mutator) {
+              continue
+            }
             if duplicate_set_column(sets) is Some(spelled) {
               // named as in the catalog (captured)
               let name = set_column_name(target, spelled)

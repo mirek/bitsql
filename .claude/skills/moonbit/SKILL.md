@@ -267,3 +267,6 @@ scripts/check.sh                 # everything CI runs; must be green to push
   CPU (every payload `Value` constructor, tuple, row copy and `{..ctx}` is a
   heap object released recursively), so per-row allocations are the first
   thing to remove.
+
+- 2026-10-06: `method` is reserved for future use (warning 0035, rejected by
+  `--deny-warn`); use `meth` for a method-name binding or parameter.

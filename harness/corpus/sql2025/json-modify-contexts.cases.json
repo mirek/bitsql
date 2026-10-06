@@ -1,0 +1,166 @@
+{
+  "cases": [
+    {
+      "name": "qualified-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int,j json); INSERT jm VALUES(1,N'{\"a\":1}'); UPDATE t SET t.j.modify('$.a',2) FROM jm AS t; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-qualifier",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int,j json); INSERT jm VALUES(1,N'{\"a\":1}'); UPDATE t SET missing.j.modify('$.a',2) FROM jm AS t; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "view-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int,j json); INSERT jm VALUES(1,N'{\"a\":1}'); EXEC(N'CREATE VIEW jv AS SELECT j AS renamed,id FROM dbo.jm'); UPDATE jv SET renamed.modify('$.a',2); SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "mixed-duplicate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":1}'); UPDATE jm SET j.modify('$.a',2),j=N'{\"a\":3}'; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "null-path-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json,p nvarchar(30)); INSERT jm VALUES(N'{\"a\":1}',NULL),(N'{\"a\":2}',N'$.a'); UPDATE jm SET j.modify(p,3); SELECT j,@@ROWCOUNT AS row_count FROM jm ORDER BY CAST(j AS nvarchar(max));"
+        }
+      ]
+    },
+    {
+      "name": "null-row-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int,j json); INSERT jm VALUES(1,N'{\"a\":1}'),(2,NULL); BEGIN TRY UPDATE jm SET j.modify('$.a',2); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state; END CATCH; SELECT id,j FROM jm ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":1}'); BEGIN TRAN; UPDATE jm SET j.modify('$.a',2); ROLLBACK; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "merge-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); INSERT jm VALUES(1,N'{\"a\":1}'); MERGE jm AS t USING (SELECT 1 AS id,2 AS v) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.modify('$.a',s.v); SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "merge-method-output",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); INSERT jm VALUES(1,N'{\"a\":1}'); MERGE jm AS t USING (SELECT 1 AS id,2 AS v) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.modify('$.a',s.v) OUTPUT deleted.j,inserted.j; SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "variable-null-source-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @i int=NULL,@j json; SET @j=@i; SELECT @j;"
+        }
+      ]
+    },
+    {
+      "name": "column-null-source-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); DECLARE @i int=NULL; INSERT jm VALUES(@i); SELECT j FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "method-name-case-sensitive",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE CURRENT COLLATE Latin1_General_100_BIN2; DECLARE @j json=N'{\"a\":1}'; SET @j.MODIFY('$.a',2); SELECT @j;"
+        }
+      ]
+    },
+    {
+      "name": "empty-merge-arity",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); MERGE jm AS t USING (SELECT 1 AS id) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.modify('$.a'); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "empty-merge-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); MERGE jm AS t USING (SELECT 1 AS id) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.modify(1,2); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "empty-merge-unknown",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); MERGE jm AS t USING (SELECT 1 AS id) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.missing('$.a',2); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "empty-merge-valid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); MERGE jm AS t USING (SELECT 1 AS id) AS s ON t.id=s.id WHEN MATCHED THEN UPDATE SET j.modify('$.a',2); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "empty-update-arity",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); UPDATE jm SET j.modify('$.a'); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "empty-update-valid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(id int PRIMARY KEY,j json); UPDATE jm SET j.modify('$.a',2); SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    }
+  ]
+}

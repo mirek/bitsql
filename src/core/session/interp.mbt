@@ -435,7 +435,7 @@ fn top_value_error(e : @types.SqlError) -> Bool {
 /// not run; a TRY still catches them).
 fn json_aborts_batch(e : @types.SqlError) -> Bool {
   let n = e.number()
-  (n >= 13600 && n < 13700) || (n == 8116 && e.state() == 8)
+  n == 5302 || (n >= 13600 && n < 13700) || (n == 8116 && e.state() == 8)
 }
 
 ///|
@@ -464,12 +464,13 @@ fn Session::assign(
 ) -> Unit raise {
   let (info, value_expr) = self.bind_assignment(name, op, e)
   let v = @exec.eval(self.ctx(), value_expr)
-  self.frame().values[info.slot] = @types.assign(
-    v,
-    value_expr.ty,
-    info.ty,
-    dates=self.rt.dates,
-  )
+  self.frame().values[info.slot] = if info.ty is Json &&
+    value_expr.kind is Lit(Null) &&
+    value_expr.ty is Int {
+    Null
+  } else {
+    @types.assign(v, value_expr.ty, info.ty, dates=self.rt.dates)
+  }
 }
 
 ///|
@@ -578,12 +579,14 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
         self.done(193, count=Some(1L))
       }
     }
-    SetVarMethod(_, m, _) => {
+    SetVarMethod(name, meth, args) => {
+      self.cur_cmd = 253
+      let (info, bound) = self.bind_var_mutator(name, meth.name, args)
       self.cur_cmd = 193
-      raise @types.not_supported(
-        "the xml \{m.name}() method",
-        number=@types.EMU_XML_NOT_SUPPORTED,
-      )
+      let value = @exec.eval(self.ctx(), bound)
+      self.frame().values[info.slot] = value
+      self.rt.rowcount = 1
+      self.done(193, count=Some(1L))
     }
     SetVar(name, _, e) if self.frame().cursor_vars.contains(name.to_lower()) =>
       self.assign_cursor_var(name, e)

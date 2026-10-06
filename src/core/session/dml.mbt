@@ -212,7 +212,12 @@ fn Session::to_column(
       )
     _ => ()
   }
-  @types.assign(v, from, col.ty, dates=self.rt.dates)
+  // Binding checked typed sources; a bare NULL can initialize native JSON.
+  if v is Null && col.ty is Json {
+    Null
+  } else {
+    @types.assign(v, from, col.ty, dates=self.rt.dates)
+  }
 }
 
 ///|

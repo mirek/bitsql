@@ -189,7 +189,22 @@ fn call_json2(
         _ =>
           raise @types.not_supported("JSON_PATH_EXISTS on non-character input")
       }
-    "JSON_MODIFY" =>
+    "JSON_MODIFY" | "JSON_MUTATE" => {
+      if name == "JSON_MUTATE" {
+        if v[0] is Null {
+          let target = match v[4] {
+            String(s) => s
+            _ => ""
+          }
+          raise @types.sql_error(
+            5302,
+            "Mutator 'modify()' on '\{target}' cannot be called on a null value.",
+          )
+        }
+        if v[1] is Null {
+          return Some(v[0])
+        }
+      }
       match (json_text_arg(v[0]), v[1]) {
         (Null, _) => Some(Null)
         (_, Null) =>
@@ -226,6 +241,7 @@ fn call_json2(
         }
         _ => raise @types.not_supported("JSON_MODIFY on non-character input")
       }
+    }
     _ => None
   }
 }

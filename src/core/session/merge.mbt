@@ -69,7 +69,10 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let mut identity_error : @types.SqlError? = None
   for w in m.whens {
     match w.action {
-      MergeUpdate(sets) =>
+      MergeUpdate(sets) => {
+        if sets.any(s => s.mutator) && duplicate_set_column(sets) is Some(name) {
+          raise duplicate_mutator_column(name)
+        }
         for sc in sets {
           guard sc.target is SetColumn(parts) else { continue }
           match t.column_index(parts[parts.length() - 1].name) {
@@ -91,6 +94,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
             None => ()
           }
         }
+      }
       MergeInsert(columns~, values~, default_values~) if !default_values => {
         if columns.is_empty() {
           let width = t.columns
@@ -160,6 +164,40 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     qualifier: target.qualifier,
   })
   let env = env0.with_columns(target_cols + source_cols)
+  // Mutator diagnostics must bind even when no source/target row matches.
+  let mutators : Map[Int, @ir.Expr] = Map([])
+  for w in m.whens {
+    guard w.action is MergeUpdate(sets) else { continue }
+    for sc in sets {
+      if !sc.mutator {
+        continue
+      }
+      guard sc.target is SetColumn(parts) &&
+        sc.value.kind is MethodCall(_, meth, args) else {
+        raise @types.emulator_error(
+          @types.EMU_INTERNAL,
+          "invalid MERGE mutator AST",
+        )
+      }
+      let name = parts[parts.length() - 1].name
+      guard t.column_index(name) is Some(ci) else {
+        raise @types.sql_error(207, "Invalid column name '\{name}'.")
+      }
+      let c = t.columns[ci]
+      let current : @ir.Expr = {
+        kind: Col(env.columns.length()),
+        ty: c.ty,
+        nullable: c.nullable,
+      }
+      mutators[sc.span.start] = @bind.bind_json_mutator(
+        env,
+        current,
+        meth.name,
+        args,
+        c.name,
+      )
+    }
+  }
   let on = @bind.bind_expr(env, m.on)
   // bind clauses
   let bound_whens = m.whens.map(w => {
@@ -429,8 +467,23 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
                 raise @types.sql_error(207, "Invalid column name '\{name}'.")
             }
             let c = t.columns[ci]
-            let rhs = @bind.bind_expr(env, sc.value)
-            let (v, ty) = if sc.op is Assign {
+            let rhs = if sc.mutator {
+              guard mutators.get(sc.span.start) is Some(bound) else {
+                raise @types.emulator_error(
+                  @types.EMU_INTERNAL,
+                  "unbound MERGE mutator",
+                )
+              }
+              bound
+            } else {
+              @bind.bind_expr(env, sc.value)
+            }
+            let (v, ty) = if sc.mutator {
+              (
+                @exec.eval(self.ctx().with_row(old + s + [old[ci]]), rhs),
+                rhs.ty,
+              )
+            } else if sc.op is Assign {
               (@exec.eval(ctx, rhs), rhs.ty)
             } else {
               // `col op= e` is `col = col op e`: the column's current value

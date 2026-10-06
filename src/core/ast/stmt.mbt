@@ -220,6 +220,8 @@ pub(all) enum SetTarget {
 
 ///|
 pub(all) struct SetClause {
+  /// Column method statement, distinct from a method call on the RHS.
+  mutator : Bool
   target : SetTarget
   op : AssignOp
   value : Expr

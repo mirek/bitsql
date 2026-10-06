@@ -416,6 +416,10 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     self.check_writable()
   }
   let t = target.table
+  if u.sets.any(s => s.mutator) && duplicate_set_column(u.sets) is Some(name) {
+    let name = t.column_index(name).map(i => t.columns[i].name).unwrap_or(name)
+    raise duplicate_mutator_column(name)
+  }
   let n = t.columns.length()
   let src = dml_source(env0, target, view, u.from)
   let env = env0.with_columns(src.columns)
@@ -511,12 +515,22 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             nullable: c.nullable,
           }
           Some(
-            @bind.compound_assignment(
-              env,
-              s.op,
-              current,
-              @bind.bind_expr(env, s.value),
-            ),
+            if s.mutator {
+              guard s.value.kind is MethodCall(_, meth, args) else {
+                raise @types.emulator_error(
+                  @types.EMU_INTERNAL,
+                  "invalid column mutator AST",
+                )
+              }
+              @bind.bind_json_mutator(env, current, meth.name, args, c.name)
+            } else {
+              @bind.compound_assignment(
+                env,
+                s.op,
+                current,
+                @bind.bind_expr(env, s.value),
+              )
+            },
           )
         }
         if rhs is Some(b) {
@@ -704,8 +718,9 @@ fn Session::update_row(
         }
       Some(b) =>
         match op {
-          Assign => (@exec.eval(ctx, b), b.ty)
-          // compound: `b` reads the column's current value one past the row
+          Assign if !(b.kind is Call(Named("JSON_MUTATE"), _)) =>
+            (@exec.eval(ctx, b), b.ty)
+          // compound and column mutators: `b` reads the column's current value one past the row
           _ => (@exec.eval(self.ctx().with_row(full + [old[ci]]), b), b.ty)
         }
     }
@@ -1216,7 +1231,19 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   // assignment type rules before any row (captured: 206/257 for
   // sql_variant columns are compile-time errors)
   for j, ci in cols {
+    let untyped_json_null = t.columns[ci].ty is Json &&
+      (match ins.source {
+        InsertValues(rows) =>
+          rows.all(r => {
+            r
+            .get(j)
+            .map(e => @bind.is_null_argument(e) || e.kind is Default)
+            .unwrap_or(false)
+          })
+        _ => false
+      })
     if j < types.length() &&
+      !untyped_json_null &&
       !(t.columns[ci].ty is RowVersion) &&
       !default_marks.iter().all(m => j < m.length() && m[j]) {
       @types.check_assign(types[j], t.columns[ci].ty)

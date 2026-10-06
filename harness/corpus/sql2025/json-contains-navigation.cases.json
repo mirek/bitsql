@@ -1,0 +1,220 @@
+{
+  "cases": [
+    {
+      "name": "path-$.a[*].x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.a[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-strict $.a[*].x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'strict $.a[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-$.a[*].missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.a[*].missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-strict $.a[*].missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'strict $.a[*].missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-$.a[*].x[*]",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.a[*].x[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-$.e[*]",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.e[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-$.e[*].x",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.e[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-$.o.*",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"a\":[{}, {\"x\":2}, null,3],\"e\":[],\"o\":{}}' AS json),2,N'$.o.*') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-array-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-array-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[]' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-object-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{}' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "empty-object-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{}' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"n\":2}' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "object-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"n\":2}' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-object-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"n\":2}]' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-object-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"n\":2}]' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-array-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[[2]]' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-array-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[[2]]' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-number-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[2]' AS json),2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "array-number-omitted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[2]' AS json),2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-tinyint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"s\":\"Alpha\"}' AS json),N'Al%','$.s',CAST(1 AS tinyint)) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-smallint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"s\":\"Alpha\"}' AS json),N'Al%','$.s',CAST(1 AS smallint)) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-bigint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"s\":\"Alpha\"}' AS json),N'Al%','$.s',CAST(1 AS bigint)) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"s\":\"Alpha\"}' AS json),N'Al%','$.s',CAST(1 AS int)) AS found;"
+        }
+      ]
+    }
+  ]
+}

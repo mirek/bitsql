@@ -1,0 +1,265 @@
+{
+  "cases": [
+    {
+      "name": "value-bit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1 AS bit)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-tinyint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(2 AS tinyint)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-smallint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(3 AS smallint)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-bigint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(9223372036854775807 AS bigint)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1.25 AS decimal(8,2))); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-float",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1.25 AS float)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-float-overflow",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1e100 AS float)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-real",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1.25 AS real)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-money",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1.25 AS money)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-datetime",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('2025-01-02' AS datetime)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-date",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('2025-01-02' AS date)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-time",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('01:02:03' AS time)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-binary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(0x01 AS varbinary(2))); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-guid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('00000000-0000-0000-0000-000000000001' AS uniqueidentifier)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-xml",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('<a/>' AS xml)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-variant",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(1 AS sql_variant)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-char",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST('x' AS char(4))); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-nvarchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(N'\u017e' AS nvarchar(3))); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-json-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(N'{\"b\":2}' AS json)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-json-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(NULL AS json)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "value-int-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify('$.a',CAST(NULL AS int)); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-varchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST('$.a' AS varchar(20)),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-nvarchar-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST(NULL AS nvarchar(20)),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-varchar-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST(NULL AS varchar(20)),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-int-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST(NULL AS int),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-variant",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST('$.a' AS sql_variant),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-binary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST(0x01 AS varbinary(2)),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST(N'{}' AS json),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "path-xml",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SET @j.modify(CAST('<a/>' AS xml),2); SELECT @j AS j,DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

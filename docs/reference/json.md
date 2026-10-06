@@ -347,8 +347,8 @@ result JSON. The older `json4/type-datalength.sql` also passes.
 
 `sql2025/json-function-storage.sql` shows JSON_MODIFY retaining allocation just
 like the native modify method. JSON_QUERY rebuilds its selected result, even
-for `$`: a modified 70-byte value rebuilds in 63 bytes. The allocator now retains this state through JSON_MODIFY; the native modify
-statement forms still need implementation.
+for `$`: a modified 70-byte value rebuilds in 63 bytes. The allocator retains this state through JSON_MODIFY and native modify
+statements.
 
 `sql2025/json-mutation-column-allocation.cases.json` adds 37 mutation sequences,
 all reproduced in a second oracle run. Shrinking a string does not reserve its
@@ -411,7 +411,7 @@ mutation sequences containing 669 operations, with immutable-copy assertions.
   and `json-append-missing.cases.json` (variables, columns and both preview states).
 
 This is an allocation model, not a serializer for native SQL Server pages.
-The native modify statement forms and other JSON audit items remain open.
+Other JSON audit items and the large-storage edge cases below remain open.
 
 ### Large dictionaries and document-wide format (2026-10-06)
 
@@ -463,7 +463,7 @@ into the same slot succeeds. Retain this error timing and source-format
 provenance in the remaining audit; do not replace it with a guessed immediate
 mutation error.
 
-### Native modify statement contracts (captured, not implemented)
+### Native modify statement contracts (2026-10-06)
 
 `json-modify-method-contracts` and `json-modify-variable-flow` distinguish
 `SET @j.modify(path, value)` from a JSON_MODIFY assignment. Successful variable
@@ -476,11 +476,43 @@ statement's zero-row completion. Assignment copies remain independent.
 
 Column contracts include row expressions for both arguments, aliases with
 OUTPUT, mixed SET clauses, duplicate targets (264), NULL targets (5302), and
-unknown methods (258). These captures are implementation requirements, not
-passing support.
+unknown methods (258). The variable, UPDATE and MERGE forms are implemented.
+`json-modify-contexts` also covers updatable views, transaction and statement
+rollback, mixed setters and MERGE OUTPUT. Qualified setters such as
+`t.j.modify(...)` are syntax error 102 near `modify`; the unqualified column
+name is required. Mutator arguments bind even for an empty MERGE target.
+
+`json-modify-types` covers 29 argument cases. A float exceeding decimal(38,10)
+raises 8115 state 18, preserves the previous document and allows following
+statements to run; NULL-target and malformed-path errors end the batch.
+Typed NULL path variables are no-ops, while NULL values delete lax properties.
+Typed int NULL cannot initialize a json variable/column (206); bare NULL can.
+
+All 121 newly registered method cases pass the focused run, including the
+37 persisted-column allocation sequences and the earlier storage-mutation
+SQL file. The five adjacent JSON/NULL regression cases also pass (126 total).
+The parser's 49 native column-method gaps are resolved. Shared large-storage
+mutation discrepancies documented above still apply to native modify.
 
 ## Not emulated
 
-Native `.modify()` statements, JSON_CONTAINS, JSON indexes and CLR arguments
+JSON_CONTAINS, JSON indexes and CLR arguments
 (13666; hierarchyid/geometry/geography/vector are 50100, and
 `geometry::Point(...)` static method calls do not parse).
+
+## JSON_CONTAINS capture findings (2026-10-06)
+
+The pinned 17.0.5005.3 oracle requires native json targets; text targets fail
+with 8116. Exact numeric, bit and string searches are accepted; native json
+search values are rejected. String equality follows the search expression's
+collation. Omitted paths behave like `$[*]` in the captured root shapes, while
+explicit `$` does not search array elements. Missing selections return NULL;
+resolved empty wildcards return zero. Strict wildcard navigation can return
+NULL where lax navigation finds a match after a missing property. Only int
+comparison modes are accepted: zero is equality, one is LIKE, and other values
+raise 13692. Explicit NULL paths raise 8116 state 8 even for NULL documents;
+NULL documents otherwise short-circuit malformed path strings and invalid
+mode values. Typed NULL searches return zero for existing selections, whereas
+bare NULL searches fail binding. These are investigative contracts, not yet
+emulated. Evidence: `sql2025/json-contains-{contracts,native-contracts,
+null-modes,navigation}.cases.json` (167 cases).

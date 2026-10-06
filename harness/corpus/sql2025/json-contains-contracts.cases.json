@@ -1,0 +1,724 @@
+{
+  "cases": [
+    {
+      "name": "text-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-number-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'2',N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-number-decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(2.0 AS decimal(3,1)),N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Alpha',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-string-case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'alpha',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-string-space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Alpha ',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-bit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(1 AS bit),N'$.b') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-bool-as-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',1,N'$.b') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-array-no-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-array-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-array-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a[1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-array-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',4,N'$.a[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-object-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'v',N'$.o') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-object-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'v',N'$.o.k') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',1,N'$.missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-strict-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',1,N'strict $.missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-json-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',1,N'$.z') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "text-null-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',NULL,N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-number-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'2',N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-number-decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),CAST(2.0 AS decimal(3,1)),N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'Alpha',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-string-case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'alpha',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-string-space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'Alpha ',N'$.s') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-bit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),CAST(1 AS bit),N'$.b') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-bool-as-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),1,N'$.b') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-array-no-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,N'$.a') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-array-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,N'$.a[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-array-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,N'$.a[1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-array-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),4,N'$.a[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-object-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'v',N'$.o') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-object-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),N'v',N'$.o.k') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),1,N'$.missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-strict-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),1,N'strict $.missing') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-json-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),1,N'$.z') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "native-null-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),NULL,N'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "arity-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS() AS found;"
+        }
+      ]
+    },
+    {
+      "name": "arity-1",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "arity-2",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "arity-5",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,'$.n',0,0) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-sql-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(NULL,2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-typed-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(CAST(NULL AS json),2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'no json',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-scalar-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'2',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-scalar-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'\"Alpha\"',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-scalar-boolean",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'true',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-integer",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(1,2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-empty-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'[]',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "target-empty-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{}',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,NULL) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-typed-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,CAST(NULL AS nvarchar(20))) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-integer",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,1) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'invalid') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-recursive",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$..n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-range",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a[0 to 2]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-last",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "path-list",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',2,N'$.a[0,2]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',0) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',1) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-two",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',2) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-minus-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',-1) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',NULL) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s','1') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',CAST(1 AS decimal(3,1))) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "mode-bit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',N'Al%','$.s',CAST(1 AS bit)) AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-json-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(N'[2]' AS json),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-json-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(N'{\"n\":2}' AS json),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-query-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',JSON_QUERY(N'[2]'),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-money",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(2 AS money),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-binary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(0x02 AS varbinary(1)),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-date",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST('2025-01-01' AS date),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-variant",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(2 AS sql_variant),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-float",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(2 AS float),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "search-real",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}',CAST(2 AS real),'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "preview-on",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "preview-off",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF; SELECT JSON_CONTAINS(CAST(N'{\"n\":2,\"s\":\"Alpha\",\"b\":true,\"a\":[1,2,3],\"o\":{\"k\":\"v\"},\"z\":null}' AS json),2,'$.n') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "root-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'[1,2,3]',2,'$') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "root-array-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'[1,2,3]',2,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "nested-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'[[1],[2,[3]]]',3,'$[*]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "nested-array-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": " SELECT JSON_CONTAINS(N'[[1],[2,[3]]]',3,'$[1][1][*]') AS found;"
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,8 @@ pub fn bind_dml_source(Env, Array[@ast.TableRef], TableBinding, Array[String], v
 
 pub fn bind_expr(Env, @ast.Expr) -> @ir.Expr raise @types.SqlError
 
+pub fn bind_json_mutator(Env, @ir.Expr, String, Array[@ast.Expr], String) -> @ir.Expr raise @types.SqlError
+
 pub fn bind_query(Env, @ast.Query, result_columns? : Bool) -> BoundQuery raise @types.SqlError
 
 pub fn bind_sources(Env, Array[@ast.TableRef]) -> (@ir.Plan, Array[ColumnRef]) raise @types.SqlError

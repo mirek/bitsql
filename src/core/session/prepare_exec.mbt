@@ -319,6 +319,8 @@ fn Session::compile_statement(self : Session, stmt : @ast.Stmt) -> Unit raise {
     Update(u) => self.exec_update(u)
     Delete(d) => self.exec_delete(d)
     Merge(m) => self.exec_merge(m)
+    SetVarMethod(name, meth, args) =>
+      ignore(self.bind_var_mutator(name, meth.name, args))
     SetVar(_, _, x) | Print(x) => ignore(@bind.bind_expr(self.env(), x))
     Select({ body: Select(sel), .. } as q) => {
       if !sel.items.iter().all(i => i.kind is Assign(_, _, _)) {

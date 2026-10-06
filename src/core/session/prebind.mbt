@@ -82,6 +82,14 @@ fn Session::prebind_stmt(
       })
     Insert(_) | Update(_) | Delete(_) | Merge(_) | Print(_) =>
       attempt(() => self.compile_statement(s))
+    SetVarMethod(name, meth, args) =>
+      try ignore(self.bind_var_mutator(name, meth.name, args)) catch {
+        @types.SqlError(number~, ..) as e if number
+          is (137 | 174 | 258 | 313 | 8116 | 8144) => Some(([e], line))
+        _ => None
+      } noraise {
+        _ => None
+      }
     SetVar(name, op, e) =>
       attempt(() => ignore(self.bind_assignment(name, op, e)))
     Declare(vars) => {
@@ -185,7 +193,7 @@ fn prebindable(s : @ast.Stmt) -> Bool {
     Select(_) => true
     Insert({ source: InsertExec(_), .. }) => false
     Insert(_) | Update(_) | Delete(_) | Merge(_) => true
-    Declare(_) | SetVar(_, _, _) | Print(_) => true
+    Declare(_) | SetVar(_, _, _) | SetVarMethod(_, _, _) | Print(_) => true
     Break | Continue | Return(_) => true
     BeginTran(..) | Commit(..) | Rollback(..) | Save(..) => true
     Throw(_) | RaisError(_, ..) => true

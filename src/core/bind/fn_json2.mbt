@@ -74,37 +74,7 @@ fn bind_json2_fn(
   }
   arity(name, call.args, 3)
   let b = call.args.map(a => bind_expr(env, a))
-  let is_string = (t : @types.SqlType) => {
-    t is (Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _))
-  }
-  if !is_null_lit(b[0]) && !is_string(b[0].ty) && !(b[0].ty is Json) {
-    raise bad_arg_type(b[0].ty, 1, "json_modify")
-  }
-  if is_null_lit(b[1]) {
-    raise null_arg(2, "json_modify")
-  }
-  if !is_string(b[1].ty) {
-    raise bad_arg_type(b[1].ty, 2, "json_modify")
-  }
-  // captured: strings, exact and approximate numerics and bit; money,
-  // date/time, binary, LOB, sql_variant and uniqueidentifier are 8116
-  // captured (json4): a json new value needs a json document
-  let value_ok = is_null_lit(b[2]) ||
-    is_string(b[2].ty) ||
-    (b[2].ty is Json && b[0].ty is Json) ||
-    b[2].ty
-    is (TinyInt
-    | SmallInt
-    | Int
-    | BigInt
-    | Decimal(_, _)
-    | Numeric(_, _)
-    | Float
-    | Real
-    | Bit)
-  if !value_ok {
-    raise bad_arg_type(b[2].ty, 3, "json_modify")
-  }
+  check_json_modify_args(b, "json_modify")
   let flag = @ir.Expr::lit(String(json_flag(env, b[2])), nvarchar(Some(4000)))
   // captured (json4): JSON_MODIFY of a json document returns json
   Some(
@@ -155,4 +125,92 @@ fn bind_json_path_exists(
     }
   }
   constant_json_check(named("JSON_PATH_EXISTS", b, Int))
+}
+
+///|
+fn check_json_modify_args(
+  b : Array[@ir.Expr],
+  diagnostic_name : String,
+) -> Unit raise @types.SqlError {
+  let is_string = (t : @types.SqlType) => {
+    t is (Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _))
+  }
+  if !is_null_lit(b[0]) && !is_string(b[0].ty) && !(b[0].ty is Json) {
+    raise bad_arg_type(b[0].ty, 1, diagnostic_name)
+  }
+  if is_null_lit(b[1]) {
+    raise null_arg(2, diagnostic_name)
+  }
+  if !is_string(b[1].ty) {
+    raise bad_arg_type(b[1].ty, 2, diagnostic_name)
+  }
+  // captured: strings, exact and approximate numerics and bit; money,
+  // date/time, binary, LOB, sql_variant and uniqueidentifier are 8116
+  // captured (json4): a json new value needs a json document
+  let value_ok = is_null_lit(b[2]) ||
+    is_string(b[2].ty) ||
+    (b[2].ty is Json && b[0].ty is Json) ||
+    b[2].ty
+    is (TinyInt
+    | SmallInt
+    | Int
+    | BigInt
+    | Decimal(_, _)
+    | Numeric(_, _)
+    | Float
+    | Real
+    | Bit)
+  if !value_ok {
+    raise bad_arg_type(b[2].ty, 3, diagnostic_name)
+  }
+}
+
+///|
+/// Statement mutators bind separately from expression methods. The final
+/// literal names the target in NULL-target runtime diagnostics.
+pub fn bind_json_mutator(
+  env : Env,
+  current : @ir.Expr,
+  meth : String,
+  args : Array[@ast.Expr],
+  target : String,
+) -> @ir.Expr raise @types.SqlError {
+  if current.ty is Xml {
+    if meth == "modify" {
+      arity(meth, args, 1)
+    }
+    raise @types.not_supported(
+      "the xml \{meth}() method",
+      number=@types.EMU_XML_NOT_SUPPORTED,
+    )
+  }
+  if !(current.ty is Json) || meth.to_lower() != "modify" {
+    raise err(
+      258,
+      "Cannot call methods on \{current.ty.clash_name()}.",
+      severity=15,
+    )
+  }
+  if args.length() < 2 {
+    raise err(
+      313,
+      "An insufficient number of arguments were supplied for the procedure or function modify.",
+      state=101,
+    )
+  }
+  if args.length() > 2 {
+    raise err(
+      8144,
+      "Procedure or function modify has too many arguments specified.",
+      state=101,
+    )
+  }
+  let b = [current] + args.map(a => bind_expr(env, a))
+  check_json_modify_args(b, "modify")
+  let flag = @ir.Expr::lit(String(json_flag(env, b[2])), nvarchar(Some(4000)))
+  named(
+    "JSON_MUTATE",
+    b + [flag, @ir.Expr::lit(String(target), nvarchar(Some(4000)))],
+    Json,
+  )
 }

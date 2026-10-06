@@ -119,6 +119,29 @@ fn Parser::set_clause(self : Parser) -> @ast.SetClause raise @ast.SyntaxError {
   } else {
     SetColumn(self.object_name().parts)
   }
+  if target is SetColumn(parts) && parts.length() >= 2 && self.is_punct("(") {
+    let n = parts.length()
+    let column = parts[0:n - 1].to_owned()
+    let meth = parts[n - 1]
+    if n != 2 {
+      raise @ast.SyntaxError(
+        number=102,
+        state=1,
+        severity=15,
+        message="Incorrect syntax near '\{meth.name}'.",
+        span=meth.span,
+      )
+    }
+    let args = self.method_args()
+    let span = self.span_from(start)
+    return {
+      target: SetColumn(column),
+      op: Assign,
+      value: mk(MethodCall(mk(Column(column), span), meth, args), span),
+      mutator: true,
+      span,
+    }
+  }
   let op = match assign_op(self.peek()) {
     Some(op) => op
     None => raise self.error()
@@ -130,7 +153,7 @@ fn Parser::set_clause(self : Parser) -> @ast.SetClause raise @ast.SyntaxError {
   } else {
     self.scalar()
   }
-  { target, op, value, span: self.span_from(start), }
+  { target, op, value, mutator: false, span: self.span_from(start), }
 }
 
 ///|
