@@ -67,6 +67,7 @@ pub fn render(
 ) -> String raise SqlError {
   match v {
     Vector(data) => data.to_text()
+    NativeJson(data) => data.text()
     Null => raise internal("render of NULL")
     String(s) => s
     Bit(b) => if b { "1" } else { "0" }

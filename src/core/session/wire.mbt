@@ -184,6 +184,7 @@ pub fn wire_value(v : @types.Value) -> @tds.WireValue {
     Money(m) => Money(m)
     Float(d) => Float(d)
     Vector(v) => Text(v.to_text())
+    NativeJson(v) => Text(v.text())
     String(s) => Text(s)
     Binary(b) => Binary(b)
     Date(d) => Date(d)

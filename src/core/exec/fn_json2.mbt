@@ -2,6 +2,15 @@
 // captures: harness/corpus/json2/*.sql).
 
 ///|
+/// Text view for JSON functions; the native value retains storage provenance.
+fn json_text_arg(value : @types.Value) -> @types.Value {
+  match value {
+    NativeJson(data) => String(data.text())
+    other => other
+  }
+}
+
+///|
 /// A value as JSON_OBJECT / JSON_ARRAY write it: FOR JSON's formatting,
 /// except that date/time values drop an all-zero fraction (captured:
 /// time '03:04:05', datetime2(0) and smalldatetime without fraction, but
@@ -98,7 +107,7 @@ fn call_json2(
 ) -> @types.Value? raise @types.SqlError {
   match name {
     "JSON_OBJECT" | "JSON_ARRAY" => {
-      let flags = match v[0] {
+      let flags = match json_text_arg(v[0]) {
         String(f) => f
         _ => "N"
       }
@@ -147,13 +156,13 @@ fn call_json2(
       }
       buf.write_char(if object { '}' } else { ']' })
       if json_result {
-        Some(String(@types.json_type_normalize(buf.to_string())))
+        Some(NativeJson(@types.JsonData::parse(buf.to_string())))
       } else {
         Some(String(buf.to_string()))
       }
     }
     "ISJSON" =>
-      match v[0] {
+      match json_text_arg(v[0]) {
         Null => Some(Null)
         String(doc) => {
           let ty : @json.IsJsonType = match v[1] {
@@ -167,7 +176,7 @@ fn call_json2(
         _ => raise @types.not_supported("ISJSON on non-character input")
       }
     "JSON_PATH_EXISTS" =>
-      match (v[0], v[1]) {
+      match (json_text_arg(v[0]), v[1]) {
         (_, Null) =>
           raise @types.sql_error(
             8116,
@@ -181,7 +190,7 @@ fn call_json2(
           raise @types.not_supported("JSON_PATH_EXISTS on non-character input")
       }
     "JSON_MODIFY" =>
-      match (v[0], v[1]) {
+      match (json_text_arg(v[0]), v[1]) {
         (Null, _) => Some(Null)
         (_, Null) =>
           raise @types.sql_error(
@@ -204,7 +213,7 @@ fn call_json2(
             e => raise if json_doc { json_type_error(e) } else { e }
           }
           if json_doc {
-            Some(String(@types.json_type_normalize(out)))
+            Some(NativeJson(@types.JsonData::modified(out)))
           } else {
             Some(String(out))
           }

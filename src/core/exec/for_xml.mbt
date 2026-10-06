@@ -142,6 +142,7 @@ fn xml_value(
     Variant(inner, base) => xml_value(inner, base)
     Xml(x) => XNodes(x)
     String(s) => XText(s)
+    NativeJson(data) => XText(data.text())
     Bit(b) => XText(if b { "1" } else { "0" })
     TinyInt(_) | SmallInt(_) | Int(_) | BigInt(_) | Decimal(_) | Guid(_) =>
       XText(@types.render(v, ty, None))

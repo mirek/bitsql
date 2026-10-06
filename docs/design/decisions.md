@@ -982,3 +982,17 @@ pass all 21,717 captured rows. Keep the newer probe tables to reproduce those
 inputs independently from the production tables. Partial-byte captures,
 lone-surrogate patterns and remaining syntax/SQL edge audits are still open;
 this decision is not a claim of complete regex support.
+
+## 2026-10-06: Native JSON values preserve storage provenance
+
+Replace canonical strings as the runtime representation of native JSON with
+`Value::NativeJson(JsonData)`. Canonical text alone cannot identify its binary
+size: both JSON_MODIFY and the modify method retain allocations after shrinking
+or deleting values, while JSON_QUERY rebuilds its result. Evidence is in
+`sql2025/json-function-storage.sql` and the mutation allocation captures.
+
+Fresh construction records its oracle-verified size. Native assignment retains
+that provenance; textual conversion and reparsing construct new storage. Until
+mutation allocation is modeled, modified values carry an unknown size and
+DATALENGTH raises an explicit Emulator error. This interim state prevents a
+false size result without claiming completion of mutation support.

@@ -66,13 +66,9 @@ pub fn cast(
   if from is Json || to is Json {
     return match (v, to) {
       (Null, _) => Null
-      (String(s), Json) =>
-        if from is Json {
-          v
-        } else {
-          String(json_type_normalize(s))
-        }
-      (String(s), _) => String(json_type_to_text(s, to))
+      (NativeJson(_), Json) => v
+      (String(s), Json) => NativeJson(JsonData::parse(s))
+      (NativeJson(data), _) => String(json_type_to_text(data.text(), to))
       _ => raise internal("json conversion of \{from.to_sql()}")
     }
   }

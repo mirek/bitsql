@@ -2,8 +2,8 @@
 //
 // SQL Server stores json values in a binary format and sends them to TDS 7.4
 // clients as varchar(max) with collation Latin1_General_100_BIN2_UTF8. bitsql
-// keeps a json value as `Value::String` holding the canonical text SQL Server
-// prints back. Rules captured on 17.0.5005.3 (harness/corpus/json4/*.sql,
+// keeps `Value::NativeJson` with canonical text and storage provenance (see
+// json_storage.mbt). Rules captured on 17.0.5005.3 (harness/corpus/json4/*.sql,
 // docs/reference/json.md "The json data type"):
 //
 // - The root must be an object or an array; whitespace (space, tab, LF, CR)

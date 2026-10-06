@@ -164,6 +164,8 @@ pub fn is_valid_date(Int, Int, Int) -> Bool
 
 pub let json_collation : Collation
 
+pub fn json_constructed_storage_bytes(String) -> Int raise SqlError
+
 pub fn json_type_decimal(Double) -> String?
 
 pub fn json_type_normalize(String) -> String raise SqlError
@@ -377,6 +379,15 @@ pub fn Decimal::trunc_to_bigint(Self) -> @bigint.BigInt
 pub fn Decimal::zero() -> Self
 pub impl Show for Decimal
 
+pub struct JsonData {
+  text : String
+  storage_bytes : Int?
+} derive(Eq, @debug.Debug)
+pub fn JsonData::modified(String) -> Self raise SqlError
+pub fn JsonData::parse(String) -> Self raise SqlError
+pub fn JsonData::storage_bytes(Self) -> Int?
+pub fn JsonData::text(Self) -> String
+
 pub(all) struct Language {
   langid : Int
   name : String
@@ -501,6 +512,7 @@ pub(all) enum Value {
   Variant(Value, SqlType)
   Xml(@xml.Xml)
   Vector(VectorData)
+  NativeJson(JsonData)
 } derive(Eq, @debug.Debug)
 pub fn Value::as_decimal(Self) -> Decimal?
 pub fn Value::as_int64(Self) -> Int64?

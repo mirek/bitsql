@@ -51,6 +51,7 @@ pub(all) enum Value {
   /// xml: a parsed fragment, or a `nodes()` context reference into one
   Xml(@xml.Xml)
   Vector(VectorData)
+  NativeJson(JsonData)
 } derive(Debug, Eq)
 
 ///|

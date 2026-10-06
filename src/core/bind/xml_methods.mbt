@@ -410,8 +410,8 @@ fn xml_guard(
 /// A json-typed argument of a built-in (captured json4/type-compare): the
 /// JSON functions, ISNULL/COALESCE/IIF/CHOOSE take it; CONCAT/CONCAT_WS
 /// report 257 to (n)varchar, GREATEST/LEAST/CHECKSUM 8116 state 4,
-/// SQL_VARIANT_PROPERTY 206, DATALENGTH (SQL Server's binary size) is an
-/// emulator error, everything else 8116.
+/// SQL_VARIANT_PROPERTY 206, DATALENGTH accepts native storage, everything
+/// else 8116.
 fn json_arg_check(
   env : Env,
   name : String,
@@ -450,10 +450,7 @@ fn json_arg_check(
     }
     "SQL_VARIANT_PROPERTY" if i == 0 =>
       raise @types.type_clash_error(Json, Variant)
-    "DATALENGTH" =>
-      raise @types.not_supported(
-        "DATALENGTH of json (SQL Server's internal binary size)",
-      )
+    "DATALENGTH" => ()
     "GREATEST" | "LEAST" | "CHECKSUM" =>
       raise bad_arg_type(Json, i + 1, name.to_lower(), state=4)
     // captured: the 8116 message spells TRIM as "Trim"

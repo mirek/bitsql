@@ -309,16 +309,16 @@ xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
 
 ## Not emulated
 
-DATALENGTH of json values (SQL Server's binary size), CLR arguments
+DATALENGTH of json values retaining mutation allocations, CLR arguments
 (13666; hierarchyid/geometry/geography/vector are 50100, and
 `geometry::Point(...)` static method calls do not parse).
 
-### Native binary size evidence awaiting implementation (2026-10-06)
+### Native binary construction sizes (2026-10-06)
 
 `sql2025/json-binary-size.cases.json` and `json-binary-boundaries.cases.json`
-provide 236 captured sizes and canonical strings. A prototype matches all 236
-with the following inferred accounting; this is not yet the emulator's
-DATALENGTH implementation or a claim to serialize the native format:
+provide 236 captured sizes and canonical strings. The implementation matches
+all 236 with the following inferred accounting. This supports DATALENGTH of
+fresh native JSON values; it is not a claim to serialize SQL Server's format:
 
 - Start with 18 bytes. Empty containers contribute zero additional bytes;
   nonempty arrays add 4 + 4n, nonempty objects add 4 + 6n, plus child payloads.
@@ -342,6 +342,19 @@ an out-of-line integer with an inline one retains its allocation. Deleting a
 property also retains storage. Both column and variable mutation work on the
 oracle. Large property dictionaries and precise allocation transitions still
 need verification; native JSON needs storage state beyond canonical text.
+
+Values now carry a `NativeJson` representation with canonical text and storage
+provenance. Fresh construction computes size once; assignment and casts from
+json to json preserve the value. `sql2025/json-constructed-storage.sql` verifies
+variables, tables, constructors, aggregates, JSON_QUERY, OPENJSON and regex
+result JSON. The older `json4/type-datalength.sql` also passes.
+
+`sql2025/json-function-storage.sql` shows JSON_MODIFY retaining allocation just
+like the native modify method. JSON_QUERY rebuilds its selected result, even
+for `$`: a modified 70-byte value rebuilds in 63 bytes. Modified values currently
+retain explicitly unknown storage provenance, so their DATALENGTH raises an
+Emulator error instead of reporting a freshly rebuilt size. Mutation allocation
+and the modify method remain unfinished.
 
 `sql2025/json-mutation-column-allocation.cases.json` adds 37 mutation sequences,
 all reproduced in a second oracle run. Shrinking a string does not reserve its

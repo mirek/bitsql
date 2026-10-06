@@ -74,7 +74,7 @@ fn regex_table(
         Int(start),
         Int(end),
         String(regex_text(bytes, a, b)),
-        String(parts.to_string()),
+        NativeJson(@types.JsonData::parse(parts.to_string())),
       ])
     } else if a != b || (a > copied && a < bytes.length()) {
       ordinal += 1L

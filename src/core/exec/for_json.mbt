@@ -90,6 +90,7 @@ fn json_scalar(
       // The base64 alphabet needs no JSON escaping; SQL Server leaves its
       // slash literal, unlike a slash in a character value.
       "\"" + base64(b) + "\""
+    NativeJson(data) => data.text()
     String(s) => {
       let buf = StringBuilder()
       json_escape(s, buf)

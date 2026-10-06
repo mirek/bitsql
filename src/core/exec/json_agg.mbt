@@ -63,7 +63,7 @@ fn eval_json_agg(
   }
   buf.write_char(if object { '}' } else { ']' })
   if json {
-    String(@types.json_type_normalize(buf.to_string()))
+    NativeJson(@types.JsonData::parse(buf.to_string()))
   } else {
     String(buf.to_string())
   }

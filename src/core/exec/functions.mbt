@@ -429,7 +429,7 @@ fn call_values(
     SchemaName | ObjectId | ObjectName =>
       raise @types.not_supported("catalog functions")
     JsonValue =>
-      match (v[0], v[1]) {
+      match (json_text_arg(v[0]), v[1]) {
         // the NULL path is checked first (captured: msduck
         // unicode-json-storage#459)
         (_, Null) =>
@@ -459,7 +459,7 @@ fn call_values(
       }
     JsonQuery => {
       let path = if v.length() > 1 { v[1] } else { String("$") }
-      match (v[0], path) {
+      match (json_text_arg(v[0]), path) {
         (_, Null) =>
           raise @types.sql_error(
             8116,
@@ -479,7 +479,12 @@ fn call_values(
             e => raise json_doc_error(args[0].ty, e)
           }
           match r {
-            Some(s) => String(s)
+            Some(s) =>
+              if args[0].ty is Json {
+                NativeJson(@types.JsonData::parse(s))
+              } else {
+                String(s)
+              }
             None => Null
           }
         }
@@ -493,7 +498,7 @@ fn call_values(
         None => call_more(ctx, name, v, args, e)
       }
     IsJson =>
-      match v[0] {
+      match json_text_arg(v[0]) {
         Null => Null
         String(doc) => Int(json(() => Some(@json.isjson(doc))).unwrap_or(0))
         _ => raise @types.not_supported("ISJSON on non-character input")

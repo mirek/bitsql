@@ -11,7 +11,7 @@ pushes and container publication on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
-| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Binary DATALENGTH and other roadmap gaps remain. Construction sizes have 236 captures; 37 persisted-column mutation sequences reproduce on a second oracle run. Native modify retains storage beyond canonical text and needs implementation, including 43 newly recorded parser gaps for column method calls. Variable mutation has unstable oracle failures; see the JSON reference. JSON_CONTAINS and JSON indexes still need explicit audit. |
+| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Fresh-value binary DATALENGTH now passes 236 construction captures and ten SQL context batches; mutation allocation and other roadmap gaps remain. 37 persisted-column mutation sequences reproduce on a second oracle run. Native modify retains storage beyond canonical text and needs implementation, including 43 newly recorded parser gaps for column method calls. Variable mutation has unstable oracle failures; see the JSON reference. JSON_CONTAINS and JSON indexes still need explicit audit. |
 | Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Scalar/SPLIT byte decoding, lone-surrogate normalization, BOM preservation and flag-type checks now pass all 351 captured regex cases. Fourteen MATCHES transport-failure cases lack expectations and remain open, along with remaining RE2/SQL edge audits; the previous checkpoint passed the full gate 2026-10-06. |
 | Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 and preview float16 storage, JSON conversion, TDS 7.4 fallback, catalogs, properties and base-specific distance kernels are implemented. Float32 norms/normalization work; float16 receives SQL Server’s captured 42246 rejection. All 150 vector cases pass focused verification, including declaration diagnostics, preview transitions and maximum dimensions. Broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
@@ -101,3 +101,17 @@ ones and 43 newly captured native JSON column-method syntax gaps. These are
 unfinished functionality, not waived regressions. Additional TOP(1) MATCHES
 captures and native JSON mutation captures remain investigative and unregistered.
 No new container is published; this checkpoint does not complete the audit.
+
+## Native JSON construction-storage checkpoint (2026-10-06)
+
+`scripts/check.sh` passed: 1,344 MoonBit tests, all-backend core checks,
+21,468 client/corpus tests passed, three pre-existing skips and no failures
+(21,471 total). All 238 newly registered cases ran: 236 size captures,
+`json-constructed-storage.sql`, and `json4/type-datalength.sql`. The parser
+check covers 35,897 batches with the same 50 known differences.
+
+Native JSON now carries canonical text and storage provenance. Fresh values
+report the captured binary size; native assignment preserves provenance and
+JSON_QUERY rebuilds storage. JSON_MODIFY allocation is still unknown and its
+DATALENGTH explicitly rejects rather than reporting a rebuilt size. Native
+modify, the other open 2025 requirements, and container publication remain.

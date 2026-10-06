@@ -53,13 +53,15 @@ test "json type errors report UTF-8 byte positions" {
 test "json type to text checks size and code page" {
   let t = @types.NVarChar(Some(6), @types.default_collation)
   assert_eq(
-    outcome(() => @types.cast(String("{\"a\":1}"), Json, t)),
+    outcome(() => {
+      @types.cast(NativeJson(@types.JsonData::parse("{\"a\":1}")), Json, t)
+    }),
     "13639/1 Target string size is too small to represent the JSON instance.",
   )
   assert_eq(
     outcome(() => {
       @types.cast(
-        String("{\"a\":\"\u{100}\"}"),
+        NativeJson(@types.JsonData::parse("{\"a\":\"\u{100}\"}")),
         Json,
         VarChar(Some(30), @types.default_collation),
       )
