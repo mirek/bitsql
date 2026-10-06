@@ -781,3 +781,9 @@ near-parity workload; the broader optimization goal stays open.
 Evidence: `harness/out/bench-compare-0.1.18.json`, `_build/bench-0.1.18.txt`,
 `_build/check-0.1.18.log`, `_build/arm64-0.1.18.log`,
 `_build/json-oracle-0.1.18.log`, `_build/requests-0.1.18-controls.txt`.
+
+Published as `0.1.18`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:b95402f8549b5d4fedb705d69b37c6c452f3bacc9ce144e49cd8002d2fbd4bb9`.
+Both images carry source revision `982cf1bc852fb7239a1ce048596aa39b43ee2a94`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.4926 MiB compressed.

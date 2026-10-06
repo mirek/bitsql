@@ -121,7 +121,7 @@ the total sums those medians. Earlier tables used one timed run per shape.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
+| Image download (compressed) | 12.5 MiB | 604.5 MiB | 2.1% | 48.4× smaller |
 | Image size on disk | 33.9 MiB | 1.64 GiB | 2.0% | 49× better |
 | Cold start: `docker run` → first query (median) | 138 ms | 2.68 s | 5.1% | 19× better |
 | CPU time until ready | 36.1 ms | 2.98 s | 1.2% | 83× better |
