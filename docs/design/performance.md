@@ -950,3 +950,9 @@ open, including the remaining text/window gaps and near-parity workloads.
 Evidence: `harness/out/bench-compare-0.1.20.json`, `_build/bench-0.1.20.txt`,
 `_build/check-0.1.20.log`, `_build/arm64-0.1.20.log`,
 `_build/json-oracle-0.1.20.log`.
+
+Published as `0.1.20`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:dd7b268e593753e586015324e6607fe8ac0c78848386a86cbb99a2f8d3413283`.
+Both images carry source revision `2f8d43274dbdf42c74ff9c350defedc802b063ed`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.4967 MiB compressed.
