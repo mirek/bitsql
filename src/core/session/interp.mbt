@@ -435,7 +435,10 @@ fn top_value_error(e : @types.SqlError) -> Bool {
 /// not run; a TRY still catches them).
 fn json_aborts_batch(e : @types.SqlError) -> Bool {
   let n = e.number()
-  n == 5302 || (n >= 13600 && n < 13700) || (n == 8116 && e.state() == 8)
+  n == 5302 ||
+  n == 22020 ||
+  (n >= 13600 && n < 13700) ||
+  (n == 8116 && e.state() == 8)
 }
 
 ///|

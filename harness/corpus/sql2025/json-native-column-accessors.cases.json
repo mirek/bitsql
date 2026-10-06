@@ -1,0 +1,544 @@
+{
+  "cases": [
+    {
+      "name": "last-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[last to last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[last to last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append $.a[last to last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[last to last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[last to last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append strict $.a[last to last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[2,2]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('$.a[2,2]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append $.a[2,2]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[2,2]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('strict $.a[2,2]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[1,2,3]}'); UPDATE jm SET j.modify('append strict $.a[2,2]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('$.a[last].b[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('$.a[last].b[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('append $.a[last].b[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('strict $.a[last].b[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('strict $.a[last].b[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'); UPDATE jm SET j.modify('append strict $.a[last].b[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('$.a[last].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('$.a[last].x',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('append $.a[last].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('strict $.a[last].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('strict $.a[last].x',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('append strict $.a[last].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('$.a[0,1].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('$.a[0,1].x',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('append $.a[0,1].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('strict $.a[0,1].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('strict $.a[0,1].x',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[{\"x\":1},{\"x\":2}]}'); UPDATE jm SET j.modify('append strict $.a[0,1].x',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('$.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('$.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('append $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('strict $.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":[]}'); UPDATE jm SET j.modify('append strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('$.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('$.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('append $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('strict $.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{}'); UPDATE jm SET j.modify('append strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('$.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('$.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('append $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('strict $.a[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"a\":{}}'); UPDATE jm SET j.modify('append strict $.a[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('$.\"last\"[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('$.\"last\"[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('append $.\"last\"[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('strict $.\"last\"[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('strict $.\"last\"[last]',NULL); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE jm(j json); INSERT jm VALUES(N'{\"last\":[1,2]}'); UPDATE jm SET j.modify('append strict $.\"last\"[last]',4); SELECT j AS v,DATALENGTH(j) AS bytes FROM jm;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "cases": [
+    {
+      "name": "native-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT CAST(@j AS nvarchar(max)) AS j;"
+        }
+      ]
+    },
+    {
+      "name": "varchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT CONVERT(varchar(max),@j) AS j;"
+        }
+      ]
+    },
+    {
+      "name": "try-convert",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT TRY_CONVERT(nvarchar(max),@j) AS j;"
+        }
+      ]
+    },
+    {
+      "name": "value-pad",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT JSON_VALUE(@j,'$.pad[0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT JSON_VALUE(@j,'$.v[0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "query-pad",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT DATALENGTH(JSON_QUERY(@j,'$.pad')) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "query-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT JSON_QUERY(@j,'$.v') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "isjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT ISJSON(@j) AS valid;"
+        }
+      ]
+    },
+    {
+      "name": "path-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT JSON_PATH_EXISTS(@j,'$.v[0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "contains-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT JSON_CONTAINS(@j,1,'$.v') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "openjson-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT * FROM OPENJSON(@j,'$.v');"
+        }
+      ]
+    },
+    {
+      "name": "copy-size",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); DECLARE @c json=@j; SELECT DATALENGTH(@c) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "replace-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SET @j=JSON_MODIFY(@j,'$.v',2); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),20) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "remove-v",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SET @j=JSON_MODIFY(@j,'$.v',NULL); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),20) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "catch-read",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); BEGIN TRY SELECT CAST(@j AS nvarchar(max)) AS j; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

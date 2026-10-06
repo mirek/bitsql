@@ -92,6 +92,8 @@ fn json_float_check(
 /// strict range past the end is 13608 state 5 (not 13659).
 fn json_type_error(e : @types.SqlError) -> @types.SqlError {
   match (e.number(), e.state()) {
+    (22020, _) =>
+      @types.sql_error(22020, e.message(), state=e.state(), severity=17)
     (13608, 2) | (13659, _) =>
       @types.sql_error(13608, @json.MISSING_MESSAGE, state=5)
     (13621, 1) => @types.sql_error(13621, e.message(), state=2)
@@ -230,6 +232,29 @@ fn call_json2(
             Null => None
             String(s) if raw => Some(s)
             other => Some(json_modify_value(other, args[2].ty))
+          }
+          let path = if json_doc {
+            let empty_storage = match v[0] {
+              NativeJson(data) =>
+                args[0].kind is Var(_) && data.storage_bytes() == 18
+              _ => false
+            }
+            let mapped = json(() => {
+              @json.native_modify_path(
+                doc,
+                path,
+                name == "JSON_MUTATE",
+                empty_storage,
+              )
+            }) catch {
+              e => raise json_type_error(e)
+            }
+            match mapped {
+              Some(path) => path
+              None => return Some(v[0])
+            }
+          } else {
+            path
           }
           let out = json(() => @json.json_modify(doc, path, text)) catch {
             e => raise if json_doc { json_type_error(e) } else { e }

@@ -1082,3 +1082,16 @@ error behavior and rejects oversize strings before a narrowing cast can truncate
 them. Captures and diagnostic boundaries are in the JSON reference; the two
 text-source 102 cases require binding and cannot be decided by the syntax-only
 parser. Earlier blanket extraction gaps are removed from parse-known.
+
+### Native mutation path and storage provenance (2026-10-06)
+
+Native mutation resolves its path before invoking the existing text mutator
+and allocation model. The same effective path drives both operations, so the
+function's captured `last`-as-first behavior cannot update the text and storage
+at different positions. A no-op returns the original immutable native value.
+The native method has separate list/last rules; variable targets consult retained
+allocation for the fresh-empty-document 22020 diagnostic, while column mutation
+permits insertion into fresh empty storage. Text equality alone is not
+sufficient. Error 22020 is catchable but ends an uncaught batch. Oracle evidence
+is collected in the native mutation accessor, missing-parent and empty-storage
+fixtures documented in the JSON reference.

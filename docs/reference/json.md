@@ -442,14 +442,12 @@ inferred from timeouts. The core storage generator now includes 356 tests.
   widens before mutation. Fresh construction can still hold 32,768 keys in
   narrow format, and editing an existing scalar need not widen it.
 
-Further mutation cases remain investigative: `json-wide-mutation` and
-`json-dictionary-wide-capacity` currently have five disagreements across 15
-cases. Three involve conservative widening when cloning a small container
-near a large dictionary's limit. The others capture oracle errors 13641
-(resource limit after reusing a deleted slot) and 13643 (corrupted JSON after
-multiple wide-container replacements). Do not encode corruption as a stable
-contract without independent verification. These cases are not registered as
-passing support and remain release requirements.
+Remaining large-storage baseline (2026-10-06): the four investigative files
+`json-wide-mutation`, `json-dictionary-wide-capacity`, `json-wide-preflight`,
+and `json-wide-empty-replacement` pass 23 of 34 cases on the current emulator.
+Five discrepancies concern conservative widening during container copying;
+six miss captured 13641 resource-limit or 13643 corruption errors. These cases
+are not registered as passing support and remain release requirements.
 
 Follow-up evidence in `json-wide-preflight` shows that cloning even an empty
 container into a narrow document with 32,767 dictionary keys widens it;
@@ -740,8 +738,7 @@ On the pinned oracle, JSON_MODIFY with `last` changes the first array element,
 whereas a list leaves the document unchanged in lax mode and raises 13608 in
 strict mode. Wildcard/range accessors give 13660 state 5. These are observed
 build-specific contracts, not interchangeable with the ordinary/typed
-extraction rules. The OPENJSON cases are now registered; mutation cases
-remain investigative.
+extraction rules. The OPENJSON and mutation cases are now registered.
 
 The 96 `sql2025/json-native-openjson-accessors` cases extend this contract:
 `last to last` selects the final element. Lax lists skip missing indexes; strict
@@ -757,7 +754,7 @@ also behave as index zero for JSON_MODIFY. Lists leave the value and allocation
 unchanged in lax mode; strict lists give 13608 state 5. Strict append to a
 selected scalar reports 13621 state 3 at an array element but state 2 at an
 object member. Lax append through a missing intermediate member exposes
-13656 state 8. These captures remain unregistered pending implementation.
+13656 state 8. These mutation captures are now registered.
 
 The 60 `sql2025/json-native-method-accessors` captures prove that the native
 `.modify()` method differs from JSON_MODIFY: `last`, `last to last`, and lists
@@ -766,7 +763,7 @@ strict mode. A missing intermediate member in lax number/null mutation raises
 22020 state 1, severity 17, “Internal Error: Tried to access an expired large
 object.” Lax append there gives 13656 state 8. The function and method need
 separate accessor handling; sharing JSON_MODIFY's index-zero translation
-would produce false greens. These cases remain investigative.
+would produce false greens. These method cases are now registered.
 
 All 216 additional OPENJSON/function/method accessor cases reproduce in
 second oracle runs (96 + 60 + 60). The parser check passes across 37,628
@@ -780,7 +777,7 @@ non-singleton range give OPENJSON 13665 (root state 5, column state 3), or
 mutation 13660 state 5. `[last to 0]` additionally exposes entry-point/error
 precedence differences (13660 state 1 versus 13665/13660 state 3/5) and needs
 separate treatment. Lists containing repeated `last` preserve the ordinary
-list contracts above. The OPENJSON cases are now registered; the mutation cases remain investigative.
+list contracts above. The OPENJSON and mutation cases are now registered.
 
 Native OPENJSON implementation checkpoint: all 200 root/WITH accessor cases
 pass, including 32 `sql2025/json-native-openjson-reversed` cases. The focused
@@ -788,8 +785,7 @@ run with json3/json4 passes 215 cases. Root selection requires one container;
 WITH columns choose the first selection. Native empty objects produce no WITH
 rows. Reversed `last to n` root diagnostics do not depend on array length;
 strict column `last to 0` uses 13660 state 1, while the captured `last to 3`
-uses 13665 state 3. Native selection is separate from the text walker. The
-remaining 160 captured JSON_MODIFY/native-method cases still need correction.
+uses 13665 state 3. Native selection is separate from the text walker. The mutation checkpoint below completes the subsequently expanded accessor set.
 
 The 32 `sql2025/json-native-mutation-missing` cases cover TRY/CATCH and
 post-error values. A missing member of a fresh empty root followed by an array accessor raises
@@ -798,7 +794,7 @@ catchable 22020 state 1, severity 17 for native `.modify()`, even with ordinary
 is a no-op. Missing nested members in existing containers do not share that
 method error. Lax append through a missing object member raises 13656 state 8;
 missing array elements and wrong-kind/null parents remain unchanged. These
-cases extend the pending mutation implementation work.
+cases are included in the mutation implementation checkpoint below.
 
 The 32 missing-parent/catchability cases reproduce on a second oracle run.
 They bring the pending mutation accessor set to 192 cases.
@@ -811,9 +807,62 @@ nested containers do not. Do not generalize this to all missing root members.
 The follow-up empty-storage captures check retained-allocation provenance.
 
 The 32 `sql2025/json-native-method-empty-storage` cases isolate storage
-provenance. Fresh `{}`/`[]` use 18 bytes and even a single-step method insert
+provenance. Fresh `{}`/`[]` variables use 18 bytes and even a single-step method insert
 or delete raises 22020 state 1, severity 17. Empty objects produced by deleting
 the last member retain 43 bytes in these fixtures: missing paths are no-ops,
 and a new member inserts normally (68 bytes here). Function deletion and
 method deletion retain the same behavior. Mutation must consult native storage
 provenance, not infer this diagnostic from text equality with `{}` or `[]`.
+
+The existing `sql2025/json-mutation-column-allocation#insert-empty` fixture
+distinguishes column from variable mutation: a column `.modify()` can insert
+into a freshly empty native object. The 22020 empty-storage check therefore
+applies to variable targets, not all method calls. The column accessor matrix
+is captured separately in `sql2025/json-native-column-accessors`.
+
+Native mutation implementation checkpoint: all 300 function/variable/column
+accessor, missing-parent and allocation-history cases are registered. The
+combined JSON run passes 1,814 cases, including the existing allocation,
+index, containment, extraction and method regressions. Effective paths update
+text and retained storage at the same position. No-op mutations retain the
+original native value; uncaught 22020 ends the batch while TRY/CATCH retains
+the original value and allocation. The 60 column accessor cases confirm that
+last/list rules match variable methods, but the fresh-empty-variable diagnostic
+does not apply to columns. Shared large-storage edge work remains open.
+
+`sql2025/json-wide-corruption-access` probes 16 read/mutation operations after
+copying a narrow `[1]` over an empty container inside a wide document. Fifteen
+have repeatable captures. DATALENGTH and native assignment work; ISJSON is 1.
+An unaffected array element remains readable, while JSON_VALUE on the damaged
+array's first element returns NULL and JSON_PATH_EXISTS returns 0. Text casts,
+including TRY_CONVERT, and JSON_QUERY/JSON_CONTAINS of the damaged container
+raise 13643 state 8; OPENJSON uses state 48. Further mutation fails with 13643.
+TRY/CATCH preserves the value and its readable size. These require per-operation
+and per-subtree validation, not a blanket invalid-value error.
+
+Direct native SELECT of the same value closes the connection (`socket hang up`)
+in two independent capture attempts. The harness cannot yet record this as an
+expected corpus outcome; this one case has no expectation and remains open.
+Do not substitute a normal SQL error or treat the missing capture as passing.
+
+The six `sql2025/json-wide-copy-preflight` cases distinguish container shape
+from dictionary pressure. At 32,766 keys, nested arrays and several empty
+arrays remain narrow, while copying an object with two already-known keys
+widens. New-key object copies instead match the existing narrow allocator
+with dictionary relocation in these fixtures. An empty object copy widens at
+32,767 keys. This rejects a generic
+nested-element-count heuristic; copied object keys participate even when the
+document's unique key set does not grow. Exact conservative preflight bounds
+remain under investigation.
+
+All six copy-preflight captures reproduce on a second oracle run; the current
+emulator passes four, with known-key object copying and the 32,767-key empty
+object copy still differing. The new-key size increases alone must not be
+interpreted as widening: the existing narrow allocation model reproduces them.
+
+The 12 `sql2025/json-wide-copy-key-boundaries` cases reproduce on the oracle.
+They support the conservative copy check `existing keys + max(1, source keys)
+> 32767`, with source dictionary keys counted even when already known. One
+source key remains narrow at 32,766 existing keys, two trigger widening; two
+remain narrow at 32,765. Empty source containers reserve one slot. The emulator
+baseline passes eight of these cases; implementing this check remains next.
