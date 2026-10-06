@@ -482,6 +482,8 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
             self.span_from(start),
           )
         }
+        "JSON_VALUE" | "JSON_QUERY" if next_paren &&
+          self.json_extract_has_clause() => self.json_extract(u == "JSON_VALUE")
         "JSON_OBJECT" | "JSON_ARRAY" if next_paren =>
           self.json_ctor(u == "JSON_OBJECT")
         "JSON_OBJECTAGG" | "JSON_ARRAYAGG" if next_paren =>

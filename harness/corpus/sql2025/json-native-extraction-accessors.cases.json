@@ -1,0 +1,436 @@
+{
+  "cases": [
+    {
+      "name": "last-scalar-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'$.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-scalar-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-scalar-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'strict $.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-scalar-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-object-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_VALUE(@j,'$.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-object-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_QUERY(@j,'$.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-object-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_VALUE(@j,'strict $.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-object-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[last]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-repeat-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'$.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-repeat-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-repeat-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'strict $.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-repeat-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-object-repeat-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_VALUE(@j,'$.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-object-repeat-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_QUERY(@j,'$.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-object-repeat-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_VALUE(@j,'strict $.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-object-repeat-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[0,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'$.a[2,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[2,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'strict $.a[2,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[2,0]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_VALUE(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_VALUE(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "only-null-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT JSON_VALUE(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "only-null-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT JSON_QUERY(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "only-null-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT JSON_VALUE(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "only-null-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT JSON_QUERY(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_VALUE(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'$.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_VALUE(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'strict $.a[*]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2}]}'; SELECT JSON_VALUE(@j,'$.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2}]}'; SELECT JSON_QUERY(@j,'$.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2}]}'; SELECT JSON_VALUE(@j,'strict $.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "outside-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_VALUE(@j,'$.a[0 to 3]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "outside-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'$.a[0 to 3]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "outside-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_VALUE(@j,'strict $.a[0 to 3]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "outside-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'strict $.a[0 to 3]') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_VALUE(@j,'$.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'$.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_VALUE(@j,'strict $.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_VALUE(@j,'$.a') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_QUERY(@j,'$.a') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-json_value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_VALUE(@j,'strict $.a') AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-json_query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_QUERY(@j,'strict $.a') AS v;"
+        }
+      ]
+    }
+  ]
+}

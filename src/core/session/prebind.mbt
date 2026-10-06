@@ -191,7 +191,19 @@ fn prebound_candidate(stmts : Array[@ast.Stmt]) -> @ast.Query? {
 ///|
 /// Errors the binder raises that SQL Server raises while compiling.
 fn compile_type_error(number : Int) -> Bool {
-  number is (206 | 257 | 402 | 8116 | 8117 | 42238 | 42246)
+  number
+  is (102
+  | 174
+  | 189
+  | 206
+  | 257
+  | 402
+  | 1001
+  | 2717
+  | 8116
+  | 8117
+  | 42238
+  | 42246)
 }
 
 ///|

@@ -342,6 +342,33 @@ fn def_expr(e : @ast.Expr) -> String {
       let lower = n.to_lower()
       if c.name.parts.length() == 1 {
         match lower {
+          "json_value returning" if c.args
+            is [doc, path, { kind: Cast(_, ty, ..), .. }] => {
+            let suffix = if ty.args.is_empty() {
+              ""
+            } else {
+              "(" +
+              ty.args
+              .map(a => {
+                match a {
+                  Num(n) | Named(n) => n
+                  Max => "max"
+                }
+              })
+              .join(",") +
+              ")"
+            }
+            return "json_value(" +
+              def_expr(strip_parens(doc)) +
+              "," +
+              def_expr(strip_parens(path)) +
+              " RETURNING " +
+              ty.name.to_upper() +
+              suffix +
+              ")"
+          }
+          "json_query with array wrapper" =>
+            return "json_query(" + def_args(c.args) + " WITH ARRAY WRAPPER)"
           "iif" if c.args.length() == 3 =>
             return "case when " +
               def_expr(strip_parens(c.args[0])) +

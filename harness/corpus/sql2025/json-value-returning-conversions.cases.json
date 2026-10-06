@@ -1,0 +1,292 @@
+{
+  "cases": [
+    {
+      "name": "fraction-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":12.75}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "fraction-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":12.75}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bool-false-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":false}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bool-false-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":false}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bool-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":true}'; SELECT JSON_VALUE(@j,'$.v' RETURNING nvarchar(10)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bool-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":true}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING nvarchar(10)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "string-bool-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"true\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING bit) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "string-bool-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"true\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING bit) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"12.75\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"12.75\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "truncated-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"abcdef\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING nvarchar(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "truncated-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"abcdef\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING nvarchar(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-overflow-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":999.99}'; SELECT JSON_VALUE(@j,'$.v' RETURNING decimal(4,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-overflow-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":999.99}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING decimal(4,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-round-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":1.995}'; SELECT JSON_VALUE(@j,'$.v' RETURNING decimal(4,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-round-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":1.995}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING decimal(4,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"é水😀\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING varchar(6)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"é水😀\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING varchar(6)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-wide-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"é水😀\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING nvarchar(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "unicode-wide-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"é水😀\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING nvarchar(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "negative-tiny-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":-1}'; SELECT JSON_VALUE(@j,'$.v' RETURNING tinyint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "negative-tiny-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":-1}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING tinyint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bigint-date-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":2147483648}'; SELECT JSON_VALUE(@j,'$.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bigint-date-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":2147483648}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-date-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":1.25}'; SELECT JSON_VALUE(@j,'$.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-date-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":1.25}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "time-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"12:34:56.1234567\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING time(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "time-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"12:34:56.1234567\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING time(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "date-string-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"2024-02-29\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "date-string-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"2024-02-29\"}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING date) AS v;"
+        }
+      ]
+    }
+  ]
+}

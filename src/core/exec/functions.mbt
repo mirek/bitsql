@@ -428,6 +428,7 @@ fn call_values(
       }
     SchemaName | ObjectId | ObjectName =>
       raise @types.not_supported("catalog functions")
+    JsonValue if v.length() == 3 => json_value_returning(ctx, v, e.ty)
     JsonValue =>
       match (json_text_arg(v[0]), v[1]) {
         // the NULL path is checked first (captured: msduck
@@ -471,6 +472,7 @@ fn call_values(
           let r = json(() => {
             @json.json_query(
               doc,
+              array_wrapper=v.length() == 3,
               path=p,
               lob=json_lob(args[0].ty),
               json_type=args[0].ty is Json,

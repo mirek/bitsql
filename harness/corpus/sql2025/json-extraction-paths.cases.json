@@ -1,0 +1,382 @@
+{
+  "cases": [
+    {
+      "name": "missing-branch-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_QUERY(@j,'$.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_QUERY(@j,'$.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_VALUE(@j,'$.a[*].x' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing-branch-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"b\":2},{\"x\":3}]}'; SELECT JSON_VALUE(@j,'strict $.a[*].x' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_VALUE(@j,'$.a[*]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'strict $.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,null,3]}'; SELECT JSON_QUERY(@j,'strict $.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-selection-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,null,3]}'; SELECT JSON_VALUE(@j,'strict $.a[*]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_VALUE(@j,'$.a[*]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'strict $.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[]}'; SELECT JSON_QUERY(@j,'strict $.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "empty-selection-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT JSON_VALUE(@j,'strict $.a[*]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'$.a[0 to 3]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'$.a[0 to 3]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_VALUE(@j,'$.a[0 to 3]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'strict $.a[0 to 3]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'strict $.a[0 to 3]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2]}'; SELECT JSON_VALUE(@j,'strict $.a[0 to 3]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'$.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'$.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_VALUE(@j,'$.a[*].x' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_QUERY(@j,'strict $.a[*].x' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,{\"x\":2}]}'; SELECT JSON_VALUE(@j,'strict $.a[*].x' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[2,0]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[2,0]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'$.a[2,0]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[2,0]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[2,0]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-reverse-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'strict $.a[2,0]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-lax-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[last,last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-lax-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'$.a[last,last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-lax-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'$.a[last,last]' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-strict-native-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[last,last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-strict-text-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2,3]}'; SELECT JSON_QUERY(@j,'strict $.a[last,last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-repeat-strict-typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_VALUE(@j,'strict $.a[last,last]' RETURNING int) AS v;"
+        }
+      ]
+    }
+  ]
+}

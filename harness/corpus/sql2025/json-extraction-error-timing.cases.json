@@ -1,0 +1,85 @@
+{
+  "cases": [
+    {
+      "name": "typed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS before_error; SELECT JSON_VALUE(CAST(N'{\"a\":1}' AS json),'not-a-path' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS before_error; SELECT JSON_QUERY(CAST(N'{\"a\":1}' AS json),'not-a-path' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "typed-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS before_error; SELECT JSON_VALUE(CAST(N'{\"a\":\"x\"}' AS json),'strict $.a' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "computed-nvarchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(j json,v AS JSON_VALUE(j,'$.a' RETURNING nvarchar(max))); SELECT definition FROM sys.computed_columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "computed-decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(j json,v AS JSON_VALUE(j,'$.a' RETURNING decimal(10,2))); SELECT definition FROM sys.computed_columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "computed-char",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(j json,v AS JSON_VALUE(j,'$.a' RETURNING char(3))); SELECT definition FROM sys.computed_columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "null-bad-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=NULL; SELECT JSON_VALUE(@j,'bad' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @p nvarchar(20)=NULL; SELECT JSON_VALUE(@j,@p RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-array-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; DECLARE @p json=N'[]'; SELECT JSON_VALUE(@j,@p RETURNING int) AS v;"
+        }
+      ]
+    }
+  ]
+}

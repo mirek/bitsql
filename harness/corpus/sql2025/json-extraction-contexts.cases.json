@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "name": "source-nvarchar-max",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"n\":1}'; SELECT JSON_VALUE(@j,'$.n' RETURNING int) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "source-varchar-max",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j varchar(max)='{\"n\":1}'; SELECT JSON_VALUE(@j,'$.n' RETURNING int) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "source-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j int=1; SELECT JSON_VALUE(@j,'$.n' RETURNING int) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "source-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=NULL; SELECT JSON_VALUE(@j,'$.n' RETURNING int) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "computed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(j json,n AS JSON_VALUE(j,'$.n' RETURNING int)); INSERT t(j) VALUES(N'{\"n\":12}'); SELECT n FROM t; SELECT definition FROM sys.computed_columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "wrapper-computed",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(j json,a AS JSON_QUERY(j,'$.a[*]' WITH ARRAY WRAPPER)); INSERT t(j) VALUES(N'{\"a\":[1,2]}'); SELECT a FROM t; SELECT definition FROM sys.computed_columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "into",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING int) AS n INTO t; SELECT n FROM t; SELECT system_type_id,max_length,is_nullable FROM sys.columns WHERE object_id=OBJECT_ID(N't');"
+        }
+      ]
+    },
+    {
+      "name": "for-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"a\":[1,2]}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS a FOR JSON PATH;"
+        }
+      ]
+    }
+  ]
+}

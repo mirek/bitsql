@@ -1,0 +1,112 @@
+{
+  "cases": [
+    {
+      "name": "value-one-arg",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-three-args",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n',1 RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-missing-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrapper-three-args",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_QUERY(@j,'$',1 WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "wrapper-incomplete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_QUERY(@j,'$' WITH WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-integer",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING integer) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-double",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING double precision) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-dec-default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING decimal) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-varchar-max",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING varchar(max)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-zero-length",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING varchar(0)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-bad-precision",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING decimal(39,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "value-negative-scale",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"n\":12}'; SELECT JSON_VALUE(@j,'$.n' RETURNING decimal(10,-1)) AS v;"
+        }
+      ]
+    }
+  ]
+}

@@ -1067,3 +1067,18 @@ Scalar counting follows live native storage with first-key-wins traversal;
 containers contribute no row. Object lookup includes the internal table, but
 ordinary table binding still raises 208. See the 52 internal-catalog cases and
 remaining physical allocation/search work in the JSON reference.
+
+
+### Typed JSON extraction and ordered wrapping (2026-10-06)
+
+Extended extraction calls follow the constructor precedent: clauses are encoded
+in the AST function name. RETURNING carries an inert CAST(NULL AS type) argument
+so existing type binding supplies exact result metadata; the executor uses that
+result type. Ordinary calls retain their original grammar. ARRAY WRAPPER uses
+an internal flag on JsonQuery, preserving FOR JSON's structured-value marking.
+Native extraction selects ordered lists with repetition, while containment
+retains set-like selection. Typed conversion preserves lax NULL versus strict
+error behavior and rejects oversize strings before a narrowing cast can truncate
+them. Captures and diagnostic boundaries are in the JSON reference; the two
+text-source 102 cases require binding and cannot be decided by the syntax-only
+parser. Earlier blanket extraction gaps are removed from parse-known.

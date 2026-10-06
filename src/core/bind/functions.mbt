@@ -64,10 +64,15 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     )
   }
   let args = call.args
-  concat_guard(env, name, args)
-  variant_guard(env, name, args)
-  xml_guard(env, name, args)
-  lob_guard(env, name, args)
+  let guard_name = match name {
+    "JSON_VALUE RETURNING" => "JSON_VALUE"
+    "JSON_QUERY WITH ARRAY WRAPPER" => "JSON_QUERY"
+    other => other
+  }
+  concat_guard(env, guard_name, args)
+  variant_guard(env, guard_name, args)
+  xml_guard(env, guard_name, args)
+  lob_guard(env, guard_name, args)
   let bound = () => args.map(a => bind_expr(env, a))
   match name {
     "COUNT" | "COUNT_BIG" | "SUM" | "AVG" | "MIN" | "MAX" | "STRING_AGG" =>
@@ -253,6 +258,33 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       let f : @ir.Fn = if args.is_empty() { DbName } else { Named("DB_NAME") }
       mk(Call(f, bound()), nvarchar(Some(128)), true)
     }
+    "JSON_VALUE RETURNING" => {
+      if args.length() != 3 {
+        raise @types.sql_error(
+          174,
+          "The json_value function requires 2 argument(s).",
+          state=2,
+          severity=15,
+        )
+      }
+      if args[2].kind is Cast(_, ty, ..) {
+        check_json_returning_type(ty)
+      }
+      if args[1].kind is Null {
+        raise null_arg(2, "json_value")
+      }
+      let b = bound()
+      if !(b[0].ty is Json) && b[0].ty.family() != FString {
+        raise bad_arg_type(b[0].ty, 1, "json_value")
+      }
+      if !(b[0].ty is Json) {
+        raise err(102, "Incorrect syntax near 'RETURNING'.", severity=15)
+      }
+      if b[1].ty.family() != FString {
+        raise bad_arg_type(b[1].ty, 2, "json_value")
+      }
+      constant_json_check(mk(Call(JsonValue, b), b[2].ty, true))
+    }
     "JSON_VALUE" => {
       arity(name, args, 2)
       // captured: a bare NULL path is 8116 at compile time for JSON_VALUE
@@ -265,9 +297,24 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         mk(Call(JsonValue, bound()), nvarchar(Some(4000)), true),
       )
     }
-    "JSON_QUERY" => {
-      arity_range(name, args, 1, 2)
+    "JSON_QUERY" | "JSON_QUERY WITH ARRAY WRAPPER" => {
+      if name == "JSON_QUERY WITH ARRAY WRAPPER" &&
+        (args.length() < 1 || args.length() > 2) {
+        raise @types.sql_error(
+          189,
+          "The json_query function requires 1 to 2 arguments.",
+          state=2,
+          severity=15,
+        )
+      }
+      arity_range("JSON_QUERY", args, 1, 2)
       let b = bound()
+      if name == "JSON_QUERY WITH ARRAY WRAPPER" {
+        if b.length() == 1 {
+          b.push(@ir.Expr::lit(String("$"), nvarchar(Some(1))))
+        }
+        b.push(@ir.Expr::lit(Bit(true), Bit))
+      }
       // captured probes: nvarchar(max) only for a max input, else
       // nvarchar(4000) (traps/json-lax-strict)
       let n = if is_max_string(b[0].ty) { None } else { Some(4000) }
@@ -346,5 +393,31 @@ fn nullif_operand(e : @ir.Expr) -> @ir.Expr {
     { kind: Lit(SmallInt(v)), ty: SmallInt, nullable: false, }
   } else {
     { kind: Lit(Int(v)), ty: Int, nullable: false, }
+  }
+}
+
+///|
+fn check_json_returning_type(ty : @ast.TypeName) -> Unit raise @types.SqlError {
+  let maximum = match ty.name.to_lower() {
+    "decimal" | "numeric" => 38
+    "varchar" | "char" => 8000
+    "nvarchar" | "nchar" => 4000
+    "float" => 53
+    _ => return
+  }
+  if num_arg(ty, 0) is Some(n) {
+    if n < 1 {
+      raise @types.sql_error(
+        1001,
+        "Line \{ty.span.line}: Length or precision specification \{n} is invalid.",
+        severity=15,
+      )
+    }
+    if n > maximum {
+      raise @types.sql_error(
+        2717,
+        "The size (\{n}) given to the type '\{ty.name.to_lower()}' exceeds the maximum allowed (\{maximum}).",
+      )
+    }
   }
 }

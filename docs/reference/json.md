@@ -664,32 +664,79 @@ catalogs project that state and current live scalar counts. These corrections
 replace the earlier missing internal-catalog surface, without claiming exact
 physical storage allocation or completed value/array search optimization.
 
-### Typed extraction and array wrapping, pending implementation (2026-10-06)
+### Typed extraction and array wrapping (2026-10-06)
 
-`sql2025/json-value-returning` and `json-query-array-wrapper` add 72 initial
-oracle cases. JSON_VALUE RETURNING accepts integer, decimal/numeric, float/real,
-bit, varchar/nvarchar and modern date/time targets. Money/smallmoney,
-uniqueidentifier, json, xml and varbinary are syntax error 102 state 29. Lax
-missing/non-scalar or failed value conversions return NULL; strict missing
-is 13608 state 5 and strict object-to-scalar is 13623 state 2. A numeric scalar
-to date/time raises the forbidden conversion 529 even in lax mode, rather than
-being treated as a failed string conversion. Wider conversion/error contracts
-still need capture. This syntax and execution are not implemented yet.
+The 180 cases in `json-value-returning`, `json-value-returning-errors`,
+`json-query-array-wrapper`, `json-extraction-contexts`, `json-extraction-paths`,
+`json-value-returning-conversions`, `json-extraction-widths`,
+`json-extraction-error-timing` and `json-extraction-grammar` pass differential
+verification. Together with containment and JSON indexes, 639 focused cases
+pass. The 63 earlier extraction parser gaps are resolved.
 
-WITH ARRAY WRAPPER is accepted for both native and text JSON on the pinned
-oracle. Native JSON wraps scalar, null, container and multi-selection values,
-returns `[]` for an empty resolved wildcard, and supports last/list accessors.
-Text JSON wraps scalar/container selections but returns NULL for JSON null or
-empty selections, and keeps its 13660 last/list rejections. Native output has
-JSON wire fallback metadata; text output is nvarchar(max). Strict missing paths
-use native state 5 versus text state 2. These captures remain investigative,
-unregistered cases until parser, binder and execution support are implemented.
+JSON_VALUE RETURNING requires a native JSON source. A text source gives 102
+near RETURNING during type binding; integer input is 8116. Those two text
+variable cases remain parser-only disagreements: the parser accepts their
+shape, and the binder emits SQL Server's error before executing the batch.
+Supported return types include integer types (also INTEGER), decimal/numeric,
+float/real (also DOUBLE PRECISION), bit, char/nchar/varchar/nvarchar and modern
+date/time types. Money/smallmoney, legacy datetime, uniqueidentifier, json, xml
+and varbinary are rejected with 102 state 29. Character return types require
+an explicit length or MAX. Invalid arity and type sizes have captured compile
+errors; computed-column definitions preserve RETURNING type spelling and
+parameter formatting. SELECT INTO and FOR JSON integration are verified.
 
+Lax missing/non-scalar or failed value conversions return NULL; strict missing
+is 13608 state 5 and strict object/multiple-scalar extraction is 13623 state 2.
+An empty wildcard selection is missing for typed scalar extraction. Numeric
+fractions truncate toward zero when returned as integers; booleans become 1/0
+for numeric targets and true/false for string targets. Oversized strings yield
+NULL in lax mode, while strict mode raises 8152 state 34. Strict invalid integer
+text raises 245 and integer overflow raises 8115 state 2. Forbidden conversions
+still raise 529 in lax mode: integer scalars, including values beyond int,
+report source type int when converting to a date; fractional scalars report
+numeric. MAX output is not limited by ordinary JSON_VALUE's 4000 characters.
 
-`json-value-returning-errors.sql` extends the initial set to 72 cases. An
-oversized string target returns NULL in lax mode, and strict mode raises 8152
-state 34; strict invalid integer text raises 245, overflow raises 8115 state 2.
-A numeric fraction truncates toward zero for an integer target, and JSON true
-converts to 1. The legacy datetime target is rejected with 102 state 29.
-The extraction captures expose 63 new parser disagreements, explicitly listed
-as unfinished implementation work in `harness/parse-known.txt`.
+WITH ARRAY WRAPPER accepts both native and text JSON on the pinned oracle.
+Native input wraps scalar, null, container and multi-selection values, returns
+`[]` for an empty resolved wildcard, and supports last/list accessors. Text
+input wraps scalar/container selections but returns NULL for JSON null or
+empty selections, and retains its 13660 last/list rejections. Native output is
+JSON; text output follows the existing JSON_QUERY width/collation rules. Strict
+missing paths use native state 5 versus text state 2. Explicit path lists keep
+selection order and repetitions: `[2,0]` returns the third value then the first;
+`[last,last]` returns two values. This ordered selection mode is separate from
+containment's set-like selection and does not change its existing behavior.
+
+For native constant expressions, malformed-path and strict conversion errors
+occur after result metadata and earlier SELECT completion. Invalid argument
+types fail compilation. A NULL document short-circuits malformed paths, but a
+NULL path still raises runtime 8116 state 8. The result type comes from the
+binder, including fixed-width character metadata and MAX widths.
+
+### Ordinary native extraction accessors, pending correction (2026-10-06)
+
+The 48 `sql2025/json-native-extraction-accessors` cases confirm that ordinary
+JSON_VALUE and JSON_QUERY on native JSON also accept last/list accessors,
+without RETURNING or ARRAY WRAPPER. Repeated positions remain distinct; several
+selected values yield NULL in lax mode, 13623 state 2 for strict JSON_VALUE or
+13624 state 2 for strict JSON_QUERY, including mixtures with JSON null. A
+strict empty wildcard gives 13608 state 5 for JSON_VALUE but 13624 state 2 for
+JSON_QUERY. Strict traversal through a missing or wrong-kind branch gives
+13608 state 5. The older implementation still uses the text extraction walker;
+these newly captured differences remain unregistered and require correction.
+
+### Other native path entry points, pending correction (2026-10-06)
+
+The 64 `sql2025/json-native-path-entrypoints` captures distinguish OPENJSON,
+its WITH column paths, and JSON_MODIFY. OPENJSON resolves a single `last`
+selection, but lists produce no rows in lax mode and 13611 state 3 in strict
+mode. Native WITH scalar columns choose the first list selection (including
+reverse and repeated lists); they resolve `last` normally. Wildcard/range
+paths produce 13665 state 5 for OPENJSON's root path, state 3 for WITH columns.
+Strict AS JSON scalar selection produces 13624 state 5.
+
+On the pinned oracle, JSON_MODIFY with `last` changes the first array element,
+whereas a list leaves the document unchanged in lax mode and raises 13608 in
+strict mode. Wildcard/range accessors give 13660 state 5. These are observed
+build-specific contracts, not interchangeable with the ordinary/typed
+extraction rules. The cases remain investigative and unregistered.

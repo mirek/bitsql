@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "name": "char",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":\"a\"}'; SELECT JSON_VALUE(@j,'$.s' RETURNING char(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "nchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":\"a\"}'; SELECT JSON_VALUE(@j,'$.s' RETURNING nchar(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "max-length",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=CAST(N'{\"s\":\"'+REPLICATE(CAST(N'x' AS nvarchar(max)),5000)+N'\"}' AS json); SELECT LEN(JSON_VALUE(@j,'$.s' RETURNING nvarchar(max))) AS n,LEN(JSON_VALUE(@j,'$.s' RETURNING nvarchar(4000))) AS narrow;"
+        }
+      ]
+    },
+    {
+      "name": "default-length",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":\"abcdefghijklmnopqrstuvwxyz0123456789\"}'; SELECT JSON_VALUE(@j,'$.s' RETURNING varchar) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "default-wrapper",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SELECT JSON_QUERY(@j WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    }
+  ]
+}

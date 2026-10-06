@@ -122,7 +122,11 @@ pub fn json_query(
   path? : String = "$",
   lob? : Bool = false,
   json_type? : Bool = false,
+  array_wrapper? : Bool = false,
 ) -> String? raise JsonError {
+  if array_wrapper {
+    return json_query_array(doc, path, lob, json_type)
+  }
   let p = parse_path(path)
   let st = states(lob, json_type)
   if p.is_multi() {

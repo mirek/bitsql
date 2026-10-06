@@ -4,6 +4,7 @@
 pub fn contains_values(
   doc : String,
   path : String,
+  ordered? : Bool = false,
 ) -> Array[OpenJsonRow]? raise JsonError {
   let p = parse_path(path, native=true)
   let scanner = root_scanner(doc, 1, false)
@@ -66,7 +67,25 @@ pub fn contains_values(
         }
       }
       let mut matched = false
-      for i, child in children {
+      let positions : Array[Int] = []
+      if ordered && step is Elements(ranges) {
+        for r in ranges {
+          let count = children.length().to_int64()
+          let lo = (if r.0 < 0L { count - 1L } else { r.0 }).max(0L)
+          let hi = (if r.1 < 0L { count - 1L } else { r.1 }).min(count - 1L)
+          if lo <= hi {
+            for i in lo.to_int()..<=hi.to_int() {
+              positions.push(i)
+            }
+          }
+        }
+      } else {
+        for i in 0..<children.length() {
+          positions.push(i)
+        }
+      }
+      for i in positions {
+        let child = children[i]
         let take = match step {
           Key(k) => !matched && child.0 == k
           AnyKey | AnyIndex => true
