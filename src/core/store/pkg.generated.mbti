@@ -13,6 +13,8 @@ pub fn qualified_key(String, String) -> String
 
 pub fn same_index_entries(Table, Array[@types.Value], Array[@types.Value]) -> Bool
 
+pub fn vector_prune(Array[VectorCandidate], VectorMetric) -> Array[Int] raise @types.SqlError
+
 // Errors
 
 // Types and methods
@@ -266,6 +268,18 @@ pub(all) struct UserType {
   table : Table?
   created : Int64
 } derive(@debug.Debug)
+
+pub(all) struct VectorCandidate {
+  key : Int
+  vector : @types.VectorData
+  distance : Double
+}
+
+pub(all) enum VectorMetric {
+  Cosine
+  Euclidean
+  Dot
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 pub type Row = Array[@types.Value]

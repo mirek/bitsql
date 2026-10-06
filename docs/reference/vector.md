@@ -224,5 +224,40 @@ remaining new-row differences (sources 375 and 397) include candidates already
 present in both the visited set and final frontier; they isolate a pruning
 nuance rather than a missing search traversal. Sweeping nearby frontier and
 expansion widths makes L=48/M=8 the best observed build match, consistent with
-the captured generated query. The second-pass occlusion behavior still needs
-to be established before promoting this prototype into the emulator.
+the captured generated query. The positional-resumption finding below subsequently resolves these pruning
+differences. Candidate tie ordering and pending-edge ordering remain open.
+
+
+### Verified pruning core (2026-10-07)
+
+`vector-pruning.cases.json` contains 48 independently repeated fixtures for
+cosine, Euclidean and dot metrics. Its normalized graph-page results provide
+1,476 ordered neighbor lists. `scripts/gen-vector-pruning-tests.py` generates
+pure storage-core tests directly from those captures and their input vectors;
+all 48 tests pass. The fixtures include signed random components, dimensions
+3–64, up to 96 source rows, 76 Euclidean lists reaching degree 48, identical
+and zero vectors, single-row graphs, and INT minimum/maximum/zero keys.
+
+Delta reduction of the 100-row discrepancy leaves only keys 8, 13, 39, 41 and
+83. For source 83, distance order is 39, 41, 13, 8. The first alpha pass selects
+39 and 13; the second selects 41 and 8. Eagerly applying newly selected 41 to
+all later candidates wrongly removes 8. SQL Server resumes each candidate's
+occlusion scan at its saved **candidate position**. It does not revisit newly
+selected neighbors before that position. Removing any of 13, 39 or 41 removes
+the discrepancy (`resume-without-*` captures).
+
+`store/vector_prune.mbt` now implements this resumption rule with float32 ratios,
+alpha passes 1 and float32 1.2, explicit zero-distance occlusion, and degree 48.
+All three metrics use the ratio rule on their captured scalar distances. The
+inner-product mask rule in the public [DiskANN implementation](https://github.com/microsoft/DiskANN/blob/main/diskann/src/graph/config/mod.rs) does not reproduce
+this SQL Server build's dot graphs. This is oracle-derived behavior, not an
+assumption that SQL Server embeds the current public library unchanged.
+
+With the captured 257-row seed, the corrected 500-row build prototype matches
+all 243 later-row neighbor lists and all 500 neighbor sets. Pending reciprocal
+ordering still differs. The new core function accepts already ordered candidates;
+it does not invent a primary-key tie breaker. A separate tie reduction leaves
+seven source rows: six candidates change tie order, while removing any one of
+four other candidates restores input order. SQL candidate sorting remains under
+investigation. No CREATE VECTOR INDEX execution, graph builder, or VECTOR_SEARCH
+execution is enabled by this pruning-only checkpoint.
