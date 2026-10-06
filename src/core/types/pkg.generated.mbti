@@ -382,12 +382,17 @@ pub impl Show for Decimal
 pub struct JsonData {
   // private fields
 } derive(Eq, @debug.Debug)
+pub fn JsonData::checked_text(Self) -> String raise SqlError
 pub fn JsonData::index_paths(Self) -> Array[String]
 pub fn JsonData::index_scalar_paths(Self) -> Array[String]
+pub fn JsonData::is_corrupt(Self) -> Bool
 pub fn JsonData::modified(Self, String, String) -> Self raise SqlError
+pub fn JsonData::navigation_text(Self) -> String
 pub fn JsonData::parse(String) -> Self raise SqlError
 pub fn JsonData::storage_bytes(Self) -> Int
 pub fn JsonData::text(Self) -> String
+pub fn JsonData::validate_openjson(Self, String) -> Unit raise SqlError
+pub fn JsonData::validate_path(Self, String, state? : Int) -> Unit raise SqlError
 
 pub(all) struct Language {
   langid : Int

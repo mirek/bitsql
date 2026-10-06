@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "name": "one-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'{}')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "two-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1,\"b\":2}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "two-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1,\"b\":2}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'{}')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.new',JSON_QUERY(N'{}')); SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

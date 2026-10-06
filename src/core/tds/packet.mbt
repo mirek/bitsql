@@ -142,6 +142,7 @@ pub fn frame(
   packet_size? : Int = DEFAULT_PACKET_SIZE,
   spid? : Int = 0,
   first_packet_id? : Int = 1,
+  end_of_message? : Bool = true,
 ) -> Bytes {
   let room = packet_size - HEADER_LEN
   let w = Writer::new(size_hint=payload.length() + HEADER_LEN)
@@ -151,7 +152,7 @@ pub fn frame(
     let n = @cmp.minimum(room, payload.length() - pos)
     let last = pos + n >= payload.length()
     w.u8(ty.to_byte())
-    w.u8(if last { STATUS_EOM } else { 0 })
+    w.u8(if last && end_of_message { STATUS_EOM } else { 0 })
     w.u16be(n + HEADER_LEN)
     w.u16be(spid)
     w.u8(id % 256)

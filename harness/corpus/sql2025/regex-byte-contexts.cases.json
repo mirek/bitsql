@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "name": "id-only",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "count",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COUNT(*) AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "top-one",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(1) * FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "top-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(0) * FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "false-filter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0',N'\\C') WHERE 1=0;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "first-filter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0',N'\\C') WHERE match_id=1;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "top-sort",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(1) * FROM REGEXP_MATCHES(N'\u03c0',N'\\C') ORDER BY match_id;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "into",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT * INTO t FROM REGEXP_MATCHES(N'\u03c0',N'\\C'); SELECT COUNT(*) AS n FROM t;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "try-catch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT * FROM REGEXP_MATCHES(N'\u03c0',N'\\C'); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n; END CATCH SELECT 1 AS after_query;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "rpc",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "SELECT * FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "empty-group",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(1) * FROM REGEXP_MATCHES(N'\u03c0',N'(\\C)()');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "partial-group",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(1) * FROM REGEXP_MATCHES(N'\u03c0',N'(\\C)(\\C)');",
+          "captureDisconnect": true
+        }
+      ]
+    }
+  ]
+}

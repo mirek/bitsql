@@ -19,6 +19,22 @@ fn stream_table_fn(
   args : Array[@ir.Expr],
   emit : (Row) -> Unit raise @types.SqlError,
 ) -> Unit raise @types.SqlError {
+  let open_input = (v : @types.Value) => {
+    match v {
+      Null => None
+      NativeJson(data) => Some(data.navigation_text())
+      other =>
+        match
+          @types.cast(
+            other,
+            args[0].ty,
+            NVarChar(None, @types.default_collation),
+          ) {
+          String(s) => Some(s)
+          _ => None
+        }
+    }
+  }
   let text = (i : Int) => {
     match eval(ctx, args[i]) {
       Null => None
@@ -37,9 +53,13 @@ fn stream_table_fn(
         emit(r)
       }
     OpenJsonDefault => {
-      guard text(0) is Some(doc) else { return }
+      let input = eval(ctx, args[0])
+      guard open_input(input) is Some(doc) else { return }
       let path = if args.length() > 1 { text(1) } else { Some("$") }
       guard path is Some(path) else { return }
+      if input is NativeJson(data) {
+        data.validate_openjson(path)
+      }
       let jt = args[0].ty is Json
       for r in json(() => @json.openjson(doc, path~, json_type=jt)) {
         emit([
@@ -53,9 +73,13 @@ fn stream_table_fn(
       }
     }
     OpenJsonWith(columns) => {
-      guard text(0) is Some(doc) else { return }
+      let input = eval(ctx, args[0])
+      guard open_input(input) is Some(doc) else { return }
       let path = if args.length() > 1 { text(1) } else { Some("$") }
       guard path is Some(path) else { return }
+      if input is NativeJson(data) {
+        data.validate_openjson(path)
+      }
       let jt = args[0].ty is Json
       let all = json(() => @json.openjson(doc, path~, json_type=jt))
       // Native empty objects, like empty arrays, produce no WITH rows.

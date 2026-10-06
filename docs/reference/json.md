@@ -830,39 +830,46 @@ the original value and allocation. The 60 column accessor cases confirm that
 last/list rules match variable methods, but the fresh-empty-variable diagnostic
 does not apply to columns. Shared large-storage edge work remains open.
 
-`sql2025/json-wide-corruption-access` probes 16 read/mutation operations after
-copying a narrow `[1]` over an empty container inside a wide document. Fifteen
-have repeatable captures. DATALENGTH and native assignment work; ISJSON is 1.
-An unaffected array element remains readable, while JSON_VALUE on the damaged
-array's first element returns NULL and JSON_PATH_EXISTS returns 0. Text casts,
-including TRY_CONVERT, and JSON_QUERY/JSON_CONTAINS of the damaged container
-raise 13643 state 8; OPENJSON uses state 48. Further mutation fails with 13643.
-TRY/CATCH preserves the value and its readable size. These require per-operation
-and per-subtree validation, not a blanket invalid-value error.
+### Wide storage and deferred corruption (2026-10-06)
 
-Direct native SELECT of the same value closes the connection (`socket hang up`)
-in two independent capture attempts. The harness cannot yet record this as an
-expected corpus outcome; this one case has no expectation and remains open.
-Do not substitute a normal SQL error or treat the missing capture as passing.
+The 107 registered wide-storage cases pass together with the existing JSON
+regressions: 1,921 focused cases. `json-wide-copy-preflight` and
+`json-wide-copy-key-boundaries` establish conservative container-copy widening:
+`existing dictionary keys + max(1, source dictionary keys) > 32767`, including
+source keys already present in the destination. `json-dictionary-deleted-limit`
+and `json-dictionary-limit-copy` distinguish scalar insertion at the narrow
+32,768-key limit (13641 state 2, original value retained) from a container copy
+that widens first. Deleted dictionary slots still count.
 
-The six `sql2025/json-wide-copy-preflight` cases distinguish container shape
-from dictionary pressure. At 32,766 keys, nested arrays and several empty
-arrays remain narrow, while copying an object with two already-known keys
-widens. New-key object copies instead match the existing narrow allocator
-with dictionary relocation in these fixtures. An empty object copy widens at
-32,767 keys. This rejects a generic
-nested-element-count heuristic; copied object keys participate even when the
-document's unique key set does not grow. Exact conservative preflight bounds
-remain under investigation.
+`json-empty-copy-dictionary` establishes relocation of the dictionary when a
+new empty container member requires dictionary growth, even when the old
+allocation is at the tail. Empty arrays and objects have the same behavior.
+The wide allocation fixtures also verify this relocation after widening.
 
-All six copy-preflight captures reproduce on a second oracle run; the current
-emulator passes four, with known-key object copying and the 32,767-key empty
-object copy still differing. The new-key size increases alone must not be
-interpreted as widening: the existing narrow allocation model reproduces them.
+`json-wide-array-copy-format` establishes source-format dependence: copying
+nonempty narrow arrays into a wide document preserves the narrow array header
+and creates a value with deferred corruption. A copied `[1]` adds eight bytes;
+empty arrays remain valid. This does not depend on the previous target's kind.
+`json-wide-corruption-access` has 19 repeatable cases: native assignment,
+DATALENGTH and ISJSON work; unaffected paths remain readable. Navigation into
+the damaged array sees no elements. Materializing a damaged subtree through
+text conversion, JSON_QUERY or JSON_CONTAINS raises 13643 state 8; OPENJSON uses
+state 48. TRY_CONVERT does not suppress this error. Further mutation fails.
 
-The 12 `sql2025/json-wide-copy-key-boundaries` cases reproduce on the oracle.
-They support the conservative copy check `existing keys + max(1, source keys)
-> 32767`, with source dictionary keys counted even when already known. One
-source key remains narrow at 32,766 existing keys, two trigger widening; two
-remain narrow at 32,765. Empty source containers reserve one slot. The emulator
-baseline passes eight of these cases; implementing this check remains next.
+Direct native SELECT sends metadata and closes the connection without finishing
+the TDS message. Captured batch, RPC and column cases require ECONNRESET and a
+dead primary connection. TRY/CATCH cannot intercept it; a second connection
+verifies that the catch body did not run. The harness records this only with
+explicit `captureDisconnect: true` on the JSON case step.
+
+`json-wide-corruption-projection` and `json-wide-openjson-limit` distinguish
+corruption from OPENJSON's 13647 state 1 container-item limit. Opening an object
+whose child array has 65,536 elements fails even when WITH selects another
+member. Opening that array itself can enumerate all 65,536 scalar elements.
+The projection, limit and six empty-container cases reproduce on an additional
+18-case oracle run; the corruption and dictionary-limit cases reproduce on a
+31-case oracle run.
+
+Remaining audit: corruption through FOR JSON/XML, OUTPUT, cursors and index
+maintenance, plus partial-row/error ordering in OPENJSON. These contexts are
+not established by the ordinary SELECT and accessor captures above.

@@ -1,0 +1,104 @@
+{
+  "cases": [
+    {
+      "name": "positions",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT start_position,end_position FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_value FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT substring_matches FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "groups-cast",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT CAST(substring_matches AS nvarchar(max)) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "groups-try",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TRY_CONVERT(nvarchar(max),substring_matches) AS j FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "groups-size",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT DATALENGTH(substring_matches) AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "group-start",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_VALUE(substring_matches,'$[0].start') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "group-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_VALUE(substring_matches,'$[0].value') AS v FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "group-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_PATH_EXISTS(substring_matches,'$[0].value') AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "groups-isjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT ISJSON(substring_matches) AS n FROM REGEXP_MATCHES(N'\u03c0',N'\\C');",
+          "captureDisconnect": true
+        }
+      ]
+    }
+  ]
+}

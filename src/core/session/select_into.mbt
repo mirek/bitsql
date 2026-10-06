@@ -185,6 +185,21 @@ fn Session::exec_query(
   self.rt.count_override = None
   let mut n = 0L
   @exec.stream(self.ctx(), bound.plan, r => {
+    for value in r {
+      if value is NativeJson(data) && data.is_corrupt() {
+        self.out.push(Disconnect)
+        // Unwind evaluation; the response renderer stops before this error.
+        ignore(data.checked_text()) catch {
+          e =>
+            raise @types.sql_error(
+              e.number(),
+              e.message(),
+              state=e.state(),
+              severity=20,
+            )
+        }
+      }
+    }
     n += 1L
     self.out.push(Row(r.map(wire_value)))
   })

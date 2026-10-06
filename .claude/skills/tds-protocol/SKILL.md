@@ -268,3 +268,10 @@ ordered result sets; see
   (corrected 2026-10-03: not NVARCHAR(MAX); see bitsql findings). FOR XML
   TYPE uses the unnamed XML TYPE_INFO and XML PLP codec. Both paths stream values beyond 8 KiB through ordinary
   COLMETADATA/ROW framing.
+
+- 2026-10-06: Direct SELECT of a corrupted native JSON value sends metadata,
+  then closes the socket with the response message unfinished (EOM unset).
+  Sending EOM before Close incorrectly completes the tedious request normally.
+  Batch/RPC/column and uncatchable behavior are captured in
+  `sql2025/json-wide-corruption-access`; the reply Disconnect item preserves
+  prior tokens and omits ROW/final DONE.

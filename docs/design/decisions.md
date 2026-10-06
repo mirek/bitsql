@@ -1095,3 +1095,18 @@ permits insertion into fresh empty storage. Text equality alone is not
 sufficient. Error 22020 is catchable but ends an uncaught batch. Oracle evidence
 is collected in the native mutation accessor, missing-parent and empty-storage
 fixtures documented in the JSON reference.
+
+### Native JSON source format and incomplete TDS replies (2026-10-06)
+
+Native storage retains copied-array format per node. Navigation and checked
+materialization are distinct: captured corruption permits size/assignment and
+unaffected reads but rejects damaged subtree conversion. Conservative source
+key counting drives widening; empty-container insertion can relocate dictionary
+storage. See the JSON reference for captured boundaries and outstanding contexts.
+
+A reply Disconnect item preserves metadata and preceding completions while
+ending the connection without EOM or final DONE. The pure engine emits Close;
+the host owns socket closure. Ordinary SELECT detects corrupted native values
+before row emission and bypasses SQL TRY/CATCH, matching batch/RPC captures.
+The harness permits only explicitly opted-in ECONNRESET captures, with primary
+reuse failure accepted only when that primary request disconnected.

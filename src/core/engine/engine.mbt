@@ -117,6 +117,7 @@ fn Engine::send(
   conn : Conn,
   payload : Bytes,
   out : Array[Output],
+  complete? : Bool = true,
 ) -> Unit {
   // tokens of a RESETCONNECTION go first (once, even if the request parked)
   let payload = match self.reset_prefix.get(conn.id) {
@@ -129,7 +130,12 @@ fn Engine::send(
   out.push(
     Send(
       conn.id,
-      @tds.frame(TabularResult, payload, packet_size=conn.packet_size),
+      @tds.frame(
+        TabularResult,
+        payload,
+        packet_size=conn.packet_size,
+        end_of_message=complete,
+      ),
     ),
   )
 }
@@ -407,7 +413,16 @@ fn Engine::run_batch(
     self.arm_timeout(conn.id, out)
     return
   }
-  self.send(conn, @reply.render(Batch, items, self.config.server_name), out)
+  let disconnected = items.any(i => i is Disconnect)
+  self.send(
+    conn,
+    @reply.render(Batch, items, self.config.server_name),
+    out,
+    complete=!disconnected,
+  )
+  if disconnected {
+    out.push(Close(conn.id))
+  }
 }
 
 ///|
@@ -437,6 +452,11 @@ fn Engine::run_rpc(
       break
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
+    if items.any(it => it is Disconnect) {
+      self.send(conn, w.to_bytes(), out, complete=false)
+      out.push(Close(conn.id))
+      return
+    }
   }
   self.send(conn, w.to_bytes(), out)
 }

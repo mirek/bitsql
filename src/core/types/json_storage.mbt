@@ -41,6 +41,7 @@ priv enum JsonStorageNode {
   NScalar(Int, String)
   NDeleted
   NArray(Array[JsonStorageNode], Int)
+  NCorruptArray(Array[JsonStorageNode], Int)
   NObject(Array[(String, JsonStorageNode)], Int)
 } derive(Debug, Eq)
 
@@ -50,6 +51,7 @@ fn JsonStorageNode::requires_wide(
   keys : Set[String],
 ) -> Bool {
   match self {
+    NCorruptArray(_, _) => true
     NArray(children, _) =>
       children.length() > 65535 || children.any(c => c.requires_wide(keys))
     NObject(children, _) => {
@@ -234,6 +236,7 @@ fn json_grow_capacity(capacity : Int) -> Int {
 fn JsonAllocator::reserve_dictionary(
   self : JsonAllocator,
   count : Int,
+  relocate? : Bool = false,
 ) -> Unit raise SqlError {
   let old = self.dictionary_capacity
   if count <= old {
@@ -249,7 +252,9 @@ fn JsonAllocator::reserve_dictionary(
   let old_bytes = self.dictionary_bytes(old, self.dictionary_indexed)
   let indexed = self.dictionary_indexed || count > 1024
   let new_bytes = self.dictionary_bytes(capacity, indexed)
-  if self.dictionary_offset is Some(offset) && offset + old_bytes == self.end {
+  if !relocate &&
+    self.dictionary_offset is Some(offset) &&
+    offset + old_bytes == self.end {
     ignore(self.allocate(new_bytes - old_bytes))
   } else {
     self.dictionary_offset = Some(self.allocate(new_bytes))
@@ -263,6 +268,7 @@ fn JsonAllocator::key(
   self : JsonAllocator,
   key : String,
   direct? : Bool = false,
+  relocate? : Bool = false,
 ) -> Unit raise SqlError {
   if self.keys.contains(key) {
     return
@@ -283,7 +289,7 @@ fn JsonAllocator::key(
     self.dictionary_indexed = true
   }
   if direct {
-    self.reserve_dictionary(self.keys.length() + 1)
+    self.reserve_dictionary(self.keys.length() + 1, relocate~)
   }
   self.keys.add(key)
   ignore(self.allocate(json_storage_string(key)))
@@ -293,25 +299,40 @@ fn JsonAllocator::key(
 fn JsonAllocator::clone_node(
   self : JsonAllocator,
   node : JsonStorageNode,
+  source_wide? : Bool = true,
 ) -> JsonStorageNode raise SqlError {
   match node {
+    NCorruptArray(_, _) => raise json_corruption_error(8)
     NDeleted => NDeleted
     NScalar(bytes, _) => {
       ignore(self.allocate(bytes))
       node
     }
     NArray(children, _) => {
-      let copy = children.map(c => self.clone_node(c))
+      let copy = children.map(c => self.clone_node(c, source_wide~))
+      let narrow_copy = self.wide && !source_wide && !copy.is_empty()
       if !copy.is_empty() {
-        ignore(self.allocate(self.container_bytes(copy.length(), false)))
+        ignore(
+          self.allocate(
+            if narrow_copy {
+              4 + 4 * copy.length()
+            } else {
+              self.container_bytes(copy.length(), false)
+            },
+          ),
+        )
       }
-      NArray(copy, copy.length())
+      if narrow_copy {
+        NCorruptArray(copy, copy.length())
+      } else {
+        NArray(copy, copy.length())
+      }
     }
     NObject(children, _) => {
       let copy = children.map(pair => {
         let (key, value) = pair
         self.key(key)
-        (key, self.clone_node(value))
+        (key, self.clone_node(value, source_wide~))
       })
       if !copy.is_empty() {
         ignore(self.allocate(self.container_bytes(copy.length(), true)))
@@ -326,7 +347,7 @@ fn JsonAllocator::fresh(
   self : JsonAllocator,
   node : JsonStorageNode,
 ) -> JsonStorageNode raise SqlError {
-  let result = self.clone_node(node)
+  let result = self.clone_node(node, source_wide=node.requires_wide(Set([])))
   self.reserve_dictionary(self.keys.length())
   result
 }
@@ -365,6 +386,29 @@ fn JsonStorageNode::child(
     }
     _ => None
   }
+}
+
+///|
+fn JsonStorageNode::at_path(
+  self : JsonStorageNode,
+  steps : Array[@json.Step],
+) -> JsonStorageNode? {
+  let mut node = self
+  for step in steps {
+    guard node.child(step) is Some(child) else { return None }
+    node = child
+  }
+  Some(node)
+}
+
+///|
+fn JsonStorageNode::copy_key_count(self : JsonStorageNode) -> Int? {
+  guard self is (NArray(_, _) | NObject(_, _)) else { return None }
+  let keys = Set([])
+  // If this traversal itself requires wide storage, the document-wide check
+  // already guarantees widening. Otherwise it visits every source key.
+  ignore(self.requires_wide(keys))
+  Some(keys.length().max(1))
 }
 
 ///|
@@ -435,7 +479,7 @@ fn JsonAllocator::insert(
     }
     _ => {
       let v = self.fresh(value)
-      self.key(key, direct=true)
+      self.key(key, direct=true, relocate=true)
       v
     }
   }
@@ -504,6 +548,7 @@ fn JsonAllocator::update(
 /// set are never mutated after publication, preserving assignment/snapshots.
 pub struct JsonData {
   priv text : String
+  priv corrupted : Bool
   priv wide : Bool
   priv root : JsonStorageNode
   priv end : Int
@@ -543,6 +588,7 @@ fn JsonData::from_canonical(
   }
   {
     text: canonical,
+    corrupted: false,
     wide,
     root,
     end: state.end,
@@ -566,6 +612,9 @@ pub fn JsonData::modified(
   text : String,
   path : String,
 ) -> JsonData raise SqlError {
+  if self.corrupted {
+    raise json_corruption_error(8)
+  }
   let canonical = json_type_normalize(text)
   let p = @json.parse_path(path, allow_append=true) catch {
     @json.JsonError(number, state, message) =>
@@ -581,7 +630,34 @@ pub fn JsonData::modified(
   let requires_wide = tree.requires_wide(keys)
   let dictionary_grows_wide = keys.length() > self.keys.length() &&
     keys.length() >= 32768
-  if !self.wide && (requires_wide || dictionary_grows_wide) {
+  let copied = if p.append {
+    match (self.root.at_path(p.steps), tree.at_path(p.steps)) {
+      (Some(NArray(before, _)), Some(NArray(after, _))) if after.length() ==
+        before.length() + 1 => after.get(before.length())
+      _ => None
+    }
+  } else {
+    tree.at_path(p.steps)
+  }
+  let copy_widens = match copied {
+    Some(node) =>
+      match node.copy_key_count() {
+        Some(count) => self.keys.length() + count > 32767
+        None => false
+      }
+    None => false
+  }
+  if !self.wide &&
+    self.keys.length() >= 32768 &&
+    keys.length() > self.keys.length() &&
+    !copy_widens {
+    raise sql_error(
+      13641,
+      "There is not enough resources to perform the operation. One or more JSON character strings in the query exceeds the supported limit for the JSON type.",
+      state=2,
+    )
+  }
+  if !self.wide && (requires_wide || dictionary_grows_wide || copy_widens) {
     return JsonData::from_canonical(self.text, force_wide=true).modified(
       canonical, path,
     )
@@ -597,6 +673,7 @@ pub fn JsonData::modified(
   let root = state.update(self.root, tree, p.steps[:], p.append)
   {
     text: root.to_text(),
+    corrupted: root.has_corruption(),
     wide: self.wide,
     root,
     end: state.end,
@@ -624,17 +701,22 @@ pub fn json_constructed_storage_bytes(canonical : String) -> Int raise SqlError 
 }
 
 ///|
-fn JsonStorageNode::write(self : JsonStorageNode, out : StringBuilder) -> Unit {
+fn JsonStorageNode::write(
+  self : JsonStorageNode,
+  out : StringBuilder,
+  navigation? : Bool = false,
+) -> Unit {
   match self {
     NScalar(_, text) => out.write_string(text)
     NDeleted => ()
-    NArray(children, _) => {
+    NCorruptArray(_, _) if navigation => out.write_string("[]")
+    NArray(children, _) | NCorruptArray(children, _) => {
       out.write_char('[')
       for i, child in children {
         if i > 0 {
           out.write_char(',')
         }
-        child.write(out)
+        child.write(out, navigation~)
       }
       out.write_char(']')
     }
@@ -651,7 +733,7 @@ fn JsonStorageNode::write(self : JsonStorageNode, out : StringBuilder) -> Unit {
         first = false
         write_json_type_string(out, key)
         out.write_char(':')
-        value.write(out)
+        value.write(out, navigation~)
       }
       out.write_char('}')
     }

@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "name": "array-to-small",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[0]}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "array-to-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[0]}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "object-to-small",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":{\"x\":0}}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "object-to-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":{\"x\":0}}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-to-small",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":1}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-to-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":1}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes; SELECT RIGHT(CAST(@j AS nvarchar(max)),40) AS tail;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "cases": [
+    {
+      "name": "greek-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\u03c0',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "greek-pair",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\u03c0',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "greek-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\u03c0',N'(\\C)()');"
+        }
+      ]
+    },
+    {
+      "name": "euro-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'x\u20acy',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "euro-pair",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'x\u20acy',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "euro-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'x\u20acy',N'(\\C)()');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\ud83d\ude00',N'\\C');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-pair",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\ud83d\ude00',N'(\\C)(\\C)');"
+        }
+      ]
+    },
+    {
+      "name": "emoji-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT match_id,start_position,end_position,match_value,DATALENGTH(substring_matches) AS bytes,JSON_VALUE(substring_matches,'$[0].start') AS s0,JSON_VALUE(substring_matches,'$[0].length') AS n0,JSON_VALUE(substring_matches,'$[1].start') AS s1,JSON_VALUE(substring_matches,'$[1].length') AS n1 FROM REGEXP_MATCHES(N'\ud83d\ude00',N'(\\C)()');"
+        }
+      ]
+    }
+  ]
+}

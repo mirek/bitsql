@@ -566,3 +566,12 @@ Start the host with `--database NAME` so the app's database exists at login
   are total container CPU deltas, including background work, not exclusive
   query CPU. Use them to investigate latency outliers without replacing the
   recorded wall-time samples or selecting a favorable rerun.
+
+### Expected request disconnects (2026-10-06)
+
+JSON case steps may set `captureDisconnect: true` for an oracle-proven
+ECONNRESET. This preserves the partial response and client error; it does not
+waive timeouts or other transport failures. A primary-connection reset permits
+its subsequent EINVALIDSTATE reuse result; a secondary reset does not. See
+`test/capture-disconnect.test.mjs` and `sql2025/json-wide-corruption-access`.
+There is no SQL-file directive for this opt-in.

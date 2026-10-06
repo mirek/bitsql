@@ -140,11 +140,25 @@ export async function runCase(target, testCase) {
 }
 
 // Turns a run result into the stored expectation: setup steps (compare:false)
-// become null; client-side failures make the capture unusable.
+// become null; client-side failures are unusable except explicitly captured
+// connection resets and their closed-connection reuse outcome.
 export function toExpected(testCase, result) {
   if (result.connectError || result.transportError || result.isolationError) return { error: result.connectError ?? result.transportError ?? result.isolationError }
-  const clientError = [...result.steps, result.reuse].flatMap(s => s?.errors ?? []).find(e => e.client)
-  if (clientError) return { error: `client-side error: ${clientError.message}` }
+  let disconnectedPrimary = false
+  for (const [i, step] of result.steps.entries()) {
+    for (const error of step?.errors ?? []) {
+      if (!error.client) continue
+      const spec = testCase.steps[i]
+      if (spec?.captureDisconnect === true && error.code === 'ECONNRESET') {
+        if ((spec.conn ?? 1) === 1) disconnectedPrimary = true
+      } else return { error: `client-side error: ${error.message}` }
+    }
+  }
+  for (const error of result.reuse?.errors ?? []) {
+    if (error.client && !(disconnectedPrimary && error.code === 'EINVALIDSTATE')) {
+      return { error: `client-side error: ${error.message}` }
+    }
+  }
   return {
     expected: {
       case: result.case,

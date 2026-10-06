@@ -68,7 +68,8 @@ pub fn cast(
       (Null, _) => Null
       (NativeJson(_), Json) => v
       (String(s), Json) => NativeJson(JsonData::parse(s))
-      (NativeJson(data), _) => String(json_type_to_text(data.text(), to))
+      (NativeJson(data), _) =>
+        String(json_type_to_text(data.checked_text(), to))
       _ => raise internal("json conversion of \{from.to_sql()}")
     }
   }

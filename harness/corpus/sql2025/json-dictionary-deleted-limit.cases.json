@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "name": "32766-full",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32766-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32766-deleted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32766-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.k0',NULL); BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32767-full",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32767-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32767-deleted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32767-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.k0',NULL); BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32768-full",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32768-deleted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.k0',NULL); BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32769-full",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32769-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    },
+    {
+      "name": "32769-deleted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32769-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes; SET @j=JSON_MODIFY(@j,'$.k0',NULL); BEGIN TRY SET @j=JSON_MODIFY(@j,'$.new',1); SELECT 1 AS succeeded; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes,JSON_VALUE(@j,'$.new') AS new_value;"
+        }
+      ]
+    }
+  ]
+}

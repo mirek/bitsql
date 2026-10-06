@@ -25,7 +25,9 @@ fn json_contains(
   guard v[0] is NativeJson(data) && v[2] is String(path) else {
     raise @types.not_supported("JSON_CONTAINS argument representation")
   }
-  let selections = match json(() => @json.contains_values(data.text(), path)) {
+  data.validate_path(path)
+  let selections = match
+    json(() => @json.contains_values(data.navigation_text(), path)) {
     None => return Null
     Some(values) => values
   }

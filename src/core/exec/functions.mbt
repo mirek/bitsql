@@ -469,6 +469,9 @@ fn call_values(
           )
         (Null, _) => Null
         (String(doc), String(p)) => {
+          if v[0] is NativeJson(data) {
+            data.validate_path(p)
+          }
           let r = json(() => {
             @json.json_query(
               doc,

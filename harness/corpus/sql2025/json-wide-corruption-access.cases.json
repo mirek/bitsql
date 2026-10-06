@@ -5,7 +5,8 @@
       "steps": [
         {
           "kind": "batch",
-          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT @j AS j;"
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT @j AS j;",
+          "captureDisconnect": true
         }
       ]
     },
@@ -141,6 +142,41 @@
         {
           "kind": "batch",
           "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); BEGIN TRY SELECT CAST(@j AS nvarchar(max)) AS j; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,ERROR_SEVERITY() AS severity; END CATCH; SELECT DATALENGTH(@j) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "native-select-rpc",
+      "steps": [
+        {
+          "kind": "rpc",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); SELECT @j AS j;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "native-select-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); CREATE TABLE jc(j json); INSERT jc VALUES(@j); SELECT j FROM jc;",
+          "captureDisconnect": true
+        }
+      ]
+    },
+    {
+      "name": "native-select-uncatchable",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'{\"pad\":['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535)+N'0],\"v\":[]}'; DECLARE @j json=CAST(@s AS json); SET @j=JSON_MODIFY(@j,'$.v',JSON_QUERY(N'[1]')); CREATE TABLE disconnect_catch(i int); BEGIN TRY SELECT @j AS j; END TRY BEGIN CATCH INSERT disconnect_catch VALUES(1); END CATCH;",
+          "captureDisconnect": true
+        },
+        {
+          "kind": "batch",
+          "conn": 2,
+          "sql": "SELECT COUNT(*) AS caught FROM disconnect_catch;"
         }
       ]
     }

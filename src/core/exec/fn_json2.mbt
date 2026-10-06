@@ -5,7 +5,7 @@
 /// Text view for JSON functions; the native value retains storage provenance.
 fn json_text_arg(value : @types.Value) -> @types.Value {
   match value {
-    NativeJson(data) => String(data.text())
+    NativeJson(data) => String(data.navigation_text())
     other => other
   }
 }
@@ -223,6 +223,10 @@ fn call_json2(
             state=8,
           )
         (String(doc), String(path)) => {
+          let doc = match v[0] {
+            NativeJson(data) => data.checked_text()
+            _ => doc
+          }
           let raw = v[3] is String("j")
           let json_doc = args[0].ty is Json
           if json_doc {

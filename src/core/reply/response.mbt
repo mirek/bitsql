@@ -14,6 +14,8 @@ pub(all) struct SqlMessage {
 /// them into tokens, choosing DONE vs DONEINPROC and the MORE/FINAL bits
 /// from the request kind, so executors never deal with token framing.
 pub(all) enum Item {
+  /// Send the preceding tokens, then terminate the transport without DONE.
+  Disconnect
   /// Start of a result set (COLMETADATA).
   ResultSet(Array[@tds.Column])
   /// ORDER token: projected ordinals of the ORDER BY keys (0 = hidden key).
@@ -73,6 +75,7 @@ pub fn render(
   let mut any_done = false
   for i, it in items {
     match it {
+      Disconnect => return w.to_bytes()
       ResultSet(c) => {
         cols = c
         @tds.write_colmetadata(w, c)
