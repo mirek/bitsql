@@ -10,6 +10,24 @@ fn call_variant(
   v : Array[@types.Value],
 ) -> @types.Value? {
   match name {
+    "COLLATIONPROPERTY" =>
+      Some(
+        match (v[0], v[1]) {
+          (String(name), String(property)) =>
+            match @types.collation_properties(name) {
+              None => Null
+              Some((lcid, codepage, style, version)) =>
+                match property.trim_end(chars=" ").to_owned().to_upper() {
+                  "LCID" => sv_int(lcid)
+                  "CODEPAGE" => sv_int(codepage)
+                  "VERSION" => sv_int(version)
+                  "COMPARISONSTYLE" => sv_int(style)
+                  _ => Null
+                }
+            }
+          _ => Null
+        },
+      )
     "SQL_VARIANT_PROPERTY" =>
       Some(
         match v[1] {

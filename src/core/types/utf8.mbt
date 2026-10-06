@@ -121,6 +121,8 @@ pub fn utf8_text(b : BytesView) -> String {
 pub fn varchar_bytes(s : String, c : Collation) -> Bytes {
   if c.utf8() {
     utf8_bytes(s)
+  } else if c.code_page == 1254 {
+    @codepage.cp1254_encode(s)
   } else {
     cp1252_bytes(s)
   }
@@ -128,7 +130,7 @@ pub fn varchar_bytes(s : String, c : Collation) -> Bytes {
 
 ///|
 /// Text converted into the code page of collation `c` (varchar storage):
-/// CP1252 with best fit, or UTF-8 (lossless except lone surrogates).
+/// CP1252/CP1254 with best fit, or UTF-8 (lossless except lone surrogates).
 pub fn to_code_page(s : String, c : Collation) -> String {
   if c.utf8() {
     if s.iter().any(ch => ch.to_int() >= 0xD800 && ch.to_int() <= 0xDFFF) {
@@ -136,7 +138,21 @@ pub fn to_code_page(s : String, c : Collation) -> String {
     } else {
       s
     }
+  } else if c.code_page == 1254 {
+    @codepage.cp1254_decode(@codepage.cp1254_encode(s)[:])
   } else {
     to_cp1252(s)
+  }
+}
+
+///|
+/// Decode stored varchar bytes using the declared collation's code page.
+pub fn varchar_text(bytes : BytesView, c : Collation) -> String {
+  if c.utf8() {
+    utf8_text(bytes)
+  } else if c.code_page == 1254 {
+    @codepage.cp1254_decode(bytes)
+  } else {
+    cp1252_string(bytes)
   }
 }

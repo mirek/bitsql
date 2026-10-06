@@ -5,7 +5,7 @@
       "steps": [
         {
           "kind": "batch",
-          "sql": "WITH n AS (SELECT TOP (65536) CONVERT(int,ROW_NUMBER() OVER (ORDER BY (SELECT NULL))-1) AS u FROM sys.all_columns a CROSS JOIN sys.all_columns b) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(1),CONVERT(varchar(1),NCHAR(u) COLLATE Turkish_100_CI_AS)),2),'') WITHIN GROUP (ORDER BY u) AS encoded FROM n;"
+          "sql": "WITH digit AS (SELECT v FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) d(v)), n AS (SELECT a.v+16*b.v+256*c.v+4096*d.v AS u FROM digit a CROSS JOIN digit b CROSS JOIN digit c CROSS JOIN digit d) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(1),CONVERT(varchar(1),NCHAR(u) COLLATE Turkish_100_CI_AS)),2),'') WITHIN GROUP (ORDER BY u) AS encoded FROM n;"
         }
       ]
     },
@@ -19,7 +19,7 @@
         },
         {
           "kind": "batch",
-          "sql": "WITH n AS (SELECT TOP (65536) CONVERT(int,ROW_NUMBER() OVER (ORDER BY (SELECT NULL))-1) AS u FROM sys.all_columns a CROSS JOIN sys.all_columns b) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(2),CONVERT(nvarchar(1),CONVERT(varchar(1),CONVERT(binary(1),u)))),2),'') WITHIN GROUP (ORDER BY u) AS decoded FROM n WHERE u<256;"
+          "sql": "WITH digit AS (SELECT v FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) d(v)), n AS (SELECT a.v+16*b.v+256*c.v+4096*d.v AS u FROM digit a CROSS JOIN digit b CROSS JOIN digit c CROSS JOIN digit d) SELECT STRING_AGG(CONVERT(varchar(max),CONVERT(varbinary(2),CONVERT(nvarchar(1),CONVERT(varchar(1),CONVERT(binary(1),u)))),2),'') WITHIN GROUP (ORDER BY u) AS decoded FROM n WHERE u<256;"
         }
       ]
     }

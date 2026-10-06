@@ -159,7 +159,8 @@ pub fn compile(e : @ir.Expr) -> Compiled {
     Call(Named(name), [arg]) if name == "CHAR" || name == "NCHAR" => {
       let ca = compile(arg)
       let ansi = name == "CHAR"
-      (c, r) => char_value(ca(c, r), ansi)
+      let collation = e.ty.collation().unwrap_or(@types.default_collation)
+      (c, r) => char_value(ca(c, r), ansi, collation~)
     }
     Call(f, args) => {
       let cs = args.map(compile)

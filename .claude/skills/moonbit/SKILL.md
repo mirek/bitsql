@@ -270,3 +270,9 @@ scripts/check.sh                 # everything CI runs; must be green to push
 
 - 2026-10-06: `method` is reserved for future use (warning 0035, rejected by
   `--deny-warn`); use `meth` for a method-name binding or parameter.
+
+- 2026-10-07: `String::compare` orders by length before contents, unlike
+  JavaScript string sorting. Use `String::lexical_compare` when searching a
+  generated lexicographically sorted string table. The exhaustive
+  `sql2025/collation-property-inventory` capture caught false lookup misses
+  when those orders were mixed.

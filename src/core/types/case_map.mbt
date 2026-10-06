@@ -29,9 +29,15 @@ pub fn case_map_unit(unit : Int, upper : Bool, version : Int) -> Int {
 pub fn case_map(s : String, upper : Bool, c : Collation) -> String {
   let out = StringBuilder()
   for i in 0..<s.length() {
-    out.write_char(
-      case_map_unit(s.code_unit_at(i).to_int(), upper, c.version).unsafe_to_char(),
-    )
+    let u = s.code_unit_at(i).to_int()
+    let mapped = if c.turkish() && upper && u == 0x69 {
+      0x130
+    } else if c.turkish() && !upper && u == 0x49 {
+      0x131
+    } else {
+      case_map_unit(u, upper, c.version)
+    }
+    out.write_char(mapped.unsafe_to_char())
   }
   out.to_string()
 }

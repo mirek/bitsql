@@ -1,5 +1,4 @@
-// Code page 1252 (Windows Latin 1), the code page of every collation bitsql
-// models. varchar values are kept as MoonBit Strings whose code units are
+// Code page 1252 (Windows Latin 1), the default legacy code page. varchar values are kept as MoonBit Strings whose code units are
 // all CP1252-representable, so the String length is the byte length.
 //
 // Unicode → CP1252 converts each UTF-16 code unit on its own (captured,

@@ -1122,3 +1122,17 @@ preserve untouched raw nodes. Valid complete strings retain the ordinary path.
 Regex position bookkeeping precomputes prefix counts once to avoid quadratic
 prefix decoding. Evidence and remaining JSON context boundaries are in the
 SQL 2025 reference's raw-group section.
+
+### Turkish collation and shared code-page data (2026-10-06)
+
+CP1254 encoding/decoding tables come from exhaustive oracle captures and live
+in a pure codepage package shared by types and TDS. Varchar conversions and wire
+serialization must agree; LCID is a collation property rather than a hardcoded
+1033. Turkish linguistic comparison bypasses Latin1 ASCII shortcuts in compare,
+sort keys, LIKE and substring search. Captured contractions are explicit rather
+than generic NFC: ö and İ differ from their decomposed spellings. Fuzzy matching
+uses the same tailored elements while preserving its own ignorable rules.
+COLLATIONPROPERTY returns sql_variant metadata even for integer properties.
+Its generated inventory covers all 5,540 oracle collation names independently
+of comparison support, avoiding false NULL values for valid unmodeled names.
+Evidence is in the SQL 2025 reference and Turkish/property captures.

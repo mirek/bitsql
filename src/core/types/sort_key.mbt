@@ -101,7 +101,7 @@ fn text_key(s : String, collation : Collation, ansi : Bool) -> FixedArray[Int]? 
   if !(collation.kind is Linguistic) || (ansi && collation.sql_collation) {
     return None
   }
-  if is_ascii_from(s, 0) {
+  if !collation.turkish() && is_ascii_from(s, 0) {
     return Some(
       ascii_text_key(s, collation, !(ansi && collation.sql_collation)),
     )

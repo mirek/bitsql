@@ -1,0 +1,75 @@
+{
+  "cases": [
+    {
+      "name": "ci_as",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE CURRENT COLLATE Turkish_100_CI_AS;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT n,CHAR(n) AS c,UNICODE(CHAR(n)) AS u,ASCII(CHAR(n)) AS a,DATALENGTH(CHAR(n)) AS bytes FROM (VALUES (-1),(0),(65),(128),(138),(142),(159),(208),(221),(222),(240),(253),(254),(255),(256)) v(n) ORDER BY n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT ASCII(N'\u011e' COLLATE Turkish_100_CI_AS) AS g,ASCII(N'\u0130' COLLATE Turkish_100_CI_AS) AS i,ASCII(N'\ud83d\ude00' COLLATE Turkish_100_CI_AS) AS emoji;"
+        }
+      ]
+    },
+    {
+      "name": "ci_as_sc_utf8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE CURRENT COLLATE Turkish_100_CI_AS_SC_UTF8;",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT n,CHAR(n) AS c,UNICODE(CHAR(n)) AS u,ASCII(CHAR(n)) AS a,DATALENGTH(CHAR(n)) AS bytes FROM (VALUES (-1),(0),(65),(128),(138),(142),(159),(208),(221),(222),(240),(253),(254),(255),(256)) v(n) ORDER BY n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT ASCII(N'\u011e' COLLATE Turkish_100_CI_AS_SC_UTF8) AS g,ASCII(N'\u0130' COLLATE Turkish_100_CI_AS_SC_UTF8) AS i,ASCII(N'\ud83d\ude00' COLLATE Turkish_100_CI_AS_SC_UTF8) AS emoji;"
+        }
+      ]
+    },
+    {
+      "name": "relational",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(8) COLLATE Turkish_100_CI_AS); INSERT t VALUES(1,N'I'),(2,N'\u0131'),(3,N'i'),(4,N'\u0130'),(5,N'\u015f'),(6,N's'); SELECT s,COUNT(*) AS n FROM t GROUP BY s ORDER BY s; SELECT id FROM t WHERE s LIKE N'i' ORDER BY id; SELECT a.id,b.id AS other_id FROM t a JOIN t b ON a.s=b.s ORDER BY a.id,b.id; SELECT CHARINDEX(N'i',N'I\u0131i\u0130' COLLATE Turkish_100_CI_AS) AS pos,REPLACE(N'I\u0131i\u0130' COLLATE Turkish_100_CI_AS,N'i',N'x') AS replaced;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-binary-order",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(s varchar(8) COLLATE Turkish_100_BIN2); INSERT t VALUES(N'\u011e'),(N'\u0130'),(N'\u015e'),(N'\u011f'),(N'\u0131'),(N'\u015f'),(N'\u20ac'); SELECT s,CONVERT(varbinary(8),s) AS b FROM t ORDER BY s;"
+        }
+      ]
+    },
+    {
+      "name": "indexed-equality",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(8) COLLATE Turkish_100_CI_AS); CREATE UNIQUE INDEX ux ON t(s); INSERT t VALUES(1,N'I'),(2,N'i'); SELECT id FROM t WHERE s=N'\u0131'; SELECT id FROM t WHERE s=N'\u0130';"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(3,N'\u0131');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id,s FROM t ORDER BY s;"
+        }
+      ]
+    }
+  ]
+}

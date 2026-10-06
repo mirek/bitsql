@@ -4,6 +4,11 @@
 /// base, expand ligatures, and preserve UTF-16 surrogate halves.
 pub fn fuzzy_elements(s : String, c : Collation) -> Array[Array[Int]] {
   let text = s.trim_end(chars=" ").to_owned()
+  let text = if c.turkish() && c.kind is Linguistic {
+    turkish_input(text)
+  } else {
+    text
+  }
   let out : Array[Array[Int]] = []
   let elements : Array[Int] = []
   for j in 0..<text.length() {
@@ -27,12 +32,12 @@ pub fn fuzzy_elements(s : String, c : Collation) -> Array[Array[Int]] {
     }
     if !expansion.is_empty() {
       for unit in expansion.iter() {
-        push_unit_elements(elements, unit.to_int(), c.version, true)
+        push_collation_unit(elements, unit.to_int(), c, true)
       }
     } else {
-      push_unit_elements(
+      push_collation_unit(
         elements,
-        if raw == 0x131 && !c.accent_sensitive {
+        if !c.turkish() && raw == 0x131 && !c.accent_sensitive {
           0x69
         } else if !c.accent_sensitive && raw == 0xF8 {
           0x6F
@@ -41,7 +46,7 @@ pub fn fuzzy_elements(s : String, c : Collation) -> Array[Array[Int]] {
         } else {
           raw
         },
-        c.version,
+        c,
         true,
       )
     }

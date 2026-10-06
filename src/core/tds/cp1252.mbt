@@ -61,6 +61,8 @@ pub fn collation_is_utf8(c : Bytes) -> Bool {
 pub fn char_encode(s : String, collation : Bytes) -> Bytes {
   if collation_is_utf8(collation) {
     utf8_encode(s)
+  } else if collation_is_turkish(collation) {
+    @codepage.cp1254_encode(s)
   } else {
     cp1252_encode(s)
   }
@@ -71,6 +73,8 @@ pub fn char_encode(s : String, collation : Bytes) -> Bytes {
 pub fn char_decode(b : BytesView, collation : Bytes) -> String {
   if collation_is_utf8(collation) {
     @utf8.decode_lossy(b)
+  } else if collation_is_turkish(collation) {
+    @codepage.cp1254_decode(b)
   } else {
     cp1252_decode(b)
   }
@@ -115,4 +119,10 @@ fn utf8_encode(s : String) -> Bytes {
     i += 1
   }
   Bytes::from_array(out)
+}
+
+///|
+fn collation_is_turkish(c : Bytes) -> Bool {
+  c.length() >= 4 &&
+  (c[0].to_int() | (c[1].to_int() << 8) | ((c[2].to_int() & 15) << 16)) == 1055
 }

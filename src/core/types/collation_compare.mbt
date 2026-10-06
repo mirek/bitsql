@@ -61,13 +61,16 @@ pub fn compare_strings(
   }
   let ansi = ansi && !collation.utf8()
   match collation.kind {
-    // varchar data is stored in code page 1252: binary collations order
+    // Non-UTF8 varchar data uses its declared code page: binary collations order
     // its bytes (captured: msduck bin2-ansi-comparisons, '€' (0x80) <
     // NBSP (0xA0) as varchar although U+20AC > U+00A0)
-    Bin2 | Bin if ansi => compare_bytes(a, b)
+    Bin2 | Bin if ansi => compare_bytes(a, b, collation)
     Bin2 => compare_bin2(a, b)
     Bin => compare_bin(a, b)
     Linguistic => {
+      if collation.turkish() {
+        return compare_linguistic(a, b, 0, collation, ansi)
+      }
       // Every code unit maps to its collation elements on its own, so an
       // identical leading run contributes identical elements (and the same
       // word-sort positions) to both sides and cannot decide the
@@ -335,12 +338,19 @@ fn compare_bin2(a : String, b : String) -> Int {
 }
 
 ///|
-/// Space-padded comparison of the CP1252 bytes of two varchar values.
-fn compare_bytes(a : String, b : String) -> Int {
+/// Space-padded comparison of the declared code-page bytes of varchar values.
+fn compare_bytes(a : String, b : String, c : Collation) -> Int {
+  let byte = (u : Int) => {
+    if c.code_page == 1254 {
+      @codepage.cp1254_byte(u)
+    } else {
+      cp1252_byte_of(u)
+    }
+  }
   let n = if a.length() > b.length() { a.length() } else { b.length() }
   for i in 0..<n {
-    let x = if i < a.length() { cp1252_byte_of(a[i].to_int()) } else { 0x20 }
-    let y = if i < b.length() { cp1252_byte_of(b[i].to_int()) } else { 0x20 }
+    let x = if i < a.length() { byte(a[i].to_int()) } else { 0x20 }
+    let y = if i < b.length() { byte(b[i].to_int()) } else { 0x20 }
     if x != y {
       return sign_of(x - y)
     }
@@ -789,6 +799,7 @@ fn collation_elements_into(
 ) -> Unit {
   out.clear()
   ws.clear()
+  let s = if collation.turkish() { turkish_input(s) } else { s }
   let version = collation.version
   let word_sort = !(ansi && collation.sql_collation)
   // pad semantics: drop trailing spaces (and trailing ignorables)
@@ -811,7 +822,7 @@ fn collation_elements_into(
       ws.push(raw)
       continue
     }
-    push_unit_elements(out, raw, version, word_sort)
+    push_collation_unit(out, raw, collation, word_sort)
   }
 }
 

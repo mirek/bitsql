@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "name": "normal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY(N'Latin1_General_100_CI_AS','LCID') AS l,COLLATIONPROPERTY(N'SQL_Latin1_General_CP1_CI_AS','CodePage') AS cp,COLLATIONPROPERTY(N'Latin1_General_100_BIN2','ComparisonStyle') AS s;"
+        }
+      ]
+    },
+    {
+      "name": "nulls",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY(NULL,'LCID') AS n,COLLATIONPROPERTY('Turkish_100_CI_AS',NULL) AS p;"
+        }
+      ]
+    },
+    {
+      "name": "unknown",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY('not_a_collation','LCID') AS n,COLLATIONPROPERTY('Turkish_100_CI_AS','unknown') AS p;"
+        }
+      ]
+    },
+    {
+      "name": "spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY('Turkish_100_CI_AS ','LCID') AS n,COLLATIONPROPERTY('Turkish_100_CI_AS','lcid ') AS p;"
+        }
+      ]
+    },
+    {
+      "name": "case",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY('turkish_100_ci_as','lCiD') AS n;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-utf8",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY('Turkish_100_CI_AS_UTF8','LCID') AS n;"
+        }
+      ]
+    },
+    {
+      "name": "integers",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY(1,2) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "variant-name",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v sql_variant=N'Turkish_100_CI_AS'; SELECT COLLATIONPROPERTY(@v,'LCID') AS n;"
+        }
+      ]
+    },
+    {
+      "name": "variant-property",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @v sql_variant='LCID'; SELECT COLLATIONPROPERTY('Turkish_100_CI_AS',@v) AS n;"
+        }
+      ]
+    },
+    {
+      "name": "missing-argument",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT COLLATIONPROPERTY('Turkish_100_CI_AS') AS n;"
+        }
+      ]
+    }
+  ]
+}

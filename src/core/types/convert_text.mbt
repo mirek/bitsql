@@ -164,6 +164,8 @@ fn to_character(
         utf16le_string(b)
       } else if to.collation().map(c => c.utf8()).unwrap_or(false) {
         utf8_text(b)
+      } else if to.collation().map(c => c.code_page == 1254).unwrap_or(false) {
+        @codepage.cp1254_decode(b[:])
       } else {
         cp1252_string(b)
       }
@@ -177,10 +179,8 @@ fn to_character(
     to.collation().map(c => c.utf8()).unwrap_or(false)
   let text = if to.is_unicode() {
     text
-  } else if utf8 {
-    to_code_page(text, to.collation().unwrap_or(default_collation))
   } else {
-    to_cp1252(text)
+    to_code_page(text, to.collation().unwrap_or(default_collation))
   }
   let mut out = text
   let size = (s : String) => if utf8 { utf8_length(s) } else { s.length() }
@@ -263,10 +263,8 @@ fn to_binary(
           (
             if from.is_unicode() {
               utf16le_bytes(s)
-            } else if from.collation().map(c => c.utf8()).unwrap_or(false) {
-              utf8_bytes(s)
             } else {
-              cp1252_bytes(s)
+              varchar_bytes(s, from.collation().unwrap_or(default_collation))
             },
             false,
           )

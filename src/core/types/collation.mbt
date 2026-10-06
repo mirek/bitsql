@@ -37,11 +37,11 @@ pub(all) struct Collation {
   accent_sensitive : Bool
   kana_sensitive : Bool
   width_sensitive : Bool
-  /// Sort table version: 0 (SQL_* and unversioned Latin1_General) or 100.
+  /// Sort table version: 0 (SQL_* and unversioned Windows collations) or 100.
   version : Int
   /// `SQL_` legacy collation (affects non-Unicode comparison).
   sql_collation : Bool
-  /// Code page of char/varchar data: 1252, or 65001 for `_UTF8`
+  /// Code page of char/varchar data: 1252, 1254, or 65001 for `_UTF8`
   /// collations.
   code_page : Int
 } derive(Debug, Eq)
@@ -86,6 +86,18 @@ pub let default_collation : Collation = sql_latin1_general_cp1_ci_as
 /// Parse a collation name (case-insensitive, as SQL Server accepts it).
 /// Returns None for names bitsql does not model.
 pub fn Collation::parse(name : String) -> Collation? {
+  if name.to_upper().has_prefix("TURKISH_") {
+    let suffix = name.unsafe_substring(start=7, end=name.length())
+    return Collation::parse("Latin1_General" + suffix).map(c => {
+      ..c,
+      name: "Turkish" + c.name.unsafe_substring(start=14, end=c.name.length()),
+      code_page: if c.utf8() {
+        65001
+      } else {
+        1254
+      },
+    })
+  }
   let parts = name.split("_").map(fn(p) { p.to_owned().to_upper() }).collect()
   let n = parts.length()
   if n >= 6 &&
@@ -240,5 +252,19 @@ pub fn unknown_collation_error(name : String) -> SqlError {
     not_supported("collation \{name}", number=EMU_COLLATION_NOT_SUPPORTED)
   } else {
     sql_error(448, "Invalid collation '\{name}'.")
+  }
+}
+
+///|
+pub fn Collation::turkish(self : Collation) -> Bool {
+  self.name.has_prefix("Turkish_")
+}
+
+///|
+pub fn Collation::lcid(self : Collation) -> Int {
+  if self.turkish() {
+    1055
+  } else {
+    1033
   }
 }

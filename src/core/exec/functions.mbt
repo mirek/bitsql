@@ -342,26 +342,18 @@ fn call_values(
         String(" ".repeat((if n > 8000L { 8000L } else { n }).to_int()))
       }
     }
-    Nchar | Char => {
-      if any_null {
-        return Null
-      }
-      let n = int_arg(v[0]).unwrap_or(0L).to_int()
-      let limit = if f == Char { 255 } else { 0xFFFF }
-      if n < 0 || n > limit {
-        Null
-      } else if f == Char {
-        String(@types.cp1252_decode(n).unsafe_to_char().to_string())
-      } else {
-        String(n.unsafe_to_char().to_string())
-      }
-    }
+    Nchar | Char => char_value(v[0], f == Char, collation=collation_of(e.ty))
     Ascii | Unicode =>
       match v[0] {
         String(s) if s.length() > 0 => {
           let c = s.code_unit_at(0).to_int()
           if f == Ascii {
-            Int(@types.cp1252_byte_of(c))
+            Int(
+              @types.varchar_bytes(
+                s.unsafe_substring(start=0, end=s.length().min(2)),
+                collation_of(args[0].ty),
+              )[0].to_int(),
+            )
           } else {
             Int(c)
           }

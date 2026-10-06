@@ -1,0 +1,240 @@
+{
+  "cases": [
+    {
+      "name": "cosine-scan",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "cosine-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-scan",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-scan",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "dot-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='dot',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "top-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=0) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "top-negative",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=-1) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "top-large",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=20) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "top-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=NULL) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "metric-mismatch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='euclidean',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "null-query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3); SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=3) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "outer-alias-cosine-scan",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=3) r ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "outer-alias-cosine-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=3) r ORDER BY distance,s.id;"
+        }
+      ]
+    }
+  ]
+}

@@ -516,7 +516,8 @@ fn coll_find(
   let ascii = (s : String) => {
     s.iter().all(c => c.to_int() < 0x7F && c.to_int() >= 0x20)
   }
-  if !(coll.kind is Linguistic) || (ascii(hay) && ascii(needle)) {
+  if !(coll.kind is Linguistic) ||
+    (!coll.turkish() && ascii(hay) && ascii(needle)) {
     let ci = coll.kind is Linguistic && !coll.case_sensitive
     let p = index_of(hay, needle, start + 1, ci)
     return if p == 0 { None } else { Some((p, needle.length())) }
@@ -959,13 +960,19 @@ fn call_string(
       }
       String(cap_pieces(pieces, e.ty))
     }
-    "NCHAR" | "CHAR" => char_value(v[0], name == "CHAR")
+    "NCHAR" | "CHAR" =>
+      char_value(v[0], name == "CHAR", collation=collation_of(e.ty))
     "ASCII" | "UNICODE" =>
       match str(0) {
         Some(s) if s.length() > 0 => {
           let c = s.code_unit_at(0).to_int()
           if name == "ASCII" {
-            Int(@types.cp1252_byte_of(c))
+            Int(
+              @types.varchar_bytes(
+                s.unsafe_substring(start=0, end=s.length().min(2)),
+                collation_of(args[0].ty),
+              )[0].to_int(),
+            )
           } else {
             Int(c)
           }
@@ -1152,11 +1159,21 @@ let char_values : FixedArray[@types.Value] = FixedArray::makei(256, n => {
 fn char_value(
   v : @types.Value,
   ansi : Bool,
+  collation? : @types.Collation = @types.default_collation,
 ) -> @types.Value raise @types.SqlError {
   let n = int_of(v).unwrap_or(-1L)
   let limit = if ansi { 255L } else { 0xFFFFL }
   if n < 0L || n > limit {
     Null
+  } else if ansi && collation.utf8() && n >= 128L {
+    Null
+  } else if ansi && collation.code_page == 1254 {
+    String(
+      @types.varchar_text(
+        Bytes::from_array([n.to_int().to_byte()])[:],
+        collation,
+      ),
+    )
   } else if ansi {
     char_values[n.to_int()]
   } else if n < 256L {

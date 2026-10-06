@@ -103,7 +103,7 @@ fn database_property(db : String, p : String, o : DbOptions) -> @types.Value {
     "isxtpsupported" => prop_tinyint(1)
     // 1900-01-01 00:00:00.000
     "lastgoodcheckdbtime" => Variant(DateTime(0, 0), DateTime)
-    "lcid" => prop_int(1033)
+    "lcid" => prop_int(o.collation.lcid())
     "sqlsortorder" => prop_tinyint(sql_sort_order(o.collation))
     "status" => prop_string("ONLINE")
     "updateability" =>

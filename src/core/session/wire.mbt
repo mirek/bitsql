@@ -46,7 +46,7 @@ pub fn collation_bytes(c : @types.Collation) -> Bytes {
   } else {
     0
   }
-  let word = 1033 | (flags << 20) | (version << 28)
+  let word = c.lcid() | (flags << 20) | (version << 28)
   Bytes::from_array([
     word.to_byte(),
     (word >> 8).to_byte(),

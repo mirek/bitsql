@@ -84,6 +84,8 @@ pub fn civil_from_days(Int) -> (Int, Int, Int)
 
 pub fn collation_ignores(Int, Collation) -> Bool
 
+pub fn collation_properties(String) -> (Int, Int, Int, Int)?
+
 pub fn common_type(SqlType, SqlType) -> SqlType raise SqlError
 
 pub fn compare(Value, Value, collation? : Collation, ansi? : Bool) -> Int? raise SqlError
@@ -274,6 +276,8 @@ pub fn utf8_text(BytesView) -> String
 
 pub fn varchar_bytes(String, Collation) -> Bytes
 
+pub fn varchar_text(BytesView, Collation) -> String
+
 pub fn variant_arith_error(ArithOp, SqlType, SqlType, a_name? : String, b_name? : String) -> SqlError
 
 pub fn variant_can_hold(SqlType) -> Bool
@@ -324,8 +328,10 @@ pub(all) struct Collation {
   sql_collation : Bool
   code_page : Int
 } derive(Eq, @debug.Debug)
+pub fn Collation::lcid(Self) -> Int
 pub fn Collation::parse(String) -> Self?
 pub fn Collation::supplementary(Self) -> Bool
+pub fn Collation::turkish(Self) -> Bool
 pub fn Collation::utf8(Self) -> Bool
 
 pub(all) enum CollationKind {

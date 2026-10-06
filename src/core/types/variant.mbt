@@ -173,7 +173,7 @@ fn collation_key(c : Collation) -> (Int, Int, Int, Int) {
   } else {
     0
   }
-  (1033, version, flags, sort_id)
+  (c.lcid(), version, flags, sort_id)
 }
 
 ///|

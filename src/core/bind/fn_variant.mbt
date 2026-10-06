@@ -184,7 +184,12 @@ fn variant_arg_rule(name : String, i : Int) -> VariantArg? {
     | "USER_ID"
     | "IS_MEMBER"
     | "IS_SRVROLEMEMBER" => nvarchar_
-    "DATABASEPROPERTYEX" => if i == 0 { nvarchar_ } else { varchar_ }
+    "DATABASEPROPERTYEX" | "COLLATIONPROPERTY" =>
+      if i == 0 {
+        nvarchar_
+      } else {
+        varchar_
+      }
     "SERVERPROPERTY" | "CONNECTIONPROPERTY" | "SESSIONPROPERTY" => varchar_
     "SUSER_SNAME" => Implicit(VarBinary(Some(1)))
     // other built-ins bitsql binds (not captured with sql_variant)
@@ -428,6 +433,14 @@ fn bind_variant_fn(
   }
   let varchar : @types.SqlType = VarChar(Some(8000), env.collation)
   let r = match name {
+    "COLLATIONPROPERTY" => {
+      arity_n(name, args, 2)
+      named(
+        name,
+        [text_arg(0, NVarChar(Some(128), env.collation)), text_arg(1, varchar)],
+        Variant,
+      )
+    }
     "SQL_VARIANT_PROPERTY" => {
       arity_n(name, args, 2)
       let x = bind_expr(env, args[0])

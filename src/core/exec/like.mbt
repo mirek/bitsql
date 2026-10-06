@@ -46,7 +46,7 @@ fn like_char_eq(a : Int, b : Int, coll : @types.Collation, ansi : Bool) -> Bool 
   if !(coll.kind is Linguistic) {
     return false
   }
-  if a < 0x80 && b < 0x80 {
+  if !coll.turkish() && a < 0x80 && b < 0x80 {
     // ASCII: only letters differ by case
     return !coll.case_sensitive &&
       like_ascii_letter(a) &&

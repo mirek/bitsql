@@ -117,3 +117,40 @@ batch text across ON/OFF transitions; the successful-precheck cache therefore
 includes preview state. Descriptor resolution receives that state in conversion,
 declaration, module and describe paths; reflection of existing module parameter
 types resolves float16 independently of the current switch.
+
+## Approximate index/search captures (2026-10-07)
+
+These contracts are investigative, not implemented or registered as passing
+emulator cases. `vector-index-probe.sql`, `vector-index-ddl.cases.json` (18)
+and `vector-search-contracts.cases.json` (14) reproduce in a 33-case oracle
+repeat against 17.0.5005.3.
+
+Enable PREVIEW_FEATURES in a separate batch before CREATE VECTOR INDEX:
+parsing occurs before a same-batch configuration change can enable the syntax.
+Keep index creation as a compared step; an ignored setup error would otherwise
+make the following search test a different condition. Both the inner TABLE
+alias and an outer result alias are accepted.
+
+CREATE VECTOR INDEX supports cosine, euclidean and dot metrics and DiskANN.
+Empty tables and one-row tables succeed, as do NULL and zero-vector rows.
+A single four-byte INT clustered primary key is required (42217); a non-vector
+column raises 42215. A second index on the same vector column raises 42230.
+ALTER INDEX DISABLE/REBUILD raises 42250. Table DML raises 42231, TRUNCATE
+raises 42232, and dropping the index restores DML. The catalog exposes type 8
+VECTOR and DiskANN/COSINE; the three-row probe records build parameters
+StartId=2, L=48, M=8 and R=48. These parameters are evidence for that fixture,
+not universal build constants.
+
+VECTOR_SEARCH requires an index with a matching metric (42227). TOP_N=0 and
+a NULL query vector yield empty results; a large TOP_N returns the available
+rows. Negative TOP_N is syntax error 102, NULL TOP_N is error 1060. The
+three-row cosine result includes 0.2928932309150696, Euclidean includes
+1.4142135381698608, and dot preserves negative zero. These simple results
+do not yet establish the search kernel or approximate graph behavior.
+
+The newer [CREATE VECTOR INDEX documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-vector-index-transact-sql?view=sql-server-ver17)
+and [VECTOR_SEARCH documentation](https://learn.microsoft.com/en-us/sql/t-sql/functions/vector-search-transact-sql?view=sql-server-ver17)
+cover evolving Azure capabilities. Do not infer their current index format,
+minimum-row requirements, DML support or scan fallback for this pinned server.
+Our oracle rejects SELECT TOP WITH APPROXIMATE and the
+ALLOW_STALE_VECTOR_INDEX database-scoped configuration.

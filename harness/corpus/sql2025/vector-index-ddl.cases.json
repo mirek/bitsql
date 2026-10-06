@@ -1,0 +1,256 @@
+{
+  "cases": [
+    {
+      "name": "preview-off",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3));",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "one-row",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "missing-metric",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v);"
+        }
+      ]
+    },
+    {
+      "name": "bad-metric",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='bad');"
+        }
+      ]
+    },
+    {
+      "name": "bad-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',TYPE='bad');"
+        }
+      ]
+    },
+    {
+      "name": "missing-pk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "bigint-pk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id bigint CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "nonclustered-pk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY NONCLUSTERED,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(id) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "null-row",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]'); INSERT t VALUES(4,NULL);",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); SELECT COUNT(*) AS n FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "zero-vector",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]'); INSERT t VALUES(4,'[0,0,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine');"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); CREATE VECTOR INDEX vi2 ON t(v) WITH(METRIC='euclidean');"
+        }
+      ]
+    },
+    {
+      "name": "disable",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); ALTER INDEX vi ON t DISABLE;"
+        }
+      ]
+    },
+    {
+      "name": "rebuild",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); ALTER INDEX vi ON t REBUILD;"
+        }
+      ]
+    },
+    {
+      "name": "truncate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); TRUNCATE TABLE t;"
+        }
+      ]
+    },
+    {
+      "name": "drop",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); DROP INDEX vi ON t; INSERT t VALUES(4,'[1,1,1]'); SELECT COUNT(*) AS n FROM t;"
+        }
+      ]
+    },
+    {
+      "name": "allow-stale",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[1,1,0]'),(3,'[0,1,0]');",
+          "compare": false
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); ALTER DATABASE SCOPED CONFIGURATION SET ALLOW_STALE_VECTOR_INDEX=ON; INSERT t VALUES(4,'[1,1,1]'); SELECT COUNT(*) AS n FROM t;"
+        }
+      ]
+    }
+  ]
+}
