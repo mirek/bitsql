@@ -18,6 +18,8 @@ pub const SCALAR_MESSAGE : String = "Scalar value cannot be found in the specifi
 
 pub const TRUNCATED_MESSAGE : String = "String value in the specified JSON path would be truncated."
 
+pub fn contains_values(String, String) -> Array[OpenJsonRow]? raise JsonError
+
 pub fn isjson(String, ty? : IsJsonType) -> Int raise JsonError
 
 pub fn json_modify(String, String, String?) -> String raise JsonError
@@ -32,7 +34,7 @@ pub fn json_value_kind(String, String) -> Int? raise JsonError
 
 pub fn openjson(String, path? : String, json_type? : Bool) -> Array[OpenJsonRow] raise JsonError
 
-pub fn parse_path(String, allow_append? : Bool) -> Path raise JsonError
+pub fn parse_path(String, allow_append? : Bool, native? : Bool) -> Path raise JsonError
 
 pub fn quote(String) -> String
 
@@ -80,6 +82,7 @@ pub(all) enum Step {
   AnyKey
   AnyIndex
   Range(Int64, Int64)
+  Elements(Array[(Int64, Int64)])
 } derive(Eq, @debug.Debug)
 pub fn Step::is_multi(Self) -> Bool
 

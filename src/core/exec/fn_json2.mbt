@@ -175,6 +175,7 @@ fn call_json2(
         }
         _ => raise @types.not_supported("ISJSON on non-character input")
       }
+    "JSON_CONTAINS" => Some(json_contains(v, args))
     "JSON_PATH_EXISTS" =>
       match (json_text_arg(v[0]), v[1]) {
         (_, Null) =>

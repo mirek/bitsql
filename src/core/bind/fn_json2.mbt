@@ -66,6 +66,9 @@ fn bind_json2_fn(
       ),
     )
   }
+  if name == "JSON_CONTAINS" {
+    return Some(bind_json_contains(env, call))
+  }
   if name == "JSON_PATH_EXISTS" {
     return Some(bind_json_path_exists(env, call))
   }
@@ -213,4 +216,55 @@ pub fn bind_json_mutator(
     b + [flag, @ir.Expr::lit(String(target), nvarchar(Some(4000)))],
     Json,
   )
+}
+
+///|
+fn bind_json_contains(
+  env : Env,
+  call : @ast.FuncCall,
+) -> @ir.Expr raise @types.SqlError {
+  if call.args.length() < 2 || call.args.length() > 4 {
+    raise err(
+      189,
+      "The json_contains function requires 2 to 4 arguments.",
+      severity=15,
+    )
+  }
+  let b = call.args.map(a => bind_expr(env, a))
+  for i, x in b {
+    let valid = match i {
+      0 => is_null_lit(x) || x.ty is Json
+      1 =>
+        !is_null_lit(x) &&
+        x.ty
+        is (Char(_, _)
+        | VarChar(_, _)
+        | NChar(_, _)
+        | NVarChar(_, _)
+        | TinyInt
+        | SmallInt
+        | Int
+        | BigInt
+        | Decimal(_, _)
+        | Numeric(_, _)
+        | Bit)
+      2 =>
+        is_null_lit(x) ||
+        x.ty is (Char(_, _) | VarChar(_, _) | NChar(_, _) | NVarChar(_, _))
+      _ => x.ty is Int
+    }
+    if !valid {
+      if is_null_lit(x) {
+        raise null_arg(i + 1, "json_contains")
+      }
+      raise bad_arg_type(x.ty, i + 1, "json_contains")
+    }
+  }
+  if b.length() == 2 {
+    b.push(@ir.Expr::lit(String("$[*]"), nvarchar(Some(4000))))
+  }
+  if b.length() == 3 {
+    b.push(@ir.Expr::lit(Int(0), Int))
+  }
+  named("JSON_CONTAINS", b, Int)
 }

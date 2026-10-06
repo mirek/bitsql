@@ -422,6 +422,7 @@ fn json_arg_check(
     "JSON_VALUE"
     | "JSON_QUERY"
     | "ISJSON"
+    | "JSON_CONTAINS"
     | "JSON_PATH_EXISTS"
     | "JSON_MODIFY"
     | "NULLIF" => ()

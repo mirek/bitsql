@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "name": "alone",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        }
+      ]
+    },
+    {
+      "name": "before-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; SELECT 1 AS n;"
+        }
+      ]
+    },
+    {
+      "name": "after-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS n; ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        }
+      ]
+    },
+    {
+      "name": "between-selects",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT 1 AS n; ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; SELECT 2 AS n;"
+        }
+      ]
+    },
+    {
+      "name": "twice",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        }
+      ]
+    },
+    {
+      "name": "variable-tail",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @x int; ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        }
+      ]
+    },
+    {
+      "name": "exec-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "EXEC(N'ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; SELECT 1 AS n;');"
+        }
+      ]
+    },
+    {
+      "name": "procedure",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE PROCEDURE p AS BEGIN ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; SELECT 1 AS n; END;"
+        },
+        {
+          "kind": "batch",
+          "sql": "EXEC p;"
+        }
+      ]
+    }
+  ]
+}

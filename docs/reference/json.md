@@ -496,11 +496,11 @@ mutation discrepancies documented above still apply to native modify.
 
 ## Not emulated
 
-JSON_CONTAINS, JSON indexes and CLR arguments
+JSON indexes and CLR arguments
 (13666; hierarchyid/geometry/geography/vector are 50100, and
 `geometry::Point(...)` static method calls do not parse).
 
-## JSON_CONTAINS capture findings (2026-10-06)
+## JSON_CONTAINS (2026-10-06)
 
 The pinned 17.0.5005.3 oracle requires native json targets; text targets fail
 with 8116. Exact numeric, bit and string searches are accepted; native json
@@ -513,6 +513,52 @@ comparison modes are accepted: zero is equality, one is LIKE, and other values
 raise 13692. Explicit NULL paths raise 8116 state 8 even for NULL documents;
 NULL documents otherwise short-circuit malformed path strings and invalid
 mode values. Typed NULL searches return zero for existing selections, whereas
-bare NULL searches fail binding. These are investigative contracts, not yet
-emulated. Evidence: `sql2025/json-contains-{contracts,native-contracts,
-null-modes,navigation}.cases.json` (167 cases).
+bare NULL searches fail binding. These contracts are implemented. The dedicated
+selection walker supports list/last accessors without changing the existing
+extraction functions' unsupported-accessor errors. Strict ranges/lists return
+NULL if any requested index is outside the array. Empty wildcards return zero,
+whereas wholly out-of-bounds selections return NULL. `last to 0` over a nonempty
+array can select an empty range and return zero. Equality ignores trailing
+spaces; LIKE retains padding in fixed-width search patterns. Text/ntext are
+invalid search and path argument types. Numeric matching compares exact decimal
+values; bit search values only match JSON booleans.
+
+Evidence: seven `sql2025/json-contains-*.cases.json` files (255 cases), covering
+scalar calls, variables, table filters/updates, errors and TRY/CATCH. The focused
+run passes all 308 cases including scoped preview completions and adjacent
+vector/JSON regressions. JSON indexes and the shared storage gaps remain open.
+
+## JSON index investigation (2026-10-06)
+
+`sql2025/json-index-contracts.cases.json` captures 26 initial contracts. JSON
+indexes work with PREVIEW_FEATURES ON or OFF, report index type 9 / JSON, and
+start at index_id 1216000. The oracle requires a clustered primary key (13672),
+not merely a unique clustered index; non-json columns fail with 13680. Duplicate
+index names yield 1913 state 3, and a second JSON index on one column yields
+13681. Overlapping/duplicate paths yield 13683 state 1; wildcard paths yield
+13683 state 2. ONLINE=ON fails with 153 state 35. Repeated FILLFACTOR options
+are accepted with the last value retained. DROP/recreate, DISABLE/REBUILD and
+indexed document updates are captured. Implementation remains open, including
+27 newly recorded parser disagreements. These cases are investigative and
+unregistered; index_id rules beyond the first index require further captures.
+
+The 12 `sql2025/json-index-catalog-lifecycle` cases additionally capture
+`sys.json_indexes` and `sys.index_columns`: JSON key_ordinal is zero and
+optimize_for_array_search reflects its option. Two JSON columns receive
+1216000/1216001; dropping the first while retaining the second then creating
+a new index gives 1216002 (not the lowest free slot). Ordinary indexes do
+not consume that range. Creation rolls back with its transaction. A JSON
+index prevents dropping the primary key (3767 then 3727) and its document
+column (5074 then 4922). Rename and explicit INDEX hints work; a disabled
+index hint raises 315. These add 12 parser gaps, for 39 JSON index gaps total.
+
+The 19 `sql2025/json-index-paths` cases capture `sys.json_index_paths`
+(object_id int, index_id int, path varchar(8000) with UTF-8 BIN2 collation).
+The catalog retains original whitespace, quoted keys and lax/strict prefixes;
+the default stored path is `$`. Overlap checks operate on path meaning rather
+than raw text: `$.a` overlaps `$."a".b`, but not `$.ab`. `$.a` and `$.A`
+conflict in the captured default CI database; other database collations still
+need verification. Literal array indexes are accepted; last/object wildcards
+fail with 13683 state 3. Rebuilding with DROP_EXISTING replaces the path set.
+Together the three investigative files contain 57 cases and expose 58 parser
+gaps. All 57 cases also pass second oracle runs for determinism.

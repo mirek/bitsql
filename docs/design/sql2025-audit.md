@@ -11,7 +11,7 @@ pushes and container publication on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
-| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Existing json3/json4 and construction captures cover type semantics, constructors and aggregates. The 485-case allocation run verifies retained storage, slot ordering, large dictionaries and array widening. Native variable/UPDATE/MERGE `.modify()` now passes 121 registered method cases (126 with adjacent regressions), resolving 49 parser gaps. Shared large-storage mutation discrepancies remain: conservative container copying and captured wide-array conversion errors. JSON_CONTAINS and JSON indexes remain unimplemented; see the JSON reference for evidence and open contracts. |
+| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Existing json3/json4 and construction captures cover type semantics, constructors and aggregates. The 485-case allocation run verifies retained storage, slot ordering, large dictionaries and array widening. Native variable/UPDATE/MERGE `.modify()` now passes 121 registered method cases (126 with adjacent regressions), resolving 49 parser gaps. Shared large-storage mutation discrepancies remain: conservative container copying and captured wide-array conversion errors. JSON_CONTAINS now passes 255 captured cases for typing, paths, comparisons, table contexts and error flow. JSON indexes remain unimplemented; 57 investigative cases now cover creation, prerequisites, catalog identity, paths, options, transactions, hints and lifecycle (58 parser gaps); see the JSON reference for evidence and open contracts. |
 | Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Scalar/SPLIT byte decoding, lone-surrogate normalization, BOM preservation and flag-type checks now pass all 351 captured regex cases. Fourteen MATCHES transport-failure cases lack expectations and remain open, along with remaining RE2/SQL edge audits; the previous checkpoint passed the full gate 2026-10-06. |
 | Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 and preview float16 storage, JSON conversion, TDS 7.4 fallback, catalogs, properties and base-specific distance kernels are implemented. Float32 norms/normalization work; float16 receives SQL Server’s captured 42246 rejection. All 150 vector cases pass focused verification, including declaration diagnostics, preview transitions and maximum dimensions. Broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
@@ -157,3 +157,19 @@ Four investigative JSON_CONTAINS fixtures capture 167 cases, including native
 target typing, NULL precedence, collation, comparison modes and navigation.
 They remain unregistered pending implementation. Shared large JSON storage
 discrepancies, the remaining 2025 audit and container publication remain open.
+
+## JSON_CONTAINS checkpoint (2026-10-06)
+
+`scripts/check.sh` passed: 1,464 MoonBit tests, all-backend core checks,
+22,100 client/corpus tests passed, three existing skips and no failures
+(22,103 total). The log confirms all 255 JSON_CONTAINS cases and eight
+preview-completion cases ran. Focused verification passes 308 cases including
+adjacent vector/JSON regressions. Native containment now handles captured
+type restrictions, comparisons, collation, list/last/range paths, missing
+and empty selections, table filters/updates and runtime error flow.
+
+The final parser check covers 36,735 batches with 65 documented disagreements:
+seven existing gaps and 58 exposed by the 57 new JSON index cases. All 57
+index cases pass repeat oracle runs; they remain investigative and unregistered
+until index implementation. JSON indexes, shared native storage edge cases,
+the broader 2025 requirements and publication of a new container remain open.

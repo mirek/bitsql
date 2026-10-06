@@ -1,0 +1,327 @@
+{
+  "cases": [
+    {
+      "name": "descriptor",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(0) * FROM sys.json_index_paths;"
+        }
+      ]
+    },
+    {
+      "name": "default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "two",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.b','$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('lax $.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('strict $.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR (' $ . a ');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "quoted",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.\"a\"');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "unicode",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR (N'$.\"\u00e1\ud83d\ude00\"');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "case-distinct",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.A');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "root-overlap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$','$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "prefix-not-child",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.ab');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-overlap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.\"a\".b');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "array-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a[0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "array-last",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a[last]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.*');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "empty-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.\"\"');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-semantic",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.\"a\"');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    },
+    {
+      "name": "replace-paths",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.b','$.c') WITH(DROP_EXISTING=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT i.name,p.index_id,p.path FROM sys.json_index_paths p JOIN sys.indexes i ON i.object_id=p.object_id AND i.index_id=p.index_id WHERE p.object_id=OBJECT_ID(N't') ORDER BY p.path;"
+        }
+      ]
+    }
+  ]
+}

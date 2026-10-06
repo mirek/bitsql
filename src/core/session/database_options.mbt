@@ -193,7 +193,9 @@ fn Session::exec_alter_database(
     self.server.db_options[name.to_lower()] = self.server
       .db_options(name)
       .with_flag("PREVIEW_FEATURES", enabled)
-    self.done(253)
+    // Captured preview-completions: no statement DONE; the batch supplies
+    // a final DONE only when no other statement has completed.
+    self.schema_ddl = true
     return
   }
   // compile-time checks

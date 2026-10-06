@@ -1,0 +1,486 @@
+{
+  "cases": [
+    {
+      "name": "catalog-descriptor",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT TOP(0) * FROM sys.json_indexes; SELECT name,column_id FROM sys.all_columns WHERE object_id=OBJECT_ID(N'sys.json_indexes') ORDER BY column_id;"
+        }
+      ]
+    },
+    {
+      "name": "default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "two-paths",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.b');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "overlap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.a.b');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a','$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('bad');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "array-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a[*]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "empty-paths",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ();"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "optimize-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "fillfactor",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (FILLFACTOR=80);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "online",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (ONLINE=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "compression",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (DATA_COMPRESSION=PAGE);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "row-locks",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (ALLOW_ROW_LOCKS=OFF);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-option",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH (FILLFACTOR=80,FILLFACTOR=90);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "heap",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "nonclustered-pk",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY NONCLUSTERED,j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "unique-clustered",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int,j json); CREATE UNIQUE CLUSTERED INDEX pk ON t(id);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j nvarchar(max));"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "preview-off",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=OFF;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "preview-on",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "second-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix2 ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "drop-recreate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DROP INDEX ix ON t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "disable-rebuild",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    },
+    {
+      "name": "data-and-mutation",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY, j json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(1,N'{\"a\":[1,2]}'),(2,N'{\"a\":[3]}'),(3,NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id; UPDATE t SET j.modify('$.a[0]',2) WHERE id=2; SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a[*]')=1 ORDER BY id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_unique,is_primary_key,is_disabled,fill_factor FROM sys.indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id;"
+        }
+      ]
+    }
+  ]
+}

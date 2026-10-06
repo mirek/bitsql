@@ -1,0 +1,337 @@
+{
+  "cases": [
+    {
+      "name": "match-first-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"x\":2},{}]' AS json),2,N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "match-first-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"x\":2},{}]' AS json),2,N'lax $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "missing-first-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{}, {\"x\":2}]' AS json),2,N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "missing-first-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{}, {\"x\":2}]' AS json),2,N'lax $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-first-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[null,{\"x\":2}]' AS json),2,N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-first-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[null,{\"x\":2}]' AS json),2,N'lax $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-value-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"x\":null},{\"x\":2}]' AS json),2,N'strict $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "null-value-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[{\"x\":null},{\"x\":2}]' AS json),2,N'lax $[*].x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[0 to 5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "range-outside-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[0 to 5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "index-outside-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "index-outside-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "list-outside-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[0,5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "list-outside-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[0,5]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "range-last-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[0 to last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "range-last-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[0 to last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[last to last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[last to last]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "reverse-list-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[2,0]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "reverse-list-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[2,0]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-list-strict",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'strict $[1,1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-list-lax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[1,2,3]' AS json),2,N'lax $[1,1]') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "exponent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"x\":2e0}' AS json),2,N'$.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "negative",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"x\":-2}' AS json),-2,N'$.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "decimal",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"x\":0.100}' AS json),CAST(0.1 AS decimal(38,10)),N'$.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "large",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"x\":9223372036854775808}' AS json),CAST(9223372036854775808 AS decimal(38,0)),N'$.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "huge",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'{\"x\":1e100}' AS json),2,N'$.x') AS found;"
+        }
+      ]
+    },
+    {
+      "name": "variable-and-filter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}', @v int=2, @p nvarchar(40)=N'$.a[*]'; SELECT JSON_CONTAINS(@j,@v,@p) AS found; SELECT x FROM (VALUES(1),(2),(4)) t(x) WHERE JSON_CONTAINS(@j,x,@p)=1 ORDER BY x;"
+        }
+      ]
+    },
+    {
+      "name": "column-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int,j json); INSERT t VALUES(1,N'{\"x\":2}'),(2,N'{\"x\":3}'),(3,NULL); SELECT id,JSON_CONTAINS(j,2,'$.x') AS found FROM t ORDER BY id; UPDATE t SET j.modify('$.x',4) WHERE JSON_CONTAINS(j,2,'$.x')=1; SELECT id,CAST(j AS nvarchar(max)) AS j FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-mode-tail",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,'$',2) AS found; SELECT 7 AS after_error;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-mode-caught",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,'$',2) AS found; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number, ERROR_STATE() AS state; END CATCH SELECT 7 AS after_error;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-path-tail",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,'bad') AS found; SELECT 7 AS after_error;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-path-caught",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,'bad') AS found; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number, ERROR_STATE() AS state; END CATCH SELECT 7 AS after_error;"
+        }
+      ]
+    },
+    {
+      "name": "null-path-tail",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,NULL) AS found; SELECT 7 AS after_error;"
+        }
+      ]
+    },
+    {
+      "name": "null-path-caught",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY SELECT JSON_CONTAINS(CAST(N'[]' AS json),2,NULL) AS found; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number, ERROR_STATE() AS state; END CATCH SELECT 7 AS after_error;"
+        }
+      ]
+    }
+  ]
+}

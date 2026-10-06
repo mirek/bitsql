@@ -1019,3 +1019,14 @@ and NULL-path no-op behavior. UPDATE and MERGE supply the current target value
 explicitly; MERGE binds mutators before scanning, including empty targets.
 Variable mutations participate in batch prebinding and preserve SET completion
 behavior. Captures and remaining storage limitations are in the JSON reference.
+
+### JSON_CONTAINS selection semantics (2026-10-06)
+
+JSON_CONTAINS uses a separate selection walker because extraction's null
+short-circuit and missing/empty collapse do not match containment. Native
+list/last parsing is opt-in; existing extraction behavior stays governed by
+its captures. SQL type and collation comparisons remain in the executor.
+See the JSON reference for the 255 oracle cases. Scoped PREVIEW_FEATURES
+changes have no statement completion token, verified in eight batch/module
+contexts (`sql2025/preview-completions`); the existing batch-final fallback
+supplies DONE when no other statement completes.

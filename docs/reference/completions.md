@@ -231,3 +231,11 @@ and data models).
 - TYPE_WARNING conversions send INFO 16956 (class 0) at the DECLARE's line
   before its DONE.
 
+
+### Scoped preview configuration (2026-10-06)
+
+`ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES` emits no statement
+DONE. Alone (including repeated settings), the batch ends with DONE 253.
+Before or after SELECT it adds no completion; in dynamic SQL and procedures
+only the ordinary result/module completions remain. Evidence: eight cases in
+`sql2025/preview-completions.cases.json`.

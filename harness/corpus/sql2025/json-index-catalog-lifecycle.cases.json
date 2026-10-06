@@ -1,0 +1,232 @@
+{
+  "cases": [
+    {
+      "name": "catalog-names",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "SELECT name FROM sys.system_objects WHERE name LIKE '%json%index%' ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "two-columns",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j); CREATE JSON INDEX iy ON t(k);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "ordinary-first",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE INDEX ordinary ON t(id); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "reuse-id",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j); CREATE JSON INDEX iy ON t(k); DROP INDEX ix ON t; CREATE JSON INDEX iz ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "array-option",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "drop-existing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.a');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j) FOR ('$.b') WITH(DROP_EXISTING=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        },
+        {
+          "kind": "batch",
+          "sql": "ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "drop-primary-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE t DROP CONSTRAINT pk;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "drop-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE t DROP COLUMN j;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "rename-index",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "EXEC sp_rename N't.ix',N'iy',N'INDEX';"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,index_id,type,type_desc,is_disabled,optimize_for_array_search FROM sys.json_indexes WHERE object_id=OBJECT_ID(N't') ORDER BY index_id; SELECT i.name,c.name AS column_name,ic.index_column_id,ic.key_ordinal,ic.is_included_column FROM sys.index_columns ic JOIN sys.indexes i ON i.object_id=ic.object_id AND i.index_id=ic.index_id JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id WHERE ic.object_id=OBJECT_ID(N't') ORDER BY i.index_id,ic.index_column_id;"
+        }
+      ]
+    },
+    {
+      "name": "hint",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t(id,j) VALUES(1,N'{\"a\":2}'),(2,N'{\"a\":3}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WITH(INDEX(ix)) WHERE JSON_CONTAINS(j,2,'$.a')=1;"
+        }
+      ]
+    },
+    {
+      "name": "disabled-query",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json,k json);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t(id,j) VALUES(1,N'{\"a\":2}'),(2,N'{\"a\":3}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE JSON INDEX ix ON t(j); ALTER INDEX ix ON t DISABLE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT id FROM t WHERE JSON_CONTAINS(j,2,'$.a')=1; SELECT id FROM t WITH(INDEX(ix)) WHERE JSON_CONTAINS(j,2,'$.a')=1;"
+        }
+      ]
+    }
+  ]
+}

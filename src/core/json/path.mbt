@@ -10,12 +10,13 @@ pub(all) enum Step {
   AnyIndex
   /// `[a to b]` with a < b (SQL Server 2025 advanced accessor).
   Range(Int64, Int64)
+  Elements(Array[(Int64, Int64)])
 } derive(Debug, Eq)
 
 ///|
 /// True for the advanced accessors that can select several values.
 pub fn Step::is_multi(self : Step) -> Bool {
-  self is (AnyKey | AnyIndex | Range(_, _))
+  self is (AnyKey | AnyIndex | Range(_, _) | Elements(_))
 }
 
 ///|
@@ -161,7 +162,7 @@ fn clamp_index(v : Int64) -> Int {
 ///|
 /// One bracket accessor after `[`: `*`, `n`, `a to b`, `last` (13660/2),
 /// lists (13660/5) and reversed ranges (13660/1).
-fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
+fn PathLexer::bracket(self : PathLexer, native : Bool) -> Step raise JsonError {
   self.ws()
   if self.peek() == 0x2A {
     self.pos += 1
@@ -172,6 +173,7 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
     self.pos += 1
     return AnyIndex
   }
+  let elements : Array[(Int64, Int64)] = []
   let mut list = false
   let mut saw_last = false
   let mut first : Step? = None
@@ -190,7 +192,7 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
     self.ws()
     let mut hi = lo
     if self.word_at() == "to" {
-      if element_last {
+      if element_last && !native {
         raise JsonError(13660, 2, ADVANCED_LAST)
       }
       self.pos += 2
@@ -203,11 +205,13 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
       } else if self.word_at() == "last" {
         self.pos += 4
         element_last = true
+        hi = -1L
       } else {
         raise self.unexpected_token(21)
       }
       self.ws()
     }
+    elements.push((lo, hi))
     saw_last = saw_last || element_last
     if !element_last {
       first = Some(
@@ -220,7 +224,7 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
     }
     match self.peek() {
       0x2C => {
-        if element_last {
+        if element_last && !native {
           raise JsonError(13660, 2, ADVANCED_LAST)
         }
         list = true
@@ -229,6 +233,9 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
       }
       0x5D => {
         self.pos += 1
+        if native && (list || saw_last) {
+          return Elements(elements)
+        }
         if list {
           raise JsonError(13660, 5, ADVANCED_COMMA)
         }
@@ -249,6 +256,7 @@ fn PathLexer::bracket(self : PathLexer) -> Step raise JsonError {
 pub fn parse_path(
   path : String,
   allow_append? : Bool = false,
+  native? : Bool = false,
 ) -> Path raise JsonError {
   let lx : PathLexer = { text: path, pos: 0, }
   lx.ws()
@@ -323,7 +331,7 @@ pub fn parse_path(
       }
       0x5B => {
         lx.pos += 1
-        steps.push(lx.bracket())
+        steps.push(lx.bracket(native))
       }
       _ => raise lx.unexpected_token(22)
     }
