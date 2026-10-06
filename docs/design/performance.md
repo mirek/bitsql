@@ -252,7 +252,7 @@ baseline and candidate: the same two non-allowlisted failures (SUM window
 ordering and COT) remain. Executor unit tests pass (14/14). Full gate passed: 273 MoonBit tests,
 20702 client/corpus passes, 3 skips, no failures.
 
-## Streaming exact grouping keys (2026-10-06, 0.1.11, publication pending)
+## Streaming exact grouping keys (2026-10-06, 0.1.11 local build)
 
 Single-column grouping hashes the exact equality payload with an unboxed
 32-bit accumulator and a final avalanche, avoiding the generic Hasher.
@@ -290,9 +290,10 @@ All 48 reported medians were recomputed from the 240 raw samples. These
 measurements use a different sampling method from the 0.1.10 table, so the
 interleaved native runs above are the before/after evidence. Both database
 containers ran sequentially after all builds and validation processes ended.
-Images remain local while publication authorization is pending.
+The 0.1.11 tags were not published separately. These changes shipped
+cumulatively in 0.1.13 after explicit registry authorization.
 
-## Integer IN membership (2026-10-06, 0.1.12, publication pending)
+## Integer IN membership (2026-10-06, 0.1.12 local build)
 
 The IN profile attributed about 31% of sampled execution time to
 `Members::contains`. Memoized all-integer subquery sets now also build an
@@ -343,7 +344,8 @@ The separate 1000-point-select container workload measured 187 versus
 of 1000 reads each, found baseline wall medians 106.20/109.42 ms and candidate
 105.90/106.80 ms; server CPU medians 37.26/36.34 versus 35.50/35.31 ms.
 This does not confirm a persistent regression. The README retains the actual
-container result. Publication remains pending destination authorization.
+container result. The 0.1.12 tags were not published separately; these
+changes shipped cumulatively in 0.1.13.
 
 ## Canonical database-key lookup (2026-10-06, candidate)
 
@@ -618,3 +620,75 @@ The revision-label update preserved the tested filesystem layers. Tags
 `0.1.16`, `0.1` and `latest` have identical amd64 + arm64 registry manifests,
 digest `sha256:31799811a93e9b131fdf58a5b8e5ed5df01bbbf175d29b1258206345ea35d09b`.
 The amd64 compressed registry layers total 12.4913 MiB.
+
+
+## Direct window keys and prefix comparisons (2026-10-06, 0.1.17)
+
+ROW_NUMBER with direct column keys now normalizes the source rows through
+column ordinals, avoiding a key-value array and compiled-column calls per row.
+Only `Col` expressions qualify; other expressions retain their evaluation path.
+The ANSI-partition guard remains. If direct normalization is unavailable, the
+pure column reads are materialized and the existing general comparator runs,
+without retrying normalization. Unit comparisons cover ranks and permutations,
+reordered keys, unused payload columns, NULLs, collations, decimal/binary/ANSI
+fallbacks and mixed-type errors. Existing expression-trace tests still pass.
+
+Window rows are assembled directly in the already-decided output order. This
+removes an intermediate pointer array and preserves call evaluation order and
+the existing last-eligible-call ordering rule. It adds no measurable gain to
+the main ROW_NUMBER query by itself; unpartitioned windows and window aggregates
+showed a small 1–2% reduction. Final appended rows are also checked against the
+materialized-key reference in the new tests.
+
+Normalized sorts compute the exact common prefix of all encoded keys once,
+then omit those equal leading elements from comparisons. This preserves
+lexicographic ordering and stability, including variable-length keys. Tests
+compare all pairs and sorted permutations with full comparisons for empty,
+identical, negative, variable-length and long-prefix keys. Short-key gains were
+not clear in isolation. Long-prefix window/full-sort controls improved about
+5–7% (30.64/30.66 to 29.06/28.92 ms, and 26.69/26.87 to 25.42/25.07 ms).
+Already-sorted and identical-key controls stayed stable. An invalid constant
+ORDER BY control was rejected before measurement; the complete rerun uses
+`ORDER BY id-id`, not the partial first run.
+
+Final combined native comparison, two interleaved runs, 100 repetitions, 20k
+rows (mean ms):
+
+| Shape | 0.1.16 | Candidate |
+| --- | ---: | ---: |
+| ROW_NUMBER over v | 6.78 / 6.87 | 5.87 / 6.00 |
+| GROUP BY v | 4.99 / 4.95 | 4.80 / 4.96 |
+| DISTINCT v | 5.31 / 5.29 | 5.07 / 5.06 |
+| COUNT(DISTINCT v) | 3.20 / 3.35 | 3.21 / 3.22 |
+| UNION | 6.06 / 6.14 | 6.04 / 6.03 |
+| ORDER BY v (TOP 10) | 1.62 / 1.64 | 1.66 / 1.64 |
+| ORDER BY accented text (TOP 10) | 3.10 / 3.13 | 3.13 / 3.09 |
+
+Direct-column-only controls also improved integer partitions and unpartitioned
+windows about 14–15%; computed-key, decimal-fallback and full-sort controls
+stayed stable. All measurements were sequential, after build/test activity
+stopped, with SQL errors checked on every execution. Evidence:
+`_build/direct-window-bench.txt`, `_build/direct-window-controls.txt`,
+`_build/window-assembly-bench.txt`, `_build/common-prefix-bench.txt`,
+`_build/common-prefix-controls.txt`, `_build/window-final-bench.txt`.
+Executor tests: 23/23. Final release results follow.
+
+
+The exact amd64 release binary passed the full gate: 283 MoonBit tests,
+20703 client/corpus passes, three skips, no failures. Arm64 passed 572/572.
+Before benchmarking, `ss -tanp` found a TIME-WAIT connection using local
+47340; waiting for it to expire avoided the earlier Docker bind failure.
+The comparison ran after all builds/tests ended and the ports were clear.
+All 48 medians match 240 raw samples. ROW_NUMBER measured 6.01 ms versus
+SQL Server 5.60 ms; the previous release measured 7.19 vs 6.07. SQL Server
+was broadly faster in this run, so the remaining gap is about 7%, not a win.
+Total shape medians are 235 vs 639 ms (about 2.7x), with bitsql's total nearly
+unchanged and SQL Server's total lower than in the prior comparison.
+
+The other clear gaps remain GROUP BY v (5.46 vs 5.05 ms) and DISTINCT v
+(5.64 vs 4.34). EXISTS is 4.89 vs 4.70; accented ORDER BY is effectively
+tied (3.016 vs 3.015). COUNT DISTINCT remains ahead at 3.29 vs 3.66.
+The optimization goal remains open. README includes the full current run,
+without substituting slower SQL Server values from an earlier run.
+Evidence: `harness/out/bench-compare-0.1.17.json`, `_build/bench-0.1.17.txt`,
+`_build/check-0.1.17.log`, `_build/arm64-0.1.17.log`.

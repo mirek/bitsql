@@ -27,6 +27,7 @@ fn normalized_keys(
   values : Array[Array[@types.Value]],
   keys : Array[@ir.SortKey],
   prefix? : (Int, Array[Int])? = None,
+  columns? : Array[Int]? = None,
 ) -> Array[Array[Int]]? {
   let ansi = keys.map(ansi_key)
   let prefix_columns = match prefix {
@@ -39,7 +40,15 @@ fn normalized_keys(
   for row in values {
     let buf : Array[Int] = Array(capacity=keys.length() * 4)
     let mut prefix_end = 0
-    for i, v in row {
+    let width = match columns {
+      Some(cs) => cs.length()
+      None => row.length()
+    }
+    for i in 0..<width {
+      let v = row[match columns {
+          Some(cs) => cs[i]
+          None => i
+        }]
       let start = buf.length()
       let kind = match v {
         Null => {
@@ -108,9 +117,9 @@ fn normalized_keys(
 }
 
 ///|
-fn compare_normalized(a : Array[Int], b : Array[Int]) -> Int {
+fn compare_normalized(a : Array[Int], b : Array[Int], start? : Int = 0) -> Int {
   let n = if a.length() < b.length() { a.length() } else { b.length() }
-  for i in 0..<n {
+  for i in start..<n {
     let x = a[i]
     let y = b[i]
     if x != y {
@@ -129,6 +138,28 @@ fn sort_order(
 ) -> Array[Int]? {
   guard normalized_keys(values, keys) is Some(ks) else { return None }
   let order = Array::makei(values.length(), i => i)
-  stable_sort_by(order, (i, j) => compare_normalized(ks[i], ks[j]))
+  let prefix = normalized_common_prefix(ks)
+  stable_sort_by(order, (i, j) => compare_normalized(ks[i], ks[j], start=prefix))
   Some(order)
+}
+
+///|
+/// Every key shares these leading elements, so omitting them from comparisons
+/// preserves the exact lexicographic order, including variable lengths/ties.
+fn normalized_common_prefix(keys : Array[Array[Int]]) -> Int {
+  guard !keys.is_empty() else { return 0 }
+  let first = keys[0]
+  let mut n = first.length()
+  for i in 1..<keys.length() {
+    if n == 0 {
+      break
+    }
+    n = @cmp.minimum(n, keys[i].length())
+    let mut same = 0
+    while same < n && first[same] == keys[i][same] {
+      same += 1
+    }
+    n = same
+  }
+  n
 }

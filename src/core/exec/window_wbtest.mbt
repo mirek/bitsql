@@ -241,3 +241,93 @@ test "row number prefix reuse preserves expression evaluation and failures" {
     }
   }
 }
+
+///|
+test "direct window columns preserve materialized-key results and failures" {
+  let ctx : Ctx = {
+    rt: Runtime::new(database="master", spid=51, now=0L, seed=1L),
+    vars: [],
+    row: [],
+    outer: [],
+    source: (_, _) => [],
+    ext: (_, _) => None,
+    user_fn: no_user_fn,
+    user_table: no_user_table,
+    seek: no_seek,
+    stamp: no_stamp,
+  }
+  for
+    name in [
+      "SQL_Latin1_General_CP1_CI_AS", "Latin1_General_100_CI_AI", "Latin1_General_100_BIN2",
+    ] {
+    let coll = @types.Collation::parse(name).unwrap()
+    for ansi in [false, true] {
+      let ty : @types.SqlType = if ansi {
+        VarChar(Some(80), coll)
+      } else {
+        NVarChar(Some(80), coll)
+      }
+      let partition : @ir.Expr = { kind: Col(1), ty, nullable: true, }
+      let ordering : @ir.Expr = { kind: Col(0), ty: Int, nullable: true, }
+      let keys : Array[@ir.SortKey] = [
+        { expr: partition, collation: Some(coll), desc: false, },
+        { expr: ordering, collation: None, desc: true, },
+      ]
+      let call : @ir.WindowCall = {
+        func: RowNumber,
+        args: [],
+        partition: [partition],
+        partition_collations: [Some(coll)],
+        order: [keys[1]],
+        frame: None,
+        ty: BigInt,
+        ignore_nulls: false,
+      }
+      let words = ["a", "A", "a ", "á", "b", "é", "é"]
+      for n in [0, 1, 1000] {
+        for mode in 0..<3 {
+          let rows : Array[Row] = Array::makei(n, i => {
+            let first : @types.Value = if mode == 1 {
+              @types.cast(Int(i % 17), Int, Decimal(12, 2))
+            } else if mode == 2 && i == n - 1 {
+              String("invalid number")
+            } else {
+              Int(i % 17)
+            }
+            [
+              first,
+              if i % 13 == 0 {
+                Null
+              } else {
+                String(words[i % words.length()])
+              },
+              Float(1.5),
+            ]
+          })
+          let expected = try {
+            let cs = keys.map(k => compile(k.expr))
+            let keyed = rows.mapi((i, r) => (cs.map(f => f(ctx, r)), i))
+            let sorted = sort_keyed(keyed, keys)
+            let result = Array::make(n, @types.Value::Null)
+            row_numbers(sorted, 1, [Some(coll)], result)
+            Ok((result, sorted.map(kv => kv.1)))
+          } catch {
+            e => Err(e)
+          }
+          let actual = Ok(window_values_ordered(ctx, rows, call)) catch {
+            e => Err(e)
+          }
+          assert_eq(actual, expected)
+          if expected is Ok((values, order)) {
+            let expected_rows = order.map(i => {
+              let row = rows[i].copy()
+              row.push(values[i])
+              row
+            })
+            assert_eq(run_window(ctx, rows, [call]), expected_rows)
+          }
+        }
+      }
+    }
+  }
+}

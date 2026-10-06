@@ -53,3 +53,40 @@ test "normalized keys sort exactly like sort_prepared" {
     }
   }
 }
+
+///|
+test "omitting a common normalized prefix preserves comparisons and stable order" {
+  let cases : Array[Array[Array[Int]]] = [
+    [],
+    [[]],
+    [[], []],
+    [[1, 2, 3]],
+    [[1, 2], [1, 2, 0], [1, 2, -1], [1, 2]],
+    [[0], [1], [0]],
+    [[-2147483648, 0], [-2147483648, -1], [-2147483648, 2147483647]],
+    Array::makei(100, i => {
+      let key = Array::make(40, 7)
+      key.push(i * 37 % 13)
+      key
+    }),
+    Array::makei(100, _ => [1, 2, 3]),
+  ]
+  for keys in cases {
+    let prefix = normalized_common_prefix(keys)
+    for a in keys {
+      for b in keys {
+        assert_eq(
+          compare_normalized(a, b, start=prefix),
+          compare_normalized(a, b),
+        )
+      }
+    }
+    let expected = Array::makei(keys.length(), i => i)
+    let actual = expected.copy()
+    stable_sort_by(expected, (i, j) => compare_normalized(keys[i], keys[j]))
+    stable_sort_by(actual, (i, j) => {
+      compare_normalized(keys[i], keys[j], start=prefix)
+    })
+    assert_eq(actual, expected)
+  }
+}

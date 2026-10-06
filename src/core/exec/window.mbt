@@ -1,6 +1,6 @@
 ///|
 /// Window functions: each call partitions the input, orders each partition
-/// and appends one value per row. Output keeps the input row order.
+/// and appends one value per row. The last eligible call decides output order.
 fn run_window(
   ctx : Ctx,
   rows : Array[Row],
@@ -13,16 +13,6 @@ fn run_window(
     orders.push(order)
     columns.push(values)
   }
-  let out = rows.mapi((i, r) => {
-    let row = Array(capacity=r.length() + columns.length())
-    for v in r {
-      row.push(v)
-    }
-    for c in columns {
-      row.push(c[i])
-    }
-    row
-  })
   // SQL Server's window operator emits rows sorted by the window's
   // PARTITION BY then ORDER BY keys (captured: msduck order-token #046,
   // SELECT a, ROW_NUMBER() OVER(ORDER BY a) without ORDER BY returns a in
@@ -35,10 +25,21 @@ fn run_window(
       last = Some(i)
     }
   }
+  let make_row = (i : Int) => {
+    let r = rows[i]
+    let row = Array(capacity=r.length() + columns.length())
+    for v in r {
+      row.push(v)
+    }
+    for c in columns {
+      row.push(c[i])
+    }
+    row
+  }
   match last {
     // the call's own partition-then-order sort (window_values_ordered)
-    Some(i) => orders[i].map(j => out[j])
-    None => out
+    Some(i) => orders[i].map(make_row)
+    None => Array::makei(rows.length(), make_row)
   }
 }
 
@@ -105,9 +106,20 @@ fn window_values_ordered(
   }
   let cs = all_keys.map(k => compile(k.expr))
   if call.func is RowNumber && all_keys[0:np].iter().all(k => !ansi_key(k)) {
+    // Direct column reads are pure: normalize the input rows without
+    // materializing another array of key values for every row.
+    let columns = window_key_columns(all_keys)
+    if columns is Some(_) {
+      if row_numbers_normalized(rows, all_keys, np, result, columns~)
+        is Some(order) {
+        return (result, order)
+      }
+    }
     let values = rows.map(r => cs.map(f => f(ctx, r)))
-    if row_numbers_normalized(values, all_keys, np, result) is Some(order) {
-      return (result, order)
+    if columns is None {
+      if row_numbers_normalized(values, all_keys, np, result) is Some(order) {
+        return (result, order)
+      }
     }
     // Encoding failed; use the general comparator without trying it again.
     let sorted = sort_keyed_general(values.mapi((i, v) => (v, i)), all_keys)
@@ -583,6 +595,7 @@ fn row_numbers_normalized(
   keys : Array[@ir.SortKey],
   np : Int,
   result : Array[@types.Value],
+  columns? : Array[Int]? = None,
 ) -> Array[Int]? {
   for i in 0..<np {
     if ansi_key(keys[i]) {
@@ -590,11 +603,13 @@ fn row_numbers_normalized(
     }
   }
   let ends : Array[Int] = []
-  guard normalized_keys(values, keys, prefix=Some((np, ends))) is Some(ks) else {
+  guard normalized_keys(values, keys, prefix=Some((np, ends)), columns~)
+    is Some(ks) else {
     return None
   }
   let order = Array::makei(values.length(), i => i)
-  stable_sort_by(order, (i, j) => compare_normalized(ks[i], ks[j]))
+  let prefix = normalized_common_prefix(ks)
+  stable_sort_by(order, (i, j) => compare_normalized(ks[i], ks[j], start=prefix))
   let mut start = 0
   for j, at in order {
     if j > 0 {
@@ -615,4 +630,16 @@ fn row_numbers_normalized(
     result[at] = BigInt((j - start + 1).to_int64())
   }
   Some(order)
+}
+
+///|
+fn window_key_columns(keys : Array[@ir.SortKey]) -> Array[Int]? {
+  let columns = []
+  for key in keys {
+    match key.expr.kind {
+      Col(i) => columns.push(i)
+      _ => return None
+    }
+  }
+  Some(columns)
 }

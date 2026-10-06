@@ -540,3 +540,8 @@ Start the host with `--database NAME` so the app's database exists at login
   47340/47341 and Docker container names. Retry only after the old process is
   confirmed terminal and the ports/names are free; never stop someone else's
   service. A launch failure before timings does not yield benchmark results.
+
+- 2026-10-06: confirmed the post-gate port conflict on 0.1.17: `ss -tanp`
+  showed TIME-WAIT at local 127.0.0.1:47340 (peer was an ephemeral emulator
+  port). Waiting until that state disappeared allowed the comparison to start.
+  LISTEN-only checks miss this; do not remove another process to clear it.
