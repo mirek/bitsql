@@ -186,7 +186,13 @@ pub fn Server::database_name(self : Server, name : String) -> String {
 
 ///|
 fn Server::get_db(self : Server, name : String) -> @store.Db {
-  match self.dbs.get(name.to_lower()) {
+  self.get_db_key(name.to_lower())
+}
+
+///|
+/// Looks up an already lowercased database key, such as `scope_key` returns.
+fn Server::get_db_key(self : Server, key : String) -> @store.Db {
+  match self.dbs.get(key) {
     Some(db) => db
     None => @store.Db::empty()
   }
@@ -610,7 +616,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     user_fn: (id, args) => self.call_scalar_udf(id, args),
     user_table: (id, args) => self.call_table_udf(id, args),
     seek: (scope, id, key) => self.seek(scope, id, key),
-    stamp: (scope, id) => self.data_stamp(scope, id),
+    stamp: self.stamp_reader(),
   }
 }
 

@@ -154,8 +154,8 @@ pub(all) struct Ctx {
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[
     (Int64, Array[@types.Value]),
   ]?
-  /// Data version of table (scope, id): equal stamps mean physically the
-  /// same rows (no write in between); None when the table's rows cannot be
+  /// Data version of table (scope, id): equal stamps identify the same
+  /// immutable table data; None when the table's rows cannot be
   /// tracked (catalog views), which disables statement caches for it.
   stamp : (Int, Int) -> Int64?
 }

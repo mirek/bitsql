@@ -253,6 +253,20 @@ equivalence tests and before/after timings are in `performance.md`.
   vs 3.12 ms, 24 shapes 247 vs 669 ms. README refreshed; publication pending
   registry authorization (`performance.md`).
 
+- [~] Canonical database-key lookup avoids redundant lowercase conversion
+  in db_of/tx_part. Session tests pass (36); isolated timings show small
+  uncorrelated-query gains. Context-scoped stamp reader now passes 37 session
+  tests, including write/rollback/database/scope transitions. Combined candidate
+  improves scalar uncorrelated queries about 16% and NOT IN about 19–20%.
+  The first eager cache passed the full gate but regressed write controls;
+  lazy state allocation plus a shared DML predicate context now improves
+  DELETE WHERE IN about 15–17% while retaining subquery gains. Small overhead
+  remains in other write controls. Final 0.1.13 exact amd64 gate passed
+  (275 MoonBit tests, 20702 client/corpus passes, 3 skips); arm64 571/571.
+  Container total 244 vs 668 ms, scalar uncorrelated 4.26 vs 4.65 ms,
+  DELETE WHERE IN 11.2 vs 102 ms. README refreshed. Publication pending
+  registry authorization (`performance.md`).
+
 ## Limiting factor
 
 For first value: phases 2–3, the protocol plus full parser coverage, because no

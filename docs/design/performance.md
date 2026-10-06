@@ -344,3 +344,131 @@ of 1000 reads each, found baseline wall medians 106.20/109.42 ms and candidate
 105.90/106.80 ms; server CPU medians 37.26/36.34 versus 35.50/35.31 ms.
 This does not confirm a persistent regression. The README retains the actual
 container result. Publication remains pending destination authorization.
+
+## Canonical database-key lookup (2026-10-06, candidate)
+
+`scope_key` already returns a lowercase key. `db_of` and `tx_part` now call
+an internal canonical-key helper; arbitrary-name `get_db` callers still
+lowercase their input. The missing-database fallback and table-stamp checks
+are unchanged. Session tests pass (36/36).
+
+Two sequential interleaved native runs, 20k rows, 120 repetitions per shape:
+
+| Shape | 0.1.12 mean runs | Candidate mean runs |
+| --- | --- | --- |
+| IN | 3.22 / 3.20 ms | 3.15 / 3.23 ms |
+| NOT IN | 2.41 / 2.39 ms | 2.32 / 2.33 ms |
+| EXISTS | 5.61 / 5.46 ms | 5.54 / 5.58 ms |
+| Scalar correlated | 3.49 / 3.50 ms | 3.45 / 3.52 ms |
+| Scalar uncorrelated | 4.87 / 4.90 ms | 4.81 / 4.85 ms |
+
+The gain is small (roughly 1–3% on uncorrelated paths), with other changes
+within timing variability. Full gate remains pending. The next candidate is
+a bounded stamp reader scoped to an execution context, resolving `db_of`
+each time and caching table stamps only while the immutable Db identity
+matches. Context scope would avoid keeping an old whole-database snapshot
+alive for a session's lifetime. It needs mutation/rollback/cross-database
+validation before implementation can be accepted.
+
+## Context-scoped stamp reader (2026-10-06, 0.1.13, publication pending)
+
+Each execution context now owns a bounded table-stamp reader (at most 64
+entries). Every probe resolves `db_of` normally. If scope or immutable Db
+identity changes, cached entries are cleared; otherwise integer table-id
+lookups avoid the table PMap traversal and composite-key stamp lookup.
+Scope 2 and missing tables retain None. Misses use the original data_stamp.
+Both normal and RPC frame contexts use the reader. Variable validity checks,
+warning replay, row-counter replay, and memo clearing remain unchanged.
+
+A stamp identifies one immutable TableData. Reusing an older stamp after
+restoring the identical Db is safe even if another context observed an
+intervening write: that stamp still names the same data. The original
+stamp allocator remains monotonic and never assigns a number to other data.
+The reader dies with its execution context, avoiding session-lifetime
+retention of an old whole-database snapshot.
+
+`stamp_wbtest.mbt` covers repeated probes, unrelated and target writes,
+savepoint/full rollback, truncate/drop, absent and catalog tables, switching
+between databases sharing object IDs, temporary/table-variable scopes, and
+a second reader observing a write before an identical Db is restored,
+numeric cross-database scopes, and eviction beyond the 64-table bound.
+Session tests pass (37/37); full release gate pending.
+
+Two interleaved runs per variant, 20k rows, 150 repetitions, no concurrent
+builds/tests/benchmarks. Mean wall time in ms:
+
+| Shape | 0.1.12 | Canonical key only | Key + stamp reader |
+| --- | --- | --- | --- |
+| IN | 3.21 / 3.09 | 3.09 / 3.09 | 2.80 / 2.87 |
+| NOT IN | 2.39 / 2.35 | 2.35 / 2.33 | 1.91 / 1.92 |
+| EXISTS | 5.40 / 5.35 | 5.41 / 5.35 | 5.02 / 5.05 |
+| Scalar correlated | 3.47 / 3.41 | 3.45 / 3.41 | 3.09 / 3.16 |
+| Scalar uncorrelated | 4.93 / 4.93 | 4.89 / 4.84 | 4.11 / 4.15 |
+
+Next ROW_NUMBER experiment (read-only review, not implemented): retain each
+normalized key's offset after its partition columns, stable-sort the existing
+position array, and compare adjacent normalized prefixes for boundaries.
+This could avoid re-comparing linguistic values and rebuilding keyed tuples
+and permutations. Guard every partition key with `!ansi_key`: varchar sorting
+can use ANSI semantics while current partition equality uses ansi=false.
+On normalization failure, reuse the already evaluated values in the old path,
+preserving expression counts and comparison errors. Test ranks AND output
+permutations, NULLs/ties/DESC/multiple keys, linguistic equivalence and binary
+fallback, mixed kinds and errors. Measure normal, long shared-prefix, unique,
+and single-partition inputs. Do not retry the rejected hash-partitioned sort.
+
+The first eager reader passed the exact-container gate (275 MoonBit tests,
+20702 client/corpus passes, 3 skips, arm64 571/571) and measured scalar
+uncorrelated 4.25 vs SQL Server 4.31 ms in the container. It is not the final
+0.1.13 candidate: subsequent write controls exposed context-allocation cost.
+Two interleaved native runs, 40 repetitions, mean ms:
+
+| Shape | 0.1.12 | Eager stamp reader |
+| --- | --- | --- |
+| DELETE WHERE IN | 14.67 / 13.81 | 15.35 / 15.06 |
+| UPDATE all rows | 19.58 / 19.06 | 20.15 / 20.18 |
+| INSERT with FK | 21.59 / 21.40 | 21.71 / 22.01 |
+| MERGE | 26.47 / 26.83 | 28.70 / 28.53 |
+
+The current revision allocates its cache state and map only on the first
+stamp probe, using one optional captured state instead of eagerly creating
+a map and separate mutable scope/database captures per context. Read/write
+remeasurement and a new full release gate are required. Eager comparison
+artifacts have an `-eager` suffix so they cannot be mistaken for final results.
+
+Lazy allocation removed most eager write overhead, but DELETE WHERE IN still
+regressed (baseline means 14.01/13.57 ms, lazy 14.82/15.11 ms): `dml_scan`
+created a new context per predicate row, preventing cache reuse and repeating
+lookup on every cold miss. It now creates one context after materializing the
+source and uses `with_row` for each predicate. The frame's variable array,
+live session callbacks, evaluation order and error handling are unchanged.
+
+Combined lazy reader + shared DML predicate context, two interleaved native
+runs, 60 repetitions per shape, mean ms (no concurrent work):
+
+| Shape | 0.1.12 runs | Revised candidate runs |
+| --- | --- | --- |
+| IN | 3.18 / 3.26 | 2.85 / 3.13 |
+| NOT IN | 2.36 / 2.38 | 1.93 / 2.13 |
+| EXISTS | 5.46 / 5.51 | 5.05 / 5.61 |
+| Scalar correlated | 3.53 / 3.54 | 3.21 / 3.24 |
+| Scalar uncorrelated | 5.04 / 5.01 | 4.55 / 4.23 |
+| DELETE WHERE IN | 13.07 / 13.52 | 11.17 / 11.18 |
+| UPDATE all rows | 18.88 / 19.35 | 19.25 / 19.43 |
+| INSERT with FK | 20.62 / 20.92 | 21.02 / 21.63 |
+| MERGE | 26.50 / 27.16 | 27.96 / 27.43 |
+
+DELETE now improves about 15–17%. Subquery gains remain, with variability
+in EXISTS. Small write overhead remains in these controls; keep it visible
+when assessing the fresh container comparison. All 37 session tests pass;
+new exact container builds, full gate and comparison are pending.
+
+Final revised 0.1.13 validation: exact amd64 release binary passed the full
+gate (275 MoonBit tests, 20702 client/corpus passes, 3 skips, no failures);
+arm64 smoke passed 571/571. The container comparison ran after all builds,
+tests and worker activity ended. All 48 medians were verified from 240 raw
+samples. Total shape medians: 244 ms vs SQL Server 668 ms. Scalar uncorrelated:
+4.26 vs 4.65 ms; NOT IN: 1.86 vs 3.17 ms; DELETE WHERE IN: 11.2 vs 102 ms;
+MERGE: 27.0 vs 31.6 ms. Text grouping and ROW_NUMBER remain clearly slower;
+EXISTS is 5.05 vs 4.90 ms. README reflects this final revised comparison,
+not the eager variant. Publication remains pending registry authorization.

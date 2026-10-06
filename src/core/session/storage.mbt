@@ -136,7 +136,7 @@ fn Session::tx_part(self : Session, tx : Tx, key : String) -> TxPart {
   match tx.parts.get(key) {
     Some(p) => p
     None => {
-      let db = self.server.get_db(key)
+      let db = self.server.get_db_key(key)
       let p = { base: db, view: db, }
       tx.parts[key] = p
       p
@@ -156,7 +156,7 @@ fn Session::db_of(self : Session, scope : Int) -> @store.Db {
       let key = self.scope_key(scope)
       match self.tx {
         Some(tx) => self.tx_part(tx, key).view
-        None => self.server.get_db(key)
+        None => self.server.get_db_key(key)
       }
     }
   }
@@ -740,4 +740,53 @@ fn Session::data_stamp(self : Session, scope : Int, id : Int) -> Int64? {
       Some(self.stamp_seq)
     }
   }
+}
+
+///|
+/// A bounded reader owned by one execution context. Resolve the database on
+/// every call, but avoid table/map lookup while its immutable identity agrees.
+/// A stamp denotes one immutable TableData, so reusing it after restoring the
+/// identical Db is safe even if another reader observed an intervening write.
+fn Session::stamp_reader(self : Session) -> (Int, Int) -> Int64? {
+  let mut state : StampReadCache? = None
+  (scope, id) => {
+    if scope == 2 {
+      return None
+    }
+    let db = self.db_of(scope)
+    let cache = match state {
+      Some(cache) => cache
+      None => {
+        let cache = StampReadCache::{ db, scope, stamps: Map([]), }
+        state = Some(cache)
+        cache
+      }
+    }
+    if cache.scope != scope || !physical_equal(cache.db, db) {
+      cache.stamps.clear()
+      cache.db = db
+      cache.scope = scope
+    }
+    match cache.stamps.get(id) {
+      Some(stamp) => Some(stamp)
+      None => {
+        let stamp = self.data_stamp(scope, id)
+        if stamp is Some(value) {
+          if cache.stamps.length() >= 64 {
+            cache.stamps.clear()
+          }
+          cache.stamps[id] = value
+        }
+        stamp
+      }
+    }
+  }
+}
+
+///|
+/// Allocated only when this context actually probes a table stamp.
+priv struct StampReadCache {
+  mut db : @store.Db
+  mut scope : Int
+  stamps : Map[Int, Int64]
 }

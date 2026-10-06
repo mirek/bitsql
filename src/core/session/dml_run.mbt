@@ -246,12 +246,15 @@ fn Session::dml_scan(
     _ => src.plan
   }
   let rows = @exec.run(self.ctx(), plan)
+  // Preserve one context across predicate rows: variables remain the same
+  // frame's array, and callbacks still resolve live session state.
+  let ctx = self.ctx()
   let out = []
   let at : Map[Int64, Int] = Map([])
   for r in rows {
     match where_ {
       Some(w) => {
-        let ok = @exec.is_true(@exec.eval(self.ctx().with_row(r), w)) catch {
+        let ok = @exec.is_true(@exec.eval(ctx.with_row(r), w)) catch {
           @types.SqlError(..) as e => return (out, Some(e))
         }
         if !ok {
