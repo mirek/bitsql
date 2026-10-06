@@ -1,0 +1,868 @@
+{
+  "cases": [
+    {
+      "name": "last-range-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[last to last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[last to last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last to last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last to last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last to last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last to last]');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1 to 1]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1 to 1]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "same-range-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1 to 1]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "same-range-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1 to 1]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "same-range-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1,1]');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1,1]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1,1]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "single-list-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1,1]');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1,1]');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1,1]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "single-list-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1,1]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "single-list-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1,1]');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1,0]');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[1,0]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1,0]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "reverse-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[1,0]');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1,0]');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1,0]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "reverse-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1,0]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "reverse-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[1,0]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[9,0]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[9,0]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[9,0]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[9,0]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[9,0]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[9,0]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[9,0]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-first-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[9,0]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[0,9]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[0,9]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[0,9]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[0,9]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[0,9]');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[0,9]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[0,9]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "list-missing-second-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[0,9]');"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'$.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "null-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j,'$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "null-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j,'$.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "null-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "null-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "null-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[null]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j,'$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j,'$.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j,'$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j,'$.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j,'strict $.a[last]') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last]');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j,'$.a.*');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j,'$.a.*') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a.*' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a.*');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j,'strict $.a.*');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j,'strict $.a.*') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a.*' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "object-wildcard-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{\"x\":1,\"y\":2}}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a.*');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-lax-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[last].x');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-lax-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'$.a[last].x') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-lax-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last].x' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "last-member-lax-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) '$.a[last].x');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-strict-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last].x');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-strict-root-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last].x') WITH(x int '$.x');"
+        }
+      ]
+    },
+    {
+      "name": "last-member-strict-column-json",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last].x' AS JSON);"
+        }
+      ]
+    },
+    {
+      "name": "last-member-strict-column-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; SELECT * FROM OPENJSON(@j) WITH(v nvarchar(max) 'strict $.a[last].x');"
+        }
+      ]
+    }
+  ]
+}

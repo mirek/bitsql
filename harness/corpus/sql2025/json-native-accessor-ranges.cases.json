@@ -1,0 +1,436 @@
+{
+  "cases": [
+    {
+      "name": "to-last-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[0 to last]');"
+        }
+      ]
+    },
+    {
+      "name": "to-last-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[0 to last]');"
+        }
+      ]
+    },
+    {
+      "name": "to-last-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[0 to last]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "to-last-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[0 to last]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "to-last-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[0 to last]');"
+        }
+      ]
+    },
+    {
+      "name": "to-last-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[0 to last]');"
+        }
+      ]
+    },
+    {
+      "name": "to-last-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[0 to last]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "to-last-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[0 to last]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "from-last-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "from-last-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "from-last-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[last to 0]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "from-last-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[last to 0]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "from-last-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "from-last-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last to 0]');"
+        }
+      ]
+    },
+    {
+      "name": "from-last-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[last to 0]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "from-last-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[last to 0]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-range-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[0,1 to 2]');"
+        }
+      ]
+    },
+    {
+      "name": "list-range-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[0,1 to 2]');"
+        }
+      ]
+    },
+    {
+      "name": "list-range-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[0,1 to 2]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-range-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[0,1 to 2]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-range-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[0,1 to 2]');"
+        }
+      ]
+    },
+    {
+      "name": "list-range-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[0,1 to 2]');"
+        }
+      ]
+    },
+    {
+      "name": "list-range-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[0,1 to 2]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "list-range-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[0,1 to 2]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-list-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[last,0]');"
+        }
+      ]
+    },
+    {
+      "name": "last-list-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last,0]');"
+        }
+      ]
+    },
+    {
+      "name": "last-list-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[last,0]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-list-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[last,0]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-list-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last,0]');"
+        }
+      ]
+    },
+    {
+      "name": "last-list-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last,0]');"
+        }
+      ]
+    },
+    {
+      "name": "last-list-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[last,0]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-list-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[last,0]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[last,last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[last,last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[last,last]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[last,last]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[last,last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[last,last]');"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[last,last]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "last-twice-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[last,last]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-lax-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'$.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-lax-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int '$.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-lax-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'$.a[1 to 1]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-lax-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('$.a[1 to 1]',4); SELECT @j AS v;"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-strict-openjson",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j,'strict $.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-strict-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT * FROM OPENJSON(@j) WITH(v int 'strict $.a[1 to 1]');"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-strict-function",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SELECT JSON_MODIFY(@j,'strict $.a[1 to 1]',4) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "zero-range-strict-method",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; SET @j.modify('strict $.a[1 to 1]',4); SELECT @j AS v;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,544 @@
+{
+  "cases": [
+    {
+      "name": "last-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last to last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last to last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last to last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last to last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last to last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-range-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last to last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[2,2]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[2,2]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[2,2]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[2,2]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[2,2]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "one-list-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[1,2,3]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[2,2]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last].b[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last].b[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last].b[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last].b[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last].b[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "nested-last-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"b\":[1,2]},{\"b\":[3,4]}]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last].b[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last].x',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last].x',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "last-child-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[0,1].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[0,1].x',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[0,1].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[0,1].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[0,1].x',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "list-child-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[{\"x\":1},{\"x\":2}]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[0,1].x',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "empty-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":[]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "missing-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'$.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'append $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.a[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "wrong-kind-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":{}}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.a[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'$.\"last\"[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'$.\"last\"[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-lax-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'append $.\"last\"[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.\"last\"[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'strict $.\"last\"[last]',NULL); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-key-strict-append",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"last\":[1,2]}'; DECLARE @r json=JSON_MODIFY(@j,'append strict $.\"last\"[last]',4); SELECT @r AS v,DATALENGTH(@r) AS bytes;"
+        }
+      ]
+    }
+  ]
+}

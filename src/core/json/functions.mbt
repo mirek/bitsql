@@ -77,6 +77,19 @@ pub fn json_value(
   lob? : Bool = false,
   json_type? : Bool = false,
 ) -> String? raise JsonError {
+  if json_type {
+    let row = json_value_typed(doc, path)
+    return match row {
+      Some({ value: Some(t), .. }) if t.length() > 4000 =>
+        if parse_path(path, native=true).strict {
+          raise JsonError(13625, 1, TRUNCATED_MESSAGE)
+        } else {
+          None
+        }
+      Some(row) => row.value
+      None => None
+    }
+  }
   let p = parse_path(path)
   let st = states(lob, json_type)
   let hit = if p.is_multi() {
@@ -126,6 +139,28 @@ pub fn json_query(
 ) -> String? raise JsonError {
   if array_wrapper {
     return json_query_array(doc, path, lob, json_type)
+  }
+  if json_type {
+    let p = parse_path(path, native=true)
+    let rows = match contains_values(doc, path, ordered=true) {
+      None => {
+        if p.strict {
+          raise JsonError(13608, 5, MISSING_MESSAGE)
+        }
+        return None
+      }
+      Some(rows) => rows
+    }
+    return match rows {
+      [row] if row.ty == 0 => None
+      [row] if row.ty is (4 | 5) => row.value
+      _ => {
+        if p.strict {
+          raise JsonError(13624, 2, CONTAINER_MESSAGE)
+        }
+        None
+      }
+    }
   }
   let p = parse_path(path)
   let st = states(lob, json_type)

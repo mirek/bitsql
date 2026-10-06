@@ -713,7 +713,7 @@ types fail compilation. A NULL document short-circuits malformed paths, but a
 NULL path still raises runtime 8116 state 8. The result type comes from the
 binder, including fixed-width character metadata and MAX widths.
 
-### Ordinary native extraction accessors, pending correction (2026-10-06)
+### Ordinary native extraction accessors (2026-10-06)
 
 The 48 `sql2025/json-native-extraction-accessors` cases confirm that ordinary
 JSON_VALUE and JSON_QUERY on native JSON also accept last/list accessors,
@@ -722,15 +722,16 @@ selected values yield NULL in lax mode, 13623 state 2 for strict JSON_VALUE or
 13624 state 2 for strict JSON_QUERY, including mixtures with JSON null. A
 strict empty wildcard gives 13608 state 5 for JSON_VALUE but 13624 state 2 for
 JSON_QUERY. Strict traversal through a missing or wrong-kind branch gives
-13608 state 5. The older implementation still uses the text extraction walker;
-these newly captured differences remain unregistered and require correction.
+13608 state 5. Native extraction now uses the ordered selector while text extraction retains
+its distinct walker. All 48 cases pass; the combined run with json3/json4
+passes 63 cases, including native result metadata and scalar width behavior.
 
 ### Other native path entry points, pending correction (2026-10-06)
 
 The 64 `sql2025/json-native-path-entrypoints` captures distinguish OPENJSON,
 its WITH column paths, and JSON_MODIFY. OPENJSON resolves a single `last`
-selection, but lists produce no rows in lax mode and 13611 state 3 in strict
-mode. Native WITH scalar columns choose the first list selection (including
+selection. Multiple list selections produce no rows in lax mode and 13611
+state 3 in strict mode; a list with only one surviving selection opens it. Native WITH scalar columns choose the first list selection (including
 reverse and repeated lists); they resolve `last` normally. Wildcard/range
 paths produce 13665 state 5 for OPENJSON's root path, state 3 for WITH columns.
 Strict AS JSON scalar selection produces 13624 state 5.
@@ -740,3 +741,42 @@ whereas a list leaves the document unchanged in lax mode and raises 13608 in
 strict mode. Wildcard/range accessors give 13660 state 5. These are observed
 build-specific contracts, not interchangeable with the ordinary/typed
 extraction rules. The cases remain investigative and unregistered.
+
+The 96 `sql2025/json-native-openjson-accessors` cases extend this contract:
+`last to last` selects the final element. Lax lists skip missing indexes; strict
+lists with any missing index give 13608 state 7 for root paths or state 8 for
+WITH columns. A strict null WITH selection also gives 13608 state 8, whereas
+a strict null root selection gives 13611 state 3. WITH scalar columns selecting
+a container use 13624 state 5, not JSON_VALUE's scalar diagnostic. Object
+wildcards have the same 13665 rejection as array wildcards and ranges.
+
+The 60 `sql2025/json-native-modify-accessors` cases include DATALENGTH and
+repeat successfully against the oracle. Nested `last` and `last to last` steps
+also behave as index zero for JSON_MODIFY. Lists leave the value and allocation
+unchanged in lax mode; strict lists give 13608 state 5. Strict append to a
+selected scalar reports 13621 state 3 at an array element but state 2 at an
+object member. Lax append through a missing intermediate member exposes
+13656 state 8. These captures remain unregistered pending implementation.
+
+The 60 `sql2025/json-native-method-accessors` captures prove that the native
+`.modify()` method differs from JSON_MODIFY: `last`, `last to last`, and lists
+leave the document/storage unchanged in lax mode and raise 13608 state 5 in
+strict mode. A missing intermediate member in lax number/null mutation raises
+22020 state 1, severity 17, “Internal Error: Tried to access an expired large
+object.” Lax append there gives 13656 state 8. The function and method need
+separate accessor handling; sharing JSON_MODIFY's index-zero translation
+would produce false greens. These cases remain investigative.
+
+All 216 additional OPENJSON/function/method accessor cases reproduce in
+second oracle runs (96 + 60 + 60). The parser check passes across 37,628
+batches with the existing nine documented differences. This verifies capture
+stability and syntax coverage, not implementation of these pending contracts.
+
+The 48 `sql2025/json-native-accessor-ranges` captures distinguish singleton
+ranges from mixed ranges: `[1 to 1]` works like `[1]`; `[last to last]` follows
+the entry point's `last` behavior. `[0 to last]` and lists containing a
+non-singleton range give OPENJSON 13665 (root state 5, column state 3), or
+mutation 13660 state 5. `[last to 0]` additionally exposes entry-point/error
+precedence differences (13660 state 1 versus 13665/13660 state 3/5) and needs
+separate treatment. Lists containing repeated `last` preserve the ordinary
+list contracts above. These captures are investigative, not passing coverage.
