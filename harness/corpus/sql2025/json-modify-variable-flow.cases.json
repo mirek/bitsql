@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "name": "null-after-select",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; SELECT 7 AS before_value; SET @j.modify('$.a',1); SELECT 9 AS after_value;"
+        }
+      ]
+    },
+    {
+      "name": "null-initialized",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=NULL; SELECT 7 AS before_value; SET @j.modify('$.a',1); SELECT 9 AS after_value;"
+        }
+      ]
+    },
+    {
+      "name": "null-caught",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; BEGIN TRY SET @j.modify('$.a',1); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,ERROR_MESSAGE() AS message; END CATCH; SELECT @@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "typed-null-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}',@p nvarchar(30)=NULL; SET @j.modify(@p,2); SELECT @j AS j,@@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "parameter-path",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}',@p nvarchar(30)=N'$.a',@v int=2; SET @j.modify(@p,@v); SELECT @j AS j,@@ROWCOUNT AS row_count;"
+        }
+      ]
+    },
+    {
+      "name": "null-document-arity",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; SELECT 7 AS before_value; SET @j.modify('$.a');"
+        }
+      ]
+    },
+    {
+      "name": "null-document-path-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; SELECT 7 AS before_value; SET @j.modify(1,2);"
+        }
+      ]
+    },
+    {
+      "name": "null-document-path-syntax",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json; SELECT 7 AS before_value; SET @j.modify('not-a-path',2);"
+        }
+      ]
+    },
+    {
+      "name": "path-syntax-caught",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}'; BEGIN TRY SET @j.modify('not-a-path',2); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS number,ERROR_STATE() AS state,ERROR_MESSAGE() AS message; END CATCH; SELECT @j AS j;"
+        }
+      ]
+    },
+    {
+      "name": "typed-null-value",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"a\":1}',@v int=NULL; SET @j.modify('$.a',@v); SELECT @j AS j,@@ROWCOUNT AS row_count;"
+        }
+      ]
+    }
+  ]
+}

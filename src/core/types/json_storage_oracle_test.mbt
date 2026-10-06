@@ -4880,3 +4880,857 @@ test "native JSON mutation json-allocation-sequences alloc-sequence-31" {
     "{\"a\":[1,2,3],\"b\":{\"x\":1},\"s\":\"abcdefgh\"}",
   )
 }
+
+///|
+fn json_storage_keys(n : Int, array_objects? : Bool = false) -> String {
+  let out = StringBuilder()
+  out.write_string(if array_objects { "[" } else { "{" })
+  for i in 0..<n {
+    if i > 0 {
+      out.write_string(",")
+    }
+    if array_objects {
+      out.write_string("{")
+    }
+    out.write_string("\"k\{i}\":0")
+    if array_objects {
+      out.write_string("}")
+    }
+  }
+  out.write_string(if array_objects { "]" } else { "}" })
+  out.to_string()
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-511" {
+  let initial = json_storage_keys(511, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 10136)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-512" {
+  let initial = json_storage_keys(512, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 10156)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-1023" {
+  let initial = json_storage_keys(1023, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20399)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-1024" {
+  let initial = json_storage_keys(1024, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20420)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-2047" {
+  let initial = json_storage_keys(2047, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 45997)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-2048" {
+  let initial = json_storage_keys(2048, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 46020)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-4095" {
+  let initial = json_storage_keys(4095, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 93101)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-4096" {
+  let initial = json_storage_keys(4096, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 93124)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-8191" {
+  let initial = json_storage_keys(8191, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 187309)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-8192" {
+  let initial = json_storage_keys(8192, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 187332)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-16383" {
+  let initial = json_storage_keys(16383, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 382108)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-16384" {
+  let initial = json_storage_keys(16384, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 382132)
+}
+
+///|
+test "native JSON wide dictionary json-wide-storage object-16385" {
+  let initial = json_storage_keys(16385, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 382156)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index object-1023" {
+  let initial = json_storage_keys(1023, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20399)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new\":1}"
+  value = value.modified(text, "$.new")
+  assert_eq(value.storage_bytes(), 26756)
+  assert_eq(original.storage_bytes(), 20399)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index array-objects-1023" {
+  let initial = json_storage_keys(1023, array_objects=true)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 28583)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 32739)
+  assert_eq(original.storage_bytes(), 28583)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index object-1024" {
+  let initial = json_storage_keys(1024, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20420)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new\":1}"
+  value = value.modified(text, "$.new")
+  assert_eq(value.storage_bytes(), 28861)
+  assert_eq(original.storage_bytes(), 20420)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index array-objects-1024" {
+  let initial = json_storage_keys(1024, array_objects=true)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 28612)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 32772)
+  assert_eq(original.storage_bytes(), 28612)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index object-1025" {
+  let initial = json_storage_keys(1025, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 22491)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new\":1}"
+  value = value.modified(text, "$.new")
+  assert_eq(value.storage_bytes(), 28890)
+  assert_eq(original.storage_bytes(), 22491)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index array-objects-1025" {
+  let initial = json_storage_keys(1025, array_objects=true)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 30691)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 34855)
+  assert_eq(original.storage_bytes(), 30691)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index object-1026" {
+  let initial = json_storage_keys(1026, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 22514)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new\":1}"
+  value = value.modified(text, "$.new")
+  assert_eq(value.storage_bytes(), 28919)
+  assert_eq(original.storage_bytes(), 22514)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index array-objects-1026" {
+  let initial = json_storage_keys(1026, array_objects=true)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 30722)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 34890)
+  assert_eq(original.storage_bytes(), 30722)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index object-2048" {
+  let initial = json_storage_keys(2048, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 46020)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new\":1}"
+  value = value.modified(text, "$.new")
+  assert_eq(value.storage_bytes(), 58557)
+  assert_eq(original.storage_bytes(), 46020)
+}
+
+///|
+test "native JSON wide dictionary json-dictionary-index array-objects-2048" {
+  let initial = json_storage_keys(2048, array_objects=true)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 62404)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 70660)
+  assert_eq(original.storage_bytes(), 62404)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth object-1010" {
+  let initial = json_storage_keys(1010, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20126)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new0\":1}"
+  value = value.modified(text, "$.new0")
+  assert_eq(value.storage_bytes(), 26406)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new1\":1}"
+  value = value.modified(text, "$.new1")
+  assert_eq(value.storage_bytes(), 26412)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new2\":1}"
+  value = value.modified(text, "$.new2")
+  assert_eq(value.storage_bytes(), 26418)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new3\":1}"
+  value = value.modified(text, "$.new3")
+  assert_eq(value.storage_bytes(), 26424)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new4\":1}"
+  value = value.modified(text, "$.new4")
+  assert_eq(value.storage_bytes(), 26430)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new5\":1}"
+  value = value.modified(text, "$.new5")
+  assert_eq(value.storage_bytes(), 26436)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new6\":1}"
+  value = value.modified(text, "$.new6")
+  assert_eq(value.storage_bytes(), 26442)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new7\":1}"
+  value = value.modified(text, "$.new7")
+  assert_eq(value.storage_bytes(), 26448)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new8\":1}"
+  value = value.modified(text, "$.new8")
+  assert_eq(value.storage_bytes(), 26454)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new9\":1}"
+  value = value.modified(text, "$.new9")
+  assert_eq(value.storage_bytes(), 26460)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new10\":1}"
+  value = value.modified(text, "$.new10")
+  assert_eq(value.storage_bytes(), 26467)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new11\":1}"
+  value = value.modified(text, "$.new11")
+  assert_eq(value.storage_bytes(), 26474)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new12\":1}"
+  value = value.modified(text, "$.new12")
+  assert_eq(value.storage_bytes(), 26481)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new13\":1}"
+  value = value.modified(text, "$.new13")
+  assert_eq(value.storage_bytes(), 26488)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new14\":1}"
+  value = value.modified(text, "$.new14")
+  assert_eq(value.storage_bytes(), 26495)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new15\":1}"
+  value = value.modified(text, "$.new15")
+  assert_eq(value.storage_bytes(), 43150)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new16\":1}"
+  value = value.modified(text, "$.new16")
+  assert_eq(value.storage_bytes(), 43157)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new17\":1}"
+  value = value.modified(text, "$.new17")
+  assert_eq(value.storage_bytes(), 43164)
+  assert_eq(original.storage_bytes(), 20126)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth object-1023" {
+  let initial = json_storage_keys(1023, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20399)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new0\":1}"
+  value = value.modified(text, "$.new0")
+  assert_eq(value.storage_bytes(), 26757)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new1\":1}"
+  value = value.modified(text, "$.new1")
+  assert_eq(value.storage_bytes(), 26763)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new2\":1}"
+  value = value.modified(text, "$.new2")
+  assert_eq(value.storage_bytes(), 37153)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new3\":1}"
+  value = value.modified(text, "$.new3")
+  assert_eq(value.storage_bytes(), 37159)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new4\":1}"
+  value = value.modified(text, "$.new4")
+  assert_eq(value.storage_bytes(), 37165)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new5\":1}"
+  value = value.modified(text, "$.new5")
+  assert_eq(value.storage_bytes(), 37171)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new6\":1}"
+  value = value.modified(text, "$.new6")
+  assert_eq(value.storage_bytes(), 37177)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new7\":1}"
+  value = value.modified(text, "$.new7")
+  assert_eq(value.storage_bytes(), 37183)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new8\":1}"
+  value = value.modified(text, "$.new8")
+  assert_eq(value.storage_bytes(), 37189)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new9\":1}"
+  value = value.modified(text, "$.new9")
+  assert_eq(value.storage_bytes(), 37195)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new10\":1}"
+  value = value.modified(text, "$.new10")
+  assert_eq(value.storage_bytes(), 37202)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new11\":1}"
+  value = value.modified(text, "$.new11")
+  assert_eq(value.storage_bytes(), 37209)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new12\":1}"
+  value = value.modified(text, "$.new12")
+  assert_eq(value.storage_bytes(), 37216)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new13\":1}"
+  value = value.modified(text, "$.new13")
+  assert_eq(value.storage_bytes(), 37223)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new14\":1}"
+  value = value.modified(text, "$.new14")
+  assert_eq(value.storage_bytes(), 37230)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new15\":1}"
+  value = value.modified(text, "$.new15")
+  assert_eq(value.storage_bytes(), 54093)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new16\":1}"
+  value = value.modified(text, "$.new16")
+  assert_eq(value.storage_bytes(), 54100)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new17\":1}"
+  value = value.modified(text, "$.new17")
+  assert_eq(value.storage_bytes(), 54107)
+  assert_eq(original.storage_bytes(), 20399)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth object-1024" {
+  let initial = json_storage_keys(1024, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 20420)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new0\":1}"
+  value = value.modified(text, "$.new0")
+  assert_eq(value.storage_bytes(), 28862)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new1\":1}"
+  value = value.modified(text, "$.new1")
+  assert_eq(value.storage_bytes(), 28868)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new2\":1}"
+  value = value.modified(text, "$.new2")
+  assert_eq(value.storage_bytes(), 28874)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new3\":1}"
+  value = value.modified(text, "$.new3")
+  assert_eq(value.storage_bytes(), 28880)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new4\":1}"
+  value = value.modified(text, "$.new4")
+  assert_eq(value.storage_bytes(), 28886)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new5\":1}"
+  value = value.modified(text, "$.new5")
+  assert_eq(value.storage_bytes(), 28892)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new6\":1}"
+  value = value.modified(text, "$.new6")
+  assert_eq(value.storage_bytes(), 28898)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new7\":1}"
+  value = value.modified(text, "$.new7")
+  assert_eq(value.storage_bytes(), 28904)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new8\":1}"
+  value = value.modified(text, "$.new8")
+  assert_eq(value.storage_bytes(), 28910)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new9\":1}"
+  value = value.modified(text, "$.new9")
+  assert_eq(value.storage_bytes(), 28916)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new10\":1}"
+  value = value.modified(text, "$.new10")
+  assert_eq(value.storage_bytes(), 28923)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new11\":1}"
+  value = value.modified(text, "$.new11")
+  assert_eq(value.storage_bytes(), 28930)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new12\":1}"
+  value = value.modified(text, "$.new12")
+  assert_eq(value.storage_bytes(), 28937)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new13\":1}"
+  value = value.modified(text, "$.new13")
+  assert_eq(value.storage_bytes(), 28944)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new14\":1}"
+  value = value.modified(text, "$.new14")
+  assert_eq(value.storage_bytes(), 28951)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new15\":1}"
+  value = value.modified(text, "$.new15")
+  assert_eq(value.storage_bytes(), 45830)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new16\":1}"
+  value = value.modified(text, "$.new16")
+  assert_eq(value.storage_bytes(), 45837)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new17\":1}"
+  value = value.modified(text, "$.new17")
+  assert_eq(value.storage_bytes(), 45844)
+  assert_eq(original.storage_bytes(), 20420)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth object-1025" {
+  let initial = json_storage_keys(1025, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 22491)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new0\":1}"
+  value = value.modified(text, "$.new0")
+  assert_eq(value.storage_bytes(), 28891)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new1\":1}"
+  value = value.modified(text, "$.new1")
+  assert_eq(value.storage_bytes(), 28897)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new2\":1}"
+  value = value.modified(text, "$.new2")
+  assert_eq(value.storage_bytes(), 28903)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new3\":1}"
+  value = value.modified(text, "$.new3")
+  assert_eq(value.storage_bytes(), 28909)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new4\":1}"
+  value = value.modified(text, "$.new4")
+  assert_eq(value.storage_bytes(), 28915)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new5\":1}"
+  value = value.modified(text, "$.new5")
+  assert_eq(value.storage_bytes(), 28921)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new6\":1}"
+  value = value.modified(text, "$.new6")
+  assert_eq(value.storage_bytes(), 28927)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new7\":1}"
+  value = value.modified(text, "$.new7")
+  assert_eq(value.storage_bytes(), 28933)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new8\":1}"
+  value = value.modified(text, "$.new8")
+  assert_eq(value.storage_bytes(), 28939)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new9\":1}"
+  value = value.modified(text, "$.new9")
+  assert_eq(value.storage_bytes(), 28945)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new10\":1}"
+  value = value.modified(text, "$.new10")
+  assert_eq(value.storage_bytes(), 28952)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new11\":1}"
+  value = value.modified(text, "$.new11")
+  assert_eq(value.storage_bytes(), 28959)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new12\":1}"
+  value = value.modified(text, "$.new12")
+  assert_eq(value.storage_bytes(), 28966)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new13\":1}"
+  value = value.modified(text, "$.new13")
+  assert_eq(value.storage_bytes(), 28973)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new14\":1}"
+  value = value.modified(text, "$.new14")
+  assert_eq(value.storage_bytes(), 28980)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new15\":1}"
+  value = value.modified(text, "$.new15")
+  assert_eq(value.storage_bytes(), 45875)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new16\":1}"
+  value = value.modified(text, "$.new16")
+  assert_eq(value.storage_bytes(), 45882)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",\"new17\":1}"
+  value = value.modified(text, "$.new17")
+  assert_eq(value.storage_bytes(), 45889)
+  assert_eq(original.storage_bytes(), 22491)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth array-65520" {
+  let initial = "[" + "0,".repeat(65519) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262102)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524246)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  assert_eq(original.storage_bytes(), 262102)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth array-65535" {
+  let initial = "[" + "0,".repeat(65534) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262162)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524370)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786636)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786636)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786636)
+  assert_eq(original.storage_bytes(), 262162)
+}
+
+///|
+test "native JSON wide dictionary json-wide-growth array-65536" {
+  let initial = "[" + "0,".repeat(65535) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262168)
+  let mut value = original
+  let mut text = initial
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 524378)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786648)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786648)
+  text = text.unsafe_substring(start=0, end=text.length() - 1) + ",1]"
+  value = value.modified(text, "append $")
+  assert_eq(value.storage_bytes(), 786648)
+  assert_eq(original.storage_bytes(), 262168)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-32767" {
+  let initial = "[" + "0,".repeat(32766) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 131090)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-32767" {
+  let initial = json_storage_keys(32767, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 775324)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-32768" {
+  let initial = "[" + "0,".repeat(32767) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 131094)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-32768" {
+  let initial = json_storage_keys(32768, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 775348)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-65535" {
+  let initial = "[" + "0,".repeat(65534) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262162)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-65536" {
+  let initial = "[" + "0,".repeat(65535) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262168)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-65537" {
+  let initial = "[" + "0,".repeat(65536) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262172)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality array-100000" {
+  let initial = "[" + "0,".repeat(99999) + "0]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 400024)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-65535" {
+  let initial = json_storage_keys(65535, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 1823900)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-65536" {
+  let initial = json_storage_keys(65536, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 1823928)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-65537" {
+  let initial = json_storage_keys(65537, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 1823956)
+}
+
+///|
+test "native JSON wide dictionary json-large-cardinality object-100000" {
+  let initial = json_storage_keys(100000, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 2788920)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format object-32769" {
+  let initial = json_storage_keys(32769, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 906452)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format object-40000" {
+  let initial = json_storage_keys(40000, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 1108920)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format object-65534" {
+  let initial = json_storage_keys(65534, array_objects=false)
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 1823872)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format parent-array-65535" {
+  let initial = "[" + ("[" + "0,".repeat(65534) + "0]") + "]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262170)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format parent-object-65535" {
+  let initial = "{\"a\":" + ("[" + "0,".repeat(65534) + "0]") + "}"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262187)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format sibling-array-65535" {
+  let initial = "[" + ("[" + "0,".repeat(65534) + "0]") + ",[1,2]]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262186)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format sibling-object-65535" {
+  let initial = "{\"a\":" +
+    ("[" + "0,".repeat(65534) + "0]") +
+    ",\"b\":{\"c\":1,\"d\":2}}"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262242)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format parent-array-65536" {
+  let initial = "[" + ("[" + "0,".repeat(65535) + "0]") + "]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262178)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format parent-object-65536" {
+  let initial = "{\"a\":" + ("[" + "0,".repeat(65535) + "0]") + "}"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262199)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format sibling-array-65536" {
+  let initial = "[" + ("[" + "0,".repeat(65535) + "0]") + ",[1,2]]"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262196)
+}
+
+///|
+test "native JSON wide dictionary json-global-wide-format sibling-object-65536" {
+  let initial = "{\"a\":" +
+    ("[" + "0,".repeat(65535) + "0]") +
+    ",\"b\":{\"c\":1,\"d\":2}}"
+  let original = @types.JsonData::parse(initial)
+  assert_eq(original.storage_bytes(), 262262)
+}

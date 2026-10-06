@@ -49,5 +49,55 @@ for name in ['json-modify-allocation', 'json-allocation-sequences']:
                 f'  assert_eq(original.storage_bytes(), {initial_size})',
                 f'  assert_eq(original.text(), {json.dumps(initial, ensure_ascii=False)})', '}']
         count += 1
+# Compact input builders mirror the generated SQL documents. Sizes are read
+# from the oracle, including the delayed dictionary-index transitions.
+out += ['', '///|', 'fn json_storage_keys(n : Int, array_objects? : Bool = false) -> String {',
+        '  let out = StringBuilder()',
+        '  out.write_string(if array_objects { "[" } else { "{" })',
+        '  for i in 0..<n {', '    if i > 0 { out.write_string(",") }',
+        '    if array_objects { out.write_string("{") }',
+        r'    out.write_string("\"k\{i}\":0")',
+        '    if array_objects { out.write_string("}") }', '  }',
+        '  out.write_string(if array_objects { "]" } else { "}" })',
+        '  out.to_string()', '}']
+corpus = root / 'harness/corpus/sql2025'
+for name in ['json-wide-storage', 'json-dictionary-index', 'json-wide-growth',
+             'json-large-cardinality', 'json-global-wide-format']:
+    expected = json.loads((corpus / f'{name}.expected.json').read_text())['cases']
+    for key, case in expected.items():
+        if 'padding' in key:
+            continue
+        n = int(key.rsplit('-', 1)[1])
+        array = key.startswith('array-objects-')
+        if key.startswith('object-') or array:
+            initial = f'json_storage_keys({n}, array_objects={str(array).lower()})'
+        else:
+            initial = f'"[" + "0,".repeat({n-1}) + "0]"'
+            for shape, prefix, suffix in [
+                ('parent-array-', '[', ']'), ('parent-object-', '{"a":', '}'),
+                ('sibling-array-', '[', ',[1,2]]'),
+                ('sibling-object-', '{"a":', ',"b":{"c":1,"d":2}}'),
+            ]:
+                if key.startswith(shape):
+                    initial = f'{json.dumps(prefix)} + ({initial}) + {json.dumps(suffix)}'
+                    break
+        sizes = [result['rows'][0][0] for result in case['steps'][0]['sets']]
+        array = key.startswith('array-')
+        out += ['', '///|', f'test "native JSON wide dictionary {name} {key}" {{',
+                f'  let initial = {initial}',
+                '  let original = @types.JsonData::parse(initial)',
+                f'  assert_eq(original.storage_bytes(), {sizes[0]})']
+        if len(sizes) > 1:
+            out += ['  let mut value = original', '  let mut text = initial']
+            for i, size in enumerate(sizes[1:]):
+                prop = 'new' if name == 'json-dictionary-index' else f'new{i}'
+                suffix = ',1]' if array else f',"{prop}":1}}'
+                path = 'append $' if array else f'$.{prop}'
+                out += [f'  text = text.unsafe_substring(start=0, end=text.length()-1) + {json.dumps(suffix)}',
+                        f'  value = value.modified(text, {json.dumps(path)})',
+                        f'  assert_eq(value.storage_bytes(), {size})']
+            out += [f'  assert_eq(original.storage_bytes(), {sizes[0]})']
+        out += ['}']
+        count += 1
 (root / 'src/core/types/json_storage_oracle_test.mbt').write_text('\n'.join(out) + '\n')
 print(f'Generated {count} oracle-derived JSON storage tests')

@@ -11,7 +11,7 @@ pushes and container publication on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
-| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Fresh-value binary DATALENGTH now passes 236 construction captures and ten SQL context batches; JSON_MODIFY allocation and deleted-slot semantics now pass the expanded 398-case focused run. Large dictionary/array sizes have newly captured discrepancies; native modify statements and other roadmap gaps remain. 37 persisted-column mutation sequences reproduce on a second oracle run. Native modify retains storage beyond canonical text and needs implementation, including 43 newly recorded parser gaps for column method calls. Variable mutation has unstable oracle failures; see the JSON reference. JSON_CONTAINS and JSON indexes still need explicit audit. |
+| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Initial smoke passes; existing json3/json4 captures cover much more. Fresh-value binary DATALENGTH now passes 236 construction captures and ten SQL context batches; JSON_MODIFY allocation and deleted-slot semantics now pass the expanded 398-case focused run. Large construction and array-widening cases are implemented; five further mutation discrepancies remain; native modify statements and other roadmap gaps remain. 37 persisted-column mutation sequences reproduce on a second oracle run. Native modify retains storage beyond canonical text and needs implementation, including 43 newly recorded parser gaps for column method calls. Variable mutation has unstable oracle failures; see the JSON reference. JSON_CONTAINS and JSON indexes still need explicit audit. |
 | Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Scalar/SPLIT byte decoding, lone-surrogate normalization, BOM preservation and flag-type checks now pass all 351 captured regex cases. Fourteen MATCHES transport-failure cases lack expectations and remain open, along with remaining RE2/SQL edge audits; the previous checkpoint passed the full gate 2026-10-06. |
 | Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 and preview float16 storage, JSON conversion, TDS 7.4 fallback, catalogs, properties and base-specific distance kernels are implemented. Float32 norms/normalization work; float16 receives SQL Server’s captured 42246 rejection. All 150 vector cases pass focused verification, including declaration diagnostics, preview transitions and maximum dimensions. Broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
@@ -127,3 +127,19 @@ remaining size discrepancies documented in the JSON reference; they are
 investigative and unregistered. Native modify contracts add six known parser
 gaps to the previous 50. These gaps and the wider feature audit remain open.
 No new container has been published.
+
+## Native JSON wide-storage checkpoint (2026-10-06)
+
+`scripts/check.sh` passed: 1,464 MoonBit tests, all-backend core checks,
+21,716 client/corpus tests passed, three pre-existing skips and no failures
+(21,719 total). All 87 newly registered large-storage cases ran. The combined
+focused allocation run passes 485 cases; 356 storage unit tests derive their
+expectations from oracle captures. The subsequent parser check includes all
+36,237 batches, retaining the same 56 known syntax gaps. Four large object cases previously missing
+expectations now have successful captures with a longer request timeout.
+
+The allocator models dictionary-index materialization, document-wide format
+changes and rebuilding live storage during widening. Conservative container
+copying and captured wide-array corruption behavior still have discrepancies;
+new investigative cases document the limits. Native modify syntax/execution,
+the rest of the 2025 audit, and a new published container remain outstanding.

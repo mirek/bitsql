@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "name": "object-65535",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65535-1)+N'0]'; SET @s=N'{\"a\":'+@s+N',\"b\":1,\"c\":\"padding\"}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.b',NULL); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'append $.a',1); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.b',2); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "array-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65536-1)+N'0]'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$',JSON_QUERY(N'[1]')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'append $',2); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'append $',3); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "object-65536",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),65536-1)+N'0]'; SET @s=N'{\"a\":'+@s+N',\"b\":1,\"c\":\"padding\"}'; DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.a',JSON_QUERY(N'[]')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.c',JSON_QUERY(N'{\"x\":1}')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.a',JSON_QUERY(N'[1]')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "dictionary-cross",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32767-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.x',1); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.y',2); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.z',3); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "dictionary-dead-key",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.k0',NULL); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.new',1); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.k0',2); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "dictionary-new-container",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.k0',JSON_QUERY(N'{\"new\":1}')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    },
+    {
+      "name": "dictionary-known-container",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @s nvarchar(max)=N'['+REPLICATE(CAST(N'0,' AS nvarchar(max)),32768-1)+N'0]'; SELECT @s=N'{'+STRING_AGG(CAST(N'\"k'+[key]+N'\":0' AS nvarchar(max)),N',') WITHIN GROUP(ORDER BY CAST([key] AS int))+N'}' FROM OPENJSON(@s); DECLARE @j json=CAST(@s AS json); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail; SET @j=JSON_MODIFY(@j,'$.k0',JSON_QUERY(N'{\"k1\":1}')); SELECT DATALENGTH(@j) AS bytes,RIGHT(CAST(@j AS nvarchar(max)),80) AS tail;"
+        }
+      ]
+    }
+  ]
+}

@@ -1000,3 +1000,12 @@ never mutated after publication, preserving assignments and transaction snapshot
 The first construction-only checkpoint used an unknown-size marker; the captured
 mutation model replaces that interim state. See the JSON reference for evidence
 and the native modify statement forms that remain unfinished.
+
+### Native JSON storage widths (2026-10-06)
+
+The allocation model carries the document's narrow/wide format and whether
+its dictionary index has materialized. These cannot be inferred from the
+current JSON text after mutation. Widening rebuilds live storage before the
+operation; ordinary edits retain dead allocation. See the JSON reference and
+`sql2025/json-global-wide-format` / `json-wide-transitions` captures. The model
+remains separate from any binary page serializer.

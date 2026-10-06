@@ -45,6 +45,27 @@ priv enum JsonStorageNode {
 } derive(Debug, Eq)
 
 ///|
+fn JsonStorageNode::requires_wide(
+  self : JsonStorageNode,
+  keys : Set[String],
+) -> Bool {
+  match self {
+    NArray(children, _) =>
+      children.length() > 65535 || children.any(c => c.requires_wide(keys))
+    NObject(children, _) => {
+      for (key, child) in children {
+        keys.add(key)
+        if keys.length() > 32768 || child.requires_wide(keys) {
+          return true
+        }
+      }
+      false
+    }
+    _ => false
+  }
+}
+
+///|
 fn JsonTypeParser::storage_node(
   self : JsonTypeParser,
   depth : Int,
@@ -137,10 +158,47 @@ fn json_storage_tree(canonical : String) -> JsonStorageNode raise SqlError {
 
 ///|
 priv struct JsonAllocator {
+  wide : Bool
   mut end : Int
   keys : Set[String]
   mut dictionary_offset : Int?
   mut dictionary_capacity : Int
+  mut dictionary_indexed : Bool
+}
+
+///|
+fn JsonAllocator::container_bytes(
+  self : JsonAllocator,
+  capacity : Int,
+  object : Bool,
+) -> Int {
+  (if self.wide { 6 } else { 4 }) +
+  (if object { if self.wide { 8 } else { 6 } } else { 4 }) * capacity
+}
+
+///|
+fn JsonAllocator::dictionary_bytes(
+  self : JsonAllocator,
+  capacity : Int,
+  indexed : Bool,
+) -> Int {
+  (if self.wide { 6 } else { 4 }) +
+  (8 + (if indexed { if self.wide { 4 } else { 2 } } else { 0 })) * capacity
+}
+
+///|
+fn JsonAllocator::container_capacity(
+  self : JsonAllocator,
+  old : Int,
+  object : Bool,
+) -> Int {
+  let n = json_grow_capacity(old)
+  let limit = if object { 32767 } else { 65535 }
+  if !self.wide && n > limit {
+    limit
+  } else {
+    n
+  }
 }
 
 ///|
@@ -184,13 +242,20 @@ fn JsonAllocator::reserve_dictionary(
   let mut capacity = old
   while capacity < count {
     capacity = json_grow_capacity(capacity)
+    if !self.wide && capacity > 32767 {
+      capacity = 32767
+    }
   }
-  if self.dictionary_offset is Some(offset) && offset + 4 + 8 * old == self.end {
-    ignore(self.allocate(8 * (capacity - old)))
+  let old_bytes = self.dictionary_bytes(old, self.dictionary_indexed)
+  let indexed = self.dictionary_indexed || count > 1024
+  let new_bytes = self.dictionary_bytes(capacity, indexed)
+  if self.dictionary_offset is Some(offset) && offset + old_bytes == self.end {
+    ignore(self.allocate(new_bytes - old_bytes))
   } else {
-    self.dictionary_offset = Some(self.allocate(4 + 8 * capacity))
+    self.dictionary_offset = Some(self.allocate(new_bytes))
   }
   self.dictionary_capacity = capacity
+  self.dictionary_indexed = indexed
 }
 
 ///|
@@ -201,6 +266,21 @@ fn JsonAllocator::key(
 ) -> Unit raise SqlError {
   if self.keys.contains(key) {
     return
+  }
+  // A spare slot can postpone the index until the next new-key insertion.
+  // Existing-key replacement/deletion does not materialize it.
+  if !self.dictionary_indexed &&
+    self.keys.length() > 1024 &&
+    self.dictionary_offset is Some(offset) {
+    let capacity = self.dictionary_capacity
+    if offset + self.dictionary_bytes(capacity, false) == self.end {
+      ignore(self.allocate((if self.wide { 4 } else { 2 }) * capacity))
+    } else {
+      self.dictionary_offset = Some(
+        self.allocate(self.dictionary_bytes(capacity, true)),
+      )
+    }
+    self.dictionary_indexed = true
   }
   if direct {
     self.reserve_dictionary(self.keys.length() + 1)
@@ -223,7 +303,7 @@ fn JsonAllocator::clone_node(
     NArray(children, _) => {
       let copy = children.map(c => self.clone_node(c))
       if !copy.is_empty() {
-        ignore(self.allocate(4 + 4 * copy.length()))
+        ignore(self.allocate(self.container_bytes(copy.length(), false)))
       }
       NArray(copy, copy.length())
     }
@@ -234,7 +314,7 @@ fn JsonAllocator::clone_node(
         (key, self.clone_node(value))
       })
       if !copy.is_empty() {
-        ignore(self.allocate(4 + 6 * copy.length()))
+        ignore(self.allocate(self.container_bytes(copy.length(), true)))
       }
       NObject(copy, copy.length())
     }
@@ -319,8 +399,8 @@ fn JsonAllocator::put(
         }
       }
       let capacity = if out.length() > capacity {
-        let next = json_grow_capacity(capacity)
-        ignore(self.allocate(4 + 6 * next))
+        let next = self.container_capacity(capacity, true)
+        ignore(self.allocate(self.container_bytes(next, true)))
         next
       } else {
         capacity
@@ -378,8 +458,8 @@ fn JsonAllocator::update(
           let out = old.copy()
           out.push(self.fresh(next[old.length()]))
           let capacity = if out.length() > capacity {
-            let n = json_grow_capacity(capacity)
-            ignore(self.allocate(4 + 4 * n))
+            let n = self.container_capacity(capacity, false)
+            ignore(self.allocate(self.container_bytes(n, false)))
             n
           } else {
             capacity
@@ -424,35 +504,52 @@ fn JsonAllocator::update(
 /// set are never mutated after publication, preserving assignment/snapshots.
 pub struct JsonData {
   priv text : String
+  priv wide : Bool
   priv root : JsonStorageNode
   priv end : Int
   priv keys : Set[String]
   priv dictionary_offset : Int?
   priv dictionary_capacity : Int
+  priv dictionary_indexed : Bool
 } derive(Debug, Eq)
 
 ///|
-fn JsonData::from_canonical(canonical : String) -> JsonData raise SqlError {
+fn JsonData::from_canonical(
+  canonical : String,
+  force_wide? : Bool = false,
+) -> JsonData raise SqlError {
+  let tree = json_storage_tree(canonical)
+  let wide = force_wide || tree.requires_wide(Set([]))
   let state : JsonAllocator = {
+    wide,
     end: 2,
     keys: Set([]),
     dictionary_offset: None,
     dictionary_capacity: 0,
+    dictionary_indexed: false,
   }
-  let root = state.clone_node(json_storage_tree(canonical))
+  let root = state.clone_node(tree)
   state.dictionary_capacity = state.keys.length()
+  state.dictionary_indexed = state.keys.length() > 1024
   if !state.keys.is_empty() {
     state.dictionary_offset = Some(
-      state.allocate(4 + 8 * state.dictionary_capacity),
+      state.allocate(
+        state.dictionary_bytes(
+          state.dictionary_capacity,
+          state.dictionary_indexed,
+        ),
+      ),
     )
   }
   {
     text: canonical,
+    wide,
     root,
     end: state.end,
     keys: state.keys,
     dictionary_offset: state.dictionary_offset,
     dictionary_capacity: state.dictionary_capacity,
+    dictionary_indexed: state.dictionary_indexed,
   }
 }
 
@@ -477,25 +574,36 @@ pub fn JsonData::modified(
   if p.steps.any(s => s.is_multi()) {
     raise not_supported("native JSON allocation for a multi-value path")
   }
+  let tree = json_storage_tree(canonical)
+  // Widening rebuilds the current live document before applying the mutation.
+  // Dead allocations disappear; all containers and dictionary entries widen.
+  let keys = self.keys.copy()
+  let requires_wide = tree.requires_wide(keys)
+  let dictionary_grows_wide = keys.length() > self.keys.length() &&
+    keys.length() >= 32768
+  if !self.wide && (requires_wide || dictionary_grows_wide) {
+    return JsonData::from_canonical(self.text, force_wide=true).modified(
+      canonical, path,
+    )
+  }
   let state : JsonAllocator = {
+    wide: self.wide,
     end: self.end,
     keys: self.keys.copy(),
     dictionary_offset: self.dictionary_offset,
     dictionary_capacity: self.dictionary_capacity,
+    dictionary_indexed: self.dictionary_indexed,
   }
-  let root = state.update(
-    self.root,
-    json_storage_tree(canonical),
-    p.steps[:],
-    p.append,
-  )
+  let root = state.update(self.root, tree, p.steps[:], p.append)
   {
     text: root.to_text(),
+    wide: self.wide,
     root,
     end: state.end,
     keys: state.keys,
     dictionary_offset: state.dictionary_offset,
     dictionary_capacity: state.dictionary_capacity,
+    dictionary_indexed: state.dictionary_indexed,
   }
 }
 

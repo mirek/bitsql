@@ -311,13 +311,15 @@ xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
 
 `sql2025/json-binary-size.cases.json` and `json-binary-boundaries.cases.json`
 provide 236 captured sizes and canonical strings. The implementation matches
-all 236 with the following inferred accounting. This supports DATALENGTH of
+all 236 with the following narrow-format accounting. Large-format extensions
+are documented below. This supports DATALENGTH of
 fresh native JSON values; it is not a claim to serialize SQL Server's format:
 
 - Start with 18 bytes. Empty containers contribute zero additional bytes;
   nonempty arrays add 4 + 4n, nonempty objects add 4 + 6n, plus child payloads.
 - Property names are shared across the entire document, case-sensitively. If
   there are any, add 4 + 8k plus the string payload of each distinct key.
+  Above 1,024 keys, the dictionary also has a two-byte index per key.
 - Empty strings are inline. A nonempty string costs its UTF-8 byte length,
   a one-byte tag, and a base-128 variable-length length field. String **values**
   are not deduplicated, and do not share payloads with property names.
@@ -411,19 +413,71 @@ mutation sequences containing 669 operations, with immutable-copy assertions.
 This is an allocation model, not a serializer for native SQL Server pages.
 The native modify statement forms and other JSON audit items remain open.
 
-### Large storage boundaries still under investigation (2026-10-06)
+### Large dictionaries and document-wide format (2026-10-06)
 
-`json-wide-storage`, `json-dictionary-index`, `json-wide-growth`,
-`json-wide-transitions` and `json-large-cardinality` capture further boundaries
-not yet implemented in the allocation model. Fresh dictionaries above 1,024
-unique keys add two bytes per key, including keys spread across many objects.
-Fresh arrays above 65,535 elements add two bytes compared with the small-array
-formula. Mutation transitions are state-dependent: adding the 1,025th key can
-install the dictionary index immediately or defer it to a later operation,
-depending on retained capacity. Large-array transitions also differ between
-root and nested arrays. These are known size discrepancies, not verified
-support. Four object captures at 65,535 or more members timed out; missing
-expectations do not establish SQL Server rejection or a passing emulator case.
+The seven registered case files `json-wide-storage`, `json-dictionary-index`,
+`json-dictionary-lazy-index`, `json-wide-growth`, `json-wide-transitions`,
+`json-global-wide-format` and `json-large-cardinality` cover 87 further cases.
+All previously timed-out object constructions were captured with a 180-second
+request timeout; the largest has 100,000 properties. No expected results were
+inferred from timeouts. The core storage generator now includes 356 tests.
+
+- Fresh dictionaries above 1,024 unique keys add a sorted index. In narrow
+  format it uses two bytes per allocated key slot. After mutation creates the
+  1,025th key in an existing spare slot, the index can remain absent until the
+  next new-key insertion. Existing-key edits and deletion do not create it.
+- Fresh arrays above 65,535 elements or dictionaries above 32,768 keys switch
+  the whole document to wide format. All container/dictionary headers become
+  six bytes; object entries become eight bytes; dictionary index entries
+  become four bytes. Array entries and the non-index part of dictionary
+  entries remain four and eight bytes respectively. Header/footer overhead
+  remains 18 bytes. Nested arrays affect parents and siblings too.
+- Array widening rebuilds the current live document before applying the
+  operation. This removes dead storage and deleted slots; it is an exception
+  to ordinary retained-allocation behavior. Read-only native page dumps
+  confirmed the document header change and relocation of the rebuilt root;
+  regression expectations come from the SQL captures above.
+- Narrow mutable capacities are capped at 65,535 array elements and 32,767
+  object/dictionary slots. Inserting a new key beyond that dictionary limit
+  widens before mutation. Fresh construction can still hold 32,768 keys in
+  narrow format, and editing an existing scalar need not widen it.
+
+Further mutation cases remain investigative: `json-wide-mutation` and
+`json-dictionary-wide-capacity` currently have five disagreements across 15
+cases. Three involve conservative widening when cloning a small container
+near a large dictionary's limit. The others capture oracle errors 13641
+(resource limit after reusing a deleted slot) and 13643 (corrupted JSON after
+multiple wide-container replacements). Do not encode corruption as a stable
+contract without independent verification. These cases are not registered as
+passing support and remain release requirements.
+
+Follow-up evidence in `json-wide-preflight` shows that cloning even an empty
+container into a narrow document with 32,767 dictionary keys widens it;
+scalar replacement does not. At 32,766 keys, copying a two-element array does
+not widen, so adding the source and destination element counts is the wrong
+rule. `json-wide-empty-replacement` independently reproduces 13643 for both
+variables and persisted columns: copying `[1]` over an empty container in a
+wide document adds eight bytes (the narrow array size), DATALENGTH succeeds,
+and character conversion raises 13643 state 8. Copying an object or scalar
+into the same slot succeeds. Retain this error timing and source-format
+provenance in the remaining audit; do not replace it with a guessed immediate
+mutation error.
+
+### Native modify statement contracts (captured, not implemented)
+
+`json-modify-method-contracts` and `json-modify-variable-flow` distinguish
+`SET @j.modify(path, value)` from a JSON_MODIFY assignment. Successful variable
+mutation sets @@ROWCOUNT to 1 and emits DONE CurCmd 193. A typed NULL path is a
+successful no-op, although a NULL literal path is a binding error 8116. A NULL
+target raises 5302 before path parsing, after earlier statements have run;
+the uncaught error completes with CurCmd 253. Arity/type errors are detected
+before earlier SELECT statements execute. TRY/CATCH observes a failed method
+statement's zero-row completion. Assignment copies remain independent.
+
+Column contracts include row expressions for both arguments, aliases with
+OUTPUT, mixed SET clauses, duplicate targets (264), NULL targets (5302), and
+unknown methods (258). These captures are implementation requirements, not
+passing support.
 
 ## Not emulated
 

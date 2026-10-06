@@ -4,17 +4,248 @@
     "version": "17.0.5005.3"
   },
   "cases": {
-    "array-32767": {
-      "case": "07edce85c94049b3",
+    "null-after-select": {
+      "case": "06467111782fa945",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"before_value","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[7]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":5302,"state":1,"class":16,"lineNumber":1,"message":"Mutator 'modify()' on '@j' cannot be called on a null value."}],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+          ],
+          "stream": [
+            {"name":"COLMETADATA","columns":1},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"ERROR","number":5302},
+            {"name":"DONE","status":2,"curCmd":253}
+          ],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "null-initialized": {
+      "case": "eaa9ac32d97bc712",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"before_value","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[7]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":5302,"state":1,"class":16,"lineNumber":1,"message":"Mutator 'modify()' on '@j' cannot be called on a null value."}],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+          ],
+          "stream": [
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"COLMETADATA","columns":1},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"ERROR","number":5302},
+            {"name":"DONE","status":2,"curCmd":253}
+          ],
+          "rowCount": 2
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "null-caught": {
+      "case": "6ae2c694bd7914ad",
       "steps": [
         {
           "sets": [
             {
               "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+                {"name":"number","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"state","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {
+                  "name": "message",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
               ],
-              "rows": [[131090,"65535"]]
+              "rows": [[5302,1,"Mutator 'modify()' on '@j' cannot be called on a null value."]]
+            },
+            {
+              "columns": [{"name":"row_count","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[0]]
+            }
+          ],
+          "done": [
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":false}
+          ],
+          "errors": [],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":349},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":350},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":351},
+            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+          ],
+          "stream": [
+            {"name":"DONE","status":1,"curCmd":349},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"DONE","status":1,"curCmd":350},
+            {"name":"COLMETADATA","columns":3},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"DONE","status":1,"curCmd":351},
+            {"name":"COLMETADATA","columns":1},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":16,"curCmd":193}
+          ],
+          "rowCount": 2
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "typed-null-path": {
+      "case": "2b0235163bfed716",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [
+                {
+                  "name": "j",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+                },
+                {"name":"row_count","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+              ],
+              "rows": [["{\"a\":1}",1]]
             }
           ],
           "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
@@ -71,91 +302,25 @@
         "rowCount": 2
       }
     },
-    "object-32767": {
-      "case": "843d6e941faa6423",
+    "parameter-path": {
+      "case": "4238fdf9852932e8",
       "steps": [
         {
           "sets": [
             {
               "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+                {
+                  "name": "j",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+                },
+                {"name":"row_count","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
               ],
-              "rows": [[775324,"349328"]]
-            }
-          ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "array-32768": {
-      "case": "4bab5dea2f165ad4",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[131094,"65537"]]
+              "rows": [["{\"a\":2}",1]]
             }
           ],
           "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
@@ -212,44 +377,27 @@
         "rowCount": 2
       }
     },
-    "object-32768": {
-      "case": "6c3e6841596c1410",
+    "null-document-arity": {
+      "case": "3eb3f018a20b29b3",
       "steps": [
         {
-          "sets": [
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
             {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[775348,"349339"]]
+              "number": 313,
+              "state": 101,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "An insufficient number of arguments were supplied for the procedure or function modify."
             }
           ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
           "info": [],
           "returnStatus": null,
           "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+          "stream": [{"name":"ERROR","number":313},{"name":"DONE","status":2,"curCmd":253}],
+          "rowCount": 0
         }
       ],
       "reuse": {
@@ -286,33 +434,194 @@
         "rowCount": 2
       }
     },
-    "array-65535": {
-      "case": "d5d6d216dbd72765",
+    "null-document-path-type": {
+      "case": "bf8d0224fc87b4a8",
+      "steps": [
+        {
+          "sets": [],
+          "done": [{"kind":"done","rowCount":null,"more":false}],
+          "errors": [
+            {
+              "number": 8116,
+              "state": 1,
+              "class": 16,
+              "lineNumber": 1,
+              "message": "Argument data type int is invalid for argument 2 of modify function."
+            }
+          ],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+          "stream": [{"name":"ERROR","number":8116},{"name":"DONE","status":2,"curCmd":253}],
+          "rowCount": 0
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "null-document-path-syntax": {
+      "case": "b5cef796f5135d26",
+      "steps": [
+        {
+          "sets": [
+            {
+              "columns": [{"name":"before_value","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+              "rows": [[7]]
+            }
+          ],
+          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+          "errors": [{"number":5302,"state":1,"class":16,"lineNumber":1,"message":"Mutator 'modify()' on '@j' cannot be called on a null value."}],
+          "info": [],
+          "returnStatus": null,
+          "outputs": [],
+          "tokens": [
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}
+          ],
+          "stream": [
+            {"name":"COLMETADATA","columns":1},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"ERROR","number":5302},
+            {"name":"DONE","status":2,"curCmd":253}
+          ],
+          "rowCount": 1
+        }
+      ],
+      "reuse": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [[0,0]]
+          },
+          {
+            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      }
+    },
+    "path-syntax-caught": {
+      "case": "2d699ef60fdc8227",
       "steps": [
         {
           "sets": [
             {
               "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+                {"name":"number","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {"name":"state","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+                {
+                  "name": "message",
+                  "type": "NVarChar",
+                  "length": 8000,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+                }
               ],
-              "rows": [[262162,"131071"]]
+              "rows": [[13607,22,"JSON path is not properly formatted. Unexpected character 'n' is found at position 0."]]
+            },
+            {
+              "columns": [
+                {
+                  "name": "j",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+                }
+              ],
+              "rows": [["{\"a\":1}"]]
             }
           ],
-          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+          "done": [
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":0,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":true},
+            {"kind":"done","rowCount":null,"more":true},
+            {"kind":"done","rowCount":1,"more":false}
+          ],
           "errors": [],
           "info": [],
           "returnStatus": null,
           "outputs": [],
           "tokens": [
             {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":349},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":350},
             {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":351},
             {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
           ],
           "stream": [
             {"name":"DONE","status":17,"curCmd":193},
+            {"name":"DONE","status":1,"curCmd":349},
             {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
+            {"name":"DONE","status":1,"curCmd":350},
+            {"name":"COLMETADATA","columns":3},
+            {"name":"ROW","count":1},
+            {"name":"DONE","status":17,"curCmd":193},
+            {"name":"DONE","status":1,"curCmd":351},
+            {"name":"COLMETADATA","columns":1},
             {"name":"ROW","count":1},
             {"name":"DONE","status":16,"curCmd":193}
           ],
@@ -353,17 +662,25 @@
         "rowCount": 2
       }
     },
-    "array-65536": {
-      "case": "9eaceeb859467ea5",
+    "typed-null-value": {
+      "case": "e1eb4122516d2274",
       "steps": [
         {
           "sets": [
             {
               "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+                {
+                  "name": "j",
+                  "type": "VarChar",
+                  "length": 65535,
+                  "precision": null,
+                  "scale": null,
+                  "flags": 33,
+                  "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+                },
+                {"name":"row_count","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
               ],
-              "rows": [[262168,"131073"]]
+              "rows": [["{}",1]]
             }
           ],
           "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
@@ -384,436 +701,6 @@
             {"name":"DONE","status":16,"curCmd":193}
           ],
           "rowCount": 3
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "array-65537": {
-      "case": "04a574ab774cd7ff",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[262172,"131075"]]
-            }
-          ],
-          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 3
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "array-100000": {
-      "case": "bf7895d17ff1525c",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[400024,"200001"]]
-            }
-          ],
-          "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 3
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "object-65535": {
-      "case": "15b1b31da7da23a8",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[1823900,"709776"]]
-            }
-          ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "object-65536": {
-      "case": "01cfc2e4d8ca191a",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[1823928,"709787"]]
-            }
-          ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "object-65537": {
-      "case": "f3b0005bf54b64d2",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[1823956,"709798"]]
-            }
-          ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
-        }
-      ],
-      "reuse": {
-        "sets": [
-          {
-            "columns": [
-              {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
-              {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
-            ],
-            "rows": [[0,0]]
-          },
-          {
-            "columns": [{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
-            "rows": [[1]]
-          }
-        ],
-        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
-        "errors": [],
-        "info": [],
-        "returnStatus": null,
-        "outputs": [],
-        "tokens": [
-          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-        ],
-        "stream": [
-          {"name":"COLMETADATA","columns":2},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":17,"curCmd":193},
-          {"name":"COLMETADATA","columns":1},
-          {"name":"ROW","count":1},
-          {"name":"DONE","status":16,"curCmd":193}
-        ],
-        "rowCount": 2
-      }
-    },
-    "object-100000": {
-      "case": "94376aa3645351f0",
-      "steps": [
-        {
-          "sets": [
-            {
-              "columns": [
-                {"name":"bytes","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
-                {"name":"text_length","type":"IntN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
-              ],
-              "rows": [[2788920,"1088891"]]
-            }
-          ],
-          "done": [
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":true},
-            {"kind":"done","rowCount":1,"more":false}
-          ],
-          "errors": [],
-          "info": [],
-          "returnStatus": null,
-          "outputs": [],
-          "tokens": [
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
-            {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
-          ],
-          "stream": [
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"DONE","status":17,"curCmd":193},
-            {"name":"COLMETADATA","columns":2},
-            {"name":"ROW","count":1},
-            {"name":"DONE","status":16,"curCmd":193}
-          ],
-          "rowCount": 4
         }
       ],
       "reuse": {
