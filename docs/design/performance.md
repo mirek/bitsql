@@ -699,3 +699,85 @@ verified at the same digest:
 Both images carry revision `b16b333068687eb09fa141d2cfa7a61c5f4d33f8`;
 revision stamping preserved the tested filesystem layers. The amd64 registry
 layers total 12.4916 MiB compressed (README rounds to 12.5).
+
+
+## Flat grouping and DISTINCT projections (2026-10-06, 0.1.18)
+
+The single-key accumulator aggregate now evaluates one flat value array and
+uses `single_value_ids` directly, materializing key rows only for group
+representatives. Non-exact types still use the existing comparison fallback
+on retained values, without evaluating expressions again. GROUP BY retains
+its first spelling and its existing `ansi=false` equality. Aggregate finish
+consumes privately allocated key rows instead of copying them; input rows
+are never passed to this helper.
+
+A single-expression Project under DISTINCT similarly retains flat values
+until grouping finishes. It preserves each projection's `next_row` call,
+all expression evaluations before grouping, first-appearance group order and
+binary-smallest string representative. Multi-column projections use the old
+path. Tests compare outputs, effect traces, NULL warnings, errors and input
+immutability with the original materialized paths, including empty input,
+NULLs, linguistic/binary collations, mixed kinds and fallback values.
+
+Sequential native measurements, 20k rows, 100 repetitions per query:
+
+| Query | 0.1.17 means (ms) | Flat grouping/DISTINCT means (ms) |
+| --- | ---: | ---: |
+| GROUP BY p | 1.66 / 1.52 | 1.02 / 1.03 |
+| GROUP BY v | 4.93 / 4.77 | 4.20 / 4.18 |
+| DISTINCT v | 5.15 / 5.08 | 4.37 / 4.38 |
+| COUNT DISTINCT v | 3.29 / 3.24 | 3.30 / 3.20 |
+| ROW_NUMBER | 5.94 / 5.86 | 5.92 / 5.94 |
+| Unique GROUP BY id | 9.31 / 9.30 | 8.21 / 8.14 |
+| Unique DISTINCT id | 8.18 / 7.94 | 7.26 / 7.23 |
+| Decimal DISTINCT fallback | 11.08 / 10.93 | 10.41 / 10.46 |
+| Multi-column DISTINCT | 19.10 / 18.85 | 18.89 / 19.58 |
+
+The first grouping-only version slightly slowed unique grouping (about 2–4%);
+consuming the private output key resolved that and improved unique grouping
+about 12%. Computed and NULL grouping keys improved; decimal grouping and
+multi-column controls stayed roughly stable. One initial scratch control had
+invalid string quoting and was rejected by the benchmark runner; it yielded
+no usable comparison and was corrected before the full control run.
+Evidence: `_build/flat-group-bench.txt`, `_build/flat-group-controls.txt`,
+`_build/flat-distinct-bench.txt`. Release validation and container comparison follow below.
+
+
+A fixed private array of 64 immutable BIGINT values also reuses small
+ROW_NUMBER ranks in both normalized and general paths. Larger ranks retain
+normal allocation. The cache neither grows with input nor changes the value
+type. Existing window equivalence tests and a boundary test cover it.
+Against the flat-grouping/DISTINCT candidate without this cache, 100-repeat
+means were 6.34/6.38 → 6.00/5.85 ms for text partitions and 4.45/4.45 →
+4.22/4.20 for integer partitions. Unpartitioned windows (3.16/3.23 →
+3.21/3.19) and two large partitions (5.93/6.06 → 6.03/6.00) were roughly
+stable; decimal fallback improved slightly (16.75/16.50 → 16.44/16.36).
+Evidence: `_build/rank-cache-bench.txt`. No benchmarks overlapped builds,
+tests or another benchmark.
+
+
+The exact amd64 release binary passed the full gate: 286 MoonBit tests,
+20703 client/corpus passes, three skips, no failures. Arm64 passed 572/572.
+The JSON compatibility corpus was also reverified against the SQL Server
+oracle (1/1 case passed). All benchmark ports and processes were clear after
+the gate; comparison ran sequentially, without build/test activity.
+
+All 48 shape medians agree with the 240 raw samples. Text GROUP BY now wins:
+4.67 vs SQL Server 5.17 ms. DISTINCT is 4.82 vs 4.59 (about 5% slower),
+EXISTS 4.95 vs 4.86 (about 2% slower), and ROW_NUMBER effectively tied at
+5.9209 vs 5.9189. Total shape medians are 232.84 vs 671.80 ms, about 2.9x.
+SQL Server's timings changed too, so controlled before/after measurements
+above are the evidence for causal gains, not cross-release ratios alone.
+
+The container's 1000 point-SELECT workload measured 154 vs 142 ms, behind
+SQL Server and slower than the prior release's recorded wall time. Two
+native baseline/candidate request-control pairs, reversing order in the
+second pair, did not reproduce a regression: eight runs per binary had
+median wall times about 115 ms for both, with similar CPU time. Individual
+runs varied on both binaries. README retains the actual new container result
+instead of replacing it with a favorable control. This remains a variable
+near-parity workload; the broader optimization goal stays open.
+
+Evidence: `harness/out/bench-compare-0.1.18.json`, `_build/bench-0.1.18.txt`,
+`_build/check-0.1.18.log`, `_build/arm64-0.1.18.log`,
+`_build/json-oracle-0.1.18.log`, `_build/requests-0.1.18-controls.txt`.

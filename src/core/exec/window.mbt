@@ -582,7 +582,7 @@ fn row_numbers(
     if j > 0 && !same_prefix(sorted[j - 1].0, kv.0, np, collations) {
       start = j
     }
-    result[kv.1] = BigInt((j - start + 1).to_int64())
+    result[kv.1] = row_number_value(j - start)
   }
 }
 
@@ -627,7 +627,7 @@ fn row_numbers_normalized(
         start = j
       }
     }
-    result[at] = BigInt((j - start + 1).to_int64())
+    result[at] = row_number_value(j - start)
   }
   Some(order)
 }
@@ -642,4 +642,20 @@ fn window_key_columns(keys : Array[@ir.SortKey]) -> Array[Int]? {
     }
   }
   Some(columns)
+}
+
+///|
+// Repeated small partitions can share immutable rank values. Keep this bounded
+// so large partitions retain constant auxiliary space.
+let row_number_small_values : FixedArray[@types.Value] = FixedArray::makei(64, i => {
+  BigInt((i + 1).to_int64())
+})
+
+///|
+fn row_number_value(index : Int) -> @types.Value {
+  if index >= 0 && index < row_number_small_values.length() {
+    row_number_small_values[index]
+  } else {
+    BigInt(index.to_int64() + 1L)
+  }
 }

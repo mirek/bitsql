@@ -453,3 +453,28 @@ fn exact_key_hash(key : @types.SortKey) -> Int {
   h = (h ^ (h >> 13)) * 0xC2B2AE35U
   (h ^ (h >> 16)).reinterpret_as_int()
 }
+
+///|
+/// Single-column projection followed by DISTINCT, without intermediate rows.
+fn distinct_values(
+  values : Array[@types.Value],
+  collation : @types.Collation?,
+) -> Array[Row] raise @types.SqlError {
+  let (ids, _) = match single_value_ids(values, collation, false) {
+    Some(result) => result
+    None => group_ids_general(values.map(v => [v]), [collation], false)
+  }
+  let out : Array[Row] = []
+  for i, value in values {
+    if ids[i] == out.length() {
+      out.push([value])
+    } else {
+      let kept = out[ids[i]]
+      match (kept[0], value) {
+        (String(a), String(b)) if code_unit_less(b, a) => kept[0] = value
+        _ => ()
+      }
+    }
+  }
+  out
+}

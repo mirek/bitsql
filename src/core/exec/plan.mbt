@@ -117,6 +117,15 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let end = start + @cmp.minimum(cnt, len - start)
       rows[start.to_int():end.to_int()].to_owned()
     }
+    Distinct(Project(input, [expr]), [collation]) => {
+      let rows = run(ctx, input)
+      let f = compile(expr)
+      let values = rows.map(row => {
+        ctx.rt.next_row()
+        f(ctx, row)
+      })
+      distinct_values(values, collation)
+    }
     Distinct(input, collations) => distinct_rows(run(ctx, input), collations)
     UnionAll(parts) => {
       let out = []

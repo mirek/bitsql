@@ -334,3 +334,13 @@ project: the breadth of transaction and error semantics in phases 5–6.
   ROW_NUMBER still trail; EXISTS and accented ORDER BY are near parity.
   Published as `0.1.17`, `0.1` and `latest`; all three amd64 + arm64
   registry manifests verified (`performance.md`).
+
+- [~] 0.1.18 validated: flat single-column grouping and DISTINCT projection inputs,
+  consuming private aggregate output keys, and bounded immutable ROW_NUMBER
+  values. Controlled text grouping and DISTINCT improve about 12–15%; unique
+  grouping improves about 12%; short ROW_NUMBER partitions improve 5–8%.
+  Exact gate: 286 MoonBit tests, 20703 client/corpus passes (three skips),
+  arm64 572/572. Text GROUP BY now wins, DISTINCT trails about 5%, ROW_NUMBER
+  and EXISTS are near parity. Total shapes: 233 vs 672 ms. Point SELECTs
+  trail in this container run; reversed-order native controls do not reproduce
+  a regression against 0.1.17. Publication next (`performance.md`).

@@ -44,6 +44,22 @@ fn run_aggregate_fast(
   let (ids, firsts) = if keys.is_empty() {
     // scalar aggregate: one group, even over empty input
     (Array::make(n, 0), [[]])
+  } else if keys.length() == 1 {
+    let key = keys[0]
+    let f = compile(key)
+    let values = rows.map(r => f(ctx, r))
+    let (ids, _) = match single_value_ids(values, key.ty.collation(), false) {
+      Some(result) => result
+      None =>
+        group_ids_general(values.map(v => [v]), [key.ty.collation()], false)
+    }
+    let firsts : Array[Row] = []
+    for j, id in ids {
+      if id == firsts.length() {
+        firsts.push([values[j]])
+      }
+    }
+    (ids, firsts)
   } else {
     let cs = keys.map(compile)
     let kvs = rows.map(r => cs.map(f => f(ctx, r)))
@@ -146,14 +162,15 @@ fn accumulate(
 }
 
 ///|
-/// The output row of group `g`: its key values, then each call's value.
+/// The output row of group `g`: consumes its privately materialized key row
+/// and appends each call's value. Callers never pass input rows here.
 fn finish_group(
   aggs : Array[@ir.AggCall],
   states : Array[AggState],
   g : Int,
   key : Row,
 ) -> Row raise @types.SqlError {
-  let row : Row = key.copy()
+  let row : Row = key
   for i, a in aggs {
     let st = states[i]
     let n = st.count[g]

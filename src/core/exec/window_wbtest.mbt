@@ -331,3 +331,10 @@ test "direct window columns preserve materialized-key results and failures" {
     }
   }
 }
+
+///|
+test "bounded row number values retain bigint type across cache boundary" {
+  for i in [0, 1, 62, 63, 64, 65, 1000, 2147483646] {
+    assert_eq(row_number_value(i), @types.Value::BigInt(i.to_int64() + 1L))
+  }
+}
