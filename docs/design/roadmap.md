@@ -399,7 +399,7 @@ project: the breadth of transaction and error semantics in phases 5–6.
   open. Medians verified against raw samples. Published as `0.1.22`, `0.1`
   and `latest`; all three amd64 + arm64 manifests verified (`performance.md`).
 
-- [ ] 0.1.23 validated: reduce binder allocations without caching bound plans.
+- [x] 0.1.23 published: reduce binder allocations without caching bound plans.
   Longer alternating point controls show 4–7% lower median server CPU and
   1–3% lower median latency. Exact gate: 293 MoonBit tests, 20704
   client/corpus passes (three expected skips); short ARM64 smoke and live
@@ -407,4 +407,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
   shapes win (226 vs 672 ms total), point reads now narrowly win 117 vs
   123 ms, and all other headline timings win. The current benchmark target
   is met, with earlier intermittent spikes still an unresolved limitation
-  (`performance.md`). Publication pending.
+  (`performance.md`). Published as `0.1.23`, `0.1` and `latest`; all three
+  amd64 + arm64 registry manifests verified.

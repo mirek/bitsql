@@ -1164,4 +1164,8 @@ All 48 shape medians, both cold-start medians and both point wall/CPU
 medians were checked against five finite, nonnegative raw samples. Builds
 and tests ended, and both benchmark ports were clear before measurement.
 Evidence: `harness/out/bench-compare-0.1.23.json`, `_build/bench-0.1.23.txt`.
-Publication pending.
+Published as `0.1.23`, `0.1` and `latest`; all three amd64 + arm64 manifests
+were verified at `sha256:bafd4f3e9a492fce12d1209ac92a227450c84b94945f4c60487f3e0535b4e4f5`.
+Both images carry source revision `b5b08e2b1f5675948ab2841eb8749fbcfa6f57c7`;
+metadata-only stamping preserved their tested filesystem layers. The amd64
+registry layers total 12.5013 MiB compressed.
