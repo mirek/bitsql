@@ -76,11 +76,30 @@ fn Session::exec_alter_index(
               self.stmt_line,
             )
           }
-          indexes[k] = { ..ix, disabled: true, }
+          indexes[k] = {
+            ..ix,
+            disabled: true,
+            json: ix.json.map(j => {
+              ..j,
+              disabled_rows: Some(
+                json_internal_row_count(self.db_of(scope), t, ix, j),
+              ),
+            }),
+          }
         }
       } else {
         for k in targets {
-          indexes[k] = { ..indexes[k], disabled: true, }
+          let ix = indexes[k]
+          indexes[k] = {
+            ..ix,
+            disabled: true,
+            json: ix.json.map(j => {
+              ..j,
+              disabled_rows: Some(
+                json_internal_row_count(self.db_of(scope), t, ix, j),
+              ),
+            }),
+          }
         }
       }
     "REBUILD" => {
@@ -129,6 +148,8 @@ fn Session::exec_alter_index(
           json: indexes[k].json.map(j => {
             ..j,
             compression: compression.unwrap_or(j.compression),
+            disabled_rows: None,
+            modified: self.rt.now,
           }),
         }
         if ix.unique && indexes[k].disabled {

@@ -1,0 +1,89 @@
+{
+  "cases": [
+    {
+      "name": "disabled-write",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t DISABLE; INSERT t VALUES(2,N'{\"c\":3}'); UPDATE t SET j=CAST(N'{}' AS json) WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN i.parent_object_id=OBJECT_ID(N't') THEN 1 ELSE 0 END AS parent_matches,SCHEMA_NAME(i.schema_id) AS schema_name,i.is_ms_shipped,i.lob_data_space_id FROM sys.internal_tables i WHERE parent_id=OBJECT_ID(N't'); SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "disabled-truncate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t DISABLE; TRUNCATE TABLE t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN i.parent_object_id=OBJECT_ID(N't') THEN 1 ELSE 0 END AS parent_matches,SCHEMA_NAME(i.schema_id) AS schema_name,i.is_ms_shipped,i.lob_data_space_id FROM sys.internal_tables i WHERE parent_id=OBJECT_ID(N't'); SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "truncate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "TRUNCATE TABLE t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN i.parent_object_id=OBJECT_ID(N't') THEN 1 ELSE 0 END AS parent_matches,SCHEMA_NAME(i.schema_id) AS schema_name,i.is_ms_shipped,i.lob_data_space_id FROM sys.internal_tables i WHERE parent_id=OBJECT_ID(N't'); SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "rebuild",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER INDEX ix ON t DISABLE; INSERT t VALUES(2,N'{\"c\":3}'); ALTER INDEX ix ON t REBUILD;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN i.parent_object_id=OBJECT_ID(N't') THEN 1 ELSE 0 END AS parent_matches,SCHEMA_NAME(i.schema_id) AS schema_name,i.is_ms_shipped,i.lob_data_space_id FROM sys.internal_tables i WHERE parent_id=OBJECT_ID(N't'); SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":2}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT CASE WHEN i.parent_object_id=OBJECT_ID(N't') THEN 1 ELSE 0 END AS parent_matches,SCHEMA_NAME(i.schema_id) AS schema_name,i.is_ms_shipped,i.lob_data_space_id FROM sys.internal_tables i WHERE parent_id=OBJECT_ID(N't'); SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    }
+  ]
+}

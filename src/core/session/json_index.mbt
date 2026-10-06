@@ -197,6 +197,10 @@ fn Session::exec_create_json_index(
     is_constraint: false,
     disabled: false,
     json: Some({
+      internal_id: self.server.object_id(),
+      created: self.rt.now,
+      modified: self.rt.now,
+      disabled_rows: None,
       paths,
       prefixes,
       array_search,

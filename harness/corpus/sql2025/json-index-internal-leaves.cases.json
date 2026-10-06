@@ -1,0 +1,186 @@
+{
+  "cases": [
+    {
+      "name": "repeated-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[1,1,1]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "repeated-array-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[1,1,1]'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "same-leaves",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":1}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "same-leaves-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":1,\"b\":1}'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-nested",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":{\"b\":1},\"a\":{\"c\":2}}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-nested-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":{\"b\":1},\"a\":{\"c\":2}}'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":[1],\"a\":[2]}'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-array-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'{\"a\":[1],\"a\":[2]}'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "null-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[null,null]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "null-array-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[null,null]'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "containers",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[{},[],{\"a\":[]}]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "containers-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[{},[],{\"a\":[]}]'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "strings",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[\"a\",\"a\",\"A\"]'); CREATE JSON INDEX ix ON t(j);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    },
+    {
+      "name": "strings-search",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE t(id int CONSTRAINT pk PRIMARY KEY,j json); INSERT t VALUES(1,N'[\"a\",\"a\",\"A\"]'); CREATE JSON INDEX ix ON t(j) WITH(OPTIMIZE_FOR_ARRAY_SEARCH=ON);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT p.index_id,p.rows FROM sys.partitions p JOIN sys.internal_tables t ON t.object_id=p.object_id WHERE t.parent_id=OBJECT_ID(N't') ORDER BY p.index_id;"
+        }
+      ]
+    }
+  ]
+}

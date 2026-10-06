@@ -1054,3 +1054,16 @@ catches references before a preceding REBUILD can execute. DDL lookup stays
 available so a separate primary-key REBUILD and TRUNCATE can work. Thirty
 additional oracle cases cover placement/options and this dependency; broader
 foreign-key/indexed-view dependencies remain in the open audit.
+
+
+### JSON index internal catalog state (2026-10-06)
+
+JSON index definitions carry their internal object ID and timestamps, plus the
+scalar row count retained while disabled. Rebuild preserves identity and
+recomputes live counts; DROP_EXISTING allocates a new internal object. Catalog
+rows expose the captured internal columns and primary-key posting types,
+clustered/posting/optional array-search indexes, statistics and partitions.
+Scalar counting follows live native storage with first-key-wins traversal;
+containers contribute no row. Object lookup includes the internal table, but
+ordinary table binding still raises 208. See the 52 internal-catalog cases and
+remaining physical allocation/search work in the JSON reference.

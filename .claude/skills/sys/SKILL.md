@@ -1354,3 +1354,12 @@ For practical client compatibility, implement in this order:
   and have no partition/statistics row under their base table. Path metadata
   preserves the original path spelling in UTF-8 varchar(8000). Full captured
   catalog, lifecycle, option and native-path findings: docs/reference/json.md.
+
+
+- 2026-10-06 (`sql2025/json-index-internal-*`): JSON index internal tables
+  have type 235 / JSON_INDEX_TABLE, schema sys, parent_object_id = parent_id,
+  and a new internal object ID on DROP_EXISTING (stable on REBUILD/rename).
+  Their clustered partition retains its scalar count while disabled, even
+  through base-table TRUNCATE. OBJECT_ID/OBJECT_NAME resolve them, but SELECT
+  of their data raises 208. The 52-case internal-catalog set and full column,
+  option, key and partition contracts are documented in docs/reference/json.md.

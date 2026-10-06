@@ -11,7 +11,7 @@ pushes and container publication on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
-| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Existing json3/json4 and construction captures cover type semantics, constructors and aggregates. The 485-case allocation run verifies retained storage, slot ordering, large dictionaries and array widening. Native variable/UPDATE/MERGE `.modify()` now passes 121 registered method cases (126 with adjacent regressions), resolving 49 parser gaps. Shared large-storage mutation discrepancies remain: conservative container copying and captured wide-array conversion errors. JSON_CONTAINS now passes 255 captured cases for typing, paths, comparisons, table contexts and error flow. JSON indexes now maintain immutable path entries and perform candidate seeks for positive containment/existence predicates. The 152-case focused run covers DDL, catalogs, options, mutation, rollback, native path-existence behavior and indexed error timing; 58 parser gaps are resolved. Broader index value/range access, option/concurrency/internal-storage details remain under audit; see the JSON reference for evidence and open contracts. |
+| Native json, JSON_ARRAYAGG, JSON_OBJECTAGG | Existing json3/json4 and construction captures cover type semantics, constructors and aggregates. The 485-case allocation run verifies retained storage, slot ordering, large dictionaries and array widening. Native variable/UPDATE/MERGE `.modify()` now passes 121 registered method cases (126 with adjacent regressions), resolving 49 parser gaps. Typed JSON_VALUE RETURNING and JSON_QUERY WITH ARRAY WRAPPER are newly captured in 72 cases and remain unimplemented. Shared large-storage mutation discrepancies remain: conservative container copying and captured wide-array conversion errors. JSON_CONTAINS now passes 255 captured cases for typing, paths, comparisons, table contexts and error flow. JSON indexes now maintain immutable path entries and perform candidate seeks for positive containment/existence predicates. The 204-case focused run covers DDL, catalogs, options, mutation, rollback, native path-existence behavior, indexed error timing and internal catalogs; 58 parser gaps are resolved. Broader index value/range access, option/concurrency/internal-storage details remain under audit; see the JSON reference for evidence and open contracts. |
 | Regex scalar and table functions | All seven functions are bound and executed. Thirteen SQL corpus files and 271 Unicode boundary/fold cases (21,717 result rows) pass differential verification. Pure VM tests cover ordered captures and error syntax. SQL Server matches Unicode 15.0, not the newer 15.1 reference tables. Scalar/SPLIT byte decoding, lone-surrogate normalization, BOM preservation and flag-type checks now pass all 351 captured regex cases. Fourteen MATCHES transport-failure cases lack expectations and remain open, along with remaining RE2/SQL edge audits; the previous checkpoint passed the full gate 2026-10-06. |
 | Vector type, distance functions, embedding generation, approximate indexes/search | Native float32 and preview float16 storage, JSON conversion, TDS 7.4 fallback, catalogs, properties and base-specific distance kernels are implemented. Float32 norms/normalization work; float16 receives SQL Server’s captured 42246 rejection. All 150 vector cases pass focused verification, including declaration diagnostics, preview transitions and maximum dimensions. Broader conversion/operator edges, embedding/model integration and approximate indexes/search remain open. External integration belongs at the host boundary. Full gate passed 2026-10-06. |
 | CURRENT_DATE | Initial metadata/date-consistency smoke passes; existing datetime-arithmetic capture also covers it. |
@@ -190,3 +190,20 @@ Seventeen further internal-catalog captures remain investigative and
 unregistered. Value/range indexing, internal storage, array-search effects,
 concurrency and broader dependency/option contracts remain open, alongside
 the rest of this audit. No new container has been published.
+
+## JSON index internal catalog checkpoint (2026-10-06)
+
+`scripts/check.sh` passed: 1,466 MoonBit tests, all-backend core checks,
+22,304 client/corpus tests passed, three existing skips and no failures
+(22,307 total). All 204 registered JSON index/path cases ran, including the
+52 internal-catalog cases. Internal objects, columns, keys, statistics,
+partition counts, retained disabled state and replacement identity now match
+the captures. Physical allocation-unit/page modeling, value/range search,
+array-search execution, broader options/dependencies and concurrency remain.
+
+The subsequent extraction captures add 72 investigative cases for typed
+JSON_VALUE RETURNING and JSON_QUERY WITH ARRAY WRAPPER. They expose 63 new
+parser gaps: the final parser check covers 37,192 batches with 70 documented
+disagreements, including seven prior ones. These cases are not registered as
+passing and await implementation. The wider 2025 audit and container
+publication remain unfinished.

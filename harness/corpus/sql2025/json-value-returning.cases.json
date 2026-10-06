@@ -1,0 +1,427 @@
+{
+  "cases": [
+    {
+      "name": "tinyint-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING tinyint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "tinyint-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING tinyint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "smallint-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING smallint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "smallint-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING smallint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "int-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "int-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bigint-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING bigint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bigint-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING bigint) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-10-2-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING decimal(10,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "decimal-10-2-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING decimal(10,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "numeric-10-2-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING numeric(10,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "numeric-10-2-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING numeric(10,2)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "float-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING float) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "float-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING float) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "real-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING real) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "real-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING real) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bit-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING bit) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "bit-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING bit) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "money-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING money) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "money-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING money) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "smallmoney-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING smallmoney) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "smallmoney-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING smallmoney) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-12-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING varchar(12)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "varchar-12-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING varchar(12)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-max-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING nvarchar(max)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "nvarchar-max-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING nvarchar(max)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "date-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "date-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING date) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "datetime2-3-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING datetime2(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "datetime2-3-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING datetime2(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "datetimeoffset-3-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING datetimeoffset(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "datetimeoffset-3-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING datetimeoffset(3)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "uniqueidentifier-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING uniqueidentifier) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "uniqueidentifier-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING uniqueidentifier) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "json-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING json) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "json-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING json) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "xml-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING xml) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "xml-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING xml) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "varbinary-10-number",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":123}'; SELECT JSON_VALUE(@j,'$.v' RETURNING varbinary(10)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "varbinary-10-string",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"123\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING varbinary(10)) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "strict-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":null}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":{}}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "strict-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":{}}'; SELECT JSON_VALUE(@j,'strict $.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "overflow",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":2147483648}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "invalid-int",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"v\":\"abc\"}'; SELECT JSON_VALUE(@j,'$.v' RETURNING int) AS v;"
+        }
+      ]
+    }
+  ]
+}

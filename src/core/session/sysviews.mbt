@@ -148,7 +148,12 @@ fn Session::sys_view_binding(
         }),
       })
     }
-    None => raise @types.not_supported("catalog view \{schema}.\{base}")
+    None => {
+      if self.resolve_object(object_text(name), Some("IT")) is Some(_) {
+        return None
+      }
+      raise @types.not_supported("catalog view \{schema}.\{base}")
+    }
   }
 }
 
@@ -292,6 +297,11 @@ fn user_objects(db : @store.Db) -> Array[CatObj] {
       created: t.created,
       modified: t.modified,
     })
+    for ix in t.indexes {
+      if ix.json is Some(j) {
+        out.push(json_internal_object(t, ix, j))
+      }
+    }
     for o in constraint_objs(t, sid) {
       out.push(o)
     }
@@ -1264,6 +1274,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   }
   // user-defined types, synonyms, parameters (sysviews_types.mbt)
   self.type_view_rows(key, db, out)
+  self.json_internal_view_rows(key, db, out)
   out
 }
 

@@ -626,11 +626,11 @@ disabled gives 1987; ALL REBUILD gives 8655 and leaves both disabled. These
 captured behaviors are implemented. Wider dependencies (foreign keys, indexed
 views), option combinations and concurrent lifecycle operations remain open.
 
-### Internal index catalog captures, pending implementation (2026-10-06)
+### Internal index catalogs (2026-10-06)
 
-Seventeen investigative cases in `json-index-internal-catalog`,
+The initial seventeen cases in `json-index-internal-catalog`,
 `json-index-internal-details`, `json-index-internal-key-types` and
-`catalog/view-descriptors-json-internal` capture the next open surface. Each
+`catalog/view-descriptors-json-internal` capture the internal catalog surface. Each
 JSON index owns a `sys.internal_tables` row: internal_type 235,
 JSON_INDEX_TABLE, parent_minor_id equal to its JSON index_id. Its internal
 clustered index is named after the JSON index (id 1); a posting-column
@@ -641,9 +641,55 @@ column per clustered primary-key component. Their types and keys are captured,
 not inferred from the public JSON index columns.
 
 Internal partition row counts follow indexed scalar leaves (including JSON
-null), excluding empty containers and duplicate object keys. The exact rules
-for repeated values and retained disabled storage still need investigation.
+null), excluding empty containers and duplicate object keys. Repeated array values retain separate entries; object keys compare case
+sensitively and only their first live occurrence supplies an indexed subtree.
 PAGE compression is visible on the internal partitions. Disabling the JSON
 index retains the clustered internal partition but removes its nonclustered
-partitions. These captures are not registered as passing and do not close the
-internal-storage or array-search implementation work.
+partitions. The expanded 52-case internal-catalog set passes, alongside the prior 152
+JSON index/path cases. Physical allocation-unit/page accounting, value/range
+access, and array-search execution remain open.
+
+
+`json-index-internal-leaves` verifies repeated values and duplicate-key rules.
+`json-index-internal-lifecycle` verifies that a disabled clustered internal
+partition retains its old scalar count through subsequent writes and TRUNCATE;
+REBUILD recalculates it and restores the nonclustered partitions. Internal
+object IDs survive REBUILD and rename but change with DROP_EXISTING or
+DROP/recreate (`json-index-internal-identity`). Internal index names and options
+follow the parent JSON index (`json-index-internal-options`). Object ID/name
+lookups resolve the internal table, while direct SELECT raises 208
+(`json-index-internal-access`). The store retains internal identity, timestamps
+and disabled scalar counts in the immutable JSON index definition; the virtual
+catalogs project that state and current live scalar counts. These corrections
+replace the earlier missing internal-catalog surface, without claiming exact
+physical storage allocation or completed value/array search optimization.
+
+### Typed extraction and array wrapping, pending implementation (2026-10-06)
+
+`sql2025/json-value-returning` and `json-query-array-wrapper` add 72 initial
+oracle cases. JSON_VALUE RETURNING accepts integer, decimal/numeric, float/real,
+bit, varchar/nvarchar and modern date/time targets. Money/smallmoney,
+uniqueidentifier, json, xml and varbinary are syntax error 102 state 29. Lax
+missing/non-scalar or failed value conversions return NULL; strict missing
+is 13608 state 5 and strict object-to-scalar is 13623 state 2. A numeric scalar
+to date/time raises the forbidden conversion 529 even in lax mode, rather than
+being treated as a failed string conversion. Wider conversion/error contracts
+still need capture. This syntax and execution are not implemented yet.
+
+WITH ARRAY WRAPPER is accepted for both native and text JSON on the pinned
+oracle. Native JSON wraps scalar, null, container and multi-selection values,
+returns `[]` for an empty resolved wildcard, and supports last/list accessors.
+Text JSON wraps scalar/container selections but returns NULL for JSON null or
+empty selections, and keeps its 13660 last/list rejections. Native output has
+JSON wire fallback metadata; text output is nvarchar(max). Strict missing paths
+use native state 5 versus text state 2. These captures remain investigative,
+unregistered cases until parser, binder and execution support are implemented.
+
+
+`json-value-returning-errors.sql` extends the initial set to 72 cases. An
+oversized string target returns NULL in lax mode, and strict mode raises 8152
+state 34; strict invalid integer text raises 245, overflow raises 8115 state 2.
+A numeric fraction truncates toward zero for an integer target, and JSON true
+converts to 1. The legacy datetime target is rejected with 102 state 29.
+The extraction captures expose 63 new parser disagreements, explicitly listed
+as unfinished implementation work in `harness/parse-known.txt`.

@@ -322,6 +322,10 @@ pub(all) struct UserType {
 
 ///|
 pub(all) struct JsonIndex {
+  internal_id : Int
+  created : Int64
+  modified : Int64
+  disabled_rows : Int64?
   paths : Array[String]
   prefixes : Array[String]
   array_search : Bool

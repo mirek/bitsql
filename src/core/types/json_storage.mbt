@@ -690,3 +690,32 @@ pub fn JsonData::index_paths(self : JsonData) -> Array[String] {
   walk(self.root, "$")
   out
 }
+
+///|
+/// Scalar entries of the JSON internal table. Empty containers have no entry;
+/// the first occurrence of each object key supplies its indexed subtree.
+pub fn JsonData::index_scalar_paths(self : JsonData) -> Array[String] {
+  let out = []
+  fn walk(node : JsonStorageNode, path : String) -> Unit {
+    match node {
+      NDeleted => ()
+      NObject(children, _) => {
+        let seen : Set[String] = Set([])
+        for (key, child) in children {
+          if child is NDeleted || seen.contains(key) {
+            continue
+          }
+          seen.add(key)
+          walk(child, path + "." + @json.quote(key))
+        }
+      }
+      NArray(children, _) =>
+        for i, child in children {
+          walk(child, path + "[" + i.to_string() + "]")
+        }
+      _ => out.push(path)
+    }
+  }
+  walk(self.root, "$")
+  out
+}

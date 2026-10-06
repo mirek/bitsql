@@ -1,0 +1,220 @@
+{
+  "cases": [
+    {
+      "name": "native-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.s' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.o' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-last",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-list",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[0,2]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-range",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[0 to 2]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.missing' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-strict-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'strict $.missing' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.empty[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "native-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j json=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.n' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-root",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-scalar",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.s' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.o' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-wildcard",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-last",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[last]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-list",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[0,2]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-range",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.a[0 to 2]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.missing' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-strict-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'strict $.missing' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.empty[*]' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    },
+    {
+      "name": "text-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DECLARE @j nvarchar(max)=N'{\"s\":1,\"o\":{\"x\":1},\"a\":[1,2,3],\"empty\":[],\"n\":null}'; SELECT JSON_QUERY(@j,'$.n' WITH ARRAY WRAPPER) AS v;"
+        }
+      ]
+    }
+  ]
+}
