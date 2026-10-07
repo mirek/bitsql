@@ -5,10 +5,12 @@ import { connect, close } from '../src/client.mjs'
 import { capture, query } from '../src/capture-core.mjs'
 import { compareCase } from '../src/compare.mjs'
 import { spawnEmulator, emulatorConfig } from '../src/emulator.mjs'
+import { normalizeEmbeddingExecution } from '../src/embedding-normalize.mjs'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
 
-test('SQL embedding execution matches captured HTTPS exchanges', { timeout: 120000 }, async t => {
-  const expected = JSON.parse(await readFile(new URL('../fixtures/embeddings.expected.json', import.meta.url), 'utf8'))
+for (const [label, file] of [['HTTP contracts', 'embeddings'], ['execution', 'embedding-execution']])
+test(`SQL embedding ${label} matches captured HTTPS exchanges`, { timeout: 120000 }, async t => {
+  const expected = JSON.parse(await readFile(new URL(`../fixtures/${file}.expected.json`, import.meta.url), 'utf8'))
   const fixture = await embeddingFixture()
   let server, conn
   try {
@@ -23,10 +25,12 @@ test('SQL embedding execution matches captured HTTPS exchanges', { timeout: 1200
       const parameters = input.parameters === undefined ? '' : `,PARAMETERS=${quote(JSON.stringify(input.parameters))}`
       await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION=${quote(endpoint)},API_FORMAT=${quote(input.api)},MODEL_TYPE=EMBEDDINGS,MODEL=${quote(input.model ?? 'fixture')}${parameters});`)
       fixture.setResponse(input.response)
-      const actual = JSON.parse(JSON.stringify(await capture(conn, { kind: 'batch', sql: input.sql })))
+      const result = await capture(conn, { kind: 'batch', sql: input.sql })
+      const normalized = normalizeEmbeddingExecution({ input, result, requests: fixture.requests })
+      const actual = normalized.result
       const difference = compareCase({ steps: [actual] }, { steps: [c.result] })
       assert.equal(difference, null, input.name + ': ' + JSON.stringify({ difference, actual, expected: c.result }))
-      assert.deepEqual(fixture.requests, c.requests, input.name + ': HTTP requests')
+      assert.deepEqual(normalized.requests, c.requests, input.name + ': HTTP requests')
       if (input.fatal) {
         await close(conn)
         conn = await connect(config)

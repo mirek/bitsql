@@ -12,6 +12,9 @@ priv struct RequestSnapshot {
   xact_state : Int
   error : Int
   rowcount : Int64
+  rng : UInt64
+  rand_s1 : Int64
+  rand_s2 : Int64
   identity : @types.Value
   scope_identity : @types.Value
   database : String
@@ -47,6 +50,9 @@ fn Session::snapshot_request(self : Session) -> RequestSnapshot {
     xact_state: self.rt.xact_state,
     error: self.rt.error,
     rowcount: self.rt.rowcount,
+    rng: self.rt.rng,
+    rand_s1: self.rt.rand_s1,
+    rand_s2: self.rt.rand_s2,
     identity: self.rt.identity,
     scope_identity: self.rt.scope_identity,
     database: self.rt.database,
@@ -83,6 +89,9 @@ fn Session::restore_request(self : Session, s : RequestSnapshot) -> Unit {
   self.rt.xact_state = s.xact_state
   self.rt.error = s.error
   self.rt.rowcount = s.rowcount
+  self.rt.rng = s.rng
+  self.rt.rand_s1 = s.rand_s1
+  self.rt.rand_s2 = s.rand_s2
   self.rt.identity = s.identity
   self.rt.scope_identity = s.scope_identity
   self.rt.database = s.database

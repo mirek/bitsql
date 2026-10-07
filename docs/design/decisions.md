@@ -1177,3 +1177,26 @@ The host uses the HTTP library's TLS passthrough mode to preserve the captured
 headers: its higher-level request API adds Accept-Encoding absent from SQL
 Server captures. This does not waive the remaining transport contracts listed
 in [external-models](../reference/external-models.md).
+
+
+### 2026-10-07: volatile evaluations survive request restart
+
+Request snapshots now include the NEWID generator and both RAND state words.
+Restoring them after an internal suspension makes replay advance each generator
+only once in the final execution. Clock evaluations use a run-length encoded
+history: old evaluation ordinals reuse their original event time, while an
+expression first reached after resumption reads the later event time. The
+history is reset per request, survives internal waits and does not freeze the
+whole request's clock. The registered embedding execution captures verify these
+contracts, including random continuation and post-HTTP time advancement.
+
+The new held-response concurrency captures rule out a whole-query snapshot as
+a resumption fix: unread rows and later model/configuration lookups see changes,
+while the already-started call keeps its context. Full row/expression resumption
+remains open; see [external-model contracts](../reference/external-models.md).
+
+HTTP resumption must also preserve completed autocommit statements in a batch.
+The current request snapshot restores the whole database state on suspension,
+so a prefix insert temporarily disappears and replay can collide with a write
+from another connection. Resuming the pending statement must preserve that
+committed prefix as well as its original row context. This is still open.

@@ -18,6 +18,9 @@ export async function embeddingFixture(host = '127.0.0.1') {
       '-out', cert, '-days', '1', '-subj', '/CN=bitsql-embedding-fixture', '-addext',
       `subjectAltName=IP:${host},IP:127.0.0.1,DNS:localhost,DNS:bitsql-embedding.test`])
     const requests = []
+    const timers = new Set()
+    const held = []
+    let paused = false
     let response = { body: '{}' }
     server = https.createServer({ key: await readFile(key), cert: await readFile(cert) }, (req, res) => {
       const chunks = []
@@ -25,16 +28,28 @@ export async function embeddingFixture(host = '127.0.0.1') {
       req.on('end', () => {
         requests.push({ method: req.method, url: req.url, headers: { ...req.headers, host: '{authority}' },
           body: Buffer.concat(chunks).toString('utf8') })
-        res.writeHead(response.status ?? 200, { 'Content-Type': response.contentType ?? 'application/json',
-          'Connection': 'close', ...response.headers })
-        res.end(typeof response.body === 'string' ? response.body : JSON.stringify(response.body))
+        const selected = response
+        const reply = () => {
+          res.writeHead(selected.status ?? 200, { 'Content-Type': selected.contentType ?? 'application/json',
+            'Connection': 'close', ...selected.headers })
+          res.end(typeof selected.body === 'string' ? selected.body : JSON.stringify(selected.body))
+        }
+        if (paused) held.push(reply)
+        else if (selected.delayMs) {
+          const timer = setTimeout(() => { timers.delete(timer); reply() }, selected.delayMs)
+          timers.add(timer)
+        } else reply()
       })
     })
     await new Promise((ok, fail) => { server.once('error', fail); server.listen(0, host, ok) })
     return {
       cert, port: server.address().port, requests,
-      setResponse(value) { requests.length = 0; response = value },
+      setResponse(value) { requests.length = 0; response = value; paused = Boolean(value.hold) },
+      release() { paused = false; for (const reply of held.splice(0)) reply() },
       async close() {
+        for (const timer of timers) clearTimeout(timer)
+        timers.clear()
+        held.length = 0
         server.closeAllConnections()
         await new Promise(ok => server.close(ok))
         await rm(dir, { recursive: true, force: true })

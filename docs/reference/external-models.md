@@ -167,5 +167,35 @@ multiple calls, stale completion rejection, cancellation and disconnect.
 This is partial inference support. Transport-specific SQL diagnostics,
 credentials, ONNX, retry timing, compressed responses, redirects and concurrent
 model/source changes remain open. A replay whose embedding payload changes
-currently fails explicitly; volatile input expressions still need stable
-replay semantics. Transport failures likewise remain explicit Emulator errors.
+currently fails explicitly; concurrent source/model changes still need retained
+execution state. Volatile clock and random inputs are now retained across replay. Transport failures likewise remain explicit Emulator errors.
+
+
+### Volatile input and concurrency captures (2026-10-07)
+
+`embedding-execution.expected.json` adds nine registered execution cases.
+Reproduce with `node gen/capture-embeddings.mjs --execution --verify`.
+GUID, unseeded RAND and clock values are normalized only after checking that
+HTTP input equals the source returned by the same SQL execution. The captures
+also cover multiple calls/columns/rows, seeded random continuation and time
+advancing after a delayed HTTP response. All nine pass the native host.
+
+`embedding-concurrency.expected.json` captures nine held-response scenarios;
+reproduce with `node gen/capture-embedding-concurrency.mjs --verify`.
+The endpoint holds the first HTTP response until another SQL connection's
+mutation completes, eliminating a timing race. A fresh oracle reproduced all
+nine. These concurrency cases are **not yet implemented/registered as passing
+emulator tests**:
+
+- Updating the consumed source retains the old value in its pending result.
+- Updating/deleting unread rows affects subsequent results; a newly inserted
+  later key is also read. A whole-query snapshot would be incorrect.
+- Dropping the model preserves the pending row, then raises 15151 on the next
+  call. Altering its MODEL changes the second request's model field.
+- Disabling REST preserves the pending row, then raises 31643 on the next call.
+- With the captured clustered-primary-key query, deleting the consumed row
+  or dropping its table times out with 1222, while a non-key update succeeds.
+
+These facts require retaining consumed rows and in-flight call context while
+allowing later reads/lookups to observe current state. The existing request
+restart path does not yet meet that contract.

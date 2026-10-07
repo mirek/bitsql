@@ -459,3 +459,15 @@ input, concurrency, credential and ONNX work is listed in the
 no new container has been published for this checkpoint.
 
 Full gate passes 1,771 MoonBit and 23,684 client tests, three existing skips, zero failures; parser checks 40,611 batches with 11 known differences. All 86 SQL/HTTPS exchanges ran in the client suite.
+
+
+### Embedding volatile replay checkpoint (2026-10-07)
+
+Nine additional registered execution cases now pass, bringing the controlled
+SQL/HTTPS checks to 95. Request restart preserves random inputs and earlier
+clock evaluations without freezing later evaluations. Nine new concurrency
+captures are reproducible but still fail the current restart implementation;
+they remain explicitly open along with the other embedding and 2025 scope.
+Version 0.1.23 remains published; this is not release completion.
+
+Full gate passes 1,772 MoonBit and 23,685 client tests, three existing skips, zero failures; parser checks 40,611 batches with 11 known differences. All 95 SQL/HTTPS exchanges ran in the client suite.

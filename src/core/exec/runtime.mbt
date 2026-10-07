@@ -33,6 +33,12 @@ pub(all) struct Runtime {
   mut nest_level : Int
   mut catch_error : ErrorInfo?
   mut now : Int64 // 100 ns ticks since 0001-01-01 UTC
+  // Run-length encoded clock evaluations retained across request replay.
+  clock_reads : Array[(Int, Int64)]
+  mut clock_seen : Int
+  mut clock_count : Int
+  mut clock_cursor : Int
+  mut record_clock : Bool
   mut rng : UInt64
   /// Set when an aggregate skipped a NULL input; the session turns it into
   /// INFO 8153 after the statement's rows, then clears it.
@@ -96,6 +102,11 @@ pub fn Runtime::new(
     nest_level: 0,
     catch_error: None,
     now,
+    clock_reads: [],
+    clock_seen: 0,
+    clock_count: 0,
+    clock_cursor: 0,
+    record_clock: false,
     rng: seed.reinterpret_as_uint64() ^ 0x9E3779B97F4A7C15UL,
     null_eliminated: false,
     count_override: None,
@@ -253,4 +264,46 @@ pub fn no_vector_search(
   _expansion : Int64,
 ) -> Array[Row] raise @types.SqlError {
   raise @types.not_supported("vector search outside a session")
+}
+
+///|
+pub fn Runtime::begin_attempt(self : Runtime, replay : Bool) -> Unit {
+  if !replay {
+    self.clock_reads.clear()
+    self.clock_count = 0
+  }
+  self.clock_seen = 0
+  self.clock_cursor = 0
+  self.record_clock = true
+}
+
+///|
+pub fn Runtime::finish_attempt(self : Runtime) -> Unit {
+  self.clock_reads.clear()
+  self.clock_count = 0
+  self.record_clock = false
+}
+
+///|
+/// Previously evaluated expressions keep their time after a suspension;
+/// an expression first reached on this attempt sees the current event time.
+fn Runtime::read_clock(self : Runtime) -> Int64 {
+  if !self.record_clock {
+    return self.now
+  }
+  let index = self.clock_seen
+  self.clock_seen += 1
+  if index == self.clock_count {
+    if self.clock_reads.last() is Some((_, time)) && time == self.now {
+      ()
+    } else {
+      self.clock_reads.push((index, self.now))
+    }
+    self.clock_count += 1
+  }
+  while self.clock_cursor + 1 < self.clock_reads.length() &&
+        self.clock_reads[self.clock_cursor + 1].0 <= index {
+    self.clock_cursor += 1
+  }
+  self.clock_reads[self.clock_cursor].1
 }

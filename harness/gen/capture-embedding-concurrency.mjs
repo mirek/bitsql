@@ -1,4 +1,4 @@
-// node gen/capture-embeddings.mjs [--verify|--force] [--execution]
+// node gen/capture-embedding-concurrency.mjs [--verify|--force]
 // Creates and removes its own oracle. Never changes the shared oracle.
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -7,9 +7,8 @@ import { readFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
-import { embeddingCases } from './embedding-cases.mjs'
-import { embeddingExecutionCases } from './embedding-execution-cases.mjs'
-import { normalizeEmbeddingExecution } from '../src/embedding-normalize.mjs'
+
+import { embeddingConcurrencyCases } from './embedding-concurrency-cases.mjs'
 import { connect, close } from '../src/client.mjs'
 import { capture, query } from '../src/capture-core.mjs'
 import { writeJson } from '../src/json.mjs'
@@ -24,9 +23,7 @@ if (!(port === 0 || (port >= 47300 && port <= 47399 && Number.isInteger(port))))
 const { startOracle, stopOracle, containerName } = await import('../src/oracle.mjs')
 if (!containerName.startsWith('bitsql-oracle-embedding-')) throw Error('a dedicated embedding oracle name is required')
 if (await docker(['ps', '-a', '--filter', `name=^/${containerName}$`, '--format', '{{.Names}}'])) throw Error('refusing to reuse an existing oracle')
-const execution = process.argv.includes('--execution')
-const cases = execution ? embeddingExecutionCases : embeddingCases
-const file = join(harnessDir, 'fixtures', execution ? 'embedding-execution.expected.json' : 'embeddings.expected.json')
+const file = join(harnessDir, 'fixtures', 'embedding-concurrency.expected.json')
 const verify = process.argv.includes('--verify'), force = process.argv.includes('--force')
 const probe = process.argv.find(a => a.startsWith('--probe='))?.slice(8)
 if (!probe && !verify && !force) {
@@ -34,7 +31,7 @@ if (!probe && !verify && !force) {
   catch (e) { if (e.code !== 'ENOENT') throw e }
 }
 await mkdir(outDir, { recursive: true })
-let conn, fixture
+let conn, fixture, other
 try {
   let oracle = await startOracle({ port, log: s => process.stderr.write(s) })
   const gateway = await docker(['inspect', '--format', '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}', containerName])
@@ -55,25 +52,25 @@ try {
   const endpoint = `https://bitsql-embedding.test:${fixture.port}/v1/embeddings`
   const normalize = value => JSON.parse(JSON.stringify(value).replaceAll(`bitsql-embedding.test:${fixture.port}`, '{authority}'))
   const quote = s => "N'" + s.replaceAll("'", "''") + "'"
+  other = await connect(oracle.config)
+  await query(other, 'USE embedding_capture; SET LOCK_TIMEOUT 200;')
   const results = []
-  for (const c of cases.filter(c => !probe || c.name === probe)) {
-    const parameters = c.parameters === undefined ? '' : `,PARAMETERS=${quote(JSON.stringify(c.parameters))}`
-    await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION=${quote(endpoint)},API_FORMAT=${quote(c.api)},MODEL_TYPE=EMBEDDINGS,MODEL=${quote(c.model ?? 'fixture')}${parameters});`)
-    fixture.setResponse(c.response)
-    const result = await capture(conn, { kind: 'batch', sql: c.sql })
-    await writeJson(join(outDir, 'embedding-capture-last.json'), { input: c, result, requests: fixture.requests }, { overwrite: true })
-    if (result.errors.some(e => e.client)) throw Error(`transport failure: ${c.name}`)
-    if (c.name === 'openai' && (result.errors.length || fixture.requests.length !== 1)) throw Error('HTTPS fixture health check failed: ' + JSON.stringify(result.errors))
-    const fatal = result.errors.some(e => e.class >= 20)
-    if (fatal !== Boolean(c.fatal)) throw Error(`unexpected fatal-error disposition: ${c.name}`)
-    results.push(normalizeEmbeddingExecution({ input: c, result: normalize(result), requests: normalize(fixture.requests) }))
-    if (fatal) {
-      await close(conn)
-      conn = await connect(oracle.config)
-      await query(conn, 'USE embedding_capture;')
-    }
-    await query(conn, 'DROP EXTERNAL MODEL m;')
-    console.log(`${c.name}: ${result.errors.map(e => e.number).join(',') || 'OK'}; ${fixture.requests.length} request(s)`)
+  for (const c of embeddingConcurrencyCases.filter(c => !probe || c.name === probe)) {
+    await query(conn, "EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE;")
+    await query(conn, c.setup)
+    await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION=${quote(endpoint)},API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');`)
+    fixture.setResponse({ body: { data: [{ embedding: [1,2] }] }, hold: true })
+    const pending = capture(conn, { kind: 'batch', sql: c.sql })
+    const started = Date.now()
+    while (fixture.requests.length === 0 && Date.now()-started < 5000) await new Promise(r => setTimeout(r, 10))
+    if (!fixture.requests.length) throw Error('no HTTP request')
+    const update = await capture(other, { kind: 'batch', sql: c.mutation })
+    fixture.release()
+    const result = await pending
+    results.push(normalize({ input: c, update, result, requests: fixture.requests.slice() }))
+    console.log(c.name, JSON.stringify({ update, result }))
+    await capture(conn, { kind: 'batch', sql: 'DROP TABLE t;' })
+    await capture(conn, { kind: 'batch', sql: 'DROP EXTERNAL MODEL m;' })
   }
   const doc = { server: { image: oracle.image, version }, cases: results }
   if (probe) {
@@ -86,6 +83,7 @@ try {
     console.log(`captured ${results.length} embedding cases: ${file}`)
   }
 } finally {
+  await close(other)
   await close(conn)
   try { await fixture?.close() } finally { await stopOracle({ log: s => process.stderr.write(s) }) }
 }

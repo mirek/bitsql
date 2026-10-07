@@ -333,6 +333,7 @@ pub fn Session::run_rpc(
   now : Int64,
 ) -> Array[@reply.Item] {
   self.rt.now = now
+  self.rt.begin_attempt(self.parked)
   self.rt.work_done = 0L
   let snap = self.snapshot_request()
   self.dateformat_set = false
@@ -450,6 +451,7 @@ pub fn Session::run_rpc(
   self.applock_waited = false
   self.waits_done = 0
   self.configuration_reads.clear()
+  self.rt.finish_attempt()
   self.embeddings.clear()
   self.embedding_pending = None
   if self.attn.hit {

@@ -92,6 +92,11 @@ pub(all) struct Runtime {
   mut nest_level : Int
   mut catch_error : ErrorInfo?
   mut now : Int64
+  clock_reads : Array[(Int, Int64)]
+  mut clock_seen : Int
+  mut clock_count : Int
+  mut clock_cursor : Int
+  mut record_clock : Bool
   mut rng : UInt64
   mut null_eliminated : Bool
   mut count_override : Int64?
@@ -112,8 +117,10 @@ pub(all) struct Runtime {
   build : (Int, Int, Int)
   memo : Memo
 }
+pub fn Runtime::begin_attempt(Self, Bool) -> Unit
 pub fn Runtime::charge(Self, Int64) -> Unit raise @types.SqlError
 pub fn Runtime::clear_caches(Self) -> Unit
+pub fn Runtime::finish_attempt(Self) -> Unit
 pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String, build? : (Int, Int, Int)) -> Self
 pub fn Runtime::next_random(Self) -> UInt64
 pub fn Runtime::next_row(Self) -> Unit

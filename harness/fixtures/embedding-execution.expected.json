@@ -1,0 +1,655 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": [
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "two-calls",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS a; SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m) AS b;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "a",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {
+            "columns": [
+              {
+                "name": "b",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "two-columns",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS a, AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m) AS b;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "a",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              },
+              {
+                "name": "b",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "volatile-guid",
+        "volatileSource": true,
+        "sql": "DECLARE @s nvarchar(36)=CONVERT(nvarchar(36),NEWID()); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "source",
+                "type": "NVarChar",
+                "length": 72,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["{volatile-source}","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "66",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"{volatile-source}\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "seeded-rand",
+        "sql": "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND(42)); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "source",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["0.714356","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "38",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"0.714356\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "volatile-rand",
+        "volatileSource": true,
+        "sql": "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND()); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "source",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["{volatile-source}","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "37",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"{volatile-source}\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "volatile-time",
+        "volatileSource": true,
+        "sql": "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),SYSDATETIME(),126); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "source",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["{volatile-source}","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "57",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"{volatile-source}\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]},"delayMs":400},
+        "name": "clock-after-http",
+        "sql": "DECLARE @before datetime2=SYSDATETIME(); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; SELECT CASE WHEN DATEDIFF(millisecond,@before,SYSDATETIME())>=300 THEN 1 ELSE 0 END AS advanced;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {
+            "columns": [{"name":"advanced","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 3
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "random-continuation",
+        "sql": "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND(42)); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding; SELECT RAND() AS after_http; SELECT RAND() AS next_value;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "source",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["0.714356","[1,2]"]]
+          },
+          {
+            "columns": [{"name":"after_http","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],
+            "rows": [[0.041009986028273604]]
+          },
+          {
+            "columns": [{"name":"next_value","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}],
+            "rows": [[0.6493841884705345]]
+          }
+        ],
+        "done": [
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":false}
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 4
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "38",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"0.714356\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,2]}]}},
+        "name": "two-rows",
+        "sql": "SELECT s, AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM (VALUES(N'first'),(N'second')) AS v(s);"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 12,
+                "precision": null,
+                "scale": null,
+                "flags": 0,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["first","[1,2]"],["second","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":2},{"name":"ROW","count":2},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ]
+    }
+  ]
+}

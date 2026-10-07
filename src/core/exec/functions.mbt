@@ -406,12 +406,13 @@ fn call_values(
     NewId => Guid(new_guid(rt))
     GetDate | GetUtcDate => {
       // datetime: days since 1900 and 1/300 s units (UTC; no time zone)
-      let days = (rt.now / @types.TICKS_PER_DAY).to_int() - @types.DAYS_TO_1900
-      let ticks = rt.now % @types.TICKS_PER_DAY
+      let now = rt.read_clock()
+      let days = (now / @types.TICKS_PER_DAY).to_int() - @types.DAYS_TO_1900
+      let ticks = now % @types.TICKS_PER_DAY
       DateTime(days, @types.ticks_to_datetime_units(ticks).to_int())
     }
-    SysDateTime | SysUtcDateTime => DateTime2(rt.now)
-    SysDateTimeOffset => DateTimeOffset(rt.now, 0)
+    SysDateTime | SysUtcDateTime => DateTime2(rt.read_clock())
+    SysDateTimeOffset => DateTimeOffset(rt.read_clock(), 0)
     DbName =>
       if v.length() == 0 {
         String(rt.database)
