@@ -1197,3 +1197,10 @@ ORM comparison has 224 matching steps and two known TypeORM ordering differences
 ARM64 validation/publication is assigned to a native ARM64 host under the new
 user instruction; this host stopped its QEMU run and does not claim ARM64
 release verification.
+
+
+Publication verified for `0.1.24`, `0.1`, and `latest` (linux/amd64). Compressed
+registry layer size is 14,327,342 bytes (13.7 MiB), filled into the benchmark
+record after publication. Remote config digest and labels match release commit
+`5284898b1743003c58a247cbda96351c2bd897c7`; image filesystem layers were unchanged
+when the revision label was stamped. See the [audit](sql2025-audit.md) for digests.

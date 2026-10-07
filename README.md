@@ -138,7 +138,7 @@ batch; versions before 0.1.20 measured one batch.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
+| Image download (compressed) | 13.7 MiB | 604.5 MiB | 2.3% | 44× better |
 | Image size on disk | 39.8 MiB | 1.64 GiB | 2.4% | 42× better |
 | Cold start: `docker run` → first query (one run) | 144 ms | 2.69 s | 5.4% | 19× better |
 | CPU time until ready | 36.0 ms | 3.01 s | 1.2% | 83× better |

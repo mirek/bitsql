@@ -536,14 +536,14 @@ zero failures. All 165 controlled SQL/HTTPS cases ran. ORM comparison has no
 new differences: 224 matching steps and two existing TypeORM ordering differences.
 
 
-### Native amd64 0.1.24 release candidate (2026-10-07)
+### Native amd64 0.1.24 release (2026-10-07)
 
 The exact amd64 release binary passes the full gate: 1,772 MoonBit tests,
 23,693 client checks, three existing skips and zero failures. All 165 controlled
 SQL/HTTPS cases ran; six concurrent source mutations now explicitly reject
 unsupported replay instead of silently succeeding. ORM comparison has 224
 matching steps and two existing TypeORM ordering differences. Measurements are
-updated in the [performance notes](performance.md). Publication remains pending.
+updated in the [performance notes](performance.md). Publication is complete.
 
 Per subsequent user instruction, architecture work is native-host only. The
 ARM64 QEMU run was stopped; its first attempt had 884 matches and two timeouts,
@@ -552,3 +552,14 @@ builds/tests only the host architecture, preserves other already-published
 architectures of the same version, and fails on registry lookup errors rather
 than dropping their entries. Shell syntax and mocked native publication checks
 pass (new version, existing other-architecture entry, registry network failure).
+
+
+Registry verification: `mirek/bitsql:0.1.24`, `0.1`, and `latest` resolve to the
+same linux/amd64 child manifest
+`sha256:15b2569f3e43d8d54cbbd88af213ecd36a59f6b9bac95e134b3b9dce40a513bb`.
+The index digest is
+`sha256:7e8041fd5152c5a06c1244c3f0a360514d948e2161d2b348f595ed5c86420599`.
+The remote image configuration matches the locally tested image; labels identify
+version 0.1.24 and release commit `5284898b1743003c58a247cbda96351c2bd897c7`.
+Updating the revision label preserved every tested filesystem layer. The
+CI-focused release is complete; the broader feature audit remains future work.

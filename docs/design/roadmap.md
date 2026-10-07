@@ -21,7 +21,8 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
   three existing skips; all four ORM workloads have no new differences.
 - [x] Concurrent table changes during embedding HTTP fail explicitly (six
   mutation regressions); full row/scan continuation is deferred.
-- [ ] Publish the native amd64 0.1.24 image and verify its registry manifest.
+- [x] Published native amd64 0.1.24; registry manifests and release labels
+  verified for `0.1.24`, `0.1`, and `latest`. ARM64 awaits its native host.
 
 ## Phase 0: project setup
 
