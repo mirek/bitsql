@@ -239,6 +239,12 @@ fn DepsWalk::plan(
       self.plan(recursive, depth, own)
     }
     WorkTable(id) => if !self.work_tables.contains(id) { self.ok = false }
+    TableFunc(VectorSearch(scope~, id~, ..), args) => {
+      if !self.tables.contains((scope, id)) {
+        self.tables.push((scope, id))
+      }
+      exprs(args)
+    }
     TableFunc(_, args) => exprs(args)
     // the inline function's query sees no outer rows and its arguments as
     // variables

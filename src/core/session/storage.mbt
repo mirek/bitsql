@@ -528,6 +528,20 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
     },
     sequence: name => self.sequence_binding(name),
     system_tvf: (name, args) => self.system_tvf(name, args),
+    vector_index: (scope, id, column, metric) => {
+      match self.db_of(scope).table(id) {
+        Some(t) =>
+          t.indexes
+          .iter()
+          .find_first(ix => {
+            ix.vector is Some(v) &&
+            v.metric.text() == metric &&
+            ix.columns.any(c => c.0 == column)
+          })
+          .map(ix => ix.index_id)
+        None => None
+      }
+    },
     preview_features: () => {
       self.server
       .db_options(self.rt.database)
@@ -681,7 +695,11 @@ fn Session::seek(
   }
   // a disabled index is not used (ALTER INDEX … DISABLE)
   for i, ix in t.indexes {
-    if ix.json is Some(_) || !ix.unique || ix.disabled || ix.filter is Some(_) {
+    if ix.vector is Some(_) ||
+      ix.json is Some(_) ||
+      !ix.unique ||
+      ix.disabled ||
+      ix.filter is Some(_) {
       continue
     }
     if covered(ix) is Some(vals) {
@@ -698,7 +716,11 @@ fn Session::seek(
     }
   }
   for i, ix in t.indexes {
-    if ix.json is Some(_) || ix.unique || ix.disabled || ix.filter is Some(_) {
+    if ix.vector is Some(_) ||
+      ix.json is Some(_) ||
+      ix.unique ||
+      ix.disabled ||
+      ix.filter is Some(_) {
       continue
     }
     let ansi = ix.columns

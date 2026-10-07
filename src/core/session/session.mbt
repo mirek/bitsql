@@ -619,6 +619,11 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     seek_json: (scope, id, column, path) => {
       self.seek_json(scope, id, column, path)
     },
+    vector_search: (scope, id, index_id, query, top, width, expansion) => {
+      self.search_vector_index(
+        scope, id, index_id, query, top, width, expansion,
+      )
+    },
     stamp: self.stamp_reader(),
   }
 }
@@ -828,6 +833,10 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
         vector_decl_reference_error(text, all[0]) is Some(extra) {
         all.push(extra)
       }
+      if all.length() == 1 &&
+        vector_index_option_error(text, all[0]) is Some(extra) {
+        all.push(extra)
+      }
       if all.length() > 1 && self.try_depth == 0 {
         for extra in all[:all.length() - 1] {
           self.message(
@@ -919,6 +928,14 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       self.text_error(e, line)
     }
     None => ()
+  }
+  let vector_errors = self.precheck_vector(stmts)
+  if !vector_errors.is_empty() {
+    for i in 0..<(vector_errors.length() - 1) {
+      self.message(vector_errors[i].0, vector_errors[i].1)
+    }
+    let last = vector_errors[vector_errors.length() - 1]
+    self.text_error(last.0, last.1)
   }
   match self.precheck_constraints(stmts) {
     Some(errors) => {

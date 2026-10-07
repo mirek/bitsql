@@ -12,7 +12,7 @@ fn Session::exec_insert_bulk(
   options : Array[String],
 ) -> Unit raise {
   match self.find_table(name) {
-    Some(_) => ()
+    Some((_, t)) => check_vector_dml(t)
     None =>
       raise @types.sql_error(208, "Invalid object name '\{object_text(name)}'.")
   }

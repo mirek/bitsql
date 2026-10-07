@@ -299,6 +299,11 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
     seek_json: (scope, id, column, path) => {
       self.seek_json(scope, id, column, path)
     },
+    vector_search: (scope, id, index_id, query, top, width, expansion) => {
+      self.search_vector_index(
+        scope, id, index_id, query, top, width, expansion,
+      )
+    },
     stamp: self.stamp_reader(),
   }
 }

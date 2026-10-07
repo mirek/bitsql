@@ -416,6 +416,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     self.check_writable()
   }
   let t = target.table
+  check_vector_dml(t)
   if u.sets.any(s => s.mutator) && duplicate_set_column(u.sets) is Some(name) {
     let name = t.column_index(name).map(i => t.columns[i].name).unwrap_or(name)
     raise duplicate_mutator_column(name)
@@ -794,6 +795,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
     self.check_writable()
   }
   let t = target.table
+  check_vector_dml(t)
   self.check_index_options(t)
   let src = dml_source(env0, target, view, d.from)
   let env = env0.with_columns(src.columns)
@@ -919,6 +921,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     self.check_writable()
   }
   let t = target.table
+  check_vector_dml(t)
   let identity_insert = self.identity_insert == Some(t.id)
   let outputs = self.bind_output(ins.output, target, view, false, true, [])
   // target columns

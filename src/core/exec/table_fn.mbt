@@ -47,6 +47,31 @@ fn stream_table_fn(
     }
   }
   match f {
+    VectorSearch(scope~, id~, index_id~) => {
+      guard eval(ctx, args[1]).as_int64() is Some(top) else {
+        raise @types.sql_error(
+          1014,
+          "A TOP or FETCH clause contains an invalid value.",
+          severity=15,
+        )
+      }
+      if top < 0L {
+        raise @types.sql_error(
+          127,
+          "A TOP N or FETCH rowcount value may not be negative.",
+          severity=15,
+        )
+      }
+      guard eval(ctx, args[0]) is Vector(query) else { return }
+      let width = eval(ctx, args[2]).as_int64().unwrap_or(5L)
+      let expansion = eval(ctx, args[3]).as_int64().unwrap_or(4L)
+      for
+        row in (ctx.vector_search)(
+          scope, id, index_id, query, top, width, expansion,
+        ) {
+        emit(row)
+      }
+    }
     RegexMatches | RegexSplit => regex_table(ctx, f, args, emit)
     XmlNodes =>
       for r in xml_nodes_rows(ctx, args) {

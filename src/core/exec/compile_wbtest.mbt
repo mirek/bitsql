@@ -11,6 +11,7 @@ test "compiled CHAR and NCHAR preserve interpreted values and errors" {
     user_table: no_user_table,
     seek: no_seek,
     seek_json: no_json_seek,
+    vector_search: no_vector_search,
     stamp: no_stamp,
   }
   for name in ["CHAR", "NCHAR"] {
@@ -82,6 +83,7 @@ test "prepared compiled arithmetic preserves operand evaluation and deferred err
     user_table: no_user_table,
     seek: no_seek,
     seek_json: no_json_seek,
+    vector_search: no_vector_search,
     stamp: no_stamp,
   }
   let zero : @ir.Expr = { kind: Lit(Int(0)), ty: Int, nullable: false, }

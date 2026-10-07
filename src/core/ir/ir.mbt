@@ -410,6 +410,8 @@ pub(all) struct WindowCall {
 
 ///|
 pub(all) enum TableFn {
+  /// Indexed vector search; args: query, TOP_N, frontier width, expansion.
+  VectorSearch(scope~ : Int, id~ : Int, index_id~ : Int)
   /// OPENJSON default schema (key, value, type); args: json [, path].
   OpenJsonDefault
   /// OPENJSON WITH schema; args: json [, path].

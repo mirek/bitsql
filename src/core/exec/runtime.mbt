@@ -159,6 +159,9 @@ pub(all) struct Ctx {
   /// Data version of table (scope, id): equal stamps identify the same
   /// immutable table data; None when the table's rows cannot be
   /// tracked (catalog views), which disables statement caches for it.
+  vector_search : (Int, Int, Int, @types.VectorData, Int64, Int64, Int64) -> Array[
+    Row,
+  ] raise @types.SqlError
   stamp : (Int, Int) -> Int64?
 }
 
@@ -234,4 +237,17 @@ pub fn no_json_seek(
   _path : String,
 ) -> Array[(Int64, Array[@types.Value])]? {
   None
+}
+
+///|
+pub fn no_vector_search(
+  _scope : Int,
+  _id : Int,
+  _index_id : Int,
+  _query : @types.VectorData,
+  _top : Int64,
+  _width : Int64,
+  _expansion : Int64,
+) -> Array[Row] raise @types.SqlError {
+  raise @types.not_supported("vector search outside a session")
 }

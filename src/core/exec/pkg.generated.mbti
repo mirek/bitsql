@@ -36,6 +36,8 @@ pub fn no_user_fn(Int, Array[@types.Value]) -> @types.Value raise @types.SqlErro
 
 pub fn no_user_table(Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
 
+pub fn no_vector_search(Int, Int, Int, @types.VectorData, Int64, Int64, Int64) -> Array[Array[@types.Value]] raise @types.SqlError
+
 pub fn pure_named_functions() -> Array[String]
 
 pub fn run(Ctx, @ir.Plan) -> Array[Array[@types.Value]] raise @types.SqlError
@@ -58,6 +60,7 @@ pub(all) struct Ctx {
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError
   seek : (Int, Int, Array[(Int, @types.Value)]) -> Array[(Int64, Array[@types.Value])]?
   seek_json : (Int, Int, Int, String) -> Array[(Int64, Array[@types.Value])]?
+  vector_search : (Int, Int, Int, @types.VectorData, Int64, Int64, Int64) -> Array[Array[@types.Value]] raise @types.SqlError
   stamp : (Int, Int) -> Int64?
 }
 pub fn Ctx::push_outer(Self, Array[@types.Value]) -> Self

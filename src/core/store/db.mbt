@@ -4,6 +4,7 @@ pub type Row = Array[@types.Value]
 ///|
 /// Index entries: key values (+ rowid for non-unique indexes) → rowid.
 pub struct IndexData {
+  priv vector : VectorGraph?
   priv map : PMap[Array[@types.Value], Int64]
 }
 
@@ -268,13 +269,14 @@ fn index_keys(
 ///|
 /// Filtered indexes skip rows outside their filter.
 fn in_index(ix : Index, row : Row) -> Bool {
-  !ix.disabled && ix.covers(row)
+  !ix.disabled && ix.vector is None && ix.covers(row)
 }
 
 ///|
 fn empty_index(t : Table, ix : Index) -> IndexData {
   if ix.json is Some(_) {
     return {
+      vector: None,
       map: PMap::empty(
         key_comparator([NVarChar(None, @types.json_collation), BigInt], [
           false, false,
@@ -288,7 +290,7 @@ fn empty_index(t : Table, ix : Index) -> IndexData {
     types.push(BigInt)
     desc.push(false)
   }
-  { map: PMap::empty(key_comparator(types, desc)), }
+  { vector: None, map: PMap::empty(key_comparator(types, desc)), }
 }
 
 ///|
@@ -326,10 +328,18 @@ pub fn Db::alter_table(
   }
   let indexes = t.indexes.map(ix => {
     let mut d = empty_index(t, ix)
+    if ix.vector is Some(_) &&
+      old is Some(previous) &&
+      self.tables.get(t.id) is Some(prior_table) {
+      if prior_table.indexes.search_by(p => p.index_id == ix.index_id)
+        is Some(k) {
+        d = { ..d, vector: previous.indexes[k].vector, }
+      }
+    }
     for kv in rows.iter() {
       if in_index(ix, kv.1) {
         for key in index_keys(ix, kv.1, kv.0) {
-          d = { map: d.map.add(key, kv.0), }
+          d = { ..d, map: d.map.add(key, kv.0), }
         }
       }
     }
@@ -366,10 +376,18 @@ pub fn Db::replace_table(
   }
   let indexes = t.indexes.map(ix => {
     let mut d = empty_index(t, ix)
+    if ix.vector is Some(_) &&
+      self.data.get(t.id) is Some(previous) &&
+      self.tables.get(t.id) is Some(prior_table) {
+      if prior_table.indexes.search_by(p => p.index_id == ix.index_id)
+        is Some(k) {
+        d = { ..d, vector: previous.indexes[k].vector, }
+      }
+    }
     for kv in rows {
       if in_index(ix, kv.1) {
         for key in index_keys(ix, kv.1, kv.0) {
-          d = { map: d.map.add(key, kv.0), }
+          d = { ..d, map: d.map.add(key, kv.0), }
         }
       }
     }
@@ -501,7 +519,7 @@ pub fn Db::insert_row(self : Db, id : Int, rowid : Int64, row : Row) -> Db {
         for key in index_keys(ix, row, rowid) {
           map = map.add(key, rowid)
         }
-        { map, }
+        { ..d.indexes[i], map, }
       } else {
         d.indexes[i]
       },
@@ -527,7 +545,7 @@ pub fn Db::delete_row(self : Db, id : Int, rowid : Int64) -> Db {
         for key in index_keys(ix, row, rowid) {
           map = map.remove(key)
         }
-        { map, }
+        { ..d.indexes[i], map, }
       } else {
         d.indexes[i]
       },
@@ -558,7 +576,7 @@ pub fn Db::insert_rows(self : Db, id : Int, rows : Array[(Int64, Row)]) -> Db {
     if entries.is_empty() {
       d.indexes[i]
     } else {
-      { map: d.indexes[i].map.add_all(entries), }
+      { ..d.indexes[i], map: d.indexes[i].map.add_all(entries), }
     }
   })
   { ..self, data: self.data.add(id, { rows: d.rows.add_all(rows), indexes, }), }
@@ -588,7 +606,7 @@ pub fn Db::delete_rows(self : Db, id : Int, rowids : Array[Int64]) -> Db {
       if t.indexes[i].disabled {
         ix
       } else {
-        { map: ix.map.retain((_, r) => !removed.contains(r)), }
+        { ..ix, map: ix.map.retain((_, r) => !removed.contains(r)), }
       }
     }),
   }
@@ -710,4 +728,31 @@ pub fn Db::seek_json_path(
   let out = rows.to_array()
   out.sort()
   out
+}
+
+///|
+pub fn Db::with_vector_graph(
+  self : Db,
+  id : Int,
+  index_id : Int,
+  graph : VectorGraph,
+) -> Db {
+  guard self.tables.get(id) is Some(t) &&
+    self.data.get(id) is Some(d) &&
+    t.indexes.search_by(ix => ix.index_id == index_id) is Some(k) else {
+    return self
+  }
+  let indexes = d.indexes.copy()
+  indexes[k] = { ..indexes[k], vector: Some(graph), }
+  { ..self, data: self.data.add(id, { ..d, indexes, }), }
+}
+
+///|
+pub fn Db::vector_graph(self : Db, id : Int, index_id : Int) -> VectorGraph? {
+  guard self.tables.get(id) is Some(t) &&
+    self.data.get(id) is Some(d) &&
+    t.indexes.search_by(ix => ix.index_id == index_id) is Some(k) else {
+    return None
+  }
+  d.indexes[k].vector
 }

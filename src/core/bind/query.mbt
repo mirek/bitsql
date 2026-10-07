@@ -500,16 +500,7 @@ fn bind_table_ref(
         ),
       )
     }
-    VectorSearch(_) => {
-      if !(env.catalog.preview_features)() {
-        raise @types.sql_error(
-          156,
-          "Incorrect syntax near the keyword 'TABLE'.",
-          severity=15,
-        )
-      }
-      raise @types.not_supported("vector index search")
-    }
+    VectorSearch(v) => bind_vector_search(env, v)
     TableFunc(name, args, openjson_with~, alias_~, columns~) =>
       match legacy_hint_ref(env, r) {
         Some(t) => bind_table_ref(env, t)

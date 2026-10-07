@@ -98,6 +98,8 @@ pub fn Db::tables(Self) -> Array[Table]
 pub fn Db::truncate(Self, Int) -> Self
 pub fn Db::update_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::user_types(Self) -> Array[UserType]
+pub fn Db::vector_graph(Self, Int, Int) -> VectorGraph?
+pub fn Db::with_vector_graph(Self, Int, Int, VectorGraph) -> Self
 pub fn Db::xprop(Self, Int, Int, Int, String) -> ExtendedProperty?
 pub fn Db::xprops(Self) -> Array[ExtendedProperty]
 
@@ -144,6 +146,7 @@ pub(all) struct Identity {
 
 pub(all) struct Index {
   json : JsonIndex?
+  vector : VectorIndex?
   index_id : Int
   object_id : Int
   name : String
@@ -287,12 +290,20 @@ pub struct VectorGraph {
 pub fn VectorGraph::new(Array[VectorNode], Int) -> Self
 pub fn VectorGraph::nodes(Self) -> Array[VectorNode]
 pub fn VectorGraph::search(Self, @types.VectorData, VectorMetric, Int) -> Array[VectorCandidate] raise @types.SqlError
+pub fn VectorGraph::search_parameters(Self, @types.VectorData, VectorMetric, Int64, Int64, Int64) -> Array[VectorCandidate] raise @types.SqlError
+
+pub(all) struct VectorIndex {
+  metric : VectorMetric
+  start : Int
+  parameters : String
+} derive(@debug.Debug)
 
 pub(all) enum VectorMetric {
   Cosine
   Euclidean
   Dot
 } derive(Eq, @debug.Debug)
+pub fn VectorMetric::text(Self) -> String
 
 pub(all) struct VectorNode {
   key : Int

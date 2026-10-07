@@ -15,7 +15,7 @@ pub(all) enum VectorMetric {
 } derive(Eq, Debug)
 
 ///|
-fn VectorMetric::text(self : VectorMetric) -> String {
+pub fn VectorMetric::text(self : VectorMetric) -> String {
   match self {
     Cosine => "cosine"
     Euclidean => "euclidean"

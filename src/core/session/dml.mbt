@@ -635,6 +635,12 @@ fn Session::exec_truncate(self : Session, name : @ast.ObjectName) -> Unit raise 
   self.check_writable()
   match self.find_table(name) {
     Some((scope, t)) => {
+      if t.indexes.any(ix => ix.vector is Some(_)) {
+        raise @types.sql_error(
+          42232,
+          "TRUNCATE TABLE statement failed because table '\{object_text(name)}' has a vector index on it.",
+        )
+      }
       let db = self.db_of(scope)
       for other in db.tables() {
         for fk in other.foreign_keys {

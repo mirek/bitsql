@@ -356,6 +356,13 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
                 None => ()
               }
             }
+            VectorSearch(v) =>
+              if self.find_table(v.table) is Some((sc, t)) && is_db_scope(sc) {
+                self.check_snapshot_allowed()
+                if self.read_lock([]) is Some((mode, duration)) {
+                  self.acquire(WholeTable(t.id), mode, duration)
+                }
+              }
             Derived(q, ..) => self.lock_reads(q)
             _ => ()
           }

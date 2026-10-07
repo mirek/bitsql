@@ -169,7 +169,8 @@ fn cursor_option_error(c : @ast.Cursor) -> @types.SqlError? {
 ///|
 fn plan_tables(p : @ir.Plan, out : Array[(Int, Int)]) -> Unit {
   match p {
-    Scan(scope~, id~, ..) => out.push((scope, id))
+    Scan(scope~, id~, ..) | TableFunc(VectorSearch(scope~, id~, ..), _) =>
+      out.push((scope, id))
     Project(x, _)
     | Filter(x, _)
     | Sort(x, _)

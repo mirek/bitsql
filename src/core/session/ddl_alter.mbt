@@ -534,6 +534,19 @@ fn Session::alter_drop(
       .iter()
       .find_first(ix => ix.is_constraint && ix.name.to_lower() == key) {
       Some(ix) => {
+        if ix.primary && t.indexes.any(index => index.vector is Some(_)) {
+          self.pending.push(
+            @types.sql_error(
+              3768,
+              "Could not drop the primary key constraint '\{ix.name}' because the table has a vector index.",
+            ),
+          )
+          raise @types.sql_error(
+            3727,
+            "Could not drop constraint. See previous errors.",
+            state=0,
+          )
+        }
         if ix.primary && t.indexes.any(index => index.json is Some(_)) {
           self.pending.push(
             @types.sql_error(
@@ -669,6 +682,14 @@ fn Session::alter_column(
     collation,
     preview=self.preview_enabled(),
   )
+  if old.ty is Vector(old_dimensions, _) &&
+    ty is Vector(new_dimensions, _) &&
+    old_dimensions != new_dimensions {
+    raise @types.sql_error(
+      42204,
+      "The vector dimensions \{old_dimensions} and \{new_dimensions} do not match.",
+    )
+  }
   // captured (json4/type-columns): json → nvarchar(max) is 257 (no 3621)
   if (old.ty is Json || ty is Json) &&
     old.ty != ty &&
@@ -1021,23 +1042,8 @@ fn Session::exec_create_index(
   ci : @ast.CreateIndex,
 ) -> Unit raise {
   if ci.vector {
-    if !self.preview_enabled() {
-      raise @types.sql_error(
-        343,
-        "Unknown object type 'VECTOR' used in a CREATE, DROP, or ALTER statement.",
-        state=2,
-        severity=15,
-      )
-    }
-    if !ci.options.any(o => o.name == "METRIC") {
-      raise @types.sql_error(
-        153,
-        "Invalid usage of the option metric in the CREATE VECTOR INDEX statement.",
-        state=7,
-        severity=15,
-      )
-    }
-    raise @types.not_supported("vector index construction")
+    self.exec_create_vector_index(ci)
+    return
   }
   if ci.json_paths is Some(paths) {
     self.exec_create_json_index(ci, paths)
@@ -1185,6 +1191,7 @@ fn Session::exec_create_index(
     fill_factor,
     ignore_dup_key,
     json: None,
+    vector: None,
     is_constraint: false,
     disabled: false,
   }

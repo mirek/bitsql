@@ -18,6 +18,7 @@ test "flat aggregate keys preserve representatives evaluation order and errors" 
     user_table: no_user_table,
     seek: no_seek,
     seek_json: no_json_seek,
+    vector_search: no_vector_search,
     stamp: no_stamp,
   }
   let cases : Array[Array[@types.Value]] = [

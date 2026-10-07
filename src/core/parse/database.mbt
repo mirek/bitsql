@@ -82,6 +82,10 @@ fn Parser::alter_database(
       }
       return AlterDatabase(target=None, PreviewFeatures(enabled))
     }
+    if self.is_kw("SET") && self.is_kw_at(1, "ALLOW_STALE_VECTOR_INDEX") {
+      self.pos += 1
+      raise self.error()
+    }
     self.skip_clause()
     return AlterDatabase(target=None, OtherAction("SCOPED CONFIGURATION"))
   }

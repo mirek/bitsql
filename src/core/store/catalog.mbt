@@ -37,6 +37,7 @@ pub(all) struct Column {
 ///|
 pub(all) struct Index {
   json : JsonIndex?
+  vector : VectorIndex?
   /// sys.indexes.index_id: 1 = clustered, 2.. nonclustered (the lowest free
   /// id is reused after DROP INDEX).
   index_id : Int
@@ -333,4 +334,11 @@ pub(all) struct JsonIndex {
   row_locks : Bool
   page_locks : Bool
   compression : Int
+} derive(Debug)
+
+///|
+pub(all) struct VectorIndex {
+  metric : VectorMetric
+  start : Int
+  parameters : String
 } derive(Debug)

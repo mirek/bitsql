@@ -196,6 +196,7 @@ fn Session::exec_create_json_index(
     ignore_dup_key: false,
     is_constraint: false,
     disabled: false,
+    vector: None,
     json: Some({
       internal_id: self.server.object_id(),
       created: self.rt.now,

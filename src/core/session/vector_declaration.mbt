@@ -69,3 +69,33 @@ fn vector_decl_reference_error(
   }
   None
 }
+
+///|
+/// Unknown vector options have a parser 155 followed by a semantic 153.
+/// Keep the latter out of the parser-only syntax contract.
+fn vector_index_option_error(
+  text : String,
+  error : @ast.SyntaxError,
+) -> @ast.SyntaxError? {
+  if error.number() != 155 ||
+    error.state() != 1 ||
+    !error
+    .message()
+    .has_suffix("is not a recognized CREATE VECTOR INDEX option.") {
+    return None
+  }
+  let @ast.SyntaxError(span~, ..) = error
+  let tokens = @lex.lex(text) catch { _ => return None }
+  guard tokens.iter().find_first(t => t.span.start == span.start) is Some(token) else {
+    return None
+  }
+  Some(
+    @ast.SyntaxError(
+      number=153,
+      state=1,
+      severity=15,
+      message="Invalid usage of the option \{token.text} in the INDEX statement.",
+      span~,
+    ),
+  )
+}

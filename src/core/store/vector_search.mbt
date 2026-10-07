@@ -149,3 +149,27 @@ pub fn vector_search(
 ) -> Array[VectorCandidate] raise @types.SqlError {
   VectorGraph::new(nodes, start).search(query, metric, top)
 }
+
+///|
+/// SQL callers evaluate the frontier expressions with SQL overflow semantics.
+/// Clamp only after that evaluation, so user counts cannot size allocations.
+pub fn VectorGraph::search_parameters(
+  self : VectorGraph,
+  query : @types.VectorData,
+  metric : VectorMetric,
+  top : Int64,
+  width : Int64,
+  expansion : Int64,
+) -> Array[VectorCandidate] raise @types.SqlError {
+  if top <= 0L || self.nodes.is_empty() {
+    return []
+  }
+  let bounded = n => {
+    @cmp.maximum(0L, @cmp.minimum(n, self.nodes.size().to_int64())).to_int()
+  }
+  self
+  .walk(query, metric, bounded(width), bounded(expansion), false)
+  .iter()
+  .take(bounded(top))
+  .collect()
+}

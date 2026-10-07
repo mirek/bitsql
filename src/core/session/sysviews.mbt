@@ -766,7 +766,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         out.push(m)
       }
     }
-    "sys.indexes" | "sys.json_indexes" =>
+    "sys.indexes" | "sys.json_indexes" | "sys.vector_indexes" =>
       for t in tables {
         if key == "sys.indexes" && !t.indexes.iter().any(ix => ix.clustered) {
           out.push(
@@ -783,6 +783,9 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
           )
         }
         for ix in t.indexes {
+          if key == "sys.vector_indexes" && ix.vector is None {
+            continue
+          }
           if key == "sys.json_indexes" && ix.json is None {
             continue
           }
@@ -794,7 +797,9 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               (
                 "type",
                 TinyInt(
-                  if ix.json is Some(_) {
+                  if ix.vector is Some(_) {
+                    8
+                  } else if ix.json is Some(_) {
                     9
                   } else if ix.clustered {
                     1
@@ -806,7 +811,9 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               (
                 "type_desc",
                 s(
-                  if ix.json is Some(_) {
+                  if ix.vector is Some(_) {
+                    "VECTOR"
+                  } else if ix.json is Some(_) {
                     "JSON"
                   } else if ix.clustered {
                     "CLUSTERED"
@@ -837,6 +844,22 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
               ),
               ("has_filter", b(ix.filter is Some(_))),
               ("filter_definition", opt_s(ix.filter.map(definition_text))),
+              (
+                "vector_index_type",
+                ix.vector.map(_ => s("DiskANN")).unwrap_or(Null),
+              ),
+              (
+                "distance_metric",
+                ix.vector
+                .map(v => s(v.metric.text().to_upper()))
+                .unwrap_or(Null),
+              ),
+              (
+                "build_parameters",
+                ix.vector
+                .map(v => @types.Value::String(v.parameters))
+                .unwrap_or(Null),
+              ),
             ]),
           )
         }
@@ -844,7 +867,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     "sys.stats" =>
       for t in tables {
         for ix in t.indexes {
-          if ix.json is Some(_) {
+          if ix.json is Some(_) || ix.vector is Some(_) {
             continue
           }
           out.push(
@@ -896,7 +919,13 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
                 ("column_id", i(t.columns[c.0].column_id)),
                 (
                   "key_ordinal",
-                  TinyInt(if ix.json is Some(_) { 0 } else { k + 1 }),
+                  TinyInt(
+                    if ix.json is Some(_) || ix.vector is Some(_) {
+                      0
+                    } else {
+                      k + 1
+                    },
+                  ),
                 ),
                 ("partition_ordinal", TinyInt(0)),
                 ("is_descending_key", b(c.1)),

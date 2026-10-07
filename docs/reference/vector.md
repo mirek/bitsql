@@ -321,11 +321,50 @@ this follows the sampled clustered scan, not insertion order. The 75 standalone
 seed/boundary fixtures reproduced independently (75/75).
 
 `VectorGraph` retains an immutable key lookup for repeated searches and
-snapshots. Construction, seed selection, and traversal are pure components;
-they are still not exposed through SQL CREATE VECTOR INDEX/VECTOR_SEARCH.
-The caller must supply the ordered repeatable source sample and the build
-alignment. Sampling beyond the 10,000-row target, larger growth thresholds,
-tied seed/candidate selection, SQL catalogs/mutations, and binding/execution
-remain open. `vector-seed-edges` also preserves empty-index StartId=0, tied
+snapshots. Construction, seed selection, and traversal are pure components.
+SQL integration is described below. Sampling beyond the 10,000-row target,
+larger growth thresholds, and tied seed/candidate selection remain open. `vector-seed-edges` also preserves empty-index StartId=0, tied
 seeds, and the 8115 followed by 42234 build-failure diagnostics. Failed builds
 can leave index metadata present; the SQL integration must preserve that state.
+
+
+### SQL index/search integration (2026-10-07)
+
+The `vector-index-ddl`, `vector-index-grammar`, `vector-index-contexts`,
+`vector-search-contracts`, `vector-search-grammar`, `vector-search-binding`,
+`vector-index-lifecycle`, and `vector-index-integrated` captures constrain the
+SQL integration. Index creation builds and retains a graph in immutable index
+data. Searches use that graph and fetch base rows through the clustered primary
+key. ALTER TABLE changes to unrelated columns preserve it; rolling back DROP
+INDEX restores it. The integrated fixtures exercise all metrics, explicit DOP
+1/32, float16/float32, and builds up to 5,000 rows. All-tied cosine queries
+check result count, distinct key count and min/max distance: oracle rebuilds
+change the selected keys, so an ORDER BY after the search cannot make the
+approximate selection deterministic.
+
+`SELECT *` emits distance before the source columns. Distance is nonnullable
+float with a base-column origin. The inner alias qualifies source columns;
+the outer alias qualifies only distance. TOP_N accepts tinyint, smallint, int
+and bigint, rejects other types with 1060, and rejects NULL/negative variable
+values at execution with 1014/127. A NULL query returns no rows, even with a
+different declared dimension. A non-NULL query checks dimensions even when
+TOP_N is zero. The SQL frontier arithmetic retains int/bigint overflow rules
+before the graph bounds its allocations.
+
+Creation emits INFO 8625 and DONE 743, with an internal DONEINPROC 186 for
+nonempty builds, including under NOCOUNT. Indexed tables reject DML (including
+zero affected rows) with 42231 and TRUNCATE with 42232. Dropping the vector index
+restores DML. The clustered single-column INT primary-key requirement,
+dependent-column/primary-key errors and ALTER INDEX rejection are captured.
+`sys.vector_indexes` has a separately captured descriptor; build_parameters is
+nvarchar(4000), and its JSON text retains spaces after commas. Vector indexes
+have type 8/index IDs starting at 1152000, key_ordinal 0, and no sys.stats row.
+
+Open boundaries: repeatable sampling beyond 10,000 eligible rows, tied seed
+selection, remaining lifecycle/locking/error precedence, RPC/module completion,
+and hardware-dependent default DOP. The current SQL implementation uses a
+virtual default DOP of 32 and explicitly rejects larger samples. Searching an
+incomplete failed-build graph remains an explicit Emulator error. The lifecycle
+probe disabling the clustered PK disconnected from the oracle without a usable
+expected result; it is retained unregistered and rejected explicitly by bitsql
+pending isolated investigation. This is not full vector feature completion.

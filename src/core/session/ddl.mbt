@@ -925,6 +925,7 @@ fn Session::add_key(
     fill_factor: 0,
     ignore_dup_key: false,
     json: None,
+    vector: None,
     is_constraint: true,
     disabled: false,
   })
@@ -1421,6 +1422,7 @@ fn Session::table_from_body(
         fill_factor,
         ignore_dup_key,
         json: None,
+        vector: None,
         is_constraint: false,
         disabled: false,
       })

@@ -40,6 +40,19 @@ fn Session::exec_alter_index(
         }
       }
   }
+  if targets.any(k => t.indexes[k].vector is Some(_)) {
+    self.cur_cmd = 253
+    raise @types.sql_error(
+      42250, "One or more of the specified ALTER INDEX options is unsupported for a Vector Index.",
+    )
+  }
+  if action == "DISABLE" &&
+    targets.any(k => t.indexes[k].primary && t.indexes[k].clustered) &&
+    t.indexes.any(ix => ix.vector is Some(_)) {
+    raise @types.not_supported(
+      "disabling the primary key of a vector-indexed table",
+    )
+  }
   let indexes = t.indexes.copy()
   let has_json = targets.any(k => indexes[k].json is Some(_))
   if action == "SET" && has_json {
