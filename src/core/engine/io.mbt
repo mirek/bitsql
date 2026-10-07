@@ -6,6 +6,7 @@ pub(all) enum Input {
   Closed(Int)
   TimerFired(Int) // lock timeout, query timeout
   Resume // continue a time-sliced long query
+  HttpCompleted(Int, Int, @types.HttpResult) // connection, generation, result
 } derive(Debug, Eq)
 
 ///|
@@ -32,6 +33,8 @@ pub(all) enum Output {
   /// Login-only encryption ends: from here on both directions are
   /// plaintext again (no close_notify). Emitted before the LOGIN7 response.
   EndTls(Int)
+  FetchHttp(Int, Int, @types.HttpRequest)
+  CancelHttp(Int, Int)
 } derive(Debug, Eq)
 
 ///|

@@ -10,14 +10,7 @@ fn Session::catalog_fn(
   args : Array[@types.Value],
 ) -> @types.Value? raise @types.SqlError {
   if name == "AI_GENERATE_EMBEDDINGS" {
-    if self.rest_enabled() {
-      raise @types.not_supported("AI_GENERATE_EMBEDDINGS HTTP execution")
-    }
-    raise @types.sql_error(
-      31643,
-      "'ai_generate_embeddings' is disabled on this instance of SQL Server. Use sp_configure 'external rest endpoint enabled' to enable it.",
-      state=2,
-    )
+    return Some(self.embedding(args))
   }
   let arg = (k : Int) => if k < args.length() { args[k] } else { Null }
   let text = (k : Int) => {

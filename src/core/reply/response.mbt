@@ -16,6 +16,8 @@ pub(all) struct SqlMessage {
 pub(all) enum Item {
   /// Send the preceding tokens, then terminate the transport without DONE.
   Disconnect
+  /// Fatal embedding diagnostic: final DONE with ERROR and SRVERROR bits.
+  FatalDone(Int)
   /// Start of a result set (COLMETADATA).
   ResultSet(Array[@tds.Column])
   /// ORDER token: projected ordinals of the ORDER BY keys (0 = hidden key).
@@ -76,6 +78,10 @@ pub fn render(
   for i, it in items {
     match it {
       Disconnect => return w.to_bytes()
+      FatalDone(cmd) => {
+        @tds.write_done(w, Done, 0x0102, cmd, 0L)
+        return w.to_bytes()
+      }
       ResultSet(c) => {
         cols = c
         @tds.write_colmetadata(w, c)

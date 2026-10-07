@@ -92,6 +92,7 @@ Sequelize, TypeORM and Prisma through `harness/orm`.
 Server options (append them after the image name): `--version`, `--listen HOST:PORT`, `--database NAME`
 (repeatable), `--auto-create-databases`, `--tls-cert FILE --tls-key FILE`
 (PEM; default a built-in self-signed localhost certificate), `--no-tls`,
+`--http-ca FILE` (PEM trust roots for outbound HTTPS; default system roots),
 `--max-request-work N` (runaway-request budget; a request past it fails with
 Emulator error 50108), `--record FILE` (event log for `replay`).
 

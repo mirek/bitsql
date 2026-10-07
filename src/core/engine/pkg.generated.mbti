@@ -3,6 +3,7 @@ package "mirek/bitsql/core/engine"
 
 import {
   "mirek/bitsql/core/tds",
+  "mirek/bitsql/core/types",
   "moonbitlang/core/debug",
 }
 
@@ -49,6 +50,7 @@ pub(all) enum Input {
   Closed(Int)
   TimerFired(Int)
   Resume
+  HttpCompleted(Int, Int, @types.HttpResult)
 } derive(Eq, @debug.Debug)
 
 pub(all) enum Output {
@@ -60,6 +62,8 @@ pub(all) enum Output {
   Log(String)
   StartTls(Int)
   EndTls(Int)
+  FetchHttp(Int, Int, @types.HttpRequest)
+  CancelHttp(Int, Int)
 } derive(Eq, @debug.Debug)
 
 // Type aliases

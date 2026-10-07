@@ -365,6 +365,9 @@ pub struct Session {
   mut waits_done : Int
   mut configuration_reads_seen : Int
   configuration_reads : Array[Result[(Int, Int), @types.SqlError]]
+  embeddings : Array[EmbeddingCall]
+  mut embeddings_seen : Int
+  mut embedding_pending : Int?
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
   /// ATTENTION (cancellation) of a parked request (attention.mbt).
@@ -542,6 +545,9 @@ pub fn Session::new(
     waits_done: 0,
     configuration_reads_seen: 0,
     configuration_reads: [],
+    embeddings: [],
+    embeddings_seen: 0,
+    embedding_pending: None,
     in_waitfor: false,
     login: "sa",
     host_name: "",
@@ -757,9 +763,12 @@ pub fn Session::run_batch(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.embeddings.clear()
+    self.embedding_pending = None
   }
   self.waits_seen = 0
   self.configuration_reads_seen = 0
+  self.embeddings_seen = 0
   self.in_waitfor = false
   self.parked = false
   self.waiting = None
@@ -801,6 +810,8 @@ pub fn Session::run_batch(
   self.applock_waited = false
   self.waits_done = 0
   self.configuration_reads.clear()
+  self.embeddings.clear()
+  self.embedding_pending = None
   if self.attn.hit {
     self.finish_attention()
   } else {

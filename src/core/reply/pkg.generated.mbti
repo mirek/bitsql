@@ -14,6 +14,7 @@ pub fn render(RequestKind, Array[Item], String, cancelled? : Bool) -> Bytes rais
 // Types and methods
 pub(all) enum Item {
   Disconnect
+  FatalDone(Int)
   ResultSet(Array[@tds.Column])
   Order(Array[Int])
   BrowseInfo(Array[Array[String]], Array[@tds.ColInfo])

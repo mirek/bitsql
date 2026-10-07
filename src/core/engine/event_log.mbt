@@ -1,8 +1,11 @@
 ///|
 /// Event log format, so a CI run can be replayed byte for byte:
 /// header = "BSQLEV1\n" + seed (i64 LE); then one record per event:
-/// tag u8 (0 Connected, 1 Received, 2 Closed, 3 TimerFired, 4 Resume),
+/// tag u8 (0 Connected, 1 Received, 2 Closed, 3 TimerFired, 4 Resume,
+/// 5 HttpCompleted),
 /// now i64 LE, id i32 LE, and for Received a u32 LE length plus the bytes.
+/// HttpCompleted adds generation/status i32 LE (-1 = transport failure),
+/// then a u32 LE UTF-8 byte length and response body/failure text.
 let event_log_magic : Bytes = b"BSQLEV1\n"
 
 ///|
@@ -22,6 +25,7 @@ pub fn encode_event(e : Event) -> Bytes {
     Closed(id) => (2, id)
     TimerFired(id) => (3, id)
     Resume => (4, 0)
+    HttpCompleted(id, _, _) => (5, id)
   }
   w.u8(tag)
   w.i64le(e.now)
@@ -29,6 +33,17 @@ pub fn encode_event(e : Event) -> Bytes {
   if e.input is Received(_, b) {
     w.u32le(b.length().to_int64())
     w.bytes(b)
+  }
+  if e.input is HttpCompleted(_, generation, result) {
+    w.i32le(generation)
+    let (status, text) = match result {
+      HttpResponse(status, body) => (status, body)
+      HttpFailure(reason) => (-1, reason)
+    }
+    w.i32le(status)
+    let bytes = @utf8.encode(text)
+    w.u32le(bytes.length().to_int64())
+    w.bytes(bytes)
   }
   w.to_bytes()
 }
@@ -59,6 +74,23 @@ pub fn decode_event_log(
         2 => Closed(id)
         3 => TimerFired(id)
         4 => Resume
+        5 => {
+          let generation = r.i32le()
+          let status = r.i32le()
+          let bytes = r.bytes(r.u32le().to_int())
+          let body = @utf8.decode(bytes) catch {
+            _ => raise @tds.Malformed("invalid UTF-8 HTTP event")
+          }
+          HttpCompleted(
+            id,
+            generation,
+            if status == -1 {
+              HttpFailure(body)
+            } else {
+              HttpResponse(status, body)
+            },
+          )
+        }
         t => raise @tds.Malformed("bad event tag \{t}")
       }
       Some({ input, now, })

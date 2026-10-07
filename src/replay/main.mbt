@@ -31,6 +31,10 @@ async fn main {
         Yield => "#\{i} yield"
         StartTls(id) => "#\{i} conn \{id} start tls"
         EndTls(id) => "#\{i} conn \{id} end tls"
+        FetchHttp(id, generation, _) =>
+          "#\{i} conn \{id} fetch HTTP \{generation}"
+        CancelHttp(id, generation) =>
+          "#\{i} conn \{id} cancel HTTP \{generation}"
       }
       @stdio.stdout.write(line + "\n")
     }

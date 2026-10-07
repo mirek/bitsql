@@ -340,9 +340,12 @@ pub fn Session::run_rpc(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.embeddings.clear()
+    self.embedding_pending = None
   }
   self.waits_seen = 0
   self.configuration_reads_seen = 0
+  self.embeddings_seen = 0
   self.in_waitfor = false
   self.parked = false
   self.waiting = None
@@ -447,6 +450,8 @@ pub fn Session::run_rpc(
   self.applock_waited = false
   self.waits_done = 0
   self.configuration_reads.clear()
+  self.embeddings.clear()
+  self.embedding_pending = None
   if self.attn.hit {
     self.finish_attention()
   } else {

@@ -27,6 +27,8 @@ struct Engine {
   parked : Map[Int, Parked]
   /// RESETCONNECTION tokens to send before a connection's next response.
   reset_prefix : Map[Int, Bytes]
+  http_pending : Map[Int, Int]
+  mut http_generation : Int
 }
 
 ///|
@@ -51,6 +53,8 @@ pub fn Engine::new(config : Config, seed : Int64) -> Engine {
     sessions: Map([]),
     parked: Map([]),
     reset_prefix: Map([]),
+    http_pending: Map([]),
+    http_generation: 0,
   }
 }
 
@@ -67,6 +71,7 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
         encryption: @tds.ENCRYPT_NOT_SUP,
       }
     Closed(id) => {
+      self.cancel_http(id, out)
       match self.sessions.get(id) {
         Some(s) => s.close()
         None => ()
@@ -89,6 +94,7 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
             self.drain(event.now, out)
           } catch {
             e => {
+              self.cancel_http(id, out)
               out.push(Log("connection \{id}: protocol error: \{e}"))
               out.push(Close(id))
               self.conns.remove(id)
@@ -104,6 +110,18 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
           self.drain(event.now, out)
         } catch {
           e => out.push(Log("lock timeout re-run: \{e}"))
+        }
+      }
+    HttpCompleted(id, generation, result) =>
+      if self.http_pending.get(id) == Some(generation) &&
+        self.parked.contains(id) {
+        self.http_pending.remove(id)
+        self.sessions[id].complete_http(result)
+        try {
+          self.rerun(id, event.now, out)
+          self.drain(event.now, out)
+        } catch {
+          e => out.push(Log("HTTP completion: \{e}"))
         }
       }
     Resume => ()
@@ -314,6 +332,7 @@ fn Engine::on_message(
       // Either way DONE_ATTN follows as a separate message, as SQL Server
       // sends it (captured; tedious reads two messages after a cancel).
       if self.parked.contains(conn.id) {
+        self.cancel_http(conn.id, out)
         out.push(CancelTimer(conn.id))
         self.sessions[conn.id].attention()
         self.rerun(conn.id, now, out)
@@ -418,7 +437,7 @@ fn Engine::run_batch(
     conn,
     @reply.render(Batch, items, self.config.server_name),
     out,
-    complete=!disconnected,
+    complete=!disconnected || items.any(i => i is FatalDone(_)),
   )
   if disconnected {
     out.push(Close(conn.id))
@@ -453,7 +472,12 @@ fn Engine::run_rpc(
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
     if items.any(it => it is Disconnect) {
-      self.send(conn, w.to_bytes(), out, complete=false)
+      self.send(
+        conn,
+        w.to_bytes(),
+        out,
+        complete=items.any(i => i is FatalDone(_)),
+      )
       out.push(Close(conn.id))
       return
     }
@@ -496,9 +520,25 @@ fn Engine::drain(self : Engine, now : Int64, out : Array[Output]) -> Unit raise 
 ///|
 /// SET LOCK_TIMEOUT > 0: the host fires TimerFired(connection id).
 fn Engine::arm_timeout(self : Engine, id : Int, out : Array[Output]) -> Unit {
+  if self.sessions[id].pending_http() is Some(request) {
+    if !self.http_pending.contains(id) {
+      self.http_generation += 1
+      self.http_pending[id] = self.http_generation
+      out.push(FetchHttp(id, self.http_generation, request))
+    }
+    return
+  }
   match self.sessions[id].wait_timeout() {
     Some(ms) => out.push(SetTimer(id, ms))
     None => ()
+  }
+}
+
+///|
+fn Engine::cancel_http(self : Engine, id : Int, out : Array[Output]) -> Unit {
+  if self.http_pending.get(id) is Some(generation) {
+    self.http_pending.remove(id)
+    out.push(CancelHttp(id, generation))
   }
 }
 

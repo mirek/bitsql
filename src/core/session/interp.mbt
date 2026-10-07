@@ -316,6 +316,13 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   self.deferred.clear()
   self.message(e, line)
+  if e.number() == 596 && e.severity() == 21 {
+    ignore(self.out.pop())
+    self.message(e, 0)
+    self.out.push(FatalDone(self.cur_cmd))
+    self.out.push(Disconnect)
+    raise AbortBatch
+  }
   // a deadlock victim's transaction is rolled back after the error
   // (captured order: ERROR, ENVCHANGE; locking/deadlock-two-tables), and so
   // is the transaction under XACT_ABORT (captured: proc/xact-abort)

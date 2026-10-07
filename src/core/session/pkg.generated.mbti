@@ -32,6 +32,12 @@ pub fn wire_value(@types.Value) -> @tds.WireValue
 // Errors
 
 // Types and methods
+pub struct EmbeddingCall {
+  request : @types.HttpRequest
+  api : @types.EmbeddingApi
+  mut result : Result[@types.Value, @types.SqlError]?
+}
+
 pub(all) struct LockKey {
   values : Array[@types.Value]
   colls : Array[@types.Collation?]
@@ -91,6 +97,9 @@ pub struct Session {
   mut waits_done : Int
   mut configuration_reads_seen : Int
   configuration_reads : Array[Result[(Int, Int), @types.SqlError]]
+  embeddings : Array[EmbeddingCall]
+  mut embeddings_seen : Int
+  mut embedding_pending : Int?
   mut in_waitfor : Bool
   mut error_override : Int?
   deferred : Array[@types.SqlError]
@@ -130,9 +139,11 @@ pub struct Session {
 pub fn Session::attention(Self) -> Unit
 pub fn Session::cancel_wait(Self) -> Unit
 pub fn Session::close(Self) -> Unit
+pub fn Session::complete_http(Self, @types.HttpResult) -> Unit
 pub fn Session::is_parked(Self) -> Bool
 pub fn Session::make_victim(Self) -> Unit
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64, server_name? : String, build? : (Int, Int, Int)) -> Self
+pub fn Session::pending_http(Self) -> @types.HttpRequest?
 pub fn Session::reset(Self) -> Array[@reply.Item]
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]

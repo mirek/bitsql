@@ -446,3 +446,16 @@ skips, zero failures; parser checks 40,562 batches with 11 known differences.
 Version 0.1.23 remains published.
 
 Embedding follow-up (2026-10-07): 32 binding/disabled-inference cases now pass, including native JSON SELECT INTO and same-batch model lookup. The 107-row instance configuration catalog is generated from captures. REST configuration mutations and catalog lock waits now pass sequential and two-session oracle tests. Enabled inference and the other open scope above are still pending. See [contracts](../reference/external-models.md).
+
+
+### Enabled HTTPS inference checkpoint (2026-10-07)
+
+The native host now executes the 86 captured embedding exchanges with matching
+SQL results and HTTP requests. Recorded completions keep networking outside
+the core, and request restart reuses completed results. This checkpoint does
+not complete the embedding or wider 2025 audit: remaining transport, volatile
+input, concurrency, credential and ONNX work is listed in the
+[contracts](../reference/external-models.md). Version 0.1.23 remains published;
+no new container has been published for this checkpoint.
+
+Full gate passes 1,771 MoonBit and 23,684 client tests, three existing skips, zero failures; parser checks 40,611 batches with 11 known differences. All 86 SQL/HTTPS exchanges ran in the client suite.

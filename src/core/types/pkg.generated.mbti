@@ -405,6 +405,19 @@ pub(all) struct EmbeddingRequest {
   retry_count : Int
 } derive(Eq, @debug.Debug)
 
+pub(all) struct HttpRequest {
+  url : String
+  body : String
+  headers : Array[(String, String)]
+  retry_count : Int
+  retry_statuses : Array[Int]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum HttpResult {
+  HttpResponse(Int, String)
+  HttpFailure(String)
+} derive(Eq, @debug.Debug)
+
 pub struct JsonData {
   // private fields
 } derive(Eq, @debug.Debug)

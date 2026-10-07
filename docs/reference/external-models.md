@@ -123,8 +123,8 @@ view with `scripts/gen-sysviews.py`. Reproduce the fixture with
 `node gen/capture-configurations.mjs --verify` from `harness/`; the script
 mutates only its own disposable oracle, never the shared instance.
 
-The catalog defaults and REST configuration mutations are implemented; actual
-HTTP inference remains open.
+The catalog defaults and REST configuration mutations are implemented.
+Enabled HTTPS inference now passes the 86 captured SQL/request exchanges.
 For REST, configuration_id 16402, the default configured/active values are
 both zero, minimum zero, maximum one, is_dynamic true and is_advanced false.
 sp_configure changes only the configured value, and RECONFIGURE installs it.
@@ -148,3 +148,24 @@ RECONFIGURE times out at the batch line with CurCmd 220. Completed procedure
 reads are retained across request replay so each subsequent read can wait
 independently. Captures also cover scalar UDFs, TRY/CATCH and TRY_CAST; the
 internal wait is never itself catchable, while the eventual timeout is.
+
+
+### Host HTTPS execution (2026-10-07)
+
+`harness/test/embedding-http.test.mjs` compares all 86 fixture SQL results and
+actual HTTPS requests against `embeddings.expected.json`, including headers,
+UTF-8 byte lengths, retries and fatal completion. The fatal 596 response ends
+with DONE(ERROR | SRVERROR), CurCmd 193, and a TDS end-of-message packet before
+connection closure; omitting EOM prevents tedious from completing the request.
+
+The native host verifies server certificates with system roots by default;
+`--http-ca FILE` supplies PEM roots for controlled endpoints. HTTP responses
+enter the pure engine as recorded events. Completed calls survive request
+restart so later calls do not repeat earlier POSTs. Engine tests exercise
+multiple calls, stale completion rejection, cancellation and disconnect.
+
+This is partial inference support. Transport-specific SQL diagnostics,
+credentials, ONNX, retry timing, compressed responses, redirects and concurrent
+model/source changes remain open. A replay whose embedding payload changes
+currently fails explicitly; volatile input expressions still need stable
+replay semantics. Transport failures likewise remain explicit Emulator errors.

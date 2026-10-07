@@ -13,6 +13,7 @@
 ///               50108 (runaway protection; default 300000000)
 ///   --tls-cert FILE --tls-key FILE  PEM certificate and key for TLS
 ///               (default: a built-in self-signed localhost certificate)
+///   --http-ca FILE  PEM trust roots for outbound HTTPS (default: system roots)
 ///   --no-tls    refuse encryption like a server without a certificate
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
@@ -56,6 +57,11 @@ async fn main {
     tls: tls_files is Some(_),
   }
   let engine = @engine.Engine::new(config, seed)
+  let http_trust : @tls.TrustedRoot = match flag(args, "--http-ca") {
+    Some(path) => CustomPemFile(path)
+    None => SystemRoot
+  }
+  let http_tasks : Map[Int, @async.Task[Unit]] = Map([])
   let queue : @aqueue.Queue[@engine.Input] = @aqueue.Queue(kind=Unbounded)
   let conns : Map[Int, Conn] = Map([])
   // pending timers: id → generation (a re-set or cancel invalidates it)
@@ -125,6 +131,19 @@ async fn main {
               })
             }
             CancelTimer(id) => timers.remove(id)
+            FetchHttp(id, generation, request) => {
+              let task = group.spawn(allow_failure=true, () => {
+                let result = perform_http(request, http_trust)
+                http_tasks.remove(generation)
+                queue.put(HttpCompleted(id, generation, result))
+              })
+              http_tasks[generation] = task
+            }
+            CancelHttp(_, generation) =>
+              if http_tasks.get(generation) is Some(task) {
+                http_tasks.remove(generation)
+                task.cancel()
+              }
             Yield => ()
           }
         }

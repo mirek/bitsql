@@ -1161,3 +1161,19 @@ each request. This permits successive internal reads to time out independently
 without repeating an earlier completed wait. See the captured configuration
 contracts in `docs/reference/external-models.md`. HTTP request/result replay is
 still separate unfinished work; configuration support does not imply inference.
+
+
+### 2026-10-07: explicit HTTP effects and recorded completions
+
+Embedding calls suspend through the typed control path. The engine emits an
+HTTP effect and the host performs TLS/HTTP; a completion carries the response
+back into the pure engine. Event logs include these completions, so replay
+requires no network. A monotonically increasing generation prevents a late
+response from completing a cancelled or subsequent request. Completed SQL-call
+outcomes survive request restart; a changed payload is explicitly rejected
+until stable replay of volatile inputs and concurrent changes is implemented.
+
+The host uses the HTTP library's TLS passthrough mode to preserve the captured
+headers: its higher-level request API adds Accept-Encoding absent from SQL
+Server captures. This does not waive the remaining transport contracts listed
+in [external-models](../reference/external-models.md).

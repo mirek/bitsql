@@ -206,6 +206,8 @@ test "event log round trip and truncation tolerance" {
     { input: TimerFired(3), now: 12, },
     { input: Resume, now: 13, },
     { input: Closed(1), now: 14, },
+    { input: HttpCompleted(2, 7, HttpResponse(200, "[1,2]")), now: 15, },
+    { input: HttpCompleted(2, 8, HttpFailure("TLS failure")), now: 16, },
   ]
   let w = @tds.Writer::new()
   w.bytes(@engine.encode_event_log_header(-7))
@@ -217,7 +219,7 @@ test "event log round trip and truncation tolerance" {
   assert_eq(seed, -7)
   assert_eq(back, events)
   let (_, partial) = @engine.decode_event_log(log[0:log.length() - 3])
-  assert_eq(partial.length(), 4)
+  assert_eq(partial.length(), events.length() - 1)
 }
 
 ///|
@@ -504,4 +506,74 @@ test "databases from --database and --auto-create-databases are server-wide" {
     e, 2, "SELECT COUNT(*) FROM master.sys.databases WHERE name IN (N'appdb', N'fixturedb') AND database_id = DB_ID(name) AND DB_NAME(database_id) = name AND database_id > 4",
   )
   assert_true(@tds.hex(sent(out)[0].payload).contains("d1 04 02 00 00 00"))
+}
+
+///|
+fn embedding_engine() -> @engine.Engine {
+  let e = @engine.Engine::new(@engine.Config::default(), 42)
+  connect(e, 1)
+  ignore(
+    batch(
+      e, 1, "EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE;",
+    ),
+  )
+  ignore(
+    batch(
+      e, 1, "CREATE EXTERNAL MODEL m WITH(LOCATION='https://localhost/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');",
+    ),
+  )
+  e
+}
+
+///|
+test "HTTP completion replay preserves completed calls and rejects stale generations" {
+  let e = embedding_engine()
+  let first = batch(
+    e, 1, "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m); SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m);",
+  )
+  guard first is [FetchHttp(1, generation, request)] else {
+    fail("expected first HTTP effect")
+  }
+  assert_true(request.body.contains("first"))
+  assert_eq(
+    e.handle(ev(HttpCompleted(1, generation + 1, HttpResponse(200, "{}")))),
+    [],
+  )
+  let response : @types.HttpResult = HttpResponse(
+    200, "{\"data\":[{\"embedding\":[1,2]}]}",
+  )
+  let second = e.handle(ev(HttpCompleted(1, generation, response)))
+  guard second is [FetchHttp(1, next, request)] else {
+    fail("expected only second HTTP effect")
+  }
+  assert_true(next != generation)
+  assert_true(request.body.contains("second"))
+  assert_eq(e.handle(ev(HttpCompleted(1, generation, response))), [])
+  let done = e.handle(ev(HttpCompleted(1, next, response)))
+  assert_eq(responded(done), [1])
+  assert_false(done.any(o => o is FetchHttp(_, _, _)))
+  assert_eq(sent(done).length(), 1)
+}
+
+///|
+test "HTTP cancellation and disconnect invalidate pending completions" {
+  let e = embedding_engine()
+  let sql = "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m);"
+  guard batch(e, 1, sql) is [FetchHttp(1, generation, _)] else {
+    fail("expected HTTP effect")
+  }
+  let cancelled = attention(e, 1)
+  assert_true(cancelled.contains(CancelHttp(1, generation)))
+  assert_eq(sent(cancelled).length(), 2)
+  assert_eq(
+    e.handle(ev(HttpCompleted(1, generation, HttpResponse(200, "{}")))),
+    [],
+  )
+  assert_eq(responded(batch(e, 1, "SELECT 42")), [1])
+  guard batch(e, 1, sql) is [FetchHttp(1, next, _)] else {
+    fail("expected fresh HTTP effect")
+  }
+  assert_true(next != generation)
+  assert_true(e.handle(ev(Closed(1))).contains(CancelHttp(1, next)))
+  assert_eq(e.handle(ev(HttpCompleted(1, next, HttpResponse(200, "{}")))), [])
 }
