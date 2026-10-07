@@ -527,6 +527,7 @@ fn Session::catalog(self : Session) -> @bind.Catalog {
       }
     },
     sequence: name => self.sequence_binding(name),
+    external_model: name => self.db_of(0).external_model(name) is Some(_),
     system_tvf: (name, args) => self.system_tvf(name, args),
     vector_index: (scope, id, column, metric) => {
       match self.db_of(scope).table(id) {

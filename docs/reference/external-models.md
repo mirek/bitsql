@@ -52,8 +52,9 @@ The controlled HTTPS captures live in
 `harness/gen/embedding-cases.mjs`. They preserve both the outgoing HTTP request
 and the SQL result, including metadata, diagnostics and completion tokens.
 `scripts/gen-embedding-tests.py` derives pure request/response tests from them.
-These pure functions are not yet connected to SQL execution; inference still
-raises the explicit unsupported error.
+These pure functions are not yet connected to host HTTP execution. SQL binding
+and the disabled REST execution path are implemented; enabling REST and actual
+inference remain open.
 
 Run `node gen/capture-embeddings.mjs --verify` from `harness/` to reproduce the
 captures. The command creates its own uniquely named oracle on an automatically
@@ -95,3 +96,39 @@ nested parameter JSON retain native JSON formatting. The fixture's
 `source-control`, `model-escape` and `parameter-escapes` cases constrain these
 separate paths. The harness also checks that capture inputs match the current
 case definitions, so editing inputs cannot silently reuse old expectations.
+
+
+## Binding and instance configuration (2026-10-07)
+
+`sql2025/embedding-binding` and `embedding-contracts` capture model lookup,
+argument validation, execution timing and descriptors. All 32 cases pass.
+Model lookup raises 15151 state 10 before argument type checks. Dotted names
+are looked up as a single external model name; string literals produce syntax
+1035 state 11. A CREATE in the same batch cannot satisfy an embedding model
+reference at batch compilation.
+
+Character source types and typed character NULL are accepted. Untyped NULL,
+XML, native JSON, binary and integer sources raise 8116 for argument 2.
+PARAMETERS accepts native JSON or untyped NULL; character/integer parameters
+raise 8116 for argument 3. The result is nullable native JSON: TDS 7.4 and
+`dm_exec_describe_first_result_set` expose UTF-8 varchar(max), but SELECT INTO
+records system_type_id 244. TOP (0), an empty input and an unselected CASE
+branch do not execute inference. Executing with REST disabled raises 31643
+state 2 after result metadata.
+
+`harness/fixtures/configurations.expected.json` contains all 107 default
+`sys.configurations` rows and their captured variant base types (all int),
+plus 26 sequential configuration procedure/RECONFIGURE probes. Generate the
+view with `scripts/gen-sysviews.py`. Reproduce the fixture with
+`node gen/capture-configurations.mjs --verify` from `harness/`; the script
+mutates only its own disposable oracle, never the shared instance.
+
+The catalog defaults are implemented; configuration mutations remain open.
+For REST, configuration_id 16402, the default configured/active values are
+both zero, minimum zero, maximum one, is_dynamic true and is_advanced false.
+sp_configure changes only the configured value, and RECONFIGURE installs it.
+Configured changes roll back with a user transaction; RECONFIGURE inside one
+raises 574 state 0. A committed configured change still awaits RECONFIGURE.
+The planned state belongs in the master Db so existing cross-database
+transaction snapshots handle rollback. Unsupported configuration mutations
+must continue to fail explicitly until implemented.

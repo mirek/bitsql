@@ -444,3 +444,5 @@ transport, pause/resume, cancellation, credentials and ONNX remain open. See
 [external-model contracts](../reference/external-models.md). The full gate passes 1,767 MoonBit and 23,647 client tests, three existing
 skips, zero failures; parser checks 40,562 batches with 11 known differences.
 Version 0.1.23 remains published.
+
+Embedding follow-up (2026-10-07): 32 binding/disabled-inference cases now pass, including native JSON SELECT INTO and same-batch model lookup. The 107-row instance configuration catalog is generated from captures. Configuration mutations, enabled inference and the other open scope above are still pending. See [contracts](../reference/external-models.md).

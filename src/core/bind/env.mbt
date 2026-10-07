@@ -61,6 +61,7 @@ pub(all) struct Catalog {
   /// The current database's compatibility level (SOUNDEX below 110 keeps
   /// the old H/W rule).
   vector_index : (Int, Int, Int, String) -> Int?
+  external_model : (String) -> Bool
   preview_features : () -> Bool
   compat_level : () -> Int
 }
@@ -111,6 +112,7 @@ pub fn Catalog::empty() -> Catalog {
     user_type: _ => false,
     system_tvf: (_, _) => None,
     vector_index: (_, _, _, _) => None,
+    external_model: _ => false,
     preview_features: () => false,
     compat_level: () => 170,
   }

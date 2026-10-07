@@ -551,6 +551,22 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
   match key {
+    "sys.configurations" =>
+      for seed in seed_configurations {
+        out.push(
+          vrow([
+            ("configuration_id", seed[0]),
+            ("name", seed[1]),
+            ("value", seed[2]),
+            ("minimum", seed[3]),
+            ("maximum", seed[4]),
+            ("value_in_use", seed[5]),
+            ("description", seed[6]),
+            ("is_dynamic", seed[7]),
+            ("is_advanced", seed[8]),
+          ]),
+        )
+      }
     "sys.external_models" =>
       for m in db.external_models() {
         out.push(

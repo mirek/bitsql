@@ -84,6 +84,7 @@ pub(all) struct Catalog {
   user_type : (@ast.TypeName) -> Bool
   system_tvf : (String, Array[@types.Value]) -> (Array[ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError
   vector_index : (Int, Int, Int, String) -> Int?
+  external_model : (String) -> Bool
   preview_features : () -> Bool
   compat_level : () -> Int
 }

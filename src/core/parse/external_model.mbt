@@ -76,7 +76,6 @@ fn Parser::external_model(
 ///|
 /// The model identifier occupies the first internal call argument, followed
 /// by source and optional PARAMETERS. It is a name, not a column reference.
-/// Inference is still explicitly unsupported by the binder.
 fn Parser::embedding_call(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
   let start = self.start()
   let name_tok = self.advance()
@@ -84,8 +83,23 @@ fn Parser::embedding_call(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
   let source = self.scalar()
   self.expect_kw("USE")
   self.expect_kw("MODEL")
-  let model = self.ident()
-  let args = [mk(StrLit(model.name, national=true), model.span), source]
+  if self.peek().kind is (Str | NStr) {
+    raise @ast.SyntaxError(
+      number=1035,
+      severity=15,
+      state=11,
+      message="Incorrect syntax near 'AI_GENERATE_EMBEDDINGS', expected 'an external model name'.",
+      span=name_tok.span,
+    )
+  }
+  let model = self.object_name()
+  let args = [
+    mk(
+      StrLit(model.parts.map(p => p.name).join("."), national=true),
+      model.span,
+    ),
+    source,
+  ]
   if self.eat_kw("PARAMETERS") {
     args.push(self.scalar())
   }

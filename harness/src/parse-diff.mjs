@@ -12,7 +12,7 @@ import { loadCorpus, readExpected } from './corpus.mjs'
 // Errors the parser itself raises; any other captured error means SQL Server parsed the batch.
 // Named-window (4123, 5362-5367, 16211) and NEXT VALUE FOR … OVER (117xx)
 // errors are resolved while parsing too (parse/window.mbt).
-export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 1034, 10713,
+export const SYNTAX_ERRORS = new Set([102, 103, 105, 111, 113, 155, 156, 191, 319, 497, 1018, 1034, 1035, 10713,
   4123, 5362, 5364, 5365, 5366, 5367, 16211, 11716, 11717, 11718, 11737])
 
 function parsecheckBinary() {

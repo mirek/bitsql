@@ -202,6 +202,7 @@ fn compile_type_error(number : Int) -> Bool {
   | 2717
   | 8116
   | 8117
+  | 15151
   | 42238
   | 42246)
 }
@@ -217,6 +218,9 @@ fn prebindable(s : @ast.Stmt) -> Bool {
     Declare(_) | SetVar(_, _, _) | SetVarMethod(_, _, _) | Print(_) => true
     Break | Continue | Return(_) => true
     BeginTran(..) | Commit(..) | Rollback(..) | Save(..) => true
+    // External-model references resolve against the catalog at batch
+    // compilation, before a CREATE in this batch can make one visible.
+    ExternalModel(_, _, ..) => true
     Throw(_) | RaisError(_, ..) => true
     SetIsolation(_) => true
     SetOption(names, _) =>

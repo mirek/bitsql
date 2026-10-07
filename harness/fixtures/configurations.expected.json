@@ -1,0 +1,1440 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "catalog": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+          {
+            "name": "name",
+            "type": "NVarChar",
+            "length": 70,
+            "precision": null,
+            "scale": null,
+            "flags": 8,
+            "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+          },
+          {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {
+            "name": "description",
+            "type": "NVarChar",
+            "length": 510,
+            "precision": null,
+            "scale": null,
+            "flags": 8,
+            "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+          },
+          {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+        ],
+        "rows": [
+          [101,"recovery interval (min)",0,0,32767,0,"Maximum recovery interval in minutes",true,true],
+          [102,"allow updates",0,0,1,0,"Allow updates to system tables",true,false],
+          [103,"user connections",0,0,32767,0,"Number of user connections allowed",false,true],
+          [106,"locks",0,5000,2147483647,0,"Number of locks for all users",false,true],
+          [107,"open objects",0,0,2147483647,0,"Number of open database objects",false,true],
+          [109,"fill factor (%)",0,0,100,0,"Default fill factor percentage",false,true],
+          [114,"disallow results from triggers",0,0,1,0,"Disallow returning results from triggers",true,true],
+          [115,"nested triggers",1,0,1,1,"Allow triggers to be invoked within triggers",true,false],
+          [116,"server trigger recursion",1,0,1,1,"Allow recursion for server level triggers",true,false],
+          [117,"remote access",1,0,1,1,"Allow remote access",false,false],
+          [124,"default language",0,0,9999,0,"default language",true,false],
+          [400,"cross db ownership chaining",0,0,1,0,"Allow cross db ownership chaining",true,false],
+          [503,"max worker threads",0,128,65535,0,"Maximum worker threads",true,true],
+          [505,"network packet size (B)",4096,512,32767,4096,"Network packet size",true,true],
+          [518,"show advanced options",0,0,1,0,"show advanced options",true,false],
+          [542,"remote proc trans",0,0,1,0,"Create DTC transaction for remote procedures",true,false],
+          [544,"c2 audit mode",0,0,1,0,"c2 audit mode",false,true],
+          [1126,"default full-text language",1033,0,2147483647,1033,"default full-text language",true,true],
+          [1127,"two digit year cutoff",2049,1753,9999,2049,"two digit year cutoff",true,true],
+          [1505,"index create memory (KB)",0,704,2147483647,0,"Memory for index create sorts (kBytes)",true,true],
+          [1517,"priority boost",0,0,1,0,"Priority boost",false,true],
+          [1519,"remote login timeout (s)",10,0,2147483647,10,"remote login timeout",true,false],
+          [1520,"remote query timeout (s)",600,0,2147483647,600,"remote query timeout",true,false],
+          [1531,"cursor threshold",-1,-1,2147483647,-1,"cursor threshold",true,true],
+          [1532,"set working set size",0,0,1,0,"set working set size",false,true],
+          [1534,"user options",0,0,32767,0,"user options",true,false],
+          [1535,"affinity mask",0,-2147483648,2147483647,0,"affinity mask",true,true],
+          [1536,"max text repl size (B)",65536,-1,2147483647,65536,"Maximum size of a text field in replication.",true,false],
+          [1537,"media retention",0,0,365,0,"Tape retention period in days",true,true],
+          [1538,"cost threshold for parallelism",5,0,32767,5,"cost threshold for parallelism",true,true],
+          [1539,"max degree of parallelism",0,0,32767,0,"maximum degree of parallelism",true,true],
+          [1540,"min memory per query (KB)",1024,512,2147483647,1024,"minimum memory per query (kBytes)",true,true],
+          [1541,"query wait (s)",-1,-1,2147483647,-1,"maximum time to wait for query memory (s)",true,true],
+          [1543,"min server memory (MB)",0,0,2147483647,16,"Minimum size of server memory (MB)",true,true],
+          [1544,"max server memory (MB)",2147483647,128,2147483647,2147483647,"Maximum size of server memory (MB)",true,true],
+          [1545,"query governor cost limit",0,0,2147483647,0,"Maximum estimated cost allowed by query governor",true,true],
+          [1546,"lightweight pooling",0,0,1,0,"User mode scheduler uses lightweight pooling",false,true],
+          [1547,"scan for startup procs",0,0,1,0,"scan for startup stored procedures",false,true],
+          [1549,"affinity64 mask",0,-2147483648,2147483647,0,"affinity64 mask",true,true],
+          [1550,"affinity I/O mask",0,-2147483648,2147483647,0,"affinity I/O mask",false,true],
+          [1551,"affinity64 I/O mask",0,-2147483648,2147483647,0,"affinity64 I/O mask",false,true],
+          [1555,"transform noise words",0,0,1,0,"Transform noise words for full-text query",true,true],
+          [1556,"precompute rank",0,0,1,0,"Use precomputed rank for full-text query",true,true],
+          [1557,"PH timeout (s)",60,1,3600,60,"DB connection timeout for full-text protocol handler (s)",true,true],
+          [1562,"clr enabled",0,0,1,0,"CLR user code execution enabled in the server",true,false],
+          [1563,"max full-text crawl range",4,0,256,4,"Maximum  crawl ranges allowed in full-text indexing",true,true],
+          [1564,"ft notify bandwidth (min)",0,0,32767,0,"Number of reserved full-text notifications buffers",true,true],
+          [1565,"ft notify bandwidth (max)",100,0,32767,100,"Max number of full-text notifications buffers",true,true],
+          [1566,"ft crawl bandwidth (min)",0,0,32767,0,"Number of reserved full-text crawl buffers",true,true],
+          [1567,"ft crawl bandwidth (max)",100,0,32767,100,"Max number of full-text crawl buffers",true,true],
+          [1568,"default trace enabled",1,0,1,1,"Enable or disable the default trace",true,true],
+          [1569,"blocked process threshold (s)",0,0,86400,0,"Blocked process reporting threshold",true,true],
+          [1570,"in-doubt xact resolution",0,0,2,0,"Recovery policy for DTC transactions with unknown outcome",true,true],
+          [1576,"remote admin connections",0,0,1,0,"Dedicated Admin Connections are allowed from remote clients",true,false],
+          [1577,"common criteria compliance enabled",0,0,1,0,"Common Criteria compliance mode enabled",false,true],
+          [1578,"EKM provider enabled",0,0,1,0,"Enable or disable EKM provider",true,true],
+          [1579,"backup compression default",0,0,1,0,"Enable compression of backups by default",true,false],
+          [1580,"filestream access level",0,0,2,0,"Sets the FILESTREAM access level",true,false],
+          [
+            1581,
+            "optimize for ad hoc workloads",
+            0,
+            0,
+            1,
+            0,
+            "When this option is set, plan cache size is further reduced for single-use adhoc OLTP workload.",
+            true,
+            true
+          ],
+          [
+            1582,
+            "access check cache bucket count",
+            0,
+            0,
+            65536,
+            0,
+            "Default hash bucket count for the access check result security cache",
+            true,
+            true
+          ],
+          [1583,"access check cache quota",0,0,2147483647,0,"Default quota for the access check result security cache",true,true],
+          [1584,"backup checksum default",0,0,1,0,"Enable checksum of backups by default",true,false],
+          [1585,"automatic soft-NUMA disabled",0,0,1,0,"Automatic soft-NUMA is enabled by default",false,true],
+          [1586,"external scripts enabled",0,0,1,0,"Allows execution of external scripts",true,false],
+          [1587,"clr strict security",1,0,1,1,"CLR strict security enabled in the server",true,true],
+          [1588,"column encryption enclave type",0,0,2,0,"Type of enclave used for computations on encrypted columns",false,false],
+          [1589,"tempdb metadata memory-optimized",0,0,1,0,"Tempdb metadata memory-optimized is disabled by default.",false,true],
+          [1591,"ADR cleaner retry timeout (min)",15,0,32767,15,"ADR cleaner retry timeout.",true,true],
+          [1592,"ADR Preallocation Factor",4,0,32767,4,"ADR Preallocation Factor.",true,true],
+          [
+            1593,
+            "version high part of SQL Server",
+            0,
+            -2147483648,
+            2147483647,
+            0,
+            "version high part of SQL Server that model database copied for",
+            true,
+            true
+          ],
+          [
+            1594,
+            "version low part of SQL Server",
+            0,
+            -2147483648,
+            2147483647,
+            0,
+            "version low part of SQL Server that model database copied for",
+            true,
+            true
+          ],
+          [
+            1595,
+            "Data processed daily limit in TB",
+            2147483647,
+            0,
+            2147483647,
+            2147483647,
+            "SQL On-demand data processed daily limit in TB",
+            true,
+            false
+          ],
+          [
+            1596,
+            "Data processed weekly limit in TB",
+            2147483647,
+            0,
+            2147483647,
+            2147483647,
+            "SQL On-demand data processed weekly limit in TB",
+            true,
+            false
+          ],
+          [
+            1597,
+            "Data processed monthly limit in TB",
+            2147483647,
+            0,
+            2147483647,
+            2147483647,
+            "SQL On-demand data processed monthly limit in TB",
+            true,
+            false
+          ],
+          [1598,"ADR Cleaner Thread Count",1,1,32767,1,"Max number of threads ADR cleaner can assign.",true,true],
+          [1599,"hardware offload enabled",0,0,1,0,"Enable hardware offloading on the server",false,true],
+          [1600,"hardware offload config",0,0,255,0,"Configure hardware offload accelerator",false,true],
+          [1601,"hardware offload mode",0,0,255,0,"Configure hardware offload accelerator mode",false,true],
+          [1602,"backup compression algorithm",0,0,3,0,"Configure default backup compression algorithm",true,false],
+          [1603,"ADR cleaner lock timeout (s)",5,1,32767,5,"ADR cleaner lock timeout",true,true],
+          [1606,"SLOG memory quota (%)",75,1,100,75,"SLOG memory quota percentage",true,true],
+          [1609,"max RPC request params (KB)",0,0,2147483647,0,"Maximum memory for RPC request parameters (kBytes)",true,true],
+          [1610,"max UCS send boxcars",256,256,2048,256,"Maximum number of UCS boxcars for sending messages.",false,true],
+          [
+            1611,
+            "availability group commit time (ms)",
+            0,
+            0,
+            10,
+            0,
+            "Configure availability group commit time in milliseconds for SQL Server only.",
+            true,
+            true
+          ],
+          [1612,"tiered memory enabled",0,0,1,0,"tiered memory memory-optimized is disabled by default.",false,true],
+          [1613,"max server tiered memory (MB)",2147483647,0,2147483647,2147483647,"Maximum size of server tiered memory (MB)",false,true],
+          [
+            1614,
+            "max lock manager cache memory (%)",
+            20,
+            20,
+            60,
+            20,
+            "Maximum size of lock manager cache memory as a percentage of the SQLOS committed memory",
+            false,
+            true
+          ],
+          [16384,"Agent XPs",0,0,1,0,"Enable or disable Agent XPs",true,true],
+          [16386,"Database Mail XPs",0,0,1,0,"Enable or disable Database Mail XPs",true,true],
+          [16387,"SMO and DMO XPs",1,0,1,1,"Enable or disable SMO and DMO XPs",true,true],
+          [16388,"Ole Automation Procedures",0,0,1,0,"Enable or disable Ole Automation Procedures",true,true],
+          [16390,"xp_cmdshell",0,0,1,0,"Enable or disable command shell",true,true],
+          [16391,"Ad Hoc Distributed Queries",0,0,1,0,"Enable or disable Ad Hoc Distributed Queries",true,true],
+          [16392,"Replication XPs",0,0,1,0,"Enable or disable Replication XPs",true,true],
+          [16393,"contained database authentication",0,0,1,0,"Enables contained databases and contained authentication",true,false],
+          [
+            16394,
+            "hadoop connectivity",
+            0,
+            0,
+            8,
+            0,
+            "Configure SQL Server to connect to external Hadoop or Microsoft Azure storage blob data sources through PolyBase",
+            true,
+            false
+          ],
+          [
+            16395,
+            "polybase network encryption",
+            1,
+            0,
+            1,
+            1,
+            "Configure SQL Server to encrypt control and data channels when using PolyBase",
+            true,
+            false
+          ],
+          [16396,"remote data archive",0,0,1,0,"Allow the use of the REMOTE_DATA_ARCHIVE data access for databases",true,false],
+          [16397,"allow polybase export",0,0,1,0,"Allows writing into an external table using PolyBase",true,false],
+          [16398,"allow filesystem enumeration",1,0,1,1,"Allow enumeration of filesystem",true,true],
+          [16399,"polybase enabled",0,0,1,0,"Configure SQL Server to connect to external data sources through PolyBase",true,false],
+          [
+            16400,
+            "suppress recovery model errors",
+            0,
+            0,
+            1,
+            0,
+            "Return warning instead of error for unsupported ALTER DATABASE SET RECOVERY command",
+            true,
+            true
+          ],
+          [16401,"openrowset auto_create_statistics",1,0,1,1,"Enable or disable auto create statistics for openrowset sources.",true,true],
+          [16402,"external rest endpoint enabled",0,0,1,0,"Enable or disable invocations of external REST endpoints",true,false],
+          [
+            16403,
+            "external xtp dll gen util enabled",
+            0,
+            0,
+            1,
+            0,
+            "Enable or disable using external xtp dll generation via HkDllGen.exe",
+            true,
+            false
+          ],
+          [16404,"external AI runtimes enabled",0,0,1,0,"Enable or disable using external AI runtimes",true,false],
+          [
+            16405,
+            "allow server scoped db credentials",
+            0,
+            0,
+            1,
+            0,
+            "Enable or disable use of server managed identity in database scoped credentials",
+            true,
+            false
+          ]
+        ]
+      }
+    ],
+    "done": [{"kind":"done","rowCount":107,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":107,"curCmd":193}],
+    "stream": [{"name":"COLMETADATA","columns":9},{"name":"ORDER","columns":[1]},{"name":"ROW","count":107},{"name":"DONE","status":16,"curCmd":193}],
+    "rowCount": 107
+  },
+  "catalogTypes": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+          {"name":"value_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"minimum_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"maximum_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+          {"name":"active_type","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [
+          [101,"int","int","int","int"],
+          [102,"int","int","int","int"],
+          [103,"int","int","int","int"],
+          [106,"int","int","int","int"],
+          [107,"int","int","int","int"],
+          [109,"int","int","int","int"],
+          [114,"int","int","int","int"],
+          [115,"int","int","int","int"],
+          [116,"int","int","int","int"],
+          [117,"int","int","int","int"],
+          [124,"int","int","int","int"],
+          [400,"int","int","int","int"],
+          [503,"int","int","int","int"],
+          [505,"int","int","int","int"],
+          [518,"int","int","int","int"],
+          [542,"int","int","int","int"],
+          [544,"int","int","int","int"],
+          [1126,"int","int","int","int"],
+          [1127,"int","int","int","int"],
+          [1505,"int","int","int","int"],
+          [1517,"int","int","int","int"],
+          [1519,"int","int","int","int"],
+          [1520,"int","int","int","int"],
+          [1531,"int","int","int","int"],
+          [1532,"int","int","int","int"],
+          [1534,"int","int","int","int"],
+          [1535,"int","int","int","int"],
+          [1536,"int","int","int","int"],
+          [1537,"int","int","int","int"],
+          [1538,"int","int","int","int"],
+          [1539,"int","int","int","int"],
+          [1540,"int","int","int","int"],
+          [1541,"int","int","int","int"],
+          [1543,"int","int","int","int"],
+          [1544,"int","int","int","int"],
+          [1545,"int","int","int","int"],
+          [1546,"int","int","int","int"],
+          [1547,"int","int","int","int"],
+          [1549,"int","int","int","int"],
+          [1550,"int","int","int","int"],
+          [1551,"int","int","int","int"],
+          [1555,"int","int","int","int"],
+          [1556,"int","int","int","int"],
+          [1557,"int","int","int","int"],
+          [1562,"int","int","int","int"],
+          [1563,"int","int","int","int"],
+          [1564,"int","int","int","int"],
+          [1565,"int","int","int","int"],
+          [1566,"int","int","int","int"],
+          [1567,"int","int","int","int"],
+          [1568,"int","int","int","int"],
+          [1569,"int","int","int","int"],
+          [1570,"int","int","int","int"],
+          [1576,"int","int","int","int"],
+          [1577,"int","int","int","int"],
+          [1578,"int","int","int","int"],
+          [1579,"int","int","int","int"],
+          [1580,"int","int","int","int"],
+          [1581,"int","int","int","int"],
+          [1582,"int","int","int","int"],
+          [1583,"int","int","int","int"],
+          [1584,"int","int","int","int"],
+          [1585,"int","int","int","int"],
+          [1586,"int","int","int","int"],
+          [1587,"int","int","int","int"],
+          [1588,"int","int","int","int"],
+          [1589,"int","int","int","int"],
+          [1591,"int","int","int","int"],
+          [1592,"int","int","int","int"],
+          [1593,"int","int","int","int"],
+          [1594,"int","int","int","int"],
+          [1595,"int","int","int","int"],
+          [1596,"int","int","int","int"],
+          [1597,"int","int","int","int"],
+          [1598,"int","int","int","int"],
+          [1599,"int","int","int","int"],
+          [1600,"int","int","int","int"],
+          [1601,"int","int","int","int"],
+          [1602,"int","int","int","int"],
+          [1603,"int","int","int","int"],
+          [1606,"int","int","int","int"],
+          [1609,"int","int","int","int"],
+          [1610,"int","int","int","int"],
+          [1611,"int","int","int","int"],
+          [1612,"int","int","int","int"],
+          [1613,"int","int","int","int"],
+          [1614,"int","int","int","int"],
+          [16384,"int","int","int","int"],
+          [16386,"int","int","int","int"],
+          [16387,"int","int","int","int"],
+          [16388,"int","int","int","int"],
+          [16390,"int","int","int","int"],
+          [16391,"int","int","int","int"],
+          [16392,"int","int","int","int"],
+          [16393,"int","int","int","int"],
+          [16394,"int","int","int","int"],
+          [16395,"int","int","int","int"],
+          [16396,"int","int","int","int"],
+          [16397,"int","int","int","int"],
+          [16398,"int","int","int","int"],
+          [16399,"int","int","int","int"],
+          [16400,"int","int","int","int"],
+          [16401,"int","int","int","int"],
+          [16402,"int","int","int","int"],
+          [16403,"int","int","int","int"],
+          [16404,"int","int","int","int"],
+          [16405,"int","int","int","int"]
+        ]
+      }
+    ],
+    "done": [{"kind":"done","rowCount":107,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":107,"curCmd":193}],
+    "stream": [{"name":"COLMETADATA","columns":5},{"name":"ORDER","columns":[1]},{"name":"ROW","count":107},{"name":"DONE","status":16,"curCmd":193}],
+    "rowCount": 107
+  },
+  "cases": [
+    {
+      "input": {
+        "name": "initial",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",0,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"describe-option","sql":"EXEC sp_configure 'external rest endpoint enabled';"},
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"minimum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"config_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"run_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [["external rest endpoint enabled",0,1,0,0]]
+          }
+        ],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":5},
+          {"name":"ROW","count":1},
+          {"name":"DONEINPROC","status":1,"curCmd":193},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"set-enabled","sql":"EXEC sp_configure 'external rest endpoint enabled',1;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 1. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [{"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}],
+        "stream": [{"name":"INFO","number":15457},{"name":"RETURNSTATUS","value":0},{"name":"DONEPROC","status":0,"curCmd":224}],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "pending",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",1,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"reconfigure","sql":"RECONFIGURE;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}],
+        "stream": [{"name":"DONE","status":0,"curCmd":220}],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "active",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",1,0,1,1,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"abbreviated","sql":"EXEC sp_configure 'external rest',0;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [{"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}],
+        "stream": [{"name":"INFO","number":15457},{"name":"RETURNSTATUS","value":0},{"name":"DONEPROC","status":0,"curCmd":224}],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "pending-disable",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",0,0,1,1,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"negative","sql":"EXEC sp_configure 'external rest endpoint enabled',-1;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 15129,
+            "state": 1,
+            "class": 16,
+            "lineNumber": 172,
+            "message": "'-1' is not a valid value for configuration option 'external rest endpoint enabled'."
+          }
+        ],
+        "info": [],
+        "returnStatus": 1,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"curCmd":246},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"ERROR","number":15129},
+          {"name":"DONEINPROC","status":3,"curCmd":246},
+          {"name":"RETURNSTATUS","value":1},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"too-large","sql":"EXEC sp_configure 'external rest endpoint enabled',2;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 15129,
+            "state": 1,
+            "class": 16,
+            "lineNumber": 172,
+            "message": "'2' is not a valid value for configuration option 'external rest endpoint enabled'."
+          }
+        ],
+        "info": [],
+        "returnStatus": 1,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"curCmd":246},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"ERROR","number":15129},
+          {"name":"DONEINPROC","status":3,"curCmd":246},
+          {"name":"RETURNSTATUS","value":1},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"override","sql":"RECONFIGURE WITH OVERRIDE;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}],
+        "stream": [{"name":"DONE","status":0,"curCmd":220}],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "disabled",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",0,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {
+        "name": "transaction",
+        "sql": "BEGIN TRAN; EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE; IF @@TRANCOUNT>0 ROLLBACK;"
+      },
+      "result": {
+        "sets": [],
+        "done": [
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"doneProc","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":false}
+        ],
+        "errors": [{"number":574,"state":0,"class":16,"lineNumber":1,"message":"CONFIG statement cannot be used inside a user transaction."}],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 1. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":212},
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":true,"sqlError":true,"attention":false,"serverError":false,"curCmd":220},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":192},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":210}
+        ],
+        "stream": [
+          {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+          {"name":"DONE","status":1,"curCmd":212},
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"ERROR","number":574},
+          {"name":"DONE","status":3,"curCmd":220},
+          {"name":"DONE","status":1,"curCmd":192},
+          {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+          {"name":"DONE","status":0,"curCmd":210}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "rolled-back",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",0,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"same-value","sql":"EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"missing","sql":"EXEC sp_configure 'absent option';"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 15123,
+            "state": 1,
+            "class": 16,
+            "lineNumber": 62,
+            "message": "The configuration option 'absent option' does not exist, or it may be an advanced option."
+          }
+        ],
+        "info": [],
+        "returnStatus": 1,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":true,"attention":false,"serverError":false,"curCmd":246},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"ERROR","number":15123},
+          {"name":"DONEINPROC","status":3,"curCmd":246},
+          {"name":"RETURNSTATUS","value":1},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"uppercase","sql":"EXEC sp_configure N'EXTERNAL REST ENDPOINT ENABLED';"},
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"minimum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"config_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"run_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [["external rest endpoint enabled",0,1,0,0]]
+          }
+        ],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":5},
+          {"name":"ROW","count":1},
+          {"name":"DONEINPROC","status":1,"curCmd":193},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "named-args",
+        "sql": "DECLARE @r int; EXEC @r=sys.sp_configure @configvalue=1,@configname=N'external rest endpoint enabled'; SELECT @r AS return_status,@@ROWCOUNT AS rc;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"return_status","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"rc","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[0,1]]
+          }
+        ],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 1. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {
+        "name": "named-pending",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",1,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"reset","sql":"EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "nocount",
+        "sql": "SET NOCOUNT ON; EXEC sp_configure 'external rest endpoint enabled'; EXEC sp_configure 'external rest endpoint enabled',0; SET NOCOUNT OFF;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"minimum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"config_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"run_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [["external rest endpoint enabled",0,1,0,0]]
+          }
+        ],
+        "done": [
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"doneInProc","rowCount":null,"more":true},
+          {"kind":"doneProc","rowCount":null,"more":true},
+          {"kind":"doneProc","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":false}
+        ],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":185},
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":186}
+        ],
+        "stream": [
+          {"name":"DONE","status":1,"curCmd":185},
+          {"name":"COLMETADATA","columns":5},
+          {"name":"ROW","count":1},
+          {"name":"DONEINPROC","status":1,"curCmd":193},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":186}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {"name":"null-value","sql":"EXEC sp_configure 'external rest endpoint enabled',NULL;"},
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"minimum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"config_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"run_value","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null}
+            ],
+            "rows": [["external rest endpoint enabled",0,1,0,0]]
+          }
+        ],
+        "done": [{"kind":"doneInProc","rowCount":null,"more":true},{"kind":"doneProc","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONEPROC","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":224}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":5},
+          {"name":"ROW","count":1},
+          {"name":"DONEINPROC","status":1,"curCmd":193},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":0,"curCmd":224}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "try-error",
+        "sql": "BEGIN TRY EXEC sp_configure 'external rest endpoint enabled',2; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_LINE() AS line,ERROR_PROCEDURE() AS proc_name; END CATCH;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"n","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"line","type":"IntN","length":4,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "proc_name",
+                "type": "NVarChar",
+                "length": 256,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[15129,172,"sp_configure"]]
+          }
+        ],
+        "done": [
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"doneProc","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":null,"more":false}
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":349},
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":350},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":351}
+        ],
+        "stream": [
+          {"name":"DONE","status":1,"curCmd":349},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":1,"curCmd":350},
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":351}
+        ],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"transaction-commit","sql":"BEGIN TRAN; EXEC sp_configure 'external rest endpoint enabled',1; COMMIT;"},
+      "result": {
+        "sets": [],
+        "done": [
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"doneProc","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":false}
+        ],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 0 to 1. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":212},
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":213}
+        ],
+        "stream": [
+          {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+          {"name":"DONE","status":1,"curCmd":212},
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"ENVCHANGE","type":"COMMIT_TXN"},
+          {"name":"DONE","status":0,"curCmd":213}
+        ],
+        "rowCount": 0
+      }
+    },
+    {
+      "input": {
+        "name": "committed-pending",
+        "sql": "SELECT configuration_id,name,value,minimum,maximum,value_in_use,description,is_dynamic,is_advanced FROM sys.configurations WHERE name='external rest endpoint enabled';"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"configuration_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "name",
+                "type": "NVarChar",
+                "length": 70,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"value","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"minimum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"maximum","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {"name":"value_in_use","type":"Variant","length":8009,"precision":null,"scale":null,"flags":33,"collation":null},
+              {
+                "name": "description",
+                "type": "NVarChar",
+                "length": 510,
+                "precision": null,
+                "scale": null,
+                "flags": 8,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {"name":"is_dynamic","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+              {"name":"is_advanced","type":"Bit","length":null,"precision":null,"scale":null,"flags":32,"collation":null}
+            ],
+            "rows": [[16402,"external rest endpoint enabled",1,0,1,0,"Enable or disable invocations of external REST endpoints",true,false]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":9},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      }
+    },
+    {
+      "input": {"name":"cleanup","sql":"EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;"},
+      "result": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      }
+    }
+  ]
+}

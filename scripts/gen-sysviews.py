@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models', 'catalog/view-descriptors-configurations']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')
@@ -237,6 +237,21 @@ def main():
         assert ty is not None
         payload = value(row[2], ty)
         w(f'  [Int({row[0]}), String({mbt_str(row[1])}), Variant({payload}, {ty}), Null, Bit(true)],')
+    w(']')
+    configurations = json.load(open(os.path.join(ROOT, 'harness/fixtures/configurations.expected.json')))
+    rows = configurations['catalog']['sets'][0]['rows']
+    props = configurations['catalogTypes']['sets'][0]['rows']
+    assert len(rows) == len(props)
+    w('')
+    w('///|')
+    w('// Default instance configuration, captured on the pinned oracle.')
+    w('let seed_configurations : Array[Array[@types.Value]] = [')
+    for row, types in zip(rows, props):
+        assert row[0] == types[0] and types[1:] == ['int'] * 4
+        vals = [f'Int({row[0]})', value(row[1], 'NVarChar')]
+        vals += [f'Variant(Int({n}), Int)' for n in row[2:6]]
+        vals += [value(row[6], 'NVarChar'), value(row[7], 'Bit'), value(row[8], 'Bit')]
+        w('  [' + ', '.join(vals) + '],')
     w(']')
     with open(OUT, 'w') as f:
         f.write('\n'.join(out) + '\n')

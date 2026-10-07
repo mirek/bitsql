@@ -9,6 +9,14 @@ fn Session::catalog_fn(
   name : String,
   args : Array[@types.Value],
 ) -> @types.Value? raise @types.SqlError {
+  if name == "AI_GENERATE_EMBEDDINGS" {
+    // REST remains disabled until sp_configure/RECONFIGURE enables it.
+    raise @types.sql_error(
+      31643,
+      "'ai_generate_embeddings' is disabled on this instance of SQL Server. Use sp_configure 'external rest endpoint enabled' to enable it.",
+      state=2,
+    )
+  }
   let arg = (k : Int) => if k < args.length() { args[k] } else { Null }
   let text = (k : Int) => {
     match arg(k) {
