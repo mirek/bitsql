@@ -6,6 +6,7 @@ test "flat DISTINCT projection and sorting preserve rows effects and errors" {
     vars: [],
     row: [],
     outer: [],
+    scan_row: (_, _, _) => (),
     source: (_, _) => [],
     ext: (_, _) => None,
     user_fn: (_, args) => {

@@ -89,6 +89,8 @@ pub struct Session {
   mut lock_timeout : Int
   mut waits_seen : Int
   mut waits_done : Int
+  mut configuration_reads_seen : Int
+  configuration_reads : Array[Result[(Int, Int), @types.SqlError]]
   mut in_waitfor : Bool
   mut error_override : Int?
   deferred : Array[@types.SqlError]

@@ -255,6 +255,7 @@ fn Session::dml_scan(
     match where_ {
       Some(w) => {
         let ok = @exec.is_true(@exec.eval(ctx.with_row(r), w)) catch {
+          @types.Suspend => raise @types.Suspend
           @types.SqlError(..) as e => return (out, Some(e))
         }
         if !ok {

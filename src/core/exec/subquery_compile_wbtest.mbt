@@ -95,6 +95,7 @@ fn subquery_execution_trace(
     // Deliberately different from every row passed to the compiled closure.
     row: [Int(-999)],
     outer: [[Int(77)]],
+    scan_row: (_, _, _) => (),
     source: (_, _) => rows,
     ext: (_, _) => None,
     user_fn: (_, args) => {

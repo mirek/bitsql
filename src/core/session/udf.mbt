@@ -198,6 +198,10 @@ fn[T] Session::in_function(
     self.text = saved_text
   }
   let result = body() catch {
+    Park | @types.Suspend => {
+      restore()
+      raise @types.Suspend
+    }
     @types.SqlError(..) as e => {
       restore()
       raise e

@@ -102,6 +102,16 @@ fn Parser::statement_kind(
     return Label(tok_ident(t))
   }
   match upper(t) {
+    "RECONFIGURE" => {
+      self.pos += 1
+      let override_ = if self.eat_kw("WITH") {
+        self.expect_kw("OVERRIDE")
+        true
+      } else {
+        false
+      }
+      Reconfigure(override_~)
+    }
     "SELECT" => Select(self.query())
     "WITH" => {
       let start = self.start()

@@ -1,9 +1,12 @@
 ///|
-/// A SQL Server error as the client sees it: message number, severity
-/// (class), state and the fully formatted message text. Shared across the
-/// whole core: every package that raises user-visible errors raises this.
+/// SQL execution failure or internal suspension, shared across the core.
+/// Only the SqlError constructor is a client-visible diagnostic. Suspend
+/// propagates to the session request boundary and has no SQL error fields.
 pub(all) suberror SqlError {
   SqlError(number~ : Int, severity~ : Int, state~ : Int, message~ : String)
+  /// Internal execution control, never a SQL diagnostic. The session must
+  /// unwind and restart the request when an expression or scan waits.
+  Suspend
 } derive(Debug, Eq)
 
 ///|
@@ -11,6 +14,7 @@ pub(all) suberror SqlError {
 pub fn SqlError::number(self : SqlError) -> Int {
   match self {
     SqlError(number~, ..) => number
+    Suspend => abort("suspension has no SQL error number")
   }
 }
 
@@ -19,6 +23,7 @@ pub fn SqlError::number(self : SqlError) -> Int {
 pub fn SqlError::severity(self : SqlError) -> Int {
   match self {
     SqlError(severity~, ..) => severity
+    Suspend => abort("suspension has no SQL severity")
   }
 }
 
@@ -27,6 +32,7 @@ pub fn SqlError::severity(self : SqlError) -> Int {
 pub fn SqlError::state(self : SqlError) -> Int {
   match self {
     SqlError(state~, ..) => state
+    Suspend => abort("suspension has no SQL error state")
   }
 }
 
@@ -35,12 +41,17 @@ pub fn SqlError::state(self : SqlError) -> Int {
 pub fn SqlError::message(self : SqlError) -> String {
   match self {
     SqlError(message~, ..) => message
+    Suspend => abort("suspension has no SQL error message")
   }
 }
 
 ///|
 /// `Msg 245, Level 16, State 1: Conversion failed ...` (SSMS-like).
 pub impl Show for SqlError with fn output(self, logger) {
+  if self is Suspend {
+    logger.write_string("execution suspended")
+    return
+  }
   logger.write_string(
     "Msg \{self.number()}, Level \{self.severity()}, State \{self.state()}: \{self.message()}",
   )
@@ -63,6 +74,9 @@ pub fn sql_error(
 /// conversions (529), source truncation (8152, captured: TRY_CAST still
 /// raises it) and emulator errors keep raising.
 pub fn SqlError::is_try_convertible(self : SqlError) -> Bool {
+  if self is Suspend {
+    return false
+  }
   match self.number() {
     220
     | 232

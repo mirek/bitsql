@@ -6,6 +6,7 @@ test "flat count inputs preserve cardinality NULL warnings and errors" {
     vars: [],
     row: [],
     outer: [],
+    scan_row: (_, _, _) => (),
     source: (_, _) => [],
     ext: (_, _) => None,
     user_fn: (_, args) => {

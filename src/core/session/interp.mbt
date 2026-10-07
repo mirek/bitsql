@@ -126,7 +126,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     // ATTENTION cancelled a wait in this statement (attention.mbt): roll the
     // statement back like a failed one, then unwind the request
-    Park if self.attn.hit && !self.attn.handled => {
+    Park | @types.Suspend if self.attn.hit && !self.attn.handled => {
       self.temp = snap_temp
       self.tvars = snap_tvars
       // same statement-level rollback as a failed statement (below)
@@ -144,6 +144,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
       self.statement_attention(out_mark, line)
       raise Park
     }
+    @types.Suspend => raise Park
     other => raise other
   }
   // statement-duration locks (and all locks in autocommit) end here
@@ -722,6 +723,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       raise Return(status)
     }
     TryCatch(body, handler) => self.exec_try(body, handler)
+    Reconfigure(..) => self.reconfigure()
     BeginTran(name~, ..) => {
       self.rt.rowcount = 0 // captured: traps/rowcount-reset
       let name = self.tran_name(name)

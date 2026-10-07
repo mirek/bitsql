@@ -179,6 +179,7 @@ fn Session::view_columns(
   cv : @ast.CreateView,
 ) -> Array[@store.Column] raise {
   let bound = @bind.bind_query(self.env(), cv.query) catch {
+    @types.Suspend => raise @types.Suspend
     @types.SqlError(number~, ..) as e =>
       if number >= 50100 && number <= 50199 {
         return []
@@ -493,6 +494,10 @@ fn Session::exec_system_proc(
   return_var : String?,
 ) -> Bool raise {
   match name.base().to_lower() {
+    "sp_configure" => {
+      self.exec_sp_configure(args, return_var)
+      true
+    }
     "sp_set_session_context" => {
       self.exec_set_session_context(args, return_var)
       true

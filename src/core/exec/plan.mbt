@@ -9,6 +9,7 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     OneRow => [[]]
     Scan(scope~, id~, rowid~) =>
       (ctx.source)(scope, id).map(kv => {
+        (ctx.scan_row)(scope, id, kv.0)
         if rowid {
           let r = kv.1.copy()
           r.push(BigInt(kv.0))
@@ -425,6 +426,7 @@ pub fn stream(
       }
     Scan(scope~, id~, rowid=false) =>
       for kv in (ctx.source)(scope, id) {
+        (ctx.scan_row)(scope, id, kv.0)
         emit(kv.1)
       }
     Join(kind, left, right, on, left_width~, right_width~) =>

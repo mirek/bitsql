@@ -167,6 +167,7 @@ test "row number prefix reuse preserves expression evaluation and failures" {
     vars: [],
     row: [],
     outer: [],
+    scan_row: (_, _, _) => (),
     source: (_, _) => [],
     ext: (_, _) => None,
     user_fn: (id, args) => {
@@ -251,6 +252,7 @@ test "direct window columns preserve materialized-key results and failures" {
     vars: [],
     row: [],
     outer: [],
+    scan_row: (_, _, _) => (),
     source: (_, _) => [],
     ext: (_, _) => None,
     user_fn: no_user_fn,

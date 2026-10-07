@@ -55,6 +55,7 @@ pub(all) struct Ctx {
   row : Array[@types.Value]
   outer : Array[Array[@types.Value]]
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
+  scan_row : (Int, Int, Int64) -> Unit raise @types.SqlError
   ext : (String, Array[@types.Value]) -> @types.Value? raise @types.SqlError
   user_fn : (Int, Array[@types.Value]) -> @types.Value raise @types.SqlError
   user_table : (Int, Array[@types.Value]) -> Array[Array[@types.Value]] raise @types.SqlError

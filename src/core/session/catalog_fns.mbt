@@ -10,7 +10,9 @@ fn Session::catalog_fn(
   args : Array[@types.Value],
 ) -> @types.Value? raise @types.SqlError {
   if name == "AI_GENERATE_EMBEDDINGS" {
-    // REST remains disabled until sp_configure/RECONFIGURE enables it.
+    if self.rest_enabled() {
+      raise @types.not_supported("AI_GENERATE_EMBEDDINGS HTTP execution")
+    }
     raise @types.sql_error(
       31643,
       "'ai_generate_embeddings' is disabled on this instance of SQL Server. Use sp_configure 'external rest endpoint enabled' to enable it.",
@@ -731,6 +733,9 @@ fn Session::flush_trailing(self : Session, line : Int) -> Unit {
 /// The statement fails with `e` followed by 3621 (captured for failed
 /// index builds and column conversions).
 fn Session::terminated(self : Session, e : @types.SqlError) -> @types.SqlError {
+  if e is @types.Suspend {
+    return e
+  }
   self.trailing.push(
     @types.sql_error(
       3621,

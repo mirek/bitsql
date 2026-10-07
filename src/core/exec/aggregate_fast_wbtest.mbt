@@ -6,6 +6,7 @@ test "flat aggregate keys preserve representatives evaluation order and errors" 
     vars: [],
     row: [],
     outer: [],
+    scan_row: (_, _, _) => (),
     source: (_, _) => [],
     ext: (_, _) => None,
     user_fn: (_, args) => {

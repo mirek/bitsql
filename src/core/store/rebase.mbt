@@ -92,6 +92,13 @@ pub fn Db::rebase(self : Db, base : Db, onto : Db) -> Db? {
   let names = merge3(base.names, self.names, onto.names, same=(a, b) => a == b)
   let tables = merge3(base.tables, self.tables, onto.tables)
   let modules = merge3(base.modules, self.modules, onto.modules)
+  guard merge3(base.configurations, self.configurations, onto.configurations, same=(
+      a,
+      b,
+    ) => a == b)
+    is Some(configurations) else {
+    return None
+  }
   guard merge3(base.external_models, self.external_models, onto.external_models)
     is Some(external_models) else {
     return None
@@ -123,6 +130,7 @@ pub fn Db::rebase(self : Db, base : Db, onto : Db) -> Db? {
     data: onto.data,
     modules,
     external_models,
+    configurations,
     schemas,
     types,
     type_names,

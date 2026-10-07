@@ -134,6 +134,7 @@ pub(all) enum StmtKind {
   Commit(name~ : Expr?)
   Rollback(name~ : Expr?)
   Save(name~ : Expr?)
+  Reconfigure(override_~ : Bool)
   OpenCursor(Ident, global~ : Bool)
   Fetch(Fetch)
   CloseCursor(Ident, global~ : Bool)

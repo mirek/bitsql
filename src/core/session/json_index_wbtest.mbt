@@ -26,6 +26,7 @@ fn json_index_equivalent(
   let lookups : Array[Bool] = []
   let ctx : @exec.Ctx = {
     ..base,
+    scan_row: (_, _, _) => (),
     source: (scope, id) => {
       scans.push(true)
       (base.source)(scope, id)

@@ -647,6 +647,7 @@ fn cached_lookup(
       }
       let keyed = []
       for kv in (ctx.source)(scope, id) {
+        (ctx.scan_row)(scope, id, kv.0)
         let key = columns.map(c => kv.1[c])
         if !key.iter().any(v => v is Null) {
           keyed.push((key, kv.0, kv.1))

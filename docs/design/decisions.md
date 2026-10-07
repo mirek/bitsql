@@ -1136,3 +1136,28 @@ COLLATIONPROPERTY returns sql_variant metadata even for integer properties.
 Its generated inventory covers all 5,540 oracle collation names independently
 of comparison support, avoiding false NULL values for valid unmodeled names.
 Evidence is in the SQL 2025 reference and Turkish/property captures.
+
+
+## 2026-10-07: typed suspension from expressions and catalog scans
+
+Execution callbacks use the existing typed `SqlError` channel with a distinct
+`Suspend` constructor for internal control flow. It has no SQL number,
+severity, state or message and must never become a TDS diagnostic. Accessing
+those fields on it is an invariant violation. `exec_one` converts it to the
+existing request-restart path; function frames restore their state and
+propagate it, and TRY_CAST cannot consume it. This keeps the core pure and
+avoids a fabricated SQL error number for a host or lock wait.
+
+`Ctx.scan_row` runs before each consumed row, including rows later filtered
+out. `sys.configurations` uses it for row-level catalog locks in lock namespace
+-2 (application locks use -1). The streaming executor can therefore preserve
+rows emitted before a timeout. Scalar/materialized and memoized scans use the
+same hook. REST configured/active state lives in master and participates in
+Db rebasing and request snapshots.
+
+sp_configure's completed read outcomes survive request replay, separately
+from the rolled-back attempt state. They are reset at the start and end of
+each request. This permits successive internal reads to time out independently
+without repeating an earlier completed wait. See the captured configuration
+contracts in `docs/reference/external-models.md`. HTTP request/result replay is
+still separate unfinished work; configuration support does not imply inference.

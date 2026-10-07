@@ -29,6 +29,7 @@ pub struct Db {
   priv type_names : PMap[String, Int] // "schema.name" lowercased → id
   priv props : PMap[String, ExtendedProperty] // xprops.mbt
   priv external_models : PMap[String, ExternalModel]
+  priv configurations : PMap[Int, (Int, Int)] // configured, active; master only
 }
 
 ///|
@@ -81,6 +82,7 @@ pub fn Db::empty() -> Db {
     type_names: PMap::empty(str_cmp),
     props: PMap::empty(str_cmp),
     external_models: PMap::empty(str_cmp),
+    configurations: PMap::empty(int_cmp),
   }
 }
 

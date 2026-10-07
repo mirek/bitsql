@@ -59,6 +59,7 @@ pub fn Db::add_module(Self, Module) -> Self
 pub fn Db::add_schema(Self, String, Int) -> Self
 pub fn Db::add_type(Self, UserType) -> Self
 pub fn Db::alter_table(Self, Table, convert? : (Array[@types.Value]) -> Array[@types.Value]) -> Self
+pub fn Db::configuration(Self, Int) -> (Int, Int)?
 pub fn Db::create_table(Self, Table) -> Self
 pub fn Db::delete_row(Self, Int, Int64) -> Self
 pub fn Db::delete_rows(Self, Int, Array[Int64]) -> Self
@@ -95,6 +96,7 @@ pub fn Db::schema_name(Self, Int) -> String?
 pub fn Db::schema_names(Self) -> Array[(String, Int)]
 pub fn Db::seek(Self, Int, Int, lo? : Array[@types.Value], hi? : Array[@types.Value]) -> Array[Int64]
 pub fn Db::seek_json_path(Self, Int, Int, String) -> Array[Int64]
+pub fn Db::set_configuration(Self, Int, Int, Int) -> Self
 pub fn Db::set_xprop(Self, ExtendedProperty) -> Self
 pub fn Db::table(Self, Int) -> Table?
 pub fn Db::table_data(Self, Int) -> TableData?

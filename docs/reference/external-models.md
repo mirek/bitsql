@@ -123,12 +123,28 @@ view with `scripts/gen-sysviews.py`. Reproduce the fixture with
 `node gen/capture-configurations.mjs --verify` from `harness/`; the script
 mutates only its own disposable oracle, never the shared instance.
 
-The catalog defaults are implemented; configuration mutations remain open.
+The catalog defaults and REST configuration mutations are implemented; actual
+HTTP inference remains open.
 For REST, configuration_id 16402, the default configured/active values are
 both zero, minimum zero, maximum one, is_dynamic true and is_advanced false.
 sp_configure changes only the configured value, and RECONFIGURE installs it.
 Configured changes roll back with a user transaction; RECONFIGURE inside one
 raises 574 state 0. A committed configured change still awaits RECONFIGURE.
-The planned state belongs in the master Db so existing cross-database
-transaction snapshots handle rollback. Unsupported configuration mutations
+The state lives in the master Db so existing cross-database transaction
+snapshots handle rollback. Unsupported configuration mutations
 must continue to fail explicitly until implemented.
+
+
+Configuration concurrency is captured in
+`harness/fixtures/configuration-concurrency.expected.json`; reproduce it with
+`node gen/capture-configuration-concurrency.mjs` from `harness/` (default:
+verify, `--force`: recapture, always a disposable oracle).
+An uncommitted configured-value change blocks catalog reads, even with NOLOCK.
+The scan can emit an unrelated matching row before reaching the locked row and
+raising 1222 state 51. sp_configure's describe path performs three reads:
+timeouts occur at lines 43, 81 and 90, each followed by DONEINPROC 193 with the
+error bit; the last read has result metadata, and the procedure returns zero.
+RECONFIGURE times out at the batch line with CurCmd 220. Completed procedure
+reads are retained across request replay so each subsequent read can wait
+independently. Captures also cover scalar UDFs, TRY/CATCH and TRY_CAST; the
+internal wait is never itself catchable, while the eventual timeout is.

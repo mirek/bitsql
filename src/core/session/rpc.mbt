@@ -291,6 +291,7 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
     vars: frame.values,
     row: [],
     outer: [],
+    scan_row: (scope, id, row) => self.configuration_scan_row(scope, id, row),
     source: (scope, id) => self.source(scope, id),
     ext: (name, args) => self.catalog_fn(name, args),
     user_fn: (id, args) => self.call_scalar_udf(id, args),
@@ -338,8 +339,10 @@ pub fn Session::run_rpc(
   self.datefirst_set = false
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
+    self.configuration_reads.clear()
   }
   self.waits_seen = 0
+  self.configuration_reads_seen = 0
   self.in_waitfor = false
   self.parked = false
   self.waiting = None
@@ -443,6 +446,7 @@ pub fn Session::run_rpc(
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
+  self.configuration_reads.clear()
   if self.attn.hit {
     self.finish_attention()
   } else {

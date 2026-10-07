@@ -1073,6 +1073,8 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
     Commit(name~) => self.opt_expr("commit", name)
     Rollback(name~) => self.opt_expr("rollback", name)
     Save(name~) => self.opt_expr("save", name)
+    Reconfigure(override_~) =>
+      self.s(if override_ { "(reconfigure override)" } else { "(reconfigure)" })
     OpenCursor(c, global~) =>
       self.s(
         "(open " + (if global { "global " } else { "" }) + ident_text(c) + ")",

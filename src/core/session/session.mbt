@@ -363,6 +363,8 @@ pub struct Session {
   /// completed before its last park; the re-run skips completed ones.
   mut waits_seen : Int
   mut waits_done : Int
+  mut configuration_reads_seen : Int
+  configuration_reads : Array[Result[(Int, Int), @types.SqlError]]
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
   /// ATTENTION (cancellation) of a parked request (attention.mbt).
@@ -538,6 +540,8 @@ pub fn Session::new(
     context_info: None,
     waits_seen: 0,
     waits_done: 0,
+    configuration_reads_seen: 0,
+    configuration_reads: [],
     in_waitfor: false,
     login: "sa",
     host_name: "",
@@ -610,6 +614,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
     vars: self.frame().values,
     row: [],
     outer: [],
+    scan_row: (scope, id, row) => self.configuration_scan_row(scope, id, row),
     source: (scope, id) => self.source(scope, id),
     ext: (name, args) => {
       match self.property_fn(name, args) {
@@ -751,8 +756,10 @@ pub fn Session::run_batch(
   self.datefirst_set = false
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
+    self.configuration_reads.clear()
   }
   self.waits_seen = 0
+  self.configuration_reads_seen = 0
   self.in_waitfor = false
   self.parked = false
   self.waiting = None
@@ -793,6 +800,7 @@ pub fn Session::run_batch(
   self.fail_next_wait = None
   self.applock_waited = false
   self.waits_done = 0
+  self.configuration_reads.clear()
   if self.attn.hit {
     self.finish_attention()
   } else {

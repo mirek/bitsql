@@ -138,6 +138,9 @@ pub(all) struct Ctx {
   /// Table rows by (scope, id), as (rowid, row) pairs. Supplied by the
   /// session from its current database view.
   source : (Int, Int) -> Array[(Int64, Array[@types.Value])]
+  /// Called before consuming each scan row, including rows later filtered
+  /// out. Catalog row locks can suspend or time out at this exact position.
+  scan_row : (Int, Int, Int64) -> Unit raise @types.SqlError
   /// Session-provided functions that need the database (catalog/metadata
   /// functions). Returns None for names it does not implement.
   ext : (String, Array[@types.Value]) -> @types.Value? raise @types.SqlError
