@@ -101,3 +101,16 @@ for (const [name, sql] of [
   ...embeddingCancellationMatrixCases[0], name, sql,
   after: 'SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;',
 })
+
+
+export const embeddingContextCases = [
+  ...embeddingConcurrencyCases.filter(c => ['model-drop', 'model-alter', 'rest-disable'].includes(c.name)),
+  ...embeddingConcurrencyCases.filter(c => ['model-drop', 'rest-disable'].includes(c.name)).flatMap(c => [
+    { ...c, name: c.name + '-single', sql: "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;" },
+    { ...c, name: c.name + '-cancel', cancel: true, kind: 'rpc', sql: "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;" },
+  ]),
+  { ...embeddingConcurrencyCases[0], name: 'model-api-alter', setup: embeddingConcurrencyCases[2].setup,
+    mutation: "ALTER EXTERNAL MODEL m SET(API_FORMAT='Ollama');" },
+  { ...embeddingConcurrencyCases[0], name: 'model-parameters-alter', setup: embeddingConcurrencyCases[2].setup,
+    mutation: `ALTER EXTERNAL MODEL m SET(PARAMETERS='{"temperature":0.5}');` },
+]

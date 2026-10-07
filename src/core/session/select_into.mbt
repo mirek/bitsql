@@ -160,15 +160,21 @@ fn Session::exec_query(
   q : @ast.Query,
   line : Int,
 ) -> Unit raise {
-  let bound = match self.prebound {
-    Some(p) if physical_equal(p.query, q) => {
-      self.prebound = None
-      for e in p.deferred {
-        self.deferred.push(e)
+  let saved_query = self.http_query
+  self.http_query = None
+  let bound = match saved_query {
+    Some((saved, bound)) if physical_equal(saved, q) => bound
+    _ =>
+      match self.prebound {
+        Some(p) if physical_equal(p.query, q) => {
+          self.prebound = None
+          for e in p.deferred {
+            self.deferred.push(e)
+          }
+          p.bound
+        }
+        _ => @bind.bind_query(self.env(), q)
       }
-      p.bound
-    }
-    _ => @bind.bind_query(self.env(), q)
   }
   self.check_json_index_paths(bound.plan)
   let cols = bound.columns.map(tds_column)
@@ -202,7 +208,13 @@ fn Session::exec_query(
     }
     n += 1L
     self.out.push(Row(r.map(wire_value)))
-  })
+  }) catch {
+    @types.Suspend if self.embedding_pending is Some(_) => {
+      self.http_query = Some((q, bound))
+      raise @types.Suspend
+    }
+    e => raise e
+  }
   if self.rt.count_override is Some(c) {
     n = c
     self.rt.count_override = None

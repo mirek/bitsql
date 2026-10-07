@@ -5,9 +5,12 @@ user. This audit remains open. A smoke test is not proof of complete feature
 support. Expected outputs in `harness/corpus/sql2025/` come from the pinned
 SQL Server 17.0.5005.3 oracle.
 
-Release completion requires publishing a new container version after the full
-feature scope and verification pass. The user explicitly authorized GitHub
-pushes and container publication on 2026-10-06.
+On 2026-10-07 the user narrowed the release to replacing SQL Server in CI,
+authorizing less-used functionality to move to future work. The full feature
+audit remains open; it is no longer the release gate. See the
+[release boundary and deferred work](sql2025-future-work.md). Release completion
+still requires a verified, newly published container. GitHub pushes and
+container publication were explicitly authorized on 2026-10-06.
 
 | Requirement | Evidence and outstanding work |
 | --- | --- |
@@ -503,3 +506,30 @@ Full gate passes 1,772 MoonBit and 23,691 client tests, three existing skips,
 zero failures. All 156 controlled SQL/HTTPS cases ran. Parser checks cover
 40,632 batches with 11 known differences. The 32-case cancellation matrix
 also reproduced on a fresh disposable SQL Server instance.
+
+
+### CI release scope decision (2026-10-07)
+
+The user authorized deferring less-used functionality because the project’s
+primary purpose is replacing SQL Server in CI. The
+[future-work register](sql2025-future-work.md) supersedes earlier checkpoint
+statements that every unfinished 2025 feature blocks publication. Those
+statements remain historical evidence of the original scope, not current
+release requirements. Deferred functionality is not claimed as supported.
+
+The release path is now bounded: finish the model-context checkpoint, reject
+known unsupported execution paths that could silently pass application tests,
+run the local gate and ORM compatibility checks, refresh release measurements,
+bump the version, and validate/publish both container architectures.
+
+### In-flight model context checkpoint (2026-10-07)
+
+Nine model/configuration context captures now pass focused client verification,
+bringing controlled SQL/HTTPS coverage to 165 cases. They cover pending results,
+subsequent lookups, API/parameter changes, and cancellation after DROP/disable.
+The source-row/scan and nested/DML scope requirements remain open. This is not
+release completion; no new container has been published.
+
+Full gate passes 1,772 MoonBit and 23,692 client tests, three existing skips,
+zero failures. All 165 controlled SQL/HTTPS cases ran. ORM comparison has no
+new differences: 224 matching steps and two existing TypeORM ordering differences.

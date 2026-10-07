@@ -1236,3 +1236,16 @@ allowed to complete. Existing statement rollback and attention rendering handle
 the unwind. Scalar streaming aggregate warnings are retained separately because
 the captured grouped/distinct paths do not emit that warning on interruption.
 The 33 oracle cancellation cases are documented in the external-model reference.
+
+
+### 2026-10-07: retain binding and HTTP call context across model changes
+
+A SELECT suspended by an embedding call retains its bound query for that same
+statement on resumption. The call memo checks its original SQL inputs before
+reusing its prepared request and response decoder; it does not look up the
+model/configuration again for an already-started call. A newly reached call
+performs a fresh lookup. This preserves the pending result after model DROP or
+REST disable, while the following call sees the change. Input differences
+remain explicit failures pending real row/scan continuation. The nine context
+captures also cover API/parameter changes and cancellation; see the external
+model reference for the behavioral evidence and outstanding scope.

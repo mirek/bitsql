@@ -33,6 +33,7 @@ pub fn wire_value(@types.Value) -> @tds.WireValue
 
 // Types and methods
 pub struct EmbeddingCall {
+  inputs : Array[@types.Value]
   request : @types.HttpRequest
   api : @types.EmbeddingApi
   mut result : Result[@types.Value, @types.SqlError]?

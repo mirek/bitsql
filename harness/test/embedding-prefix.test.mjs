@@ -8,7 +8,7 @@ import { spawnEmulator, emulatorConfig } from '../src/emulator.mjs'
 import { embeddingAfterSql } from '../src/embedding-normalize.mjs'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
 
-for (const [label, file] of [['batch', 'embedding-prefix'], ['RPC', 'embedding-prefix-rpc'], ['procedure RPC', 'embedding-prefix-proc'], ['cancelled RPC', 'embedding-cancellation'], ['cancelled expressions', 'embedding-cancellation-matrix']])
+for (const [label, file] of [['batch', 'embedding-prefix'], ['RPC', 'embedding-prefix-rpc'], ['procedure RPC', 'embedding-prefix-proc'], ['cancelled RPC', 'embedding-cancellation'], ['cancelled expressions', 'embedding-cancellation-matrix'], ['model context', 'embedding-context']])
 test(`embedding HTTP ${label} contracts match SQL Server`, { timeout: 30000 }, async t => {
   const expected = JSON.parse(await readFile(new URL(`../fixtures/${file}.expected.json`, import.meta.url), 'utf8'))
   const fixture = await embeddingFixture()
@@ -24,7 +24,9 @@ test(`embedding HTTP ${label} contracts match SQL Server`, { timeout: 30000 }, a
     other = await connect(config)
     await query(conn, "EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE;")
     await query(other, 'SET LOCK_TIMEOUT 200;')
-    for (const c of expected.cases) {
+    const cases = expected.cases
+    for (const c of cases) {
+      await query(conn, "EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE;")
       await query(conn, c.input.setup)
       await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:${fixture.port}/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');`)
       if (c.input.prepare) await query(conn, c.input.prepare)
@@ -53,9 +55,9 @@ test(`embedding HTTP ${label} contracts match SQL Server`, { timeout: 30000 }, a
       if (c.input.after) compare(await capture(conn, { kind: 'batch', sql: embeddingAfterSql(c.input, result) }), c.after, c.input.name + ': after module')
       assert.deepEqual(fixture.requests, c.requests, c.input.name + ': HTTP requests')
       if (c.input.cleanup) await query(conn, c.input.cleanup)
-      await query(conn, 'DROP TABLE t; DROP EXTERNAL MODEL m;')
+      await query(conn, "DROP TABLE t; IF EXISTS(SELECT 1 FROM sys.external_models WHERE name=N'm') DROP EXTERNAL MODEL m;")
     }
-    t.diagnostic(`${expected.cases.length} oracle cases matched`)
+    t.diagnostic(`${cases.length} oracle cases matched`)
   } finally {
     await close(other)
     await close(conn)

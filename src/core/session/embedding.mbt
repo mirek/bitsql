@@ -1,18 +1,16 @@
 ///|
 pub struct EmbeddingCall {
+  inputs : Array[@types.Value]
   request : @types.HttpRequest
   api : @types.EmbeddingApi
   mut result : Result[@types.Value, @types.SqlError]?
 }
 
 ///|
-fn Session::embedding(
+fn Session::prepare_embedding(
   self : Session,
   args : Array[@types.Value],
-) -> @types.Value raise @types.SqlError {
-  if self.attn.hit {
-    return Null
-  }
+) -> EmbeddingCall raise @types.SqlError {
   if !self.rest_enabled() {
     raise @types.sql_error(
       31643,
@@ -20,9 +18,15 @@ fn Session::embedding(
       state=2,
     )
   }
-  guard args[0] is String(name) &&
-    self.db_of(0).external_model(name) is Some(model) else {
-    raise @types.not_supported("embedding model changed during execution")
+  guard args[0] is String(name) else {
+    raise @types.not_supported("embedding model expression")
+  }
+  guard self.db_of(0).external_model(name) is Some(model) else {
+    raise @types.sql_error(
+      15151,
+      "Cannot find the external model '\{name}', because it does not exist or you do not have permission.",
+      state=10,
+    )
   }
   let api : @types.EmbeddingApi = match model.api_format {
     "OpenAI" => OpenAI
@@ -57,11 +61,22 @@ fn Session::embedding(
       ("User-Agent", "Enterprise Developer Edition (64-bit)/17.0.5005.3"),
     ],
   }
+  { inputs: args.copy(), request, api, result: None, }
+}
+
+///|
+fn Session::embedding(
+  self : Session,
+  args : Array[@types.Value],
+) -> @types.Value raise @types.SqlError {
+  if self.attn.hit {
+    return Null
+  }
   let index = self.embeddings_seen
   self.embeddings_seen += 1
   let call = match self.embeddings.get(index) {
     Some(call) => {
-      if call.request != request || call.api != api {
+      if call.inputs != args {
         raise @types.not_supported(
           "embedding input changed during request replay",
         )
@@ -69,7 +84,7 @@ fn Session::embedding(
       call
     }
     None => {
-      let call : EmbeddingCall = { request, api, result: None, }
+      let call = self.prepare_embedding(args)
       self.embeddings.push(call)
       call
     }

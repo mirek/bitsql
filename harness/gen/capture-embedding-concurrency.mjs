@@ -1,4 +1,4 @@
-// node gen/capture-embedding-concurrency.mjs [--verify|--force] [--prefix|--rpc-prefix|--proc-prefix|--cancel-prefix|--cancel-matrix]
+// node gen/capture-embedding-concurrency.mjs [--verify|--force] [--prefix|--rpc-prefix|--proc-prefix|--cancel-prefix|--cancel-matrix|--context]
 // Creates and removes its own oracle. Never changes the shared oracle.
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict'
 import { embeddingAfterSql } from '../src/embedding-normalize.mjs'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
 
-import { embeddingConcurrencyCases, embeddingPrefixCases, embeddingRpcPrefixCases, embeddingProcPrefixCases, embeddingCancellationCases, embeddingCancellationMatrixCases } from './embedding-concurrency-cases.mjs'
+import { embeddingConcurrencyCases, embeddingPrefixCases, embeddingRpcPrefixCases, embeddingProcPrefixCases, embeddingCancellationCases, embeddingCancellationMatrixCases, embeddingContextCases } from './embedding-concurrency-cases.mjs'
 import { connect, close } from '../src/client.mjs'
 import { capture, query } from '../src/capture-core.mjs'
 import { writeJson } from '../src/json.mjs'
@@ -24,13 +24,14 @@ if (!(port === 0 || (port >= 47300 && port <= 47399 && Number.isInteger(port))))
 const { startOracle, stopOracle, containerName } = await import('../src/oracle.mjs')
 if (!containerName.startsWith('bitsql-oracle-embedding-')) throw Error('a dedicated embedding oracle name is required')
 if (await docker(['ps', '-a', '--filter', `name=^/${containerName}$`, '--format', '{{.Names}}'])) throw Error('refusing to reuse an existing oracle')
+const context = process.argv.includes('--context')
 const cancelMatrix = process.argv.includes('--cancel-matrix')
 const cancellation = process.argv.includes('--cancel-prefix')
 const procPrefix = process.argv.includes('--proc-prefix')
 const rpcPrefix = process.argv.includes('--rpc-prefix')
 const prefix = process.argv.includes('--prefix') || rpcPrefix || procPrefix
-const cases = cancelMatrix ? embeddingCancellationMatrixCases : cancellation ? embeddingCancellationCases : procPrefix ? embeddingProcPrefixCases : rpcPrefix ? embeddingRpcPrefixCases : prefix ? embeddingPrefixCases : embeddingConcurrencyCases
-const file = join(harnessDir, 'fixtures', cancelMatrix ? 'embedding-cancellation-matrix.expected.json' : cancellation ? 'embedding-cancellation.expected.json' : procPrefix ? 'embedding-prefix-proc.expected.json' : rpcPrefix ? 'embedding-prefix-rpc.expected.json' : prefix ? 'embedding-prefix.expected.json' : 'embedding-concurrency.expected.json')
+const cases = context ? embeddingContextCases : cancelMatrix ? embeddingCancellationMatrixCases : cancellation ? embeddingCancellationCases : procPrefix ? embeddingProcPrefixCases : rpcPrefix ? embeddingRpcPrefixCases : prefix ? embeddingPrefixCases : embeddingConcurrencyCases
+const file = join(harnessDir, 'fixtures', context ? 'embedding-context.expected.json' : cancelMatrix ? 'embedding-cancellation-matrix.expected.json' : cancellation ? 'embedding-cancellation.expected.json' : procPrefix ? 'embedding-prefix-proc.expected.json' : rpcPrefix ? 'embedding-prefix-rpc.expected.json' : prefix ? 'embedding-prefix.expected.json' : 'embedding-concurrency.expected.json')
 const verify = process.argv.includes('--verify'), force = process.argv.includes('--force')
 const probe = process.argv.find(a => a.startsWith('--probe='))?.slice(8)
 if (!probe && !verify && !force) {

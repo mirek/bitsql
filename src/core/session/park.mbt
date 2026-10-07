@@ -162,6 +162,7 @@ pub fn Session::cancel_wait(self : Session) -> Unit {
 pub fn Session::close(self : Session) -> Unit {
   // Continuations capture this session; break the reference-counting cycle
   // when a client disconnects without completing its suspended RPC.
+  self.http_query = None
   self.rpc_continuation = None
   self.batch_resume = None
   self.batch_resuming = false
@@ -214,6 +215,7 @@ pub fn Session::time_out(self : Session) -> Unit {
 /// response: rollback (if any), then RESETACK (captured with tedious reset
 /// against SQL Server 17.0.5005.3).
 pub fn Session::reset(self : Session) -> Array[@reply.Item] {
+  self.http_query = None
   self.rpc_continuation = None
   self.batch_resume = None
   self.batch_resuming = false

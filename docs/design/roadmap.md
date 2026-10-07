@@ -8,6 +8,13 @@ overrides the order inside a phase.
 
 Legend: `[x]` done and tested, `[~]` partially done (say what is missing), `[ ]` not started.
 
+## Current release boundary (2026-10-07)
+
+The user authorized deferring less-used 2025 functionality for the CI-focused
+release. See [future work](sql2025-future-work.md); unchecked deep feature audits
+below remain tracked but do not all block publication. Known false-green risks,
+local/client/ORM verification and publication remain release requirements.
+
 ## Phase 0: project setup
 
 - [x] MoonBit module, vendored docs with rerunnable update script
@@ -460,3 +467,5 @@ project: the breadth of transaction and error semantics in phases 5–6.
 - [~] HTTP statement/RPC continuation (2026-10-07): 28 registered prefix cases pass across batches, dynamic RPCs, stored-procedure RPCs and prepared execution. Committed effects remain visible during HTTP; variables, response prefixes, scope cleanup, output parameters and prepared handles survive. Pending-row/scan state and nested continuations remain open; see [contracts](../reference/external-models.md).
 
 - [~] Embedding cancellation (2026-10-07): 33 captured batch/RPC cases cover final rows, aggregate warning distinctions, DML rollback, TRY and transaction retention. Native JSON/vector conversion adds 21 captured statements. Broader operator/interruption coverage and concurrent resumption remain open; see the external-model and vector references.
+
+- [~] Embedding model context (2026-10-07): nine registered cases preserve pending calls and SELECT binding across model DROP/ALTER and REST disable, with later calls observing new MODEL/API_FORMAT/PARAMETERS. Cancellation after configuration changes also matches. Source rows, scan position, nested modules and DML query binding remain open.

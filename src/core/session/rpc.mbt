@@ -376,6 +376,7 @@ pub fn Session::run_rpc(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.http_query = None
     self.embeddings.clear()
     self.embedding_pending = None
   }
@@ -503,6 +504,7 @@ pub fn Session::run_rpc(
   self.waits_done = 0
   self.configuration_reads.clear()
   self.rt.finish_attempt()
+  self.http_query = None
   self.embeddings.clear()
   self.embedding_pending = None
   if self.attn.hit {

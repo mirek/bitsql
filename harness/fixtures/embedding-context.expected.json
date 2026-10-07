@@ -1,0 +1,721 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": [
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT id,s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY id;",
+        "name": "model-drop",
+        "mutation": "DROP EXTERNAL MODEL m;"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[1,"first","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 15151,
+            "state": 10,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "Cannot find the external model 'm', because it does not exist or you do not have permission."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":1},
+          {"name":"ERROR","number":15151},
+          {"name":"DONE","status":2,"curCmd":193}
+        ],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT id,s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY id;",
+        "name": "model-alter",
+        "mutation": "ALTER EXTERNAL MODEL m SET(MODEL='changed');"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[1,"first","[1,2]"],[2,"second","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"changed\",\"input\":\"second\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT id,s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY id;",
+        "name": "rest-disable",
+        "mutation": "EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[1,"first","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31643,
+            "state": 2,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "'ai_generate_embeddings' is disabled on this instance of SQL Server. Use sp_configure 'external rest endpoint enabled' to enable it."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":1},
+          {"name":"ERROR","number":31643},
+          {"name":"DONE","status":2,"curCmd":193}
+        ],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "model-drop-single",
+        "mutation": "DROP EXTERNAL MODEL m;"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "model-drop-cancel",
+        "mutation": "DROP EXTERNAL MODEL m;",
+        "cancel": true,
+        "kind": "rpc"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "rest-disable-single",
+        "mutation": "EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "rest-disable-cancel",
+        "mutation": "EXEC sp_configure 'external rest endpoint enabled',0; RECONFIGURE;",
+        "cancel": true,
+        "kind": "rpc"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"doneProc","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [
+          {
+            "number": 15457,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 196,
+            "message": "Configuration option 'external rest endpoint enabled' changed from 1 to 0. Run the RECONFIGURE statement to install."
+          }
+        ],
+        "returnStatus": 0,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":220}
+        ],
+        "stream": [
+          {"name":"INFO","number":15457},
+          {"name":"RETURNSTATUS","value":0},
+          {"name":"DONEPROC","status":1,"curCmd":224},
+          {"name":"DONE","status":0,"curCmd":220}
+        ],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT id,s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY id;",
+        "name": "model-api-alter",
+        "mutation": "ALTER EXTERNAL MODEL m SET(API_FORMAT='Ollama');"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[1,"first","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":1},
+          {"name":"ERROR","number":31744},
+          {"name":"DONE","status":2,"curCmd":193}
+        ],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second');",
+        "sql": "SELECT id,s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY id;",
+        "name": "model-parameters-alter",
+        "mutation": "ALTER EXTERNAL MODEL m SET(PARAMETERS='{\"temperature\":0.5}');"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":253}],
+        "stream": [{"name":"DONE","status":0,"curCmd":253}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              },
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[1,"first","[1,2]"],[2,"second","[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "54",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\",\"temperature\":0.5}"
+        }
+      ]
+    }
+  ]
+}

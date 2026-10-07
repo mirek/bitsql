@@ -183,9 +183,9 @@ advancing after a delayed HTTP response. All nine pass the native host.
 `embedding-concurrency.expected.json` captures nine held-response scenarios;
 reproduce with `node gen/capture-embedding-concurrency.mjs --verify`.
 The endpoint holds the first HTTP response until another SQL connection's
-mutation completes, eliminating a timing race. A fresh oracle reproduced all
-nine. These concurrency cases are **not yet implemented/registered as passing
-emulator tests**:
+mutation completes, preventing HTTP response arrival from racing that mutation.
+A fresh oracle reproduced all nine. The model/configuration cases now pass
+through the context suite below; the source/locking cases remain unregistered:
 
 - Updating the consumed source retains the old value in its pending result.
 - Updating/deleting unread rows affects subsequent results; a newly inserted
@@ -193,7 +193,7 @@ emulator tests**:
 - Dropping the model preserves the pending row, then raises 15151 on the next
   call. Altering its MODEL changes the second request's model field.
 - Disabling REST preserves the pending row, then raises 31643 on the next call.
-- With the captured clustered-primary-key query, deleting the consumed row
+- With the captured clustered-primary-key query, `DELETE t` (all rows)
   or dropping its table times out with 1222, while a non-key update succeeds.
 
 These facts require retaining consumed rows and in-flight call context while
@@ -251,3 +251,21 @@ cancellation and the follow-up rolls it back.
 
 These captures do not establish all operator shapes or interruption points.
 Concurrent source/model changes and nested statement resumption remain open.
+
+
+### In-flight model context (2026-10-07)
+
+`embedding-context.expected.json` contains nine cases, reproducible with
+`node gen/capture-embedding-concurrency.mjs --context --verify`. The registered
+client suite checks both connections and all requests/results. Dropping a model
+or disabling REST leaves the pending call intact; a later call sees 15151 or
+31643. Changing MODEL, API_FORMAT or PARAMETERS affects the later call while
+the pending response retains its original decoding context. Single-call queries
+and cancellation after dropping the model/disabling REST are also covered.
+
+A suspended SELECT retains its bound plan and metadata. Completed/pending HTTP
+calls retain their input values and prepared request/API context; only newly
+reached calls look up current model/configuration state. Replayed input changes
+still produce an explicit unsupported error until row/scan resumption is
+implemented. This checkpoint does not establish nested module or DML query
+binding retention, or solve source-row concurrency.
