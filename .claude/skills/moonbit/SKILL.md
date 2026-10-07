@@ -284,3 +284,10 @@ scripts/check.sh                 # everything CI runs; must be green to push
   line below 65,535 columns: a giant single-line string warns 0033. This
   changes representation, not expected data or assertions. The revised
   153-test storage run took 63 seconds with ~1.7 GiB peak RSS.
+
+- 2026-10-07: derived `ToJson` encodes `Some(x)` as `[x]`, not directly as
+  `x`. At a JS display boundary, use explicit `Json` cells (`Json::null()`
+  or `text.to_json()`) when the consumer expects `string | null`.
+  `website/test/engine.test.ts` compares the browser adapter with SQL Server
+  captures and caught the extra array wrapper. Backend-only packages are
+  checked separately (`moon check --target js --deny-warn src/browser`).

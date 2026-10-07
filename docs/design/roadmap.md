@@ -24,6 +24,18 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
 - [x] Published native amd64 0.1.24; registry manifests and release labels
   verified for `0.1.24`, `0.1`, and `latest`. ARM64 awaits its native host.
 
+## Website and adoption (2026-10-07)
+
+- [x] Position the published release for application CI and lead with the SQL
+  Server 2025 container replacement; retain explicit compatibility boundaries.
+- [x] `website/`: TypeScript/pnpm static homepage with evidence-backed linear
+  comparison charts, container migration guide, and actual JS engine playground.
+- [x] Browser adapter tested against checked-in SQL Server smoke captures;
+  production browser checks cover safe rendering, state reset, stop and mobile layout.
+- [x] GitHub Pages workflow builds/tests `website/dist` from main.
+- [ ] Repository owner selects GitHub Actions in Settings → Pages and verifies
+  the first published site at https://mirek.github.io/bitsql/.
+
 ## Phase 0: project setup
 
 - [x] MoonBit module, vendored docs with rerunnable update script

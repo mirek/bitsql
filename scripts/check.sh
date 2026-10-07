@@ -27,4 +27,9 @@ if [ -d harness/node_modules ] && [ "${SKIP_HARNESS:-0}" != 1 ]; then
   echo "== harness (emulator)"
   (cd harness && npm test --silent)
 fi
+if [ -d website/node_modules ]; then
+  echo "== website (JS engine, TypeScript, capture tests, production build)"
+  pnpm --dir website test
+  pnpm --dir website build
+fi
 echo "OK"

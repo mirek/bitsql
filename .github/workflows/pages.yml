@@ -1,0 +1,72 @@
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'src/**'
+      - 'moon.mod'
+      - 'harness/corpus/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: website/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.13.0
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - name: Install pinned MoonBit toolchain
+        env:
+          MOON_VERSION: '0.10.14%2B7d59c7ec9'
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.moon"
+          curl --fail --location --retry 3 "https://cli.moonbitlang.com/binaries/$MOON_VERSION/moonbit-linux-x86_64.tar.gz" | tar xz -C "$HOME/.moon"
+          curl --fail --location --retry 3 "https://cli.moonbitlang.com/cores/core-$MOON_VERSION.tar.gz" | tar xz -C "$HOME/.moon/lib"
+          export PATH="$HOME/.moon/bin:$PATH"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          moon -C "$HOME/.moon/lib/core" bundle --warn-list -a --target js
+          moon version
+      - run: moon update
+      - run: pnpm --dir website install --frozen-lockfile
+      - run: pnpm --dir website test
+      - run: pnpm --dir website build
+      - run: pnpm --dir website exec playwright install --with-deps chromium
+      - run: pnpm --dir website test:browser
+        env:
+          BITSQL_BROWSER_TEST: '1'
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: website/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

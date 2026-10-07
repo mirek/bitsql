@@ -1,0 +1,23 @@
+{
+  "name": "@bitsql/website",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "engine": "node scripts/build-engine.ts",
+    "dev": "pnpm engine && vite --host 127.0.0.1",
+    "build": "pnpm engine && tsc --noEmit && vite build",
+    "test": "pnpm engine && node --test test/*.test.ts",
+    "preview": "vite preview --host 127.0.0.1 --port 47339",
+    "test:browser": "node --test test/browser.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "playwright": "1.62.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  }
+}

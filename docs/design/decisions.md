@@ -1272,3 +1272,20 @@ first, then add another validated architecture of the same version. Never mix
 versions in one manifest; coordinate manifest writes across hosts. The ongoing
 0.1.24 ARM64 emulation run was stopped, and ARM64 publication is deferred to its
 native host. The amd64 full release gate passed before this workflow change.
+
+## 2026-10-07: Ship a CI-focused website with the real engine in the browser
+
+Present bitsql as usable for application CI, with the SQL Server 2025 container
+swap as the primary entry point and the existing release boundary still visible.
+`website/` follows cave's directory/relative-asset pattern: TypeScript, pnpm,
+Vite, Node native tests and a GitHub Pages publishing workflow. The charts use
+a checked-in copy of the 0.1.24 raw comparison, including slower point reads and
+the single successful cold-start sample per target.
+
+The browser playground compiles the existing MoonBit session executor to JS;
+`src/browser` is a display adapter, not a second SQL implementation. A lazy Web
+Worker owns the database and receives time from the browser. Stop/reset and a
+10-second timeout terminate the worker. Pending host waits/HTTP are reported as
+incomplete and reset; the browser does not simulate networking or concurrency.
+SQL Server smoke captures verify the JS adapter; Node/Playwright exercises the
+production UI. See `website/README.md` for build and publishing details.

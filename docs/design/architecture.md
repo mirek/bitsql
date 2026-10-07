@@ -1,8 +1,10 @@
 # Architecture
 
-Everything is MoonBit: a pure core does TDS, parse, bind, execute, storage and
-locking as one state machine; a thin native async host only moves bytes and
-fires timers.
+The SQL engine is MoonBit: a pure core does TDS, parse, bind, execute, storage
+and locking as one state machine; a thin native async host moves bytes and fires
+timers. The TypeScript website also runs the same session executor, compiled to
+JavaScript, in a Web Worker through `src/browser`. That display adapter has no
+sockets or host wait/HTTP integration; see [the website guide](../../website/README.md).
 
 ```
             ┌──────────────── host (native, moonbitlang/async) ───────────────┐

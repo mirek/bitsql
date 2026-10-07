@@ -5,7 +5,11 @@ Real `tedious` / `mssql` clients connect to it over TDS, so test suites can drop
 the ~1.6 GB `mssql/server` container in favor of a 40 MB image that starts in
 about 0.14 s and idles at about 5 MB of RAM ([benchmarks](#benchmarks)).
 
-Status: early development. See [docs/design/roadmap.md](docs/design/roadmap.md).
+Ready to try in application CI as a lightweight replacement for the SQL Server
+2025 container. [Try SQL in your browser](https://mirek.github.io/bitsql/) or
+follow the container swap below. See [SQL Server 2025 coverage](#sql-server-2025-coverage)
+for the release boundary and [the roadmap](docs/design/roadmap.md) for ongoing work.
+
 Behavior is checked against captures from real SQL Server. A feature the
 emulator doesn't support fails with an `Emulator: …` error (numbers
 50100–50199) instead of returning a guess.
@@ -49,7 +53,7 @@ docker compose:
 ```yaml
 services:
   db:
-    image: mirek/bitsql:0.1              # was mcr.microsoft.com/mssql/server:2022-latest
+    image: mirek/bitsql:0.1              # was mcr.microsoft.com/mssql/server:2025-latest
     command: ["--auto-create-databases"]
     ports: ["1433:1433"]
     environment:                         # optional; kept for SQL Server parity, ignored
@@ -198,6 +202,13 @@ npm run bench:compare -- --starts 5 --json out/bench-compare.json
 npm run bench:compare -- --from out/bench-compare.json   # re-render tables only
 BITSQL_IMAGE=bitsql:dev npm run bench:compare -- --only bitsql
 ```
+
+## Website and browser playground
+
+The [website](https://mirek.github.io/bitsql/) includes measured comparisons,
+a container migration guide, and the actual SQL engine running locally in a
+browser Web Worker. The site lives in [`website/`](website/README.md), uses
+TypeScript and pnpm, and is published to GitHub Pages by the Pages workflow.
 
 ## Building
 
