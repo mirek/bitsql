@@ -419,3 +419,16 @@ The full gate passes 1,615 MoonBit tests and 23,553 client/corpus tests, with
 three existing skips and zero failures. All 29 registered mutation cases ran;
 parser comparison covers 40,360 batches with 11 known differences. Broader
 vector and 2025 requirements remain open.
+
+
+### External models in progress (2026-10-07)
+
+Oracle captures now cover CREATE/ALTER/DROP, catalog descriptors, transactional
+rollback, nontransactional ID allocation and option-validation boundaries.
+All 93 registered DDL/catalog cases pass. The full gate passes 1,615 MoonBit
+and 23,646 client tests, three existing skips, zero failures; parser checks
+40,562 batches with 11 known differences. Embedding syntax now parses and
+execution explicitly raises an Emulator unsupported error. Inference, credentials,
+model locking and broader authorization remain open. See
+[external-model contracts](../reference/external-models.md). This is not release
+completion: version 0.1.23 remains published and the full audit stays open.

@@ -1,0 +1,319 @@
+{
+  "cases": [
+    {
+      "name": "rollback-allocation",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN;CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL n WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "failed-allocation",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'bad',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL n WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-allocation",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL n WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "rollback-after-existing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN;CREATE EXTERNAL MODEL n WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL p WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "same-batch-alter",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');ALTER EXTERNAL MODEL m SET(MODEL='changed'); SELECT CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models;"
+        }
+      ]
+    },
+    {
+      "name": "location-4000",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "location-4001",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "model-100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "model-101",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "api-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "api-100",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "api-101",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "runtime-0",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture',LOCAL_RUNTIME_PATH=N'');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "runtime-260",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture',LOCAL_RUNTIME_PATH=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "runtime-261",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture',LOCAL_RUNTIME_PATH=N'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "two-spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI  ',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "leading-space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N' OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "tab",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI\t',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "ollama-space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'Ollama ',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "azure-space",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'Azure OpenAI ',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "alter-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET();"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "alter-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(MODEL_TYPE=EMBEDDINGS);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    },
+    {
+      "name": "drop-many",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');CREATE EXTERNAL MODEL n WITH(LOCATION=N'not-a-url',API_FORMAT=N'OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL=N'fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DROP EXTERNAL MODEL m,n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,api_format,LEN(location) AS location_length,DATALENGTH(model) AS model_bytes FROM sys.external_models ORDER BY external_model_id;"
+        }
+      ]
+    }
+  ]
+}

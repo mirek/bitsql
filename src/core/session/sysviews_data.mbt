@@ -1694,6 +1694,24 @@ let view_defs : Array[ViewDef] = [
     ],
   },
   {
+    schema: "sys",
+    name: "external_models",
+    columns: [
+      vc("external_model_id", Int, false, false),
+      vc("name", NVarChar(Some(128), coll_default), true, true),
+      vc("principal_id", Int, true, false),
+      vc("location", NVarChar(Some(4000), coll_default), true, true),
+      vc("api_format", NVarChar(Some(100), coll_default), true, true),
+      vc("model_type_id", Int, true, false),
+      vc("model_type_desc", NVarChar(Some(65), coll_default), true, true),
+      vc("model", NVarChar(Some(100), coll_default), true, true),
+      vc("credential_id", Int, true, false),
+      vc("parameters", Json, true, true),
+      vc("create_time", DateTime2(7), true, true),
+      vc("modify_time", DateTime2(7), true, true),
+    ],
+  },
+  {
     // read as sys.dm_exec_cursors(session_id) (bind_table_function)
     schema: "sys",
     name: "dm_exec_cursors",

@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')
@@ -83,6 +83,8 @@ def sql_type(c):
         return 'Int'
     if t == 'BigInt' or (t == 'IntN' and n == 8):
         return 'BigInt'
+    if t == 'DateTime2':
+        return f'DateTime2({c["scale"]})'
     if t == 'DateTime' or (t == 'DateTimeN' and n == 8):
         return 'DateTime'
     if t == 'SmallDateTime' or (t == 'DateTimeN' and n == 4):
@@ -167,7 +169,7 @@ def main():
         cols = []
         tys = {}
         for c in s['columns']:
-            ty = sql_type(c)
+            ty = "Json" if v == "sys.external_models" and c["name"] == "parameters" else sql_type(c)
             nullable = 'true' if c['flags'] & 1 else 'false'
             computed = 'true' if c['flags'] & 0x20 else 'false'
             cols.append(f'vc({mbt_str(c["name"])}, {ty}, {nullable}, {computed})')

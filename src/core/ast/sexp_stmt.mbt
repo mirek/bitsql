@@ -802,6 +802,25 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
       self.s("(create-synonym " + n.to_sexp() + " " + base.to_sexp())
       self.close()
     }
+    ExternalModel(mode, n, owner~, options~) => {
+      self.s(
+        "(external-model " +
+        (if mode is Alter { "alter" } else { "create" }) +
+        " " +
+        quote(n.name),
+      )
+      if owner is Some(o) {
+        self.s(" (authorization " + quote(o.name) + ")")
+      }
+      for o in options {
+        self.s(" (" + o.name + " " + quote(o.value.unwrap_or("")) + ")")
+      }
+      self.close()
+    }
+    DropExternalModel(n) => {
+      self.s("(drop-external-model " + quote(n.name))
+      self.close()
+    }
     CreateSequence(n, type_~, options~) => {
       self.s("(create-sequence " + n.to_sexp())
       if type_ is Some(t) {

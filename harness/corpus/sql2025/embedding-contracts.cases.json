@@ -1,0 +1,108 @@
+{
+  "cases": [
+    {
+      "name": "missing-model",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL absent) AS embedding;"
+        }
+      ]
+    },
+    {
+      "name": "null-source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT AI_GENERATE_EMBEDDINGS(NULL USE MODEL m) AS embedding;"
+        }
+      ]
+    },
+    {
+      "name": "string-source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+        }
+      ]
+    },
+    {
+      "name": "integer-source",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT AI_GENERATE_EMBEDDINGS(1 USE MODEL m) AS embedding;"
+        }
+      ]
+    },
+    {
+      "name": "parameters-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS '{\"dimensions\":3}') AS embedding;"
+        }
+      ]
+    },
+    {
+      "name": "table-form",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m);"
+        }
+      ]
+    },
+    {
+      "name": "describe",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "EXEC sys.sp_describe_first_result_set N'SELECT AI_GENERATE_EMBEDDINGS(N''hello'' USE MODEL m) AS embedding';"
+        }
+      ]
+    },
+    {
+      "name": "configuration",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,value_in_use FROM sys.configurations WHERE name='external rest endpoint enabled';"
+        }
+      ]
+    }
+  ]
+}

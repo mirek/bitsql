@@ -993,6 +993,10 @@ fn Parser::create_or_alter(
     }
   }
   match u {
+    "EXTERNAL" if self.is_kw_at(1, "MODEL") && !(mode is CreateOrAlter) => {
+      self.pos += 2
+      self.external_model(mode)
+    }
     "SCHEMA" if mode is Alter => {
       self.pos += 1
       let schema = self.ident()

@@ -488,6 +488,7 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
           self.json_ctor(u == "JSON_OBJECT")
         "JSON_OBJECTAGG" | "JSON_ARRAYAGG" if next_paren =>
           self.json_agg(u == "JSON_OBJECTAGG")
+        "AI_GENERATE_EMBEDDINGS" if next_paren => self.embedding_call()
         "NEXT" if self.is_kw_at(1, "VALUE") && self.is_kw_at(2, "FOR") => {
           self.pos += 3
           let name = self.object_name()

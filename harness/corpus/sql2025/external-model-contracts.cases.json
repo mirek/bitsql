@@ -1,0 +1,381 @@
+{
+  "cases": [
+    {
+      "name": "catalog-id",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-model",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(MODEL='changed'); SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-location",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(LOCATION='other'); SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-api",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(API_FORMAT='Ollama'); SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-parameters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(PARAMETERS='{\"dimensions\":4}'); SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL m SET(API_FORMAT='unknown'); SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "alter-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER EXTERNAL MODEL absent SET(MODEL='x');"
+        }
+      ]
+    },
+    {
+      "name": "drop-recreate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DROP EXTERNAL MODEL m; CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "ids",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL n WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "object-namespace",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TABLE m(id int); SELECT name,type,type_desc FROM sys.objects WHERE name='m'; SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "object-visible",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,type,type_desc FROM sys.objects WHERE name='m'; SELECT OBJECT_ID('m') AS object_id;"
+        }
+      ]
+    },
+    {
+      "name": "alter-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; ALTER EXTERNAL MODEL m SET(MODEL='changed'); ROLLBACK; SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "drop-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; DROP EXTERNAL MODEL m; ROLLBACK; SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "unknown-option",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',FOO='x');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-option",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',MODEL='second');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "empty-parameters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS='');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "scalar-parameters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS='42');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "null-parameters",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS=NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "local-runtime",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',LOCAL_RUNTIME_PATH='/tmp/model');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "credential-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',CREDENTIAL=NULL);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "owner-dbo",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m AUTHORIZATION dbo WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "owner-absent",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m AUTHORIZATION absent WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "empty-options",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH();"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "create-no-with",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "empty-location",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "long-model",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "api-spaces",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='openai ',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "onnx",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='ONNX Runtime',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "name-temporary",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL #m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT external_model_id,name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters,CAST(CASE WHEN create_time=modify_time THEN 1 ELSE 0 END AS bit) AS same_time FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    }
+  ]
+}

@@ -760,6 +760,10 @@ fn Parser::if_exists(self : Parser) -> Bool {
 ///|
 fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
   self.expect_kw("DROP")
+  if self.is_kw("EXTERNAL") && self.is_kw_at(1, "MODEL") {
+    self.pos += 2
+    return DropExternalModel(self.ident())
+  }
   if self.eat_kw("INDEX") {
     let if_exists = self.if_exists()
     let items = []

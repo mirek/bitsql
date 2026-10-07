@@ -908,6 +908,9 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     }
     CreateType(ct) => self.exec_create_type(ct)
     CreateSynonym(name, base) => self.exec_create_synonym(name, base)
+    ExternalModel(mode, name, owner~, options~) =>
+      self.exec_external_model(mode, name, owner, options)
+    DropExternalModel(name) => self.exec_drop_external_model(name)
     CreateSequence(name, type_~, options~) =>
       self.exec_create_sequence(name, type_, options, s.span.start, s.span.line)
     InsertBulk(name, _, options) => self.exec_insert_bulk(name, options)

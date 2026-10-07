@@ -73,6 +73,8 @@ pub(all) enum StmtKind {
   CreateType(CreateType)
   /// `CREATE SYNONYM name FOR base_object`.
   CreateSynonym(ObjectName, ObjectName)
+  ExternalModel(CreateMode, Ident, owner~ : Ident?, options~ : Array[OptionKV])
+  DropExternalModel(Ident)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
   /// ALTER SEQUENCE name options (see `CreateSequence`; adds `RESTART`).
   AlterSequence(ObjectName, Array[String])

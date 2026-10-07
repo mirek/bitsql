@@ -21,6 +21,8 @@ pub struct Server {
   /// Row ids and object ids are never reused or rolled back.
   mut next_rowid : Int64
   mut next_object_id : Int
+  /// Per-database external model IDs survive transaction rollback.
+  priv external_model_ids : Map[String, Int]
   /// Last identity value per table (not rolled back, like SQL Server),
   /// keyed by `Session::ident_key`: "database:id" for tables of a
   /// database (a restored copy shares its object ids with the original),
@@ -60,6 +62,7 @@ pub struct Server {
 
 ///|
 priv struct ServerSnapshot {
+  external_model_ids : Map[String, Int]
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
   db_ids : Map[String, Int]
@@ -90,6 +93,7 @@ pub fn Server::new() -> Server {
     // capture printing object ids agrees: msduck-runs alter-named-default,
     // table-type-catalog, system-all-columns)
     next_object_id: 1221579390,
+    external_model_ids: Map([]),
     idents: Map([]),
     dbts: 2000L,
     snapshots: Map([]),

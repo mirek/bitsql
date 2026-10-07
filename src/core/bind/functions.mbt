@@ -54,6 +54,9 @@ fn nvarchar(n : Int?) -> @types.SqlType {
 ///|
 fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError {
   let name = call.name.base().to_upper()
+  if name == "AI_GENERATE_EMBEDDINGS" {
+    raise @types.not_supported("AI_GENERATE_EMBEDDINGS inference")
+  }
   if call.over is Some(_) {
     // windowed calls are extracted by the query binder (SELECT list and
     // ORDER BY); anywhere else is 4108 (captured: msduck output-typed-stages)

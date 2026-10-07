@@ -1,0 +1,333 @@
+{
+  "cases": [
+    {
+      "name": "create-default",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "create-preview",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "ollama",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='Ollama',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "azure",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='Azure OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "api-lower",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='openai',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "api-unknown",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='unknown',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "http-location",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='http://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "bad-location",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='not-a-url',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "empty-model",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "missing-model",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "missing-location",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "missing-api",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "missing-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "model-type-chat",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=CHAT,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "quoted-model-type",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE='EMBEDDINGS',MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "missing-credential",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',CREDENTIAL=absent);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "parameters-object",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS='{\"dimensions\":3}');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "parameters-array",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS='[1,2]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "parameters-invalid",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture',PARAMETERS='bad');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "schema-name",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL dbo.m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "duplicate",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture'); CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "drop",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture'); DROP EXTERNAL MODEL m;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "drop-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DROP EXTERNAL MODEL absent;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "drop-if-exists",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "DROP EXTERNAL MODEL IF EXISTS absent;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    },
+    {
+      "name": "transaction",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:47398/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture'); ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name,principal_id,location,api_format,model_type_id,model_type_desc,model,credential_id,parameters FROM sys.external_models ORDER BY name;"
+        }
+      ]
+    }
+  ]
+}

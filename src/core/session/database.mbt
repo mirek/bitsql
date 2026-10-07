@@ -72,6 +72,7 @@ fn Session::exec_drop_database(
     self.server.db_names.remove(key)
     self.server.db_ids.remove(key)
     self.server.db_options.remove(key)
+    self.server.external_model_ids.remove(key)
   }
   self.done(204)
 }
@@ -160,6 +161,7 @@ fn Session::exec_emulator_proc(
         db_options[k] = v
       }
       self.server.snapshots[name] = {
+        external_model_ids: self.server.external_model_ids.copy(),
         dbs,
         db_names: names,
         db_ids: ids,
@@ -172,6 +174,10 @@ fn Session::exec_emulator_proc(
     "restore" =>
       match self.server.snapshots.get(name) {
         Some(s) => {
+          self.server.external_model_ids.clear()
+          for k, v in s.external_model_ids {
+            self.server.external_model_ids[k] = v
+          }
           self.server.dbs.clear()
           for k, v in s.dbs {
             self.server.dbs[k] = v

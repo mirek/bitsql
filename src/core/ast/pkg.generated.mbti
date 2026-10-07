@@ -669,6 +669,8 @@ pub(all) enum StmtKind {
   AlterSchemaTransfer(Ident, String, ObjectName)
   CreateType(CreateType)
   CreateSynonym(ObjectName, ObjectName)
+  ExternalModel(CreateMode, Ident, owner~ : Ident?, options~ : Array[OptionKV])
+  DropExternalModel(Ident)
   CreateSequence(ObjectName, type_~ : TypeName?, options~ : Array[String])
   AlterSequence(ObjectName, Array[String])
   Drop(DropKind, if_exists~ : Bool, Array[ObjectName])

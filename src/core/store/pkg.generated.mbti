@@ -62,11 +62,14 @@ pub fn Db::alter_table(Self, Table, convert? : (Array[@types.Value]) -> Array[@t
 pub fn Db::create_table(Self, Table) -> Self
 pub fn Db::delete_row(Self, Int, Int64) -> Self
 pub fn Db::delete_rows(Self, Int, Array[Int64]) -> Self
+pub fn Db::drop_external_model(Self, String) -> Self
 pub fn Db::drop_object(Self, Int) -> Self
 pub fn Db::drop_schema(Self, String) -> Self
 pub fn Db::drop_type(Self, Int) -> Self
 pub fn Db::drop_xprop(Self, Int, Int, Int, String) -> Self
 pub fn Db::empty() -> Self
+pub fn Db::external_model(Self, String) -> ExternalModel?
+pub fn Db::external_models(Self) -> Array[ExternalModel]
 pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
 pub fn Db::get_module(Self, Int) -> Module?
 pub fn Db::get_type(Self, Int) -> UserType?
@@ -77,6 +80,7 @@ pub fn Db::lookup_type(Self, String, String) -> UserType?
 pub fn Db::modules(Self) -> Array[Module]
 pub fn Db::next_schema_id(Self) -> Int
 pub fn Db::next_type_id(Self) -> Int
+pub fn Db::put_external_model(Self, ExternalModel) -> Self
 pub fn Db::rebase(Self, Self, Self) -> Self?
 pub fn Db::rename_module(Self, Module) -> Self
 pub fn Db::replace_row(Self, Int, Int64, Array[@types.Value]) -> Self
@@ -110,6 +114,20 @@ pub(all) struct ExtendedProperty {
   name : String
   value : @types.Value
 } derive(Eq, @debug.Debug)
+
+pub(all) struct ExternalModel {
+  id : Int
+  name : String
+  principal_id : Int
+  location : String
+  api_format : String
+  model : String
+  credential_id : Int?
+  parameters : @types.JsonData?
+  local_runtime_path : String?
+  created : Int64
+  modified : Int64
+}
 
 pub(all) enum FilterOp {
   FEq

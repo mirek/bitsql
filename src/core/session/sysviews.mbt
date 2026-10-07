@@ -551,6 +551,37 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
   match key {
+    "sys.external_models" =>
+      for m in db.external_models() {
+        out.push(
+          vrow([
+            ("external_model_id", i(m.id)),
+            ("name", s(m.name)),
+            ("principal_id", i(m.principal_id)),
+            ("location", s(m.location)),
+            ("api_format", s(m.api_format)),
+            ("model_type_id", i(1)),
+            ("model_type_desc", s("EMBEDDINGS")),
+            ("model", s(m.model)),
+            (
+              "credential_id",
+              match m.credential_id {
+                Some(id) => i(id)
+                None => Null
+              },
+            ),
+            (
+              "parameters",
+              match m.parameters {
+                Some(p) => NativeJson(p)
+                None => Null
+              },
+            ),
+            ("create_time", DateTime2(m.created)),
+            ("modify_time", DateTime2(m.modified)),
+          ]),
+        )
+      }
     "sys.objects" => {
       for o in user_objects(db) {
         out.push(object_row(o))
