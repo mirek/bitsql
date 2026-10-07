@@ -126,6 +126,12 @@ pub fn divide_by_zero_error() -> SqlError
 
 pub fn double_to_decimal17(Double) -> Decimal
 
+pub fn embedding_request(EmbeddingApi, String, String?, JsonData?, JsonData?) -> EmbeddingRequest raise SqlError
+
+pub fn embedding_response(EmbeddingApi, Int, String) -> Value raise SqlError
+
+pub fn embedding_retryable_status(Int) -> Bool
+
 pub fn emulator_error(Int, String) -> SqlError
 
 pub let emulator_error_table : Array[(Int, String)]
@@ -386,6 +392,17 @@ pub fn Decimal::to_string(Self) -> String
 pub fn Decimal::trunc_to_bigint(Self) -> @bigint.BigInt
 pub fn Decimal::zero() -> Self
 pub impl Show for Decimal
+
+pub(all) enum EmbeddingApi {
+  OpenAI
+  AzureOpenAI
+  Ollama
+} derive(Eq, @debug.Debug)
+
+pub(all) struct EmbeddingRequest {
+  body : String
+  retry_count : Int
+} derive(Eq, @debug.Debug)
 
 pub struct JsonData {
   // private fields

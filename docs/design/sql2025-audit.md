@@ -432,3 +432,15 @@ execution explicitly raises an Emulator unsupported error. Inference, credential
 model locking and broader authorization remain open. See
 [external-model contracts](../reference/external-models.md). This is not release
 completion: version 0.1.23 remains published and the full audit stays open.
+
+### Embedding HTTP behavior in progress (2026-10-07)
+
+The dedicated HTTPS fixture captures real SQL Server requests and results for
+86 cases, with 152 generated tests for pure request construction and response
+decoding. It uses its own disposable oracle and does not change the shared
+oracle's settings. This establishes HTTP payload, retry, JSON conversion and
+error contracts. SQL execution still explicitly rejects inference; host-side
+transport, pause/resume, cancellation, credentials and ONNX remain open. See
+[external-model contracts](../reference/external-models.md). The full gate passes 1,767 MoonBit and 23,647 client tests, three existing
+skips, zero failures; parser checks 40,562 batches with 11 known differences.
+Version 0.1.23 remains published.

@@ -1,0 +1,4293 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": [
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "openai",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "Azure OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "azure",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "17",
+            "host": "{authority}"
+          },
+          "body": "{\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "Ollama",
+        "response": {"body":{"model":"fixture","embeddings":[[0.25,-0.5,1]]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "ollama",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "héllo '世界' 😀\n\t",
+        "optional": null,
+        "name": "unicode",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'héllo ''世界'' 😀' + NCHAR(10) + NCHAR(9) USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "54",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"héllo '世界' 😀\\n\\t\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "",
+        "optional": null,
+        "name": "empty-source",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "30",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": null,
+        "optional": null,
+        "name": "null-source",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(CAST(NULL AS nvarchar(max)) USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31701,
+            "state": 1,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "Parameter 'input data' must be specified. This parameter cannot be NULL."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31701},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"dimensions\":3}",
+        "name": "parameter-dimensions",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"dimensions\":3}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "50",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"dimensions\":3}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"dimensions\":3}",
+        "name": "parameter-override",
+        "parameters": {"dimensions":2,"user":"saved"},
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"dimensions\":3}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "65",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"dimensions\":3,\"user\":\"saved\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"model\":\"override\",\"input\":\"override\",\"encoding_format\":\"float\"}",
+        "name": "parameter-reserved",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"model\":\"override\",\"input\":\"override\",\"encoding_format\":\"float\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'model') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "parameter-null",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS NULL) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "[]",
+        "name": "parameter-array",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'[]' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31732,"state":3,"class":16,"lineNumber":1,"message":"'Optional Parameters' must be a valid JSON object."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31732},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "model-parameter-array",
+        "parameters": [],
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31732,"state":1,"class":16,"lineNumber":1,"message":"'Model Parameters' must be a valid JSON object."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31732},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":0},\"dimensions\":3}",
+        "name": "retry-zero",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":0},\"dimensions\":3}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "50",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"dimensions\":3}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":-1}}",
+        "name": "retry-negative",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":-1}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31734,"state":2,"class":16,"lineNumber":1,"message":"The value '-1' is not within range for the retry_count parameter."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31734},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":null}}",
+        "name": "retry-null",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":null}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31735,
+            "state": 2,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "The JSON value for the JSON key 'retry_count' must be 'Integer' type."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31735},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"input\":\"value\"}",
+        "name": "request-key-input",
+        "fatal": false,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"input\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'input') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"model\":\"value\"}",
+        "name": "request-key-model",
+        "fatal": false,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"model\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'model') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"encoding_format\":\"value\"}",
+        "name": "request-key-encoding_format",
+        "fatal": false,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"encoding_format\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "61",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"encoding_format\":\"value\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"user\":\"value\"}",
+        "name": "request-key-user",
+        "fatal": false,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"user\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "50",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"user\":\"value\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"Model\":\"value\"}",
+        "name": "request-key-Model",
+        "fatal": false,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"Model\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "51",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"Model\":\"value\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":\"value\"}",
+        "name": "request-key-sql_rest_options",
+        "fatal": true,
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":\"value\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 596,
+            "state": 1,
+            "class": 21,
+            "lineNumber": 0,
+            "message": "Cannot continue the execution because the session is in the kill state."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":true,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":596},{"name":"DONE","status":258,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"input\":\"override\"}",
+        "name": "request-input-OpenAI",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"input\":\"override\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'input') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "Azure OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"input\":\"override\"}",
+        "name": "request-input-Azure OpenAI",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"input\":\"override\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'input') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "Ollama",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"input\":\"override\"}",
+        "name": "request-input-Ollama",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"input\":\"override\"}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31731,"state":2,"class":16,"lineNumber":1,"message":"The provided JSON parameters (e.g., 'input') are not allowed."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31731},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{}}",
+        "name": "rest-options-0",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"other\":1}}",
+        "name": "rest-options-1",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"other\":1}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":1}}",
+        "name": "rest-options-2",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":1}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":11}}",
+        "name": "rest-options-3",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":11}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31734,"state":2,"class":16,"lineNumber":1,"message":"The value '11' is not within range for the retry_count parameter."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31734},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":\"1\"}}",
+        "name": "rest-options-4",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":\"1\"}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31735,
+            "state": 2,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "The JSON value for the JSON key 'retry_count' must be 'Integer' type."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31735},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":true}}",
+        "name": "rest-options-5",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":true}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31735,
+            "state": 2,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "The JSON value for the JSON key 'retry_count' must be 'Integer' type."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31735},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":1.0}}",
+        "name": "retry-decimal",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":1.0}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31735,
+            "state": 2,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "The JSON value for the JSON key 'retry_count' must be 'Integer' type."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31735},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "model-retry-invalid",
+        "parameters": {"sql_rest_options":{"retry_count":-1}},
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31734,"state":1,"class":16,"lineNumber":1,"message":"The value '-1' is not within range for the retry_count parameter."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31734},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": []
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":0}}",
+        "name": "override-invalid-model-retry",
+        "parameters": {"sql_rest_options":{"retry_count":-1}},
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":0}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "/\\<>\u0001",
+        "optional": null,
+        "name": "source-escape",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'/\\<>' + NCHAR(1) USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "42",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"\\/\\\\<>\\u0001\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":500,"headers":{"Retry-After":"0"},"body":{}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":1}}",
+        "name": "retry-http-1",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":1}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":500,"headers":{"Retry-After":"0"},"body":{}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{\"retry_count\":2}}",
+        "name": "retry-http-2",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{\"retry_count\":2}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":429,"headers":{"Retry-After":"0"},"body":{}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "retry-model-http",
+        "parameters": {"sql_rest_options":{"retry_count":1}},
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":500,"headers":{"Retry-After":"0"},"body":{}},
+        "sourceText": "hello",
+        "optional": "{\"sql_rest_options\":{}}",
+        "name": "retry-model-empty-override",
+        "parameters": {"sql_rest_options":{"retry_count":1}},
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"sql_rest_options\":{}}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": "{\"text\":\"/\\\\<>\\u001b\",\"nested\":{\"path\":\"/\"},\"list\":[\"/\"]}",
+        "name": "parameter-escapes",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m PARAMETERS CAST(N'{\"text\":\"/\\\\<>\\u001b\",\"nested\":{\"path\":\"/\"},\"list\":[\"/\"]}' AS json)) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "92",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\",\"text\":\"\\/\\\\<>\\u001b\",\"nested\":{\"path\":\"/\"},\"list\":[\"/\"]}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "\u001b",
+        "optional": null,
+        "name": "source-control",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(NCHAR(27) USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"\\u001b\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"object":"list","data":[{"object":"embedding","index":0,"embedding":[0.25,-0.5,1]}],"model":"fixture"}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "model-escape",
+        "model": "fixture/path",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[0.25,-0.5,1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "40",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture/path\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":""},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "empty-response",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31718,
+            "state": 21,
+            "class": 17,
+            "lineNumber": 1,
+            "message": "An internal error has occurred. Please retry the operation. If the issue persists, contact support for assistance."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31718},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"not json"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "invalid-json",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31745,"state":1,"class":16,"lineNumber":1,"message":"The HTTP response does not contain valid JSON."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31745},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "missing-data",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "empty-data",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":null}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "null-data",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "missing-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":null}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "null-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":"abc"}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "string-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":{"a":1}}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "object-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["{\"a\":1}"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[]}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "empty-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"embedding":[1,null,"x"]}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "mixed-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,null,\"x\"]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":{"data":[{"index":1,"embedding":[1]},{"index":0,"embedding":[2]}]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "two-embeddings",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "Ollama",
+        "response": {"body":{"embeddings":[[1],[2]]}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "ollama-two",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{ \"data\": [ { \"embedding\": [ 1.0, 2e-2, -0.00 ] } ] }"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "whitespace-response",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1.0,0.0200000000,0.00]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"[]"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "root-array",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"1"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "root-number",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31745,"state":1,"class":16,"lineNumber":1,"message":"The HTTP response does not contain valid JSON."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31745},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"\"hello\""},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "root-string",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31745,"state":1,"class":16,"lineNumber":1,"message":"The HTTP response does not contain valid JSON."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31745},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"null"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "root-null",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31745,"state":1,"class":16,"lineNumber":1,"message":"The HTTP response does not contain valid JSON."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31745},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{\"other\":1e300,\"data\":[{\"embedding\":[1]}]}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "outside-overflow",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{\"data\":[{\"embedding\":[1e300]}]}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "inside-overflow",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 1007,
+            "state": 5,
+            "class": 16,
+            "lineNumber": 1,
+            "message": "The number '1e300' is out of the range for numeric representation (maximum precision 38)."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":1007},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{\"data\":[{\"embedding\":42}]}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "number-embedding",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{\"Data\":[{\"embedding\":[1]}]}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "uppercase-path",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"body":"{\"data\":[{\"embedding\":[1],\"embedding\":[2]}]}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "duplicate-path",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "Ollama",
+        "response": {"body":"{}"},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "ollama-missing",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":201,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-201",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":202,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-202",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":204,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-204",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 31718,
+            "state": 21,
+            "class": 17,
+            "lineNumber": 1,
+            "message": "An internal error has occurred. Please retry the operation. If the issue persists, contact support for assistance."
+          }
+        ],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31718},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":206,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-206",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31744,"state":1,"class":16,"lineNumber":1,"message":"The JSON path for embeddings could not be found in the response."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31744},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":301,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-301",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 301  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":302,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-302",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 302  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":304,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-304",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 304  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":400,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-400",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 400  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":401,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-401",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 401  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":403,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-403",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 403  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":404,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-404",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 404  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":408,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-408",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":409,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-409",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 409  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":413,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-413",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 413  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":415,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-415",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 415  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":422,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-422",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": []
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [{"number":31742,"state":3,"class":16,"lineNumber":1,"message":"Unrecoverable HTTP error 422  occured."}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ERROR","number":31742},{"name":"DONE","status":2,"curCmd":193}],
+        "rowCount": 0
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":429,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-429",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":500,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-500",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":502,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-502",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":503,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-503",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "api": "OpenAI",
+        "response": {"status":504,"body":{"error":{"message":"fixture rejection","type":"fixture"}}},
+        "sourceText": "hello",
+        "optional": null,
+        "name": "http-504",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [[null]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"NBCROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    }
+  ]
+}

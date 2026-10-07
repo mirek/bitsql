@@ -575,3 +575,11 @@ waive timeouts or other transport failures. A primary-connection reset permits
 its subsequent EINVALIDSTATE reuse result; a secondary reset does not. See
 `test/capture-disconnect.test.mjs` and `sql2025/json-wide-corruption-access`.
 There is no SQL-file directive for this opt-in.
+
+- 2026-10-07: `node gen/capture-embeddings.mjs --verify` verifies the controlled
+  HTTPS embedding fixture against a uniquely named disposable oracle; `--force`
+  recaptures it. It never enables REST on the shared oracle. The fixture records
+  outgoing HTTP payloads as well as SQL metadata/results/errors; generated pure
+  tests come from `scripts/gen-embedding-tests.py`. Certificate setup, automatic
+  Docker port changes after restart, and the explicitly fatal malformed-options
+  case are documented in `docs/reference/external-models.md`.
