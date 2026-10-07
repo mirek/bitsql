@@ -8,8 +8,8 @@ import { spawnEmulator, emulatorConfig } from '../src/emulator.mjs'
 import { embeddingAfterSql } from '../src/embedding-normalize.mjs'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
 
-for (const [label, file] of [['batch', 'embedding-prefix'], ['RPC', 'embedding-prefix-rpc'], ['procedure RPC', 'embedding-prefix-proc']])
-test(`completed ${label} statements remain visible during embedding HTTP waits`, { timeout: 30000 }, async t => {
+for (const [label, file] of [['batch', 'embedding-prefix'], ['RPC', 'embedding-prefix-rpc'], ['procedure RPC', 'embedding-prefix-proc'], ['cancelled RPC', 'embedding-cancellation'], ['cancelled expressions', 'embedding-cancellation-matrix']])
+test(`embedding HTTP ${label} contracts match SQL Server`, { timeout: 30000 }, async t => {
   const expected = JSON.parse(await readFile(new URL(`../fixtures/${file}.expected.json`, import.meta.url), 'utf8'))
   const fixture = await embeddingFixture()
   let server, conn, other
@@ -29,13 +29,25 @@ test(`completed ${label} statements remain visible during embedding HTTP waits`,
       await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION='https://127.0.0.1:${fixture.port}/v1/embeddings',API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');`)
       if (c.input.prepare) await query(conn, c.input.prepare)
       fixture.setResponse({ body: { data: [{ embedding: [1,2] }] }, hold: true })
-      const pending = capture(conn, { kind: c.input.kind ?? 'batch', sql: c.input.sql, params: c.input.params })
+      const serverRows = []
+      const pending = capture(conn, { kind: c.input.kind ?? 'batch', sql: c.input.sql, params: c.input.params }, { onTokenRow: row => serverRows.push(row) })
       const started = Date.now()
       while (!fixture.requests.length && Date.now() - started < 5000) await new Promise(r => setTimeout(r, 10))
-      assert.ok(fixture.requests.length, c.input.name + ': HTTP request did not start')
+      if (!fixture.requests.length) assert.fail(c.input.name + ': HTTP request did not start: ' + JSON.stringify(await pending))
       const update = await capture(other, { kind: 'batch', sql: c.input.mutation })
+      if (c.input.cancel) {
+        conn.cancel()
+        let timer
+        const beforeRelease = await Promise.race([
+          pending.then(() => true),
+          new Promise(r => { timer = setTimeout(() => r(false), 500) }),
+        ])
+        clearTimeout(timer)
+        assert.equal(beforeRelease, c.beforeRelease, c.input.name + ': cancellation before HTTP release')
+      }
       fixture.release()
       const result = await pending
+      if (c.serverRows) assert.deepEqual(serverRows, c.serverRows, c.input.name + ': cancelled wire rows')
       compare(update, c.update, c.input.name + ': observer')
       compare(result, c.result, c.input.name + ': inference')
       if (c.input.after) compare(await capture(conn, { kind: 'batch', sql: embeddingAfterSql(c.input, result) }), c.after, c.input.name + ': after module')
@@ -43,7 +55,7 @@ test(`completed ${label} statements remain visible during embedding HTTP waits`,
       if (c.input.cleanup) await query(conn, c.input.cleanup)
       await query(conn, 'DROP TABLE t; DROP EXTERNAL MODEL m;')
     }
-    t.diagnostic(`${expected.cases.length} committed-prefix oracle cases matched`)
+    t.diagnostic(`${expected.cases.length} oracle cases matched`)
   } finally {
     await close(other)
     await close(conn)

@@ -98,6 +98,8 @@ pub(all) struct Runtime {
   mut clock_cursor : Int
   mut record_clock : Bool
   mut rng : UInt64
+  mut cancel_pending : Bool
+  mut cancel_null_warning : Bool
   mut null_eliminated : Bool
   mut count_override : Int64?
   work : Map[Int, Array[Array[@types.Value]]]
@@ -119,6 +121,7 @@ pub(all) struct Runtime {
 }
 pub fn Runtime::begin_attempt(Self, Bool) -> Unit
 pub fn Runtime::charge(Self, Int64) -> Unit raise @types.SqlError
+pub fn Runtime::check_cancel(Self) -> Unit raise @types.SqlError
 pub fn Runtime::clear_caches(Self) -> Unit
 pub fn Runtime::finish_attempt(Self) -> Unit
 pub fn Runtime::new(database~ : String, spid~ : Int, now~ : Int64, seed~ : Int64, server_name? : String, version? : String, build? : (Int, Int, Int)) -> Self

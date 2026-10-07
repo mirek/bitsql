@@ -32,7 +32,7 @@ function streamEntry(token) {
 
 // Runs one step on `connection`. step: { kind: 'batch'|'rpc'|'proc', sql, params? }
 // Never rejects: transport/client failures land in `errors` with `client: true`.
-export function capture(connection, step, { rowLimit = 100000 } = {}) {
+export function capture(connection, step, { rowLimit = 100000, onTokenRow } = {}) {
   return new Promise(resolve => {
     const result = { sets: [], done: [], errors: [], info: [], returnStatus: null, outputs: [], tokens: [], stream: [] }
     let truncated = 0
@@ -57,6 +57,7 @@ export function capture(connection, step, { rowLimit = 100000 } = {}) {
     connection.on('infoMessage', onInfo)
     // tedious calls debug.token for every parsed token, listeners or not.
     connection.debug.token = token => {
+      if (onTokenRow && (token.name === 'ROW' || token.name === 'NBCROW')) onTokenRow(token.columns.map(c => c.value))
       if (token.name.startsWith('DONE')) result.tokens.push({ name: token.name, more: token.more, sqlError: token.sqlError, attention: token.attention, serverError: token.serverError, rowCount: token.rowCount, curCmd: token.curCmd })
       const entry = streamEntry(token)
       const last = result.stream.at(-1)

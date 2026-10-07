@@ -214,6 +214,11 @@ fn stream_aggregate(
 ) -> Array[Row] raise @types.SqlError {
   let args = aggs.map(a => a.arg.map(compile))
   let states = new_states(aggs, 1)
-  stream(ctx, input, row => accumulate(ctx, aggs, args, states, 0, row))
+  stream(ctx, input, row => {
+    accumulate(ctx, aggs, args, states, 0, row)
+    if ctx.rt.cancel_pending && ctx.rt.null_eliminated {
+      ctx.rt.cancel_null_warning = true
+    }
+  })
   [finish_group(aggs, states, 0, [])]
 }

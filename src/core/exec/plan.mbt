@@ -142,8 +142,13 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
     Aggregate(input, keys, aggs, sets~) if keys.is_empty() &&
       sets.is_empty() &&
       fast_aggregates(aggs) => stream_aggregate(ctx, input, aggs)
-    Aggregate(input, keys, aggs, sets~) =>
-      run_aggregate(ctx, run(ctx, input), keys, aggs, sets)
+    Aggregate(input, keys, aggs, sets~) => {
+      let rows = run_aggregate(ctx, run(ctx, input), keys, aggs, sets)
+      if keys.is_empty() {
+        ctx.rt.check_cancel()
+      }
+      rows
+    }
     Window(input, calls) => run_window(ctx, run(ctx, input), calls)
     Apply(left, right, outer~, right_width~) => {
       let out = []
@@ -396,6 +401,11 @@ pub fn stream(
   plan : @ir.Plan,
   emit : (Row) -> Unit raise @types.SqlError,
 ) -> Unit raise @types.SqlError {
+  let consume = emit
+  let emit = row => {
+    consume(row)
+    ctx.rt.check_cancel()
+  }
   match plan {
     Project(input, exprs) => {
       let cs = exprs.map(compile)

@@ -228,6 +228,26 @@ The nine source/model concurrency cases above remain open.
 `embedding-cancellation.expected.json` records cancellation with a held RPC
 HTTP response (`--cancel-prefix --verify`). SQL Server cancels before the
 response is released and preserves the completed insert. It sends an NBCROW
-NULL result before DONEPROC(ERROR) and DONE_ATTN. The current emulator cancels
-and preserves the prefix but omits that row; this capture is not yet registered
-as a passing emulator test.
+NULL result before DONEPROC(ERROR) and DONE_ATTN. The emulator now matches this capture, including the NULL row.
+
+### Embedding cancellation (2026-10-07)
+
+`embedding-cancellation-matrix.expected.json` adds 32 cases, reproducible with
+`node gen/capture-embedding-concurrency.mjs --cancel-matrix --verify`. Together
+with the prefix cancellation case, 33 registered cases verify prompt attention
+before HTTP release, exact wire rows, completion tokens, and connection reuse.
+Raw token-row observation matters: tedious suppresses its ordinary row events
+once the client cancels, although SQL Server can still send a row.
+
+Scalar expressions finish the interrupted embedding as NULL. Surrounding
+COALESCE, sibling columns, subqueries and vector conversion still evaluate;
+streaming SELECT emits that row before cancellation. Scalar COUNT emits 8153
+but no result row, DISTINCT COUNT emits neither, and the captured grouped COUNT
+emits its first group without a warning. INSERT and INSERT OUTPUT roll back the
+interrupted write and emit 3621; OUTPUT metadata precedes the interruption but
+no inserted rows follow. Assignments, TRY, SQL batches, RPCs and an open
+transaction are covered. The preceding transaction/insert remains active after
+cancellation and the follow-up rolls it back.
+
+These captures do not establish all operator shapes or interruption points.
+Concurrent source/model changes and nested statement resumption remain open.

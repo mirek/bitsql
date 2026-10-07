@@ -487,3 +487,19 @@ Full gate passes 1,772 MoonBit and 23,688 client tests, three existing skips,
 zero failures. Parser checks cover 40,611 batches with 11 known differences.
 All 123 controlled SQL/HTTPS cases ran in the client suite; the 28 new prefix
 captures also reproduced on fresh disposable SQL Server oracles.
+
+
+### Embedding cancellation and JSON/vector conversion (2026-10-07)
+
+Thirty-three cancellation cases now cover held HTTP requests, raw wire rows,
+scalar/grouped/distinct aggregates, DML OUTPUT, assignments, nested expressions,
+TRY and open transactions. Controlled SQL/HTTPS coverage reaches 156 cases.
+Native JSON/vector conversion has 21 captured statements, including implicit
+conversion, distinct native error states and TRY_CAST. Broader cancellation
+shapes, row/scan continuation, nested statement resumption and the other open
+2025 requirements remain in scope. No new container has been published.
+
+Full gate passes 1,772 MoonBit and 23,691 client tests, three existing skips,
+zero failures. All 156 controlled SQL/HTTPS cases ran. Parser checks cover
+40,632 batches with 11 known differences. The 32-case cancellation matrix
+also reproduced on a fresh disposable SQL Server instance.

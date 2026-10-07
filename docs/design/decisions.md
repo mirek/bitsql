@@ -1221,5 +1221,18 @@ become SQL errors. The registered prefix fixtures cover batches, dynamic SQL,
 stored-procedure RPCs, output parameters, temporary objects and handle reuse.
 
 This is statement-level resumption. The pending statement still retries, so
-row/scan state, nested control flow and the captured cancellation NULL row
-remain separate unfinished requirements.
+row/scan state and nested control flow remain separate unfinished requirements.
+The cancellation checkpoint below addresses the captured NULL row.
+
+
+### 2026-10-07: poll embedding cancellation after row consumption
+
+An interrupted embedding yields NULL and sets a pure runtime cancellation flag.
+The streaming executor polls after handing the current row to its consumer;
+this preserves a SELECT row or lets a scalar aggregate account for its NULL
+before unwinding. Materialized scalar aggregates and INSERT input have their
+own completion boundary. Scalar assignments poll before their statement is
+allowed to complete. Existing statement rollback and attention rendering handle
+the unwind. Scalar streaming aggregate warnings are retained separately because
+the captured grouped/distinct paths do not emit that warning on interruption.
+The 33 oracle cancellation cases are documented in the external-model reference.

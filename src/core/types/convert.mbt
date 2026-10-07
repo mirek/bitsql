@@ -31,6 +31,8 @@ pub fn cast(
     return match (v, to) {
       (Null, _) => Null
       (String(s), Vector(n, base)) => Vector(vector_parse(s, n, base~))
+      (NativeJson(data), Vector(n, base)) =>
+        Vector(vector_from_json(data, n, base))
       (Vector(data), Vector(n, base)) => {
         if data.base() != base {
           raise vector_base_conversion_error(data.base(), base)
@@ -127,7 +129,9 @@ pub fn try_cast(
   dates? : DateSettings = default_date_settings,
 ) -> Value raise SqlError {
   cast(v, from, to, style?, dates~) catch {
-    SqlError(_) as e if e.is_try_convertible() => Null
+    SqlError(_) as e if e.is_try_convertible() ||
+      (to is Vector(_, _) && (e.number() == 13670 || e.number() == 42204)) =>
+      Null
     e => raise e
   }
 }

@@ -122,6 +122,15 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.read_only_write = None
   let failure = try {
     self.exec_stmt(s)
+    if self.rt.cancel_pending {
+      // A scalar assignment can finish without passing through a row
+      // consumer. Its completion belongs to the interrupted statement.
+      while self.out.length() > out_mark &&
+            self.out.last() is Some(StatementDone(..) | InProcDone(..)) {
+        ignore(self.out.pop())
+      }
+      self.rt.check_cancel()
+    }
     // a write to a READ_ONLY database: 3906 instead of the statement's own
     // output, ending the batch (captured: settings/alter-database)
     if self.read_only_write is Some(ro) {
@@ -193,6 +202,9 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
         _ => ()
       }
       self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
+      if self.rt.cancel_null_warning {
+        self.emit_null_warning(line)
+      }
       self.statement_attention(out_mark, line)
       raise Park
     }

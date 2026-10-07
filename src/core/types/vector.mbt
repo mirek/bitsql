@@ -22,7 +22,28 @@ fn vector_json_error(state : Int, reason : String) -> SqlError {
 }
 
 ///|
-fn JsonTypeParser::vector_reject(self : JsonTypeParser) -> Unit raise SqlError {
+fn JsonTypeParser::vector_reject(
+  self : JsonTypeParser,
+  native : Bool,
+) -> Unit raise SqlError {
+  if native {
+    let (state, reason) = match self.peek() {
+      110 => (14, "Null Not Supported")
+      116 | 102 => (13, "Boolean not supported")
+      34 => (15, "String not Supported")
+      123 => {
+        self.pos += 1
+        self.ws()
+        if self.peek() == 125 {
+          (19, "Empty object Not Suppoted")
+        } else {
+          (20, "Key-Value Not Supported")
+        }
+      }
+      _ => (16, "Malformed JSON")
+    }
+    raise vector_json_error(state, reason)
+  }
   match self.peek() {
     110 => {
       self.literal("null", StringBuilder())
@@ -149,23 +170,49 @@ pub fn vector_parse(
   dimensions : Int,
   base? : VectorBase = Float32,
 ) -> VectorData raise SqlError {
+  parse_vector(text, dimensions, base, false)
+}
+
+///|
+fn vector_from_json(
+  data : JsonData,
+  dimensions : Int,
+  base : VectorBase,
+) -> VectorData raise SqlError {
+  parse_vector(data.checked_text(), dimensions, base, true)
+}
+
+///|
+fn parse_vector(
+  text : String,
+  dimensions : Int,
+  base : VectorBase,
+  native : Bool,
+) -> VectorData raise SqlError {
   if dimensions < 1 || dimensions > (if base == Float16 { 3996 } else { 1998 }) {
     raise not_supported("invalid \{base.name()} vector descriptor")
   }
   let p : JsonTypeParser = { b: @utf8.encode(text), pos: 0, }
   p.ws()
   if p.peek() != 91 {
-    p.vector_reject()
+    p.vector_reject(native)
   }
   p.pos += 1
   p.ws()
   if p.peek() == 93 {
-    raise vector_json_error(8, "Empty Array not Supported")
+    raise vector_json_error(
+      if native {
+        18
+      } else {
+        8
+      },
+      "Empty Array not Supported",
+    )
   }
   let components : Array[Double] = []
   while true {
     if !(p.peek() == 45 || (p.peek() >= 48 && p.peek() <= 57)) {
-      p.vector_reject()
+      p.vector_reject(native)
     }
     components.push(p.vector_number(base))
     if components.length() > 3996 {
@@ -193,7 +240,7 @@ pub fn vector_parse(
     raise sql_error(
       42204,
       "The vector dimensions \{dimensions} and \{components.length()} do not match.",
-      state=4,
+      state=if native { 2 } else { 4 },
     )
   }
   { components, base_type: base, }

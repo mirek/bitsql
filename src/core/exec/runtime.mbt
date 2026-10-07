@@ -40,6 +40,9 @@ pub(all) struct Runtime {
   mut clock_cursor : Int
   mut record_clock : Bool
   mut rng : UInt64
+  /// An interrupted external expression finishes its current row before unwind.
+  mut cancel_pending : Bool
+  mut cancel_null_warning : Bool
   /// Set when an aggregate skipped a NULL input; the session turns it into
   /// INFO 8153 after the statement's rows, then clears it.
   mut null_eliminated : Bool
@@ -108,6 +111,8 @@ pub fn Runtime::new(
     clock_cursor: 0,
     record_clock: false,
     rng: seed.reinterpret_as_uint64() ^ 0x9E3779B97F4A7C15UL,
+    cancel_pending: false,
+    cancel_null_warning: false,
     null_eliminated: false,
     count_override: None,
     work: Map([]),
@@ -268,6 +273,8 @@ pub fn no_vector_search(
 
 ///|
 pub fn Runtime::begin_attempt(self : Runtime, replay : Bool) -> Unit {
+  self.cancel_pending = false
+  self.cancel_null_warning = false
   if !replay {
     self.clock_reads.clear()
     self.clock_count = 0
@@ -306,4 +313,13 @@ fn Runtime::read_clock(self : Runtime) -> Int64 {
     self.clock_cursor += 1
   }
   self.clock_reads[self.clock_cursor].1
+}
+
+///|
+/// Poll after the current row has reached its consumer. An aggregate can
+/// account for NULLs before cancellation; a SELECT can emit the final row.
+pub fn Runtime::check_cancel(self : Runtime) -> Unit raise @types.SqlError {
+  if self.cancel_pending {
+    raise @types.Suspend
+  }
 }

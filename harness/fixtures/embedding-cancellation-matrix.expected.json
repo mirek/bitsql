@@ -1,0 +1,2395 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": [
+    {
+      "input": {
+        "name": "scalar",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "columns",
+        "sql": "SELECT 1 AS before_value,AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding,2 AS after_value;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1,null,2]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "coalesce",
+        "sql": "SELECT COALESCE(CONVERT(nvarchar(max),AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)),N'fallback') AS value;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [["fallback"]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "two-calls",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS a,AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m) AS b;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null,null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "rows",
+        "sql": "SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1,null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "aggregate",
+        "sql": "SELECT COUNT(AI_GENERATE_EMBEDDINGS(s USE MODEL m)) AS n FROM t;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [
+          {
+            "number": 8153,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 1,
+            "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+          }
+        ],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"INFO","number":8153},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "sorted",
+        "sql": "SELECT s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY s DESC;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [["second",null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "insert",
+        "sql": "INSERT dest SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"INFO","number":3621},{"name":"DONEPROC","status":2,"curCmd":224},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "assignment",
+        "sql": "DECLARE @j json=AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m); SELECT @j;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"DONEPROC","status":2,"curCmd":224},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "predicate",
+        "sql": "SELECT id FROM t WHERE AI_GENERATE_EMBEDDINGS(s USE MODEL m) IS NULL;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "subquery",
+        "sql": "SELECT (SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)) AS embedding;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "vector",
+        "sql": "SELECT CAST(AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS vector(2)) AS embedding;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-scalar",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-columns",
+        "sql": "SELECT 1 AS before_value,AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding,2 AS after_value;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1,null,2]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":3},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-coalesce",
+        "sql": "SELECT COALESCE(CONVERT(nvarchar(max),AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)),N'fallback') AS value;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [["fallback"]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-two-calls",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS a,AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m) AS b;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null,null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-rows",
+        "sql": "SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1,null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-aggregate",
+        "sql": "SELECT COUNT(AI_GENERATE_EMBEDDINGS(s USE MODEL m)) AS n FROM t;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [
+          {
+            "number": 8153,
+            "state": 1,
+            "class": 0,
+            "lineNumber": 1,
+            "message": "Warning: Null value is eliminated by an aggregate or other SET operation."
+          }
+        ],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"INFO","number":8153},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-sorted",
+        "sql": "SELECT s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY s DESC;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [["second",null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"second\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-insert",
+        "sql": "INSERT dest SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":253},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":253},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-assignment",
+        "sql": "DECLARE @j json=AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m); SELECT @j;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"DONE","status":2,"curCmd":193},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-predicate",
+        "sql": "SELECT id FROM t WHERE AI_GENERATE_EMBEDDINGS(s USE MODEL m) IS NULL;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-subquery",
+        "sql": "SELECT (SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)) AS embedding;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "batch-vector",
+        "sql": "SELECT CAST(AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS vector(2)) AS embedding;",
+        "kind": "batch",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT COUNT(*) AS remaining FROM dest;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONE","status":2,"curCmd":193},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ],
+      "after": {
+        "sets": [{"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "aggregate-distinct",
+        "sql": "SELECT COUNT(DISTINCT CONVERT(nvarchar(100),AI_GENERATE_EMBEDDINGS(s USE MODEL m))) AS n FROM t;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"DONEPROC","status":2,"curCmd":224},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "grouped",
+        "sql": "SELECT id,COUNT(AI_GENERATE_EMBEDDINGS(s USE MODEL m)) AS n FROM t GROUP BY id;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[1,0]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "union",
+        "sql": "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding UNION ALL SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m);",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "insert-output",
+        "sql": "INSERT dest OUTPUT inserted.id,inserted.embedding SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"INFO","number":3621},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "assignment-select",
+        "sql": "DECLARE @j json; SELECT @j=AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t; SELECT @j;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [{"name":"DONEPROC","status":2,"curCmd":224},{"name":"DONE","status":32,"curCmd":253}],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "nested-subqueries",
+        "sql": "SELECT (SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m)) AS a,(SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m)) AS b;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null,null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "try",
+        "sql": "BEGIN TRY SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS caught; END CATCH;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":349},
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"DONEINPROC","status":1,"curCmd":349},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[0]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[0]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":null,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":192}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":0,"curCmd":192}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    },
+    {
+      "input": {
+        "name": "transaction",
+        "sql": "BEGIN TRAN; INSERT dest VALUES(3,NULL); SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding; COMMIT;",
+        "kind": "rpc",
+        "cancel": true,
+        "setup": "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+        "mutation": "SELECT 1 AS alive;",
+        "after": "SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;",
+        "cleanup": "DROP TABLE dest;"
+      },
+      "serverRows": [[null]],
+      "update": {
+        "sets": [{"columns":[{"name":"alive","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [],
+        "done": [],
+        "errors": [{"client":true,"code":"ECANCEL","message":"Canceled.","number":null}],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":212},
+          {"name":"DONEINPROC","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONEPROC","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":224},
+          {"name":"DONE","more":false,"sqlError":false,"attention":true,"serverError":false,"curCmd":253}
+        ],
+        "stream": [
+          {"name":"ENVCHANGE","type":"BEGIN_TXN"},
+          {"name":"DONEINPROC","status":1,"curCmd":212},
+          {"name":"DONEINPROC","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"NBCROW","count":1},
+          {"name":"DONEPROC","status":2,"curCmd":224},
+          {"name":"DONE","status":32,"curCmd":253}
+        ],
+        "rowCount": null
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"first\"}"
+        }
+      ],
+      "after": {
+        "sets": [
+          {
+            "columns": [{"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],
+            "rows": [[1]]
+          },
+          {"columns":[{"name":"remaining","type":"IntN","length":4,"precision":null,"scale":null,"flags":1,"collation":null}],"rows":[[1]]}
+        ],
+        "done": [
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"done","rowCount":null,"more":false}
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":192},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"curCmd":210}
+        ],
+        "stream": [
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":1,"curCmd":192},
+          {"name":"ENVCHANGE","type":"ROLLBACK_TXN"},
+          {"name":"DONE","status":0,"curCmd":210}
+        ],
+        "rowCount": 2
+      },
+      "beforeRelease": true
+    }
+  ]
+}

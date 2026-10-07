@@ -96,10 +96,10 @@ pub fn can_convert_implicitly(from : SqlType, to : SqlType) -> Bool {
     return true
   }
   match (ff, tf) {
-    // json: only character types convert to it implicitly; it converts to
-    // nothing implicitly (captured json4: 257 to strings, 206 otherwise)
-    (FString, FVector) | (FVector, FString | FJson) => true
+    // Native JSON also feeds vector conversion (json-vector-conversion).
+    (FString | FJson, FVector) | (FVector, FString | FJson) => true
     (FVector, _) | (_, FVector) => false
+    // JSON has no other implicit outward conversion.
     (FString, FJson) => true
     (FJson, _) | (_, FJson) => false
     // sql_variant: anything it can hold converts to it implicitly; it

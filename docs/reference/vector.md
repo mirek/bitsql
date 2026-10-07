@@ -395,3 +395,15 @@ Twenty-nine mutation cases pass focused verification (80 with neighboring
 DDL/lifecycle cases). The thirtieth retains an open engine prerequisite:
 SET IMPLICIT_TRANSACTIONS ON is explicitly unsupported, so that creation
 context is not yet verified in bitsql and is not registered as passing.
+
+
+### Native JSON conversion (2026-10-07)
+
+`sql2025/json-vector-conversion.sql` captures 21 statements. Native JSON converts
+implicitly and explicitly to vector, including embedding results. Its rejection
+states differ from character input: 13670 states 13/14/15 for boolean/NULL/string,
+16 for nested arrays, 18 for an empty root array, 19 for an empty object and 20
+for key/value objects. Dimension mismatch uses 42204 state 2 (text uses state 4).
+TRY_CAST turns captured 13670 and 42204 value failures into NULL; forbidden type
+conversions still fail at binding. The native path preserves JSON validation
+before feeding its numeric values into the vector rounding code.

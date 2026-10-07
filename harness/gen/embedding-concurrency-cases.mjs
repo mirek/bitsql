@@ -66,3 +66,38 @@ embeddingProcPrefixCases.push({
   ],
   after: { output: 'handle', sql: 'EXEC sp_execute {handle},3; SELECT id,s FROM t ORDER BY id;' },
 })
+
+export const embeddingCancellationMatrixCases = [
+  ['scalar', "SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;"],
+  ['columns', "SELECT 1 AS before_value,AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding,2 AS after_value;"],
+  ['coalesce', "SELECT COALESCE(CONVERT(nvarchar(max),AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)),N'fallback') AS value;"],
+  ['two-calls', "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS a,AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m) AS b;"],
+  ['rows', 'SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t;'],
+  ['aggregate', 'SELECT COUNT(AI_GENERATE_EMBEDDINGS(s USE MODEL m)) AS n FROM t;'],
+  ['sorted', 'SELECT s,AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM t ORDER BY s DESC;'],
+  ['insert', 'INSERT dest SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t;'],
+  ['assignment', "DECLARE @j json=AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m); SELECT @j;"],
+  ['predicate', 'SELECT id FROM t WHERE AI_GENERATE_EMBEDDINGS(s USE MODEL m) IS NULL;'],
+  ['subquery', "SELECT (SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m)) AS embedding;"],
+  ['vector', "SELECT CAST(AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS vector(2)) AS embedding;"],
+].map(([name, sql]) => ({ name, sql, kind: 'rpc', cancel: true,
+  setup: "CREATE TABLE t(id int PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first'),(2,N'second'); CREATE TABLE dest(id int,embedding json);",
+  mutation: 'SELECT 1 AS alive;', after: 'SELECT COUNT(*) AS remaining FROM dest;', cleanup: 'DROP TABLE dest;',
+}))
+
+embeddingCancellationMatrixCases.push(...embeddingCancellationMatrixCases.map(c => ({
+  ...c, name: 'batch-' + c.name, kind: 'batch',
+})))
+for (const [name, sql] of [
+  ['aggregate-distinct', 'SELECT COUNT(DISTINCT CONVERT(nvarchar(100),AI_GENERATE_EMBEDDINGS(s USE MODEL m))) AS n FROM t;'],
+  ['grouped', 'SELECT id,COUNT(AI_GENERATE_EMBEDDINGS(s USE MODEL m)) AS n FROM t GROUP BY id;'],
+  ['union', "SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding UNION ALL SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m);"],
+  ['insert-output', 'INSERT dest OUTPUT inserted.id,inserted.embedding SELECT id,AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t;'],
+  ['assignment-select', 'DECLARE @j json; SELECT @j=AI_GENERATE_EMBEDDINGS(s USE MODEL m) FROM t; SELECT @j;'],
+  ['nested-subqueries', "SELECT (SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m)) AS a,(SELECT AI_GENERATE_EMBEDDINGS(N'second' USE MODEL m)) AS b;"],
+  ['try', "BEGIN TRY SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS caught; END CATCH;"],
+  ['transaction', "BEGIN TRAN; INSERT dest VALUES(3,NULL); SELECT AI_GENERATE_EMBEDDINGS(N'first' USE MODEL m) AS embedding; COMMIT;"],
+]) embeddingCancellationMatrixCases.push({
+  ...embeddingCancellationMatrixCases[0], name, sql,
+  after: 'SELECT @@TRANCOUNT AS trancount; SELECT COUNT(*) AS remaining FROM dest; IF @@TRANCOUNT>0 ROLLBACK;',
+})

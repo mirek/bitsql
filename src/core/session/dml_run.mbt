@@ -1221,7 +1221,9 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       }
       start_rows()
       sent = self.output_header(outputs)
-      (@exec.run(self.ctx(), bq.plan), bq.columns.map(c => c.ty))
+      let rows = @exec.run(self.ctx(), bq.plan)
+      self.rt.check_cancel()
+      (rows, bq.columns.map(c => c.ty))
     }
     DefaultValues => {
       start_rows()

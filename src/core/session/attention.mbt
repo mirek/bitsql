@@ -112,7 +112,12 @@ fn Session::statement_attention(
   self.attn.in_try = self.try_depth > 0
   let mark = @cmp.minimum(out_mark, self.out.length())
   let result_started = self.out[mark:].iter().any(x => x is ResultSet(_))
-  if self.try_depth > 0 {
+  if self.rt.cancel_pending {
+    self.attn.in_try = false
+    if self.cur_cmd == 193 {
+      self.attn.cmd = 193
+    }
+  } else if self.try_depth > 0 {
     self.done(self.cur_cmd)
   } else if result_started {
     self.attn.cmd = self.cur_cmd

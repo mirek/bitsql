@@ -10,6 +10,9 @@ fn Session::embedding(
   self : Session,
   args : Array[@types.Value],
 ) -> @types.Value raise @types.SqlError {
+  if self.attn.hit {
+    return Null
+  }
   if !self.rest_enabled() {
     raise @types.sql_error(
       31643,
@@ -77,6 +80,8 @@ fn Session::embedding(
     None => {
       if self.attn.cancelling {
         self.attn.hit = true
+        self.rt.cancel_pending = true
+        return Null
       }
       self.embedding_pending = Some(index)
       raise @types.Suspend
