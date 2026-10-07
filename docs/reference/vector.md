@@ -289,5 +289,43 @@ that graph bytes or tied selections reproduce across builds. The component
 uses primary-key order for equal distances. This does not resolve the separate
 builder candidate-sort contract, where tie order changes non-tied graph edges.
 Mixed tied/non-tied exploration needs further capture coverage. Graph
-construction and SQL binding/execution remain unfinished; integration must
-also retain the key lookup with the index rather than rebuilding it per query.
+construction and SQL binding/execution were unfinished at this checkpoint.
+The builder checkpoint below adds the persistent graph lookup needed by integration.
+
+### Verified builder and seed components (2026-10-07)
+
+`vector-build` and `vector-build-extended` capture 34 builds and their searches,
+including all three metrics, float32/float16, dimensions 3/8/16, signed keys,
+reverse insertion order, MAXDOP 1/8/16/32, and four 5,000-row builds. Pure-core
+tests reconstruct all 30,308 captured neighbor sets and reproduce 68 searches
+against those reconstructed graphs. Comparison treats neighbor order separately:
+pending reciprocal order can vary between oracle builds. Captures retain the
+raw bytes; generated tests compare each node's sorted neighbor keys.
+
+The generated build query's actual DOP is captured with each graph. Omitting
+MAXDOP does not imply a fixed 32: one capture used 23, and an earlier default
+500-row graph matched the 240-row seed batch rather than 256. With 30 graph rows
+per page, the initial batch uses the captured page/DOP least common multiple;
+the start row is added separately. The 5,000-row fixtures exercise the first
+batch-growth threshold. Later insertion batches search a snapshot of the prior
+graph with L=48/M=8 and prune the union of the final frontier and visited nodes.
+Reciprocal edges accumulate separately until 14 pending keys trigger repruning.
+
+Seed selection has 88 exact checks: 54 cancellation-sensitive fixtures in
+`vector-seed` and the 34 complete builds. The float32 seed aggregate updates an
+incremental mean, rounding subtraction, division, and addition to float32 at
+each row. Summing then dividing gives different seeds for the captured large
+cancellation cases. Float16 instead selects the first sampled row; six graph
+fixtures inserted in reverse key order and three boundary captures verify that
+this follows the sampled clustered scan, not insertion order. The 75 standalone
+seed/boundary fixtures reproduced independently (75/75).
+
+`VectorGraph` retains an immutable key lookup for repeated searches and
+snapshots. Construction, seed selection, and traversal are pure components;
+they are still not exposed through SQL CREATE VECTOR INDEX/VECTOR_SEARCH.
+The caller must supply the ordered repeatable source sample and the build
+alignment. Sampling beyond the 10,000-row target, larger growth thresholds,
+tied seed/candidate selection, SQL catalogs/mutations, and binding/execution
+remain open. `vector-seed-edges` also preserves empty-index StartId=0, tied
+seeds, and the 8115 followed by 42234 build-failure diagnostics. Failed builds
+can leave index metadata present; the SQL integration must preserve that state.

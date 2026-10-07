@@ -1,0 +1,373 @@
+{
+  "cases": [
+    {
+      "name": "cosine-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3));"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[0,0,0]'),(-10,'[0,0,0]'),(0,'[0,0,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-identical",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]'),(-10,'[1,2,3]'),(0,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-opposite-large",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[-3e+38,1,0]'),(2,'[3e+38,1,0]'),(3,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-large-same",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[3e+38,1,0]'),(2,'[3e+38,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "cosine-float16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        },
+        {
+          "kind": "batch",
+          "sql": " CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3,float16)); INSERT t VALUES (1,'[-1000,1,0]'),(2,'[1,1,0]'),(3,'[1000,1,0]'),(4,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3));"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[0,0,0]'),(-10,'[0,0,0]'),(0,'[0,0,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-identical",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]'),(-10,'[1,2,3]'),(0,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-opposite-large",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[-3e+38,1,0]'),(2,'[3e+38,1,0]'),(3,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-large-same",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[3e+38,1,0]'),(2,'[3e+38,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "euclidean-float16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        },
+        {
+          "kind": "batch",
+          "sql": " CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3,float16)); INSERT t VALUES (1,'[-1000,1,0]'),(2,'[1,1,0]'),(3,'[1000,1,0]'),(4,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='euclidean',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3));"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-single",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-zero",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[0,0,0]'),(-10,'[0,0,0]'),(0,'[0,0,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-identical",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (7,'[1,2,3]'),(-10,'[1,2,3]'),(0,'[1,2,3]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-opposite-large",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[-3e+38,1,0]'),(2,'[3e+38,1,0]'),(3,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-large-same",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES (1,'[3e+38,1,0]'),(2,'[3e+38,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    },
+    {
+      "name": "dot-float16",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON;"
+        },
+        {
+          "kind": "batch",
+          "sql": " CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3,float16)); INSERT t VALUES (1,'[-1000,1,0]'),(2,'[1,1,0]'),(3,'[1000,1,0]'),(4,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='dot',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT build_parameters FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t');"
+        }
+      ]
+    }
+  ]
+}

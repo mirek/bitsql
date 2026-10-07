@@ -13,9 +13,13 @@ pub fn qualified_key(String, String) -> String
 
 pub fn same_index_entries(Table, Array[@types.Value], Array[@types.Value]) -> Bool
 
+pub fn vector_build(Array[(Int, @types.VectorData)], Int, VectorMetric, alignment? : Int) -> VectorGraph raise @types.SqlError
+
 pub fn vector_prune(Array[VectorCandidate], VectorMetric) -> Array[Int] raise @types.SqlError
 
 pub fn vector_search(Array[VectorNode], Int, @types.VectorData, VectorMetric, Int) -> Array[VectorCandidate] raise @types.SqlError
+
+pub fn vector_seed(Array[(Int, @types.VectorData)], VectorMetric) -> Int? raise @types.SqlError
 
 // Errors
 
@@ -276,6 +280,13 @@ pub(all) struct VectorCandidate {
   vector : @types.VectorData
   distance : Double
 }
+
+pub struct VectorGraph {
+  // private fields
+}
+pub fn VectorGraph::new(Array[VectorNode], Int) -> Self
+pub fn VectorGraph::nodes(Self) -> Array[VectorNode]
+pub fn VectorGraph::search(Self, @types.VectorData, VectorMetric, Int) -> Array[VectorCandidate] raise @types.SqlError
 
 pub(all) enum VectorMetric {
   Cosine

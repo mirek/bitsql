@@ -276,3 +276,11 @@ scripts/check.sh                 # everything CI runs; must be green to push
   generated lexicographically sorted string table. The exhaustive
   `sql2025/collation-property-inventory` capture caught false lookup misses
   when those orders were mixed.
+
+- 2026-10-07: tens of thousands of nested vector/neighbor literals in one
+  generated test file made `moonc link-core` use ~68 GiB RSS. Store large
+  oracle fixtures as multiline JSON string literals and decode them in a
+  small test helper (`scripts/gen-vector-build-tests.py`). Keep each source
+  line below 65,535 columns: a giant single-line string warns 0033. This
+  changes representation, not expected data or assertions. The revised
+  153-test storage run took 63 seconds with ~1.7 GiB peak RSS.
