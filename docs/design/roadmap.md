@@ -33,8 +33,10 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
 - [x] Browser adapter tested against checked-in SQL Server smoke captures;
   production browser checks cover safe rendering, state reset, stop and mobile layout.
 - [x] GitHub Pages workflow builds/tests `website/dist` from main.
-- [ ] Repository owner selects GitHub Actions in Settings → Pages and verifies
-  the first published site at https://mirek.github.io/bitsql/.
+- [x] Repository owner enabled GitHub Pages and confirmed publication at
+  https://mirek.github.io/bitsql/.
+- [x] Homepage highlights the 0.1.24 validation total: 25,465 passing tests and
+  client checks, with the breakdown and three additional skips disclosed.
 
 ## Phase 0: project setup
 
