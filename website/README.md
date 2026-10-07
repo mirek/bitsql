@@ -71,6 +71,8 @@ files is needed. The workflow is scoped to website publishing; the local
 `scripts/check.sh` remains the gate for the full emulator/client suite.
 
 The workflow pins the same compiler/core version as the repository and runs
-on native amd64. MoonBit's versioned binary archives have a retention window;
+on native amd64. The archive binaries need executable permissions restored
+before invoking `moon`; the workflow does this before bundling the JS core.
+MoonBit's versioned binary archives have a retention window;
 when refreshing the pinned toolchain, update the workflow and vendored docs
 together. The workflow must successfully build before deployment is attempted.

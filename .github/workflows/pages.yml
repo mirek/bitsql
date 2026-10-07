@@ -40,6 +40,7 @@ jobs:
           mkdir -p "$HOME/.moon"
           curl --fail --location --retry 3 "https://cli.moonbitlang.com/binaries/$MOON_VERSION/moonbit-linux-x86_64.tar.gz" | tar xz -C "$HOME/.moon"
           curl --fail --location --retry 3 "https://cli.moonbitlang.com/cores/core-$MOON_VERSION.tar.gz" | tar xz -C "$HOME/.moon/lib"
+          chmod +x "$HOME/.moon/bin/"* "$HOME/.moon/bin/internal/tcc"
           export PATH="$HOME/.moon/bin:$PATH"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
           moon -C "$HOME/.moon/lib/core" bundle --warn-list -a --target js
