@@ -2,7 +2,7 @@
 # Build the binary first (no MoonBit toolchain inside the image):
 #   moon build --target native --release
 #   docker build -t bitsql .
-# Multi-arch release (amd64 + arm64 cross build): scripts/docker-publish.sh
+# Native-host release (run separately on each architecture): scripts/docker-publish.sh
 # Run:  docker run -p 1433:1433 bitsql --database app
 # BASE: scripts/docker-publish.sh pins each arch's digest (the classic
 # builder would otherwise reuse the locally cached amd64 image for arm64).

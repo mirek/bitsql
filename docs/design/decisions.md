@@ -1249,3 +1249,26 @@ REST disable, while the following call sees the change. Input differences
 remain explicit failures pending real row/scan continuation. The nine context
 captures also cover API/parameter changes and cancellation; see the external
 model reference for the behavioral evidence and outstanding scope.
+
+
+## 2026-10-07: Bound inference concurrency for the CI release
+
+Use an explicit unsupported error for committed table changes during pending
+embedding HTTP, rather than expanding this release into retained row/scan
+execution. Compare immutable table metadata/data after rollback and before
+retry, including disappeared tables/rows. The conservative check also rejects
+unrelated committed table changes; external-model/configuration changes remain
+supported. See [external-model contracts](../reference/external-models.md).
+This implements the user-authorized CI scope in
+[future work](sql2025-future-work.md); it does not claim concurrency equivalence.
+
+
+## 2026-10-07: Validate releases on native hosts only
+
+Per user instruction, amd64 hosts build/test/benchmark amd64 and ARM64 hosts do
+the same for ARM64. Stop cross-compilation/QEMU work by default; separate native
+hosts own architecture coverage. Releases may publish one verified architecture
+first, then add another validated architecture of the same version. Never mix
+versions in one manifest; coordinate manifest writes across hosts. The ongoing
+0.1.24 ARM64 emulation run was stopped, and ARM64 publication is deferred to its
+native host. The amd64 full release gate passed before this workflow change.

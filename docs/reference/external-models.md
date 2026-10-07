@@ -269,3 +269,20 @@ reached calls look up current model/configuration state. Replayed input changes
 still produce an explicit unsupported error until row/scan resumption is
 implemented. This checkpoint does not establish nested module or DML query
 binding retention, or solve source-row concurrency.
+
+### CI release concurrency boundary (2026-10-07)
+
+Until pending rows/scans have true continuation, any committed table data or
+schema change in any database during an embedding HTTP wait raises 50100,
+severity 16 (`Emulator: concurrent table changes during embedding HTTP is not
+supported.`). This intentionally includes unrelated tables. Model/configuration
+changes are excluded and retain their captured behavior. The snapshot is taken
+after pending-statement rollback and checked inside normal statement error
+handling, preserving other sessions' committed work and connection reuse.
+
+The six source mutation cases from `embedding-concurrency.expected.json` are
+registered as explicit emulator rejection tests in
+`embedding-concurrency-guard.test.mjs`; they are not claimed as SQL Server
+concurrency equivalence. Before the guard, deleting every source row silently
+returned success because no embedding call was replayed. The broader work is
+[deferred](../design/sql2025-future-work.md).

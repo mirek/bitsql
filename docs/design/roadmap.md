@@ -14,6 +14,14 @@ The user authorized deferring less-used 2025 functionality for the CI-focused
 release. See [future work](sql2025-future-work.md); unchecked deep feature audits
 below remain tracked but do not all block publication. Known false-green risks,
 local/client/ORM verification and publication remain release requirements.
+Native-host policy: amd64 hosts validate/publish amd64; ARM64 hosts validate/publish
+ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
+
+- [x] 0.1.24 runtime candidate: 1,772 MoonBit tests and 23,693 client checks pass,
+  three existing skips; all four ORM workloads have no new differences.
+- [x] Concurrent table changes during embedding HTTP fail explicitly (six
+  mutation regressions); full row/scan continuation is deferred.
+- [ ] Publish the native amd64 0.1.24 image and verify its registry manifest.
 
 ## Phase 0: project setup
 

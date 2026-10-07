@@ -583,3 +583,16 @@ There is no SQL-file directive for this opt-in.
   tests come from `scripts/gen-embedding-tests.py`. Certificate setup, automatic
   Docker port changes after restart, and the explicitly fatal malformed-options
   case are documented in `docs/reference/external-models.md`.
+
+
+### Native architecture release policy (2026-10-07)
+
+User instruction: each host builds, tests and benchmarks its own architecture
+only (amd64 on amd64, ARM64 on ARM64). This supersedes the historical cross-build
+and QEMU workflows above. Do not use `FULL_ARM64_SMOKE`, foreign runtime downloads
+or emulated SQL Server containers by default. Use checked-in oracle captures or
+a remote oracle when a native oracle is unavailable. `scripts/docker-publish.sh`
+builds/tests/publishes the native architecture and preserves other already
+published architectures of that same version. Coordinate manifest writes across
+hosts. Publishing the verified native architecture is sufficient for this host's
+release; another host can add its architecture after its native checks pass.

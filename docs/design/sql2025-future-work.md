@@ -17,9 +17,10 @@ HTTP execution. The topic references describe exact coverage and limitations;
 this is not a claim of complete SQL Server 2025 equivalence.
 
 Release gates are `scripts/check.sh`, ORM compatibility, refreshed performance
-measurements, a coherent version bump, pushed commits, amd64/arm64 release
-validation, and publication verified in the registry. Publishing the new
-container remains the definition of done.
+measurements, a coherent version bump, pushed commits, native-host release
+validation, and publication verified in the registry. Each architecture is
+validated on its own native host; foreign architecture work is not a gate.
+Publishing the new container remains the definition of done.
 
 ## Deferred work
 

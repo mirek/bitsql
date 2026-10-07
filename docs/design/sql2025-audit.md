@@ -520,7 +520,8 @@ release requirements. Deferred functionality is not claimed as supported.
 The release path is now bounded: finish the model-context checkpoint, reject
 known unsupported execution paths that could silently pass application tests,
 run the local gate and ORM compatibility checks, refresh release measurements,
-bump the version, and validate/publish both container architectures.
+bump the version, and validate/publish the native host architecture. Separate
+native hosts own other architectures, per the subsequent user instruction.
 
 ### In-flight model context checkpoint (2026-10-07)
 
@@ -533,3 +534,21 @@ release completion; no new container has been published.
 Full gate passes 1,772 MoonBit and 23,692 client tests, three existing skips,
 zero failures. All 165 controlled SQL/HTTPS cases ran. ORM comparison has no
 new differences: 224 matching steps and two existing TypeORM ordering differences.
+
+
+### Native amd64 0.1.24 release candidate (2026-10-07)
+
+The exact amd64 release binary passes the full gate: 1,772 MoonBit tests,
+23,693 client checks, three existing skips and zero failures. All 165 controlled
+SQL/HTTPS cases ran; six concurrent source mutations now explicitly reject
+unsupported replay instead of silently succeeding. ORM comparison has 224
+matching steps and two existing TypeORM ordering differences. Measurements are
+updated in the [performance notes](performance.md). Publication remains pending.
+
+Per subsequent user instruction, architecture work is native-host only. The
+ARM64 QEMU run was stopped; its first attempt had 884 matches and two timeouts,
+so it is not claimed as a passing ARM64 release. The revised release workflow
+builds/tests only the host architecture, preserves other already-published
+architectures of the same version, and fails on registry lookup errors rather
+than dropping their entries. Shell syntax and mocked native publication checks
+pass (new version, existing other-architecture entry, registry network failure).

@@ -42,6 +42,15 @@ the top priority: a false green is worse than an explicit "not supported" error.
 - Expected outputs are captured from real SQL Server, never hand-written.
 - Push straight to `main` (no PR flow yet), often, but only when
   `scripts/check.sh` is green locally. No CI yet, on purpose.
+- **Native host architecture only:** on amd64 hosts build, run, test and
+  benchmark amd64; on ARM64 hosts do the same for ARM64. Do not cross-compile,
+  run QEMU/binfmt, or spend time validating foreign architectures unless the
+  user explicitly requests it. Separate agents on native hosts own each
+  architecture. If an oracle image is foreign, use checked-in captures or a
+  remote oracle instead of emulating it. A release may publish the verified
+  host architecture first; add other architectures only after native-host
+  validation. Combine only the same version in a manifest and coordinate
+  manifest updates between hosts.
 - **Shared host:** other agents run msduck servers and MSSQL containers here.
   bitsql uses ports 47300–47399 (emulator 47333, oracle MSSQL 47314, or port 0)
   and docker containers named `bitsql-*`. Never stop containers you didn't start.

@@ -1169,3 +1169,31 @@ were verified at `sha256:bafd4f3e9a492fce12d1209ac92a227450c84b94945f4c60487f3e0
 Both images carry source revision `b5b08e2b1f5675948ab2841eb8749fbcfa6f57c7`;
 metadata-only stamping preserved their tested filesystem layers. The amd64
 registry layers total 12.5013 MiB compressed.
+
+
+## 2026-10-07: 0.1.24 SQL Server 2025 CI release
+
+Measured the exact tested amd64 image on the native amd64 host. Image size is
+39.8 MiB; idle memory 5.1 MiB, post-workload memory 48.1 MiB. The checked
+24 query/DML shapes total 235 ms versus SQL Server’s 636 ms (medians of five
+runs per shape); five 1000-query point-read batches have median 126 ms versus
+113 ms. This broad functionality release does not claim a point-read speedup.
+The previous release measured 117 ms versus 123 ms; these separate runs do not
+isolate a code regression from host/run variability.
+
+Cold start is **one successful startup per target**, 144 ms versus 2.688 s.
+Two earlier five-start attempts failed when the disposable SQL Server container
+asserted `!currentWorker->IsPreemptiveOnEntry()` in `NtumWaiter.cpp:444`, on
+startup 2 and startup 5 respectively. Their incomplete measurements were not
+used. Query/DML and point-read repetitions remain five; no timing samples were
+selected or removed from the completed run. Do not treat the single cold-start
+sample as equivalent evidence to previous five-start medians.
+
+Evidence: `harness/out/bench-compare-0.1.24.json`,
+`harness/out/release-0.1.24-benchmark.log`, and the two
+`release-0.1.24-benchmark-oracle-crash*.log` files. Full native validation:
+1,772 MoonBit tests, 23,693 client checks, three existing skips, zero failures;
+ORM comparison has 224 matching steps and two known TypeORM ordering differences.
+ARM64 validation/publication is assigned to a native ARM64 host under the new
+user instruction; this host stopped its QEMU run and does not claim ARM64
+release verification.

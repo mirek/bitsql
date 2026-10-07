@@ -106,7 +106,13 @@ fn Session::embedding(
 
 ///|
 pub fn Session::pending_http(self : Session) -> @types.HttpRequest? {
-  self.embedding_pending.map(i => self.embeddings[i].request)
+  guard self.embedding_pending is Some(i) else { return None }
+  // The engine asks after the pending statement has rolled back. Keep the
+  // committed table state, excluding unrelated model/configuration catalogs.
+  if self.http_tables is None {
+    self.http_tables = Some(copy_map(self.server.dbs))
+  }
+  Some(self.embeddings[i].request)
 }
 
 ///|
@@ -131,4 +137,38 @@ pub fn Session::complete_http(
     },
   )
   self.embedding_pending = None
+}
+
+///|
+/// Query replay cannot retain a consumed row or safely observe changed unread
+/// rows yet. Fail closed even when deletion means no embedding is re-evaluated.
+fn Session::check_http_tables(self : Session) -> Unit raise @types.SqlError {
+  guard self.http_tables is Some(before) else { return }
+  self.http_tables = None
+  let changed = before.length() != self.server.dbs.length() ||
+    before
+    .iter()
+    .any(pair => {
+      let (name, old) = pair
+      match self.server.dbs.get(name) {
+        None => true
+        Some(now) => {
+          let tables = old.tables()
+          tables.length() != now.tables().length() ||
+          tables
+          .iter()
+          .any(table => {
+            match now.table(table.id) {
+              None => true
+              Some(current) =>
+                !physical_equal(table, current) ||
+                !old.same_table_data(now, table.id)
+            }
+          })
+        }
+      }
+    })
+  if changed {
+    raise @types.not_supported("concurrent table changes during embedding HTTP")
+  }
 }

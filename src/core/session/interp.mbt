@@ -121,6 +121,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   let out_mark = self.out.length()
   self.read_only_write = None
   let failure = try {
+    self.check_http_tables()
     self.exec_stmt(s)
     if self.rt.cancel_pending {
       // A scalar assignment can finish without passing through a row

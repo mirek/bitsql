@@ -373,6 +373,7 @@ pub struct Session {
   embeddings : Array[EmbeddingCall]
   mut embeddings_seen : Int
   mut embedding_pending : Int?
+  priv mut http_tables : Map[String, @store.Db]?
   priv mut http_query : (@ast.Query, @bind.BoundQuery)?
   /// The request is parked in WAITFOR (its timer completes the wait).
   mut in_waitfor : Bool
@@ -559,6 +560,7 @@ pub fn Session::new(
     embeddings: [],
     embeddings_seen: 0,
     embedding_pending: None,
+    http_tables: None,
     http_query: None,
     in_waitfor: false,
     login: "sa",
@@ -780,6 +782,7 @@ pub fn Session::run_batch(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.http_tables = None
     self.http_query = None
     self.embeddings.clear()
     self.embedding_pending = None
@@ -847,6 +850,7 @@ pub fn Session::run_batch(
   self.waits_done = 0
   self.configuration_reads.clear()
   self.rt.finish_attempt()
+  self.http_tables = None
   self.http_query = None
   self.embeddings.clear()
   self.embedding_pending = None
