@@ -199,3 +199,35 @@ emulator tests**:
 These facts require retaining consumed rows and in-flight call context while
 allowing later reads/lookups to observe current state. The existing request
 restart path does not yet meet that contract.
+
+
+### Statement and RPC resumption (2026-10-07)
+
+The committed-prefix captures now pass: seven SQL batches, ten dynamic RPCs,
+and eleven procedure/prepared RPCs. Reproduce them with
+`node gen/capture-embedding-concurrency.mjs --prefix --verify`, `--rpc-prefix
+--verify`, and `--proc-prefix --verify`. The three expectation files are
+`embedding-prefix.expected.json`, `embedding-prefix-rpc.expected.json` and
+`embedding-prefix-proc.expected.json`. The registered
+`harness/test/embedding-prefix.test.mjs` checks both connections, all result
+metadata/completions, and every HTTP exchange.
+
+Completed outer statements remain committed during HTTP. Variables, table
+variables, DDL and response tokens survive the wait; transparent BEGIN/END
+blocks resume at their pending inner statement. A subsequent WAITFOR can park
+again without replaying completed statements. RPC module scopes now survive
+suspension: output parameters retain their values, temporary tables remain
+available until module completion, and SET options revert at completion. A
+prepared RPC returns a usable handle after suspension; the test executes it
+again and checks its second HTTP request.
+
+This does not yet preserve the pending statement's scan position/evaluated row,
+or completed nested statements inside control flow and nested module calls.
+The nine source/model concurrency cases above remain open.
+
+`embedding-cancellation.expected.json` records cancellation with a held RPC
+HTTP response (`--cancel-prefix --verify`). SQL Server cancels before the
+response is released and preserves the completed insert. It sends an NBCROW
+NULL result before DONEPROC(ERROR) and DONE_ATTN. The current emulator cancels
+and preserves the prefix but omits that row; this capture is not yet registered
+as a passing emulator test.

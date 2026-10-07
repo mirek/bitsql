@@ -318,6 +318,11 @@ pub struct Session {
   mut nocount : Bool
   mut xact_abort : Bool
   priv frames : Array[Frame]
+  priv mut rpc_continuation : (() -> Unit raise)?
+  priv mut batch_resume : BatchResume?
+  priv mut batch_resuming : Bool
+  priv mut list_depth : Int
+  priv mut batch_outer_refs : Array[(Int, Int, String)]
   /// Databases in effect outside the running dynamic SQL scopes (a USE
   /// inside dynamic SQL lasts until the scope ends): the first entry is
   /// the session's own database, which RESTORE's 3101 check reads.
@@ -515,6 +520,11 @@ pub fn Session::new(
     nocount: false,
     xact_abort: false,
     frames: [],
+    rpc_continuation: None,
+    batch_resume: None,
+    batch_resuming: false,
+    list_depth: 0,
+    batch_outer_refs: [],
     outer_dbs: [],
     out: [],
     rpc: false,
@@ -755,12 +765,16 @@ pub fn Session::run_batch(
   text : String,
   now : Int64,
 ) -> Array[@reply.Item] {
+  let continuation = self.batch_resume
+  self.batch_resume = None
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
   self.rt.work_done = 0L
   let snap = self.snapshot_request()
-  self.dateformat_set = false
-  self.datefirst_set = false
+  if continuation is None {
+    self.dateformat_set = false
+    self.datefirst_set = false
+  }
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
@@ -775,16 +789,29 @@ pub fn Session::run_batch(
   self.waiting = None
   self.wait_ms = None
   self.attn.reset()
-  self.out.clear()
   self.text = text
   self.rpc = false
-  self.frames.clear()
-  self.tvar_sites.clear()
-  self.frames.push(Frame::new())
-  self.schema_ddl = false
+  if continuation is Some(r) {
+    self.waits_seen = r.waits_seen
+    self.configuration_reads_seen = r.configuration_reads_seen
+    self.embeddings_seen = r.embeddings_seen
+    self.rt.clock_seen = r.clock_seen
+    self.temp_db_refs = r.temp_db_refs
+  } else {
+    self.out.clear()
+    self.frames.clear()
+    self.tvar_sites.clear()
+    self.frames.push(Frame::new())
+    self.schema_ddl = false
+    self.batch_resuming = false
+    self.batch_outer_refs = self.temp_db_refs
+  }
   self.abort_cmd = None
   let parked = try {
-    self.run_text(text)
+    match continuation {
+      Some(r) => self.exec_list(r.remaining)
+      None => self.run_text(text)
+    }
     false
   } catch {
     Park => true
@@ -802,10 +829,15 @@ pub fn Session::run_batch(
   self.abort_cmd = None
   if parked && !self.attn.hit {
     // a lock wait: discard this attempt; the engine re-runs it later
-    self.restore_request(snap)
+    if self.batch_resume is None {
+      self.restore_request(snap)
+    }
     self.parked = true
     return []
   }
+  self.batch_resuming = false
+  self.batch_resume = None
+  self.temp_db_refs = self.batch_outer_refs
   self.attn.cancelling = false
   self.fail_next_wait = None
   self.applock_waited = false

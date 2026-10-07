@@ -1,4 +1,4 @@
-// node gen/capture-embedding-concurrency.mjs [--verify|--force]
+// node gen/capture-embedding-concurrency.mjs [--verify|--force] [--prefix|--rpc-prefix|--proc-prefix|--cancel-prefix]
 // Creates and removes its own oracle. Never changes the shared oracle.
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -6,9 +6,10 @@ import { randomUUID } from 'node:crypto'
 import { readFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import assert from 'node:assert/strict'
+import { embeddingAfterSql } from '../src/embedding-normalize.mjs'
 import { embeddingFixture } from '../src/embedding-fixture.mjs'
 
-import { embeddingConcurrencyCases } from './embedding-concurrency-cases.mjs'
+import { embeddingConcurrencyCases, embeddingPrefixCases, embeddingRpcPrefixCases, embeddingProcPrefixCases, embeddingCancellationCases } from './embedding-concurrency-cases.mjs'
 import { connect, close } from '../src/client.mjs'
 import { capture, query } from '../src/capture-core.mjs'
 import { writeJson } from '../src/json.mjs'
@@ -23,7 +24,12 @@ if (!(port === 0 || (port >= 47300 && port <= 47399 && Number.isInteger(port))))
 const { startOracle, stopOracle, containerName } = await import('../src/oracle.mjs')
 if (!containerName.startsWith('bitsql-oracle-embedding-')) throw Error('a dedicated embedding oracle name is required')
 if (await docker(['ps', '-a', '--filter', `name=^/${containerName}$`, '--format', '{{.Names}}'])) throw Error('refusing to reuse an existing oracle')
-const file = join(harnessDir, 'fixtures', 'embedding-concurrency.expected.json')
+const cancellation = process.argv.includes('--cancel-prefix')
+const procPrefix = process.argv.includes('--proc-prefix')
+const rpcPrefix = process.argv.includes('--rpc-prefix')
+const prefix = process.argv.includes('--prefix') || rpcPrefix || procPrefix
+const cases = cancellation ? embeddingCancellationCases : procPrefix ? embeddingProcPrefixCases : rpcPrefix ? embeddingRpcPrefixCases : prefix ? embeddingPrefixCases : embeddingConcurrencyCases
+const file = join(harnessDir, 'fixtures', cancellation ? 'embedding-cancellation.expected.json' : procPrefix ? 'embedding-prefix-proc.expected.json' : rpcPrefix ? 'embedding-prefix-rpc.expected.json' : prefix ? 'embedding-prefix.expected.json' : 'embedding-concurrency.expected.json')
 const verify = process.argv.includes('--verify'), force = process.argv.includes('--force')
 const probe = process.argv.find(a => a.startsWith('--probe='))?.slice(8)
 if (!probe && !verify && !force) {
@@ -55,20 +61,34 @@ try {
   other = await connect(oracle.config)
   await query(other, 'USE embedding_capture; SET LOCK_TIMEOUT 200;')
   const results = []
-  for (const c of embeddingConcurrencyCases.filter(c => !probe || c.name === probe)) {
+  for (const c of cases.filter(c => !probe || c.name === probe)) {
     await query(conn, "EXEC sp_configure 'external rest endpoint enabled',1; RECONFIGURE;")
     await query(conn, c.setup)
     await query(conn, `CREATE EXTERNAL MODEL m WITH(LOCATION=${quote(endpoint)},API_FORMAT='OpenAI',MODEL_TYPE=EMBEDDINGS,MODEL='fixture');`)
+    if (c.prepare) await query(conn, c.prepare)
     fixture.setResponse({ body: { data: [{ embedding: [1,2] }] }, hold: true })
-    const pending = capture(conn, { kind: 'batch', sql: c.sql })
+    const pending = capture(conn, { kind: c.kind ?? 'batch', sql: c.sql, params: c.params })
     const started = Date.now()
     while (fixture.requests.length === 0 && Date.now()-started < 5000) await new Promise(r => setTimeout(r, 10))
     if (!fixture.requests.length) throw Error('no HTTP request')
     const update = await capture(other, { kind: 'batch', sql: c.mutation })
+    let beforeRelease
+    if (c.cancel) {
+      conn.cancel()
+      let timer
+      beforeRelease = await Promise.race([
+        pending.then(() => true),
+        new Promise(r => { timer = setTimeout(() => r(false), 500) }),
+      ])
+      clearTimeout(timer)
+    }
     fixture.release()
     const result = await pending
-    results.push(normalize({ input: c, update, result, requests: fixture.requests.slice() }))
+    if (result.errors.some(e => e.client && !(c.cancel && e.code === 'ECANCEL'))) throw Error('unexpected client failure: ' + c.name)
+    const after = c.after ? await capture(conn, { kind: 'batch', sql: embeddingAfterSql(c, result) }) : undefined
+    results.push(normalize({ input: c, update, result, requests: fixture.requests.slice(), ...(after ? { after } : {}), ...(c.cancel ? { beforeRelease } : {}) }))
     console.log(c.name, JSON.stringify({ update, result }))
+    if (c.cleanup) await query(conn, c.cleanup)
     await capture(conn, { kind: 'batch', sql: 'DROP TABLE t;' })
     await capture(conn, { kind: 'batch', sql: 'DROP EXTERNAL MODEL m;' })
   }

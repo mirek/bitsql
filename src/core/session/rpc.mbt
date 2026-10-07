@@ -67,6 +67,30 @@ priv struct ModuleRun {
 }
 
 ///|
+priv suberror ModulePark {
+  ModulePark(() -> ModuleRun raise)
+}
+
+///|
+priv suberror RpcPark {
+  RpcPark(() -> Unit raise)
+}
+
+///|
+fn Session::continue_rpc_module(
+  self : Session,
+  body : () -> ModuleRun raise,
+  finish : (ModuleRun) -> Unit raise,
+) -> Unit raise {
+  let run = body() catch {
+    ModulePark(next) =>
+      raise RpcPark(() => self.continue_rpc_module(next, finish))
+    e => raise e
+  }
+  finish(run)
+}
+
+///|
 /// The return status of a procedure or EXEC string: RETURN's value, else
 /// 10 - severity of its worst own error (11 → -1 … 18 → -8), else 0
 /// (captured: proc/return-status, gaps-procedures #044-#066). None when
@@ -188,6 +212,7 @@ fn Session::run_module(
   body : () -> Unit raise,
 ) -> ModuleRun raise {
   let frame = bound.frame
+  let saved_temp_refs = self.temp_db_refs
   let saved = (
     self.nocount,
     self.xact_abort,
@@ -221,6 +246,7 @@ fn Session::run_module(
     self.set_ansi_nulls(on)
   }
   let leave = () => {
+    self.temp_db_refs = saved_temp_refs
     self.frames.pop() |> ignore
     // LOCAL cursors and cursor variables end with the module
     self.release_frame_cursors(frame)
@@ -258,30 +284,35 @@ fn Session::run_module(
       }
     }
   }
-  let end = try {
-    body()
-    Completed(None)
-  } catch {
-    Return(s) => Completed(s)
-    AbortScope => ScopeAborted
-    Caught(_, _, _, _) as c => {
-      leave()
-      self.module_done(error=false)
-      raise c
+  fn drive(execute : () -> Unit raise) -> ModuleRun raise {
+    let end = try {
+      execute()
+      Completed(None)
+    } catch {
+      Return(s) => Completed(s)
+      AbortScope => ScopeAborted
+      Caught(_, _, _, _) as c => {
+        leave()
+        self.module_done(error=false)
+        raise c
+      }
+      Park if self.batch_resume is Some(_) && self.rpc =>
+        raise ModulePark(() => drive(() => self.continue_statements()))
+      e => {
+        leave()
+        raise e
+      }
     }
-    e => {
-      leave()
-      raise e
+    leave()
+    {
+      end,
+      worst: frame.worst,
+      values: bound.slots.map(k => if k < 0 { Null } else { frame.values[k] }),
+      types: bound.types,
+      frame,
     }
   }
-  leave()
-  {
-    end,
-    worst: frame.worst,
-    values: bound.slots.map(k => if k < 0 { Null } else { frame.values[k] }),
-    types: bound.types,
-    frame,
-  }
+  drive(body)
 }
 
 ///|
@@ -332,12 +363,16 @@ pub fn Session::run_rpc(
   call : @tds.RpcCall,
   now : Int64,
 ) -> Array[@reply.Item] {
+  let continuation = self.rpc_continuation
+  self.rpc_continuation = None
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
   self.rt.work_done = 0L
   let snap = self.snapshot_request()
-  self.dateformat_set = false
-  self.datefirst_set = false
+  if continuation is None {
+    self.dateformat_set = false
+    self.datefirst_set = false
+  }
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
@@ -352,10 +387,13 @@ pub fn Session::run_rpc(
   self.waiting = None
   self.wait_ms = None
   self.attn.reset()
-  self.out.clear()
   self.rpc = true
-  self.frames.clear()
-  self.frames.push(Frame::new())
+  if continuation is None {
+    self.out.clear()
+    self.frames.clear()
+    self.frames.push(Frame::new())
+    self.batch_resuming = false
+  }
   self.abort_cmd = None
   self.error_line = None
   self.error_module = None
@@ -383,37 +421,45 @@ pub fn Session::run_rpc(
     self.message(e, self.error_line.unwrap_or(1))
   }
   self.parked = try {
-    check_variant_params(call.params)
-    match call.proc.canonical_name() {
-      "sp_executesql" => self.rpc_executesql(wire)
-      "sp_reset_connection" => self.out.push(ReturnStatus(0))
-      "sp_prepare" | "sp_prepexec" as which => self.rpc_prepare(which, wire)
-      "sp_execute" => self.rpc_execute(wire)
-      "sp_unprepare" => {
-        let handle = match wire.get(0) {
-          Some((_, a)) => a.value.as_int64().unwrap_or(0L).to_int()
-          None => 0
+    if continuation is Some(next) {
+      next()
+    } else {
+      check_variant_params(call.params)
+      match call.proc.canonical_name() {
+        "sp_executesql" => self.rpc_executesql(wire)
+        "sp_reset_connection" => self.out.push(ReturnStatus(0))
+        "sp_prepare" | "sp_prepexec" as which => self.rpc_prepare(which, wire)
+        "sp_execute" => self.rpc_execute(wire)
+        "sp_unprepare" => {
+          let handle = match wire.get(0) {
+            Some((_, a)) => a.value.as_int64().unwrap_or(0L).to_int()
+            None => 0
+          }
+          if self.prepared.contains(handle) {
+            self.prepared.remove(handle)
+            self.out.push(ReturnStatus(0))
+          } else {
+            // captured: state 8 here, 4 from sp_execute
+            raise ProcFail(
+              @types.sql_error(
+                8179,
+                "Could not find prepared statement with handle \{handle}.",
+                state=8,
+              ),
+              1,
+              Some(8179),
+            )
+          }
         }
-        if self.prepared.contains(handle) {
-          self.prepared.remove(handle)
-          self.out.push(ReturnStatus(0))
-        } else {
-          // captured: state 8 here, 4 from sp_execute
-          raise ProcFail(
-            @types.sql_error(
-              8179,
-              "Could not find prepared statement with handle \{handle}.",
-              state=8,
-            ),
-            1,
-            Some(8179),
-          )
-        }
+        _ => self.rpc_proc(call, wire)
       }
-      _ => self.rpc_proc(call, wire)
     }
     false
   } catch {
+    RpcPark(next) => {
+      self.rpc_continuation = Some(next)
+      true
+    }
     ProcFail(e, line, status) => {
       self.rpc_fail(e, line, status, wire)
       false
@@ -442,10 +488,15 @@ pub fn Session::run_rpc(
   }
   self.abort_cmd = None
   if self.parked && !self.attn.hit {
-    self.restore_request(snap)
+    if self.rpc_continuation is None {
+      self.restore_request(snap)
+    }
     return []
   }
   self.parked = false
+  self.batch_resume = None
+  self.batch_resuming = false
+  self.rpc_continuation = None
   self.attn.cancelling = false
   self.fail_next_wait = None
   self.applock_waited = false
@@ -652,23 +703,29 @@ fn Session::rpc_proc(
   let b = self.bind_params(params, bound, owner=Some(proc.name), conv_state=1)
   self.error_line = None
   let before = self.rt.trancount
-  let run = self.run_module(b, levels=1, ansi_nulls=Some(proc.ansi_nulls), () => {
-    self.hoist_declares(proc.def.body)
-    self.exec_list(proc.def.body)
-  })
-  guard run.status() is Some(status) else { return }
-  let outs = self.output_values(wire, index, run)
-  if !self.xml_aborted() {
-    self.out.push(ReturnStatus(status))
-  }
-  for x in outs {
-    self.out.push(x)
-  }
-  // captured: RETURNSTATUS, then 266, then DONEPROC with the error bit
-  // (gaps-rpc-procedures #058)
-  if self.rt.trancount != before {
-    self.message(tran_count_error(before, self.rt.trancount), 0)
-  }
+  self.continue_rpc_module(
+    () => {
+      self.run_module(b, levels=1, ansi_nulls=Some(proc.ansi_nulls), () => {
+        self.hoist_declares(proc.def.body)
+        self.exec_list(proc.def.body)
+      })
+    },
+    run => {
+      guard run.status() is Some(status) else { return }
+      let outs = self.output_values(wire, index, run)
+      if !self.xml_aborted() {
+        self.out.push(ReturnStatus(status))
+      }
+      for x in outs {
+        self.out.push(x)
+      }
+      // captured: RETURNSTATUS, then 266, then DONEPROC with the error bit
+      // (gaps-rpc-procedures #058)
+      if self.rt.trancount != before {
+        self.message(tran_count_error(before, self.rt.trancount), 0)
+      }
+    },
+  )
 }
 
 ///|
@@ -824,18 +881,23 @@ fn Session::run_dynamic(
   let saved_db = self.rt.database
   self.text = sql
   self.outer_dbs.push(saved_db)
-  let run = {
-    errdefer {
-      self.text = saved_text
-      self.rt.database = saved_db
-      ignore(self.outer_dbs.pop())
-    }
-    self.run_module(bound, levels~, () => self.run_text(sql))
+  let cleanup = () => {
+    self.text = saved_text
+    self.rt.database = saved_db
+    ignore(self.outer_dbs.pop())
   }
-  self.text = saved_text
-  self.rt.database = saved_db
-  ignore(self.outer_dbs.pop())
-  run
+  fn finish(execute : () -> ModuleRun raise) -> ModuleRun raise {
+    let run = execute() catch {
+      ModulePark(next) => raise ModulePark(() => finish(next))
+      e => {
+        cleanup()
+        raise e
+      }
+    }
+    cleanup()
+    run
+  }
+  finish(() => self.run_module(bound, levels~, () => self.run_text(sql)))
 }
 
 ///|
@@ -865,7 +927,6 @@ fn Session::rpc_executesql(
   )
   let b = self.executesql_frame(params, bound)
   let before = self.rt.trancount
-  let run = self.run_dynamic(sql, b, levels=2)
   let index : Array[Int?] = Array::makei(wire.length(), i => {
     if i >= 2 {
       arg_index[i - 2]
@@ -873,7 +934,9 @@ fn Session::rpc_executesql(
       None
     }
   })
-  self.rpc_module_end(run, wire, index, before)
+  self.continue_rpc_module(() => self.run_dynamic(sql, b, levels=2), run => {
+    self.rpc_module_end(run, wire, index, before)
+  })
 }
 
 ///|
@@ -970,9 +1033,14 @@ fn Session::rpc_prepare(
   )
   let b = self.executesql_frame(params, bound)
   let before = self.rt.trancount
-  let run = {
-    errdefer discard()
-    self.run_dynamic(sql, b, levels=2)
+  fn execute(body : () -> ModuleRun raise) -> ModuleRun raise {
+    body() catch {
+      ModulePark(next) => raise ModulePark(() => execute(next))
+      e => {
+        discard()
+        raise e
+      }
+    }
   }
   let index : Array[Int?] = Array::makei(wire.length(), i => {
     if i >= 3 {
@@ -981,7 +1049,10 @@ fn Session::rpc_prepare(
       None
     }
   })
-  self.rpc_module_end(run, wire, index, before, prefix=[handle_item])
+  self.continue_rpc_module(
+    () => execute(() => self.run_dynamic(sql, b, levels=2)),
+    run => self.rpc_module_end(run, wire, index, before, prefix=[handle_item]),
+  )
 }
 
 ///|
@@ -1019,7 +1090,6 @@ fn Session::rpc_execute(
   )
   let b = self.executesql_frame(params, bound)
   let before = self.rt.trancount
-  let run = self.run_dynamic(sql, b, levels=2)
   let index : Array[Int?] = Array::makei(wire.length(), i => {
     if i >= 1 {
       arg_index[i - 1]
@@ -1027,7 +1097,9 @@ fn Session::rpc_execute(
       None
     }
   })
-  self.rpc_module_end(run, wire, index, before)
+  self.continue_rpc_module(() => self.run_dynamic(sql, b, levels=2), run => {
+    self.rpc_module_end(run, wire, index, before)
+  })
 }
 
 ///|

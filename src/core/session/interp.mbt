@@ -10,8 +10,60 @@ priv suberror Caught {
 
 ///|
 fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
-  for s in stmts {
-    self.exec_one(s)
+  let root = self.list_depth == 0
+  let stmts = if root { batch_statements(stmts) } else { stmts }
+  self.list_depth += 1
+  defer {
+    self.list_depth -= 1
+  }
+  for i, s in stmts {
+    let saved = if root {
+      Some(
+        (
+          self.snapshot_request(),
+          self.frames.map(f => (f, f.copy())),
+          self.rt.nest_level,
+          self.try_depth,
+          self.try_base,
+        ),
+      )
+    } else {
+      None
+    }
+    let out_mark = self.out.length()
+    let waits_seen = self.waits_seen
+    let configuration_reads_seen = self.configuration_reads_seen
+    let embeddings_seen = self.embeddings_seen
+    let clock_seen = self.rt.clock_seen
+    let temp_db_refs = self.temp_db_refs
+    self.exec_one(s) catch {
+      Park if !self.attn.hit &&
+        (self.embedding_pending is Some(_) || self.batch_resuming) => {
+        if saved is Some((snap, frames, level, try_depth, try_base)) {
+          let prefix = self.out[:@cmp.minimum(out_mark, self.out.length())].to_owned()
+          self.restore_request(snap)
+          for (frame, saved_frame) in frames {
+            frame.restore(saved_frame)
+            self.frames.push(frame)
+          }
+          self.rt.nest_level = level
+          self.try_depth = try_depth
+          self.try_base = try_base
+          self.out.append(prefix)
+          self.batch_resume = Some({
+            remaining: stmts[i:].to_owned(),
+            waits_seen,
+            configuration_reads_seen,
+            embeddings_seen,
+            clock_seen,
+            temp_db_refs,
+          })
+          self.batch_resuming = true
+        }
+        raise Park
+      }
+      e => raise e
+    }
   }
 }
 

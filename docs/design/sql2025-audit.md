@@ -471,3 +471,19 @@ they remain explicitly open along with the other embedding and 2025 scope.
 Version 0.1.23 remains published; this is not release completion.
 
 Full gate passes 1,772 MoonBit and 23,685 client tests, three existing skips, zero failures; parser checks 40,611 batches with 11 known differences. All 95 SQL/HTTPS exchanges ran in the client suite.
+
+
+### HTTP statement and RPC continuation checkpoint (2026-10-07)
+
+Twenty-eight additional registered prefix cases pass across batches and RPC
+module forms, bringing controlled SQL/HTTPS coverage to 123 cases. Earlier
+committed statements remain visible during the wait, and module resources and
+outputs survive suspension. The pending statement still retries: live unread
+rows/model changes, nested control flow, and the captured cancellation NULL row
+remain open. All other unfinished 2025 requirements remain in scope. Version
+0.1.23 remains published; no new container is published at this checkpoint.
+
+Full gate passes 1,772 MoonBit and 23,688 client tests, three existing skips,
+zero failures. Parser checks cover 40,611 batches with 11 known differences.
+All 123 controlled SQL/HTTPS cases ran in the client suite; the 28 new prefix
+captures also reproduced on fresh disposable SQL Server oracles.

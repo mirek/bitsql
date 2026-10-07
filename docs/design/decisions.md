@@ -1195,8 +1195,31 @@ a resumption fix: unread rows and later model/configuration lookups see changes,
 while the already-started call keeps its context. Full row/expression resumption
 remains open; see [external-model contracts](../reference/external-models.md).
 
-HTTP resumption must also preserve completed autocommit statements in a batch.
-The current request snapshot restores the whole database state on suspension,
-so a prefix insert temporarily disappears and replay can collide with a write
-from another connection. Resuming the pending statement must preserve that
-committed prefix as well as its original row context. This is still open.
+HTTP resumption must also preserve completed autocommit statements. The former
+whole-request snapshot made a prefix insert temporarily disappear and allowed
+conflicting writes from another connection. The statement/RPC continuation
+checkpoint below fixes completed outer statements; original row context and
+nested control-flow continuation remain open.
+
+
+### 2026-10-07: statement checkpoints and live RPC module scopes
+
+An HTTP wait checkpoints the pending outer statement rather than rolling back
+completed statements in the request. The checkpoint retains the remaining
+statement list, response prefix, variable frames and evaluation ordinals.
+Transparent BEGIN/END blocks are flattened at that list boundary. Further waits
+in the resumed list use the same boundary. Ordinary waits before HTTP retain
+the existing request-restart path.
+
+RPC modules carry typed internal continuations through their normal completion
+handlers. Their frame, parameter slots, temporary objects and saved caller
+settings remain alive until the module actually ends. Restoring frames in
+place preserves the references used by parameter/output handling. Dynamic SQL
+restores its caller context once; prepared RPCs retain their handle through a
+wait and discard it only on an actual failure. These control transfers never
+become SQL errors. The registered prefix fixtures cover batches, dynamic SQL,
+stored-procedure RPCs, output parameters, temporary objects and handle reuse.
+
+This is statement-level resumption. The pending statement still retries, so
+row/scan state, nested control flow and the captured cancellation NULL row
+remain separate unfinished requirements.

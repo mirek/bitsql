@@ -16,3 +16,10 @@ export function normalizeEmbeddingExecution(value) {
   }
   return c
 }
+
+export function embeddingAfterSql(input, result) {
+  if (typeof input.after === 'string') return input.after
+  const output = result.outputs.find(p => p.name.replace(/^@/, '') === input.after.output)
+  assert.ok(output && Number.isInteger(output.value), 'missing prepared handle output')
+  return input.after.sql.replaceAll('{handle}', String(output.value))
+}

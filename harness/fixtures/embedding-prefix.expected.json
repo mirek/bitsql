@@ -1,0 +1,675 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "cases": [
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "INSERT t VALUES(2,N'prefix'); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "prefix-visible",
+        "mutation": "SELECT id,s FROM t ORDER BY id;"
+      },
+      "update": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "INSERT t VALUES(2,N'prefix'); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "prefix-unique",
+        "mutation": "INSERT t VALUES(2,N'concurrent');"
+      },
+      "update": {
+        "sets": [],
+        "done": [{"kind":"done","rowCount":null,"more":false}],
+        "errors": [
+          {
+            "number": 2627,
+            "state": 1,
+            "class": 14,
+            "lineNumber": 1,
+            "message": "Violation of PRIMARY KEY constraint 'pk_prefix'. Cannot insert duplicate key in object 'dbo.t'. The duplicate key value is (2)."
+          }
+        ],
+        "info": [{"number":3621,"state":0,"class":0,"lineNumber":1,"message":"The statement has been terminated."}],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"curCmd":195}],
+        "stream": [{"name":"ERROR","number":2627},{"name":"INFO","number":3621},{"name":"DONE","status":2,"curCmd":195}],
+        "rowCount": 0
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "DECLARE @s nvarchar(100)=N'prefix'; INSERT t VALUES(2,@s); SELECT AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding; SELECT @s AS retained;",
+        "name": "prefix-variables",
+        "mutation": "SELECT id,s FROM t ORDER BY id;"
+      },
+      "update": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {
+            "columns": [
+              {
+                "name": "retained",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [["prefix"]]
+          }
+        ],
+        "done": [
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":false}
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 4
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "36",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"prefix\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "INSERT t VALUES(2,N'prefix'); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; WAITFOR DELAY '00:00:00.01'; SELECT id,s FROM t ORDER BY id;",
+        "name": "prefix-following-wait",
+        "mutation": "SELECT id,s FROM t ORDER BY id;"
+      },
+      "update": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":1,"more":true},
+          {"kind":"done","rowCount":null,"more":true},
+          {"kind":"done","rowCount":2,"more":false}
+        ],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":243},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"DONE","status":1,"curCmd":243},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 4
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "BEGIN INSERT t VALUES(2,N'prefix'); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; END; SELECT id,s FROM t ORDER BY id;",
+        "name": "prefix-block",
+        "mutation": "SELECT id,s FROM t ORDER BY id;"
+      },
+      "update": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 2
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"],[2,"prefix"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":2,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":2,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":2},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 4
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "DECLARE @t TABLE(id int); INSERT @t VALUES(2); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; SELECT id FROM @t;",
+        "name": "prefix-table-variable",
+        "mutation": "SELECT id,s FROM t ORDER BY id;"
+      },
+      "update": {
+        "sets": [
+          {
+            "columns": [
+              {"name":"id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+              {
+                "name": "s",
+                "type": "NVarChar",
+                "length": 200,
+                "precision": null,
+                "scale": null,
+                "flags": 9,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+              }
+            ],
+            "rows": [[1,"first"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [
+          {"name":"COLMETADATA","columns":2},
+          {"name":"ORDER","columns":[1]},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          },
+          {"columns":[{"name":"id","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null}],"rows":[[2]]}
+        ],
+        "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":195},
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":17,"curCmd":195},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":17,"curCmd":193},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 3
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    },
+    {
+      "input": {
+        "setup": "CREATE TABLE t(id int CONSTRAINT pk_prefix PRIMARY KEY,s nvarchar(100)); INSERT t VALUES(1,N'first');",
+        "sql": "CREATE TABLE created_before_http(id int); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding;",
+        "name": "prefix-ddl",
+        "mutation": "SELECT CASE WHEN OBJECT_ID(N'created_before_http') IS NOT NULL THEN 1 ELSE 0 END AS visible;",
+        "cleanup": "DROP TABLE created_before_http;"
+      },
+      "update": {
+        "sets": [{"columns":[{"name":"visible","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}],
+        "done": [{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}],
+        "stream": [{"name":"COLMETADATA","columns":1},{"name":"ROW","count":1},{"name":"DONE","status":16,"curCmd":193}],
+        "rowCount": 1
+      },
+      "result": {
+        "sets": [
+          {
+            "columns": [
+              {
+                "name": "embedding",
+                "type": "VarChar",
+                "length": 65535,
+                "precision": null,
+                "scale": null,
+                "flags": 33,
+                "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":96,"version":2,"sortId":0,"codepage":"utf-8"}
+              }
+            ],
+            "rows": [["[1,2]"]]
+          }
+        ],
+        "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+        "errors": [],
+        "info": [],
+        "returnStatus": null,
+        "outputs": [],
+        "tokens": [
+          {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"curCmd":198},
+          {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+        ],
+        "stream": [
+          {"name":"DONE","status":1,"curCmd":198},
+          {"name":"COLMETADATA","columns":1},
+          {"name":"ROW","count":1},
+          {"name":"DONE","status":16,"curCmd":193}
+        ],
+        "rowCount": 1
+      },
+      "requests": [
+        {
+          "method": "POST",
+          "url": "/v1/embeddings",
+          "headers": {
+            "connection": "Keep-Alive",
+            "content-type": "application/json;charset=utf-8",
+            "accept": "application/json",
+            "user-agent": "Enterprise Developer Edition (64-bit)/17.0.5005.3",
+            "content-length": "35",
+            "host": "{authority}"
+          },
+          "body": "{\"model\":\"fixture\",\"input\":\"hello\"}"
+        }
+      ]
+    }
+  ]
+}

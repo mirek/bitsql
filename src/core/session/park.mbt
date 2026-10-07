@@ -160,6 +160,11 @@ pub fn Session::cancel_wait(self : Session) -> Unit {
 ///|
 /// Session end: roll back and release everything.
 pub fn Session::close(self : Session) -> Unit {
+  // Continuations capture this session; break the reference-counting cycle
+  // when a client disconnects without completing its suspended RPC.
+  self.rpc_continuation = None
+  self.batch_resume = None
+  self.batch_resuming = false
   self.cancel_wait()
   self.tx = None
   self.applocks.clear()
@@ -209,6 +214,9 @@ pub fn Session::time_out(self : Session) -> Unit {
 /// response: rollback (if any), then RESETACK (captured with tedious reset
 /// against SQL Server 17.0.5005.3).
 pub fn Session::reset(self : Session) -> Array[@reply.Item] {
+  self.rpc_continuation = None
+  self.batch_resume = None
+  self.batch_resuming = false
   let items : Array[@reply.Item] = []
   if self.rt.trancount > 0 {
     let d = self.tx_descriptor()

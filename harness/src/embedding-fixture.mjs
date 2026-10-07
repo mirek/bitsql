@@ -30,6 +30,7 @@ export async function embeddingFixture(host = '127.0.0.1') {
           body: Buffer.concat(chunks).toString('utf8') })
         const selected = response
         const reply = () => {
+          if (res.destroyed) return
           res.writeHead(selected.status ?? 200, { 'Content-Type': selected.contentType ?? 'application/json',
             'Connection': 'close', ...selected.headers })
           res.end(typeof selected.body === 'string' ? selected.body : JSON.stringify(selected.body))
