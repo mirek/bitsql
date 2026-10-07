@@ -52,6 +52,15 @@ fn Session::exec_create_vector_index(
       severity=15,
     )
   }
+  if self.rt.trancount > 0 {
+    self.cur_cmd = 743
+    self.ddl_cmd = 743
+    raise @types.sql_error(
+      574,
+      "CREATE VECTOR INDEX statement cannot be used inside a user transaction.",
+      state=31,
+    )
+  }
   guard self.find_table(ci.table) is Some((scope, t)) else {
     raise @types.sql_error(
       1088,
@@ -197,11 +206,15 @@ fn Session::exec_create_vector_index(
 }
 
 ///|
-fn check_vector_dml(t : @store.Table) -> Unit raise @types.SqlError {
+fn check_vector_dml(
+  t : @store.Table,
+  state? : Int = 1,
+) -> Unit raise @types.SqlError {
   if t.indexes.any(ix => ix.vector is Some(_)) {
     raise @types.sql_error(
       42231,
       "Data modification statement failed because table '\{t.name}' has a vector index on it.",
+      state~,
     )
   }
 }
@@ -263,4 +276,56 @@ fn Session::search_vector_index(
     }
   }
   rows
+}
+
+///|
+/// Binding rejects potential cascaded writes even with no matching rows.
+/// None denotes DELETE; Some(columns) denotes the UPDATE target columns.
+fn Session::check_vector_cascades(
+  self : Session,
+  scope : Int,
+  root : Int,
+  updated : Array[Int]?,
+) -> Unit raise @types.SqlError {
+  let tables = self.db_of(scope).tables()
+  if !tables.any(t => t.indexes.any(ix => ix.vector is Some(_))) {
+    return
+  }
+  let queue : Array[(Int, Array[Int]?)] = [(root, updated)]
+  let seen : Array[(Int, Array[Int]?)] = []
+  let mut at = 0
+  while at < queue.length() {
+    let (parent, columns) = queue[at]
+    at += 1
+    if seen.contains((parent, columns)) {
+      continue
+    }
+    seen.push((parent, columns))
+    for child in tables {
+      for fk in child.foreign_keys {
+        if !fk.enabled || fk.ref_table != parent {
+          continue
+        }
+        let action = match columns {
+          None => fk.on_delete
+          Some(columns) => {
+            if !fk.ref_columns.any(c => columns.contains(c)) {
+              continue
+            }
+            fk.on_update
+          }
+        }
+        if action is NoAction {
+          continue
+        }
+        let next = if columns is None && action is Cascade {
+          None
+        } else {
+          Some(fk.columns)
+        }
+        check_vector_dml(child, state=if next is None { 3 } else { 4 })
+        queue.push((child.id, next))
+      }
+    }
+  }
 }

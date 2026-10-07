@@ -26,6 +26,36 @@ fn Session::precheck_vector(
     }
     body(q.body)
   }
+  let cascade = (
+    target : @ast.TableRef,
+    sets : Array[@ast.SetClause]?,
+    line : Int,
+  ) => {
+    if defer_schema || !errors.is_empty() {
+      return
+    }
+    guard target.kind is Table(name, ..) &&
+      self.find_table(name) is Some((scope, t)) else {
+      return
+    }
+    check_vector_dml(t) catch {
+      e => {
+        errors.push((e, line))
+        return
+      }
+    }
+    let columns = sets.map(sets => {
+      sets.filter_map(s => {
+        match s.target {
+          SetColumn(parts) => t.column_index(parts[parts.length() - 1].name)
+          _ => None
+        }
+      })
+    })
+    self.check_vector_cascades(scope, t.id, columns) catch {
+      e => errors.push((e, line))
+    }
+  }
   fn stmt(s : @ast.Stmt) -> Unit {
     if !errors.is_empty() {
       return
@@ -43,6 +73,34 @@ fn Session::precheck_vector(
           }
           vars[v.name.to_lower()] = { slot: vars.length(), ty, }
         }
+      CreateIndex(ci) if ci.vector &&
+        self.preview_enabled() &&
+        !ci.options.any(o => o.name == "METRIC") =>
+        errors.push(
+          (
+            @types.sql_error(
+              153,
+              "Invalid usage of the option metric in the CREATE VECTOR INDEX statement.",
+              state=7,
+              severity=15,
+            ),
+            s.span.line,
+          ),
+        )
+      Insert(i) => cascade(i.target, Some([]), s.span.line)
+      Update(u) => cascade(u.target, Some(u.sets), s.span.line)
+      Delete(d) => cascade(d.target, None, s.span.line)
+      Merge(m) =>
+        for w in m.whens {
+          match w.action {
+            MergeDelete => cascade(m.target, None, s.span.line)
+            MergeUpdate(sets) => cascade(m.target, Some(sets), s.span.line)
+            MergeInsert(..) => cascade(m.target, Some([]), s.span.line)
+          }
+        }
+      // Constraint toggles occur after the batch's potential cascade writes
+      // are compiled against the existing foreign-key graph.
+      AlterTable(_, CheckConstraints(_, ..)) => ()
       Select(q) if !defer_schema && has_vector(q) => {
         let before = []
         let env = @bind.Env::new(

@@ -368,3 +368,30 @@ incomplete failed-build graph remains an explicit Emulator error. The lifecycle
 probe disabling the clustered PK disconnected from the oracle without a usable
 expected result; it is retained unregistered and rejected explicitly by bitsql
 pending isolated investigation. This is not full vector feature completion.
+
+
+### Cascades and creation transactions (2026-10-07)
+
+`vector-index-mutations` captures direct and indirect write restrictions.
+Potential foreign-key cascades are checked before scanning rows: deleting no
+matching parents still raises 42231 state 3 for a vector-indexed child.
+Cascade UPDATE and DELETE SET NULL raise state 4. An UPDATE of a referenced
+column is checked even when assigned to itself; updating unrelated columns is
+allowed. The check follows multiple levels of cascades and MERGE actions.
+Disabled foreign keys do not cascade, but disabling one later in the same
+batch does not bypass compilation against the initial foreign-key graph.
+NO ACTION constraints retain their normal 547 behavior.
+
+Direct writes use state 1 even with INSTEAD OF triggers. Direct and cascaded
+42231 errors are batch compile failures: preceding DECLARE statements do not
+run, and a same-level TRY/CATCH cannot catch them. Index creation inside an
+explicit user transaction instead raises catchable 574 state 31, DONE 743,
+before table/column lookup. Missing METRIC remains compile-time 153 state 7.
+The captured XACT_ABORT behavior uses the normal session error rules. Dynamic
+SQL and stored-procedure creation completions, including NOCOUNT, match the
+oracle without additional protocol special cases.
+
+Twenty-nine mutation cases pass focused verification (80 with neighboring
+DDL/lifecycle cases). The thirtieth retains an open engine prerequisite:
+SET IMPLICIT_TRANSACTIONS ON is explicitly unsupported, so that creation
+context is not yet verified in bitsql and is not registered as passing.

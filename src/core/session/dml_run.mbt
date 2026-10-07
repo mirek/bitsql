@@ -545,6 +545,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
         raise @types.not_supported("UPDATE SET @variable")
     }
   }
+  self.check_vector_cascades(target.scope, t.id, Some(sets.map(s => s.0)))
   let (extra, extra_idx) = output_extra(src, u.from)
   let outputs = self.bind_output(u.output, target, view, true, true, extra)
   self.cur_cmd = cmd
@@ -796,6 +797,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
   }
   let t = target.table
   check_vector_dml(t)
+  self.check_vector_cascades(target.scope, t.id, None)
   self.check_index_options(t)
   let src = dml_source(env0, target, view, d.from)
   let env = env0.with_columns(src.columns)

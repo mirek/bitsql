@@ -405,3 +405,17 @@ the session rather than parser recovery.
 Sampling beyond 10,000 eligible rows, tied seed selection,
 further lifecycle/locking/module coverage and embeddings remain open. This
 checkpoint does not complete the 2025 audit or container publication.
+
+
+## Vector cascade and transaction checkpoint (2026-10-07)
+
+Twenty-nine new mutation cases pass focused verification, and 80 pass with
+neighboring DDL/lifecycle cases. The implementation rejects potential cascades
+before data changes, preserving indexed table/graph consistency. It also
+matches explicit-transaction rejection, error precedence, same-level TRY
+behavior and basic dynamic SQL/procedure completions. See the vector reference
+for the captured states and the remaining implicit-transaction prerequisite.
+The full gate passes 1,615 MoonBit tests and 23,553 client/corpus tests, with
+three existing skips and zero failures. All 29 registered mutation cases ran;
+parser comparison covers 40,360 batches with 11 known differences. Broader
+vector and 2025 requirements remain open.

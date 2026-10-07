@@ -24,6 +24,21 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let has_insert = m.whens.iter().any(w => w.action is MergeInsert(..))
   let has_update = m.whens.iter().any(w => w.action is MergeUpdate(_))
   let has_delete = m.whens.iter().any(w => w.action is MergeDelete)
+  if has_delete {
+    self.check_vector_cascades(target.scope, target.table.id, None)
+  }
+  for clause in m.whens {
+    if clause.action is MergeUpdate(sets) {
+      let columns = sets.filter_map(s => {
+        match s.target {
+          SetColumn(parts) =>
+            target.table.column_index(parts[parts.length() - 1].name)
+          _ => None
+        }
+      })
+      self.check_vector_cascades(target.scope, target.table.id, Some(columns))
+    }
+  }
   // INSTEAD OF triggers (captured: gaps-triggers #145-#159): either every
   // action present has one (they fire instead of the writes, per action in
   // INSERT, UPDATE, DELETE order; AFTER triggers do not fire) or none has

@@ -1,0 +1,586 @@
+{
+  "cases": [
+    {
+      "name": "cascade-delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON UPDATE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE p SET id=3 WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-set-null",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE SET NULL;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-delete-empty",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=-1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "create-rollback",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1); ROLLBACK;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t'); SELECT @@TRANCOUNT AS trancount;"
+        }
+      ]
+    },
+    {
+      "name": "create-commit",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1); COMMIT;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t'); SELECT @@TRANCOUNT AS trancount;"
+        }
+      ]
+    },
+    {
+      "name": "dynamic-create",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "EXEC(N'CREATE VECTOR INDEX vi ON t(v) WITH(METRIC=''cosine'',MAXDOP=1);');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t'); SELECT @@TRANCOUNT AS trancount;"
+        }
+      ]
+    },
+    {
+      "name": "nocount-dynamic-create",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SET NOCOUNT ON; EXEC(N'CREATE VECTOR INDEX vi ON t(v) WITH(METRIC=''cosine'',MAXDOP=1);');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT name FROM sys.vector_indexes WHERE object_id=OBJECT_ID('t'); SELECT @@TRANCOUNT AS trancount;"
+        }
+      ]
+    },
+    {
+      "name": "instead-of-insert",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tr ON t INSTEAD OF INSERT AS SELECT 11 AS intercepted;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "INSERT t VALUES(3,'[1,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "instead-of-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tr ON t INSTEAD OF UPDATE AS SELECT 12 AS intercepted;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE t SET id=id WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "instead-of-delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tr ON t INSTEAD OF DELETE AS SELECT 13 AS intercepted;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE t WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "procedure-create",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE PROC build_index AS CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "EXEC build_index;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-noop-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON UPDATE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE p SET id=id WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-unrelated-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY,tag int DEFAULT 0); INSERT p(id) VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON UPDATE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "UPDATE p SET tag=1 WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-disabled",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE t NOCHECK CONSTRAINT FK_t; DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-no-action",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE NO ACTION;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-merge-delete",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "MERGE p USING(VALUES(1))s(id) ON p.id=s.id WHEN MATCHED THEN DELETE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-merge-update",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON UPDATE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "MERGE p USING(VALUES(1))s(id) ON p.id=s.id WHEN MATCHED THEN UPDATE SET id=3;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-missing-table",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON absent(v) WITH(METRIC='cosine'); ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-no-metric",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON t(v); ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-missing-column",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON t(absent) WITH(METRIC='cosine'); ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "implicit-transaction",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SET IMPLICIT_TRANSACTIONS ON; CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); SELECT @@TRANCOUNT AS n; ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-disabled-prior-batch",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "ALTER TABLE t NOCHECK CONSTRAINT FK_t;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-two-levels",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE mid(id int PRIMARY KEY REFERENCES p(id) ON DELETE CASCADE); INSERT mid VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES mid(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DELETE p WHERE id=1;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-try",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; BEGIN TRY CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS n,ERROR_STATE() AS s,@@TRANCOUNT AS tc,XACT_STATE() AS xs; END CATCH; ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-xact-abort",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "SET XACT_ABORT ON; BEGIN TRAN; CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine'); SELECT @@TRANCOUNT AS tc,XACT_STATE() AS xs; ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "transaction-metric-missing",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRAN; CREATE VECTOR INDEX vi ON t(v) WITH(TYPE='DiskANN'); ROLLBACK;"
+        }
+      ]
+    },
+    {
+      "name": "direct-delete-try",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tr ON t INSTEAD OF DELETE AS SELECT 13 AS intercepted;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE t WHERE id=1; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS caught; END CATCH; SELECT 99 AS after_statement;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    },
+    {
+      "name": "cascade-delete-try",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE p(id int PRIMARY KEY); INSERT p VALUES(1),(2); CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,pid int,v vector(3)); INSERT t VALUES(10,1,'[1,0,0]'),(20,2,'[0,1,0]'); ALTER TABLE t ADD CONSTRAINT FK_t FOREIGN KEY(pid) REFERENCES p(id) ON DELETE CASCADE;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "BEGIN TRY DELETE p WHERE id=1; END TRY BEGIN CATCH SELECT ERROR_NUMBER() AS caught; END CATCH; SELECT 99 AS after_statement;"
+        },
+        {
+          "kind": "batch",
+          "sql": "SELECT * FROM p ORDER BY id; SELECT id,pid FROM t ORDER BY id;"
+        }
+      ]
+    },
+    {
+      "name": "direct-declare-first",
+      "steps": [
+        {
+          "kind": "batch",
+          "sql": "ALTER DATABASE SCOPED CONFIGURATION SET PREVIEW_FEATURES=ON; CREATE TABLE t(id int CONSTRAINT PK_t PRIMARY KEY,v vector(3)); INSERT t VALUES(1,'[1,0,0]'),(2,'[0,1,0]');"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE TRIGGER tr ON t INSTEAD OF UPDATE AS SELECT 12 AS intercepted;"
+        },
+        {
+          "kind": "batch",
+          "sql": "CREATE VECTOR INDEX vi ON t(v) WITH(METRIC='cosine',MAXDOP=1);"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @n int=0; UPDATE t SET id=id; SELECT @n AS n;"
+        },
+        {
+          "kind": "batch",
+          "sql": "DECLARE @q vector(3)='[1,0,0]'; SELECT s.id,distance FROM VECTOR_SEARCH(TABLE=t AS s,COLUMN=v,SIMILAR_TO=@q,METRIC='cosine',TOP_N=2) ORDER BY distance,s.id;"
+        }
+      ]
+    }
+  ]
+}
