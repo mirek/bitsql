@@ -9,6 +9,8 @@ import {
 // Values
 pub fn debug_fn(Fn) -> String
 
+pub fn explain_plan(Plan, (Int, Int) -> String) -> ExplainedPlan
+
 // Errors
 
 // Types and methods
@@ -55,6 +57,22 @@ pub(all) enum CmpOp {
   Gt
   Ge
 } derive(Eq, @debug.Debug)
+
+pub(all) struct ExplainedNode {
+  id : Int
+  parent : Int
+  depth : Int
+  operator : String
+  detail : String
+} derive(ToJson)
+
+pub(all) struct ExplainedPlan {
+  schema_version : Int
+  kind : String
+  truncated : Bool
+  nodes : Array[ExplainedNode]
+} derive(ToJson)
+pub fn ExplainedPlan::text(Self) -> String
 
 pub(all) struct Expr {
   kind : ExprKind

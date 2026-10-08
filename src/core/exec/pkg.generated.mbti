@@ -50,6 +50,7 @@ pub fn stream(Ctx, @ir.Plan, (Array[@types.Value]) -> Unit raise @types.SqlError
 
 // Types and methods
 pub(all) struct Ctx {
+  profile : QueryProfile?
   rt : Runtime
   vars : Array[@types.Value]
   row : Array[@types.Value]
@@ -77,6 +78,27 @@ pub(all) struct ErrorInfo {
 } derive(@debug.Debug)
 
 type Memo
+
+pub struct QueryProfile {
+  events : Array[Json]
+  mut events_truncated : Bool
+  mut source_calls : Int64
+  mut source_rows : Int64
+  mut scan_rows : Int64
+  mut seek_attempts : Int64
+  mut seek_hits : Int64
+  mut seek_candidates : Int64
+  mut json_seek_attempts : Int64
+  mut json_seek_hits : Int64
+  mut json_seek_candidates : Int64
+  mut vector_searches : Int64
+  mut vector_candidates : Int64
+  mut scalar_function_calls : Int64
+  mut table_function_calls : Int64
+}
+pub fn QueryProfile::counters(Self) -> Json
+pub fn QueryProfile::new() -> Self
+pub fn QueryProfile::wrap(Self, Ctx) -> Ctx
 
 pub(all) struct Runtime {
   mut rowcount : Int64

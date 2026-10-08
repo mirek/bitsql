@@ -1,8 +1,8 @@
 // Values come from the checked-in raw benchmark, also offered as a download.
-import evidence from '../public/benchmark-0.1.24.json';
+import evidence from '../public/benchmark-0.1.26.json';
 const [bitsql, sqlserver] = evidence.results;
 export const benchmarks = [
-  { name: 'Image download', unit: 'MiB', values: [bitsql.downloadBytes / 2 ** 20, sqlserver.downloadBytes / 2 ** 20] },
+  { name: 'Image on disk', unit: 'MiB', values: [bitsql.imageBytes / 2 ** 20, sqlserver.imageBytes / 2 ** 20] },
   { name: 'Idle memory', unit: 'MiB', values: [bitsql.idle.used / 2 ** 20, sqlserver.idle.used / 2 ** 20] },
   { name: 'Cold start → first query', unit: 'ms', values: [bitsql.coldStartMs, sqlserver.coldStartMs] },
   { name: 'TLS login', unit: 'ms', values: [bitsql.loginMs, sqlserver.loginMs] },

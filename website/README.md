@@ -51,10 +51,10 @@ results can exhaust browser memory, so use the container for large workloads.
 
 ## Measurements
 
-`public/benchmark-0.1.24.json` is copied unchanged from the recorded
-`harness/out/bench-compare-0.1.24.json` run. Chart bars and ratios derive from
-those values, with each pair sharing a linear scale starting at zero. The page
-includes the slower point-read result and the cold-start sample limitation.
+`public/benchmark-0.1.26.json` is copied unchanged from the recorded
+`harness/out/bench-compare-0.1.26.json` run. Chart bars and ratios derive from
+those values, with each pair sharing a linear scale starting at zero. The image chart uses on-disk size because the temporary benchmark image was
+not yet in a registry. The page includes the slower point-read result and the cold-start sample limitation.
 See the root README and `docs/design/performance.md` for reproduction commands.
 On a measured release update, replace the evidence file and update the version,
 headline figures and methodology together. Do not substitute browser timings

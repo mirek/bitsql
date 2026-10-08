@@ -1204,3 +1204,57 @@ registry layer size is 14,327,342 bytes (13.7 MiB), filled into the benchmark
 record after publication. Remote config digest and labels match release commit
 `5284898b1743003c58a247cbda96351c2bd897c7`; image filesystem layers were unchanged
 when the revision label was stamped. See the [audit](sql2025-audit.md) for digests.
+
+## 2026-10-08 — Opt-in query diagnostics
+
+Version 0.1.26 adds `emulator.explain` and `emulator.profile`; ordinary queries
+collect no statistics. Full history remains deferred. The detailed
+[diagnostic contract](query-diagnostics.md) distinguishes logical plan structure,
+actual selected algorithms and overlapping storage-boundary counters.
+
+Disabled-overhead experiment: packaged native 0.1.25 and 0.1.26 binaries,
+Ryzen 9 7950X3D, 20,000 rows, 21 rounds of 100 requests per mode, after warm-up.
+Modes (old ordinary/new ordinary/new profile) rotate each round. Both servers
+and the client were pinned to CPU 31 to remove cross-core migration variance.
+The table is median server CPU milliseconds per complete request, from
+`/proc/<pid>/schedstat`; profile includes formatting/transmitting its extra
+report. No timestamps were added to the pure core. Raw round samples and wall
+times: [query-diagnostics-0.1.26.json](../benchmarks/query-diagnostics-0.1.26.json).
+
+| Shape | 0.1.25 | 0.1.26 off | 0.1.26 profile | Disabled change | Profile vs off |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Constant | 0.0398 | 0.0397 | 0.0623 | -0.1% | +56.8% |
+| Point seek | 0.0563 | 0.0562 | 0.0844 | -0.2% | +50.1% |
+| Scan/filter aggregate | 0.4192 | 0.4115 | 0.4298 | -1.8% | +4.4% |
+| Equi-join | 1.3042 | 1.2933 | 1.3613 | -0.8% | +5.3% |
+| Top-N | 1.6929 | 1.7086 | 1.7500 | +0.9% | +2.4% |
+| Correlated subquery | 2.9039 | 2.8935 | 2.9971 | -0.4% | +3.6% |
+
+This establishes no substantial disabled regression in these sampled shapes,
+not zero overhead for every workload. Preliminary unpinned runs varied from
+about -10% to +9% on the disabled path, motivating the controlled comparison.
+The enabled cost is most visible in tiny queries: 23–28 microseconds here.
+Counters and physical events enable stable regression assertions even when
+wall-clock measurements are noisy.
+
+Reproduce (native binaries only):
+
+```bash
+BASELINE_BIN=/path/to/0.1.25/bitsql BITSQL_BIN=/path/to/0.1.26/bitsql \
+  ROUNDS=21 REPS=100 taskset -c 31 node harness/bench/diagnostics.mjs
+```
+
+The container comparison was also refreshed using the final amd64 binary in
+`bitsql-diagnostics:0.1.26`, before publication. It ran sequentially against
+native SQL Server 17.0.5005.3 on the shared host, with one cold start per target,
+five warmed shape samples and five warmed point-read batches. It measured
+39.9 MiB on disk, 220 ms startup and 5.2 MiB idle memory; 1,000 point reads took
+162 ms versus SQL Server's 134 ms. The 24 shape medians sum to 358 ms versus
+686 ms. This comparison is not CPU-pinned and should not be used to attribute
+cross-release timing changes to the instrumentation. Full tables are in README;
+raw data is [benchmark-0.1.26.json](../../website/public/benchmark-0.1.26.json).
+Compressed download size is absent because the benchmark image was local.
+
+The repeat initially found port 47340 busy. `bench:compare` now accepts
+`--bitsql-port` and `--mssql-port` within 47300–47399; this recorded run used
+47348 and 47349. No unrelated container or listener was stopped.

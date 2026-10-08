@@ -7,6 +7,7 @@
 //   npm run bench:compare -- --only bitsql         # one target (bitsql|mssql)
 //   npm run bench:compare -- --starts 5 --rows 20000 --json out/bench.json
 //   BITSQL_IMAGE=bitsql:dev npm run bench:compare  # a locally built image
+//   npm run bench:compare -- --bitsql-port 47348 --mssql-port 47349
 //   npm run bench:compare -- --from out/bench.json # re-render a --json run
 //
 // Containers: bitsql-bench-bitsql (127.0.0.1:47340) and bitsql-bench-mssql
@@ -34,10 +35,13 @@ const rows = Number(flags.rows ?? 20000)
 const version = readFileSync(resolve(repoDir, 'moon.mod'), 'utf8').match(/^version = "(.*)"/m)[1]
 const password = 'Bench!9bitsql-compare'
 const targets = [
-  { key: 'bitsql', image: process.env.BITSQL_IMAGE ?? `mirek/bitsql:${version}`, port: 47340, env: [] },
-  { key: 'mssql', image: process.env.MSSQL_IMAGE ?? oracleImage, port: 47341,
+  { key: 'bitsql', image: process.env.BITSQL_IMAGE ?? `mirek/bitsql:${version}`, port: Number(flags['bitsql-port'] ?? 47340), env: [] },
+  { key: 'mssql', image: process.env.MSSQL_IMAGE ?? oracleImage, port: Number(flags['mssql-port'] ?? 47341),
     env: ['ACCEPT_EULA=Y', 'MSSQL_PID=Developer', `MSSQL_SA_PASSWORD=${password}`] },
 ].filter(t => !flags.only || t.key === flags.only)
+for (const t of targets) {
+  if (!Number.isInteger(t.port) || t.port < 47300 || t.port > 47399) throw new Error('Benchmark ports must be in 47300–47399')
+}
 
 const median = xs => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]
 const mib = bytes => bytes / 1048576

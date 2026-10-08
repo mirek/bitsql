@@ -147,6 +147,8 @@ pub fn Runtime::next_random(self : Runtime) -> UInt64 {
 ///|
 /// Evaluation context: variable slots, the current row and enclosing rows.
 pub(all) struct Ctx {
+  /// Present only for explicitly requested diagnostics.
+  profile : QueryProfile?
   rt : Runtime
   vars : Array[@types.Value]
   row : Array[@types.Value]

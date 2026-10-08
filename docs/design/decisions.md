@@ -1309,3 +1309,14 @@ explicit exception to the default native-only build policy: --multiarch enables
 ARM64 cross-compilation on amd64 without QEMU, publishes both same-version
 images, and runs only the native client suite. Default publishing remains
 native-only. Do not describe the cross-built ARM64 image as runtime-validated.
+
+## 2026-10-08 — On-demand executor diagnostics, no Query Store history
+
+The user chose a development-oriented subset after the 0.1.25 metadata scaffold:
+`emulator.explain` binds one SELECT and `emulator.profile` executes it with a
+request-local observer. Reports describe bitsql's logical operators, selected
+actual algorithms and deterministic storage-boundary counters; they do not
+imitate SQL Server costs, Showplan or historical Query Store state. Ordinary
+contexts have no observer and no new per-row profiling checks. Full monitoring,
+retention and forcing remain deferred. Usage, coverage and counter limitations
+are maintained in [query diagnostics](query-diagnostics.md).

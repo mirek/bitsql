@@ -92,6 +92,7 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
     seek: @exec.no_seek,
     seek_json: @exec.no_json_seek,
     vector_search: @exec.no_vector_search,
+    profile: None,
     stamp: @exec.no_stamp,
   }
   Some(@exec.eval(ctx, e)) catch {
@@ -263,6 +264,7 @@ fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
     seek: @exec.no_seek,
     seek_json: @exec.no_json_seek,
     vector_search: @exec.no_vector_search,
+    profile: None,
     stamp: @exec.no_stamp,
   }
   ignore(@exec.eval(ctx, e))

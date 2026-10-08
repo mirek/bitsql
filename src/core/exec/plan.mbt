@@ -193,8 +193,14 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
       let values = rows.map(row => cs.map(f => f(ctx, row)))
       let n = top_count(ctx, count, percent, rows.length())
       if n * 4 >= rows.length() && sort_order(values, keys) is Some(order) {
+        if ctx.profile is Some(p) {
+          p.record("top_sort_order", rows.length(), n)
+        }
         order[0:n].iter().map(i => rows[i]).to_array()
       } else if n * 4 >= rows.length() {
+        if ctx.profile is Some(p) {
+          p.record("top_full_sort", rows.length(), n)
+        }
         let ansi = keys.map(ansi_key)
         let prepared = rows.mapi((i, row) => {
           (order_keys(values[i], keys, ansi), row)
@@ -202,6 +208,9 @@ pub fn run(ctx : Ctx, plan : @ir.Plan) -> Array[Row] raise @types.SqlError {
         sort_prepared(prepared, keys, ansi)
         prepared[0:n].iter().map(p => p.1).to_array()
       } else {
+        if ctx.profile is Some(p) {
+          p.record("top_heap", rows.length(), n)
+        }
         top_n_values(values, rows, n, keys)
       }
     }
@@ -834,6 +843,18 @@ fn join_each(
     Some(p) => equi_index(p, left_width, rs)
     None => None
   }
+  if ctx.profile is Some(profile) {
+    let algorithm = match index {
+      Some(ix) =>
+        if ix.heads is Some(_) {
+          "hash_equi_join"
+        } else {
+          "sorted_equi_join"
+        }
+      None => "nested_loop_join"
+    }
+    profile.record(algorithm, ls.length(), rs.length())
+  }
   let con = on.map(compile)
   let exact = index is Some(ix) && ix.exact
   let check = (row : Row) => {
@@ -892,8 +913,16 @@ fn sort_rows(
   let cs = keys.map(k => compile(k.expr))
   let values = rows.map(row => cs.map(f => f(ctx, row)))
   match sort_order(values, keys) {
-    Some(order) => order.map(i => rows[i])
+    Some(order) => {
+      if ctx.profile is Some(p) {
+        p.record("sort_order", rows.length(), 0)
+      }
+      order.map(i => rows[i])
+    }
     None => {
+      if ctx.profile is Some(p) {
+        p.record("full_sort", rows.length(), 0)
+      }
       let prepared = rows.mapi((i, row) => {
         (order_keys(values[i], keys, ansi), row)
       })

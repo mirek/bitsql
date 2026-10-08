@@ -24,6 +24,24 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
 - [x] Published native amd64 0.1.24; registry manifests and release labels
   verified for `0.1.24`, `0.1`, and `latest`. ARM64 awaits its native host.
 
+## Opt-in query diagnostics (2026-10-08)
+
+New user-approved goal: useful explain/profile instrumentation, OFF by default,
+with structural Query Store compatibility retained. Scope and release checklist:
+[query diagnostics](query-diagnostics.md). Full history and SQL Server cost/plan
+replication are deferred.
+
+- [x] Versioned logical explain and request-local profiling via batch EXEC/RPC;
+  selected physical choices, bounded reports, scan/seek regression tests.
+- [x] Disabled overhead measured against 0.1.25 on one CPU: -1.8% to +0.9%
+  across six shapes. Enabled cost and limitations documented.
+- [x] README, website example and benchmark evidence refreshed.
+- [x] Full gate: 1,778 MoonBit tests, 23,709 client checks (three existing
+  skips), website 12 passes/one existing browser skip and production build.
+- [x] Both release binaries built from the same source; packaged amd64 client
+  suite: 23,709 passes, zero failures, three existing skips. No ARM64 execution.
+- [ ] Publish and verify 0.1.26 amd64+arm64 manifests and running native image.
+
 ## Query Store compatibility (2026-10-08)
 
 - [x] User chose an empty-view compatibility release; full statistics collection

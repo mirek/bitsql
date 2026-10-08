@@ -176,6 +176,17 @@ fn Session::exec_query(
         _ => @bind.bind_query(self.env(), q)
       }
   }
+  ignore(self.exec_bound_query(q, bound, line))
+}
+
+///|
+fn Session::exec_bound_query(
+  self : Session,
+  q : @ast.Query,
+  bound : @bind.BoundQuery,
+  line : Int,
+  profile? : @exec.QueryProfile? = None,
+) -> Int64 raise {
   self.check_json_index_paths(bound.plan)
   let cols = bound.columns.map(tds_column)
   self.out.push(ResultSet(cols))
@@ -190,7 +201,11 @@ fn Session::exec_query(
   self.rt.null_eliminated = false
   self.rt.count_override = None
   let mut n = 0L
-  @exec.stream(self.ctx(), bound.plan, r => {
+  let ctx = match profile {
+    Some(p) => p.wrap(self.ctx())
+    None => self.ctx()
+  }
+  @exec.stream(ctx, bound.plan, r => {
     for value in r {
       if value is NativeJson(data) && data.is_corrupt() {
         self.out.push(Disconnect)
@@ -215,6 +230,7 @@ fn Session::exec_query(
     }
     e => raise e
   }
+  let returned_rows = n
   if self.rt.count_override is Some(c) {
     n = c
     self.rt.count_override = None
@@ -222,4 +238,5 @@ fn Session::exec_query(
   self.emit_null_warning(line)
   self.rt.rowcount = n
   self.done(193, count=Some(n), result_set=true)
+  returned_rows
 }

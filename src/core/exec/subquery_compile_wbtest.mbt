@@ -109,6 +109,7 @@ fn subquery_execution_trace(
     seek: no_seek,
     seek_json: no_json_seek,
     vector_search: no_vector_search,
+    profile: None,
     stamp: (_, _) => if stamped { Some(revision) } else { None },
   }
   let f = compile(expr)

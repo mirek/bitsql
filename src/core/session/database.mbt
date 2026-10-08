@@ -120,6 +120,10 @@ fn Session::exec_emulator_proc(
   args : Array[@ast.ExecArg],
 ) -> Bool raise {
   let op = proc.to_lower()
+  if op is ("explain" | "profile") {
+    self.query_diagnostics(op, args)
+    return true
+  }
   if op != "snapshot" && op != "restore" && op != "drop_snapshot" {
     return false
   }

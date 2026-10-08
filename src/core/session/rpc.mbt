@@ -336,6 +336,7 @@ fn Session::ctx_with(self : Session, frame : Frame) -> @exec.Ctx {
         scope, id, index_id, query, top, width, expansion,
       )
     },
+    profile: None,
     stamp: self.stamp_reader(),
   }
 }
@@ -648,6 +649,12 @@ fn Session::rpc_proc(
         span,
       }
     })
+    if on.parts.length() == 2 &&
+      on.parts[0].name.to_lower() == "emulator" &&
+      on.base().to_lower() is ("explain" | "profile") &&
+      self.exec_emulator_proc(on.base(), args) {
+      return
+    }
     if self.exec_system_proc(on, args, None) {
       return
     }

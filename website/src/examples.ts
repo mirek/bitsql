@@ -14,7 +14,15 @@ INSERT INTO orders VALUES (1, 1, 42.50), (2, 1, 17.25), (3, 2, 89.00);
 SELECT c.name, COUNT(*) AS orders, SUM(o.amount) AS total
 FROM customers c JOIN orders o ON o.customer_id = c.id
 GROUP BY c.name ORDER BY total DESC;` },
-  { name: 'Window functions', sql: `SELECT value AS n,
+  { name: 'Inspect a query', sql: `-- Explain binds without executing. Profile executes once and adds counters.
+-- Instrumentation is off for ordinary queries; no history is retained.
+DROP TABLE IF EXISTS diagnostic_orders;
+CREATE TABLE diagnostic_orders (id int PRIMARY KEY, total int);
+INSERT diagnostic_orders SELECT value, 101-value FROM GENERATE_SERIES(1, 100);
+
+EXEC emulator.explain @sql=N'SELECT id FROM diagnostic_orders WHERE id=42';
+EXEC emulator.profile @sql=N'SELECT TOP 3 id,total FROM diagnostic_orders ORDER BY total';` },
+  { name: 'Window functions' , sql: `SELECT value AS n,
   ROW_NUMBER() OVER (ORDER BY value DESC) AS rank,
   SUM(value) OVER (ORDER BY value ROWS UNBOUNDED PRECEDING) AS running_total
 FROM GENERATE_SERIES(1, 10)

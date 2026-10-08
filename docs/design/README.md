@@ -17,7 +17,8 @@ and amended as the project learns. Amendments are logged in
 | [fidelity-traps.md](fidelity-traps.md) | Places where a plausible implementation silently diverges |
 | [verification.md](verification.md) | Differential harness, CI routing |
 | [sql2025-future-work.md](sql2025-future-work.md) | CI release boundary and deferred SQL Server 2025 work |
-| [query-store.md](query-store.md) | Active Query Store implementation and publication requirements |
+| [query-diagnostics.md](query-diagnostics.md) | Opt-in bitsql explain/profile, counter definitions and limits |
+| [query-store.md](query-store.md) | Published Query Store metadata compatibility boundary |
 | [roadmap.md](roadmap.md) | Phases, gates, **live status**, risks |
 | [decisions.md](decisions.md) | Dated log of amendments to the original draft |
 

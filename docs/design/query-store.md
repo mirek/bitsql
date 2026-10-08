@@ -21,8 +21,8 @@ remains a reference for names, metadata and configuration contracts.
   empty store. Operations on query/plan IDs report missing-ID or disabled-store
   errors. No successful plan forcing, hint application or statistics mutation
   is advertised. Other unimplemented capabilities remain explicit errors.
-- No per-statement collector, identity map, timer samples or counter updates
-  remain in the execution path. Proper collection is deferred unless a concrete
+- No Query Store per-statement collector, identity map, timer samples or
+  counter updates remain in the ordinary execution path. Proper collection is deferred unless a concrete
   application-testing need justifies it.
 
 ## Evidence and release checklist
@@ -54,6 +54,9 @@ local ARM64 runtime tests. The explicit --multiarch publishing option cross-buil
 ARM64 from the same generated C and toolchain runtime version without emulation;
 local runtime validation covers amd64. Pause this goal after publication and
 published-image verification, as requested by the user.
+
+For opt-in inspection of the emulator itself, see [query diagnostics](query-diagnostics.md).
+Those request-local reports do not populate any Query Store view.
 
 ## Published 0.1.25
 

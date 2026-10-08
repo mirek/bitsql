@@ -609,3 +609,8 @@ release; another host can add its architecture after its native checks pass.
   native amd64 client suite. Default releases remain native-only. Verify both
   manifest entries and same-version/revision labels; do not claim ARM64 runtime
   validation from a successful cross-build.
+
+- 2026-10-08: `bench:compare --bitsql-port 47348 --mssql-port 47349` selects
+  alternate ports within bitsql's allowed range when defaults are busy. Run
+  comparison and diagnostics benchmarks sequentially; interleave diagnostic
+  modes on one CPU to reduce migration noise (`harness/bench/diagnostics.mjs`).

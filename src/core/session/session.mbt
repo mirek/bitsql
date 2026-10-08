@@ -653,6 +653,7 @@ fn Session::ctx(self : Session) -> @exec.Ctx {
         scope, id, index_id, query, top, width, expansion,
       )
     },
+    profile: None,
     stamp: self.stamp_reader(),
   }
 }
