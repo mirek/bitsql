@@ -97,8 +97,7 @@ fn Session::sys_view_binding(
   if s == "sys" &&
     (
       base.to_lower().has_prefix("query_store_") ||
-      base.to_lower()
-      is ("query_context_settings" | "database_query_store_internal_state")
+      base.to_lower() is "database_query_store_internal_state"
     ) {
     raise @types.not_supported("Query Store workload history")
   }
@@ -559,6 +558,12 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
   match key {
+    "sys.query_context_settings" => {
+      let database = if self.view_tempdb { "tempdb" } else { self.rt.database }
+      for context in self.server.query_history(database).contexts.values() {
+        out.push(context.row())
+      }
+    }
     "sys.database_query_store_options" =>
       if !self.view_tempdb &&
         !(self.rt.database.to_lower()

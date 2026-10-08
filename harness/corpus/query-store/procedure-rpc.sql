@@ -1,0 +1,24 @@
+-- Direct TDS RPC uses the same native Query Store procedures.
+-- @step proc sys.sp_query_store_flush_db
+-- @step proc sys.sp_query_store_clear_message_queues
+-- @step proc sys.sp_query_store_consistency_check
+-- @step proc sys.sp_query_store_remove_plan
+-- @param @plan_id bigint = "987654321"
+-- @step proc sys.sp_query_store_remove_query
+-- @param @query_id bigint = "987654321"
+-- @step proc sys.sp_query_store_force_plan
+-- @param @query_id bigint = "987654321"
+-- @param @plan_id bigint = "987654321"
+-- @step proc sys.sp_query_store_unforce_plan
+-- @param @query_id bigint = "987654321"
+-- @param @plan_id bigint = "987654321"
+-- @step proc sys.sp_query_store_set_hints
+-- @param @query_id bigint = "987654321"
+-- @param @query_hints nvarchar(100) = "OPTION (MAXDOP 1)"
+-- @step proc sys.sp_query_store_clear_hints
+-- @param @query_id bigint = "987654321"
+-- @step proc sys.sp_query_store_flush_db
+-- @param @unexpected int = 1
+-- @step proc sys.sp_query_store_remove_plan
+-- @step proc sys.sp_query_store_remove_plan
+-- @param @plan_id nvarchar(10) = "wrong"

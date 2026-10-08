@@ -10,6 +10,7 @@ import {
   "mirek/bitsql/core/store",
   "mirek/bitsql/core/tds",
   "mirek/bitsql/core/types",
+  "moonbitlang/core/set",
 }
 
 // Values
@@ -45,6 +46,7 @@ pub(all) struct LockKey {
 }
 
 pub(all) struct Proc {
+  source : String
   name : String
   def : @ast.CreateProcedure
   ansi_nulls : Bool
@@ -94,6 +96,8 @@ pub struct Session {
   mut implicit_tx : Bool
   mut isolation : String
   mut lock_timeout : Int
+  mut query_store_seen : Int
+  query_store_recorded : @set.Set[Int]
   mut waits_seen : Int
   mut waits_done : Int
   mut configuration_reads_seen : Int

@@ -376,11 +376,13 @@ pub fn Session::run_rpc(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.query_store_recorded.clear()
     self.http_tables = None
     self.http_query = None
     self.embeddings.clear()
     self.embedding_pending = None
   }
+  self.query_store_seen = 0
   self.waits_seen = 0
   self.configuration_reads_seen = 0
   self.embeddings_seen = 0

@@ -34,8 +34,16 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
   Full gate: 1,772 MoonBit tests, 23,694 client checks passed (three skips),
   website checks/build passed. Remaining option boundaries and their effects on
   capture/cleanup await history.
-- [ ] Capture query/plan/context/runtime/wait history and expose live views.
-- [ ] Implement management procedures, plan forcing, hints and related functions.
+- [~] Database-scoped successful execution identity/count collection and live
+  `sys.query_context_settings` pass focused tests and an oracle differential.
+  Replay, rollback, CLEAR and isolation are covered. Query/plan/runtime/wait
+  projections, admission policies, failures and host measurements remain.
+- [~] Five procedure contract cases pass: validation, absent-ID/disabled errors,
+  status variables, TRY/CATCH and RPC completions. Operations on stored plans,
+  forcing, hints and related functions still require execution history.
+  Collector/procedure gate: 1,779 MoonBit tests and 23,703 client checks passed
+  (three existing skips), including all nine Query Store allowlisted cases;
+  website tests/build passed.
 - [ ] Full local gate, version bump, native container publication and pull/run verification.
 
 ## Website and adoption (2026-10-07)

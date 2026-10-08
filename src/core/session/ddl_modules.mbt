@@ -273,6 +273,7 @@ fn Session::exec_create_procedure(
   }
   let m = self.define_module(p.mode, p.name, Procedure, 222, start)
   self.server.procs[m.name.to_lower()] = {
+    source: self.text,
     name: m.name,
     def: p,
     ansi_nulls: m.ansi_nulls,
@@ -494,6 +495,20 @@ fn Session::exec_system_proc(
   return_var : String?,
 ) -> Bool raise {
   match name.base().to_lower() {
+    "sp_query_store_flush_db"
+    | "sp_query_store_clear_message_queues"
+    | "sp_query_store_consistency_check"
+    | "sp_query_store_reset_exec_stats"
+    | "sp_query_store_force_plan"
+    | "sp_query_store_unforce_plan"
+    | "sp_query_store_remove_plan"
+    | "sp_query_store_remove_query"
+    | "sp_query_store_set_hints"
+    | "sp_query_store_clear_hints"
+    | "sp_query_store_remove_plan_feedback" as proc_name => {
+      self.exec_query_store_proc(proc_name, args, return_var)
+      true
+    }
     "sp_configure" => {
       self.exec_sp_configure(args, return_var)
       true

@@ -596,3 +596,8 @@ builds/tests/publishes the native architecture and preserves other already
 published architectures of that same version. Coordinate manifest writes across
 hosts. Publishing the verified native architecture is sufficient for this host's
 release; another host can add its architecture after its native checks pass.
+
+- 2026-10-08: allowlist selectors are corpus paths, not case IDs: a SQL file
+  needs its `.sql` suffix (`query-store/options.sql`). A bare case ID silently
+  selects nothing. Check new case names in the gate log; the Query Store
+  collector gate caught nine missing suffixes despite focused diffs passing.

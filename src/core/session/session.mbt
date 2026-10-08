@@ -1,6 +1,8 @@
 ///|
 /// A stored procedure definition (until the catalog lands in core/store).
 pub(all) struct Proc {
+  /// Source corresponding to the stored AST spans (before catalog rewriting).
+  source : String
   name : String
   def : @ast.CreateProcedure
   /// SET ANSI_NULLS at CREATE / ALTER PROCEDURE: the body runs with it.
@@ -53,6 +55,7 @@ pub struct Server {
   priv udfs : Map[Int, UdfDef]
   /// ALTER DATABASE settings by lowercased database name (absent: the
   /// defaults of `DbOptions::default`).
+  priv query_histories : Map[String, QueryStoreHistory]
   priv db_options : Map[String, DbOptions]
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
@@ -62,6 +65,7 @@ pub struct Server {
 
 ///|
 priv struct ServerSnapshot {
+  query_histories : Map[String, QueryStoreHistory]
   external_model_ids : Map[String, Int]
   dbs : Map[String, @store.Db]
   db_names : Map[String, String]
@@ -106,6 +110,7 @@ pub fn Server::new() -> Server {
     woken: [],
     victims: [],
     udfs: Map([]),
+    query_histories: Map([]),
     db_options: Map([]),
     backups: BackupStore::new(),
     parse_cache: ParseCache::new(),
@@ -366,6 +371,8 @@ pub struct Session {
   mut lock_timeout : Int
   /// WAITFORs passed in the current request (counted while it runs) and
   /// completed before its last park; the re-run skips completed ones.
+  mut query_store_seen : Int
+  query_store_recorded : Set[Int]
   mut waits_seen : Int
   mut waits_done : Int
   mut configuration_reads_seen : Int
@@ -553,6 +560,8 @@ pub fn Session::new(
     session_context: Map([]),
     error_override: None,
     context_info: None,
+    query_store_seen: 0,
+    query_store_recorded: Set([]),
     waits_seen: 0,
     waits_done: 0,
     configuration_reads_seen: 0,
@@ -782,11 +791,13 @@ pub fn Session::run_batch(
   if !self.parked {
     self.waits_done = 0 // a new request (not a re-run of a parked one)
     self.configuration_reads.clear()
+    self.query_store_recorded.clear()
     self.http_tables = None
     self.http_query = None
     self.embeddings.clear()
     self.embedding_pending = None
   }
+  self.query_store_seen = 0
   self.waits_seen = 0
   self.configuration_reads_seen = 0
   self.embeddings_seen = 0
@@ -798,6 +809,7 @@ pub fn Session::run_batch(
   self.text = text
   self.rpc = false
   if continuation is Some(r) {
+    self.query_store_seen = r.query_store_seen
     self.waits_seen = r.waits_seen
     self.configuration_reads_seen = r.configuration_reads_seen
     self.embeddings_seen = r.embeddings_seen
