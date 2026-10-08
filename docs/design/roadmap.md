@@ -40,7 +40,9 @@ replication are deferred.
   skips), website 12 passes/one existing browser skip and production build.
 - [x] Both release binaries built from the same source; packaged amd64 client
   suite: 23,709 passes, zero failures, three existing skips. No ARM64 execution.
-- [ ] Publish and verify 0.1.26 amd64+arm64 manifests and running native image.
+- [x] Published and verified 0.1.26 amd64+arm64 (source ef97f22);
+  version/0.1/latest share one index, labels match, pulled native checks 7/7.
+  Website deployment and live diagnostics mention verified.
 
 ## Query Store compatibility (2026-10-08)
 

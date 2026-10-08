@@ -3,15 +3,20 @@ import assert from 'node:assert/strict'
 import { connect, close } from '../src/client.mjs'
 import { capture } from '../src/capture-core.mjs'
 import { server } from './support.mjs'
+import { randomUUID } from 'node:crypto'
 
 const command = (op, sql) => `EXEC emulator.${op} @sql=N'${sql.replaceAll("'", "''")}'`
 const report = result => JSON.parse(result.sets.at(-1).rows[0][1])
 async function fixture(t) {
   const s = await server(t)
   const c = await connect(s.config)
-  t.after(() => close(c))
+  const database = `diagnostics_${randomUUID().replaceAll('-', '')}`
+  t.after(async () => {
+    try { await capture(c, { kind: 'batch', sql: `USE master; DROP DATABASE IF EXISTS ${database}` }) }
+    finally { await close(c) }
+  })
   const run = sql => capture(c, { kind: 'batch', sql })
-  const setup = await run('CREATE TABLE diagnostic_data(id int NOT NULL, n int NOT NULL); INSERT diagnostic_data SELECT value, 101-value FROM GENERATE_SERIES(1,100);')
+  const setup = await run(`CREATE DATABASE ${database}; USE ${database}; CREATE TABLE diagnostic_data(id int NOT NULL, n int NOT NULL); INSERT diagnostic_data SELECT value, 101-value FROM GENERATE_SERIES(1,100);`)
   assert.deepEqual(setup.errors, [])
   return { c, run }
 }

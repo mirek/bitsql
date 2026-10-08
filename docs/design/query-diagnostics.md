@@ -44,7 +44,7 @@ Bounded history may be considered later if actual developer usage justifies it.
 - [x] Client API, correctness/error/cleanup tests and regression examples.
 - [x] Disabled-overhead and enabled-cost measurements.
 - [x] Documentation/site and full gate; both architecture binaries built.
-- [ ] Multi-architecture publication verification.
+- [x] Multi-architecture publication verification.
 
 ## Using the diagnostics
 
@@ -145,3 +145,24 @@ three existing skips; all core packages check on every backend. Website: 12
 passes, one existing browser-test skip and production build passed, including
 the diagnostics example. The packaged amd64 binary independently passed the
 same 23,709 client checks. ARM64 was cross-built, never locally executed.
+
+
+## Published 0.1.26
+
+Both images are built from `ef97f22759ed0efe9be0b0a75c2e5840a77241c2`.
+The version/revision labels were verified after pulling both registry images.
+Tags `0.1.26`, `0.1` and `latest` resolve to the same amd64+arm64 index:
+
+- Index: `sha256:e809242a7f4c6ae8f9cb9c3117b0d5daf1e4ddd381a98d86224f714d094b2a89`
+- amd64: `sha256:e2882d76296ec4c0ef8c8d969c4d24440f6a17fc96830e4f5a33da24b215c4dc`
+- arm64: `sha256:22b0cd84ce001cbcca1f1a73a1f5d81a885a2477c19b94d2bfed64784fde0112`
+
+A container started from the pulled amd64 image passed all five diagnostics
+client tests, the captured empty Query Store descriptor/workload check and the
+release-version check (7/7). Diagnostics tests use isolated databases and clean
+them up, so they also work with `BITSQL_ADDR` targeting a shared server.
+ARM64 was not executed locally. The verification container was removed.
+
+The [website deployment](https://github.com/mirek/bitsql/actions/runs/37754882471)
+succeeded; the [live site](https://mirekrusin.com/bitsql/) advertises 0.1.26,
+explains the default-off boundary and includes an executable diagnostics example.
