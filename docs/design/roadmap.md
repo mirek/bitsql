@@ -35,8 +35,12 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
   views remain empty after workload. Prior experiment preserved in 51b7954.
 - [x] Full 0.1.25 local gate: 1,772 MoonBit tests, 23,704 client checks
   (three existing skips), website tests/build.
-- [ ] Commit/push, amd64+arm64 container publication and registry/pull/run
-  verification (runtime checks on native amd64).
+- [x] Published 0.1.25 for amd64+arm64 from ae74375; verified version/0.1/latest
+  manifests and both revision labels. Packaged amd64: 23,704 checks passed;
+  pulled-container version/scaffold tests 2/2 and targeted differentials 4/4.
+  ARM64 cross-built without local execution, as requested.
+- User requested pausing the goal after publication; no live-collection work
+  should continue automatically.
 
 ## Website and adoption (2026-10-07)
 

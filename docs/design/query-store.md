@@ -36,8 +36,10 @@ after actual workload and lifecycle changes against captured descriptors.
 
 - [x] Full local gate for 0.1.25: 1,772 MoonBit tests, 23,704 client checks
   (three existing skips), and website tests/build passed.
-- [ ] Commit/push main and publish amd64 and arm64 images.
-- [ ] Verify registry version/revision and run the published amd64 image's scaffold checks.
+- [x] Commit/push main and publish amd64 and arm64 images (source ae74375).
+- [x] Verified registry version/revision for both architectures and ran the
+  published amd64 image: version/scaffold tests 2/2 and targeted oracle
+  differentials 4/4 passed.
 
 ## Preserved experimental work
 
@@ -52,3 +54,18 @@ local ARM64 runtime tests. The explicit --multiarch publishing option cross-buil
 ARM64 from the same generated C and toolchain runtime version without emulation;
 local runtime validation covers amd64. Pause this goal after publication and
 published-image verification, as requested by the user.
+
+## Published 0.1.25
+
+The full packaged-amd64 client suite passed 23,704 checks with zero failures
+and three existing skips. ARM64 was cross-built and its ELF architecture and
+published version/revision were verified; it was not runtime-tested locally.
+The version, 0.1 and latest tags all resolve to the same manifest list:
+
+- Index: sha256:03d845e2cdf84097c711cce8d2ea7b76b9623a5de5ecc0253dff8fc4a90925d4
+- amd64: sha256:00b53c2a300b93970e466cc40f38abbcf98c03945268873f31ccb87288da584c
+- arm64: sha256:d7aa9dc67adacedced2c315e08fa80c0583691942fc4c33652efab115b2a76e0
+
+Both images identify source revision ae74375e8927515a4a3f85be080d397996d4ed69.
+The user requested pausing this goal after the scaffold release; full monitoring
+collection is not scheduled as automatic follow-up work.
