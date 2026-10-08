@@ -66,9 +66,14 @@ for the container comparison.
 publishes through the `github-pages` environment. In the repository's
 **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**.
 Then run **Deploy website** from Actions (or push a website change to main).
-The URL is https://mirek.github.io/bitsql/ . No branch containing generated
+The URL is https://mirekrusin.com/bitsql/ . No branch containing generated
 files is needed. The workflow is scoped to website publishing; the local
 `scripts/check.sh` remains the gate for the full emulator/client suite.
+
+The static HTML includes [Open Graph](https://ogp.me/) metadata and a Twitter
+summary card for link previews without JavaScript. `public/social-logo.png`
+is a 512 × 512 rendering of `public/favicon.svg`. If the public domain changes, update the canonical URL, `og:url`, and both social image URLs in
+`index.html` together.
 
 The workflow pins the same compiler/core version as the repository and runs
 on native amd64. The archive binaries need executable permissions restored
