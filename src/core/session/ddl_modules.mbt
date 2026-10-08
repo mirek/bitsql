@@ -273,7 +273,6 @@ fn Session::exec_create_procedure(
   }
   let m = self.define_module(p.mode, p.name, Procedure, 222, start)
   self.server.procs[m.name.to_lower()] = {
-    source: self.text,
     name: m.name,
     def: p,
     ansi_nulls: m.ansi_nulls,

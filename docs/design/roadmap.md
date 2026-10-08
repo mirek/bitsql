@@ -24,27 +24,19 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
 - [x] Published native amd64 0.1.24; registry manifests and release labels
   verified for `0.1.24`, `0.1`, and `latest`. ARM64 awaits its native host.
 
-## Query Store performance monitoring (2026-10-08)
+## Query Store compatibility (2026-10-08)
 
-- [x] Initial oracle contracts: nine cases cover metadata, options, procedure
-  errors, live workload statistics and lifecycle; all nine reproduce on the
-  oracle. More contracts will be captured alongside implementation. [Implementation and release requirements](query-store.md).
-- [~] Query Store parser and database configuration now match three oracle
-  cases (including OFF/ON retention, CUSTOM settings and system-database errors).
-  Full gate: 1,772 MoonBit tests, 23,694 client checks passed (three skips),
-  website checks/build passed. Remaining option boundaries and their effects on
-  capture/cleanup await history.
-- [~] Database-scoped successful execution identity/count collection and live
-  `sys.query_context_settings` pass focused tests and an oracle differential.
-  Replay, rollback, CLEAR and isolation are covered. Query/plan/runtime/wait
-  projections, admission policies, failures and host measurements remain.
-- [~] Five procedure contract cases pass: validation, absent-ID/disabled errors,
-  status variables, TRY/CATCH and RPC completions. Operations on stored plans,
-  forcing, hints and related functions still require execution history.
-  Collector/procedure gate: 1,779 MoonBit tests and 23,703 client checks passed
-  (three existing skips), including all nine Query Store allowlisted cases;
-  website tests/build passed.
-- [ ] Full local gate, version bump, native container publication and pull/run verification.
+- [x] User chose an empty-view compatibility release; full statistics collection
+  is deferred because the project targets application CI, not performance
+  monitoring. [Scope and release requirements](query-store.md).
+- [x] Oracle-derived descriptors for fourteen views, configuration retention
+  and validation, management-procedure argument/error/RPC contracts.
+- [x] Removed per-statement collection from the release execution path; history
+  views remain empty after workload. Prior experiment preserved in 51b7954.
+- [x] Full 0.1.25 local gate: 1,772 MoonBit tests, 23,704 client checks
+  (three existing skips), website tests/build.
+- [ ] Commit/push, amd64+arm64 container publication and registry/pull/run
+  verification (runtime checks on native amd64).
 
 ## Website and adoption (2026-10-07)
 

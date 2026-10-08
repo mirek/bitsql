@@ -31,7 +31,6 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
       None
     }
     let out_mark = self.out.length()
-    let query_store_seen = self.query_store_seen
     let waits_seen = self.waits_seen
     let configuration_reads_seen = self.configuration_reads_seen
     let embeddings_seen = self.embeddings_seen
@@ -53,7 +52,6 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
           self.out.append(prefix)
           self.batch_resume = Some({
             remaining: stmts[i:].to_owned(),
-            query_store_seen,
             waits_seen,
             configuration_reads_seen,
             embeddings_seen,
@@ -122,7 +120,6 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   let out_mark = self.out.length()
   self.read_only_write = None
-  let query_execution = self.query_store_begin(s)
   let failure = try {
     self.check_http_tables()
     self.exec_stmt(s)
@@ -218,7 +215,6 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // statement-duration locks (and all locks in autocommit) end here
   self.server.wake_all(self.server.locks.release_statement(self.rt.spid))
   guard failure is Some(e) else {
-    self.query_store_finish(query_execution, self.rt.rowcount)
     // a successful statement sets @@ERROR to 0, or to 50000 for
     // RAISERROR ... WITH SETERROR (stmt_error); after EXEC it is the
     // module's last @@ERROR (captured: gaps-procedures #101)

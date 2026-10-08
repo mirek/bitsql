@@ -12,15 +12,18 @@ for the release boundary and [the roadmap](docs/design/roadmap.md) for ongoing w
 
 Behavior is checked against captures from real SQL Server. A feature the
 emulator doesn't support fails with an `Emulator: …` error (numbers
-50100–50199) instead of returning a guess.
+50100–50199) instead of returning a guess. The deliberate exception is
+[Query Store compatibility](docs/design/query-store.md): its history views are
+always empty, and no performance statistics are collected.
 
 ```bash
 docker run --rm -p 1433:1433 mirek/bitsql --auto-create-databases
 ```
 
-Published image: `mirek/bitsql` (tags `X.Y.Z`, `X.Y`, `latest`). Each
-architecture is validated on its native host and added when ready; inspect the
-tag’s manifest for availability. `SELECT @@VERSION` returns `Microsoft SQL Server 2025
+Published image: `mirek/bitsql` (tags `X.Y.Z`, `X.Y`, `latest`). Release 0.1.25
+includes amd64 and arm64; inspect the tag’s manifest for availability.
+For 0.1.25, amd64 is runtime-validated locally and arm64 is cross-built from the
+same source revision without local emulation. `SELECT @@VERSION` returns `Microsoft SQL Server 2025
 (bitsql emulator X.Y.Z)`, so you can tell which release you're connected to,
 and the image has `org.opencontainers.image.version` and `revision` labels.
 
@@ -124,6 +127,16 @@ See the [feature audit](docs/design/sql2025-audit.md) and
 Operational backup/replica features, optimizer internals and advanced inference
 concurrency remain outside this release. Concurrent table changes during an
 embedding HTTP wait raise an explicit unsupported error.
+
+Query Store is a metadata compatibility layer: its catalog views have SQL Server
+column types but history/context/plan/runtime/wait views always return no rows,
+even after queries execute. ON/OFF and policy settings are retained and visible
+in sys.database_query_store_options; they do not enable collection. Flush and
+CLEAR operate on the empty store. Procedures validate arguments and report
+missing query/plan IDs or disabled-state errors; plan forcing, hints and real
+performance monitoring are not implemented. There are no per-statement Query
+Store hooks, timing samples or statistics allocations. See the
+[Query Store boundary](docs/design/query-store.md).
 
 ## Benchmarks
 

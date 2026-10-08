@@ -17,7 +17,17 @@ fn QueryStoreOptions::default(db : String) -> QueryStoreOptions {
     capture: 2,
     cleanup: true,
     waits: true,
-    numbers: query_store_default_numbers,
+    numbers: Map([
+      ("DATA_FLUSH_INTERVAL_SECONDS", 900),
+      ("INTERVAL_LENGTH_MINUTES", 60),
+      ("MAX_STORAGE_SIZE_MB", 1000),
+      ("CLEANUP_POLICY.STALE_QUERY_THRESHOLD_DAYS", 30),
+      ("MAX_PLANS_PER_QUERY", 200),
+      ("QUERY_CAPTURE_POLICY.EXECUTION_COUNT", 30),
+      ("QUERY_CAPTURE_POLICY.TOTAL_COMPILE_CPU_TIME_MS", 1000),
+      ("QUERY_CAPTURE_POLICY.TOTAL_EXECUTION_CPU_TIME_MS", 100),
+      ("QUERY_CAPTURE_POLICY.STALE_CAPTURE_POLICY_THRESHOLD", 24),
+    ]),
   }
 }
 
@@ -153,14 +163,7 @@ fn Session::alter_query_store(
   if action == "OFF" {
     q = { ..q, enabled: false, }
   }
-  if action is ("CLEAR" | "CLEAR_ALL") {
-    let sequence = self.query_store_seen
-    self.query_store_seen += 1
-    if !self.query_store_recorded.contains(sequence) {
-      self.server.query_histories.remove(database.to_lower())
-      self.query_store_recorded.add(sequence)
-    }
-  }
+  // Compatibility scaffold: history is always empty; CLEAR keeps settings.
   self.server.db_options[database.to_lower()] = { ..db, query_store: q, }
 }
 
@@ -189,17 +192,3 @@ fn validate_query_store_options(
     }
   }
 }
-
-///|
-/// Shared read-only defaults; ALTER clones this map before changing any value.
-let query_store_default_numbers : Map[String, Int] = Map([
-  ("DATA_FLUSH_INTERVAL_SECONDS", 900),
-  ("INTERVAL_LENGTH_MINUTES", 60),
-  ("MAX_STORAGE_SIZE_MB", 1000),
-  ("CLEANUP_POLICY.STALE_QUERY_THRESHOLD_DAYS", 30),
-  ("MAX_PLANS_PER_QUERY", 200),
-  ("QUERY_CAPTURE_POLICY.EXECUTION_COUNT", 30),
-  ("QUERY_CAPTURE_POLICY.TOTAL_COMPILE_CPU_TIME_MS", 1000),
-  ("QUERY_CAPTURE_POLICY.TOTAL_EXECUTION_CPU_TIME_MS", 100),
-  ("QUERY_CAPTURE_POLICY.STALE_CAPTURE_POLICY_THRESHOLD", 24),
-])

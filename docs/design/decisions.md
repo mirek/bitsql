@@ -1289,3 +1289,23 @@ Worker owns the database and receives time from the browser. Stop/reset and a
 incomplete and reset; the browser does not simulate networking or concurrency.
 SQL Server smoke captures verify the JS adapter; Node/Playwright exercises the
 production UI. See `website/README.md` for build and publishing details.
+
+## 2026-10-08: Query Store is an empty-view compatibility layer
+
+The user explicitly approved publishing empty Query Store views, working
+configuration and errors for unsupported management operations, then questioned
+whether real monitoring is needed in this CI emulator given overhead and effort.
+This supersedes the original full-monitoring release plan. The history views
+intentionally return no rows after workload; README and the Query Store design
+page disclose the exception to the no-silent-approximation rule. Per-statement
+collection is removed, so Query Store settings do not add measurement work to
+query execution. Prior experiments and oracle captures are retained for a
+future, separately justified feature. The release still requires full checks
+and verified native container publication.
+
+The user subsequently clarified that the published 0.1.25 tag must contain both
+amd64 and arm64, while ARM64 does not need local runtime testing. This is an
+explicit exception to the default native-only build policy: --multiarch enables
+ARM64 cross-compilation on amd64 without QEMU, publishes both same-version
+images, and runs only the native client suite. Default publishing remains
+native-only. Do not describe the cross-built ARM64 image as runtime-validated.

@@ -82,3 +82,14 @@ Authoritative fixtures: `harness/corpus/query-store/*.expected.json`.
   This is a lookup contract, not evidence that arbitrary text can be hashed to
   a SQL Server handle. The [function reference](https://learn.microsoft.com/en-us/sql/relational-databases/system-functions/sys-fn-stmt-sql-handle-from-sql-stmt-transact-sql?view=sql-server-ver17)
   documents a 64-byte metadata maximum, while this oracle exposes 44 bytes.
+
+- `statement-handle-boundaries`: lookup uses collation equality, including
+  case folding and trailing-space equality; an added semicolon does not match.
+  NULL text returns no rows. DEFAULT parameterization uses 0; -1 overflows
+  tinyint (220/state 2). Missing arguments give 313/state 3 at line 13.
+- `parameterization`: procedure queries retain their declaration prefix but
+  report query_parameterization_type 0 (`None`); sp_executesql with parameters
+  reports 1 (`User`). Both captured texts are returned by the handle function
+  with lookup parameterization 0, while lookup parameterization 1 returns no
+  rows. Do not equate the function's lookup parameter with the query view's
+  parameterization classification.

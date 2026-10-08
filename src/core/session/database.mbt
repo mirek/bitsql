@@ -24,7 +24,6 @@ fn Session::exec_create_database(
     )
   }
   self.server.create_database(name.name)
-  self.server.query_histories.remove(name.name.to_lower())
   match collation {
     Some(c) =>
       self.server.db_options[name.name.to_lower()] = {
@@ -72,7 +71,6 @@ fn Session::exec_drop_database(
     self.server.dbs.remove(key)
     self.server.db_names.remove(key)
     self.server.db_ids.remove(key)
-    self.server.query_histories.remove(key)
     self.server.db_options.remove(key)
     self.server.external_model_ids.remove(key)
   }
@@ -162,12 +160,7 @@ fn Session::exec_emulator_proc(
       for k, v in self.server.db_options {
         db_options[k] = v
       }
-      let query_histories : Map[String, QueryStoreHistory] = Map([])
-      for key, history in self.server.query_histories {
-        query_histories[key] = history.copy()
-      }
       self.server.snapshots[name] = {
-        query_histories,
         external_model_ids: self.server.external_model_ids.copy(),
         dbs,
         db_names: names,
@@ -181,10 +174,6 @@ fn Session::exec_emulator_proc(
     "restore" =>
       match self.server.snapshots.get(name) {
         Some(s) => {
-          self.server.query_histories.clear()
-          for key, history in s.query_histories {
-            self.server.query_histories[key] = history.copy()
-          }
           self.server.external_model_ids.clear()
           for k, v in s.external_model_ids {
             self.server.external_model_ids[k] = v

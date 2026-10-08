@@ -3,7 +3,6 @@
 /// remain committed and their response items remain part of this request.
 priv struct BatchResume {
   remaining : Array[@ast.Stmt]
-  query_store_seen : Int
   waits_seen : Int
   configuration_reads_seen : Int
   embeddings_seen : Int
@@ -87,7 +86,6 @@ fn Session::continue_statements(self : Session) -> Unit raise {
     raise @types.not_supported("missing suspended statement")
   }
   self.batch_resume = None
-  self.query_store_seen = r.query_store_seen
   self.waits_seen = r.waits_seen
   self.configuration_reads_seen = r.configuration_reads_seen
   self.embeddings_seen = r.embeddings_seen

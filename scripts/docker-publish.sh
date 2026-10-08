@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Native-host release image for mirek/bitsql.
+# Native-host release image for mirek/bitsql; opt-in amd64+arm64 publication.
 #   scripts/docker-publish.sh          build and test this host's architecture
 #   scripts/docker-publish.sh --push   publish it and update version aliases
+#   scripts/docker-publish.sh --push --multiarch  cross-build ARM64, test native only
 # Other architectures are built/tested on their own native hosts. Publication
 # preserves architectures already published under the SAME version; coordinate
 # manifest updates across hosts. Never mix binaries from different versions.
@@ -10,7 +11,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 push=0
-[[ ${1:-} == --push ]] && push=1
+multiarch=0
+for arg in "$@"; do
+  case $arg in
+    --push) push=1 ;;
+    --multiarch) multiarch=1 ;;
+    *) echo "Unknown argument: $arg" >&2; exit 2 ;;
+  esac
+done
 
 repo=mirek/bitsql
 version=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
@@ -20,6 +28,12 @@ case $(uname -m) in
   aarch64|arm64) arch=arm64 ;;
   *) echo "Unsupported native architecture: $(uname -m)" >&2; exit 1 ;;
 esac
+host_arch=$arch
+arches=("$host_arch")
+if ((multiarch)); then
+  [[ $host_arch == amd64 ]] || { echo "--multiarch cross-build requires an amd64 host" >&2; exit 2; }
+  arches=(amd64 arm64)
+fi
 moonc_version=$(moonc -v | awk '{print $1}' | sed 's/^v//')
 out=_build/xarch
 src=_build/native/release/build
@@ -28,8 +42,21 @@ mkdir -p "$out"
 echo "== bitsql $version (moonc $moonc_version)"
 moon build --target native --release
 
-# Build a glibc-compatible native toolchain; no foreign compiler or QEMU.
-docker build -q -t bitsql-xbuild scripts/xbuild >/dev/null
+# Explicit --multiarch permits cross-compilation, never emulated execution.
+arm_home=$out/moon-linux-aarch64-$moonc_version
+if ((multiarch)); then
+  if [[ ! -d $arm_home/lib ]]; then
+    mkdir -p "$arm_home"
+    if ! curl -fsSL "https://cli.moonbitlang.com/binaries/${moonc_version//+/%2B}/moonbit-linux-aarch64.tar.gz" |
+      tar xz -C "$arm_home" ./lib ./include; then
+      rm -rf "$arm_home"
+      exit 1
+    fi
+  fi
+  diff -r "$HOME/.moon/include" "$arm_home/include" >/dev/null ||
+    { echo "ARM64 MoonBit headers differ from local toolchain" >&2; exit 1; }
+fi
+docker build -q --build-arg "CROSS_ARM64=$multiarch" -t bitsql-xbuild scripts/xbuild >/dev/null
 
 # The cc/ar commands that produce host.exe (other executables dropped).
 plan=$(moon build --target native --release --dry-run 2>/dev/null |
@@ -39,6 +66,11 @@ plan+=$'\n'$(moon build --target native --release --dry-run 2>/dev/null |
 
 build_arch() {
   local arch=$1 cc=gcc ar=ar moon_runtime=$HOME/.moon
+  if [[ $arch != "$host_arch" ]]; then
+    cc=aarch64-linux-gnu-gcc
+    ar=aarch64-linux-gnu-ar
+    moon_runtime=$PWD/$arm_home
+  fi
   local dst=$out/$arch/build
   rm -rf "$dst" && mkdir -p "$dst"
   (cd "$src" && find . -name '*.c' -exec cp --parents {} "$OLDPWD/$dst" \;)
@@ -52,7 +84,7 @@ build_arch() {
   rm -f "$out/$arch/bitsql" && cp "$dst/host/host.exe" "$out/$arch/bitsql"
   echo "== $arch: $(file -b "$out/$arch/bitsql" | cut -d, -f1-2), $(du -h "$out/$arch/bitsql" | cut -f1)"
 }
-build_arch "$arch"
+for arch in "${arches[@]}"; do build_arch "$arch"; done
 
 # The full client suite runs directly on the host architecture.
 smoke() {
@@ -63,14 +95,14 @@ smoke() {
   echo "== $arch smoke: $(grep -E '^ℹ (pass|fail|skipped) ' <<<"$log" | tr '\n' ' ')"
 }
 if [[ ${SKIP_SMOKE:-0} != 1 ]]; then
-  smoke "$arch" "$PWD/$out/$arch/bitsql"
+  smoke "$host_arch" "$PWD/$out/$host_arch/bitsql"
 fi
 
 # The base is pinned per arch by digest: given a tag, the classic builder
 # can reuse whichever architecture is cached locally even with --platform.
 base=gcr.io/distroless/cc-debian12
 base_index=$(docker manifest inspect "$base:nonroot")
-for arch in "$arch"; do
+for arch in "${arches[@]}"; do
   digest=$(python3 -c "import json,sys; print(next(m['digest'] for m in json.load(sys.stdin)['manifests'] if m['platform']['architecture'] == sys.argv[1]))" "$arch" <<<"$base_index")
   docker pull -q --platform "linux/$arch" "$base@$digest" >/dev/null
   docker build -q --platform "linux/$arch" --build-arg "BASE=$base@$digest" \
@@ -82,10 +114,14 @@ for arch in "$arch"; do
   [[ $(docker image inspect -f '{{.Architecture}}' "$repo:$version-$arch") == "$arch" ]] ||
     { echo "image $repo:$version-$arch has the wrong architecture" >&2; exit 1; }
 done
-echo "== image: $repo:$version-$arch"
+echo "== images: ${arches[*]} ($version); runtime-tested architecture: $host_arch"
 
 if ((push)); then
-  docker push -q "$repo:$version-$arch"
+  published=()
+  for arch in "${arches[@]}"; do
+    docker push -q "$repo:$version-$arch"
+    published+=("$repo:$version-$arch")
+  done
   # Preserve only other architectures already validated for this version.
   # A registry/network error must not silently erase their manifest entries.
   if existing=$(docker manifest inspect "$repo:$version" 2>&1); then
@@ -93,9 +129,9 @@ if ((push)); then
 import json,sys
 index=json.load(sys.stdin)
 for entry in index.get("manifests", []):
-    if entry["platform"]["architecture"] != sys.argv[1]:
+    if entry["platform"]["architecture"] not in sys.argv[1].split():
         print(sys.argv[2] + "@" + entry["digest"])
-' "$arch" "$repo" <<<"$existing")
+' "${arches[*]}" "$repo" <<<"$existing")
     previous=()
     if [[ -n $references ]]; then mapfile -t previous <<<"$references"; fi
   elif [[ $existing == *"no such manifest"* || $existing == *"manifest unknown"* ]]; then
@@ -106,7 +142,7 @@ for entry in index.get("manifests", []):
   fi
   for tag in "$version" "$minor" latest; do
     docker manifest rm "$repo:$tag" >/dev/null 2>&1 || true
-    docker manifest create "$repo:$tag" "$repo:$version-$arch" "${previous[@]}" >/dev/null
+    docker manifest create "$repo:$tag" "${published[@]}" "${previous[@]}" >/dev/null
     docker manifest push --purge "$repo:$tag"
   done
   docker manifest inspect "$repo:$version" | grep -E '"architecture"'

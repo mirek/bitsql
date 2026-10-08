@@ -1,78 +1,54 @@
-# Query Store performance monitoring
+# Query Store compatibility
 
-Active work requested 2026-10-08. Completion requires a newly published native
-container with working monitoring support, not just catalog names or empty views.
-The reference is [Microsoft's Query Store monitoring guide](https://learn.microsoft.com/en-us/sql/relational-databases/performance/monitoring-performance-by-using-the-query-store?view=sql-server-ver17).
+## Release scope (user decision, 2026-10-08)
 
-## Implementation and release requirements
+The user explicitly chose empty views and then questioned whether real Query
+Store collection belongs in a CI emulator at all, given performance overhead
+and implementation effort. This supersedes the earlier full monitoring release
+plan. Completion requires a published amd64+arm64 container with this documented
+compatibility layer. The [Microsoft guide](https://learn.microsoft.com/en-us/sql/relational-databases/performance/monitoring-performance-by-using-the-query-store?view=sql-server-ver17)
+remains a reference for names, metadata and configuration contracts.
 
-- Parse and apply Query Store ON/OFF, operation/capture modes, interval/flush/
-  retention/storage/plan limits, cleanup/wait settings and custom capture policy.
-  Support CLEAR and CLEAR ALL. Validate syntax and values against oracle errors.
-- Database-scoped query, text, context, plan, runtime interval and wait history;
-  record actual executions, including parameterized SQL and stored procedures.
-  Preserve history across OFF/READ_ONLY and implement the capture policy.
-- Bind the captured catalog metadata for the 14 views in
-  `harness/corpus/query-store/view-descriptors.sql`; supply meaningful live rows.
-  Include `sys.databases.is_query_store_on` and correct cross-database isolation.
-- Implement flush, statistics reset, plan/query removal, force/unforce, message
-  queue clearing and consistency checks, including SQL batch and RPC invocation.
-  Audit Query Store hints, feedback, replicas and the statement-handle function
-  listed by the reference. Unsupported engine capabilities must raise explicit
-  emulator errors; never advertise successful plan forcing without its effect.
-- Measure runtime metrics at the host boundary and pass observations to the pure
-  core. Do not fabricate SQL Server CPU, reads, memory or Showplan information.
-  Define and document faithful emulator metrics and explicit unsupported areas.
-- Verify lifecycle, isolation, capture modes, statistics aggregation, stored
-  procedure attribution, execution failures and cleanup using oracle-derived
-  corpus and meaningful host/client tests. Add passing cases to the allowlist.
-- Run `scripts/check.sh`, update knowledge and version, push to main, publish
-  using `scripts/docker-publish.sh --push`, and verify registry manifests and
-  a running instance of the published native image. Benchmark as required by
-  knowledge-upkeep. Do not combine different versions in multiarch manifests.
+- Fourteen captured catalog descriptors are available. The options view reports
+  configuration; the other thirteen views always return no rows, including
+  contexts, text, queries, plans, intervals, runtime/wait stats, hints, feedback,
+  replicas and internal state. This is an intentional exception to the usual
+  unsupported-error policy, not evidence of an idle workload.
+- ON/OFF, operation/capture modes and policy values are retained and validated.
+  They do not activate collection. CLEAR/CLEAR ALL preserve configuration.
+- Native management procedures validate arguments and retain captured SQL Server
+  errors, return statuses and completions. Flush/queue clearing succeed for the
+  empty store. Operations on query/plan IDs report missing-ID or disabled-store
+  errors. No successful plan forcing, hint application or statistics mutation
+  is advertised. Other unimplemented capabilities remain explicit errors.
+- No per-statement collector, identity map, timer samples or counter updates
+  remain in the execution path. Proper collection is deferred unless a concrete
+  application-testing need justifies it.
 
-## Current evidence and next work
+## Evidence and release checklist
 
-The nine `harness/corpus/query-store/` cases establish wire metadata,
-configuration/defaults/validation, enabled/disabled procedure errors, SELECT
-and stored-procedure execution statistics, plan forcing/removal/reset, and
-history retention across capture-mode transitions. Expectations are captured
-from the native SQL Server 17.0.5005.3 oracle. See
-[Query Store capture findings](../reference/query-store.md).
+Metadata, options and procedure contracts come from native SQL Server
+17.0.5005.3 captures in harness/corpus/query-store; detailed findings are in
+[the reference](../reference/query-store.md). Workload fixtures are retained as
+oracle evidence for possible future work, not claims of supported monitoring.
+The query-store-scaffold client test checks all thirteen empty history views
+after actual workload and lifecycle changes against captured descriptors.
 
-The parser now preserves Query Store actions and policy settings. Database options
-retain configuration across OFF/ON; `sys.database_query_store_options` and
-`sys.databases.is_query_store_on` reflect it. All three option cases match the
-oracle and all 83 captured batches agree on parsing. System-database enable
-errors and compile-time validation completions are covered. The context-settings view now exposes captured contexts. Other history views
-raise an explicit unsupported error while their implementation is pending.
+- [x] Full local gate for 0.1.25: 1,772 MoonBit tests, 23,704 client checks
+  (three existing skips), and website tests/build passed.
+- [ ] Commit/push main and publish amd64 and arm64 images.
+- [ ] Verify registry version/revision and run the published amd64 image's scaffold checks.
 
-The descriptor generator now consumes every captured step, checks descriptor
-counts, and supports datetimeoffset metadata. The 14 history/option descriptors
-are generated without inferring types from runtime values.
+## Preserved experimental work
 
-Next: per-database history, execution instrumentation and host measurements,
-management procedures and live history rows. Extend captures for missing
-contracts as each part is implemented. The configuration chunk passed `scripts/check.sh`: 1,772 MoonBit tests,
-23,694 passing client checks (three existing skips), and the website checks/build; no new release has been published for this work yet.
+Commit 51b7954 contains the earlier collector/context experiment. Subsequent
+uncommitted text/handle work is preserved locally in
+harness/out/query-store-live-history.patch. Neither is on this release's query
+execution path. The broader oracle captures remain checked in. Revisit real
+monitoring only as a separately scoped feature with measured overhead.
 
-Procedure validation progress: `procedures-on`, `procedures-off`,
-`procedure-arguments`, `procedure-rpc`, and `procedure-errors` now match the
-oracle. This covers absent-ID/disabled-state errors, type/arity checks, status
-variables, error scope and wire completions. Positive operations on stored
-queries/plans still require the history implementation. The combined procedure/collector chunk passed the full gate: 1,779 MoonBit
-tests, 23,703 client checks (three existing skips), and website tests/build.
-All nine Query Store allowlisted cases executed and passed; selectors must
-include their `.sql` suffix. The preceding configuration chunk is `48baf01`.
-
-Execution collection progress: successful statements in ALL mode retain database,
-text, procedure object, context, actual row counts and supplied event timestamps.
-READ_ONLY/OFF preserve history; CLEAR removes it. Collection survives transaction
-rollback and avoids double counting suspended-request replay. Seven focused tests
-cover those paths. `context-view` matches the oracle. AUTO/CUSTOM admission,
-failed executions, query/plan projections and resource measurements remain
-unfinished; no timing or resource metrics are synthesized from row counts.
-
-Five more oracle cases (`query-identity`, `query-text`, `context-settings`,
-`context-view`, `execution-errors`) reproduce with populated results. They establish identity
-relationships, context flags and execution classifications for the next chunk.
+The user requires both amd64 and arm64 publication for this release and exempts
+local ARM64 runtime tests. The explicit --multiarch publishing option cross-builds
+ARM64 from the same generated C and toolchain runtime version without emulation;
+local runtime validation covers amd64. Pause this goal after publication and
+published-image verification, as requested by the user.

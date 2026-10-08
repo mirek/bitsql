@@ -601,3 +601,11 @@ release; another host can add its architecture after its native checks pass.
   needs its `.sql` suffix (`query-store/options.sql`). A bare case ID silently
   selects nothing. Check new case names in the gate log; the Query Store
   collector gate caught nine missing suffixes despite focused diffs passing.
+
+- 2026-10-08: the user explicitly requires amd64+arm64 for the Query Store
+  scaffold release, with no local ARM64 runtime test. Use
+  scripts/docker-publish.sh --push --multiarch for this authorized exception:
+  same generated C and matched MoonBit runtime, ARM64 cross compiler, no QEMU,
+  native amd64 client suite. Default releases remain native-only. Verify both
+  manifest entries and same-version/revision labels; do not claim ARM64 runtime
+  validation from a successful cross-build.
