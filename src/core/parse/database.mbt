@@ -102,6 +102,9 @@ fn Parser::alter_database(
     self.skip_clause()
     return AlterDatabase(target~, OtherAction(words))
   }
+  if self.eat_kw("QUERY_STORE") {
+    return AlterDatabase(target~, self.query_store_options())
+  }
   let opts : Array[@ast.DatabaseOption] = []
   while true {
     let t = self.peek()

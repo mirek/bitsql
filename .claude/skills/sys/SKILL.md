@@ -34,6 +34,11 @@ corrects or adds to this reference: wire bytes, client behavior or SQL Server
 semantics observed in captures. Correct wrong inherited notes in place and
 mention the correction here.
 
+- 2026-10-08: Query Store descriptor captures use multiple steps; the generator
+  must flatten all result sets and assert the SELECT/descriptor counts match.
+  Query Store timestamps use datetimeoffset(7). Configuration and lifecycle
+  rules are in `docs/reference/query-store.md` (oracle `query-store/` corpus).
+
 - 2026-10-05 (catalog/storage-catalogs, view-descriptors-storage):
   sys.partitions has one row per heap (index_id 0) or index, except a
   disabled nonclustered index (no row); `partition_id = hobt_id`; `rows` is

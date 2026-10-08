@@ -94,6 +94,14 @@ fn Session::sys_view_binding(
     (tempdb || self.rt.database.to_lower() is ("tempdb" | "model" | "msdb")) {
     raise @types.not_supported("sys.database_files of a system database")
   }
+  if s == "sys" &&
+    (
+      base.to_lower().has_prefix("query_store_") ||
+      base.to_lower()
+      is ("query_context_settings" | "database_query_store_internal_state")
+    ) {
+    raise @types.not_supported("Query Store workload history")
+  }
   match view_index(schema, base) {
     Some(i) => {
       let v = view_defs[i]
@@ -551,6 +559,14 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
   match key {
+    "sys.database_query_store_options" =>
+      if !self.view_tempdb &&
+        !(self.rt.database.to_lower()
+        is ("master" | "tempdb" | "model" | "msdb")) {
+        out.push(
+          self.server.db_options(self.rt.database).query_store.options_row(),
+        )
+      }
     "sys.configurations" =>
       for seed in seed_configurations {
         let values = self.configuration_values(seed)

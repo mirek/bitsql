@@ -1,0 +1,710 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "803a1e92a8c100e6",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[0,"OFF",0,"OFF",0,"0","900","15","1000","30","200",4,"CUSTOM",30,"1000","100",24,1,"AUTO",1,"ON",""]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"COLMETADATA","columns":22},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[2,"READ_WRITE",2,"READ_WRITE",0,"0","900","15","1000","30","200",4,"CUSTOM",30,"1000","100",24,1,"AUTO",1,"ON",""]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"COLMETADATA","columns":22},
+        {"name":"ROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[2,"READ_WRITE",2,"READ_WRITE",0,"0","900","15","1000","30","200",2,"AUTO",null,null,null,null,1,"AUTO",1,"ON",""]]
+        }
+      ],
+      "done": [{"kind":"done","rowCount":null,"more":true},{"kind":"done","rowCount":1,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"COLMETADATA","columns":22},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": [[1,"READ_ONLY",1,"READ_ONLY",0,"0","900","15","1000","30","200",2,"AUTO",null,null,null,null,1,"AUTO",1,"ON",""]]
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":null,"more":true},
+        {"kind":"done","rowCount":1,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"DONE","status":1,"curCmd":215},
+        {"name":"COLMETADATA","columns":22},
+        {"name":"NBCROW","count":1},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 1
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":22},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 12438,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot perform action because Query Store cannot be enabled on system database master."
+        },
+        {"number":5069,"state":1,"class":16,"lineNumber":1,"message":"ALTER DATABASE statement failed."}
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215}],
+      "stream": [{"name":"ERROR","number":12438},{"name":"ERROR","number":5069},{"name":"DONE","status":2,"curCmd":215}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [
+        {
+          "number": 12438,
+          "state": 1,
+          "class": 16,
+          "lineNumber": 1,
+          "message": "Cannot perform action because Query Store cannot be enabled on system database tempdb."
+        },
+        {"number":5069,"state":1,"class":16,"lineNumber":1,"message":"ALTER DATABASE statement failed."}
+      ],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215}],
+      "stream": [{"name":"ERROR","number":12438},{"name":"ERROR","number":5069},{"name":"DONE","status":2,"curCmd":215}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215}],
+      "stream": [{"name":"DONE","status":0,"curCmd":215}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [{"number":102,"state":1,"class":15,"lineNumber":1,"message":"Incorrect syntax near '2147483648'."}],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":true,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":253}],
+      "stream": [{"name":"ERROR","number":102},{"name":"DONE","status":2,"curCmd":253}],
+      "rowCount": 0
+    },
+    {
+      "sets": [],
+      "done": [{"kind":"done","rowCount":null,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":{"kind":"missing"},"curCmd":215}],
+      "stream": [{"name":"DONE","status":0,"curCmd":215}],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

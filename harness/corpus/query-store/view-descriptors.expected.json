@@ -1,0 +1,764 @@
+{
+  "server": {
+    "image": "mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726",
+    "version": "17.0.5005.3"
+  },
+  "case": "07ccbdb2bd0aa29d",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"desired_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "desired_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"actual_state","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "actual_state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"readonly_reason","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"current_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"flush_interval_seconds","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"interval_length_minutes","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_storage_size_mb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stale_query_threshold_days","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_plans_per_query","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"capture_policy_execution_count","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "capture_policy_total_compile_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_total_execution_cpu_time_ms",
+              "type": "IntN",
+              "length": 8,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {
+              "name": "capture_policy_stale_threshold_hours",
+              "type": "IntN",
+              "length": 4,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": null
+            },
+            {"name":"size_based_cleanup_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "size_based_cleanup_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"wait_stats_capture_mode","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_stats_capture_mode_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "actual_state_additional_info",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":22},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"context_settings_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"set_options","type":"VarBinary","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"language_id","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"date_format","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"date_first","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"status","type":"VarBinary","length":2,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"required_cursor_options","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"acceptable_cursor_options","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"merge_action_type","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"default_schema_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_replication_specific","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_contained","type":"VarBinary","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":12},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_group_id","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "engine_version",
+              "type": "NVarChar",
+              "length": 64,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"compatibility_level","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_plan_hash","type":"Binary","length":8,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_plan",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"is_online_index_plan","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_trivial_plan","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_parallel_plan","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_forced_plan","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_natively_compiled","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"force_failure_count","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_force_failure_reason","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "last_force_failure_reason_desc",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"count_compiles","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "initial_compile_start_time",
+              "type": "DateTimeOffset",
+              "length": null,
+              "precision": null,
+              "scale": 7,
+              "flags": 8,
+              "collation": null
+            },
+            {"name":"last_compile_start_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"last_execution_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"avg_compile_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_compile_duration","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"plan_forcing_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "plan_forcing_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"has_compile_replay_script","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "is_optimized_plan_forcing_disabled",
+              "type": "Bit",
+              "length": null,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": null
+            },
+            {"name":"plan_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "plan_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":27},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_text_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"context_settings_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"object_id","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"batch_sql_handle","type":"VarBinary","length":44,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"query_hash","type":"Binary","length":8,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"is_internal_query","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_parameterization_type","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_parameterization_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "initial_compile_start_time",
+              "type": "DateTimeOffset",
+              "length": null,
+              "precision": null,
+              "scale": 7,
+              "flags": 8,
+              "collation": null
+            },
+            {"name":"last_compile_start_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"last_execution_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {
+              "name": "last_compile_batch_sql_handle",
+              "type": "VarBinary",
+              "length": 44,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": null
+            },
+            {"name":"last_compile_batch_offset_start","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_compile_batch_offset_end","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"count_compiles","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_compile_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_compile_duration","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_bind_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_bind_duration","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_bind_cpu_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_bind_cpu_time","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_optimize_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_optimize_duration","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_optimize_cpu_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_optimize_cpu_time","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"avg_compile_memory_kb","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_compile_memory_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_compile_memory_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_clouddb_internal_query","type":"BitN","length":1,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":30},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"query_text_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_sql_text",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"statement_sql_handle","type":"VarBinary","length":44,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"is_part_of_encrypted_module","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"has_restricted_text","type":"Bit","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":5},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"runtime_stats_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"runtime_stats_interval_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"execution_type","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "execution_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"first_execution_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":8,"collation":null},
+            {"name":"last_execution_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":8,"collation":null},
+            {"name":"count_executions","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"avg_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_duration","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_duration","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_duration","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_duration","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_cpu_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_cpu_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_cpu_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_cpu_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_cpu_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_logical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_logical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_logical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_logical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_logical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_logical_io_writes","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_logical_io_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_logical_io_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_logical_io_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_logical_io_writes","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_physical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_physical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_physical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_physical_io_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_physical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_clr_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_clr_time","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_dop","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_dop","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_dop","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_dop","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_dop","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_query_max_used_memory","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_query_max_used_memory","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_query_max_used_memory","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_query_max_used_memory","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_query_max_used_memory","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_rowcount","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_rowcount","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_rowcount","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_rowcount","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_rowcount","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_num_physical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_num_physical_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_num_physical_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_num_physical_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stdev_num_physical_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_log_bytes_used","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_log_bytes_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_log_bytes_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_log_bytes_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stdev_log_bytes_used","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_tempdb_space_used","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_tempdb_space_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_tempdb_space_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_tempdb_space_used","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stdev_tempdb_space_used","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_page_server_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_page_server_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_page_server_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_page_server_io_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"stdev_page_server_io_reads","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":74},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"wait_stats_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"runtime_stats_interval_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"wait_category","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "wait_category_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"execution_type","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "execution_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"total_query_wait_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"avg_query_wait_time_ms","type":"FloatN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_query_wait_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_query_wait_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_query_wait_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stdev_query_wait_time_ms","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":14},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"runtime_stats_interval_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"start_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":8,"collation":null},
+            {"name":"end_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":8,"collation":null},
+            {
+              "name": "comment",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":4},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"pending_message_count","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"messaging_memory_used_mb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":2},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"query_hint_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "query_hint_text",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"last_query_hint_failure_reason","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "last_query_hint_failure_reason_desc",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"query_hint_failure_count","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"source","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "source_desc",
+              "type": "NVarChar",
+              "length": 256,
+              "precision": null,
+              "scale": null,
+              "flags": 33,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "comment",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":10},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"plan_feedback_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"feature_id","type":"TinyInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "feature_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {
+              "name": "feedback_data",
+              "type": "NVarChar",
+              "length": 65535,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"state","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {
+              "name": "state_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            },
+            {"name":"create_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":8,"collation":null},
+            {"name":"last_updated_time","type":"DateTimeOffset","length":null,"precision":null,"scale":7,"flags":9,"collation":null},
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":10},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"query_variant_query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"parent_query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"dispatcher_plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"role_type","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "replica_name",
+              "type": "NVarChar",
+              "length": 1288,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":3},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    },
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"plan_forcing_location_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"replica_group_id","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"timestamp","type":"DateTime","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_forcing_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "plan_forcing_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":1,"version":0,"sortId":0,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [{"kind":"done","rowCount":0,"more":false}],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [{"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}],
+      "stream": [{"name":"COLMETADATA","columns":7},{"name":"DONE","status":16,"curCmd":193}],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

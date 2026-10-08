@@ -154,6 +154,8 @@ pub(all) enum AlterDatabaseAction {
   Collate(Ident)
   /// Database-scoped SQL Server 2025 preview feature switch.
   PreviewFeatures(Bool)
+  /// Query Store action and flattened options (nested policy keys retain their prefix).
+  QueryStore(String, Array[(String, String)])
   /// `SET option [=] value [, ...] [WITH termination]`
   SetOptions(Array[DatabaseOption])
   /// Anything else (MODIFY, ADD FILE, SCOPED CONFIGURATION, ...): its

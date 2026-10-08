@@ -1,0 +1,28 @@
+-- OFF retains configuration; option-only changes and system-database restrictions.
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE = OFF;
+ALTER DATABASE CURRENT SET QUERY_STORE (INTERVAL_LENGTH_MINUTES = 15, QUERY_CAPTURE_MODE = CUSTOM);
+SELECT * FROM sys.database_query_store_options;
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE = ON;
+SELECT * FROM sys.database_query_store_options;
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE (QUERY_CAPTURE_MODE = AUTO);
+SELECT * FROM sys.database_query_store_options;
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE (OPERATION_MODE = READ_ONLY);
+ALTER DATABASE CURRENT SET QUERY_STORE = OFF;
+ALTER DATABASE CURRENT SET QUERY_STORE = ON;
+SELECT * FROM sys.database_query_store_options;
+-- @step batch
+SELECT * FROM master.sys.database_query_store_options;
+-- @step batch
+ALTER DATABASE master SET QUERY_STORE = ON;
+-- @step batch
+ALTER DATABASE tempdb SET QUERY_STORE = ON;
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE (DATA_FLUSH_INTERVAL_SECONDS = 86401);
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE (MAX_PLANS_PER_QUERY = 2147483648);
+-- @step batch
+ALTER DATABASE CURRENT SET QUERY_STORE (QUERY_CAPTURE_POLICY = (EXECUTION_COUNT = 1));

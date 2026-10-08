@@ -6,6 +6,7 @@
 ///|
 /// Settings of one database. Immutable: ALTER DATABASE stores a new value.
 priv struct DbOptions {
+  query_store : QueryStoreOptions
   collation : @types.Collation
   compat_level : Int
   /// READ_COMMITTED_SNAPSHOT
@@ -68,6 +69,7 @@ fn DbOptions::with_flag(self : DbOptions, name : String, v : Bool) -> DbOptions 
 fn DbOptions::default(name : String) -> DbOptions {
   let key = name.to_lower()
   {
+    query_store: QueryStoreOptions::default(name),
     collation: @types.default_collation,
     compat_level: 170,
     rcsi: false,
@@ -217,6 +219,7 @@ fn Session::exec_alter_database(
           }
         }
       }
+    QueryStore(_, opts) => validate_query_store_options(opts)
     PreviewFeatures(_) => ()
     OtherAction(w) => raise @types.not_supported("ALTER DATABASE \{w}")
   }
@@ -277,6 +280,7 @@ fn Session::exec_alter_database(
       }
       self.server.db_options[name.to_lower()] = o
     }
+    QueryStore(action, opts) => self.alter_query_store(name, action, opts)
     PreviewFeatures(_) | OtherAction(_) => ()
   }
   self.done(215)
@@ -357,7 +361,6 @@ fn Session::database_option(
     | "TARGET_RECOVERY_TIME"
     | "DELAYED_DURABILITY"
     | "ACCELERATED_DATABASE_RECOVERY"
-    | "QUERY_STORE"
     | "AUTOMATIC_TUNING"
     | "NEW_BROKER"
     | "ERROR_BROKER_CONVERSATIONS"
@@ -417,6 +420,7 @@ fn DbOptions::apply_row(
   name : String,
   m : Map[String, @types.Value],
 ) -> Unit {
+  m["is_query_store_on"] = Bit(self.query_store.enabled)
   m["collation_name"] = String(self.collation.name)
   m["compatibility_level"] = TinyInt(self.compat_level)
   let (ua, ua_desc) = match self.user_access {

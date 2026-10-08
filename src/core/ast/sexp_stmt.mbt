@@ -1134,6 +1134,11 @@ fn W::stmt(self : W, s : Stmt) -> Unit {
           })
           .join("") +
           ")"
+        QueryStore(action, opts) =>
+          "(query-store " +
+          action +
+          opts.map(o => " (" + o.0 + " " + o.1 + ")").join("") +
+          ")"
         PreviewFeatures(v) => "(preview-features " + v.to_string() + ")"
         OtherAction(w) => "(other " + w + ")"
       }

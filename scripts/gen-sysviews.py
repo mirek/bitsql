@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models', 'catalog/view-descriptors-configurations']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models', 'catalog/view-descriptors-configurations', 'query-store/view-descriptors']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')
@@ -83,6 +83,8 @@ def sql_type(c):
         return 'Int'
     if t == 'BigInt' or (t == 'IntN' and n == 8):
         return 'BigInt'
+    if t == 'DateTimeOffset':
+        return f'DateTimeOffset({c["scale"]})'
     if t == 'DateTime2':
         return f'DateTime2({c["scale"]})'
     if t == 'DateTime' or (t == 'DateTimeN' and n == 8):
@@ -149,8 +151,12 @@ def main():
     views = []
     desc = []
     for name in DESCRIPTORS:
-        views += [l.split()[3] for l in open(os.path.join(CORPUS, name + '.sql')) if l.startswith('SELECT')]
-        desc += json.load(open(os.path.join(CORPUS, name + '.expected.json')))['steps'][0]['sets']
+        names = [l.split()[3] for l in open(os.path.join(CORPUS, name + '.sql')) if l.startswith('SELECT')]
+        steps = json.load(open(os.path.join(CORPUS, name + '.expected.json')))['steps']
+        sets = [result for step in steps if step is not None for result in step['sets']]
+        assert len(names) == len(sets), f'{name}: descriptor count differs from SELECT count'
+        views += names
+        desc += sets
     seed = json.load(open(SEED))
     out = []
     w = out.append

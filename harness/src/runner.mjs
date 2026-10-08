@@ -12,7 +12,7 @@
 //             model, system objects, the name itself).
 // Database names inside strings become `{db}` so both modes compare equal.
 import { randomBytes } from 'node:crypto'
-import { capture, canonical, normalizeSpids, replaceDatabaseName } from './capture-core.mjs'
+import { capture, canonical, normalizeSpids, normalizeQueryStoreDatabaseIds, replaceDatabaseName } from './capture-core.mjs'
 import { caseHash } from './corpus.mjs'
 import { connect, close, withDatabase } from './client.mjs'
 import { startOracle } from './oracle.mjs'
@@ -123,7 +123,7 @@ export async function runCase(target, testCase) {
       config = withDatabase(config, database)
     }
     const raw = await runSteps(config, testCase.steps)
-    const result = normalizeSpids(replaceDatabaseName(canonical(raw), database))
+    const result = normalizeQueryStoreDatabaseIds(normalizeSpids(replaceDatabaseName(canonical(raw), database)))
     return { case: caseHash(testCase.steps), ...result }
   } catch (error) {
     return { case: caseHash(testCase.steps), transportError: error.message }

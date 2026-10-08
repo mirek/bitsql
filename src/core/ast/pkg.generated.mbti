@@ -25,6 +25,7 @@ pub fn SyntaxError::state(Self) -> Int
 pub(all) enum AlterDatabaseAction {
   Collate(Ident)
   PreviewFeatures(Bool)
+  QueryStore(String, Array[(String, String)])
   SetOptions(Array[DatabaseOption])
   OtherAction(String)
 } derive(Eq, @debug.Debug)

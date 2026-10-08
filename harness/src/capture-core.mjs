@@ -158,6 +158,20 @@ export function normalizeSpids(value) {
   return value
 }
 
+// Query Store errors name the database by its server-assigned numeric ID.
+// Only normalize that field in known error objects, never SQL values or plan IDs.
+export function normalizeQueryStoreDatabaseIds(value) {
+  if (Array.isArray(value)) return value.map(normalizeQueryStoreDatabaseIds)
+  if (value && typeof value === 'object') {
+    const result = Object.fromEntries(Object.entries(value).map(([k, v]) => [k, normalizeQueryStoreDatabaseIds(v)]))
+    if ([12402, 12403, 12405].includes(result.number) && typeof result.message === 'string') {
+      result.message = result.message.replace(/\bdatabase \(\d+\)/g, 'database ({dbid})')
+    }
+    return result
+  }
+  return value
+}
+
 // JSON-pointer diff (msduck). Returns every differing leaf.
 export function differences(actual, expected, path = '') {
   if (Object.is(actual, expected)) return []

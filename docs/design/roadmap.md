@@ -24,6 +24,20 @@ ARM64 independently. Foreign cross-builds and QEMU runs are not release gates.
 - [x] Published native amd64 0.1.24; registry manifests and release labels
   verified for `0.1.24`, `0.1`, and `latest`. ARM64 awaits its native host.
 
+## Query Store performance monitoring (2026-10-08)
+
+- [x] Initial oracle contracts: nine cases cover metadata, options, procedure
+  errors, live workload statistics and lifecycle; all nine reproduce on the
+  oracle. More contracts will be captured alongside implementation. [Implementation and release requirements](query-store.md).
+- [~] Query Store parser and database configuration now match three oracle
+  cases (including OFF/ON retention, CUSTOM settings and system-database errors).
+  Full gate: 1,772 MoonBit tests, 23,694 client checks passed (three skips),
+  website checks/build passed. Remaining option boundaries and their effects on
+  capture/cleanup await history.
+- [ ] Capture query/plan/context/runtime/wait history and expose live views.
+- [ ] Implement management procedures, plan forcing, hints and related functions.
+- [ ] Full local gate, version bump, native container publication and pull/run verification.
+
 ## Website and adoption (2026-10-07)
 
 - [x] Position the published release for application CI and lead with the SQL
