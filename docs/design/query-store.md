@@ -93,5 +93,7 @@ available for more detailed request-local executor counters.
 Release gate for the 0.1.27 changes: 1,780 MoonBit tests and 23,723 client/corpus
 checks passed, zero failures, three existing client skips. All core packages
 check on every backend. Website tests/build passed (12 tests and one existing
-browser skip). Packaged-binary and publication verification are recorded below
-when complete.
+browser skip). The packaged native release binary independently passed the same 23,723
+client checks. The local release container passed all 13 report corpus cases
+and the populated seven-view metadata test over TDS; publication verification
+is recorded below when complete.

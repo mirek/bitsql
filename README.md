@@ -154,75 +154,73 @@ See [usage, counter definitions and limitations](docs/design/query-diagnostics.m
 
 ## Benchmarks
 
-The 0.1.26 amd64 release binary, packaged as `bitsql-diagnostics:0.1.26` for
-measurement, vs `mcr.microsoft.com/mssql/server:2025-latest` (Developer edition,
-default settings), linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3,
-2026-10-08 (Europe/Zurich). The benchmark image contains the same binary as the
-published release. Both containers ran one after the other on this shared host;
-the client is tedious over loopback with TLS. All metrics are lower-is-better.
-Cold start is one successful startup per target, not a distribution. Query/DML
-shapes are medians of five checked runs after one warm-up; the total sums those
-medians. Point SELECTs are the median of five 1000-query batches after warm-up.
-Compressed download size was unavailable for the temporary local image.
+The 0.1.27 native amd64 release image, `mirek/bitsql:0.1.27-amd64`, vs
+`mcr.microsoft.com/mssql/server:2025-latest` (Developer edition, default settings),
+linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3, 2026-10-09. Both containers ran
+one after the other on this shared host; the client is tedious over loopback
+with TLS. All metrics are lower-is-better. Cold start is one successful startup
+per target, not a distribution. Query/DML shapes are medians of five checked
+runs after one warm-up; the total sums those medians. Point SELECTs are the
+median of five 1000-query batches after warm-up. Compressed download size was
+unavailable before publication.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
 | Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
-| Image size on disk | 39.9 MiB | 1.64 GiB | 2.4% | 42× better |
-| Cold start: `docker run` → first query (one run) | 220 ms | 3.46 s | 6.4% | 16× better |
-| CPU time until ready | 36.7 ms | 3.72 s | 1.0% | 101× better |
-| Memory idle after start | 5.2 MiB | 1.17 GiB | 0.4% | 233× better |
-| Memory after workload | 47.3 MiB | 1.22 GiB | 3.8% | 26× better |
-| Memory peak (incl. page cache) | 47.5 MiB | 1.24 GiB | 3.7% | 27× better |
-| Login (new connection, TLS, median) | 2.54 ms | 51.8 ms | 4.9% | 20× better |
-| `SELECT 1` round trip (median) | 0.11 ms | 0.15 ms | 71% | 1.4× better |
-| Drop + create 2-table schema (median) | 0.16 ms | 8.67 ms | 1.8% | 55× better |
-| 1000 parameterized INSERTs | 178 ms | 1.01 s | 18% | 5.6× better |
-| 1000 parameterized point SELECTs (median of 5) | 162 ms | 134 ms | 121% | 1.2× worse |
-| 200 transactions (INSERT + UPDATE) | 42.1 ms | 242 ms | 17% | 5.7× better |
-| Join + GROUP BY report (median) | 0.70 ms | 0.86 ms | 81% | 1.2× better |
-| Load 20000 + 20000 rows (GENERATE_SERIES) | 46.3 ms | 51.0 ms | 91% | 1.1× better |
-| 24 query/DML shapes over 20000 rows (total) | 358 ms | 686 ms | 52% | 1.9× better |
+| Image size on disk | 40.1 MiB | 1.64 GiB | 2.4% | 42× better |
+| Cold start: `docker run` → first query (one run) | 162 ms | 2.67 s | 6.1% | 16× better |
+| CPU time until ready | 37.1 ms | 2.98 s | 1.2% | 80× better |
+| Memory idle after start | 5.7 MiB | 1.17 GiB | 0.5% | 211× better |
+| Memory after workload | 39.5 MiB | 1.21 GiB | 3.2% | 31× better |
+| Memory peak (incl. page cache) | 49.0 MiB | 1.24 GiB | 3.9% | 26× better |
+| Login (new connection, TLS, median) | 2.34 ms | 48.7 ms | 4.8% | 21× better |
+| `SELECT 1` round trip (median) | 0.10 ms | 0.18 ms | 59% | 1.7× better |
+| Drop + create 2-table schema (median) | 0.16 ms | 6.48 ms | 2.5% | 41× better |
+| 1000 parameterized INSERTs | 174 ms | 894 ms | 19% | 5.1× better |
+| 1000 parameterized point SELECTs (median of 5) | 155 ms | 124 ms | 125% | 1.3× worse |
+| 200 transactions (INSERT + UPDATE) | 44.5 ms | 220 ms | 20% | 4.9× better |
+| Join + GROUP BY report (median) | 0.77 ms | 0.82 ms | 94% | 1.1× better |
+| Load 20000 + 20000 rows (GENERATE_SERIES) | 36.4 ms | 50.0 ms | 73% | 1.4× better |
+| 24 query/DML shapes over 20000 rows (total) | 234 ms | 636 ms | 37% | 2.7× better |
 
 | Shape (20000 rows) | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| GROUP BY p (997 groups) | 1.14 ms | 2.71 ms | 42% | 2.4× better |
-| GROUP BY v (5003 groups) | 5.07 ms | 5.02 ms | 101% | same |
-| SELECT DISTINCT v | 4.80 ms | 4.37 ms | 110% | 1.1× worse |
-| COUNT(DISTINCT v) | 4.08 ms | 3.75 ms | 109% | 1.1× worse |
-| UNION | 7.81 ms | 7.84 ms | 100% | same |
-| EXCEPT | 9.13 ms | 6.74 ms | 135% | 1.4× worse |
-| INTERSECT | 3.95 ms | 3.95 ms | 100% | same |
-| IN (uncorrelated subquery) | 3.59 ms | 4.80 ms | 75% | 1.3× better |
-| NOT IN (uncorrelated subquery) | 2.11 ms | 3.06 ms | 69% | 1.4× better |
-| EXISTS (correlated, unindexed) | 4.51 ms | 4.71 ms | 96% | same |
-| scalar subquery (correlated) | 3.24 ms | 4.62 ms | 70% | 1.4× better |
-| scalar subquery (uncorrelated) | 5.04 ms | 4.54 ms | 111% | 1.1× worse |
-| equi-join | 1.54 ms | 4.74 ms | 32% | 3.1× better |
-| ORDER BY v | 3.35 ms | 2.61 ms | 129% | 1.3× worse |
-| ORDER BY v after a shared non-ASCII prefix | 4.68 ms | 3.03 ms | 154% | 1.5× worse |
-| ORDER BY accented text | 3.56 ms | 3.10 ms | 115% | 1.2× worse |
-| ROW_NUMBER over v | 6.07 ms | 5.69 ms | 107% | 1.1× worse |
-| DELETE WHERE IN (subquery) | 20.5 ms | 104 ms | 20% | 5.1× better |
-| UPDATE FROM join | 31.4 ms | 32.3 ms | 97% | same |
-| UPDATE all rows | 32.7 ms | 29.3 ms | 111% | 1.1× worse |
-| INSERT with FOREIGN KEY | 37.5 ms | 45.2 ms | 83% | 1.2× better |
-| DELETE parent rows (FK checked) | 44.9 ms | 127 ms | 35% | 2.8× better |
-| DELETE with ON DELETE CASCADE | 71.0 ms | 240 ms | 30% | 3.4× better |
-| MERGE | 45.8 ms | 32.9 ms | 139% | 1.4× worse |
+| GROUP BY p (997 groups) | 1.10 ms | 2.53 ms | 43% | 2.3× better |
+| GROUP BY v (5003 groups) | 4.39 ms | 4.71 ms | 93% | 1.1× better |
+| SELECT DISTINCT v | 3.32 ms | 4.28 ms | 77% | 1.3× better |
+| COUNT(DISTINCT v) | 2.70 ms | 3.60 ms | 75% | 1.3× better |
+| UNION | 5.39 ms | 7.58 ms | 71% | 1.4× better |
+| EXCEPT | 6.12 ms | 6.40 ms | 96% | same |
+| INTERSECT | 2.52 ms | 3.83 ms | 66% | 1.5× better |
+| IN (uncorrelated subquery) | 3.11 ms | 4.58 ms | 68% | 1.5× better |
+| NOT IN (uncorrelated subquery) | 2.14 ms | 2.92 ms | 73% | 1.4× better |
+| EXISTS (correlated, unindexed) | 4.01 ms | 4.57 ms | 88% | 1.1× better |
+| scalar subquery (correlated) | 2.88 ms | 4.50 ms | 64% | 1.6× better |
+| scalar subquery (uncorrelated) | 4.02 ms | 4.22 ms | 95% | 1.1× better |
+| equi-join | 1.38 ms | 4.63 ms | 30% | 3.4× better |
+| ORDER BY v | 1.73 ms | 2.45 ms | 70% | 1.4× better |
+| ORDER BY v after a shared non-ASCII prefix | 2.38 ms | 2.91 ms | 82% | 1.2× better |
+| ORDER BY accented text | 2.80 ms | 3.20 ms | 88% | 1.1× better |
+| ROW_NUMBER over v | 4.43 ms | 5.50 ms | 81% | 1.2× better |
+| DELETE WHERE IN (subquery) | 11.3 ms | 96.7 ms | 12% | 8.5× better |
+| UPDATE FROM join | 20.8 ms | 29.4 ms | 71% | 1.4× better |
+| UPDATE all rows | 19.6 ms | 26.4 ms | 74% | 1.3× better |
+| INSERT with FOREIGN KEY | 21.5 ms | 39.2 ms | 55% | 1.8× better |
+| DELETE parent rows (FK checked) | 27.5 ms | 116 ms | 24% | 4.2× better |
+| DELETE with ON DELETE CASCADE | 49.0 ms | 225 ms | 22% | 4.6× better |
+| MERGE | 29.6 ms | 29.8 ms | 99% | same |
 
 Query/DML shapes: median of 5 timed runs after one warm-up; total is the sum of those medians.
 
-images: bitsql=bitsql-diagnostics:0.1.26, mssql=mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726
+images: bitsql=mirek/bitsql:0.1.27-amd64, mssql=mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726
 Point SELECTs: median of five 1000-query batches after one full warm-up batch; all executions check SQL errors.
 
-Startup, footprint and writes are the main gains in this run; point reads and
-some query shapes are slower than SQL Server. Shared-host measurements vary
-between runs. A separate interleaved comparison against 0.1.25, pinned to one
-CPU, measured disabled diagnostic overhead within -1.8% to +0.9% across six
-shapes. Explicit profiling added 23–28 µs of server CPU for tiny queries and
-2.4–5.3% for the larger shapes. These are sampled results, not a zero-overhead
-guarantee. See [the measurements and methodology](docs/design/performance.md).
+Startup, footprint and writes are the main gains in this run; point reads are
+slower than SQL Server. Shared-host measurements vary between runs. These
+measurements include native statement-history collection but do not isolate its
+overhead or benchmark Query Store capture mode ALL. The earlier 0.1.26 opt-in
+profiling experiment applies to that release only. See [the measurements and
+methodology](docs/design/performance.md) and the [raw samples](website/public/benchmark-0.1.27.json).
 
 To reproduce (pulls both images; uses containers `bitsql-bench-*` on ports
 47340/47341 and removes them afterwards):

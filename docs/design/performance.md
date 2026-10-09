@@ -1258,3 +1258,30 @@ Compressed download size is absent because the benchmark image was local.
 The repeat initially found port 47340 busy. `bench:compare` now accepts
 `--bitsql-port` and `--mssql-port` within 47300–47399; this recorded run used
 47348 and 47349. No unrelated container or listener was stopped.
+
+## 2026-10-09 — Compatibility report and native history (0.1.27)
+
+The native host now supplies elapsed/CPU samples for statement history; the
+pure core still has no clock or OS calls. The release comparison includes this
+default collection, index usage tracking and the scoped missing-index advisor.
+It does not benchmark Query Store ALL capture or isolate instrumentation cost.
+The 0.1.26 disabled-overhead figures above do not apply to the new default path.
+
+The fully tested `mirek/bitsql:0.1.27-amd64` image was measured sequentially
+against native SQL Server 2025 on the Ryzen 9 7950X3D shared host, after both
+client suites finished. One cold start per target, five warmed point-read
+batches and five warmed samples per shape: 40.1 MiB image, 162 ms cold start,
+5.7 MiB idle memory, 155 ms for 1,000 point reads versus SQL Server's 124 ms.
+The 24 shape medians sum to 234 ms versus 636 ms. Cross-release changes in
+these unpinned, shared-host numbers must not be attributed to instrumentation.
+Every timed query is checked for SQL errors. Raw samples and metadata:
+[benchmark-0.1.27.json](../../website/public/benchmark-0.1.27.json). README tables
+and website charts use this same artifact. Registry download size is added
+after publication without re-running the measurements.
+
+Validation: 1,780 MoonBit tests, all-backend core checks, 23,723 client/corpus
+passes (three existing skips), and the same full client suite independently
+against the packaged release binary. All 13 report cases pass both BitSQL and
+an independent rerun against native SQL Server 2022 16.0.4236.2. The actual
+release container additionally passed all 13 cases and populated diagnostic
+metadata checks. The original 0.1.25 image reproduced the report failures.
