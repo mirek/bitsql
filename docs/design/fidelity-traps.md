@@ -169,3 +169,10 @@ real system message). Keep the allocation table in
 - Query Store activation/ingestion is asynchronous on the oracle. Assert positive
   captured workload before comparing history; an empty join is not verification.
   Mode/lifecycle probes explicitly wait after activation and before flushing.
+
+- 2026-10-09 (`report-0127`): safe nvarchar widening casts inserted for
+  comparisons must not disable storage seeks. Both the key and column may be
+  widened; retain the full lookup value and original collation. Never strip
+  narrowing, code-page or numeric casts: their errors/truncation can change
+  results. The uniform 5,000-row INDEX fixture requires a real seek and one
+  `user_seeks` increment, not a diagnostic-only counter patch.

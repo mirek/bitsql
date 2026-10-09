@@ -1290,3 +1290,21 @@ The published version/minor/latest manifests and registry-delivered container
 were verified; immutable digests and binary identity are recorded in the
 [publication evidence](query-store.md#publication). Image revision stamping
 preserved all tested filesystem layers.
+
+### 2026-10-09: 0.1.28 diagnostic compatibility fixes
+
+Native amd64 release comparison, sequential containers on the shared Ryzen
+9 7950X3D host, same methodology as 0.1.27: one startup per target, five warmed
+1,000-point-read batches, and five warmed samples per query/DML shape. The
+new image is 40.1 MiB, starts in 154 ms and uses 5.1 MiB idle memory. Point
+reads remain slower than SQL Server (157 vs 117 ms). The 24 shape medians sum
+to 232 vs 666 ms. Every timed query checked for SQL errors; recorded medians
+were independently recomputed from raw samples. These are shared-host release
+measurements, not an isolated estimate of the new IO model's overhead.
+
+Logical-read footprints are cached with immutable materialized table data;
+Unicode widening now permits real seeks instead of scanning. The benchmarks
+include default native history collection but do not exercise Query Store ALL.
+Raw evidence: [benchmark-0.1.28.json](../../website/public/benchmark-0.1.28.json).
+README tables and website charts use the same artifact. No foreign architecture
+was built, run or benchmarked for this release.

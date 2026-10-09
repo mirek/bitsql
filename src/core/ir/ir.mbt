@@ -424,6 +424,7 @@ pub(all) enum TableFn {
   /// GENERATE_SERIES; args: start, stop, step (all of the `value` type).
   GenerateSeries(@types.SqlType)
   DiagnosticText(Array[Array[@types.Value]])
+  DiagnosticAttributes(Array[Array[@types.Value]])
   /// xml `nodes()`; args: the xml value, the XQuery text, sql:variable /
   /// sql:column values. One xml context reference per result node.
   XmlNodes

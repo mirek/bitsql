@@ -1337,3 +1337,22 @@ Partition statistics reuse the already documented allocation model. All
 remaining boundaries, including top-level-only timing and AUTO/CUSTOM metadata
 policies, are explicit in [query-store.md](query-store.md). Plan forcing and hints
 on captured IDs produce Emulator errors rather than claiming success.
+
+### 2026-10-09: diagnostic IO and plan database lookup (0.1.28)
+
+The 0.1.27 follow-up report requires numeric Query Store read aggregates.
+Physical reads are zero: this executor has no disk-backed database pages.
+Logical reads accumulate the existing storage-catalog page model over rows
+retrieved at each ordinary rowstore materialized source/seek boundary (including repeated cached
+source reads). User rows use the existing record/LOB/overflow footprint;
+virtual catalog rows use typed payload bytes plus eight bytes per record,
+rounded to 8 KiB. A B-tree seek adds one modeled lookup page. This is an
+explicit emulator model, not SQL Server buffer-pool accounting or a prediction
+of its IO. Source footprints are cached with immutable table data. Query Store
+publishes average/last/min/max/population-standard-deviation; query statistics
+publish the same total/last/min/max. No-read statements retain numeric zero.
+
+Plan-attribute lookup publishes the observed plan's `dbid` as an int variant
+and cache key. Other SQL Server optimizer attributes remain outside the
+supported history subset; no object IDs, plan costs or SET option masks are
+invented. Captures: `harness/corpus/report-0127`, SQL Server 2022 16.0.4236.2.

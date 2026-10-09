@@ -296,7 +296,7 @@ fn Session::system_tvf(
   args : Array[@types.Value],
 ) -> (Array[@bind.ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError {
   match name {
-    "dm_exec_sql_text" => {
+    "dm_exec_sql_text" | "dm_exec_plan_attributes" => {
       let v = view_defs[view_index("sys", name).unwrap()]
       let cols = v.columns.map(c => @bind.ColumnRef::{
         untyped_null: false,
@@ -312,6 +312,15 @@ fn Session::system_tvf(
       })
       let rows = []
       for _, q in self.server.query_statistics {
+        if name == "dm_exec_plan_attributes" {
+          rows.push([
+            s("dbid"),
+            Variant(i(self.server.database_id(q.database).unwrap_or(0)), Int),
+            Bit(true),
+            observation_handle(q.id, 64),
+          ])
+          continue
+        }
         rows.push([
           i(self.server.database_id(q.database).unwrap_or(0)),
           Null,

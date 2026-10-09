@@ -10,6 +10,7 @@ priv struct StatementSample {
   mut start : Int64
   mut cpu_start : Int64
   mut rows : Int64
+  mut logical_reads : Int64
   mut finished : Bool
 }
 
@@ -37,6 +38,12 @@ priv struct QueryObservation {
   mut last_cpu : Int64
   mut min_cpu : Int64
   mut max_cpu : Int64
+  mut logical_reads : Int64
+  mut last_logical_reads : Int64
+  mut min_logical_reads : Int64
+  mut max_logical_reads : Int64
+  mut logical_mean : Double
+  mut logical_m2 : Double
   interval_minutes : Int
 }
 
@@ -106,6 +113,14 @@ fn Server::observe(
       }
       q.last_time = now
       q.count += 1L
+      let reads = sample.logical_reads
+      let delta = reads.to_double() - q.logical_mean
+      q.logical_mean += delta / q.count.to_double()
+      q.logical_m2 += delta * (reads.to_double() - q.logical_mean)
+      q.logical_reads += reads
+      q.last_logical_reads = reads
+      q.min_logical_reads = @cmp.minimum(q.min_logical_reads, reads)
+      q.max_logical_reads = @cmp.maximum(q.max_logical_reads, reads)
       q.rows += sample.rows
       q.last_rows = sample.rows
       q.min_rows = @cmp.minimum(q.min_rows, sample.rows)
@@ -149,6 +164,12 @@ fn Server::observe(
         last_cpu: cpu,
         min_cpu: cpu,
         max_cpu: cpu,
+        logical_reads: sample.logical_reads,
+        last_logical_reads: sample.logical_reads,
+        min_logical_reads: sample.logical_reads,
+        max_logical_reads: sample.logical_reads,
+        logical_mean: sample.logical_reads.to_double(),
+        logical_m2: 0.0,
         interval_minutes: sample.interval_minutes,
       }
     }
@@ -211,6 +232,7 @@ fn Session::prepare_sample(self : Session, stmt : @ast.Stmt) -> Unit {
     start: 0L,
     cpu_start: 0L,
     rows: 0L,
+    logical_reads: 0L,
     finished: false,
   })
 }
@@ -247,6 +269,13 @@ fn QueryObservation::stats_row(self : QueryObservation) -> VRow {
       ),
       ("worker_time", self.cpu, self.last_cpu, self.min_cpu, self.max_cpu),
       ("rows", self.rows, self.last_rows, self.min_rows, self.max_rows),
+      (
+        "logical_reads",
+        self.logical_reads,
+        self.last_logical_reads,
+        self.min_logical_reads,
+        self.max_logical_reads,
+      ),
     ] {
     r["total_" + name] = BigInt(total)
     r["last_" + name] = BigInt(last)
@@ -353,12 +382,24 @@ fn Session::monitoring_rows(
         ),
         ("cpu_time", q.cpu, q.last_cpu, q.min_cpu, q.max_cpu),
         ("rowcount", q.rows, q.last_rows, q.min_rows, q.max_rows),
+        (
+          "logical_io_reads",
+          q.logical_reads,
+          q.last_logical_reads,
+          q.min_logical_reads,
+          q.max_logical_reads,
+        ),
+        ("physical_io_reads", 0L, 0L, 0L, 0L),
       ] {
       r["avg_" + name] = Float(total.to_double() / q.count.to_double())
       r["last_" + name] = BigInt(last)
       r["min_" + name] = BigInt(min)
       r["max_" + name] = BigInt(max)
     }
+    r["stdev_logical_io_reads"] = Float(
+      @cmp.maximum(0.0, q.logical_m2 / q.count.to_double()).sqrt(),
+    )
+    r["stdev_physical_io_reads"] = Float(0.0)
     out.push(r)
   }
 }

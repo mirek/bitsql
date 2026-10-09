@@ -1,6 +1,6 @@
 # Query Store and diagnostic history
 
-## Current scope (0.1.27)
+## Current scope (0.1.28)
 
 The October 8 compatibility report supersedes the intentionally empty 0.1.25
 scaffold for the workload it reproduces. The native host now collects successful
@@ -42,7 +42,16 @@ empty descriptors for those unsupported history dimensions are retained from
 the previously approved scaffold. Embedded/browser engines do not have a host
 measurement driver and do not collect query history.
 
-Nullable metrics that are not measured remain NULL. Mandatory resource fields
+Logical read statistics are numeric in 0.1.28. They accumulate modeled page
+footprints at ordinary rowstore source/seek boundaries, including cached source reads;
+physical read statistics are zero for this memory-only engine. User-table
+footprints use the same record/LOB/overflow model as the storage catalogs;
+virtual catalogs use typed payload bytes rounded to 8 KiB, and seeks add one
+modeled lookup page. These counts describe materialized storage access, not
+rows finally emitted or SQL Server buffer-pool events. Repeated observations
+retain average/last/min/max and population standard deviation. Specialized JSON
+and vector index internals are not included in this IO model. Other
+nullable metrics that are not measured remain NULL. Mandatory resource fields
 for SQL Server subsystems absent from this memory-only executor remain zero.
 Do not interpret them as measured SQL Server page I/O, memory grants or waits.
 
@@ -51,7 +60,10 @@ Do not interpret them as measured SQL Server page I/O, memory grants or waits.
 - `sys.dm_exec_query_stats` contains actual execution counts, row counts and
   host-sampled elapsed/CPU time. Its bounded instance history evicts at 4096
   distinct statement/context entries. `sys.dm_exec_sql_text(handle)` supports
-  correlated APPLY for diagnostic joins. These are observations of the emulator;
+  correlated APPLY for diagnostic joins. `sys.dm_exec_plan_attributes(handle)`
+  supports the observed `dbid` attribute as an int sql_variant/cache key,
+  including correlated APPLY, NULL/unknown handles and malformed-handle errors.
+  Other plan attributes remain outside this supported subset. These are observations of the emulator;
   it does not retain SQL Server physical execution plans.
 - `sys.dm_db_index_usage_stats` records storage seeks, scans and index writes,
   with timestamps. Counts are deduplicated per statement/index/access kind and
@@ -96,6 +108,21 @@ check on every backend. Website tests/build passed (12 tests and one existing
 browser skip). The packaged native release binary independently passed the same 23,723
 client checks. The local release container passed all 13 report corpus cases
 and the populated seven-view metadata test over TDS.
+
+## 0.1.28 follow-up validation
+
+The five `report-0127` cases were captured and independently reverified against
+native SQL Server 2022 16.0.4236.2. All 18 cases from both compatibility reports
+pass against the new binary and its actual native container. The container also
+passes the populated seven-view metadata test.
+
+The full `scripts/check.sh` gate used the exact packaged native binary:
+1,783 MoonBit tests, 23,728 client/corpus checks, zero failures and three existing
+client skips. All core packages check on every backend. Website tests/build
+passed (12 tests, one existing browser skip). Native container benchmarks and
+raw measurements are refreshed in [performance.md](performance.md).
+Packaged binary SHA-256:
+`75705219cab0a7994cd298c7061f5c5c44ff77c364a81c936a74c1dc994386d2`.
 
 ## Publication
 

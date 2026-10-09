@@ -1375,3 +1375,11 @@ For practical client compatibility, implement in this order:
   produced missing-index advice where a trivial unsorted plan did not; creating
   the covering index removed it. Emulator advice/counter limits are documented
   in `docs/design/query-store.md`.
+
+- 2026-10-09 (`report-0127/plan-*.sql`, SQL Server 2022): despite the online
+  reference's varchar description, plan-attributes emits `attribute
+  nvarchar(128)` (flags 8), nullable sql_variant (9), nonnullable bit (8).
+  dbid is an int variant/cache key. NULL and unknown 64-byte handles return no
+  rows; a short handle raises 569 state 10 after COLMETADATA. WHERE 1=0 avoids
+  handle evaluation. Query Store read averages and standard deviations are
+  numeric even when physical reads are zero (`query-store-io.sql`).

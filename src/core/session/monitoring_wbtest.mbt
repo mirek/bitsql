@@ -87,3 +87,76 @@ test "index usage survives rollback and missing index advice follows schema" {
   server.missing_index_rows(after)
   assert_true(after.is_empty())
 }
+
+///|
+test "logical read observations aggregate cache hits and zero-read statements" {
+  let server = Server::new()
+  server.create_database("foo")
+  let s = Session::new(server, spid=51, database="foo", seed=1)
+  let now = 638000000000000000L
+  server.enable_monitoring(now, 2, 1024L)
+  ignore(
+    monitored_run(
+      s, "ALTER DATABASE CURRENT SET QUERY_STORE=ON (QUERY_CAPTURE_MODE=ALL,INTERVAL_LENGTH_MINUTES=60); CREATE TABLE t(id int); INSERT t VALUES(1),(2);",
+      now,
+    ),
+  )
+  let sql = "SELECT id FROM t"
+  ignore(monitored_run(s, sql, now))
+  ignore(monitored_run(s, sql, now))
+  ignore(monitored_run(s, "SELECT 1 AS no_reads", now))
+  let q = server.query_history.values().to_array().filter(q => q.text == sql)[0]
+  assert_eq(q.count, 2L)
+  assert_eq(q.logical_reads, 2L)
+  assert_eq(q.last_logical_reads, 1L)
+  assert_eq(q.logical_m2, 0.0)
+  let zero = server.query_history
+    .values()
+    .to_array()
+    .filter(q => q.text == "SELECT 1 AS no_reads")[0]
+  assert_eq(zero.logical_reads, 0L)
+  // Grow past a modeled page and run the same identity, invalidating the
+  // materialized source cache without resetting runtime aggregation.
+  ignore(
+    monitored_run(s, "INSERT t SELECT TOP(2000) 1 FROM sys.all_objects", now),
+  )
+  ignore(monitored_run(s, sql, now))
+  assert_true(q.last_logical_reads > 1L)
+  assert_eq(q.min_logical_reads, 1L)
+  assert_eq(q.max_logical_reads, q.last_logical_reads)
+  assert_eq(q.logical_reads, 2L + q.last_logical_reads)
+  assert_true(q.logical_m2 > 0.0)
+  let runtime = server.query_runtime
+    .values()
+    .to_array()
+    .filter(q => q.text == sql)[0]
+  assert_eq(runtime.logical_reads, q.logical_reads)
+  assert_eq(runtime.logical_m2, q.logical_m2)
+}
+
+///|
+test "plan dbid attributes retain the originating database" {
+  let server = Server::new()
+  server.create_database("foo")
+  server.create_database("bar")
+  let now = 638000000000000000L
+  server.enable_monitoring(now, 2, 1024L)
+  let a = Session::new(server, spid=51, database="foo", seed=1)
+  let b = Session::new(server, spid=52, database="bar", seed=1)
+  ignore(monitored_run(a, "SELECT 1 AS origin_foo", now))
+  ignore(monitored_run(b, "SELECT 2 AS origin_bar", now))
+  guard a.system_tvf("dm_exec_plan_attributes", []) is Some((cols, rows)) else {
+    fail("TVF")
+  }
+  assert_eq(cols.length(), 3)
+  assert_eq(rows.length(), 2)
+  for _, q in server.query_statistics {
+    let row = rows.filter(r => r[3] == observation_handle(q.id, 64))[0]
+    assert_eq(row[0], String("dbid"))
+    assert_eq(
+      row[1],
+      Variant(Int(server.database_id(q.database).unwrap()), Int),
+    )
+    assert_eq(row[2], Bit(true))
+  }
+}

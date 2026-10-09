@@ -216,6 +216,23 @@ fn stream_table_fn(
         }
       }
     }
+    DiagnosticAttributes(rows) => {
+      let handle = eval(ctx, args[0])
+      if handle is Binary(bytes) && bytes.length() != 64 {
+        raise @types.sql_error(
+          569,
+          "The handle that was passed to dm_exec_plan_attributes was invalid.",
+          state=10,
+        )
+      }
+      if !(handle is Null) {
+        for row in rows {
+          if row.get(3) == Some(handle) {
+            emit(row[:3].to_owned())
+          }
+        }
+      }
+    }
     GenerateSeries(ty) => generate_series(ctx, ty, args, emit)
   }
 }

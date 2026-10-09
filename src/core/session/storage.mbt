@@ -173,7 +173,9 @@ fn Session::source(
   id : Int,
 ) -> Array[(Int64, Array[@types.Value])] {
   if scope == 2 {
-    return self.sys_view_rows(id)
+    let rows = self.sys_view_rows(id)
+    self.charge_reads(self.read_pages(scope, id, rows))
+    return rows
   }
   let db = self.db_of(scope)
   if db.table(id) is Some(t) {
@@ -185,7 +187,10 @@ fn Session::source(
   }
   guard db.table_data(id) is Some(data) else { return db.rows(id) }
   match self.scans.get((scope, id)) {
-    Some((seen, rows)) if physical_equal(seen, data) => rows
+    Some((seen, rows, pages)) if physical_equal(seen, data) => {
+      self.charge_reads(pages)
+      rows
+    }
     _ => {
       let rows = db.rows(id)
       // bounded: pooled sessions that create and drop many tables must not
@@ -193,7 +198,9 @@ fn Session::source(
       if self.scans.length() >= 32 {
         self.scans.clear()
       }
-      self.scans[(scope, id)] = (data, rows)
+      let pages = self.read_pages(scope, id, rows)
+      self.scans[(scope, id)] = (data, rows, pages)
+      self.charge_reads(pages)
       rows
     }
   }
@@ -712,16 +719,16 @@ fn Session::seek(
     }
     if covered(ix) is Some(vals) {
       self.index_access(scope, id, ix.index_id, 0)
-      return Some(
-        match db.find_key(id, i, vals) {
-          Some(rowid) =>
-            match db.row(id, rowid) {
-              Some(r) => [(rowid, r)]
-              None => []
-            }
-          None => []
-        },
-      )
+      let found = match db.find_key(id, i, vals) {
+        Some(rowid) =>
+          match db.row(id, rowid) {
+            Some(r) => [(rowid, r)]
+            None => []
+          }
+        None => []
+      }
+      self.charge_reads(1L + self.read_pages(scope, id, found))
+      return Some(found)
     }
   }
   for i, ix in t.indexes {
@@ -757,6 +764,7 @@ fn Session::seek(
         None => ()
       }
     }
+    self.charge_reads(1L + self.read_pages(scope, id, out))
     return Some(out)
   }
   None

@@ -21,7 +21,7 @@ statement executions and index usage. Optional
 docker run --rm -p 1433:1433 mirek/bitsql --auto-create-databases
 ```
 
-Published image: `mirek/bitsql` (tags `X.Y.Z`, `X.Y`, `latest`). Release 0.1.27
+Published image: `mirek/bitsql` (tags `X.Y.Z`, `X.Y`, `latest`). Release 0.1.28
 publishes native-validated amd64; inspect the tag’s manifest for availability.
 Other architectures require validation and publication on their native hosts. `SELECT @@VERSION` returns `Microsoft SQL Server 2025
 (bitsql emulator X.Y.Z)`, so you can tell which release you're connected to,
@@ -129,7 +129,8 @@ concurrency remain outside this release. Concurrent table changes during an
 embedding HTTP wait raise an explicit unsupported error.
 
 Native execution history now populates Query Store under `QUERY_CAPTURE_MODE=ALL`,
-with real counts, host-measured durations/CPU, linked runtime intervals and
+with real counts, host-measured durations/CPU, numeric modeled logical reads,
+zero physical reads, linked runtime intervals and
 flush/clear/reset/remove behavior. Diagnostic views expose query and index usage,
 partition statistics, host facts and scoped missing-index advice. Monitoring is
 not complete SQL Server equivalence: AUTO/CUSTOM admission, nested statement
@@ -154,7 +155,7 @@ See [usage, counter definitions and limitations](docs/design/query-diagnostics.m
 
 ## Benchmarks
 
-The 0.1.27 native amd64 release image, `mirek/bitsql:0.1.27-amd64`, vs
+The 0.1.28 native amd64 release image, `mirek/bitsql:0.1.28-amd64`, vs
 `mcr.microsoft.com/mssql/server:2025-latest` (Developer edition, default settings),
 linux/amd64, AMD Ryzen 9 7950X3D, Docker 29.1.3, 2026-10-09. Both containers ran
 one after the other on this shared host; the client is tedious over loopback
@@ -166,53 +167,53 @@ from the published amd64 registry manifest.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | 13.8 MiB | 604.5 MiB | 2.3% | 44× better |
+| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
 | Image size on disk | 40.1 MiB | 1.64 GiB | 2.4% | 42× better |
-| Cold start: `docker run` → first query (one run) | 162 ms | 2.67 s | 6.1% | 16× better |
-| CPU time until ready | 37.1 ms | 2.98 s | 1.2% | 80× better |
-| Memory idle after start | 5.7 MiB | 1.17 GiB | 0.5% | 211× better |
-| Memory after workload | 39.5 MiB | 1.21 GiB | 3.2% | 31× better |
-| Memory peak (incl. page cache) | 49.0 MiB | 1.24 GiB | 3.9% | 26× better |
-| Login (new connection, TLS, median) | 2.34 ms | 48.7 ms | 4.8% | 21× better |
-| `SELECT 1` round trip (median) | 0.10 ms | 0.18 ms | 59% | 1.7× better |
-| Drop + create 2-table schema (median) | 0.16 ms | 6.48 ms | 2.5% | 41× better |
-| 1000 parameterized INSERTs | 174 ms | 894 ms | 19% | 5.1× better |
-| 1000 parameterized point SELECTs (median of 5) | 155 ms | 124 ms | 125% | 1.3× worse |
-| 200 transactions (INSERT + UPDATE) | 44.5 ms | 220 ms | 20% | 4.9× better |
-| Join + GROUP BY report (median) | 0.77 ms | 0.82 ms | 94% | 1.1× better |
-| Load 20000 + 20000 rows (GENERATE_SERIES) | 36.4 ms | 50.0 ms | 73% | 1.4× better |
-| 24 query/DML shapes over 20000 rows (total) | 234 ms | 636 ms | 37% | 2.7× better |
+| Cold start: `docker run` → first query (one run) | 154 ms | 2.91 s | 5.3% | 19× better |
+| CPU time until ready | 35.3 ms | 3.25 s | 1.1% | 92× better |
+| Memory idle after start | 5.1 MiB | 1.17 GiB | 0.4% | 236× better |
+| Memory after workload | 37.7 MiB | 1.22 GiB | 3.0% | 33× better |
+| Memory peak (incl. page cache) | 47.2 MiB | 1.24 GiB | 3.7% | 27× better |
+| Login (new connection, TLS, median) | 2.36 ms | 51.0 ms | 4.6% | 22× better |
+| `SELECT 1` round trip (median) | 0.11 ms | 0.19 ms | 56% | 1.8× better |
+| Drop + create 2-table schema (median) | 0.15 ms | 6.64 ms | 2.3% | 44× better |
+| 1000 parameterized INSERTs | 180 ms | 902 ms | 20% | 5.0× better |
+| 1000 parameterized point SELECTs (median of 5) | 157 ms | 117 ms | 135% | 1.4× worse |
+| 200 transactions (INSERT + UPDATE) | 45.6 ms | 216 ms | 21% | 4.7× better |
+| Join + GROUP BY report (median) | 0.78 ms | 0.86 ms | 91% | 1.1× better |
+| Load 20000 + 20000 rows (GENERATE_SERIES) | 35.4 ms | 50.6 ms | 70% | 1.4× better |
+| 24 query/DML shapes over 20000 rows (total) | 232 ms | 666 ms | 35% | 2.9× better |
 
 | Shape (20000 rows) | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| GROUP BY p (997 groups) | 1.10 ms | 2.53 ms | 43% | 2.3× better |
-| GROUP BY v (5003 groups) | 4.39 ms | 4.71 ms | 93% | 1.1× better |
-| SELECT DISTINCT v | 3.32 ms | 4.28 ms | 77% | 1.3× better |
-| COUNT(DISTINCT v) | 2.70 ms | 3.60 ms | 75% | 1.3× better |
-| UNION | 5.39 ms | 7.58 ms | 71% | 1.4× better |
-| EXCEPT | 6.12 ms | 6.40 ms | 96% | same |
-| INTERSECT | 2.52 ms | 3.83 ms | 66% | 1.5× better |
-| IN (uncorrelated subquery) | 3.11 ms | 4.58 ms | 68% | 1.5× better |
-| NOT IN (uncorrelated subquery) | 2.14 ms | 2.92 ms | 73% | 1.4× better |
-| EXISTS (correlated, unindexed) | 4.01 ms | 4.57 ms | 88% | 1.1× better |
-| scalar subquery (correlated) | 2.88 ms | 4.50 ms | 64% | 1.6× better |
-| scalar subquery (uncorrelated) | 4.02 ms | 4.22 ms | 95% | 1.1× better |
-| equi-join | 1.38 ms | 4.63 ms | 30% | 3.4× better |
-| ORDER BY v | 1.73 ms | 2.45 ms | 70% | 1.4× better |
-| ORDER BY v after a shared non-ASCII prefix | 2.38 ms | 2.91 ms | 82% | 1.2× better |
-| ORDER BY accented text | 2.80 ms | 3.20 ms | 88% | 1.1× better |
-| ROW_NUMBER over v | 4.43 ms | 5.50 ms | 81% | 1.2× better |
-| DELETE WHERE IN (subquery) | 11.3 ms | 96.7 ms | 12% | 8.5× better |
-| UPDATE FROM join | 20.8 ms | 29.4 ms | 71% | 1.4× better |
-| UPDATE all rows | 19.6 ms | 26.4 ms | 74% | 1.3× better |
-| INSERT with FOREIGN KEY | 21.5 ms | 39.2 ms | 55% | 1.8× better |
-| DELETE parent rows (FK checked) | 27.5 ms | 116 ms | 24% | 4.2× better |
-| DELETE with ON DELETE CASCADE | 49.0 ms | 225 ms | 22% | 4.6× better |
-| MERGE | 29.6 ms | 29.8 ms | 99% | same |
+| GROUP BY p (997 groups) | 1.14 ms | 2.73 ms | 42% | 2.4× better |
+| GROUP BY v (5003 groups) | 4.27 ms | 4.93 ms | 87% | 1.2× better |
+| SELECT DISTINCT v | 3.58 ms | 4.49 ms | 80% | 1.3× better |
+| COUNT(DISTINCT v) | 2.69 ms | 4.04 ms | 67% | 1.5× better |
+| UNION | 5.32 ms | 8.04 ms | 66% | 1.5× better |
+| EXCEPT | 5.91 ms | 6.75 ms | 87% | 1.1× better |
+| INTERSECT | 2.58 ms | 4.10 ms | 63% | 1.6× better |
+| IN (uncorrelated subquery) | 3.08 ms | 5.04 ms | 61% | 1.6× better |
+| NOT IN (uncorrelated subquery) | 2.10 ms | 3.16 ms | 66% | 1.5× better |
+| EXISTS (correlated, unindexed) | 3.91 ms | 4.91 ms | 80% | 1.3× better |
+| scalar subquery (correlated) | 2.89 ms | 4.89 ms | 59% | 1.7× better |
+| scalar subquery (uncorrelated) | 3.93 ms | 4.59 ms | 86% | 1.2× better |
+| equi-join | 1.36 ms | 4.97 ms | 27% | 3.6× better |
+| ORDER BY v | 1.89 ms | 2.67 ms | 71% | 1.4× better |
+| ORDER BY v after a shared non-ASCII prefix | 2.46 ms | 3.15 ms | 78% | 1.3× better |
+| ORDER BY accented text | 2.82 ms | 3.27 ms | 86% | 1.2× better |
+| ROW_NUMBER over v | 4.48 ms | 5.99 ms | 75% | 1.3× better |
+| DELETE WHERE IN (subquery) | 11.3 ms | 101 ms | 11% | 9.0× better |
+| UPDATE FROM join | 20.7 ms | 30.8 ms | 67% | 1.5× better |
+| UPDATE all rows | 19.8 ms | 27.9 ms | 71% | 1.4× better |
+| INSERT with FOREIGN KEY | 21.5 ms | 41.4 ms | 52% | 1.9× better |
+| DELETE parent rows (FK checked) | 27.3 ms | 122 ms | 22% | 4.5× better |
+| DELETE with ON DELETE CASCADE | 47.1 ms | 233 ms | 20% | 4.9× better |
+| MERGE | 29.6 ms | 31.4 ms | 94% | 1.1× better |
 
 Query/DML shapes: median of 5 timed runs after one warm-up; total is the sum of those medians.
 
-images: bitsql=mirek/bitsql:0.1.27-amd64, mssql=mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726
+images: bitsql=mirek/bitsql:0.1.28-amd64, mssql=mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726
 Point SELECTs: median of five 1000-query batches after one full warm-up batch; all executions check SQL errors.
 
 Startup, footprint and writes are the main gains in this run; point reads are
@@ -220,7 +221,7 @@ slower than SQL Server. Shared-host measurements vary between runs. These
 measurements include native statement-history collection but do not isolate its
 overhead or benchmark Query Store capture mode ALL. The earlier 0.1.26 opt-in
 profiling experiment applies to that release only. See [the measurements and
-methodology](docs/design/performance.md) and the [raw samples](website/public/benchmark-0.1.27.json).
+methodology](docs/design/performance.md) and the [raw samples](website/public/benchmark-0.1.28.json).
 
 To reproduce (pulls both images; uses containers `bitsql-bench-*` on ports
 47340/47341 and removes them afterwards):

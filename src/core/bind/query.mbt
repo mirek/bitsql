@@ -690,14 +690,24 @@ fn bind_table_function(
   if fname == "GENERATE_SERIES" {
     return bind_generate_series(env, name, args, columns, q)
   }
-  if fname == "DM_EXEC_SQL_TEXT" &&
+  if (fname == "DM_EXEC_SQL_TEXT" || fname == "DM_EXEC_PLAN_ATTRIBUTES") &&
     name.parts.length() == 2 &&
     name.parts[0].name.to_lower() == "sys" {
     arity_range(fname, args, 1, 1)
     let arg = coerce(bind_expr(penv, args[0]), VarBinary(Some(64)))
-    match (env.catalog.system_tvf)("dm_exec_sql_text", []) {
+    match (env.catalog.system_tvf)(fname.to_lower(), []) {
       Some((cols, rows)) =>
-        return (TableFunc(DiagnosticText(rows), [arg]), requalify(cols, q))
+        return (
+          TableFunc(
+            if fname == "DM_EXEC_SQL_TEXT" {
+              DiagnosticText(rows)
+            } else {
+              DiagnosticAttributes(rows)
+            },
+            [arg],
+          ),
+          requalify(cols, q),
+        )
       None => raise @types.not_supported("diagnostic SQL text lookup")
     }
   }

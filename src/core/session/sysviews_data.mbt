@@ -2318,6 +2318,15 @@ let view_defs : Array[ViewDef] = [
     ],
   },
   {
+    schema: "sys",
+    name: "dm_exec_plan_attributes",
+    columns: [
+      vc("attribute", NVarChar(Some(128), coll_default), false, false),
+      vc("value", Variant, true, false),
+      vc("is_cache_key", Bit, false, false),
+    ],
+  },
+  {
     // read as sys.dm_exec_cursors(session_id) (bind_table_function)
     schema: "sys",
     name: "dm_exec_cursors",

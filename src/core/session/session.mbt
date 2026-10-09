@@ -449,7 +449,7 @@ pub struct Session {
   /// Materialized table rows per (scope, id) for `source` (scan cache).
   priv scans : Map[
     (Int, Int),
-    (@store.TableData, Array[(Int64, Array[@types.Value])]),
+    (@store.TableData, Array[(Int64, Array[@types.Value])], Int64),
   ]
   priv mut stamp_seq : Int64
   /// Foreign key lookup indexes of recent table states (fk_actions.mbt).

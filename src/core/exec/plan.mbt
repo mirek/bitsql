@@ -516,7 +516,32 @@ fn row_free(e : @ir.Expr) -> Bool {
   match e.kind {
     Lit(_) | Var(_) | OuterCol(_, _) => true
     Collate(a) => row_free(a)
+    Cast(a, style=None, ..) if unicode_widening(a.ty, e.ty) => row_free(a)
     _ => false
+  }
+}
+
+///|
+/// Widening Unicode strings cannot fail or truncate; numeric/code-page casts
+/// retain the scan path and its error/evaluation order.
+fn unicode_widening(from : @types.SqlType, to : @types.SqlType) -> Bool {
+  match (from, to) {
+    (NVarChar(a, c), NVarChar(b, d)) if c == d =>
+      match (a, b) {
+        (_, None) => true
+        (Some(x), Some(y)) => x <= y
+        _ => false
+      }
+    _ => false
+  }
+}
+
+///|
+fn seek_column(e : @ir.Expr) -> (Int, @ir.Expr)? {
+  match e.kind {
+    Col(i) => Some((i, e))
+    Cast(a, style=None, ..) if unicode_widening(a.ty, e.ty) => seek_column(a)
+    _ => None
   }
 }
 
@@ -573,13 +598,20 @@ fn seek_rows(
   let mut index_ok = true
   for e in conj {
     guard e.kind is Cmp(Eq, a, b, coll) else { continue }
-    let pinned = match (a.kind, b.kind) {
-      (Col(i), _) if row_free(b) => Some((i, a, b))
-      (_, Col(i)) if row_free(a) => Some((i, b, a))
+    let pinned = match (seek_column(a), seek_column(b)) {
+      (Some((i, col)), _) if row_free(b) => Some((i, col, b))
+      (_, Some((i, col))) if row_free(a) => Some((i, col, a))
       _ => None
     }
     guard pinned is Some((i, col, value)) else { continue }
-    if col.ty != value.ty {
+    // Unicode equality does not depend on declared string length. Preserve
+    // the full lookup value (never truncate it to the column's width).
+    let compatible = col.ty == value.ty ||
+      (match (col.ty, value.ty) {
+        (NVarChar(_, a), NVarChar(_, b)) => a == b
+        _ => false
+      })
+    if !compatible {
       continue
     }
     match coll {

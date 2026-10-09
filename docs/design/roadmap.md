@@ -552,3 +552,17 @@ project: the breadth of transaction and error semantics in phases 5–6.
   reran all 13 report cases plus populated-view metadata checks successfully.
   Version/minor/latest tags agree; [release evidence](query-store.md#publication).
   No foreign-architecture execution/build.
+
+## 0.1.27 compatibility report follow-up (2026-10-09)
+
+- [x] Capture native SQL Server 2022 plan-attribute metadata, dbid variants,
+  NULL/unknown/malformed handles, Query Store numeric IO invariants and the
+  exact uniform 5,000-row nonclustered-index workload (`report-0127`).
+- [x] Add correlated plan-attribute dbid lookup and numeric Query Store read
+  aggregates with explicit modeled-logical/zero-physical IO semantics.
+- [x] Permit safe Unicode widening in seek keys and columns; preserve full
+  keys, collation and scan-equivalent results. The report's actual storage
+  seek now increments index usage. Longer values, trailing spaces, NULLs,
+  parameters and collation controls are captured and pass.
+- [ ] Publish native amd64 0.1.28 after the full packaged-binary gate, refreshed
+  comparison, and immutable registry-container verification.
