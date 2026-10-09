@@ -1308,3 +1308,10 @@ include default native history collection but do not exercise Query Store ALL.
 Raw evidence: [benchmark-0.1.28.json](../../website/public/benchmark-0.1.28.json).
 README tables and website charts use the same artifact. No foreign architecture
 was built, run or benchmarked for this release.
+
+0.1.28 publication: registry download size is 14,451,926 bytes (13.8 MiB),
+filled into the benchmark artifact after pushing, without changing timings.
+The full packaged-binary gate passed 1,783 MoonBit and 23,728 client/corpus
+checks (three existing skips); website checks/build passed. The pulled immutable
+registry image passed all 18 report cases, populated diagnostic metadata and
+the TDS version test. [Publication evidence](query-store.md#publication).

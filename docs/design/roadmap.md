@@ -564,5 +564,8 @@ project: the breadth of transaction and error semantics in phases 5–6.
   keys, collation and scan-equivalent results. The report's actual storage
   seek now increments index usage. Longer values, trailing spaces, NULLs,
   parameters and collation controls are captured and pass.
-- [ ] Publish native amd64 0.1.28 after the full packaged-binary gate, refreshed
-  comparison, and immutable registry-container verification.
+- [x] Publish native amd64 0.1.28 after the full packaged-binary gate, refreshed
+  comparison, and immutable registry-container verification. All 18 report
+  cases, populated diagnostic metadata and TDS version pass in the pulled
+  registry image; version/minor/latest manifests agree. See
+  [publication evidence](query-store.md#publication).

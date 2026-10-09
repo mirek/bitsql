@@ -167,7 +167,7 @@ from the published amd64 registry manifest.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
+| Image download (compressed) | 13.8 MiB | 604.5 MiB | 2.3% | 44× better |
 | Image size on disk | 40.1 MiB | 1.64 GiB | 2.4% | 42× better |
 | Cold start: `docker run` → first query (one run) | 154 ms | 2.91 s | 5.3% | 19× better |
 | CPU time until ready | 35.3 ms | 3.25 s | 1.1% | 92× better |

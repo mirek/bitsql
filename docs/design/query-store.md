@@ -126,6 +126,25 @@ Packaged binary SHA-256:
 
 ## Publication
 
+### 0.1.28
+
+Published 2026-10-09: `mirek/bitsql:0.1.28` (`0.1`, `latest`), linux/amd64.
+All three tags resolve to the same manifest list:
+`sha256:de8acc5ebe653e0908826e407b1e7edb1f855d649c41cf885ce82711dac9ac70`.
+Native image child digest:
+`sha256:987625c720ae7f8ef6dcb060c6bdba950ba9c107b6bce2734d2b1fed453414de`.
+Revision label: `5effe2592c36c395d6e6503202306b1a88081b0b`.
+
+Revision stamping preserved all tested filesystem layers. The image was pulled
+by immutable registry digest and reran all 18 report cases, populated diagnostic
+metadata and the TDS version test successfully. Remote config digest, labels,
+architecture and filesystem layers matched the validated local image. Compressed
+registry layers sum to 14,451,926 bytes (13.8 MiB); benchmark download size was
+updated from this registry measurement without rerunning timings. This release
+publishes only the native-validated amd64 architecture.
+
+### 0.1.27
+
 Published 2026-10-09: `mirek/bitsql:0.1.27` (`0.1`, `latest`), linux/amd64.
 All three tags resolve to the same manifest list:
 `sha256:a45997d31fbac63ddc8094984f0c5a0b27c98098b722d3984661dc99d40f7893`.
