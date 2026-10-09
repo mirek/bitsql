@@ -530,3 +530,22 @@ project: the breadth of transaction and error semantics in phases 5–6.
 - [~] Embedding cancellation (2026-10-07): 33 captured batch/RPC cases cover final rows, aggregate warning distinctions, DML rollback, TRY and transaction retention. Native JSON/vector conversion adds 21 captured statements. Broader operator/interruption coverage and concurrent resumption remain open; see the external-model and vector references.
 
 - [~] Embedding model context (2026-10-07): nine registered cases preserve pending calls and SELECT binding across model DROP/ALTER and REST disable, with later calls observing new MODEL/API_FORMAT/PARAMETERS. Cancellation after configuration changes also matches. Source rows, scan position, nested modules and DML query binding remain open.
+
+## 0.1.25 compatibility report follow-up (2026-10-09)
+
+- [x] Capture the report against native SQL Server 2022 16.0.4236.2; identify
+  the exact old image binary by image ID and revision.
+- [x] Correct mixed untyped-NULL/date VALUES coercion; all six temporal types
+  and the explicitly typed-int rejection control are covered.
+- [x] Preserve filtered-index multi-item IN syntax without changing CHECK
+  constraint serialization; capture singleton and numeric-list controls.
+- [x] Add seven diagnostic descriptors with populated query/index/partition/
+  host observations and scoped, linked missing-index advice. Verify complete
+  SQL-text/index/partition/advice diagnostic joins, not only view existence.
+- [x] Populate Query Store ALL-mode native statement history, measured timings,
+  context/plan/runtime/interval relationships, mode transitions and maintenance.
+  Preserve pure core through recorded host measurement events and test lock
+  wakeups across measurement boundaries. Broader limits are documented in
+  [query-store.md](query-store.md).
+- [ ] Publish and verify native amd64 0.1.27 after the full release gate and
+  fresh performance comparison. No foreign-architecture execution/build.

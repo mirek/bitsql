@@ -5,6 +5,10 @@ pub(all) enum Input {
   Received(Int, Bytes) // raw TDS bytes, arbitrary chunking
   Closed(Int)
   TimerFired(Int) // lock timeout, query timeout
+  SystemFacts(Array[(String, Int64)]) // host-supplied instance facts
+  MonitoringStarted(Int, Int64) // host CPU count and memory KB
+  CpuUsed(Int, Int64) // connection, measured CPU microseconds for one engine turn
+  Measured(Int, Int64) // connection id, process CPU microseconds
   Resume // continue a time-sliced long query
   HttpCompleted(Int, Int, @types.HttpResult) // connection, generation, result
 } derive(Debug, Eq)
@@ -33,6 +37,7 @@ pub(all) enum Output {
   /// Login-only encryption ends: from here on both directions are
   /// plaintext again (no close_notify). Emitted before the LOGIN7 response.
   EndTls(Int)
+  Sample(Int) // host supplies a fresh timestamp and CPU sample
   FetchHttp(Int, Int, @types.HttpRequest)
   CancelHttp(Int, Int)
 } derive(Debug, Eq)

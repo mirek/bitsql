@@ -749,6 +749,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     cascaded = nodes
     self.check_references(target, db, removed, removed_new, "MERGE")
   }
+  self.index_updates(target.scope, t)
   self.write(target.scope, db)
   self.fire_cascade_triggers(target.scope, cascaded, pre)
   // AFTER triggers fire per action clause present, even for zero rows, in

@@ -206,6 +206,16 @@ fn stream_table_fn(
         }
       }
     }
+    DiagnosticText(rows) => {
+      let handle = eval(ctx, args[0])
+      if !(handle is Null) {
+        for row in rows {
+          if row.get(5) == Some(handle) {
+            emit(row[:5].to_owned())
+          }
+        }
+      }
+    }
     GenerateSeries(ty) => generate_series(ctx, ty, args, emit)
   }
 }

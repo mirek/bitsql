@@ -296,6 +296,33 @@ fn Session::system_tvf(
   args : Array[@types.Value],
 ) -> (Array[@bind.ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError {
   match name {
+    "dm_exec_sql_text" => {
+      let v = view_defs[view_index("sys", name).unwrap()]
+      let cols = v.columns.map(c => @bind.ColumnRef::{
+        untyped_null: false,
+        qualifier: name,
+        name: c.name,
+        ty: c.ty,
+        nullable: c.nullable,
+        origin: if c.computed {
+          ViewComputed
+        } else {
+          BaseColumn(identity=false)
+        },
+      })
+      let rows = []
+      for _, q in self.server.query_statistics {
+        rows.push([
+          i(self.server.database_id(q.database).unwrap_or(0)),
+          Null,
+          Null,
+          Bit(false),
+          s(q.text),
+          observation_handle(q.id, 64),
+        ])
+      }
+      Some((cols, rows))
+    }
     "dm_exec_describe_first_result_set" =>
       Some((describe_columns(), self.describe_first_result_set(args)))
     "fn_listextendedproperty" => Some(self.fn_listextendedproperty(args))

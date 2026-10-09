@@ -176,6 +176,13 @@ fn Session::source(
     return self.sys_view_rows(id)
   }
   let db = self.db_of(scope)
+  if db.table(id) is Some(t) {
+    let ix = t.indexes
+      .search_by(ix => ix.clustered)
+      .map(k => t.indexes[k].index_id)
+      .unwrap_or(0)
+    self.index_access(scope, id, ix, 1)
+  }
   guard db.table_data(id) is Some(data) else { return db.rows(id) }
   match self.scans.get((scope, id)) {
     Some((seen, rows)) if physical_equal(seen, data) => rows
@@ -704,6 +711,7 @@ fn Session::seek(
       continue
     }
     if covered(ix) is Some(vals) {
+      self.index_access(scope, id, ix.index_id, 0)
       return Some(
         match db.find_key(id, i, vals) {
           Some(rowid) =>
@@ -734,6 +742,7 @@ fn Session::seek(
       continue
     }
     guard covered(ix) is Some(vals) else { continue }
+    self.index_access(scope, id, ix.index_id, 0)
     // non-unique keys end with the row id: the range of one key value
     let lo = vals.copy()
     lo.push(BigInt(-0x8000000000000000L))

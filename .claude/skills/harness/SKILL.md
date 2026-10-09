@@ -614,3 +614,10 @@ release; another host can add its architecture after its native checks pass.
   alternate ports within bitsql's allowed range when defaults are busy. Run
   comparison and diagnostics benchmarks sequentially; interleave diagnostic
   modes on one CPU to reduce migration noise (`harness/bench/diagnostics.mjs`).
+
+- 2026-10-09: do not rebuild a binary while the full process-isolated corpus is
+  spawning it: the link step temporarily removes executable permission and
+  produces spurious EACCES failures. Freeze source/builds during a full gate, or
+  copy the tested binary to a fixed separate path and set BITSQL_BIN. Report
+  probes use a dedicated native SQL Server 2022 container, never the shared
+  default oracle's lifecycle.

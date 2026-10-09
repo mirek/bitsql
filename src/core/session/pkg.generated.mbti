@@ -71,8 +71,10 @@ pub struct Server {
 pub fn Server::create_database(Self, String) -> Unit
 pub fn Server::database_id(Self, String) -> Int?
 pub fn Server::database_name(Self, String) -> String
+pub fn Server::enable_monitoring(Self, Int64, Int, Int64) -> Unit
 pub fn Server::has_database(Self, String) -> Bool
 pub fn Server::new() -> Self
+pub fn Server::set_system_facts(Self, Array[(String, Int64)]) -> Unit
 pub fn Server::take_victims(Self) -> Array[Int]
 pub fn Server::take_woken(Self) -> Array[Int]
 
@@ -139,17 +141,21 @@ pub struct Session {
 }
 pub fn Session::attention(Self) -> Unit
 pub fn Session::cancel_wait(Self) -> Unit
+pub fn Session::charge_cpu(Self, Int64) -> Unit
 pub fn Session::close(Self) -> Unit
 pub fn Session::complete_http(Self, @types.HttpResult) -> Unit
 pub fn Session::is_parked(Self) -> Bool
 pub fn Session::make_victim(Self) -> Unit
+pub fn Session::needs_sample(Self) -> Bool
 pub fn Session::new(Server, spid~ : Int, database~ : String, seed~ : Int64, server_name? : String, build? : (Int, Int, Int)) -> Self
 pub fn Session::pending_http(Self) -> @types.HttpRequest?
+pub fn Session::resample(Self) -> Bool
 pub fn Session::reset(Self) -> Array[@reply.Item]
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
 pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
 pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
+pub fn Session::sample(Self, Int64, Int64) -> Unit
 pub fn Session::set_login(Self, String, String, String, library? : String, encrypted? : Bool, now? : Int64) -> Unit
 pub fn Session::set_work_limit(Self, Int64) -> Unit
 pub fn Session::stream_error(Self, Int, Int, String, Int64) -> Array[@reply.Item]

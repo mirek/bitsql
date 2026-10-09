@@ -1,0 +1,383 @@
+{
+  "server": {"image":"mcr.microsoft.com/mssql/server:2022-latest","version":"16.0.4236.2"},
+  "case": "84ca9df72eef1aa5",
+  "steps": [
+    {
+      "sets": [
+        {
+          "columns": [
+            {"name":"sql_handle","type":"VarBinary","length":64,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"statement_start_offset","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"statement_end_offset","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"plan_generation_num","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"plan_handle","type":"VarBinary","length":64,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"creation_time","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_execution_time","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"execution_count","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_worker_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_worker_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_worker_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_worker_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_logical_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_logical_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_logical_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_logical_writes","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_logical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_logical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_logical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_logical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_clr_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_elapsed_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_elapsed_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_elapsed_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_elapsed_time","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"query_hash","type":"Binary","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"query_plan_hash","type":"Binary","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_rows","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_rows","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_rows","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_rows","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"statement_sql_handle","type":"VarBinary","length":64,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"statement_context_id","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_dop","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_dop","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_dop","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_dop","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_used_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_used_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_used_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_used_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_ideal_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_ideal_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_ideal_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_ideal_grant_kb","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_reserved_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_reserved_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_reserved_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_reserved_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_used_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_used_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_used_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_used_threads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_columnstore_segment_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_columnstore_segment_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_columnstore_segment_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_columnstore_segment_reads","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_columnstore_segment_skips","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_columnstore_segment_skips","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_columnstore_segment_skips","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_columnstore_segment_skips","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_spills","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_spills","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"min_spills","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_spills","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"total_num_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_num_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_num_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_num_physical_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"total_num_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_num_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"min_num_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"max_num_page_server_reads","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"database_id","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"object_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"index_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"user_seeks","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"user_scans","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"user_lookups","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"user_updates","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_user_seek","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_user_scan","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_user_lookup","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_user_update","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"system_seeks","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"system_scans","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"system_lookups","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"system_updates","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"last_system_seek","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_system_scan","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_system_lookup","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_system_update","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"index_handle","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"database_id","type":"SmallInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"object_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "equality_columns",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "inequality_columns",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "included_columns",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "statement",
+              "type": "NVarChar",
+              "length": 8000,
+              "precision": null,
+              "scale": null,
+              "flags": 9,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"index_group_handle","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"index_handle","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"group_handle","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"unique_compiles","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"user_seeks","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"user_scans","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_user_seek","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_user_scan","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_total_user_cost","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_user_impact","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"system_seeks","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"system_scans","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"last_system_seek","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"last_system_scan","type":"DateTimeN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_total_system_cost","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null},
+            {"name":"avg_system_impact","type":"FloatN","length":8,"precision":null,"scale":null,"flags":33,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"partition_id","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"object_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"index_id","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"partition_number","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"in_row_data_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"in_row_used_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"in_row_reserved_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"lob_used_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"lob_reserved_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"row_overflow_used_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"row_overflow_reserved_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"used_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"reserved_page_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"row_count","type":"IntN","length":8,"precision":null,"scale":null,"flags":9,"collation":null}
+          ],
+          "rows": []
+        },
+        {
+          "columns": [
+            {"name":"cpu_ticks","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"ms_ticks","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"cpu_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"hyperthread_ratio","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"physical_memory_kb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"virtual_memory_kb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"committed_kb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"committed_target_kb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"visible_target_kb","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"stack_size_in_bytes","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"os_quantum","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"os_error_mode","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"os_priority_class","type":"IntN","length":4,"precision":null,"scale":null,"flags":9,"collation":null},
+            {"name":"max_workers_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"scheduler_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"scheduler_total_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"deadlock_monitor_serial_number","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"sqlserver_start_time_ms_ticks","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"sqlserver_start_time","type":"DateTime","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"affinity_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "affinity_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"process_kernel_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"process_user_time_ms","type":"BigInt","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"time_source","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "time_source_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"virtual_machine_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "virtual_machine_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"softnuma_configuration","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "softnuma_configuration_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {
+              "name": "process_physical_affinity",
+              "type": "NVarChar",
+              "length": 6144,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"sql_memory_model","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "sql_memory_model_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            },
+            {"name":"socket_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"cores_per_socket","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"numa_node_count","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {"name":"container_type","type":"Int","length":null,"precision":null,"scale":null,"flags":8,"collation":null},
+            {
+              "name": "container_type_desc",
+              "type": "NVarChar",
+              "length": 120,
+              "precision": null,
+              "scale": null,
+              "flags": 8,
+              "collation": {"buffer":{"kind":"missing"},"lcid":1033,"flags":13,"version":0,"sortId":52,"codepage":"CP1252"}
+            }
+          ],
+          "rows": []
+        }
+      ],
+      "done": [
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":true},
+        {"kind":"done","rowCount":0,"more":false}
+      ],
+      "errors": [],
+      "info": [],
+      "returnStatus": null,
+      "outputs": [],
+      "tokens": [
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193},
+        {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":0,"curCmd":193}
+      ],
+      "stream": [
+        {"name":"COLMETADATA","columns":88},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":19},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":7},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":2},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":14},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":14},
+        {"name":"DONE","status":17,"curCmd":193},
+        {"name":"COLMETADATA","columns":37},
+        {"name":"DONE","status":16,"curCmd":193}
+      ],
+      "rowCount": 0
+    }
+  ],
+  "reuse": {
+    "sets": [
+      {
+        "columns": [
+          {"name":"trancount","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null},
+          {"name":"xact_state","type":"IntN","length":2,"precision":null,"scale":null,"flags":33,"collation":null}
+        ],
+        "rows": [[0,0]]
+      },
+      {"columns":[{"name":"reusable","type":"Int","length":null,"precision":null,"scale":null,"flags":32,"collation":null}],"rows":[[1]]}
+    ],
+    "done": [{"kind":"done","rowCount":1,"more":true},{"kind":"done","rowCount":1,"more":false}],
+    "errors": [],
+    "info": [],
+    "returnStatus": null,
+    "outputs": [],
+    "tokens": [
+      {"name":"DONE","more":true,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193},
+      {"name":"DONE","more":false,"sqlError":false,"attention":false,"serverError":false,"rowCount":1,"curCmd":193}
+    ],
+    "stream": [
+      {"name":"COLMETADATA","columns":2},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":17,"curCmd":193},
+      {"name":"COLMETADATA","columns":1},
+      {"name":"ROW","count":1},
+      {"name":"DONE","status":16,"curCmd":193}
+    ],
+    "rowCount": 2
+  }
+}

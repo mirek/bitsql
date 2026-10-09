@@ -93,3 +93,14 @@ Authoritative fixtures: `harness/corpus/query-store/*.expected.json`.
   with lookup parameterization 0, while lookup parameterization 1 returns no
   rows. Do not equate the function's lookup parameter with the query view's
   parameterization classification.
+
+## SQL Server 2022 report controls (2026-10-09)
+
+`harness/corpus/report-0125/*.expected.json` records 16.0.4236.2.
+`query-store.sql` reproduces the report's cross-joined catalog workload and checks
+positive duration plus query/text/plan/runtime/interval linkage. Lifecycle counts
+are 2 after two executions, 2 after READ_ONLY, 3 after running an existing query
+under NONE, and 3 after OFF. CLEAR removes query/runtime rows. Management captures
+show reset removes runtime rows, remove-plan preserves its query, and remove-query
+removes the query. These are positive histories; zero-row workload joins must not
+be accepted as a passing capture. Native monitoring limits are in the design doc.

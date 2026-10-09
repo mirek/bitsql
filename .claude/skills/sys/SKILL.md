@@ -1368,3 +1368,10 @@ For practical client compatibility, implement in this order:
   through base-table TRUNCATE. OBJECT_ID/OBJECT_NAME resolve them, but SELECT
   of their data raises 208. The 52-case internal-catalog set and full column,
   option, key and partition contracts are documented in docs/reference/json.md.
+
+- 2026-10-09: `report-0125/` adds SQL Server 2022 descriptors and populated
+  diagnostic join captures. `dm_exec_sql_text` has **five** result columns:
+  dbid, objectid, number, encrypted, text. A selective sorted/recompiled scan
+  produced missing-index advice where a trivial unsorted plan did not; creating
+  the covering index removed it. Emulator advice/counter limits are documented
+  in `docs/design/query-store.md`.

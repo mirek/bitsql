@@ -17,6 +17,16 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
     self.list_depth -= 1
   }
   for i, s in stmts {
+    let measured = root &&
+      self.server.monitoring &&
+      self.frame().proc_name is None &&
+      s.span.start >= 0 &&
+      s.span.end <= self.text.length() &&
+      s.kind is (Select(_) | Insert(_) | Update(_) | Delete(_) | Merge(_))
+    if measured && self.statement_sample is None {
+      self.prepare_sample(s)
+      self.sample_boundary(stmts[i:].to_owned())
+    }
     let saved = if root {
       Some(
         (
@@ -62,7 +72,19 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
         }
         raise Park
       }
-      e => raise e
+      e => {
+        self.statement_sample = None
+        raise e
+      }
+    }
+    if measured && self.statement_sample is Some(sample) {
+      if self.rt.error != 0 {
+        self.statement_sample = None
+        continue
+      }
+      sample.rows = self.rt.rowcount
+      sample.finished = true
+      self.sample_boundary(stmts[i + 1:].to_owned())
     }
   }
 }
@@ -70,6 +92,7 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
 ///|
 /// Executes one statement and applies SQL Server's error disposition.
 fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
+  self.diagnostic_statement += 1L
   let line = s.span.line
   self.stmt_line = line
   // the current line as SQL Server reports it for errors raised before a

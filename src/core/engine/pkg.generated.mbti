@@ -35,6 +35,7 @@ pub(all) struct Config {
 pub fn Config::default() -> Self
 
 type Engine
+pub fn Engine::enable_monitoring(Self, Int64, Int, Int64) -> Unit
 pub fn Engine::handle(Self, Event) -> Array[Output]
 pub fn Engine::new(Config, Int64) -> Self
 pub fn Engine::seed(Self) -> Int64
@@ -49,6 +50,10 @@ pub(all) enum Input {
   Received(Int, Bytes)
   Closed(Int)
   TimerFired(Int)
+  SystemFacts(Array[(String, Int64)])
+  MonitoringStarted(Int, Int64)
+  CpuUsed(Int, Int64)
+  Measured(Int, Int64)
   Resume
   HttpCompleted(Int, Int, @types.HttpResult)
 } derive(Eq, @debug.Debug)
@@ -62,6 +67,7 @@ pub(all) enum Output {
   Log(String)
   StartTls(Int)
   EndTls(Int)
+  Sample(Int)
   FetchHttp(Int, Int, @types.HttpRequest)
   CancelHttp(Int, Int)
 } derive(Eq, @debug.Debug)

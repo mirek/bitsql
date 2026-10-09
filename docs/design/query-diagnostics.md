@@ -1,5 +1,9 @@
 # Opt-in query diagnostics
 
+As of 0.1.27, native statement history also exists independently of explicit
+profiling; see [Query Store and diagnostic history](query-store.md). The original
+0.1.26 release contract and measurements below are historical.
+
 User-approved scope, 2026-10-08. This is a new goal following the published
 0.1.25 Query Store scaffold. The user delegated choosing the useful subset;
 full SQL Server monitoring replication is explicitly not required.
@@ -111,14 +115,13 @@ Unlisted optimizations are not represented as physical events.
 Ordinary contexts have no collector. Explicit profiling wraps existing storage
 callbacks; ordinary row-processing loops have no added profiling checks.
 Join/sort/Top-N operators check once per invocation whether a collector exists.
-Reports and counters have request lifetime only: there is no capture policy,
-history buffer, timer, background task or retention process.
+These explicit profile reports have request lifetime only; their collector
+does not own the separate native execution-history buffer.
 
-Query Store configuration is independent: its SQL Server-compatible ON/OFF
-metadata does not activate these diagnostics. All history views stay empty,
-including after `emulator.profile`. No SQL Server Showplan or Query Store plan
-XML is fabricated. This tool diagnoses the emulator and helps test its executor;
-production tuning decisions still require SQL Server measurements.
+Query Store configuration does not activate these request-local profiles. The
+native host separately records outer statement history under the boundary in
+[query-store.md](query-store.md). No SQL Server Showplan XML is fabricated.
+Production tuning decisions still require SQL Server measurements.
 
 ## Validation
 

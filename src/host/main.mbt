@@ -57,6 +57,37 @@ async fn main {
     tls: tls_files is Some(_),
   }
   let engine = @engine.Engine::new(config, seed)
+  let monitoring : @engine.Event = {
+    input: MonitoringStarted(cpu_count(), memory_kb()),
+    now: clock_ticks(),
+  }
+  if record is Some(f) {
+    f.write(@engine.encode_event(monitoring))
+  }
+  ignore(engine.handle(monitoring))
+  let sockets = socket_count()
+  let facts : @engine.Event = {
+    input: SystemFacts([
+      ("socket_count", sockets.to_int64()),
+      ("cores_per_socket", cores_per_socket().to_int64()),
+      (
+        "hyperthread_ratio",
+        if sockets > 0 {
+          cpu_count().to_int64() / sockets.to_int64()
+        } else {
+          0L
+        },
+      ),
+      ("numa_node_count", numa_count().to_int64()),
+      ("container_type", container_type().to_int64()),
+      ("sqlserver_start_time_ms_ticks", boot_ms()),
+    ]),
+    now: monitoring.now,
+  }
+  if record is Some(f) {
+    f.write(@engine.encode_event(facts))
+  }
+  ignore(engine.handle(facts))
   let http_trust : @tls.TrustedRoot = match flag(args, "--http-ca") {
     Some(path) => CustomPemFile(path)
     None => SystemRoot
@@ -75,9 +106,51 @@ async fn main {
         if record is Some(f) {
           f.write(@engine.encode_event(event))
         }
+        let cpu_before = cpu_us()
         let outputs = engine.handle(event)
+        let cpu_delta = cpu_us() - cpu_before
+        let event_id = match input {
+          Received(id, _) | TimerFired(id) | HttpCompleted(id, _, _) => Some(id)
+          _ => None
+        }
+        if event_id is Some(id) {
+          let charge : @engine.Event = {
+            input: CpuUsed(id, cpu_delta),
+            now: event.now,
+          }
+          if record is Some(f) {
+            f.write(@engine.encode_event(charge))
+          }
+          ignore(engine.handle(charge))
+        }
+        // Measurement handshakes run immediately: no other request, socket I/O,
+        // or scheduling delay is charged to the measured statement.
+        let mut sample_index = 0
+        while sample_index < outputs.length() {
+          if outputs[sample_index] is Sample(id) {
+            let sample : @engine.Event = {
+              input: Measured(id, 0L),
+              now: clock_ticks(),
+            }
+            if record is Some(f) {
+              f.write(@engine.encode_event(sample))
+            }
+            let before = cpu_us()
+            outputs.append(engine.handle(sample))
+            let charge : @engine.Event = {
+              input: CpuUsed(id, cpu_us() - before),
+              now: sample.now,
+            }
+            if record is Some(f) {
+              f.write(@engine.encode_event(charge))
+            }
+            ignore(engine.handle(charge))
+          }
+          sample_index += 1
+        }
         for o in outputs {
           match o {
+            Sample(_) => ()
             Send(id, bytes) =>
               match conns.get(id) {
                 Some(conn) =>

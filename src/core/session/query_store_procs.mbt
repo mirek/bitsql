@@ -198,6 +198,37 @@ fn Session::query_store_proc_error(
       return None
     }
   }
+  for history_key, entry in self.server.query_history {
+    if entry.database != self.rt.database.to_lower() {
+      continue
+    }
+    let matches = if query {
+      entry.id == id
+    } else {
+      !entry.plan_removed && entry.plan_id == id
+    }
+    if !matches {
+      continue
+    }
+    if suffix is ("remove_query" | "remove_plan" | "reset_exec_stats") {
+      let runtime_keys = self.server.query_runtime.keys().to_array()
+      for runtime_key in runtime_keys {
+        if runtime_key.0 == entry.database && runtime_key.1 == entry.identity {
+          self.server.query_runtime.remove(runtime_key)
+        }
+      }
+      if suffix == "remove_query" {
+        self.server.query_history.remove(history_key)
+      }
+      if suffix == "remove_plan" {
+        entry.plan_removed = true
+      }
+      return None
+    }
+    return Some(
+      @types.not_supported("Query Store " + suffix + " for a captured plan"),
+    )
+  }
   let state = match suffix {
     "force_plan" | "unforce_plan" | "reset_exec_stats" => 2
     "set_hints" => 5

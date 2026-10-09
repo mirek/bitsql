@@ -26,10 +26,29 @@ pub fn encode_event(e : Event) -> Bytes {
     TimerFired(id) => (3, id)
     Resume => (4, 0)
     HttpCompleted(id, _, _) => (5, id)
+    Measured(id, _) => (6, id)
+    MonitoringStarted(cpus, _) => (7, cpus)
+    CpuUsed(id, _) => (8, id)
+    SystemFacts(_) => (9, 0)
   }
   w.u8(tag)
   w.i64le(e.now)
   w.i32le(id)
+  if e.input is SystemFacts(facts) {
+    w.u32le(facts.length().to_int64())
+    for (key, value) in facts {
+      let bytes = @utf8.encode(key)
+      w.u32le(bytes.length().to_int64())
+      w.bytes(bytes)
+      w.i64le(value)
+    }
+  }
+  if e.input is (MonitoringStarted(_, cpu) | CpuUsed(_, cpu)) {
+    w.i64le(cpu)
+  }
+  if e.input is Measured(_, cpu) {
+    w.i64le(cpu)
+  }
   if e.input is Received(_, b) {
     w.u32le(b.length().to_int64())
     w.bytes(b)
@@ -74,6 +93,23 @@ pub fn decode_event_log(
         2 => Closed(id)
         3 => TimerFired(id)
         4 => Resume
+        6 => Measured(id, r.u64le().reinterpret_as_int64())
+        7 => MonitoringStarted(id, r.u64le().reinterpret_as_int64())
+        8 => CpuUsed(id, r.u64le().reinterpret_as_int64())
+        9 => {
+          let n = r.u32le().to_int()
+          if n < 0 || n > 128 {
+            raise @tds.Malformed("too many system facts")
+          }
+          let facts = []
+          for _ in 0..<n {
+            let key = @utf8.decode(r.bytes(r.u32le().to_int())) catch {
+              _ => raise @tds.Malformed("invalid system fact name")
+            }
+            facts.push((key, r.u64le().reinterpret_as_int64()))
+          }
+          SystemFacts(facts)
+        }
         5 => {
           let generation = r.i32le()
           let status = r.i32le()

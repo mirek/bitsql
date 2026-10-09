@@ -18,7 +18,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Descriptor captures, in view_defs order (view ids are indexes: append new
 # files at the end).
-DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models', 'catalog/view-descriptors-configurations', 'query-store/view-descriptors']
+DESCRIPTORS = ['catalog/view-descriptors', 'catalog/view-descriptors-variant', 'catalog/view-descriptors-types', 'catalog/view-descriptors-schema', 'catalog/view-descriptors-settings', 'tail/catalog-view-descriptors-system', 'catalog/view-descriptors-storage', 'catalog/view-descriptors-scoped', 'catalog/view-descriptors-json-indexes', 'catalog/view-descriptors-json-internal', 'catalog/view-descriptors-vector-indexes', 'catalog/view-descriptors-external-models', 'catalog/view-descriptors-configurations', 'query-store/view-descriptors', 'report-0125/view-descriptors', 'report-0125/text-descriptor']
 CORPUS = os.path.join(ROOT, 'harness/corpus')
 SYSTEM = os.path.join(ROOT, 'scripts/system-catalog')
 OUT_SYSTEM = os.path.join(ROOT, 'src/core/session/sysviews_system_data.mbt')
@@ -151,7 +151,7 @@ def main():
     views = []
     desc = []
     for name in DESCRIPTORS:
-        names = [l.split()[3] for l in open(os.path.join(CORPUS, name + '.sql')) if l.startswith('SELECT')]
+        names = [l.split()[3].split('(')[0] for l in open(os.path.join(CORPUS, name + '.sql')) if l.startswith('SELECT')]
         steps = json.load(open(os.path.join(CORPUS, name + '.expected.json')))['steps']
         sets = [result for step in steps if step is not None for result in step['sets']]
         assert len(names) == len(sets), f'{name}: descriptor count differs from SELECT count'

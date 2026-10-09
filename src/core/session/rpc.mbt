@@ -368,7 +368,9 @@ pub fn Session::run_rpc(
   self.rpc_continuation = None
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
-  self.rt.work_done = 0L
+  if !self.parked {
+    self.rt.work_done = 0L
+  }
   let snap = self.snapshot_request()
   if continuation is None {
     self.dateformat_set = false

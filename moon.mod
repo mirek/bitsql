@@ -1,7 +1,7 @@
 // MoonBit module descriptor. See docs/moonbit/toolchain/moon-module.md
 name = "mirek/bitsql"
 
-version = "0.1.26"
+version = "0.1.27"
 
 readme = "README.md"
 

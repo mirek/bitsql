@@ -678,6 +678,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
     }
     d
   }
+  self.index_updates(target.scope, t)
   self.write(target.scope, db)
   self.fire_cascade_triggers(target.scope, cascaded, pre)
   self.fire_after(
@@ -900,6 +901,7 @@ fn Session::exec_delete(self : Session, d : @ast.Delete) -> Unit raise {
       cascaded = nodes
     }
   }
+  self.index_updates(target.scope, t)
   self.write(target.scope, db)
   self.fire_cascade_triggers(target.scope, cascaded, pre)
   self.fire_after(target, OnDelete, rows.map(r => r.1), [], [], pre)
@@ -1383,6 +1385,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
     self.done(195, count=Some(count))
     return
   }
+  self.index_updates(target.scope, t)
   self.write(target.scope, db)
   self.output_finish(outputs, evaluated)
   if last_identity is Some(v) {

@@ -28,6 +28,33 @@ fn definition_text(raw : String) -> String {
 }
 
 ///|
+/// Filter predicates preserve multi-item IN lists, unlike CHECK definitions.
+/// Evidence: report-0125/filter-definition (SQL Server 2022).
+fn filter_definition_text(raw : String) -> String {
+  let e = @parse.parse_expr(raw) catch { _ => return raw }
+  "(" + filter_def_expr(strip_parens(e)) + ")"
+}
+
+///|
+fn filter_def_expr(e : @ast.Expr) -> String {
+  match strip_parens(e).kind {
+    And(a, b) => {
+      let left = filter_def_expr(a)
+      let right = filter_def_expr(b)
+      (if def_class(a) < 20 { "(" + left + ")" } else { left }) +
+      " AND " +
+      (if def_class(b) <= 20 { "(" + right + ")" } else { right })
+    }
+    InList(x, items, negated=false) if items.length() > 1 =>
+      def_wrap(x, 50) +
+      " IN (" +
+      items.map(i => def_wrap(i, 50)).join(", ") +
+      ")"
+    _ => def_expr(strip_parens(e))
+  }
+}
+
+///|
 fn strip_parens(e : @ast.Expr) -> @ast.Expr {
   match e.kind {
     Paren(x) => strip_parens(x)

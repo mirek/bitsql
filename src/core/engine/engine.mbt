@@ -124,6 +124,23 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
           e => out.push(Log("HTTP completion: \{e}"))
         }
       }
+    SystemFacts(facts) => self.server.set_system_facts(facts)
+    MonitoringStarted(cpus, memory) =>
+      self.enable_monitoring(event.now, cpus, memory)
+    CpuUsed(id, cpu) =>
+      if self.sessions.get(id) is Some(session) {
+        session.charge_cpu(cpu)
+      }
+    Measured(id, cpu) =>
+      if self.parked.contains(id) && self.sessions[id].needs_sample() {
+        self.sessions[id].sample(event.now, cpu)
+        try {
+          self.rerun(id, event.now, out)
+          self.drain(event.now, out)
+        } catch {
+          e => out.push(Log("measurement resume: \{e}"))
+        }
+      }
     Resume => ()
   }
   out
@@ -509,7 +526,11 @@ fn Engine::drain(self : Engine, now : Int64, out : Array[Output]) -> Unit raise 
       match (self.parked.get(id), self.conns.get(id)) {
         (Some(_), Some(_)) => {
           out.push(CancelTimer(id))
-          self.rerun(id, now, out)
+          if self.sessions[id].resample() {
+            out.push(Sample(id))
+          } else {
+            self.rerun(id, now, out)
+          }
         }
         _ => ()
       }
@@ -520,6 +541,10 @@ fn Engine::drain(self : Engine, now : Int64, out : Array[Output]) -> Unit raise 
 ///|
 /// SET LOCK_TIMEOUT > 0: the host fires TimerFired(connection id).
 fn Engine::arm_timeout(self : Engine, id : Int, out : Array[Output]) -> Unit {
+  if self.sessions[id].needs_sample() {
+    out.push(Sample(id))
+    return
+  }
   if self.sessions[id].pending_http() is Some(request) {
     if !self.http_pending.contains(id) {
       self.http_generation += 1
@@ -566,4 +591,14 @@ fn Engine::rerun(
 /// The bitsql release (moon.mod version), for `host --version`.
 pub fn version() -> String {
   @exec.bitsql_version
+}
+
+///|
+pub fn Engine::enable_monitoring(
+  self : Engine,
+  now : Int64,
+  cpus : Int,
+  memory_kb : Int64,
+) -> Unit {
+  self.server.enable_monitoring(now, cpus, memory_kb)
 }

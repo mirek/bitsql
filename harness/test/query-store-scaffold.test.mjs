@@ -6,9 +6,8 @@ import { compareCase } from '../src/compare.mjs'
 import { loadCorpus, readExpected } from '../src/corpus.mjs'
 import { server } from './support.mjs'
 
-// User-approved boundary: history remains empty after workload. Expected
-// metadata and empty results come from the SQL Server descriptor capture.
-test('Query Store scaffold stays empty after workload and configuration changes', async t => {
+// Populated history must retain the oracle-captured catalog descriptors.
+test('Query Store descriptors remain stable after workload and configuration changes', async t => {
   const [fixture] = await loadCorpus(['query-store/view-descriptors.sql'])
   const expected = await readExpected(fixture)
   const s = await server(t)
@@ -21,7 +20,7 @@ test('Query Store scaffold stays empty after workload and configuration changes'
     const result = await capture(conn, { kind: 'batch', sql: setup })
     assert.deepEqual(result.errors, [])
     for (let i = 1; i < fixture.steps.length; i++) {
-      const sql = fixture.steps[i].sql.replace(/ WHERE 1 = 0/i, '')
+      const sql = fixture.steps[i].sql
       const actual = JSON.parse(JSON.stringify(await capture(conn, { kind: 'batch', sql })))
       assert.equal(compareCase({ steps: [actual] }, { steps: [expected.steps[i]] }), null, sql)
     }

@@ -163,7 +163,17 @@ fn Session::alter_query_store(
   if action == "OFF" {
     q = { ..q, enabled: false, }
   }
-  // Compatibility scaffold: history is always empty; CLEAR keeps settings.
+  if action.has_prefix("CLEAR") {
+    for history in [self.server.query_history, self.server.query_runtime] {
+      let keys = history.keys().to_array()
+      for key in keys {
+        if key.0 == database.to_lower() {
+          history.remove(key)
+        }
+      }
+    }
+  }
+  // History is operational state, independent of transactional table data.
   self.server.db_options[database.to_lower()] = { ..db, query_store: q, }
 }
 

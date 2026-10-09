@@ -321,6 +321,41 @@ fn partition_rows(db : @store.Db, out : Array[VRow]) -> Unit {
 }
 
 ///|
+/// Shares the allocation model with sys.partitions/sys.allocation_units.
+fn partition_stats_rows(db : @store.Db, out : Array[VRow]) -> Unit {
+  for t in db.tables() {
+    for (index_id, fp, _, _) in table_storage(db, t) {
+      let in_row = unit_pages(fp.data + fp.upper, fp.data)
+      let lob = unit_pages(fp.lob, 0)
+      let overflow = unit_pages(fp.overflow, 0)
+      let used = (r : VRow) => r["used_pages"].as_int64().unwrap_or(0L)
+      let reserved = (r : VRow) => r["total_pages"].as_int64().unwrap_or(0L)
+      out.push(
+        vrow([
+          ("partition_id", BigInt(hobt_id(t.id, index_id))),
+          ("object_id", i(t.id)),
+          ("index_id", i(index_id)),
+          ("partition_number", i(1)),
+          ("row_count", BigInt(fp.rows.to_int64())),
+          ("in_row_data_page_count", BigInt(fp.data.to_int64())),
+          ("in_row_used_page_count", BigInt(used(in_row))),
+          ("in_row_reserved_page_count", BigInt(reserved(in_row))),
+          ("lob_used_page_count", BigInt(used(lob))),
+          ("lob_reserved_page_count", BigInt(reserved(lob))),
+          ("row_overflow_used_page_count", BigInt(used(overflow))),
+          ("row_overflow_reserved_page_count", BigInt(reserved(overflow))),
+          ("used_page_count", BigInt(used(in_row) + used(lob) + used(overflow))),
+          (
+            "reserved_page_count",
+            BigInt(reserved(in_row) + reserved(lob) + reserved(overflow)),
+          ),
+        ]),
+      )
+    }
+  }
+}
+
+///|
 fn allocation_unit_rows(db : @store.Db, out : Array[VRow]) -> Unit {
   for t in db.tables() {
     for e in table_storage(db, t) {

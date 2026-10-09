@@ -152,3 +152,20 @@ real system message). Keep the allocation table in
 | Vector pruning (2026-10-07) | pure storage graph core | Eager second-pass occlusion removes neighbors SQL Server retains. Resume by candidate position; all three metrics, including dot, use the captured ratio rule. Candidate tie ordering is a separate contract. | sql2025/vector-pruning; [vector reference](../reference/vector.md) |
 | Vector search parameters (2026-10-07) | pure graph traversal | Query-time L=max(5,3*TOP_N/2) and M=max(4,L/6) differ from build-time 48/8. Expand M nodes together and include pending reciprocal edges. Oracle rebuilds can change graph edges and all-tied selections. | sql2025/vector-search-traversal; [vector reference](../reference/vector.md) |
 | Vector seed and build alignment (2026-10-07) | pure graph construction | Float32 seeds use an incremental float32 mean; float16 starts at the first sampled row. Default build DOP can vary and changes seed batch alignment. Build search includes visited nodes as well as the final frontier. | sql2025/vector-seed, vector-build, vector-build-extended; [vector reference](../reference/vector.md) |
+
+### 2026-10-09: compatibility-report regressions
+
+- Mixed VALUES must apply the chosen non-NULL type even when only one typed
+  expression remains after ignoring untyped NULLs. Retag the untyped literal
+  directly; attempting an int-to-datetime2 conversion still raises 529. Explicit
+  `CAST(NULL AS int)` remains typed and retains its 206 error. Evidence:
+  `report-0125/null-dates.sql` and `null-date-types.sql` (SQL Server 2022).
+- Filtered-index IN lists preserve source order and IN syntax, but singleton IN
+  becomes equality; CHECK constraints still expand reversed OR chains. Use
+  separate formatters (`report-0125/filter-definition.sql`).
+- Query-cache SQL text may contain generated parameter declarations and bracketed
+  names with AS removed. Match a distinctive marker, not the original leading
+  SQL string (`report-0125/query-stats.sql`).
+- Query Store activation/ingestion is asynchronous on the oracle. Assert positive
+  captured workload before comparing history; an empty join is not verification.
+  Mode/lifecycle probes explicitly wait after activation and before flushing.

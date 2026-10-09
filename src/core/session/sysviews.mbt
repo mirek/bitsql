@@ -551,6 +551,18 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
   let schema_of = (name : String) => db.schema_id(name).unwrap_or(1)
   let out : Array[VRow] = []
   match key {
+    "sys.dm_db_missing_index_details"
+    | "sys.dm_db_missing_index_groups"
+    | "sys.dm_db_missing_index_group_stats" =>
+      self.server.missing_index_rows(out)
+    "sys.dm_os_sys_info" => out.push(self.system_info_row())
+    "sys.query_context_settings"
+    | "sys.dm_exec_query_stats"
+    | "sys.query_store_query_text"
+    | "sys.query_store_query"
+    | "sys.query_store_plan"
+    | "sys.query_store_runtime_stats"
+    | "sys.query_store_runtime_stats_interval" => self.monitoring_rows(key, out)
     "sys.database_query_store_options" =>
       if !self.view_tempdb &&
         !(self.rt.database.to_lower()
@@ -899,7 +911,10 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
                 b(ix.json.map(j => j.array_search).unwrap_or(false)),
               ),
               ("has_filter", b(ix.filter is Some(_))),
-              ("filter_definition", opt_s(ix.filter.map(definition_text))),
+              (
+                "filter_definition",
+                opt_s(ix.filter.map(filter_definition_text)),
+              ),
               (
                 "vector_index_type",
                 ix.vector.map(_ => s("DiskANN")).unwrap_or(Null),
@@ -960,6 +975,8 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         }
       }
     "sys.partitions" => partition_rows(db, out)
+    "sys.dm_db_partition_stats" => partition_stats_rows(db, out)
+    "sys.dm_db_index_usage_stats" => self.server.index_usage_rows(out)
     "sys.allocation_units" => allocation_unit_rows(db, out)
     "sys.index_columns" =>
       for t in tables {

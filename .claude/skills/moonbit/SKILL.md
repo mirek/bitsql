@@ -291,3 +291,7 @@ scripts/check.sh                 # everything CI runs; must be green to push
   `website/test/engine.test.ts` compares the browser adapter with SQL Server
   captures and caught the extra array wrapper. Backend-only packages are
   checked separately (`moon check --target js --deny-warn src/browser`).
+
+- 2026-10-09: `moon test -f` filters **test names**, not source filenames. To run
+  one white-box file use `moon test src/core/session/monitoring_wbtest.mbt`;
+  `-f monitoring_wbtest.mbt` compiles it but runs zero tests. Inspect the count.

@@ -1320,3 +1320,20 @@ imitate SQL Server costs, Showplan or historical Query Store state. Ordinary
 contexts have no observer and no new per-row profiling checks. Full monitoring,
 retention and forcing remain deferred. Usage, coverage and counter limitations
 are maintained in [query diagnostics](query-diagnostics.md).
+
+## 2026-10-09 — report-driven native diagnostic history
+
+The new compatibility report requests actual observations, superseding the
+0.1.25 empty-history release boundary for ALL-mode workload capture. Native
+statement boundaries now handshake with the host using recorded `Measured` and
+`CpuUsed` events; startup hardware facts are recorded too. Core still performs
+no I/O, FFI or clock reads. CPU is charged per engine turn, avoiding attribution
+of another session's work during lock waits. Measured continuation completions
+must drain lock wakeups exactly like received requests.
+
+The advisor handles selective equality scans and exposes observed candidate-row
+cost/selectivity estimates; it does not synthesize SQL Server optimizer costs.
+Partition statistics reuse the already documented allocation model. All
+remaining boundaries, including top-level-only timing and AUTO/CUSTOM metadata
+policies, are explicit in [query-store.md](query-store.md). Plan forcing and hints
+on captured IDs produce Emulator errors rather than claiming success.

@@ -715,12 +715,16 @@ fn unify_values_rows(
         tys.push(e.ty)
       }
     }
-    if tys.length() < 2 {
+    if tys.is_empty() {
       continue
     }
     let t = @bind.unify_types(tys)
     for r in out {
       if r[j] is Some(e) {
+        if e.kind is Lit(Null) && e.ty is Int {
+          r[j] = Some({ ..e, ty: t, })
+          continue
+        }
         // a literal that cannot convert fails while compiling (captured:
         // VALUES (1), ('abc') is 245 with DONE cmd 253)
         if e.kind is Lit(v) && e.ty != t {

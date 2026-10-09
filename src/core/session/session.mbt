@@ -57,6 +57,22 @@ pub struct Server {
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
   /// Parsed texts (session/parse_cache.mbt).
+  priv mut monitoring : Bool
+  priv system_facts : Map[String, Int64]
+  priv mut monitor_start : Int64
+  priv mut monitor_cpus : Int
+  priv mut monitor_memory : Int64
+  priv mut next_observation : Int64
+  priv query_statistics : Map[(String, String, Int64), QueryObservation]
+  priv query_runtime : Map[(String, String, Int64), QueryObservation]
+  priv query_contexts : Map[(String, String), QueryStoreContext]
+  priv query_history : Map[(String, String, Int64), QueryObservation]
+  priv missing_indexes : Map[
+    (String, Int, Array[Int], Array[Int]),
+    MissingIndex,
+  ]
+  priv mut next_missing_index : Int
+  priv index_usage : Map[(String, Int, Int), IndexUsage]
   priv parse_cache : ParseCache
 }
 
@@ -108,6 +124,19 @@ pub fn Server::new() -> Server {
     udfs: Map([]),
     db_options: Map([]),
     backups: BackupStore::new(),
+    monitoring: false,
+    system_facts: Map([]),
+    monitor_start: 0L,
+    monitor_cpus: 1,
+    monitor_memory: 0L,
+    next_observation: 0L,
+    query_statistics: Map([]),
+    query_history: Map([]),
+    query_contexts: Map([]),
+    query_runtime: Map([]),
+    missing_indexes: Map([]),
+    next_missing_index: 0,
+    index_usage: Map([]),
     parse_cache: ParseCache::new(),
   }
 }
@@ -321,6 +350,9 @@ pub struct Session {
   priv mut rpc_continuation : (() -> Unit raise)?
   priv mut batch_resume : BatchResume?
   priv mut batch_resuming : Bool
+  priv mut statement_sample : StatementSample?
+  priv mut sample_requested : Bool
+  priv mut diagnostic_statement : Int64
   priv mut list_depth : Int
   priv mut batch_outer_refs : Array[(Int, Int, String)]
   /// Databases in effect outside the running dynamic SQL scopes (a USE
@@ -525,6 +557,9 @@ pub fn Session::new(
     rpc_continuation: None,
     batch_resume: None,
     batch_resuming: false,
+    statement_sample: None,
+    sample_requested: false,
+    diagnostic_statement: 0L,
     list_depth: 0,
     batch_outer_refs: [],
     outer_dbs: [],
@@ -774,7 +809,9 @@ pub fn Session::run_batch(
   self.batch_resume = None
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
-  self.rt.work_done = 0L
+  if !self.parked {
+    self.rt.work_done = 0L
+  }
   let snap = self.snapshot_request()
   if continuation is None {
     self.dateformat_set = false

@@ -68,6 +68,37 @@ fn Session::exec_drop_database(
         state=4,
       )
     }
+    for
+      history in [
+        self.server.query_statistics,
+        self.server.query_history,
+        self.server.query_runtime,
+      ] {
+      let keys = history.keys().to_array()
+      for history_key in keys {
+        if history_key.0 == key {
+          history.remove(history_key)
+        }
+      }
+    }
+    let context_keys = self.server.query_contexts.keys().to_array()
+    for context_key in context_keys {
+      if context_key.0 == key {
+        self.server.query_contexts.remove(context_key)
+      }
+    }
+    let usage_keys = self.server.index_usage.keys().to_array()
+    for usage_key in usage_keys {
+      if usage_key.0 == key {
+        self.server.index_usage.remove(usage_key)
+      }
+    }
+    let advice_keys = self.server.missing_indexes.keys().to_array()
+    for advice_key in advice_keys {
+      if advice_key.0 == key {
+        self.server.missing_indexes.remove(advice_key)
+      }
+    }
     self.server.dbs.remove(key)
     self.server.db_names.remove(key)
     self.server.db_ids.remove(key)

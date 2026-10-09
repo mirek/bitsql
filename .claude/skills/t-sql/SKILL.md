@@ -1641,3 +1641,9 @@ and `XACT_STATE()` advertises nullable smallint width.
   Jaro transposition counting for repeated letters. Captures and implementation
   traps: docs/reference/sql2025.md (sql2025/fuzzy-*). Preview enablement is
   required; compatibility level 170 is not required.
+
+- 2026-10-09: mixed VALUES temporal inserts ignore an untyped NULL while choosing
+  the source type, but must then apply that type to every untyped literal even
+  when only one typed source remains. An explicitly typed int NULL still rejects
+  datetime2 assignment. Oracle: `report-0125/null-dates.sql` and
+  `null-date-types.sql` (SQL Server 2022; six temporal types).

@@ -230,6 +230,7 @@ fn Session::exec_bound_query(
     }
     e => raise e
   }
+  self.observe_missing_index(bound.plan, n)
   let returned_rows = n
   if self.rt.count_override is Some(c) {
     n = c
