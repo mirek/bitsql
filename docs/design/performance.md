@@ -1276,8 +1276,8 @@ The 24 shape medians sum to 234 ms versus 636 ms. Cross-release changes in
 these unpinned, shared-host numbers must not be attributed to instrumentation.
 Every timed query is checked for SQL errors. Raw samples and metadata:
 [benchmark-0.1.27.json](../../website/public/benchmark-0.1.27.json). README tables
-and website charts use this same artifact. Registry download size is added
-after publication without re-running the measurements.
+and website charts use this same artifact. Registry download size was filled in after publication: 14,449,243 bytes
+(13.8 MiB), without re-running the measurements.
 
 Validation: 1,780 MoonBit tests, all-backend core checks, 23,723 client/corpus
 passes (three existing skips), and the same full client suite independently
@@ -1285,3 +1285,8 @@ against the packaged release binary. All 13 report cases pass both BitSQL and
 an independent rerun against native SQL Server 2022 16.0.4236.2. The actual
 release container additionally passed all 13 cases and populated diagnostic
 metadata checks. The original 0.1.25 image reproduced the report failures.
+
+The published version/minor/latest manifests and registry-delivered container
+were verified; immutable digests and binary identity are recorded in the
+[publication evidence](query-store.md#publication). Image revision stamping
+preserved all tested filesystem layers.

@@ -547,5 +547,8 @@ project: the breadth of transaction and error semantics in phases 5–6.
   Preserve pure core through recorded host measurement events and test lock
   wakeups across measurement boundaries. Broader limits are documented in
   [query-store.md](query-store.md).
-- [ ] Publish and verify native amd64 0.1.27 after the full release gate and
-  fresh performance comparison. No foreign-architecture execution/build.
+- [x] Publish and verify native amd64 0.1.27 after the full release gate and
+  fresh performance comparison. Pulled the immutable registry digest and
+  reran all 13 report cases plus populated-view metadata checks successfully.
+  Version/minor/latest tags agree; [release evidence](query-store.md#publication).
+  No foreign-architecture execution/build.

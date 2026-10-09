@@ -95,5 +95,23 @@ checks passed, zero failures, three existing client skips. All core packages
 check on every backend. Website tests/build passed (12 tests and one existing
 browser skip). The packaged native release binary independently passed the same 23,723
 client checks. The local release container passed all 13 report corpus cases
-and the populated seven-view metadata test over TDS; publication verification
-is recorded below when complete.
+and the populated seven-view metadata test over TDS.
+
+## Publication
+
+Published 2026-10-09: `mirek/bitsql:0.1.27` (`0.1`, `latest`), linux/amd64.
+All three tags resolve to the same manifest list:
+`sha256:a45997d31fbac63ddc8094984f0c5a0b27c98098b722d3984661dc99d40f7893`.
+The native image child digest is
+`sha256:f7156af98e5a60ea328ac868b2d41616defb15b84f0a1a5f3604ddcf28d7b15d`;
+revision label `bbd85aa2ad3ab3a1ee581bf55e193724952b5b8b`.
+
+The final revision stamp changed only image metadata: filesystem layers match
+the fully tested release image. Packaged binary SHA-256:
+`ab184bb0d3f8ae8fce818fe46042ca1f89489646d7bab2502f7e00dcaf78f1da`.
+After pulling the published immutable manifest digest, the container passed
+all 13 report corpus cases and the populated seven-view metadata test; a TDS
+query confirmed version 0.1.27. Remote config digest, revision, architecture
+and unchanged filesystem layers were verified. Compressed registry layers
+sum to 14,449,243 bytes (13.8 MiB). ARM64 publication requires separate native
+host verification and is not included in this release manifest.

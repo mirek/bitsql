@@ -161,12 +161,12 @@ one after the other on this shared host; the client is tedious over loopback
 with TLS. All metrics are lower-is-better. Cold start is one successful startup
 per target, not a distribution. Query/DML shapes are medians of five checked
 runs after one warm-up; the total sums those medians. Point SELECTs are the
-median of five 1000-query batches after warm-up. Compressed download size was
-unavailable before publication.
+median of five 1000-query batches after warm-up. Compressed download size comes
+from the published amd64 registry manifest.
 
 |  | bitsql | SQL Server | % of SQL Server | Factor |
 | --- | ---: | ---: | ---: | ---: |
-| Image download (compressed) | n/a | 604.5 MiB | n/a | n/a |
+| Image download (compressed) | 13.8 MiB | 604.5 MiB | 2.3% | 44× better |
 | Image size on disk | 40.1 MiB | 1.64 GiB | 2.4% | 42× better |
 | Cold start: `docker run` → first query (one run) | 162 ms | 2.67 s | 6.1% | 16× better |
 | CPU time until ready | 37.1 ms | 2.98 s | 1.2% | 80× better |
