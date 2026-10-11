@@ -504,7 +504,7 @@ Start the host with `--database NAME` so the app's database exists at login
   with `BITSQL_BIN`) runs compare.mjs's request workload (SELECT 1,
   parameterized INSERT / point SELECT, transactions, report) and prints
   wall time plus server CPU from `/proc/<pid>/schedstat`; the wall time is
-  mostly tedious and TLS, so compare CPU. `report.py --focus FUNC` keeps
+  mostly tedious and TLS, so compare CPU. `report.mbtx --focus FUNC` keeps
   only samples with FUNC on the stack (e.g. `rpc__executesql`).
   Add `POINTS_ONLY=1` to stop after the point-read batches (setup, SELECT 1
   and inserts still run), excluding the transaction/report workloads from

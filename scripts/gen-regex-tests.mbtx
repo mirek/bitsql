@@ -1,0 +1,342 @@
+///|
+// Generate pure regex engine tests from SQL Server corpus captures.
+//
+// The SQL inputs below select corresponding captured REGEXP_COUNT columns.
+// Expected values and error details are always read from the oracle artifacts.
+//
+//   moon run scripts/gen-regex-tests.mbtx    (from the repo root; then moon fmt)
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/json",
+}
+
+///|
+const CORPUS = "harness/corpus/sql2025"
+
+///|
+/// Python `Path.read_text()`: UTF-8 with universal newlines.
+async fn read_text(path : String) -> String {
+  @fs.read_file(path)
+  .text()
+  .replace_all(old="\r\n", new="\n")
+  .replace_all(old="\r", new="\n")
+}
+
+///|
+async fn captured(
+  cache : Map[String, Json],
+  name : String,
+  step : Int,
+) -> Map[String, Json] {
+  let doc = match cache.get(name) {
+    Some(doc) => doc
+    None => {
+      let doc = @json.parse(read_text("\{CORPUS}/regex-\{name}.expected.json"))
+      cache[name] = doc
+      doc
+    }
+  }
+  guard doc is { "steps": Array(steps), .. } &&
+    steps.get(step) is Some(Object(s)) else {
+    fail("regex-\{name}.expected.json has no step \{step}")
+  }
+  s
+}
+
+///|
+/// Python `json.dumps(s, ensure_ascii=False)`: MoonBit quoted strings accept
+/// literal Unicode, so only quotes, backslashes and controls are escaped.
+fn q(s : String) -> String {
+  let b = StringBuilder()
+  b.write_char('"')
+  for c in s {
+    match c {
+      '"' => b.write_string("\\\"")
+      '\\' => b.write_string("\\\\")
+      '\n' => b.write_string("\\n")
+      '\r' => b.write_string("\\r")
+      '\t' => b.write_string("\\t")
+      '\b' => b.write_string("\\b")
+      '\u{0C}' => b.write_string("\\f")
+      c if c.to_int() < 0x20 =>
+        b.write_string("\\u" + c.to_int().to_string(radix=16).pad_start(4, '0'))
+      c => b.write_char(c)
+    }
+  }
+  b.write_char('"')
+  b.to_string()
+}
+
+///|
+/// Python `str()` of a JSON scalar as interpolated by an f-string. Only the
+/// shapes the captures hold are accepted; anything else fails loudly.
+fn py_str(v : Json) -> String raise {
+  match v {
+    String(s) => s
+    Null => "None"
+    True => "True"
+    False => "False"
+    Number(_, repr=Some(r)) if is_int_literal(r) => r
+    Number(d, repr=None) if d == d.floor() && d.abs() < 9.0e15 =>
+      d.to_int64().to_string()
+    _ => fail("unsupported expected value \{v.stringify()}")
+  }
+}
+
+///|
+fn is_int_literal(r : String) -> Bool {
+  let digits = if r.has_prefix("-") { r.view(start_offset=1) } else { r[:] }
+  !digits.is_empty() &&
+  digits.iter().all(c => c >= '0' && c <= '9') &&
+  r != "-0"
+}
+
+///|
+fn str_value(v : Json) -> String raise {
+  guard v is String(s) else { fail("expected a string, got \{v.stringify()}") }
+  s
+}
+
+///|
+/// A pattern did not match at the tried position.
+suberror NoMatch
+
+///|
+/// Code unit at `i` as an Int, -1 past the end. Every literal and delimiter in
+/// the patterns below is ASCII, so scanning UTF-16 code units matches Python's
+/// code-point regex exactly (surrogate pairs never contain ASCII).
+fn unit(s : String, i : Int) -> Int {
+  if i < s.length() {
+    s.at(i).to_int()
+  } else {
+    -1
+  }
+}
+
+///|
+/// The literal `p` at `i`: the position after it.
+fn lit(s : String, i : Int, p : String) -> Int raise NoMatch {
+  for k in 0..<p.length() {
+    if unit(s, i + k) != p.at(k).to_int() {
+      raise NoMatch
+    }
+  }
+  i + p.length()
+}
+
+///|
+/// `'([^']*)'` at `i`: the quoted text and the position after it.
+fn quoted(s : String, i : Int) -> (String, Int) raise NoMatch {
+  let start = lit(s, i, "'")
+  let mut j = start
+  while j < s.length() && unit(s, j) != '\''.to_int() {
+    j += 1
+  }
+  (s.unsafe_substring(start~, end=j), lit(s, j, "'"))
+}
+
+///|
+/// Python `re.findall` with a matcher returning the groups and the end.
+fn findall(
+  s : String,
+  try_at : (String, Int) -> (Array[String], Int) raise NoMatch,
+) -> Array[Array[String]] {
+  let out = []
+  let mut i = 0
+  while i <= s.length() {
+    try try_at(s, i) catch {
+      NoMatch => i += 1
+    } noraise {
+      (groups, end) => {
+        out.push(groups)
+        i = if end == i { i + 1 } else { end }
+      }
+    }
+  }
+  out
+}
+
+///|
+/// `SELECT REGEXP_COUNT\(N'([^']*)', N'([^']*)'(?:,1,'([^']*)')?\)`; an
+/// absent optional group is '' as in Python.
+fn property_call(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let i = lit(s, i, "SELECT REGEXP_COUNT(N")
+  let (text, i) = quoted(s, i)
+  let i = lit(s, i, ", N")
+  let (pattern, i) = quoted(s, i)
+  let (flags, end) = try {
+    let (flags, j) = quoted(s, lit(s, i, ",1,"))
+    (flags, lit(s, j, ")"))
+  } catch {
+    NoMatch => ("", lit(s, i, ")"))
+  }
+  ([text, pattern, flags], end)
+}
+
+///|
+/// `REGEXP_MATCHES\('([^']*)', '([^']*)'\)`
+fn matches_call(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let i = lit(s, i, "REGEXP_MATCHES(")
+  let (text, i) = quoted(s, i)
+  let i = lit(s, i, ", ")
+  let (pattern, i) = quoted(s, i)
+  ([text, pattern], lit(s, i, ")"))
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-regex-tests.mbtx") {
+    fail("run from the repo root: moon run scripts/gen-regex-tests.mbtx")
+  }
+  let cache : Map[String, Json] = Map([])
+  let counts : Array[(String, Int, Int, String, String, String)] = [
+    ("functions", 0, 0, "Ab12cd34", "[0-9]+", ""),
+    ("functions", 3, 0, "aaa", "a*", ""),
+    ("functions", 5, 0, "abc", "", ""),
+    ("boundaries", 1, 0, "abc123", "a{", ""),
+    ("boundaries", 9, 0, "abc123", "(?:a)", ""),
+    ("boundaries", 10, 0, "abc123", "(?i)a", ""),
+    ("boundaries", 11, 0, "abc123", "a*?", ""),
+    ("boundaries", 13, 0, "abc123", "[[:digit:]]", ""),
+    ("boundaries", 15, 0, "abc123", "\\b", ""),
+    ("boundaries", 21, 0, "A", "a", "ci"),
+    ("boundaries", 22, 0, "A", "a", "ic"),
+    ("boundaries", 24, 0, "A", "a", ""),
+    ("boundaries", 26, 0, "A", "a", "ii"),
+    ("boundaries", 27, 0, "A", "a", "iscm"),
+    ("unicode", 0, 0, "a😀b", ".", ""),
+    ("unicode", 1, 0, "😀", ".", ""),
+    ("unicode", 1, 1, "😀", "\\C", ""),
+    ("unicode", 5, 0, "A", "a", ""),
+    ("unicode", 5, 1, "é", "e", ""),
+    ("unicode", 6, 0, "a\nb", "^b", "m"),
+    ("unicode", 6, 1, "a\nb", ".", "s"),
+    ("unicode", 7, 0, "a\n", "a$", ""),
+    ("unicode", 7, 1, "a\n", "a$", "m"),
+    ("unicode", 8, 0, "aaa", "a*?", ""),
+  ]
+  let errors : Array[(String, Int, String, String)] = [
+    ("functions", 6, "(", ""),
+    ("functions", 8, "a", "x"),
+    ("boundaries", 0, "[", ""),
+    ("boundaries", 2, "a{2,1}", ""),
+    ("boundaries", 3, "*", ""),
+    ("boundaries", 4, "\\q", ""),
+    ("boundaries", 5, "(?=a)", ""),
+    ("boundaries", 6, "(?<=a)", ""),
+    ("boundaries", 7, "(a)\\1", ""),
+    ("boundaries", 8, "[z-a]", ""),
+    ("boundaries", 12, "a{1001}", ""),
+    ("boundaries", 23, "a", "I"),
+    ("boundaries", 28, "a", "xxz"),
+  ]
+  // Property syntax and simple-fold controls, independently captured in SQL.
+  let property_sql = read_text("\{CORPUS}/regex-properties.sql")
+  for step, call in findall(property_sql, property_call) {
+    let (text, pattern, flags) = (call[0], call[1], call[2])
+    if captured(cache, "properties", step).get("errors") is Some(Array([_, ..])) {
+      errors.push(("properties", step, pattern, flags))
+    } else {
+      counts.push(("properties", step, 0, text, pattern, flags))
+    }
+  }
+  let out = [
+    "// Generated by scripts/gen-regex-tests.mbtx from real SQL Server captures.",
+    "// Do not hand-edit expectations.", "", "///|", "fn count_matches(text : String, pattern : String, flags : String) -> Int raise {",
+    "  let p = @regex.compile(pattern, flags)", "  let bytes = @utf8.encode(text)",
+    "  let mut at = 0", "  let mut count = 0", "  while p.find(bytes, at, _ => ()) is Some(m) {",
+    "    let (start, end) = m.groups[0].unwrap()", "    count += 1", "    at = if start == end { @regex.next_boundary(bytes, end) } else { end }",
+    "  }", "  count", "}",
+  ]
+  for count in counts {
+    let (name, step, col, text, pattern, flags) = count
+    guard captured(cache, name, step)
+      is { "sets": Array([{ "rows": Array([Array(row), ..]), .. }, ..]), .. } &&
+      row.get(col) is Some(expected) else {
+      fail("regex-\{name} step \{step} has no captured count")
+    }
+    out.push_iter(
+      [
+        "",
+        "///|",
+        "test \"oracle count \{name} \{step} \{col}\" {",
+        "  assert_eq(count_matches(\{q(text)}, \{q(pattern)}, \{q(flags)}), \{py_str(expected)})",
+        "}",
+      ].iter(),
+    )
+  }
+  for err in errors {
+    let (name, step, pattern, flags) = err
+    guard captured(cache, name, step)
+      is { "errors": Array([Object(error), ..]), .. } &&
+      error is { "number": number, "state": state, "message": message, .. } else {
+      fail("regex-\{name} step \{step} has no captured error")
+    }
+    out.push_iter(
+      [
+        "",
+        "///|",
+        "test \"oracle syntax \{name} \{step}\" {",
+        "  try @regex.compile(\{q(pattern)}, \{q(flags)}) catch {",
+        "    e => { assert_eq(e.number(), \{py_str(number)}); assert_eq(e.state(), \{py_str(state)}); assert_eq(e.message(), \{q(str_value(message))}) }",
+        "  } noraise { _ => fail(\"Expected the oracle pattern error\") }",
+        "}",
+      ].iter(),
+    )
+  }
+  out.push_iter(
+    [
+      "", "///|", "fn capture_values(text : String, pattern : String) -> Array[Array[String?]] raise {",
+      "  let p = @regex.compile(pattern, \"\")", "  let bytes = @utf8.encode(text)",
+      "  let rows : Array[Array[String?]] = []", "  let mut at = 0", "  while p.find(bytes, at, _ => ()) is Some(m) {",
+      "    rows.push(m.groups.map(g => match g {", "      None => None", "      Some((a, b)) => Some(@utf8.decode(bytes[a:b]))",
+      "    }))", "    let (a, b) = m.groups[0].unwrap()", "    at = if a == b { @regex.next_boundary(bytes, b) } else { b }",
+      "  }", "  rows", "}",
+    ].iter(),
+  )
+  let captures_sql = read_text("\{CORPUS}/regex-captures.sql")
+  for step, pair in findall(captures_sql, matches_call) {
+    let (text, pattern) = (pair[0], pair[1])
+    guard captured(cache, "captures", step)
+      is { "sets": Array([{ "rows": Array(rows), .. }, ..]), .. } else {
+      fail("regex-captures step \{step} has no captured rows")
+    }
+    let values = []
+    for row in rows {
+      guard row is Array(row) && row.get(3) is Some(whole) else {
+        fail("regex-captures step \{step}: malformed row")
+      }
+      let vals = [whole]
+      if !(step is (14 | 15 | 18 | 19)) {
+        guard row.get(4) is Some(String(groups)) &&
+          @json.parse(groups) is Array(groups) else {
+          fail("regex-captures step \{step}: malformed group list")
+        }
+        for g in groups {
+          guard g is { "value": value, .. } else {
+            fail("regex-captures step \{step}: group without value")
+          }
+          vals.push(value)
+        }
+      }
+      let items = []
+      for v in vals {
+        items.push(if v is Null { "None" } else { "Some(\{q(str_value(v))})" })
+      }
+      values.push("[" + items.join(", ") + "]")
+    }
+    let expected = "[" + values.join(", ") + "]"
+    out.push_iter(
+      [
+        "",
+        "///|",
+        "test \"oracle captures \{step}\" {",
+        "  assert_eq(capture_values(\{q(text)}, \{q(pattern)}), \{expected})",
+        "}",
+      ].iter(),
+    )
+  }
+  @fs.write_file("src/core/regex/oracle_test.mbt", out.join("\n") + "\n")
+}
