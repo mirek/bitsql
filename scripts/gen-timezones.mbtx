@@ -1,3 +1,4 @@
+///|
 // Generates src/core/types/timezone_data.mbt (AT TIME ZONE rules).
 //
 // Input: scripts/timezones/sqlserver-timezones.json, dumped from real SQL
@@ -87,7 +88,7 @@ suberror Fail {
 }
 
 ///|
-impl Show for Fail with output(self, logger) {
+impl Show for Fail with fn output(self, logger) {
   let Fail(msg) = self
   logger.write_string(msg)
 }
@@ -372,10 +373,15 @@ fn rule_offset(rule : Rule, utc : Int64) -> Int {
 
 ///|
 /// Instants in [lo, hi) where rule_offset may change.
-fn rule_candidates(rule : Rule, lo : Int64, hi : Int64, out : Array[Int64]) -> Unit {
+fn rule_candidates(
+  rule : Rule,
+  lo : Int64,
+  hi : Int64,
+  out : Array[Int64],
+) -> Unit {
   let y0 = year_of(day_of(lo)) - 1
   let y1 = year_of(day_of(hi - 1L)) + 1
-  for y in (if y0 > 1 { y0 } else { 1 })..=(if y1 < 9999 { y1 } else { 9999 }) {
+  for y in (if y0 > 1 { y0 } else { 1 })..<=(if y1 < 9999 { y1 } else { 9999 }) {
     let (s, e) = rule_bounds(rule, y)
     let jan1 = days_from_civil(y, 1, 1).to_int64() * tpd
     for t in [s, e, jan1 - min_ticks(rule.std), jan1 - min_ticks(rule.dst)] {
@@ -448,8 +454,12 @@ struct Group {
 ///|
 fn Group::new(t : Trans) -> Group {
   let (_, before, after) = t
-  let (std, dst) = if after > before { (before, after) } else { (after, before) }
-  let g = { items: [t], std, dst, cands: {}, years: {}, last_kind: None }
+  let (std, dst) = if after > before {
+    (before, after)
+  } else {
+    (after, before)
+  }
+  let g = { items: [t], std, dst, cands: {}, years: {}, last_kind: None, }
   if !year_artifact(t) {
     g.take(t)
   }
@@ -544,7 +554,7 @@ struct Segment {
 
 ///|
 fn seg(start : Int64, initial : Int?, rule : Rule?) -> Segment {
-  { start, initial, rule, daylight: false }
+  { start, initial, rule, daylight: false, }
 }
 
 ///|
@@ -665,7 +675,10 @@ fn make_groups(transitions : Array[Trans]) -> Array[Group] {
 /// Segments starting at each group's first transition: a rule segment for a
 /// group of 3+ transitions with a rule, else one fixed segment per
 /// transition.
-fn group_segments(groups : Array[Group], choice : Map[Int, Int]) -> Array[Segment] {
+fn group_segments(
+  groups : Array[Group],
+  choice : Map[Int, Int],
+) -> Array[Segment] {
   let segs = []
   for gi, g in groups {
     let rules = if g.items.length() >= 3 { g.rules() } else { [] }
@@ -753,11 +766,13 @@ fn fix(
       raise Fail("\{zone}: cannot model \{fmt_ticks(at)}")
     }
     let nxt = if i + 1 < segs.length() { Some(segs[i + 1].start) } else { None }
-    let rest = want.filter(t => t.0 >= at &&
+    let rest = want.filter(t => {
+      t.0 >= at &&
       (match nxt {
         None => true
         Some(n) => t.0 < n
-      }))
+      })
+    })
     if s.start == at {
       segs = splice(segs, i, rest.map(t => seg(t.0, Some(t.2), None)), i + 1)
       continue
@@ -935,13 +950,15 @@ fn parse_dump(j : Json) -> Dump raise {
   for zone, v in jobj(jget(j, "probes")) {
     let p : Probes = []
     for at, results in jobj(v) {
-      p.push((
-        at,
-        jarr(results).map(r => {
-          guard jarr(r) is [shown, used] else { raise Fail("bad probe") }
-          (jint(shown), @string.parse_double(jstr(used)))
-        }),
-      ))
+      p.push(
+        (
+          at,
+          jarr(results).map(r => {
+            guard jarr(r) is [shown, used] else { raise Fail("bad probe") }
+            (jint(shown), @string.parse_double(jstr(used)))
+          }),
+        ),
+      )
     }
     probes[zone] = p
   }
@@ -976,7 +993,9 @@ fn parse_dump(j : Json) -> Dump raise {
 
 ///|
 fn Dump::scans_of(self : Dump, zone : String) -> Array[Scan] raise Fail {
-  guard self.scans.get(zone) is Some(s) else { raise Fail("no scans for \{zone}") }
+  guard self.scans.get(zone) is Some(s) else {
+    raise Fail("no scans for \{zone}")
+  }
   s
 }
 
@@ -1009,7 +1028,12 @@ fn fit_local(
     for j in 0..<@cmp.minimum(locs.length(), results.length()) {
       let wall_t = locs[j]
       let (_, used) = results[j]
-      for tr in model_transitions(segs, wall_t - 1000L * tpm, wall_t + 1000L * tpm) {
+      for
+        tr in model_transitions(
+          segs,
+          wall_t - 1000L * tpm,
+          wall_t + 1000L * tpm,
+        ) {
         let (t2, b2, a2) = tr
         let (lo, hi) = wall_range(t2, b2, a2)
         if lo <= wall_t && wall_t < hi {
@@ -1125,7 +1149,11 @@ fn model_zone(zone : String, dump : Dump) -> Array[Segment] raise {
   let mut error = "None"
   for cf in 0..<@cmp.minimum(nfirst, 16) {
     for cl in 0..<@cmp.minimum(nlast, 16) {
-      let choice = if last > 0 { Map([(0, cf), (last, cl)]) } else { Map([(0, cf)]) }
+      let choice = if last > 0 {
+        Map([(0, cf), (last, cl)])
+      } else {
+        Map([(0, cf)])
+      }
       let (segs, _) = build(scans[0].initial, trans, choice, lo)
       let segs = fix(zone, segs, trans, lo, hi)
       match check_windows(segs, windows, scans) {
@@ -1269,11 +1297,19 @@ async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
   l.push("]")
   l.push("")
   l.push("///|")
-  l.push("/// Segments of zone i are tz_segments[tz_first[i]..tz_first[i + 1]].")
-  l.push("let tz_first : Array[Int] = [" + first.map(x => x.to_string()).join(", ") + "]")
+  l.push(
+    "/// Segments of zone i are tz_segments[tz_first[i]..tz_first[i + 1]].",
+  )
+  l.push(
+    "let tz_first : Array[Int] = [" +
+    first.map(x => x.to_string()).join(", ") +
+    "]",
+  )
   l.push("")
   l.push("///|")
-  l.push("/// (start UTC ticks or tz_neg_inf, fixed offset in minutes, annual rule")
+  l.push(
+    "/// (start UTC ticks or tz_neg_inf, fixed offset in minutes, annual rule",
+  )
   l.push("/// index or -1 for a fixed offset, fixed offset is daylight time).")
   l.push("let tz_segments : Array[(Int64, Int, Int, Bool)] = [")
   for row in seg_rows {
@@ -1284,8 +1320,12 @@ async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
   l.push("]")
   l.push("")
   l.push("///|")
-  l.push("/// Annual rules: (standard offset, daylight offset, start month, week")
-  l.push("/// (5 = last), weekday (0 = Sunday), start wall ticks in standard time,")
+  l.push(
+    "/// Annual rules: (standard offset, daylight offset, start month, week",
+  )
+  l.push(
+    "/// (5 = last), weekday (0 = Sunday), start wall ticks in standard time,",
+  )
   l.push("/// end month, week, weekday, end wall ticks in daylight time).")
   l.push(
     "let tz_rules : Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)] = [",
@@ -1300,8 +1340,12 @@ async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
   l.push("]")
   l.push("")
   l.push("///|")
-  l.push("/// (zone, UTC instant, wall-clock year) of offset changes whose repeated")
-  l.push("/// or skipped wall times of that year SQL Server reads in the offset after")
+  l.push(
+    "/// (zone, UTC instant, wall-clock year) of offset changes whose repeated",
+  )
+  l.push(
+    "/// or skipped wall times of that year SQL Server reads in the offset after",
+  )
   l.push("/// the change.")
   l.push("let tz_after_picks : Array[(Int, Int64, Int)] = [")
   for p in picks {
@@ -1310,8 +1354,12 @@ async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
   l.push("]")
   l.push("")
   l.push("///|")
-  l.push("/// (zone, wall-clock year) where local (datetime/datetime2) input is not")
-  l.push("/// resolved like SQL Server by this model: rejected with an emulator error.")
+  l.push(
+    "/// (zone, wall-clock year) where local (datetime/datetime2) input is not",
+  )
+  l.push(
+    "/// resolved like SQL Server by this model: rejected with an emulator error.",
+  )
   l.push("let tz_unsupported_local_years : Array[(Int, Int)] = [")
   for b in bad {
     l.push("  (\{b.0}, \{b.1}),")
@@ -1334,7 +1382,9 @@ async fn emit_test(dump : Dump, zones : Array[OutZone]) -> Unit {
   for z in zones {
     let (zone, segs, picks, bad) = z
     let scans = dump.scans_of(zone)
-    let keep = scans[0].raw.filter(t => years.contains(t.0.view(end_offset=4).to_owned()))
+    let keep = scans[0].raw.filter(t => {
+      years.contains(t.0.view(end_offset=4).to_owned())
+    })
     for sc in scans[1:] {
       keep.append(sc.raw[:])
     }
@@ -1363,8 +1413,11 @@ async fn emit_test(dump : Dump, zones : Array[OutZone]) -> Unit {
     }
   }
   let l = [
-    "// Generated by \{GENERATOR}: a sample of SQL Server's answers in", "// scripts/timezones/sqlserver-timezones.json. Do not edit.",
-    "", "///|", "/// (zone, UTC ticks of an offset change, offset before, offset after)",
+    "// Generated by \{GENERATOR}: a sample of SQL Server's answers in",
+    "// scripts/timezones/sqlserver-timezones.json. Do not edit.",
+    "",
+    "///|",
+    "/// (zone, UTC ticks of an offset change, offset before, offset after)",
     "let tz_sql_transitions : Array[(String, Int64, Int, Int)] = [",
   ]
   for t in trans {
@@ -1400,7 +1453,9 @@ async fn emit_test(dump : Dump, zones : Array[OutZone]) -> Unit {
     #|}
   l.push(tail)
   @fs.write_file(OUT_TEST, l.join("\n") + "\n", create_mode=CreateOrTruncate)
-  eprintln("test: \{trans.length()} transitions, \{probes.length()} local probes")
+  eprintln(
+    "test: \{trans.length()} transitions, \{probes.length()} local probes",
+  )
 }
 
 ///|
@@ -1444,8 +1499,9 @@ async fn xcheck_msduck(msduck : String) -> Unit {
   let examples : Map[String, String] = Map([])
   let dir = msduck + "/reference"
   let files = if @fs.exists(dir) {
-    @fs.readdir(dir).filter(f => f.has_prefix("at-time-zone-history-") &&
-      f.has_suffix(".json"))
+    @fs.readdir(dir).filter(f => {
+      f.has_prefix("at-time-zone-history-") && f.has_suffix(".json")
+    })
   } else {
     []
   }
@@ -1455,10 +1511,18 @@ async fn xcheck_msduck(msduck : String) -> Unit {
     for chunk in jarr(jget(doc, "chunks")) {
       let daily = jget(chunk, "daily")
       let q = jstr(jget(daily, "query"))
-      let start_s = after_first(q, "CAST('").split("'").next().unwrap().to_owned()
-      let start = parse_ticks(start_s.view(end_offset=10).to_owned() + " 00:00:00.0000000")
+      let start_s = after_first(q, "CAST('")
+        .split("'")
+        .next()
+        .unwrap()
+        .to_owned()
+      let start = parse_ticks(
+        start_s.view(end_offset=10).to_owned() + " 00:00:00.0000000",
+      )
       let range = after_first(q, "GENERATE_SERIES(").split(")").next().unwrap()
-      guard range.split(",").to_array() is [a, b] else { raise Fail("bad GENERATE_SERIES") }
+      guard range.split(",").to_array() is [a, b] else {
+        raise Fail("bad GENERATE_SERIES")
+      }
       let lo_k = py_int(a).to_int64()
       let hi_k = py_int(b).to_int64()
       let want : Map[String, Set[(Int64, Int, Int)]] = Map([])
@@ -1474,7 +1538,8 @@ async fn xcheck_msduck(msduck : String) -> Unit {
       for m in models {
         let (z, segs) = m
         let got : Set[(Int64, Int, Int)] = Set([])
-        for tr in model_transitions(segs, start + lo_k * tpd, start + hi_k * tpd) {
+        for
+          tr in model_transitions(segs, start + lo_k * tpd, start + hi_k * tpd) {
           // first sampled midnight at or after t
           let k = -fdiv64(start - tr.0, tpd)
           if lo_k < k && k <= hi_k {

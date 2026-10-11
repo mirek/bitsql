@@ -3,7 +3,8 @@
 # container's own architecture only (see CLAUDE.md, native host rule).
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
-# gcc/libc for the native backend, python3 for scripts/gen-*.py.
+# gcc/libc (and addr2line) for the native backend and profiler, python3 for
+# the inline JSON helpers in scripts/docker-publish.sh.
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       build-essential libssl3 python3 ca-certificates curl \

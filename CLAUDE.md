@@ -40,6 +40,8 @@ the top priority: a false green is worse than an explicit "not supported" error.
   never silent approximations.
 - Result metadata comes from the binder, never from row values.
 - Expected outputs are captured from real SQL Server, never hand-written.
+- Automation is MoonBit script mode (`scripts/*.mbtx`, `moon run`), not
+  Python; shell only launches. Conventions: skill **moonbit**, "Scripts".
 - Push straight to `main` (no PR flow yet), often, but only when
   `scripts/check.sh` is green locally. No CI yet, on purpose.
 - **Native host architecture only:** on amd64 hosts build, run, test and

@@ -102,7 +102,7 @@ docs/reference/          SQL Server rules distilled from captures (completions, 
 docs/moonbit/            vendored MoonBit docs (generated, see VERSIONS.md)
 docs/reuse/              what to reuse from msduck / mssqlite
 .claude/skills/          project skills (kept current as we learn)
-scripts/                 check.sh (pre-push gate), update-moonbit-docs.mbtx
+scripts/                 check.sh (pre-push gate), *.mbtx automation (generators, docs refresh)
 Dockerfile               distroless image around the release binary
 ```
 

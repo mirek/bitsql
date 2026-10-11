@@ -9,7 +9,7 @@
   // host docker socket) on 127.0.0.1:47314 exactly as on a Linux host.
   // Hostname: tedious sends os.hostname() in LOGIN7, and captures such as
   // sysprocs/sp-who were recorded from a client host named `linux`.
-  "runArgs": ["--network=host", "--hostname=linux", "--name=bitsql-devcontainer"],
+  "runArgs": ["--network=host", "--hostname=linux", "--name=bitsql-devcontainer", "--ulimit", "core=0"],
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "24.13.0", "pnpmVersion": "11.3.0" },
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}

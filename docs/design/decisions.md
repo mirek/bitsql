@@ -1356,3 +1356,22 @@ Plan-attribute lookup publishes the observed plan's `dbid` as an int variant
 and cache key. Other SQL Server optimizer attributes remain outside the
 supported history subset; no object IDs, plan costs or SET option masks are
 invented. Captures: `harness/corpus/report-0127`, SQL Server 2022 16.0.4236.2.
+
+### 2026-10-11: automation in MoonBit script mode (`.mbtx`), not Python
+
+All 17 Python tools in `scripts/` (generators, the timezone msduck
+cross-check, the profiler report, the MoonBit docs refresh) are now
+single-file `.mbtx` scripts run with `moon run scripts/<name>.mbtx`, following
+the vendored agent guide ("use `.mbtx` exclusively for agent-authored
+automation") and MoonBit's "Building agents" post: one type-checked language
+for code and tooling, `@shell.Cmd` instead of shell strings, and the same
+`moon check` feedback loop. Each port reproduced the old outputs byte for byte
+on current inputs before the `.py` was deleted; the generated headers now name
+the `.mbtx`. Deliberate differences: the profiler report orders ties by first
+appearance (Python's `set()` order varied per process), and scripts fail
+loudly on input shapes the captures don't contain (non-integral numbers where
+Python printed ints, non-ASCII where Python `\w`/`\d` are Unicode).
+`scripts/check.sh` now checks and format-checks every script and fails when a
+generated file differs from its generator's output (`SKIP_GENERATORS=1` to
+skip, ~30 s). Shell launchers (`check.sh`, `profile.sh`, `docker-publish.sh`)
+are unchanged. Conventions and gotchas: moonbit skill, "Scripts (`.mbtx`)".

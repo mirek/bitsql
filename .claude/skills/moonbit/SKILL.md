@@ -67,6 +67,31 @@ No native MoonBit toolchain for Intel macOS: use `.devcontainer/` (VS Code
 "Reopen in Container"; Linux on the host's own architecture, toolchain pinned
 like `.github/workflows/pages.yml`, so bump both together).
 
+## Scripts (`.mbtx`)
+
+Automation (generators, report tools, doc refresh) is written as MoonBit
+script-mode files in `scripts/` (agent guide: `docs/moonbit/agent-guide/SKILL.md`,
+"Script Mode"), not Python. New automation goes there too; shell stays only a
+thin launcher. Conventions:
+
+- One self-contained file per tool: an `import { ... }` header of registry
+  packages (`moonbitlang/core/*`, `moonbitlang/async/*`; versions are not
+  pinned, the cache resolves them), then `fn main` / `async fn main`. Scripts
+  cannot import `mirek/bitsql/*` packages or each other: related tools share
+  a file via a subcommand (`gen-timezones.mbtx xcheck-msduck <msduck>`).
+- Run from the repo root (`moon run scripts/x.mbtx [args]`, script flags after
+  `--`); scripts check that and fail clearly otherwise. Generators then need
+  `moon fmt` on their output, as the checked-in files are formatted.
+- File IO with `@fs` (`write_file(.., sync=NoSync)` for bulk output), processes
+  with `@shell.Cmd` (never via a shell), temp dirs removed with `defer`.
+  Build output in memory and write it once: `println` is very slow on wasm.
+- Format and check each script explicitly: plain `moon fmt` skips `.mbtx`;
+  `moon check` takes exactly one script path (`moon check --deny-warn x.mbtx`).
+  `scripts/check.sh` does both and also fails when a generated file differs
+  from its `gen-*.mbtx` output.
+- A port from another language must reproduce the old outputs byte for byte
+  on current inputs before the old script is deleted (2026-10-11 Python port).
+
 ## Gotchas and learnings (append, dated)
 
 - 2026-10-03: toolchain moon 0.1.20260920 / moonc v0.10.14 uses `moon.mod` and
@@ -348,3 +373,36 @@ like `.github/workflows/pages.yml`, so bump both together).
   Python `set()` iteration order is hash-randomized per process, so output
   ordered by it is not reproducible even in Python: pick a deterministic
   order and say so.
+- 2026-10-11: porting Python scripts to `.mbtx` (all 17 generators/tools).
+  Semantics that differ from Python and need helpers: `/` and `%` truncate
+  toward zero (floor helpers for `//`, `%`, `divmod`); `Double::round` is half
+  away from zero (Python `round` is half-to-even); `String::compare` is length
+  first (`a.to_array().lexical_compare(b.to_array())` for code-point order);
+  `Double::to_string` is JavaScript-style (`0.00001`, `1e+22`, `-0.0` prints
+  `0`) but shortest round-trip, so Python `repr` is rebuilt on top of it
+  (verified on 200k doubles, `scripts/gen-vector-tests.mbtx`).
+- 2026-10-11: `@json.parse` rejects lone UTF-16 surrogate escapes (`"\ud83e"`;
+  Python accepts them; `unicode-case.expected.json` has 12) and its
+  `Number(d, repr~)` keeps `repr` only when the double loses precision, so
+  `1`, `1.0` and `1e3` are indistinguishable: scripts print integral numbers
+  as ints and fail on non-integers where an int is expected.
+- 2026-10-11: core has a regex, `@string.Regex(pattern)` (`execute` ~
+  `re.search`, `find` ~ `re.finditer`, `MatchResult::group(i)`). It rejects
+  `\d` `\s` `\w` ("Use POSIX character class"): write `[0-9]`, `[[:space:]]`,
+  `[A-Za-z0-9_]` (ASCII only, unlike Python). An uncaught raise in a sync
+  `fn main raise` aborts with "RuntimeError: unreachable" and no message;
+  in `async fn main` `fail(..)` prints `Failure(..)` and exits 1. A custom
+  `suberror` needs `impl Show` to print its message.
+- 2026-10-11: syntax traps met in scripts: `suberror E { E(String) }` (the old
+  `suberror E T` form is a parse error); `type T = X` (not `typealias`); `1e-9`
+  does not parse (`1.0e-9`); map literal keys must be literals (else
+  `Map([(k, v)])`); `{}` as an empty map warns (`Map([])`), `Set::new()` /
+  `StringBuilder::new()` -> `Set([])` / `StringBuilder()`; view `to_string` /
+  `to_array` -> `to_owned()`; `trim_space` -> `trim`; `unsafe_char_at` ->
+  `get_char`; `Json::value`/`as_string` deprecated (pattern-match instead);
+  no tuple assignment (`continue` a loop state); `a < 0 != b < 0` needs
+  parens; `var`, `ref`, `local`, `alias` are reserved names; `@cmp.minimum`
+  needs `moonbitlang/core/cmp` imported; `@hex` lives at
+  `moonbitlang/core/encoding/hex`.
+- 2026-10-11: a crashing `moon` in the dev container writes an ELF `core` dump
+  (5-18 MB) into the cwd; the dev container now runs with `--ulimit core=0`.
