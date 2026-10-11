@@ -1,0 +1,1533 @@
+// Generates src/core/types/timezone_data.mbt (AT TIME ZONE rules).
+//
+// Input: scripts/timezones/sqlserver-timezones.json, dumped from real SQL
+// Server by harness/src/dump-timezones.mjs (see its header). Every number in
+// the output is derived from SQL Server's own answers; nothing comes from IANA
+// tzdata or the Windows registry directly.
+//
+// Model. For each sys.time_zone_info name the UTC timeline is cut into
+// segments. A segment starts at an observed transition instant (the first one
+// at -infinity) and holds either a fixed offset or an annual Windows-style
+// rule (standard/daylight offsets plus two "n-th weekday of month at local
+// time" transition specs, week 5 = last). SQL Server extrapolates the first
+// yearly rule backwards and the last one forwards; the sample windows of the
+// dump check that assumption at years 1..9999.
+//
+// The script verifies, and fails loudly otherwise, that the model reproduces:
+// - every transition (exact 100 ns instant and offsets) of every scanned
+//   window, and no extra transitions, and the offset at every window start;
+// - sys.time_zone_info (current_utc_offset, is_currently_dst) at the dump time.
+// Local (wall-clock) input is fitted to the probes: changes whose repeated or
+// skipped wall times SQL Server reads in the offset after the change are
+// listed (tz_after_picks); wall-clock years whose probes the resolver still
+// cannot reproduce are listed as unsupported (an Emulator error at run time).
+//
+// Outputs: src/core/types/timezone_data.mbt (the tables) and
+// src/core/types/timezone_data_test.mbt (a sample of SQL Server's answers that
+// the MoonBit port, src/core/types/timezone.mbt, must reproduce; it mirrors the
+// functions rule_offset, model_transitions and local_to_utc below).
+//
+// Regenerate (see docs/reference/at-time-zone.md), from the repo root:
+//   cd harness && BITSQL_ORACLE_NAME=bitsql-oracle-tz BITSQL_ORACLE_PORT=47345 \
+//     node src/dump-timezones.mjs ../scripts/timezones/sqlserver-timezones.json
+//   moon run scripts/gen-timezones.mbtx && moon fmt && moon test -p mirek/bitsql/core/types
+//
+// Cross-check against msduck's independent captures
+// (reference/at-time-zone-history-*.json: daily offsets of every zone, years
+// 0001-2500, SQL Server 17.0.4065.4):
+//   moon run scripts/gen-timezones.mbtx xcheck-msduck PATH/TO/msduck
+//   (clone: git clone --depth 1 https://github.com/mirek/msduck.git)
+// Expected result (2026-10-03): all 345,109 daily changes agree except 47 at
+// 0001-01-01 for zones west of UTC, where AT TIME ZONE clamps an underflowing
+// local time to +00:00 (an executor rule, not a zone rule).
+//
+// Port notes: Python's `//` and `%` floor; MoonBit's `/` and `%` truncate, so
+// all divisions of possibly negative values go through fdiv/fmod. MoonBit's
+// String compare orders by length first, so string sorts use str_cmp
+// (lexicographic, like Python).
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+///|
+const DUMP : String = "scripts/timezones/sqlserver-timezones.json"
+
+///|
+const OUT : String = "src/core/types/timezone_data.mbt"
+
+///|
+const OUT_TEST : String = "src/core/types/timezone_data_test.mbt"
+
+///|
+const GENERATOR : String = "scripts/gen-timezones.mbtx"
+
+///|
+let tps : Int64 = 10_000_000L
+
+///|
+let tpm : Int64 = 60L * tps
+
+///|
+let tpd : Int64 = 86400L * tps
+
+///|
+let neg_inf : Int64 = -9223372036854775807L - 1L
+
+///|
+/// Fatal error: its message is printed to stderr and the script exits 1
+/// (Python's `raise SystemExit(msg)`).
+suberror Fail {
+  Fail(String)
+}
+
+///|
+impl Show for Fail with output(self, logger) {
+  let Fail(msg) = self
+  logger.write_string(msg)
+}
+
+// ---------------------------------------------------------------- helpers
+
+///|
+fn fdiv(a : Int, b : Int) -> Int {
+  let q = a / b
+  if a % b != 0 && (a < 0) != (b < 0) {
+    q - 1
+  } else {
+    q
+  }
+}
+
+///|
+fn fmod(a : Int, b : Int) -> Int {
+  a - fdiv(a, b) * b
+}
+
+///|
+fn fdiv64(a : Int64, b : Int64) -> Int64 {
+  let q = a / b
+  if a % b != 0L && (a < 0L) != (b < 0L) {
+    q - 1L
+  } else {
+    q
+  }
+}
+
+///|
+fn fmod64(a : Int64, b : Int64) -> Int64 {
+  a - fdiv64(a, b) * b
+}
+
+///|
+/// Day number (days since 0001-01-01) of a tick instant.
+fn day_of(t : Int64) -> Int {
+  fdiv64(t, tpd).to_int()
+}
+
+///|
+/// Python's `str.__lt__`: lexicographic by code unit (all inputs are ASCII).
+fn str_cmp(a : String, b : String) -> Int {
+  let n = if a.length() < b.length() { a.length() } else { b.length() }
+  for i in 0..<n {
+    let x = a.at(i)
+    let y = b.at(i)
+    if x != y {
+      return if x < y { -1 } else { 1 }
+    }
+  }
+  a.length().compare(b.length())
+}
+
+///|
+/// Python's `f'{n:0{w}d}'`.
+fn zpad(n : Int64, w : Int) -> String {
+  if n < 0L {
+    "-" + (-n).to_string().pad_start(w - 1, '0')
+  } else {
+    n.to_string().pad_start(w, '0')
+  }
+}
+
+///|
+fn py_bool(b : Bool) -> String {
+  if b {
+    "True"
+  } else {
+    "False"
+  }
+}
+
+///|
+/// Python's `repr(str)` for printable text.
+fn py_repr(s : String) -> String {
+  let q = if s.contains("'") && !s.contains("\"") { '"' } else { '\'' }
+  let buf = StringBuilder()
+  buf.write_char(q)
+  for c in s {
+    match c {
+      '\\' => buf.write_string("\\\\")
+      '\n' => buf.write_string("\\n")
+      '\r' => buf.write_string("\\r")
+      '\t' => buf.write_string("\\t")
+      _ =>
+        if c == q {
+          buf.write_char('\\')
+          buf.write_char(c)
+        } else {
+          buf.write_char(c)
+        }
+    }
+  }
+  buf.write_char(q)
+  buf.to_string()
+}
+
+///|
+/// Python's `int(s)` for decimal text.
+fn py_int(s : StringView) -> Int raise {
+  @string.parse_int(s.trim())
+}
+
+// ---------------------------------------------------------------- calendar
+
+///|
+fn days_from_civil(y : Int, m : Int, d : Int) -> Int {
+  let y = if m <= 2 { y - 1 } else { y }
+  let era = fdiv(if y >= 0 { y } else { y - 399 }, 400)
+  let yoe = y - era * 400
+  let mp = fmod(m + 9, 12)
+  let doy = fdiv(153 * mp + 2, 5) + d - 1
+  let doe = yoe * 365 + fdiv(yoe, 4) - fdiv(yoe, 100) + doy
+  era * 146097 + doe - 719468 + 719162
+}
+
+///|
+fn civil_from_days(days : Int) -> (Int, Int, Int) {
+  let z = days - 719162 + 719468
+  let era = fdiv(if z >= 0 { z } else { z - 146096 }, 146097)
+  let doe = z - era * 146097
+  let yoe = fdiv(
+    doe - fdiv(doe, 1460) + fdiv(doe, 36524) - fdiv(doe, 146096),
+    365,
+  )
+  let doy = doe - (365 * yoe + fdiv(yoe, 4) - fdiv(yoe, 100))
+  let mp = fdiv(5 * doy + 2, 153)
+  let d = doy - fdiv(153 * mp + 2, 5) + 1
+  let m = if mp < 10 { mp + 3 } else { mp - 9 }
+  let y = yoe + era * 400 + (if m <= 2 { 1 } else { 0 })
+  (y, m, d)
+}
+
+///|
+fn year_of(days : Int) -> Int {
+  civil_from_days(days).0
+}
+
+///|
+fn is_leap(y : Int) -> Bool {
+  fmod(y, 4) == 0 && (fmod(y, 100) != 0 || fmod(y, 400) == 0)
+}
+
+///|
+fn dim(y : Int, m : Int) -> Int {
+  [31, if is_leap(y) { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m -
+  1]
+}
+
+///|
+/// 0 = Sunday (Windows SYSTEMTIME.wDayOfWeek); 0001-01-01 is a Monday.
+fn dow(days : Int) -> Int {
+  fmod(days + 1, 7)
+}
+
+///|
+fn parse_ticks(s : String) -> Int64 raise {
+  let parts = s.split(" ").to_array()
+  guard parts is [date, time] else { raise Fail("bad timestamp \{s}") }
+  let ymd = date.split("-").to_array()
+  guard ymd is [y, m, d] else { raise Fail("bad timestamp \{s}") }
+  let hms = time.split(":").to_array()
+  guard hms is [hh, mm, rest] else { raise Fail("bad timestamp \{s}") }
+  let sf = rest.split(".").to_array()
+  guard sf is [sec, frac] else { raise Fail("bad timestamp \{s}") }
+  let frac = (frac.to_owned() + "0000000").view(end_offset=7)
+  days_from_civil(py_int(y), py_int(m), py_int(d)).to_int64() * tpd +
+  ((py_int(hh) * 60 + py_int(mm)) * 60 + py_int(sec)).to_int64() * tps +
+  py_int(frac).to_int64()
+}
+
+///|
+fn fmt_ticks(t : Int64) -> String {
+  if t == neg_inf {
+    return "-inf"
+  }
+  let days = fdiv64(t, tpd)
+  let rem = fmod64(t, tpd)
+  let (y, m, d) = civil_from_days(days.to_int())
+  let s = fdiv64(rem, tps)
+  let f = fmod64(rem, tps)
+  "\{zpad(y.to_int64(), 4)}-\{zpad(m.to_int64(), 2)}-\{zpad(d.to_int64(), 2)} " +
+  "\{zpad(s / 3600L, 2)}:\{zpad(s / 60L % 60L, 2)}:\{zpad(s % 60L, 2)}.\{zpad(f, 7)}"
+}
+
+// ---------------------------------------------------------------- rules
+
+///|
+/// An observed offset change: (UTC instant, offset before, offset after).
+type Trans = (Int64, Int, Int)
+
+///|
+/// A transition spec candidate: (month, week 1..5 (5 = last), dow, wall ticks).
+type Spec = (Int, Int, Int, Int64)
+
+///|
+/// An annual rule: standard/daylight offsets, the (month, week, dow) of DST
+/// start and its standard wall ticks, and of DST end and its daylight wall
+/// ticks.
+struct Rule {
+  std : Int
+  dst : Int
+  s_spec : (Int, Int, Int)
+  s_tod : Int64
+  e_spec : (Int, Int, Int)
+  e_tod : Int64
+} derive(Eq, Hash)
+
+///|
+/// Day number of (month, week 1..5 (5 = last), dow) in `year`.
+fn spec_day(year : Int, spec : (Int, Int, Int)) -> Int {
+  let (month, week, wd) = spec
+  let first = days_from_civil(year, month, 1)
+  let mut d = first + fmod(wd - dow(first), 7) + (week - 1) * 7
+  while d >= first + dim(year, month) {
+    d -= 7
+  }
+  d
+}
+
+///|
+fn clamp_year(y : Int) -> Int {
+  if y < 1 {
+    1
+  } else if y > 9999 {
+    9999
+  } else {
+    y
+  }
+}
+
+///|
+fn min_ticks(o : Int) -> Int64 {
+  o.to_int64() * tpm
+}
+
+///|
+/// (DST start, DST end) UTC instants of `rule` in rule year `year`.
+fn rule_bounds(rule : Rule, year : Int) -> (Int64, Int64) {
+  let s = spec_day(year, rule.s_spec).to_int64() * tpd +
+    rule.s_tod -
+    min_ticks(rule.std)
+  let e = spec_day(year, rule.e_spec).to_int64() * tpd +
+    rule.e_tod -
+    min_ticks(rule.dst)
+  (s, e)
+}
+
+///|
+/// Offset of an annual rule at `utc`, the way SQL Server decides: the rule
+/// year Y is the year of the standard-time wall clock (utc + standard
+/// offset); the daylight-time wall clock (utc + daylight offset), moved into
+/// year Y (its own year is dropped), is compared with year Y's DST end (a
+/// daylight wall time) and DST start (a standard wall time, shifted into
+/// daylight time). In the hours where the two wall clocks are in different
+/// years this reproduces SQL Server's odd results (Central Brazilian Standard
+/// Time: DST end at 1903-01-01 04:00 UTC instead of 03:00, a one-hour
+/// standard-time blip at 1904-01-01 03:00 UTC).
+fn rule_offset(rule : Rule, utc : Int64) -> Int {
+  let y = clamp_year(year_of(day_of(utc + min_ticks(rule.std))))
+  let wall_t = utc + min_ticks(rule.dst)
+  let (_, m, d) = civil_from_days(day_of(wall_t))
+  let wall = days_from_civil(y, m, d).to_int64() * tpd + fmod64(wall_t, tpd)
+  let start = spec_day(y, rule.s_spec).to_int64() * tpd +
+    rule.s_tod +
+    min_ticks(rule.dst - rule.std)
+  let end = spec_day(y, rule.e_spec).to_int64() * tpd + rule.e_tod
+  let inside = if rule.s_spec.0 < rule.e_spec.0 {
+    start <= wall && wall < end
+  } else {
+    wall < end || wall >= start
+  }
+  if inside {
+    rule.dst
+  } else {
+    rule.std
+  }
+}
+
+///|
+/// Instants in [lo, hi) where rule_offset may change.
+fn rule_candidates(rule : Rule, lo : Int64, hi : Int64, out : Array[Int64]) -> Unit {
+  let y0 = year_of(day_of(lo)) - 1
+  let y1 = year_of(day_of(hi - 1L)) + 1
+  for y in (if y0 > 1 { y0 } else { 1 })..=(if y1 < 9999 { y1 } else { 9999 }) {
+    let (s, e) = rule_bounds(rule, y)
+    let jan1 = days_from_civil(y, 1, 1).to_int64() * tpd
+    for t in [s, e, jan1 - min_ticks(rule.std), jan1 - min_ticks(rule.dst)] {
+      if lo <= t && t < hi {
+        out.push(t)
+      }
+    }
+  }
+}
+
+///|
+/// A change exactly where the standard or daylight wall clock reaches 00:00
+/// Jan 1: an artifact of rule_offset's year handling, not a rule date (says
+/// nothing about the specs).
+fn year_artifact(tr : Trans) -> Bool {
+  let (t, before, after) = tr
+  for off in [before, after] {
+    let wall = t + min_ticks(off)
+    let (_, m, d) = civil_from_days(day_of(wall))
+    if m == 1 && d == 1 && fmod64(wall, tpd) == 0L {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// (year, candidate (month, week, dow, wall ticks) specs) of a transition,
+/// from the wall clock in the offset before it.
+fn describe(tr : Trans) -> (Int, Array[Spec]) {
+  let (t, before, _) = tr
+  let wall = t + min_ticks(before)
+  let days = day_of(wall)
+  let tod = fmod64(wall, tpd)
+  let (y, m, d) = civil_from_days(days)
+  let weeks = [fdiv(d - 1, 7) + 1]
+  if d + 7 > dim(y, m) && weeks[0] != 5 {
+    weeks.push(5)
+  }
+  (y, weeks.map(w => (m, w, dow(days), tod)))
+}
+
+///|
+enum Kind {
+  Start
+  End
+} derive(Eq, Hash)
+
+///|
+fn kind(t : Trans) -> Kind {
+  if t.2 > t.1 {
+    Start
+  } else {
+    End
+  }
+}
+
+///|
+/// Consecutive transitions explained by one annual rule. Year artifacts are
+/// carried along without constraining the specs.
+struct Group {
+  items : Array[Trans]
+  std : Int
+  dst : Int
+  cands : Map[Kind, Array[Spec]]
+  years : Map[Kind, Int]
+  mut last_kind : Kind?
+}
+
+///|
+fn Group::new(t : Trans) -> Group {
+  let (_, before, after) = t
+  let (std, dst) = if after > before { (before, after) } else { (after, before) }
+  let g = { items: [t], std, dst, cands: {}, years: {}, last_kind: None }
+  if !year_artifact(t) {
+    g.take(t)
+  }
+  g
+}
+
+///|
+fn Group::take(self : Group, t : Trans) -> Unit {
+  let (y, specs) = describe(t)
+  let k = kind(t)
+  self.cands[k] = match self.cands.get(k) {
+    None => specs
+    Some(old) => old.filter(s => specs.contains(s))
+  }
+  self.years[k] = y
+  self.last_kind = Some(k)
+}
+
+///|
+fn Group::accepts(self : Group, t : Trans) -> Bool {
+  if t.1 == t.2 {
+    return false
+  }
+  let lo = if t.1 < t.2 { t.1 } else { t.2 }
+  let hi = if t.1 < t.2 { t.2 } else { t.1 }
+  if lo != self.std || hi != self.dst {
+    return false
+  }
+  if year_artifact(t) {
+    return true
+  }
+  let k = kind(t)
+  if self.last_kind == Some(k) {
+    return false
+  }
+  let (y, specs) = describe(t)
+  if self.years.get(k) is Some(py) && y != py + 1 {
+    return false
+  }
+  match self.cands.get(k) {
+    None => true
+    Some(c) => c.iter().any(s => specs.contains(s))
+  }
+}
+
+///|
+fn Group::add(self : Group, t : Trans) -> Unit {
+  self.items.push(t)
+  if !year_artifact(t) {
+    self.take(t)
+  }
+}
+
+///|
+/// Candidate rules, most likely first (week n before 'last').
+fn Group::rules(self : Group) -> Array[Rule] {
+  guard self.cands.get(Start) is Some(starts) &&
+    self.cands.get(End) is Some(ends) else {
+    return []
+  }
+  fn ranked(c : Array[Spec]) -> Array[Spec] {
+    let r = c.copy()
+    r.sort_by_key(s => (s.1 == 5, s))
+    r
+  }
+  let out = []
+  for s in ranked(starts) {
+    for e in ranked(ends) {
+      out.push({
+        std: self.std,
+        dst: self.dst,
+        s_spec: (s.0, s.1, s.2),
+        s_tod: s.3,
+        e_spec: (e.0, e.1, e.2),
+        e_tod: e.3,
+      })
+    }
+  }
+  out
+}
+
+///|
+struct Segment {
+  /// first instant (inclusive); neg_inf for the first
+  mut start : Int64
+  /// fixed offset (rule is None)
+  initial : Int?
+  rule : Rule?
+  /// fixed offset that is daylight saving time
+  mut daylight : Bool
+}
+
+///|
+fn seg(start : Int64, initial : Int?, rule : Rule?) -> Segment {
+  { start, initial, rule, daylight: false }
+}
+
+///|
+/// A fixed segment is daylight saving time when it starts with an increase
+/// that the next change, within a year, reverses (DST periods that SQL
+/// Server's yearly rules hold but this model keeps as fixed offsets; checked
+/// against sys.time_zone_info.is_currently_dst).
+fn mark_daylight(segs : Array[Segment]) -> Array[Segment] {
+  for s in segs {
+    guard s.rule is None && s.start != neg_inf else { continue }
+    let b = offset_at(segs, s.start - 1L)
+    if s.initial.unwrap() <= b {
+      continue
+    }
+    let nxt = model_transitions(segs, s.start, s.start + 366L * tpd)
+    s.daylight = nxt.length() > 0 && nxt[0].2 == b
+  }
+  segs
+}
+
+///|
+fn find_segment(segs : Array[Segment], t : Int64) -> Int {
+  let mut lo = 0
+  let mut hi = segs.length() - 1
+  while lo < hi {
+    let mid = (lo + hi + 1) / 2
+    if segs[mid].start <= t {
+      lo = mid
+    } else {
+      hi = mid - 1
+    }
+  }
+  lo
+}
+
+///|
+fn offset_at(segs : Array[Segment], t : Int64) -> Int {
+  let s = segs[find_segment(segs, t)]
+  match s.rule {
+    None => s.initial.unwrap()
+    Some(r) => rule_offset(r, t)
+  }
+}
+
+///|
+/// Offset changes of the model with instant in (lo, hi].
+fn model_transitions(
+  segs : Array[Segment],
+  lo : Int64,
+  hi : Int64,
+) -> Array[Trans] {
+  let cands : Array[Int64] = []
+  for i, s in segs {
+    let end = if i + 1 < segs.length() { segs[i + 1].start } else { hi + 1L }
+    let a = if lo + 1L > s.start { lo + 1L } else { s.start }
+    let b = if hi + 1L < end { hi + 1L } else { end }
+    if a >= b {
+      continue
+    }
+    if s.start == a {
+      cands.push(a)
+    }
+    if s.rule is Some(r) {
+      rule_candidates(r, a, b, cands)
+    }
+  }
+  cands.sort()
+  cands.dedup()
+  let out = []
+  for t in cands {
+    let b = offset_at(segs, t - 1L)
+    let a = offset_at(segs, t)
+    if b != a {
+      out.push((t, b, a))
+    }
+  }
+  out
+}
+
+///|
+/// Greedy rule groups of consecutive transitions.
+fn make_groups(transitions : Array[Trans]) -> Array[Group] {
+  let groups : Array[Group] = []
+  for t in transitions {
+    match groups.last() {
+      Some(g) if g.accepts(t) => g.add(t)
+      _ => groups.push(Group::new(t))
+    }
+  }
+  // a year artifact can split a run of one rule: merge such neighbours
+  let merged : Array[Group] = []
+  for g in groups {
+    let joins = match merged.last() {
+      Some(m) =>
+        g.items.length() >= 3 &&
+        m.items.length() >= 3 &&
+        g.rules().length() > 0 &&
+        g.rules()[0] == m.rules()[0] &&
+        g.items[0].0 - m.items[m.items.length() - 1].0 < 400L * tpd
+      None => false
+    }
+    if joins {
+      let m = merged[merged.length() - 1]
+      for t in g.items {
+        m.items.push(t)
+        if !year_artifact(t) {
+          m.take(t)
+        }
+      }
+    } else {
+      merged.push(g)
+    }
+  }
+  merged
+}
+
+///|
+/// Segments starting at each group's first transition: a rule segment for a
+/// group of 3+ transitions with a rule, else one fixed segment per
+/// transition.
+fn group_segments(groups : Array[Group], choice : Map[Int, Int]) -> Array[Segment] {
+  let segs = []
+  for gi, g in groups {
+    let rules = if g.items.length() >= 3 { g.rules() } else { [] }
+    if rules.length() > 0 {
+      let c = choice.get_or_default(gi, 0)
+      let pick = if c < rules.length() - 1 { c } else { rules.length() - 1 }
+      segs.push(seg(g.items[0].0, None, Some(rules[pick])))
+    } else {
+      for t in g.items {
+        segs.push(seg(t.0, Some(t.2), None))
+      }
+    }
+  }
+  segs
+}
+
+///|
+/// Segments from greedy rule groups; choice[i] picks group i's rule among its
+/// candidates (for groups that extrapolate). A first rule group starting in
+/// the first scanned year extends to -infinity.
+fn build(
+  initial : Int,
+  transitions : Array[Trans],
+  choice : Map[Int, Int],
+  transitions_lo : Int64,
+) -> (Array[Segment], Array[Group]) {
+  let groups = make_groups(transitions)
+  let segs = group_segments(groups, choice)
+  if segs.length() > 0 &&
+    segs[0].rule is Some(_) &&
+    groups[0].items[0].0 - transitions_lo < 400L * tpd {
+    segs[0].start = neg_inf
+  } else {
+    segs.insert(0, seg(neg_inf, Some(initial), None))
+  }
+  (segs, groups)
+}
+
+///|
+/// a[:keep] + mid + a[from:]
+fn splice(
+  a : Array[Segment],
+  keep : Int,
+  mid : Array[Segment],
+  from : Int,
+) -> Array[Segment] {
+  let out = a[0:keep].to_owned()
+  out.append(mid[:])
+  out.append(a[from:])
+  out
+}
+
+///|
+/// Where the model and SQL Server disagree inside the main window, ends the
+/// rule segment at the first divergence and models the observed transitions
+/// up to the next segment afresh (a rule segment wrong at its own start
+/// becomes fixed offsets).
+fn fix(
+  zone : String,
+  segs : Array[Segment],
+  transitions : Array[Trans],
+  lo : Int64,
+  hi : Int64,
+) -> Array[Segment] raise Fail {
+  let want = transitions.filter(t => lo < t.0 && t.0 <= hi)
+  let mut segs = segs
+  for _ in 0..<100000 {
+    let got = model_transitions(segs, lo, hi)
+    if got == want {
+      return segs
+    }
+    let mut k = 0
+    while k < got.length() && k < want.length() && got[k] == want[k] {
+      k += 1
+    }
+    let at = match (got.get(k), want.get(k)) {
+      (Some(g), Some(w)) => if g.0 < w.0 { g.0 } else { w.0 }
+      (Some(g), None) => g.0
+      (None, Some(w)) => w.0
+      (None, None) => abort("unreachable")
+    }
+    let i = find_segment(segs, at)
+    let s = segs[i]
+    if s.rule is None {
+      raise Fail("\{zone}: cannot model \{fmt_ticks(at)}")
+    }
+    let nxt = if i + 1 < segs.length() { Some(segs[i + 1].start) } else { None }
+    let rest = want.filter(t => t.0 >= at &&
+      (match nxt {
+        None => true
+        Some(n) => t.0 < n
+      }))
+    if s.start == at {
+      segs = splice(segs, i, rest.map(t => seg(t.0, Some(t.2), None)), i + 1)
+      continue
+    }
+    let new = group_segments(make_groups(rest), {})
+    if new.length() == 0 || new[0].start != at {
+      new.insert(0, seg(at, Some(offset_at(segs, at - 1L)), None))
+    }
+    segs = splice(segs, i + 1, new, i + 1)
+  }
+  raise Fail("\{zone}: no convergence")
+}
+
+///|
+/// Wall-clock times a change at `t` (offset b → a) repeats or skips.
+fn wall_range(t : Int64, b : Int, a : Int) -> (Int64, Int64) {
+  let x = t + min_ticks(b)
+  let y = t + min_ticks(a)
+  if x < y {
+    (x, y)
+  } else {
+    (y, x)
+  }
+}
+
+///|
+/// SQL Server's resolution of a wall-clock time: (utc, shown offset). A wall
+/// time a change repeats or skips is read in the offset before the change
+/// (daylight saving: repeated times are daylight time, skipped ones are read
+/// in standard time and land after the change), except for the changes in
+/// `after_picks` ((UTC instant, wall-clock year) pairs: a range spanning a new
+/// year can resolve differently on each side), which SQL Server reads in the
+/// offset after the change. Mirrors tz_local_to_utc in
+/// src/core/types/timezone.mbt.
+fn local_to_utc(
+  segs : Array[Segment],
+  wall_t : Int64,
+  after_picks : Set[(Int64, Int)],
+) -> (Int64, Int) {
+  let span = 1000L * tpm
+  for tr in model_transitions(segs, wall_t - span, wall_t + span) {
+    let (t, b, a) = tr
+    let (lo, hi) = wall_range(t, b, a)
+    if lo <= wall_t && wall_t < hi {
+      let o = if after_picks.contains((t, year_of(day_of(wall_t)))) {
+        a
+      } else {
+        b
+      }
+      let utc = wall_t - min_ticks(o)
+      return (utc, offset_at(segs, utc))
+    }
+  }
+  let mut o = offset_at(
+    segs,
+    wall_t - min_ticks(offset_at(segs, wall_t - span)),
+  )
+  if offset_at(segs, wall_t - min_ticks(o)) != o {
+    o = offset_at(segs, wall_t - min_ticks(offset_at(segs, wall_t + span)))
+  }
+  (wall_t - min_ticks(o), o)
+}
+
+///|
+fn probe_locals(segs : Array[Segment], t : Int64) -> Array[Int64] {
+  let before = offset_at(segs, t - 1L)
+  let after = offset_at(segs, t)
+  let l = t + min_ticks(before)
+  let d = (after - before).abs().to_int64()
+  [l - 1L, l, l + d * 30L * tps, l + d * tpm - 1L, l + d * tpm]
+}
+
+// ---------------------------------------------------------------- dump
+
+///|
+struct Window {
+  start : String
+  steps : Int
+  step_minutes : Int
+}
+
+///|
+struct Scan {
+  initial : Int
+  /// as dumped: (instant text, offset before, offset after)
+  raw : Array[(String, Int, Int)]
+  transitions : Array[Trans]
+}
+
+///|
+/// Probes of a zone keyed by transition instant (dump order): SQL Server's
+/// (shown offset, offset used) for each probe_locals wall time.
+type Probes = Array[(String, Array[(Int, Double)])]
+
+///|
+struct Catalog {
+  at : String
+  rows : Array[(String, String, Bool)]
+}
+
+///|
+struct Dump {
+  server : String
+  zones : Array[String]
+  windows : Array[Window]
+  probe_from : String
+  probe_to : String
+  catalog : Catalog?
+  scans : Map[String, Array[Scan]]
+  probes : Map[String, Probes]
+}
+
+///|
+fn jget(j : Json, key : String) -> Json raise Fail {
+  guard j is Object(m) else { raise Fail("JSON object expected for \{key}") }
+  guard m.get(key) is Some(v) else { raise Fail("JSON key \{key} missing") }
+  v
+}
+
+///|
+fn jstr(j : Json) -> String raise Fail {
+  guard j is String(s) else { raise Fail("JSON string expected") }
+  s
+}
+
+///|
+fn jint(j : Json) -> Int raise Fail {
+  guard j is Number(d, ..) else { raise Fail("JSON number expected") }
+  d.to_int()
+}
+
+///|
+fn jbool(j : Json) -> Bool raise Fail {
+  match j {
+    True => true
+    False => false
+    _ => raise Fail("JSON boolean expected")
+  }
+}
+
+///|
+fn jarr(j : Json) -> Array[Json] raise Fail {
+  guard j is Array(a) else { raise Fail("JSON array expected") }
+  a
+}
+
+///|
+fn jobj(j : Json) -> Map[String, Json] raise Fail {
+  guard j is Object(m) else { raise Fail("JSON object expected") }
+  m
+}
+
+///|
+fn parse_dump(j : Json) -> Dump raise {
+  let windows = jarr(jget(j, "windows")).map(w => {
+    start: jstr(jget(w, "start")),
+    steps: jint(jget(w, "steps")),
+    step_minutes: jint(jget(w, "stepMinutes")),
+  })
+  let scans = Map([])
+  for zone, v in jobj(jget(j, "scans")) {
+    scans[zone] = jarr(v).map(sc => {
+      let raw = jarr(jget(sc, "transitions")).map(t => {
+        guard jarr(t) is [a, b, c] else { raise Fail("bad transition") }
+        (jstr(a), jint(b), jint(c))
+      })
+      {
+        initial: jint(jget(sc, "initial")),
+        raw,
+        transitions: raw.map(t => (parse_ticks(t.0), t.1, t.2)),
+      }
+    })
+  }
+  let probes = Map([])
+  for zone, v in jobj(jget(j, "probes")) {
+    let p : Probes = []
+    for at, results in jobj(v) {
+      p.push((
+        at,
+        jarr(results).map(r => {
+          guard jarr(r) is [shown, used] else { raise Fail("bad probe") }
+          (jint(shown), @string.parse_double(jstr(used)))
+        }),
+      ))
+    }
+    probes[zone] = p
+  }
+  let catalog = match j {
+    Object(m) =>
+      match m.get("catalog") {
+        Some(Object(c)) if c.length() > 0 => {
+          let cat = Json::object(c)
+          Some({
+            at: jstr(jget(cat, "at")),
+            rows: jarr(jget(cat, "rows")).map(r => {
+              guard jarr(r) is [name, cur, isdst] else { raise Fail("bad row") }
+              (jstr(name), jstr(cur), jbool(isdst))
+            }),
+          })
+        }
+        _ => None
+      }
+    _ => None
+  }
+  {
+    server: jstr(jget(j, "server")),
+    zones: jarr(jget(j, "zones")).map(jstr),
+    windows,
+    probe_from: jstr(jget(j, "probeFrom")),
+    probe_to: jstr(jget(j, "probeTo")),
+    catalog,
+    scans,
+    probes,
+  }
+}
+
+///|
+fn Dump::scans_of(self : Dump, zone : String) -> Array[Scan] raise Fail {
+  guard self.scans.get(zone) is Some(s) else { raise Fail("no scans for \{zone}") }
+  s
+}
+
+///|
+fn Dump::probes_of(self : Dump, zone : String) -> Probes raise Fail {
+  guard self.probes.get(zone) is Some(p) else {
+    raise Fail("no probes for \{zone}")
+  }
+  p
+}
+
+// ---------------------------------------------------------------- fitting
+
+///|
+/// From SQL Server's answers to the probes: the changes whose repeated or
+/// skipped wall times are read in the offset after the change, and the
+/// wall-clock years where SQL Server resolves local times in ways this model
+/// does not reproduce (rejected with an emulator error).
+fn fit_local(
+  segs : Array[Segment],
+  probes : Probes,
+) -> (Set[(Int64, Int)], Set[Int]) raise {
+  let after_picks : Set[(Int64, Int)] = Set([])
+  let bad_years : Set[Int] = Set([])
+  // picks seen per (change, wall-clock year): 1 = before, 2 = after, 4 = bad
+  let observed : Map[(Int64, Int), Int] = Map([])
+  for p in probes {
+    let (at, results) = p
+    let locs = probe_locals(segs, parse_ticks(at))
+    for j in 0..<@cmp.minimum(locs.length(), results.length()) {
+      let wall_t = locs[j]
+      let (_, used) = results[j]
+      for tr in model_transitions(segs, wall_t - 1000L * tpm, wall_t + 1000L * tpm) {
+        let (t2, b2, a2) = tr
+        let (lo, hi) = wall_range(t2, b2, a2)
+        if lo <= wall_t && wall_t < hi {
+          let pick = if used == b2.to_double() {
+            1
+          } else if used == a2.to_double() {
+            2
+          } else {
+            4
+          }
+          let key = (t2, year_of(day_of(wall_t)))
+          observed[key] = observed.get_or_default(key, 0) | pick
+        }
+      }
+    }
+  }
+  for key, picks in observed {
+    if picks == 2 {
+      after_picks.add(key)
+    } else if picks != 1 {
+      bad_years.add(key.1)
+    }
+  }
+  for p in probes {
+    let (at, results) = p
+    let locs = probe_locals(segs, parse_ticks(at))
+    for j in 0..<@cmp.minimum(locs.length(), results.length()) {
+      let wall_t = locs[j]
+      let (shown, used) = results[j]
+      let (utc, sh) = local_to_utc(segs, wall_t, after_picks)
+      if sh != shown ||
+        ((wall_t - utc).to_double() / tpm.to_double() - used).abs() > 1.0e-9 {
+        bad_years.add(year_of(day_of(wall_t)))
+      }
+    }
+  }
+  (after_picks, bad_years)
+}
+
+///|
+fn window_bounds(w : Window) -> (Int64, Int64) raise {
+  let lo = parse_ticks(w.start + " 00:00:00.0000000")
+  (lo, lo + w.steps.to_int64() * w.step_minutes.to_int64() * tpm)
+}
+
+///|
+/// First disagreement with SQL Server over all scanned windows, or None.
+fn check_windows(
+  segs : Array[Segment],
+  windows : Array[Window],
+  scans : Array[Scan],
+) -> String? raise {
+  for i in 0..<@cmp.minimum(windows.length(), scans.length()) {
+    let w = windows[i]
+    let sc = scans[i]
+    let (lo, hi) = window_bounds(w)
+    if offset_at(segs, lo) != sc.initial {
+      return Some(
+        "offset at \{w.start} is \{offset_at(segs, lo)}, SQL Server \{sc.initial}",
+      )
+    }
+    let want = sc.transitions
+    let got = model_transitions(segs, lo, hi)
+    if got != want {
+      // sorted(set(got) ^ set(want)) as (instant text, before, after, side)
+      let gs = Set::from_iter(got.iter())
+      let ws = Set::from_iter(want.iter())
+      let diff = gs
+        .symmetric_difference(ws)
+        .to_array()
+        .map(x => {
+          let (t, b, a) = x
+          (fmt_ticks(t), b, a, if gs.contains(x) { "model" } else { "sql" })
+        })
+      diff.sort_by((x, y) => {
+        let c = str_cmp(x.0, y.0)
+        if c != 0 {
+          return c
+        }
+        let c = (x.1, x.2).compare((y.1, y.2))
+        if c != 0 {
+          return c
+        }
+        str_cmp(x.3, y.3)
+      })
+      let shown = diff[:@cmp.minimum(6, diff.length())]
+        .to_owned()
+        .map(x => "(\{py_repr(x.0)}, \{x.1}, \{x.2}, \{py_repr(x.3)})")
+      return Some("window \{w.start} differs: [\{shown.join(", ")}]")
+    }
+  }
+  None
+}
+
+///|
+fn model_zone(zone : String, dump : Dump) -> Array[Segment] raise {
+  let windows = dump.windows
+  let scans = dump.scans_of(zone)
+  let trans = scans[0].transitions
+  let (lo, hi) = window_bounds(windows[0])
+  let (_, groups) = build(scans[0].initial, trans, {}, lo)
+  let last = groups.length() - 1
+  let nfirst = if groups.length() > 0 {
+    @cmp.maximum(1, groups[0].rules().length())
+  } else {
+    1
+  }
+  let nlast = if groups.length() > 0 {
+    @cmp.maximum(1, groups[last].rules().length())
+  } else {
+    1
+  }
+  let mut error = "None"
+  for cf in 0..<@cmp.minimum(nfirst, 16) {
+    for cl in 0..<@cmp.minimum(nlast, 16) {
+      let choice = if last > 0 { Map([(0, cf), (last, cl)]) } else { Map([(0, cf)]) }
+      let (segs, _) = build(scans[0].initial, trans, choice, lo)
+      let segs = fix(zone, segs, trans, lo, hi)
+      match check_windows(segs, windows, scans) {
+        None => return mark_daylight(segs)
+        Some(e) => error = e
+      }
+    }
+  }
+  raise Fail("\{zone}: \{error}")
+}
+
+// ---------------------------------------------------------------- main
+
+///|
+/// (zone, segments, sorted after-picks, sorted unsupported local years)
+type OutZone = (String, Array[Segment], Array[(Int64, Int)], Array[Int])
+
+///|
+async fn generate() -> Unit {
+  let dump = parse_dump(@json.parse(@fs.read_file(DUMP).text()))
+  let out_zones : Array[OutZone] = []
+  let mut total_probes = 0
+  let failures = []
+  let plo = parse_ticks(dump.probe_from + " 00:00:00.0000000")
+  let phi = parse_ticks(dump.probe_to + " 00:00:00.0000000")
+  let (wlo, whi) = window_bounds(dump.windows[0])
+  for zone in dump.zones {
+    let segs = model_zone(zone, dump)
+    let probes = dump.probes_of(zone)
+    for p in probes {
+      total_probes += p.1.length()
+    }
+    let (after_picks, bad_years) = fit_local(segs, probes)
+    // outside the probed years only plain daylight-saving rules may change
+    // the offset; anything else stays unsupported for local input
+    for tr in model_transitions(segs, wlo, whi) {
+      let t = tr.0
+      if plo <= t && t < phi {
+        continue
+      }
+      let s = segs[find_segment(segs, t)]
+      if s.rule is None || s.start == t {
+        bad_years.add(year_of(day_of(t)))
+      }
+    }
+    let picks = after_picks.to_array()
+    picks.sort()
+    let bad = bad_years.to_array()
+    bad.sort()
+    out_zones.push((zone, segs, picks, bad))
+  }
+  if dump.catalog is Some(cat) {
+    let now = parse_ticks(cat.at)
+    // SQL Server reads its local clock (UTC in the dump container) as a
+    // wall-clock time in each zone
+    for i in 0..<@cmp.minimum(out_zones.length(), cat.rows.length()) {
+      let (zone, segs, picks, _) = out_zones[i]
+      let (name, cur, isdst) = cat.rows[i]
+      let (utc, off) = local_to_utc(segs, now, Set::from_array(picks))
+      let s = segs[find_segment(segs, utc)]
+      let dst = match s.rule {
+        None => s.daylight
+        Some(r) => r.std != r.dst && rule_offset(r, utc) == r.dst
+      }
+      let a = off.abs().to_int64()
+      let text = (if off < 0 { "-" } else { "+" }) +
+        "\{zpad(a / 60L, 2)}:\{zpad(a % 60L, 2)}"
+      if name != zone || text != cur || dst != isdst {
+        failures.push(
+          "catalog \{name}: model (\{zone}, \{text}, \{py_bool(dst)}) SQL Server (\{cur}, \{py_bool(isdst)})",
+        )
+      }
+    }
+  }
+  if failures.length() > 0 {
+    eprintln(failures.join("\n"))
+    raise Fail("\{failures.length()} failures")
+  }
+  emit(dump, out_zones)
+  emit_test(dump, out_zones)
+  let mut nseg = 0
+  let mut npick = 0
+  let bad = []
+  for z in out_zones {
+    nseg += z.1.length()
+    npick += z.2.length()
+    for y in z.3 {
+      bad.push("(\{py_repr(z.0)}, \{y})")
+    }
+  }
+  eprintln(
+    "\{out_zones.length()} zones, \{nseg} segments, \{npick} after-picks, \{total_probes} probes",
+  )
+  eprintln("unsupported local years: [\{bad.join(", ")}]")
+}
+
+///|
+async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
+  let rules : Array[Rule] = []
+  let rule_ix : Map[Rule, Int] = Map([])
+  let seg_rows : Array[(Int64, Int, Int, Bool)] = []
+  let first = []
+  let picks = []
+  let bad = []
+  for zi, z in zones {
+    let (_, segs, after_picks, bad_years) = z
+    first.push(seg_rows.length())
+    for s in segs {
+      let mut r = -1
+      if s.rule is Some(rule) {
+        if !rule_ix.contains(rule) {
+          rule_ix[rule] = rules.length()
+          rules.push(rule)
+        }
+        r = rule_ix.get(rule).unwrap()
+      }
+      seg_rows.push((s.start, s.initial.unwrap_or(0), r, s.daylight))
+    }
+    for p in after_picks {
+      picks.push((zi, p.0, p.1))
+    }
+    for y in bad_years {
+      bad.push((zi, y))
+    }
+  }
+  first.push(seg_rows.length())
+  let l = []
+  l.push(
+    "// Generated by \{GENERATOR} from scripts/timezones/sqlserver-timezones.json",
+  )
+  l.push(
+    "// (SQL Server \{dump.server}, dumped by harness/src/dump-timezones.mjs). Do not edit.",
+  )
+  l.push("")
+  l.push("///|")
+  l.push("/// sys.time_zone_info names in catalog order.")
+  l.push("let tz_names : Array[String] = [")
+  for z in zones {
+    l.push("  \"\{z.0}\",")
+  }
+  l.push("]")
+  l.push("")
+  l.push("///|")
+  l.push("/// Segments of zone i are tz_segments[tz_first[i]..tz_first[i + 1]].")
+  l.push("let tz_first : Array[Int] = [" + first.map(x => x.to_string()).join(", ") + "]")
+  l.push("")
+  l.push("///|")
+  l.push("/// (start UTC ticks or tz_neg_inf, fixed offset in minutes, annual rule")
+  l.push("/// index or -1 for a fixed offset, fixed offset is daylight time).")
+  l.push("let tz_segments : Array[(Int64, Int, Int, Bool)] = [")
+  for row in seg_rows {
+    let (st, ini, r, dl) = row
+    let stv = if st == neg_inf { "tz_neg_inf" } else { "\{st}L" }
+    l.push("  (\{stv}, \{ini}, \{r}, \{dl}),")
+  }
+  l.push("]")
+  l.push("")
+  l.push("///|")
+  l.push("/// Annual rules: (standard offset, daylight offset, start month, week")
+  l.push("/// (5 = last), weekday (0 = Sunday), start wall ticks in standard time,")
+  l.push("/// end month, week, weekday, end wall ticks in daylight time).")
+  l.push(
+    "let tz_rules : Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)] = [",
+  )
+  for r in rules {
+    let (sm, sw, sd) = r.s_spec
+    let (em, ew, ed) = r.e_spec
+    l.push(
+      "  (\{r.std}, \{r.dst}, \{sm}, \{sw}, \{sd}, \{r.s_tod}L, \{em}, \{ew}, \{ed}, \{r.e_tod}L),",
+    )
+  }
+  l.push("]")
+  l.push("")
+  l.push("///|")
+  l.push("/// (zone, UTC instant, wall-clock year) of offset changes whose repeated")
+  l.push("/// or skipped wall times of that year SQL Server reads in the offset after")
+  l.push("/// the change.")
+  l.push("let tz_after_picks : Array[(Int, Int64, Int)] = [")
+  for p in picks {
+    l.push("  (\{p.0}, \{p.1}L, \{p.2}),")
+  }
+  l.push("]")
+  l.push("")
+  l.push("///|")
+  l.push("/// (zone, wall-clock year) where local (datetime/datetime2) input is not")
+  l.push("/// resolved like SQL Server by this model: rejected with an emulator error.")
+  l.push("let tz_unsupported_local_years : Array[(Int, Int)] = [")
+  for b in bad {
+    l.push("  (\{b.0}, \{b.1}),")
+  }
+  l.push("]")
+  @fs.write_file(OUT, l.join("\n") + "\n", create_mode=CreateOrTruncate)
+}
+
+///|
+/// src/core/types/timezone_data_test.mbt: a sample of SQL Server's own
+/// answers from the dump (not the model's), so the MoonBit port is checked
+/// against the same evidence as the model here.
+async fn emit_test(dump : Dump, zones : Array[OutZone]) -> Unit {
+  let years = [
+    "1900", "1903", "1904", "1970", "2000", "2010", "2011", "2014", "2016", "2018",
+    "2022", "2024", "2026", "2030", "2101",
+  ]
+  let trans = []
+  let probes = []
+  for z in zones {
+    let (zone, segs, picks, bad) = z
+    let scans = dump.scans_of(zone)
+    let keep = scans[0].raw.filter(t => years.contains(t.0.view(end_offset=4).to_owned()))
+    for sc in scans[1:] {
+      keep.append(sc.raw[:])
+    }
+    for t in keep {
+      trans.push((zone, parse_ticks(t.0), t.1, t.2))
+    }
+    let pick_ts = Set::from_array(picks.map(p => p.0))
+    let sorted = dump.probes_of(zone).copy()
+    sorted.sort_by((a, b) => str_cmp(a.0, b.0))
+    for i, p in sorted {
+      let (at, results) = p
+      let t = parse_ticks(at)
+      if !pick_ts.contains(t) && i % 12 != 0 {
+        continue
+      }
+      let locs = probe_locals(segs, t)
+      for j in 0..<@cmp.minimum(locs.length(), results.length()) {
+        let wall_t = locs[j]
+        let (shown, used) = results[j]
+        if bad.contains(year_of(day_of(wall_t))) {
+          continue
+        }
+        let utc = wall_t - round_half_even(used * tpm.to_double())
+        probes.push((zone, wall_t, utc, shown))
+      }
+    }
+  }
+  let l = [
+    "// Generated by \{GENERATOR}: a sample of SQL Server's answers in", "// scripts/timezones/sqlserver-timezones.json. Do not edit.",
+    "", "///|", "/// (zone, UTC ticks of an offset change, offset before, offset after)",
+    "let tz_sql_transitions : Array[(String, Int64, Int, Int)] = [",
+  ]
+  for t in trans {
+    l.push("  (\"\{t.0}\", \{t.1}L, \{t.2}, \{t.3}),")
+  }
+  l.append([
+    "]", "", "///|", "/// (zone, local datetime2 ticks, UTC ticks of the result, offset shown)",
+    "let tz_sql_local : Array[(String, Int64, Int64, Int)] = [",
+  ])
+  for p in probes {
+    l.push("  (\"\{p.0}\", \{p.1}L, \{p.2}L, \{p.3}),")
+  }
+  let tail =
+    #|]
+    #|
+    #|///|
+    #|test "timezone: offset changes match SQL Server" {
+    #|  for c in tz_sql_transitions {
+    #|    let (name, t, before, after) = c
+    #|    let z = @types.tz_lookup(name).unwrap()
+    #|    assert_eq(@types.tz_offset_at(z, t - 1L), before, msg="\{name} before \{t}")
+    #|    assert_eq(@types.tz_offset_at(z, t), after, msg="\{name} at \{t}")
+    #|  }
+    #|}
+    #|
+    #|///|
+    #|test "timezone: local times resolve like SQL Server" {
+    #|  for c in tz_sql_local {
+    #|    let (name, wall, utc, shown) = c
+    #|    let z = @types.tz_lookup(name).unwrap()
+    #|    assert_eq(@types.tz_local_to_utc(z, wall), (utc, shown), msg="\{name} \{wall}")
+    #|  }
+    #|}
+  l.push(tail)
+  @fs.write_file(OUT_TEST, l.join("\n") + "\n", create_mode=CreateOrTruncate)
+  eprintln("test: \{trans.length()} transitions, \{probes.length()} local probes")
+}
+
+///|
+/// Python's round(): to nearest, ties to even.
+fn round_half_even(x : Double) -> Int64 {
+  let f = x.floor()
+  let diff = x - f
+  let r = if diff > 0.5 {
+    f + 1.0
+  } else if diff < 0.5 {
+    f
+  } else if (f / 2.0).floor() * 2.0 == f {
+    f
+  } else {
+    f + 1.0
+  }
+  r.to_int64()
+}
+
+// ---------------------------------------------------------------- xcheck
+
+///|
+/// Text of `s` after the first `sep` (Python `s.split(sep)[1]`, up to the
+/// next `sep`).
+fn after_first(s : StringView, sep : String) -> StringView raise Fail {
+  let parts = s.split(sep).to_array()
+  guard parts.length() >= 2 else { raise Fail("\{sep} not found") }
+  parts[1]
+}
+
+///|
+/// Cross-checks the time zone model against msduck's independent captures
+/// (reference/at-time-zone-history-*.json: daily offsets of every zone, years
+/// 0001-2500, SQL Server 17.0.4065.4).
+async fn xcheck_msduck(msduck : String) -> Unit {
+  let dump = parse_dump(@json.parse(@fs.read_file(DUMP).text()))
+  let models = dump.zones.map(z => (z, model_zone(z, dump)))
+  let mut total = 0
+  // zone -> differences, and its first example, in first-seen order
+  let bad : Map[String, Int] = Map([])
+  let examples : Map[String, String] = Map([])
+  let dir = msduck + "/reference"
+  let files = if @fs.exists(dir) {
+    @fs.readdir(dir).filter(f => f.has_prefix("at-time-zone-history-") &&
+      f.has_suffix(".json"))
+  } else {
+    []
+  }
+  files.sort_by(str_cmp)
+  for f in files {
+    let doc = @json.parse(@fs.read_file(dir + "/" + f).text())
+    for chunk in jarr(jget(doc, "chunks")) {
+      let daily = jget(chunk, "daily")
+      let q = jstr(jget(daily, "query"))
+      let start_s = after_first(q, "CAST('").split("'").next().unwrap().to_owned()
+      let start = parse_ticks(start_s.view(end_offset=10).to_owned() + " 00:00:00.0000000")
+      let range = after_first(q, "GENERATE_SERIES(").split(")").next().unwrap()
+      guard range.split(",").to_array() is [a, b] else { raise Fail("bad GENERATE_SERIES") }
+      let lo_k = py_int(a).to_int64()
+      let hi_k = py_int(b).to_int64()
+      let want : Map[String, Set[(Int64, Int, Int)]] = Map([])
+      let sets = jarr(jget(jget(daily, "reference"), "sets"))
+      for row in jarr(jget(sets[0], "rows")) {
+        guard jarr(row) is [z, k, p, o] else { raise Fail("bad row") }
+        let z = jstr(z)
+        if !want.contains(z) {
+          want[z] = Set([])
+        }
+        want.get(z).unwrap().add((jint(k).to_int64(), jint(p), jint(o)))
+      }
+      for m in models {
+        let (z, segs) = m
+        let got : Set[(Int64, Int, Int)] = Set([])
+        for tr in model_transitions(segs, start + lo_k * tpd, start + hi_k * tpd) {
+          // first sampled midnight at or after t
+          let k = -fdiv64(start - tr.0, tpd)
+          if lo_k < k && k <= hi_k {
+            let p = offset_at(segs, start + (k - 1L) * tpd)
+            let o = offset_at(segs, start + k * tpd)
+            if p != o {
+              got.add((k, p, o))
+            }
+          }
+        }
+        let w = want.get_or_default(z, Set([]))
+        total += w.length()
+        if !got.equal(w) {
+          let diff = got.symmetric_difference(w).to_array()
+          bad[z] = bad.get_or_default(z, 0) + diff.length()
+          if !examples.contains(z) {
+            diff.sort()
+            let ex = diff[:@cmp.minimum(4, diff.length())]
+              .to_owned()
+              .map(x => "(\{x.0}, \{x.1}, \{x.2})")
+            examples[z] = "(\{py_repr(start_s)}, [\{ex.join(", ")}])"
+          }
+        }
+      }
+    }
+    let mut nbad = 0
+    for _, n in bad {
+      nbad += n
+    }
+    println("\{f}: \{total} daily changes so far, \{nbad} differences")
+  }
+  // Counter.most_common(): by count, descending, ties in first-seen order
+  let ranked = bad.to_array().mapi((i, e) => (e.0, e.1, i))
+  ranked.sort_by_key(e => (-e.1, e.2))
+  for e in ranked {
+    println("\{e.0} \{e.1} \{examples.get(e.0).unwrap()}")
+  }
+}
+
+///|
+async fn main {
+  let args = @env.args()[1:].to_owned()
+  if !@fs.exists(DUMP) {
+    raise Fail(
+      "run from the repo root (\{DUMP} not found): moon run scripts/gen-timezones.mbtx [xcheck-msduck PATH/TO/msduck]",
+    )
+  }
+  match args {
+    [] => generate()
+    ["xcheck-msduck", msduck] => xcheck_msduck(msduck)
+    _ =>
+      raise Fail(
+        "usage: moon run scripts/gen-timezones.mbtx [xcheck-msduck PATH/TO/msduck]",
+      )
+  }
+}

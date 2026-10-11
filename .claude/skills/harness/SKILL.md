@@ -333,7 +333,7 @@ Start the host with `--database NAME` so the app's database exists at login
   Remove it with `npm run oracle:stop` under the same env when done.
 - 2026-10-03: `harness/gen/timezone.mjs` generates
   `corpus/timezone/at-time-zone.cases.json`; `harness/src/dump-timezones.mjs`
-  dumps SQL Server's time zone behaviour for `scripts/gen-timezones.py`
+  dumps SQL Server's time zone behaviour for `scripts/gen-timezones.mbtx`
   (docs/reference/at-time-zone.md). Cases reading the clock
   (sys.time_zone_info) compare only clock-independent facts.
 - 2026-10-03: `harness/gen/datestrings.mjs` generates

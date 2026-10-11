@@ -106,14 +106,14 @@ Everything is SQL Server's own answer; no IANA or registry data is used.
    cause short blips), refines every change to the exact 100 ns tick, probes
    local times around every 1970–2060 change, and snapshots
    `sys.time_zone_info`. About 13 minutes; 2.4 MB JSON.
-2. `python3 scripts/gen-timezones.py` fits the segments and rules, checks them
+2. `moon run scripts/gen-timezones.mbtx` fits the segments and rules, checks them
    against every scanned window, probe and the catalog snapshot (failing
    loudly), writes `timezone_data.mbt` and the test table
    `timezone_data_test.mbt` (6145 changes and 4718 local probes from the
    dump, checked against the MoonBit port).
 3. `moon fmt && moon test -p mirek/bitsql/core/types`.
 
-Cross-check (2026-10-03, `scripts/timezones/xcheck-msduck.py`): msduck's independent history captures
+Cross-check (2026-10-03, `moon run scripts/gen-timezones.mbtx xcheck-msduck PATH/TO/msduck`): msduck's independent history captures
 (`reference/at-time-zone-history-*.json`, SQL Server 17.0.4065.4, daily
 offsets 0001–2500) agree on all 345,109 daily changes except 47 artifacts of
 the year-1 clamp described above.
