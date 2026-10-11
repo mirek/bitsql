@@ -1,0 +1,321 @@
+///|
+// Derive graph search inputs and outputs from SQL Server oracle captures.
+//
+//   moon run scripts/gen-vector-search-tests.mbtx
+//
+// Writes src/core/store/vector_search_test.mbt; run `moon fmt` afterwards.
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/encoding/hex",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+///|
+const CORPUS = "harness/corpus/sql2025"
+
+///|
+/// Python `repr(float)`: the shortest round-trip digits (the same ones
+/// `Double::to_string` picks), in CPython's layout (`1e-05`, `1e+16`, `2.0`).
+fn py_float(d : Double) -> String {
+  if d.is_nan() {
+    return "nan"
+  }
+  if d.is_inf() {
+    return if d > 0.0 { "inf" } else { "-inf" }
+  }
+  let sign = if d < 0.0 || (d == 0.0 && 1.0 / d < 0.0) { "-" } else { "" }
+  if d == 0.0 {
+    return sign + "0.0"
+  }
+  // Decompose the shortest form as 0.DIGITS * 10^point.
+  let text = d.abs().to_string()
+  let (mantissa, exponent) = match text.split_once("e") {
+    Some((m, e)) =>
+      (
+        m.to_owned(),
+        @string.parse_int(e.trim_start(chars="+")) catch {
+          _ => panic()
+        },
+      )
+    None => (text, 0)
+  }
+  let (whole, fraction) = match mantissa.split_once(".") {
+    Some((w, f)) => (w.to_owned(), f.to_owned())
+    None => (mantissa, "")
+  }
+  let all = whole + fraction
+  let mut point = whole.length() + exponent
+  let mut start = 0
+  while all.get_char(start) is Some('0') {
+    start += 1
+    point -= 1
+  }
+  let mut end = all.length()
+  while all.get_char(end - 1) is Some('0') {
+    end -= 1
+  }
+  let digits = all.unsafe_substring(start~, end~)
+  let n = digits.length()
+  if point <= -4 || point > 16 {
+    let e = point - 1
+    let rest = if n > 1 {
+      "." + digits.unsafe_substring(start=1, end=n)
+    } else {
+      ""
+    }
+    let e_sign = if e < 0 { "-" } else { "+" }
+    sign +
+    digits.unsafe_substring(start=0, end=1) +
+    rest +
+    "e" +
+    e_sign +
+    e.abs().to_string().pad_start(2, '0')
+  } else if point <= 0 {
+    sign + "0." + "0".repeat(-point) + digits
+  } else if point >= n {
+    sign + digits + "0".repeat(point - n) + ".0"
+  } else {
+    sign +
+    digits.unsafe_substring(start=0, end=point) +
+    "." +
+    digits.unsafe_substring(start=point, end=n)
+  }
+}
+
+///|
+/// Python `json.dumps(str)` (`ensure_ascii=True`): UTF-16 `\uXXXX` escapes.
+fn py_str(s : String) -> String {
+  let out = StringBuilder()
+  out.write_char('"')
+  for unit in s.code_units() {
+    match unit.to_int() {
+      0x22 => out.write_string("\\\"")
+      0x5C => out.write_string("\\\\")
+      0x0A => out.write_string("\\n")
+      0x0D => out.write_string("\\r")
+      0x09 => out.write_string("\\t")
+      0x08 => out.write_string("\\b")
+      0x0C => out.write_string("\\f")
+      u if u < 0x20 || u > 0x7E =>
+        out.write_string("\\u" + u.to_string(radix=16).pad_start(4, '0'))
+      u => out.write_char(u.unsafe_to_char())
+    }
+  }
+  out.write_char('"')
+  out.to_string()
+}
+
+///|
+/// Python `str.title()`: upper-case each letter that follows a non-letter.
+fn py_title(s : String) -> String {
+  let out = StringBuilder()
+  let mut after_letter = false
+  for c in s {
+    out.write_char(
+      if after_letter {
+        c.to_ascii_lowercase()
+      } else {
+        c.to_ascii_uppercase()
+      },
+    )
+    after_letter = c.is_ascii_alphabetic()
+  }
+  out.to_string()
+}
+
+///|
+/// The text Python prints for a captured integer. Captures are written by
+/// JavaScript, so a number is integer-shaped (a Python `int`) exactly when it
+/// is integral and below 1e21; larger integer literals keep their source text.
+fn int_text(j : Json) -> String raise {
+  match j {
+    Number(_, repr=Some(t)) if t.iter().all(c => c == '-' || c.is_ascii_digit()) =>
+      t
+    Number(d, repr=None) if d == d.floor() && d.abs() < 1.0e21 =>
+      d.to_int64().to_string()
+    _ => fail("expected an integer, got \{j.stringify()}")
+  }
+}
+
+///|
+/// Python `str()` of a decoded JSON scalar, as an f-string prints it.
+fn py_text(j : Json) -> String raise {
+  match j {
+    String(s) => s
+    Null => "None"
+    True => "True"
+    False => "False"
+    Number(d, ..) => int_text(j) catch { _ => py_float(d) }
+    _ => fail("cannot print \{j.stringify()} like Python")
+  }
+}
+
+///|
+/// Python `float(value)` of a captured number or numeric string.
+fn to_float(j : Json) -> Double raise {
+  match j {
+    Number(d, ..) => d
+    String(s) => @string.parse_double(s)
+    _ => fail("expected a number, got \{j.stringify()}")
+  }
+}
+
+///|
+fn key(j : Json, name : String) -> Json raise {
+  guard j is Object(fields) && fields.get(name) is Some(v) else {
+    fail("missing key \{name}")
+  }
+  v
+}
+
+///|
+fn idx(j : Json, i : Int) -> Json raise {
+  guard j is Array(items) && items.get(i) is Some(v) else {
+    fail("missing index \{i}")
+  }
+  v
+}
+
+///|
+fn arr(j : Json) -> Array[Json] raise {
+  guard j is Array(items) else { fail("expected an array") }
+  items
+}
+
+///|
+fn str(j : Json) -> String raise {
+  guard j is String(s) else { fail("expected a string") }
+  s
+}
+
+///|
+fn rows(step : Json) -> Array[Json] raise {
+  arr(key(idx(key(step, "sets"), 0), "rows"))
+}
+
+///|
+async fn read_json(path : String) -> Json {
+  @json.parse(@fs.read_file(path).text())
+}
+
+///|
+/// The first capture group of the first match, like `re.search(...)[1]`.
+fn search(pattern : String, text : String) -> String raise {
+  guard @string.Regex(pattern).execute(text) is Some(m) else {
+    fail("no match for \{pattern}")
+  }
+  m.group(1).unwrap().to_owned()
+}
+
+///|
+/// A graph page as little-endian int32 keys, like `struct.unpack('<i...')`.
+fn int32s(hex : String) -> Array[Int] raise {
+  let raw = @hex.decode(hex)
+  guard raw.length() % 4 == 0 else { fail("graph page is not int32 aligned") }
+  Array::makei(raw.length() / 4, i => {
+    let b = (k : Int) => raw[4 * i + k].to_int()
+    b(0) | (b(1) << 8) | (b(2) << 16) | (b(3) << 24)
+  })
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-vector-search-tests.mbtx") {
+    fail(
+      "run from the repository root: moon run scripts/gen-vector-search-tests.mbtx",
+    )
+  }
+  let cases = arr(
+    key(read_json("\{CORPUS}/vector-search-traversal.cases.json"), "cases"),
+  )
+  let expected = key(
+    read_json("\{CORPUS}/vector-search-traversal.expected.json"),
+    "cases",
+  )
+  let lines = [
+    "// Generated by scripts/gen-vector-search-tests.mbtx from oracle captures.",
+    "",
+  ]
+  let node_pattern = @string.Regex("\\((-?[0-9]+),'(\\[[^']+\\])'\\)")
+  for case in cases {
+    let name = str(key(case, "name"))
+    let steps = arr(key(key(expected, name), "steps"))
+    for s in steps {
+      guard arr(key(s, "errors")).is_empty() else { fail(name) }
+    }
+    // Case names are metric-dimensions-rows.
+    guard name.split("-").to_array() is [metric, dims, _] else {
+      fail("unexpected case name \{name}")
+    }
+    let metric = metric.to_owned()
+    let dims = @string.parse_int(dims)
+    let params = @json.parse(str(idx(rows(steps[2])[0], 0)))
+    let start = py_text(key(params, "StartId"))
+    let graph : Map[Int, Array[Int]] = Map([])
+    for row in rows(steps[3]) {
+      let data = idx(row, 1)
+      graph[@string.parse_int(int_text(idx(row, 0)))] = if data is Null {
+        []
+      } else {
+        int32s(str(key(data, "value")))
+      }
+    }
+    lines.append([
+      "///|",
+      "test \"vector search oracle \{name}\" {",
+      "  let nodes : Array[@store.VectorNode] = [",
+    ])
+    let case_steps = arr(key(case, "steps"))
+    for m in node_pattern.find(str(key(case_steps[0], "sql"))) {
+      let node_key = m.group(1).unwrap()
+      let vector = m.group(2).unwrap().to_owned()
+      guard graph.get(@string.parse_int(node_key)) is Some(neighbors) else {
+        fail("no graph page for key \{node_key}")
+      }
+      let list = neighbors.map(n => n.to_string()).join(", ")
+      lines.push(
+        "    { key: \{node_key}, vector: @types.vector_parse(\{py_str(vector)}, \{dims}), neighbors: [\{list}] },",
+      )
+    }
+    lines.push("  ]")
+    for i in 4..<case_steps.length() {
+      let sql = str(key(case_steps[i], "sql"))
+      let q = search("@q vector\\([0-9]+\\)='([^']+)'", sql)
+      let top = @string.parse_int(search("TOP_N=([0-9]+)", sql))
+      let pairs = rows(steps[i])
+        .map(row => {
+          let d = match idx(row, 1) {
+            Object(_) as cell => key(cell, "value")
+            cell => cell
+          }
+          "(\{py_text(idx(row, 0))}, \{py_float(to_float(d))})"
+        })
+        .join(", ")
+      lines.append([
+        "  let expected : Array[(Int, Double)] = [\{pairs}]",
+        "  let found = @store.vector_search(nodes, \{start}, @types.vector_parse(\{py_str(q)}, \{dims}), @store.\{py_title(metric)}, \{top})",
+      ])
+      let all_zero = arr(@json.parse(q)).iter().all(v => v is Number(0.0, ..))
+      if all_zero && metric != "euclidean" {
+        lines.append([
+          "  // All source rows tie; oracle rebuilds can change the chosen keys.",
+          "  assert_eq(found.map(c => c.distance), expected.map(c => c.1), msg=\"\{name} step \{i}\")",
+          "  let keys : Set[Int] = Set([])",
+          "  for candidate in found {",
+          "    assert_true(!keys.contains(candidate.key))",
+          "    assert_true(nodes.any(n => n.key == candidate.key))",
+          "    keys.add(candidate.key) |> ignore",
+          "  }",
+        ])
+      } else {
+        lines.push(
+          "  assert_eq(found.map(c => (c.key, c.distance)), expected, msg=\"\{name} step \{i}\")",
+        )
+      }
+    }
+    lines.append(["}", ""])
+  }
+  @fs.write_file("src/core/store/vector_search_test.mbt", lines.join("\n"))
+}

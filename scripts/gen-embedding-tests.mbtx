@@ -1,0 +1,511 @@
+///|
+// Generate pure response-decoder tests from the real HTTPS oracle capture.
+//
+//   moon run scripts/gen-embedding-tests.mbtx
+//
+// Writes src/core/types/embedding_oracle_test.mbt; run `moon fmt` afterwards.
+//
+// The fixture's provider bodies are hand-written JSON that Python re-serialised
+// (`json.loads` then `json.dumps`), so this script parses JSON itself and keeps
+// Python's int/float distinction: `1` stays `1`, `1.0` stays `1.0`.
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/double",
+  "moonbitlang/core/string",
+}
+
+///|
+/// A JSON value as Python's `json.loads` decodes it.
+enum PyJson {
+  Null
+  Bool(Bool)
+  Int(String)
+  Float(Double)
+  Str(String)
+  List(Array[PyJson])
+  Dict(Map[String, PyJson])
+} derive(Eq)
+
+///|
+struct Parser {
+  text : String
+  mut pos : Int
+}
+
+///|
+fn Parser::peek(self : Parser) -> Int {
+  if self.pos < self.text.length() {
+    self.text.at(self.pos).to_int()
+  } else {
+    -1
+  }
+}
+
+///|
+fn Parser::error(self : Parser, what : String) -> Error {
+  Failure("invalid JSON at offset \{self.pos}: \{what}")
+}
+
+///|
+fn Parser::skip_space(self : Parser) -> Unit {
+  while self.peek() is (0x20 | 0x09 | 0x0A | 0x0D) {
+    self.pos += 1
+  }
+}
+
+///|
+fn Parser::literal(
+  self : Parser,
+  word : String,
+  value : PyJson,
+) -> PyJson raise {
+  guard self.text.view(start_offset=self.pos).has_prefix(word) else {
+    raise self.error("expected \{word}")
+  }
+  self.pos += word.length()
+  value
+}
+
+///|
+fn Parser::hex4(self : Parser) -> Int raise {
+  let mut value = 0
+  for _ in 0..<4 {
+    let digit = match self.peek() {
+      c if c >= '0'.to_int() && c <= '9'.to_int() => c - '0'.to_int()
+      c if c >= 'a'.to_int() && c <= 'f'.to_int() => c - 'a'.to_int() + 10
+      c if c >= 'A'.to_int() && c <= 'F'.to_int() => c - 'A'.to_int() + 10
+      _ => raise self.error("bad \\u escape")
+    }
+    value = value * 16 + digit
+    self.pos += 1
+  }
+  value
+}
+
+///|
+/// A string body; `\uXXXX` escapes are UTF-16 units, like Python's.
+fn Parser::string(self : Parser) -> String raise {
+  self.pos += 1
+  let out = StringBuilder()
+  while true {
+    let c = self.peek()
+    self.pos += 1
+    match c {
+      -1 => raise self.error("unterminated string")
+      0x22 => break
+      0x5C => {
+        let e = self.peek()
+        self.pos += 1
+        match e.unsafe_to_char() {
+          '"' | '\\' | '/' => out.write_char(e.unsafe_to_char())
+          'b' => out.write_char('\b')
+          'f' => out.write_char('\u{0C}')
+          'n' => out.write_char('\n')
+          'r' => out.write_char('\r')
+          't' => out.write_char('\t')
+          'u' => out.write_char(self.hex4().unsafe_to_char())
+          _ => raise self.error("bad escape")
+        }
+      }
+      c if c < 0x20 => raise self.error("control character in string")
+      c => out.write_char(c.unsafe_to_char())
+    }
+  }
+  out.to_string()
+}
+
+///|
+/// Python's number grammar: an `int` unless there is a fraction or exponent.
+fn Parser::number(self : Parser) -> PyJson raise {
+  let start = self.pos
+  let mut is_float = false
+  while self.peek() is c && c >= 0 {
+    match c.unsafe_to_char() {
+      '0'..='9' | '-' | '+' => ()
+      '.' | 'e' | 'E' => is_float = true
+      _ => break
+    }
+    self.pos += 1
+  }
+  let text = self.text.unsafe_substring(start~, end=self.pos)
+  if text == "" || text == "-" {
+    raise self.error("expected a value")
+  }
+  if is_float {
+    Float(@string.parse_double(text))
+  } else {
+    // Python ints print without a sign on zero.
+    Int(if text == "-0" { "0" } else { text })
+  }
+}
+
+///|
+fn Parser::value(self : Parser) -> PyJson raise {
+  self.skip_space()
+  let value = match self.peek() {
+    0x7B => {
+      self.pos += 1
+      let fields : Map[String, PyJson] = Map([])
+      self.skip_space()
+      if self.peek() == 0x7D {
+        self.pos += 1
+      } else {
+        while true {
+          self.skip_space()
+          guard self.peek() == 0x22 else { raise self.error("expected a key") }
+          let name = self.string()
+          self.skip_space()
+          guard self.peek() == 0x3A else { raise self.error("expected :") }
+          self.pos += 1
+          fields[name] = self.value()
+          match self.peek() {
+            0x2C => self.pos += 1
+            0x7D => {
+              self.pos += 1
+              break
+            }
+            _ => raise self.error("expected , or }")
+          }
+        }
+      }
+      Dict(fields)
+    }
+    0x5B => {
+      self.pos += 1
+      let items = []
+      self.skip_space()
+      if self.peek() == 0x5D {
+        self.pos += 1
+      } else {
+        while true {
+          items.push(self.value())
+          match self.peek() {
+            0x2C => self.pos += 1
+            0x5D => {
+              self.pos += 1
+              break
+            }
+            _ => raise self.error("expected , or ]")
+          }
+        }
+      }
+      List(items)
+    }
+    0x22 => Str(self.string())
+    0x74 => self.literal("true", Bool(true))
+    0x66 => self.literal("false", Bool(false))
+    0x6E => self.literal("null", Null)
+    0x4E => self.literal("NaN", Float(@double.not_a_number))
+    0x49 => self.literal("Infinity", Float(@double.infinity))
+    0x2D if self.text.view(start_offset=self.pos).has_prefix("-Infinity") =>
+      self.literal("-Infinity", Float(@double.neg_infinity))
+    _ => self.number()
+  }
+  self.skip_space()
+  value
+}
+
+///|
+/// Python `json.loads`.
+fn py_loads(text : String) -> PyJson raise {
+  let parser = { text, pos: 0, }
+  let value = parser.value()
+  guard parser.pos == text.length() else { raise parser.error("extra data") }
+  value
+}
+
+///|
+/// Python `json.dumps(str, ensure_ascii=False)`: only quotes, backslashes and
+/// control characters are escaped.
+fn py_str(s : String) -> String {
+  let out = StringBuilder()
+  out.write_char('"')
+  for unit in s.code_units() {
+    match unit.to_int() {
+      0x22 => out.write_string("\\\"")
+      0x5C => out.write_string("\\\\")
+      0x0A => out.write_string("\\n")
+      0x0D => out.write_string("\\r")
+      0x09 => out.write_string("\\t")
+      0x08 => out.write_string("\\b")
+      0x0C => out.write_string("\\f")
+      u if u < 0x20 =>
+        out.write_string("\\u" + u.to_string(radix=16).pad_start(4, '0'))
+      u => out.write_char(u.unsafe_to_char())
+    }
+  }
+  out.write_char('"')
+  out.to_string()
+}
+
+///|
+/// Python `repr(float)`: the shortest round-trip digits (the same ones
+/// `Double::to_string` picks), in CPython's layout (`1e-05`, `1e+16`, `2.0`).
+fn py_float(d : Double) -> String {
+  if d.is_nan() {
+    return "nan"
+  }
+  if d.is_inf() {
+    return if d > 0.0 { "inf" } else { "-inf" }
+  }
+  let sign = if d < 0.0 || (d == 0.0 && 1.0 / d < 0.0) { "-" } else { "" }
+  if d == 0.0 {
+    return sign + "0.0"
+  }
+  // Decompose the shortest form as 0.DIGITS * 10^point.
+  let text = d.abs().to_string()
+  let (mantissa, exponent) = match text.split_once("e") {
+    Some((m, e)) =>
+      (
+        m.to_owned(),
+        @string.parse_int(e.trim_start(chars="+")) catch {
+          _ => panic()
+        },
+      )
+    None => (text, 0)
+  }
+  let (whole, fraction) = match mantissa.split_once(".") {
+    Some((w, f)) => (w.to_owned(), f.to_owned())
+    None => (mantissa, "")
+  }
+  let all = whole + fraction
+  let mut point = whole.length() + exponent
+  let mut start = 0
+  while all.get_char(start) is Some('0') {
+    start += 1
+    point -= 1
+  }
+  let mut end = all.length()
+  while all.get_char(end - 1) is Some('0') {
+    end -= 1
+  }
+  let digits = all.unsafe_substring(start~, end~)
+  let n = digits.length()
+  if point <= -4 || point > 16 {
+    let e = point - 1
+    let rest = if n > 1 {
+      "." + digits.unsafe_substring(start=1, end=n)
+    } else {
+      ""
+    }
+    let e_sign = if e < 0 { "-" } else { "+" }
+    sign +
+    digits.unsafe_substring(start=0, end=1) +
+    rest +
+    "e" +
+    e_sign +
+    e.abs().to_string().pad_start(2, '0')
+  } else if point <= 0 {
+    sign + "0." + "0".repeat(-point) + digits
+  } else if point >= n {
+    sign + digits + "0".repeat(point - n) + ".0"
+  } else {
+    sign +
+    digits.unsafe_substring(start=0, end=point) +
+    "." +
+    digits.unsafe_substring(start=point, end=n)
+  }
+}
+
+///|
+/// Python `json.dumps(value, ensure_ascii=False)`, with the default
+/// separators or the compact `(',', ':')` ones.
+fn py_dumps(j : PyJson, compact? : Bool = false) -> String {
+  let (item_sep, key_sep) = if compact { (",", ":") } else { (", ", ": ") }
+  match j {
+    Null => "null"
+    Bool(b) => if b { "true" } else { "false" }
+    Int(t) => t
+    Float(d) =>
+      if d.is_nan() {
+        "NaN"
+      } else if d.is_inf() {
+        if d > 0.0 {
+          "Infinity"
+        } else {
+          "-Infinity"
+        }
+      } else {
+        py_float(d)
+      }
+    Str(s) => py_str(s)
+    List(items) =>
+      "[" + items.map(v => py_dumps(v, compact~)).join(item_sep) + "]"
+    Dict(fields) => {
+      let parts = []
+      for k, v in fields {
+        parts.push(py_str(k) + key_sep + py_dumps(v, compact~))
+      }
+      "{" + parts.join(item_sep) + "}"
+    }
+  }
+}
+
+///|
+/// Python `str()` of a decoded scalar, as an f-string prints it.
+fn py_text(j : PyJson) -> String raise {
+  match j {
+    Null => "None"
+    Bool(b) => if b { "True" } else { "False" }
+    Int(t) => t
+    Float(d) => py_float(d)
+    Str(s) => s
+    _ => fail("cannot print \{py_dumps(j)} like Python")
+  }
+}
+
+///|
+fn get(j : PyJson, name : String) -> PyJson? raise {
+  guard j is Dict(fields) else { fail("expected an object for \{name}") }
+  fields.get(name)
+}
+
+///|
+fn key(j : PyJson, name : String) -> PyJson raise {
+  guard get(j, name) is Some(v) else { fail("missing key \{name}") }
+  v
+}
+
+///|
+fn list(j : PyJson) -> Array[PyJson] raise {
+  guard j is List(items) else { fail("expected an array") }
+  items
+}
+
+///|
+/// The `@types.EmbeddingApi` constructor for a fixture's `api` name.
+fn api_name(input : PyJson) -> String raise {
+  match key(input, "api") {
+    Str("OpenAI") => "OpenAI"
+    Str("Azure OpenAI") => "AzureOpenAI"
+    Str("Ollama") => "Ollama"
+    api => fail("unknown api \{py_dumps(api)}")
+  }
+}
+
+///|
+/// Lines asserting that `call` raises the single captured SQL error.
+fn error_lines(call : String, result : PyJson) -> Array[String] raise {
+  guard list(key(result, "errors")) is [e] else {
+    fail("expected exactly one captured error")
+  }
+  [
+    "  try \{call} catch {",
+    "    e => {",
+    "      assert_eq(e.number(), \{py_text(key(e, "number"))})",
+    "      assert_eq(e.state(), \{py_text(key(e, "state"))})",
+    "      assert_eq(e.severity(), \{py_text(key(e, "class"))})",
+    "      assert_eq(e.message(), \{py_dumps(key(e, "message"))})",
+    "    }",
+    "  } noraise { _ => fail(\"expected captured SQL error\") }",
+  ]
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-embedding-tests.mbtx") {
+    fail(
+      "run from the repository root: moon run scripts/gen-embedding-tests.mbtx",
+    )
+  }
+  let captured = py_loads(
+    @fs.read_file("harness/fixtures/embeddings.expected.json").text(),
+  )
+  let entries = list(key(captured, "cases"))
+  let out = [
+    "// Generated by scripts/gen-embedding-tests.mbtx from HTTPS oracle captures.\n",
+  ]
+  let mut count = 0
+  for entry in entries {
+    let c = key(entry, "input")
+    let result = key(entry, "result")
+    if list(key(entry, "requests")).length() != 1 {
+      continue // Binding / request validation failed before response decoding.
+    }
+    let response = key(c, "response")
+    let body = match key(response, "body") {
+      Str(text) => text
+      body => py_dumps(body, compact=true)
+    }
+    let status = match get(response, "status") {
+      Some(s) => py_text(s)
+      None => "200"
+    }
+    let call = "@types.embedding_response(\{api_name(c)}, \{status}, \{py_str(body)})"
+    let name = py_text(key(c, "name"))
+    out.append(["///|", "test \{py_str("embedding response " + name)} {"])
+    if !list(key(result, "errors")).is_empty() {
+      out.append(error_lines(call, result))
+    } else {
+      guard list(key(result, "sets")) is [set, ..] &&
+        list(key(set, "rows")) is [row, ..] &&
+        list(row) is [value, ..] else {
+        fail("\{name}: no captured value")
+      }
+      if value is Null {
+        out.push("  assert_eq(\{call}, @types.Value::Null)")
+      } else {
+        out.append([
+          "  match \{call} {",
+          "    NativeJson(v) => assert_eq(v.text(), \{py_dumps(value)})",
+          "    _ => fail(\"expected native JSON\")",
+          "  }",
+        ])
+      }
+    }
+    out.append(["}", ""])
+    count += 1
+  }
+  let mut request_count = 0
+  for entry in entries {
+    let c = key(entry, "input")
+    let result = key(entry, "result")
+    let requests = list(key(entry, "requests"))
+    let source = match key(c, "sourceText") {
+      Null => "None"
+      text => "Some(" + py_dumps(text) + ")"
+    }
+    let parameters = match get(c, "parameters") {
+      None => "None"
+      Some(p) =>
+        "Some(@types.JsonData::parse(" +
+        py_str(py_dumps(p, compact=true)) +
+        "))"
+    }
+    let optional = match key(c, "optional") {
+      Null => "None"
+      o => "Some(@types.JsonData::parse(" + py_dumps(o) + "))"
+    }
+    let model = get(c, "model").unwrap_or(Str("fixture"))
+    let call = "@types.embedding_request(\{api_name(c)}, \{py_dumps(model)}, \{source}, \{parameters}, \{optional})"
+    let name = py_text(key(c, "name"))
+    out.append(["///|", "test \{py_str("embedding request " + name)} {"])
+    if !requests.is_empty() {
+      let first_body = key(requests[0], "body")
+      for r in requests {
+        guard key(r, "body") == first_body else {
+          fail("\{name}: retried requests differ")
+        }
+      }
+      out.append([
+        "  let request = \{call}",
+        "  assert_eq(request.body, \{py_dumps(first_body)})",
+      ])
+      let retried = match get(key(c, "response"), "status") {
+        Some(Int(s)) => ["408", "429", "500", "502", "503", "504"].contains(s)
+        Some(Float(d)) => [408.0, 429.0, 500.0, 502.0, 503.0, 504.0].contains(d)
+        _ => false
+      }
+      if retried {
+        out.push("  assert_eq(request.retry_count, \{requests.length() - 1})")
+      }
+    } else {
+      out.append(error_lines(call, result))
+    }
+    out.append(["}", ""])
+    request_count += 1
+  }
+  @fs.write_file("src/core/types/embedding_oracle_test.mbt", out.join("\n"))
+  println("generated \{count} response and \{request_count} request tests")
+}

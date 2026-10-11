@@ -1,0 +1,515 @@
+///|
+// Generate native vector tests strictly from captured SQL Server results.
+//
+//   moon run scripts/gen-vector-tests.mbtx
+//
+// Writes src/core/types/vector_test.mbt; run `moon fmt` afterwards.
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+///|
+const CORPUS = "harness/corpus/sql2025"
+
+///|
+/// Python `repr(float)`: the shortest round-trip digits (the same ones
+/// `Double::to_string` picks), in CPython's layout (`1e-05`, `1e+16`, `2.0`).
+fn py_float(d : Double) -> String {
+  if d.is_nan() {
+    return "nan"
+  }
+  if d.is_inf() {
+    return if d > 0.0 { "inf" } else { "-inf" }
+  }
+  let sign = if d < 0.0 || (d == 0.0 && 1.0 / d < 0.0) { "-" } else { "" }
+  if d == 0.0 {
+    return sign + "0.0"
+  }
+  // Decompose the shortest form as 0.DIGITS * 10^point.
+  let text = d.abs().to_string()
+  let (mantissa, exponent) = match text.split_once("e") {
+    Some((m, e)) =>
+      (
+        m.to_owned(),
+        @string.parse_int(e.trim_start(chars="+")) catch {
+          _ => panic()
+        },
+      )
+    None => (text, 0)
+  }
+  let (whole, fraction) = match mantissa.split_once(".") {
+    Some((w, f)) => (w.to_owned(), f.to_owned())
+    None => (mantissa, "")
+  }
+  let all = whole + fraction
+  let mut point = whole.length() + exponent
+  let mut start = 0
+  while all.get_char(start) is Some('0') {
+    start += 1
+    point -= 1
+  }
+  let mut end = all.length()
+  while all.get_char(end - 1) is Some('0') {
+    end -= 1
+  }
+  let digits = all.unsafe_substring(start~, end~)
+  let n = digits.length()
+  if point <= -4 || point > 16 {
+    let e = point - 1
+    let rest = if n > 1 {
+      "." + digits.unsafe_substring(start=1, end=n)
+    } else {
+      ""
+    }
+    let e_sign = if e < 0 { "-" } else { "+" }
+    sign +
+    digits.unsafe_substring(start=0, end=1) +
+    rest +
+    "e" +
+    e_sign +
+    e.abs().to_string().pad_start(2, '0')
+  } else if point <= 0 {
+    sign + "0." + "0".repeat(-point) + digits
+  } else if point >= n {
+    sign + digits + "0".repeat(point - n) + ".0"
+  } else {
+    sign +
+    digits.unsafe_substring(start=0, end=point) +
+    "." +
+    digits.unsafe_substring(start=point, end=n)
+  }
+}
+
+///|
+/// Python `json.dumps(str)` (`ensure_ascii=True`): UTF-16 `\uXXXX` escapes.
+fn py_str(s : String) -> String {
+  let out = StringBuilder()
+  out.write_char('"')
+  for unit in s.code_units() {
+    match unit.to_int() {
+      0x22 => out.write_string("\\\"")
+      0x5C => out.write_string("\\\\")
+      0x0A => out.write_string("\\n")
+      0x0D => out.write_string("\\r")
+      0x09 => out.write_string("\\t")
+      0x08 => out.write_string("\\b")
+      0x0C => out.write_string("\\f")
+      u if u < 0x20 || u > 0x7E =>
+        out.write_string("\\u" + u.to_string(radix=16).pad_start(4, '0'))
+      u => out.write_char(u.unsafe_to_char())
+    }
+  }
+  out.write_char('"')
+  out.to_string()
+}
+
+///|
+/// The text Python prints for a captured integer. Captures are written by
+/// JavaScript, so a number is integer-shaped (a Python `int`) exactly when it
+/// is integral and below 1e21; larger integer literals keep their source text.
+fn int_text(j : Json) -> String raise {
+  match j {
+    Number(_, repr=Some(t)) if t.iter().all(c => c == '-' || c.is_ascii_digit()) =>
+      t
+    Number(d, repr=None) if d == d.floor() && d.abs() < 1.0e21 =>
+      d.to_int64().to_string()
+    _ => fail("expected an integer, got \{j.stringify()}")
+  }
+}
+
+///|
+/// Python `str()` of a decoded JSON scalar, as an f-string prints it.
+fn py_text(j : Json) -> String raise {
+  match j {
+    String(s) => s
+    Null => "None"
+    True => "True"
+    False => "False"
+    Number(d, ..) => int_text(j) catch { _ => py_float(d) }
+    _ => fail("cannot print \{j.stringify()} like Python")
+  }
+}
+
+///|
+/// Python `json.dumps` of a captured value with default separators.
+fn py_dumps(j : Json) -> String raise {
+  match j {
+    Null => "null"
+    True => "true"
+    False => "false"
+    String(s) => py_str(s)
+    Number(d, ..) =>
+      int_text(j) catch {
+        _ =>
+          if d.is_nan() {
+            "NaN"
+          } else if d.is_inf() {
+            if d > 0.0 {
+              "Infinity"
+            } else {
+              "-Infinity"
+            }
+          } else {
+            py_float(d)
+          }
+      }
+    Array(items) => "[" + items.map(py_dumps).join(", ") + "]"
+    Object(fields) => {
+      let parts = []
+      for k, v in fields {
+        parts.push(py_str(k) + ": " + py_dumps(v))
+      }
+      "{" + parts.join(", ") + "}"
+    }
+  }
+}
+
+///|
+/// Python `float(value)` of a captured number or numeric string.
+fn to_float(j : Json) -> Double raise {
+  match j {
+    Number(d, ..) => d
+    String(s) => @string.parse_double(s)
+    _ => fail("expected a number, got \{j.stringify()}")
+  }
+}
+
+///|
+fn key(j : Json, name : String) -> Json raise {
+  guard j is Object(fields) && fields.get(name) is Some(v) else {
+    fail("missing key \{name}")
+  }
+  v
+}
+
+///|
+fn idx(j : Json, i : Int) -> Json raise {
+  guard j is Array(items) && items.get(i) is Some(v) else {
+    fail("missing index \{i}")
+  }
+  v
+}
+
+///|
+fn arr(j : Json) -> Array[Json] raise {
+  guard j is Array(items) else { fail("expected an array") }
+  items
+}
+
+///|
+fn str(j : Json) -> String raise {
+  guard j is String(s) else { fail("expected a string") }
+  s
+}
+
+///|
+/// The capture groups of every match, like Python `re.findall`.
+fn findall(re : @string.Regex, text : String) -> Array[Array[String]] {
+  re
+  .find(text)
+  .map(m => {
+    let groups = []
+    for i = 1; m.group(i) is Some(g); i = i + 1 {
+      groups.push(g.to_owned())
+    }
+    groups
+  })
+  .to_array()
+}
+
+///|
+/// The batches of a `.sql` corpus file, like `re.split('-- @step batch\n')[1:]`.
+fn sql_steps(sql : String) -> Array[String] {
+  sql.split("-- @step batch\n").drop(1).map(s => s.to_owned()).to_array()
+}
+
+///|
+fn check_same_length(a : Int, b : Int, what : String) -> Unit raise {
+  if a != b {
+    fail("\{what}: \{a} inputs but \{b} captured results")
+  }
+}
+
+///|
+/// Lines asserting that `call` raises the captured SQL Server error.
+fn error_lines(call : String, e : Json, kind : String) -> Array[String] raise {
+  let error = idx(key(e, "errors"), 0)
+  [
+    "  try \{call} catch {",
+    "    e => { assert_eq(e.number(), \{py_text(key(error, "number"))}); assert_eq(e.state(), \{py_text(key(error, "state"))}); assert_eq(e.message(), \{py_dumps(key(error, "message"))}) }",
+    "  } noraise { _ => fail(\"Expected SQL Server \{kind} error\") }",
+  ]
+}
+
+///|
+fn has_errors(e : Json) -> Bool raise {
+  !arr(key(e, "errors")).is_empty()
+}
+
+///|
+fn first_row(e : Json) -> Json raise {
+  idx(key(idx(key(e, "sets"), 0), "rows"), 0)
+}
+
+///|
+async fn read_json(path : String) -> Json {
+  @json.parse(@fs.read_file(path).text())
+}
+
+///|
+/// Distance inputs and outputs are paired directly from the recorded batches.
+fn distance_case(
+  out : Array[String],
+  label : String,
+  sql : String,
+  step : Json,
+  base : String,
+) -> Bool raise {
+  let inputs = findall(
+    @string.Regex("vector\\(([0-9]+)(?:,float16)?\\)='([^']*)'"),
+    sql,
+  )
+  let metrics = findall(
+    @string.Regex("VECTOR_DISTANCE\\('([^']*)',@a,@b\\)"),
+    sql,
+  ).map(g => g[0])
+  if inputs.length() != 2 || metrics.is_empty() {
+    return false
+  }
+  out.append(["", "///|", "test \"vector oracle distance \{label}\" {"])
+  for i, name in ["a", "b"] {
+    out.push(
+      "  let \{name} = @types.vector_parse(\{py_str(inputs[i][1])}, \{inputs[i][0]}, base=\{base})",
+    )
+  }
+  if has_errors(step) {
+    out.append(
+      error_lines("a.distance(b, \{py_str(metrics[0])})", step, "distance"),
+    )
+  } else {
+    let row = arr(first_row(step))
+    check_same_length(metrics.length(), row.length(), label)
+    for i, metric in metrics {
+      let value = match row[i] {
+        Object(_) as cell => to_float(key(cell, "value"))
+        cell => to_float(cell)
+      }
+      out.push(
+        "  assert_eq(a.distance(b, \{py_str(metric)}), \{py_float(value)})",
+      )
+      if value == 0.0 {
+        let sign = if 1.0 / value < 0.0 { "true" } else { "false" }
+        out.push(
+          "  assert_eq(1.0 / a.distance(b, \{py_str(metric)}) < 0.0, \{sign})",
+        )
+      }
+    }
+  }
+  out.push("}")
+  true
+}
+
+///|
+/// Case files pair each case's batches with the captured steps of that case.
+async fn distance_cases(
+  out : Array[String],
+  name : String,
+  base : String,
+) -> Int {
+  let cases = arr(
+    key(read_json("\{CORPUS}/vector-\{name}.cases.json"), "cases"),
+  )
+  let expected = key(
+    read_json("\{CORPUS}/vector-\{name}.expected.json"),
+    "cases",
+  )
+  let mut count = 0
+  for c in cases {
+    let case_name = str(key(c, "name"))
+    let steps = arr(key(c, "steps"))
+    let captured = arr(key(key(expected, case_name), "steps"))
+    check_same_length(steps.length(), captured.length(), case_name)
+    for i, step in steps {
+      let label = "\{name} \{case_name} \{i}"
+      if distance_case(out, label, str(key(step, "sql")), captured[i], base) {
+        count += 1
+      }
+    }
+  }
+  count
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-vector-tests.mbtx") {
+    fail("run from the repository root: moon run scripts/gen-vector-tests.mbtx")
+  }
+  let out = [
+    "// Generated by scripts/gen-vector-tests.mbtx from SQL Server captures.",
+  ]
+  let mut count = 0
+  let conversion = [
+    @string.Regex(
+      "DECLARE @v vector\\(([0-9]+)\\) =?[[:space:]]*N?'([^']*)'; SELECT @v(?: AS v)?;",
+    ),
+    @string.Regex(
+      "DECLARE @v vector\\(([0-9]+)\\)=N?'([^']*)'; SELECT @v AS v;",
+    ),
+  ]
+  for name in ["functions", "contracts", "json"] {
+    let steps = sql_steps(@fs.read_file("\{CORPUS}/vector-\{name}.sql").text())
+    let expected = arr(
+      key(read_json("\{CORPUS}/vector-\{name}.expected.json"), "steps"),
+    )
+    check_same_length(steps.length(), expected.length(), name)
+    for i, step in steps {
+      let e = expected[i]
+      let m = conversion.iter().filter_map(re => re.execute(step)).head()
+      guard m is Some(m) else { continue }
+      let dim = m.group(1).unwrap().to_owned()
+      let text = m.group(2).unwrap().to_owned()
+      count += 1
+      out.append([
+        "",
+        "///|",
+        "test \"vector oracle conversion \{name} \{i}\" {",
+      ])
+      let expr = "@types.vector_parse(\{py_str(text)}, \{dim})"
+      if has_errors(e) {
+        out.append(error_lines(expr, e, "conversion"))
+      } else {
+        let value = idx(first_row(e), 0)
+        out.append([
+          "  let v = \{expr}",
+          "  assert_eq(v.dimensions(), \{dim})",
+          "  assert_eq(v.to_text(), \{py_dumps(value)})",
+        ])
+      }
+      out.push("}")
+    }
+  }
+  let norm_kinds = ["norm1", "norm2", "norminf"]
+  for name in ["norms", "norm-extremes"] {
+    let inputs = findall(
+      @string.Regex("DECLARE @v vector\\(([0-9]+)\\)='([^']*)'"),
+      @fs.read_file("\{CORPUS}/vector-\{name}.sql").text(),
+    )
+    let steps = arr(
+      key(read_json("\{CORPUS}/vector-\{name}.expected.json"), "steps"),
+    )
+    check_same_length(inputs.length(), steps.length(), name)
+    for i, input in inputs {
+      let step = steps[i]
+      count += 1
+      out.append([
+        "",
+        "///|",
+        "test \"vector oracle \{name} \{i}\" {",
+        "  let v = @types.vector_parse(\{py_str(input[1])}, \{input[0]})",
+      ])
+      if has_errors(step) {
+        out.append(error_lines("v.norm(\"norm2\")", step, "norm"))
+      } else {
+        let row = first_row(step)
+        if name == "norms" {
+          for j, kind in norm_kinds {
+            out.append([
+              "  assert_eq(v.norm(\{py_str(kind)}), \{py_float(to_float(idx(row, 2 * j)))})",
+              "  assert_eq(v.normalize(\{py_str(kind)}).to_text(), \{py_dumps(idx(row, 2 * j + 1))})",
+            ])
+          }
+        } else {
+          out.append([
+            "  assert_eq(v.norm(\"norm2\"), \{py_float(to_float(idx(row, 0)))})",
+            "  assert_eq(v.normalize(\"norm2\").to_text(), \{py_dumps(idx(row, 1))})",
+            "  assert_eq(v.normalize(\"norm1\").to_text(), \{py_dumps(idx(row, 2))})",
+          ])
+        }
+      }
+      out.push("}")
+    }
+  }
+  let rounding_cases = arr(
+    key(read_json("\{CORPUS}/vector-norm-rounding.cases.json"), "cases"),
+  )
+  let rounding_expected = key(
+    read_json("\{CORPUS}/vector-norm-rounding.expected.json"),
+    "cases",
+  )
+  let rounding_input = @string.Regex("vector\\(([0-9]+)\\)='([^']*)'")
+  for c in rounding_cases {
+    let case_name = str(key(c, "name"))
+    count += 1
+    out.append([
+      "",
+      "///|",
+      "test \"vector oracle norm rounding \{case_name}\" {",
+    ])
+    let inputs = findall(
+      rounding_input,
+      str(key(idx(key(c, "steps"), 0), "sql")),
+    )
+    let row = first_row(idx(key(key(rounding_expected, case_name), "steps"), 0))
+    for i, input in inputs {
+      out.push(
+        "  let v\{i} = @types.vector_parse(\{py_str(input[1])}, \{input[0]})",
+      )
+      for j, kind in norm_kinds {
+        out.push(
+          "  assert_eq(v\{i}.norm(\{py_str(kind)}), \{py_float(to_float(idx(row, 3 * i + j)))})",
+        )
+      }
+    }
+    out.push("}")
+  }
+  count += distance_cases(out, "distances", "Float32")
+  count += distance_cases(out, "distance-rounding", "Float32")
+  for name in ["distance-special", "distance-extremes"] {
+    let steps = sql_steps(@fs.read_file("\{CORPUS}/vector-\{name}.sql").text())
+    let expected = arr(
+      key(read_json("\{CORPUS}/vector-\{name}.expected.json"), "steps"),
+    )
+    check_same_length(steps.length(), expected.length(), name)
+    for i, step in steps {
+      if distance_case(out, "\{name} \{i}", step, expected[i], "Float32") {
+        count += 1
+      }
+    }
+  }
+  count += distance_cases(out, "float16-distances", "Float16")
+  let name = "float16-values"
+  let steps = sql_steps(@fs.read_file("\{CORPUS}/vector-\{name}.sql").text())
+  let expected = arr(
+    key(read_json("\{CORPUS}/vector-\{name}.expected.json"), "steps"),
+  )
+  check_same_length(steps.length(), expected.length(), name)
+  let float16_input = @string.Regex(
+    "DECLARE @v vector\\(([0-9]+),float16\\)='([^']*)'; SELECT @v AS v",
+  )
+  for i, sql in steps {
+    let e = expected[i]
+    guard float16_input.execute(sql) is Some(m) else { continue }
+    count += 1
+    let dim = m.group(1).unwrap().to_owned()
+    let value = m.group(2).unwrap().to_owned()
+    out.append(["", "///|", "test \"vector oracle float16 input \{i}\" {"])
+    let expr = "@types.vector_parse(\{py_str(value)}, \{dim}, base=Float16)"
+    if has_errors(e) {
+      out.append(error_lines(expr, e, "float16 input"))
+    } else {
+      let row = first_row(e)
+      out.append([
+        "  let v = \{expr}",
+        "  assert_eq(v.to_text(), \{py_dumps(idx(row, 0))})",
+        "  assert_eq(8 + v.base().bytes() * v.dimensions(), \{py_text(idx(row, 1))})",
+        "  assert_eq(v.base().name(), \{py_dumps(idx(row, 2))})",
+      ])
+    }
+    out.push("}")
+  }
+  @fs.write_file("src/core/types/vector_test.mbt", out.join("\n") + "\n")
+  println("\{count} oracle vector tests")
+}

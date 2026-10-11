@@ -51,7 +51,7 @@ The controlled HTTPS captures live in
 `harness/fixtures/embeddings.expected.json`, with inputs in
 `harness/gen/embedding-cases.mjs`. They preserve both the outgoing HTTP request
 and the SQL result, including metadata, diagnostics and completion tokens.
-`scripts/gen-embedding-tests.py` derives pure request/response tests from them.
+`moon run scripts/gen-embedding-tests.mbtx` derives pure request/response tests from them.
 These pure functions are not yet connected to host HTTP execution. SQL binding
 and the disabled REST execution path are implemented; enabling REST and actual
 inference remain open.
