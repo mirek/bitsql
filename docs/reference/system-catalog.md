@@ -13,7 +13,7 @@ drop-index / table-type-catalog / tedious-compat-gaps, corpus
   published. `sys.system_columns`: 11569 rows; every flag is constant except
   `is_nullable` and `is_ansi_padded`. Dumped from the oracle by
   `harness/src/dump-system-catalog.mjs` into `scripts/system-catalog/*.tsv`
-  and generated into MoonBit by `scripts/gen-sysviews.py`.
+  and generated into MoonBit by `scripts/gen-sysviews.mbtx`.
 - `sys.all_objects` = `sys.objects` ∪ `sys.system_objects`; `sys.all_columns`
   = `sys.columns` ∪ `sys.system_columns`. `OBJECT_ID(N'sys.columns')`
   resolves system views.

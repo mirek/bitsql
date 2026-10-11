@@ -1,5 +1,5 @@
 -- Result descriptors of the system-object catalog views, sys.server_principals
--- and sys.database_files (appended to view_defs by scripts/gen-sysviews.py
+-- and sys.database_files (appended to view_defs by scripts/gen-sysviews.mbtx
 -- after catalog/view-descriptors-settings.sql).
 SELECT * FROM sys.all_objects WHERE 1 = 0;
 SELECT * FROM sys.system_objects WHERE 1 = 0;

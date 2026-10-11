@@ -1,0 +1,920 @@
+///|
+// Generates src/core/session/sysviews_data.mbt and
+// src/core/session/sysviews_system_data.mbt.
+//
+// Inputs (all captured from real SQL Server, never hand-written):
+// - harness/corpus/catalog/view-descriptors.expected.json (and the other
+//   DESCRIPTORS captures): result descriptors of `SELECT * FROM <view> WHERE
+//   1 = 0` for every emulated catalog view (column order, wire type,
+//   nullability, computed flag, collation).
+// - scripts/sysviews-seed.json: seed rows of a fresh database (system objects
+//   in sys.objects, sys.schemas, sys.types, sys.databases), dumped from the
+//   oracle by harness/src/dump-sysviews-seed.mjs (node
+//   src/dump-sysviews-seed.mjs ../scripts/sysviews-seed.json) (see the sys
+//   skill findings).
+// - scripts/system-catalog/*.tsv: sys.system_objects, sys.system_columns and
+//   sys.server_principals, dumped by harness/src/dump-system-catalog.mjs.
+//
+// Run from the repo root: moon run scripts/gen-sysviews.mbtx && moon fmt
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+///|
+/// Descriptor captures, in view_defs order (view ids are indexes: append new
+/// files at the end).
+let descriptors : Array[String] = [
+  "catalog/view-descriptors", "catalog/view-descriptors-variant", "catalog/view-descriptors-types",
+  "catalog/view-descriptors-schema", "catalog/view-descriptors-settings", "tail/catalog-view-descriptors-system",
+  "catalog/view-descriptors-storage", "catalog/view-descriptors-scoped", "catalog/view-descriptors-json-indexes",
+  "catalog/view-descriptors-json-internal", "catalog/view-descriptors-vector-indexes",
+  "catalog/view-descriptors-external-models", "catalog/view-descriptors-configurations",
+  "query-store/view-descriptors", "report-0125/view-descriptors", "report-0125/text-descriptor",
+  "report-0127/plan-descriptor",
+]
+
+///|
+let corpus : String = "harness/corpus"
+
+///|
+let system_dir : String = "scripts/system-catalog"
+
+///|
+let out_system_path : String = "src/core/session/sysviews_system_data.mbt"
+
+///|
+let seed_path : String = "scripts/sysviews-seed.json"
+
+///|
+let out_path : String = "src/core/session/sysviews_data.mbt"
+
+///|
+/// Views whose captured descriptor is not emitted.
+let skip : Array[String] = []
+
+///|
+let extra_views : String =
+  #|  {
+  #|    // read as sys.dm_exec_cursors(session_id) (bind_table_function)
+  #|    schema: "sys",
+  #|    name: "dm_exec_cursors",
+  #|    columns: [
+  #|      vc("session_id", Int, false, false),
+  #|      vc("cursor_id", Int, false, false),
+  #|      vc("name", NVarChar(Some(128), coll_default), true, false),
+  #|      vc("properties", NVarChar(Some(128), coll_default), false, false),
+  #|      vc("sql_handle", VarBinary(Some(64)), true, false),
+  #|      vc("statement_start_offset", Int, true, false),
+  #|      vc("statement_end_offset", Int, true, false),
+  #|      vc("plan_generation_num", BigInt, true, false),
+  #|      vc("creation_time", DateTime, true, false),
+  #|      vc("is_open", Bit, false, false),
+  #|      vc("is_async_population", Bit, false, false),
+  #|      vc("is_close_on_commit", Bit, false, false),
+  #|      vc("fetch_status", Int, false, false),
+  #|      vc("fetch_buffer_size", Int, false, false),
+  #|      vc("fetch_buffer_start", Int, false, false),
+  #|      vc("ansi_position", Int, false, false),
+  #|      vc("worker_time", BigInt, false, false),
+  #|      vc("reads", BigInt, false, false),
+  #|      vc("writes", BigInt, false, false),
+  #|      vc("dormant_duration", BigInt, false, false),
+  #|    ],
+  #|  },
+
+///|
+/// Reads a text file the way Python's text mode does: universal newlines
+/// (`\r\n` and `\r` become `\n`).
+async fn read_text(path : String) -> String {
+  @fs.read_file(path)
+  .text()
+  .replace_all(old="\r\n", new="\n")
+  .replace_all(old="\r", new="\n")
+}
+
+///|
+async fn load_json(path : String) -> Json {
+  @json.parse(read_text(path))
+}
+
+///|
+fn get(j : Json, key : String) -> Json raise {
+  guard j is Object(m) else { fail("not an object looking up \{key}") }
+  guard m.get(key) is Some(v) else { fail("missing key \{key}") }
+  v
+}
+
+///|
+fn items(j : Json) -> Array[Json] raise {
+  guard j is Array(a) else { fail("not an array") }
+  a
+}
+
+///|
+fn at(j : Json, i : Int) -> Json raise {
+  let a = items(j)
+  guard i >= 0 && i < a.length() else { fail("index \{i} out of range") }
+  a[i]
+}
+
+///|
+fn text(j : Json) -> String raise {
+  guard j is String(s) else { fail("not a string") }
+  s
+}
+
+///|
+/// Integer of a JSON number. Non-integral numbers are refused: the inputs hold
+/// none, and a parsed Json cannot tell `1.0` (a Python float) from `1`.
+fn int_of(j : Json) -> Int64 raise {
+  guard j is Number(d, ..) else { fail("not a number") }
+  guard d == d.floor() && d.abs() < 9007199254740992.0 else {
+    fail("not an exact integer: \{d}")
+  }
+  d.to_int64()
+}
+
+///|
+/// Python's `str()` of a JSON scalar, as an f-string placeholder renders it.
+fn py_str(j : Json) -> String raise {
+  match j {
+    Null => "None"
+    True => "True"
+    False => "False"
+    String(s) => s
+    Number(_, repr=Some(r)) =>
+      if r.find(".") is None && r.find("e") is None && r.find("E") is None {
+        if r == "-0" {
+          "0"
+        } else {
+          r
+        }
+      } else {
+        fail("float values are not supported: \{r}")
+      }
+    Number(_, ..) => int_of(j).to_string()
+    _ => fail("cannot format a JSON array or object")
+  }
+}
+
+///|
+/// Python truthiness of a JSON value.
+fn truthy(j : Json) -> Bool {
+  match j {
+    Null | False => false
+    True => true
+    Number(d, ..) => d != 0.0
+    String(s) => s != ""
+    Array(a) => !a.is_empty()
+    Object(m) => !m.is_empty()
+  }
+}
+
+///|
+/// Python's `//` (floors toward negative infinity).
+fn floor_div(a : Int64, b : Int64) -> Int64 {
+  let q = a / b
+  if a % b != 0 && (a < 0) != (b < 0) {
+    q - 1
+  } else {
+    q
+  }
+}
+
+///|
+/// Python's `round()` of a float: nearest integer, ties to even.
+fn round_half_even(x : Double) -> Int64 {
+  let f = x.floor()
+  let diff = x - f
+  let r = if diff > 0.5 {
+    f + 1.0
+  } else if diff < 0.5 {
+    f
+  } else if (f / 2.0).floor() * 2.0 == f {
+    f
+  } else {
+    f + 1.0
+  }
+  r.to_int64()
+}
+
+///|
+fn collation(c : Json) -> String? raise {
+  if c is Null {
+    return None
+  }
+  let key = (
+    int_of(get(c, "lcid")),
+    int_of(get(c, "flags")),
+    int_of(get(c, "sortId")),
+    int_of(get(c, "version")),
+  )
+  match key {
+    (1033, 13, 52, 0) => Some("coll_default")
+    (1033, 1, 0, 0) => Some("coll_ks_ws")
+    (1033, 96, 0, 2) => Some("@types.json_collation")
+    _ => fail("unknown collation \{c.stringify()}")
+  }
+}
+
+///|
+fn sql_type(c : Json) -> String raise {
+  let t = text(get(c, "type"))
+  let raw_n = get(c, "length")
+  let n : Int64? = if raw_n is Null { None } else { Some(int_of(raw_n)) }
+  let co = match collation(get(c, "collation")) {
+    Some(name) => name
+    None => "None"
+  }
+  let half = fn() raise {
+    guard n is Some(len) else { fail("missing length in \{c.stringify()}") }
+    floor_div(len, 2L)
+  }
+  let is_n = fn(name : String, len : Int64) { t == name && n == Some(len) }
+  if t == "Bit" || t == "BitN" {
+    "Bit"
+  } else if t == "TinyInt" || is_n("IntN", 1) {
+    "TinyInt"
+  } else if t == "SmallInt" || is_n("IntN", 2) {
+    "SmallInt"
+  } else if t == "Int" || is_n("IntN", 4) {
+    "Int"
+  } else if t == "BigInt" || is_n("IntN", 8) {
+    "BigInt"
+  } else if t == "DateTimeOffset" {
+    "DateTimeOffset(\{py_str(get(c, "scale"))})"
+  } else if t == "DateTime2" {
+    "DateTime2(\{py_str(get(c, "scale"))})"
+  } else if t == "DateTime" || is_n("DateTimeN", 8) {
+    "DateTime"
+  } else if t == "SmallDateTime" || is_n("DateTimeN", 4) {
+    "SmallDateTime"
+  } else if t == "Float" || is_n("FloatN", 8) {
+    "Float"
+  } else if t == "Real" || is_n("FloatN", 4) {
+    "Real"
+  } else if t == "Binary" {
+    "Binary(\{py_str(raw_n)})"
+  } else if t == "NChar" {
+    "NChar(\{half()}, \{co})"
+  } else if t == "UniqueIdentifier" {
+    "UniqueIdentifier"
+  } else if t == "NVarChar" {
+    let len = if n == Some(65535) { "None" } else { "Some(\{half()})" }
+    "NVarChar(\{len}, \{co})"
+  } else if t == "VarChar" {
+    let len = if n == Some(65535) { "None" } else { "Some(\{py_str(raw_n)})" }
+    "VarChar(\{len}, \{co})"
+  } else if t == "Char" {
+    "Char(\{py_str(raw_n)}, \{co})"
+  } else if t == "VarBinary" {
+    "VarBinary(Some(\{py_str(raw_n)}))"
+  } else if t == "Variant" {
+    "Variant"
+  } else if t == "Numeric" || t == "NumericN" {
+    "Numeric(\{py_str(get(c, "precision"))}, \{py_str(get(c, "scale"))})"
+  } else {
+    fail("unknown type \{c.stringify()}")
+  }
+}
+
+///|
+fn mbt_str(s : String) -> String {
+  "\"" +
+  s.replace_all(old="\\", new="\\\\").replace_all(old="\"", new="\\\"") +
+  "\""
+}
+
+///|
+/// Days from 1970-01-01 of a proleptic Gregorian date (Howard Hinnant's
+/// days_from_civil).
+fn days_from_civil(y : Int, m : Int, d : Int) -> Int {
+  let y = if m <= 2 { y - 1 } else { y }
+  let era = (if y >= 0 { y } else { y - 399 }) / 400
+  let yoe = y - era * 400
+  let mp = (m + 9) % 12
+  let doy = (153 * mp + 2) / 5 + d - 1
+  let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+  era * 146097 + doe - 719468
+}
+
+///|
+/// A parsed ISO timestamp: day number (days_from_civil) and the time of day.
+struct Stamp {
+  day : Int
+  hour : Int
+  minute : Int
+  second : Int
+  microsecond : Int
+}
+
+///|
+/// Parses `YYYY-MM-DD[THH:MM[:SS[.f...]]]`, the subset of Python's
+/// `datetime.fromisoformat` the captures use; anything else is refused.
+fn parse_iso(s : String) -> Stamp raise {
+  let cs = s.to_array()
+  let num = fn(start : Int, len : Int) raise {
+    guard start + len <= cs.length() else { fail("bad timestamp \{s}") }
+    let mut v = 0
+    for i in start..<(start + len) {
+      let c = cs[i]
+      guard c >= '0' && c <= '9' else { fail("bad timestamp \{s}") }
+      v = v * 10 + (c.to_int() - '0'.to_int())
+    }
+    v
+  }
+  guard cs.length() >= 10 && cs[4] == '-' && cs[7] == '-' else {
+    fail("bad timestamp \{s}")
+  }
+  let day = days_from_civil(num(0, 4), num(5, 2), num(8, 2))
+  if cs.length() == 10 {
+    return { day, hour: 0, minute: 0, second: 0, microsecond: 0, }
+  }
+  guard cs.length() >= 16 && (cs[10] == 'T' || cs[10] == ' ') && cs[13] == ':' else {
+    fail("bad timestamp \{s}")
+  }
+  let hour = num(11, 2)
+  let minute = num(14, 2)
+  if cs.length() == 16 {
+    return { day, hour, minute, second: 0, microsecond: 0, }
+  }
+  guard cs.length() >= 19 && cs[16] == ':' else { fail("bad timestamp \{s}") }
+  let second = num(17, 2)
+  if cs.length() == 19 {
+    return { day, hour, minute, second, microsecond: 0, }
+  }
+  let digits = cs.length() - 20
+  guard cs[19] == '.' && digits >= 1 && digits <= 6 else {
+    fail("bad timestamp \{s}")
+  }
+  let mut microsecond = num(20, digits)
+  for _ in digits..<6 {
+    microsecond = microsecond * 10
+  }
+  { day, hour, minute, second, microsecond, }
+}
+
+///|
+/// Seconds into the day as Python computes them (int + float).
+fn day_seconds(d : Stamp) -> Double {
+  (d.hour * 3600 + d.minute * 60 + d.second).to_double() +
+  d.microsecond.to_double() / 1.0e6
+}
+
+///|
+let day_1900 : Int = days_from_civil(1900, 1, 1)
+
+///|
+fn datetime_value(raw : String) -> String raise {
+  let d = parse_iso(raw.trim_end(chars="Z").to_owned())
+  let days = d.day - day_1900
+  "DateTime(\{days}, \{round_half_even(day_seconds(d) * 300.0)})"
+}
+
+///|
+fn hex2(b : Int64) -> String {
+  let h = b.to_string(radix=16)
+  if h.length() < 2 {
+    "0" + h
+  } else {
+    h
+  }
+}
+
+///|
+fn value(v : Json, ty : String) -> String raise {
+  if v is Null {
+    return "Null"
+  }
+  if ty == "Bit" {
+    "Bit(\{if truthy(v) { "true" } else { "false" }})"
+  } else if ty == "TinyInt" || ty == "SmallInt" || ty == "Int" {
+    "\{ty}(\{py_str(v)})"
+  } else if ty == "BigInt" {
+    "BigInt(\{py_str(v)}L)"
+  } else if ty == "DateTime" {
+    datetime_value(text(v))
+  } else if ty == "UniqueIdentifier" {
+    "Guid(@types.parse_guid(\{mbt_str(text(v))}).unwrap())"
+  } else if ty.has_prefix("VarBinary") {
+    let data = StringBuilder()
+    for b in items(get(v, "data")) {
+      data.write_string("\\x\{hex2(int_of(b))}")
+    }
+    "Binary(b\"\{data.to_string()}\")"
+  } else {
+    "String(\{mbt_str(text(v))})"
+  }
+}
+
+///|
+/// Python's `str.isspace` for `str.split()` without arguments.
+fn is_py_space(c : Char) -> Bool {
+  match c {
+    ' ' | '\t' | '\n' | '\r' | '\u{0b}' | '\u{0c}' => true
+    '\u{1c}'..='\u{1f}' | '\u{85}' | '\u{a0}' | '\u{1680}' => true
+    '\u{2000}'..='\u{200a}' | '\u{2028}' | '\u{2029}' | '\u{202f}' => true
+    '\u{205f}' | '\u{3000}' => true
+    _ => false
+  }
+}
+
+///|
+/// Python's `str.split()`: runs of whitespace separate, no empty fields.
+fn split_ws(s : String) -> Array[String] {
+  let out = []
+  let cur = StringBuilder()
+  let mut in_word = false
+  for c in s {
+    if is_py_space(c) {
+      if in_word {
+        out.push(cur.to_string())
+        cur.reset()
+        in_word = false
+      }
+    } else {
+      cur.write_char(c)
+      in_word = true
+    }
+  }
+  if in_word {
+    out.push(cur.to_string())
+  }
+  out
+}
+
+///|
+/// Columns of `SELECT * FROM <view> ...` lines: the 4th word up to any `(`.
+fn select_names(sql : String) -> Array[String] raise {
+  let names = []
+  for line in sql.split("\n") {
+    let line = line.to_owned()
+    if line.has_prefix("SELECT") {
+      let words = split_ws(line)
+      guard words.length() > 3 else { fail("short SELECT line: \{line}") }
+      let word = words[3]
+      names.push(
+        match word.find("(") {
+          Some(i) => word.view(end_offset=i).to_owned()
+          None => word
+        },
+      )
+    }
+  }
+  names
+}
+
+///|
+fn join_strs(xs : Array[Json]) -> String raise {
+  xs.map(x => mbt_str(text(x))).join(", ")
+}
+
+///|
+async fn main_data() -> Map[String, Map[String, String]] {
+  let views : Array[String] = []
+  let desc : Array[Json] = []
+  for name in descriptors {
+    let names = select_names(read_text("\{corpus}/\{name}.sql"))
+    let steps = items(
+      get(load_json("\{corpus}/\{name}.expected.json"), "steps"),
+    )
+    let sets = []
+    for step in steps {
+      if !(step is Null) {
+        for result in items(get(step, "sets")) {
+          sets.push(result)
+        }
+      }
+    }
+    guard names.length() == sets.length() else {
+      fail("\{name}: descriptor count differs from SELECT count")
+    }
+    views.append(names)
+    desc.append(sets)
+  }
+  let seed = load_json(seed_path)
+  let out : Array[String] = []
+  let w = fn(line : String) { out.push(line) }
+  w("// Generated by scripts/gen-sysviews.mbtx from oracle captures")
+  w("// (harness/corpus/catalog/view-descriptors.expected.json,")
+  w("// scripts/sysviews-seed.json). Do not edit by hand.")
+  w("")
+  w("///|")
+  w("/// Catalog view result descriptors, in SQL Server column order.")
+  w("let view_defs : Array[ViewDef] = [")
+  let types_by_view : Map[String, Map[String, String]] = Map([])
+  for i, v in views {
+    let s = desc[i]
+    if skip.contains(v) {
+      continue
+    }
+    let parts = v.split(".").map(p => p.to_owned()).to_array()
+    guard parts.length() == 2 else { fail("bad view name \{v}") }
+    let (schema, name) = (parts[0], parts[1])
+    let cols = []
+    let tys : Map[String, String] = Map([])
+    for c in items(get(s, "columns")) {
+      let cname = text(get(c, "name"))
+      let ty = if v == "sys.external_models" && cname == "parameters" {
+        "Json"
+      } else {
+        sql_type(c)
+      }
+      let flags = int_of(get(c, "flags"))
+      let nullable = if (flags & 1L) != 0L { "true" } else { "false" }
+      let computed = if (flags & 0x20L) != 0L { "true" } else { "false" }
+      cols.push("vc(\{mbt_str(cname)}, \{ty}, \{nullable}, \{computed})")
+      tys[cname] = ty
+    }
+    types_by_view[v] = tys
+    w("  { schema: \{mbt_str(schema)}, name: \{mbt_str(name)}, columns: [")
+    for c in cols {
+      w("    \{c},")
+    }
+    w("  ] },")
+  }
+  // Hand-written descriptor (cursor work, commit 59e22ac): the DMV is read
+  // as a table function and has no `SELECT * ... WHERE 1 = 0` capture.
+  w(extra_views.trim_end(chars="\n").to_owned())
+  w("]")
+  w("")
+  let seed_rows = fn(key : String, view : String) raise {
+    let d = get(seed, key)
+    let names = items(get(d, "columns")).map(n => text(n))
+    guard types_by_view.get(view) is Some(tys) else { fail("no view \{view}") }
+    let rows = []
+    for r in items(get(d, "rows")) {
+      let r = items(r)
+      let vals = []
+      for i in 0..<@cmp.minimum(names.length(), r.length()) {
+        guard tys.get(names[i]) is Some(ty) else {
+          fail("\{view} has no column \{names[i]}")
+        }
+        vals.push(value(r[i], ty))
+      }
+      rows.push("[" + vals.join(", ") + "]")
+    }
+    (names, rows)
+  }
+  for
+    spec in [
+      ("system_objects", "sys.objects", "seed_system_objects"),
+      ("types", "sys.types", "seed_types"),
+      ("databases", "sys.databases", "seed_databases"),
+    ] {
+    let (key, view, var_name) = spec
+    let (names, rows) = seed_rows(key, view)
+    w("///|")
+    w("/// Columns: \{names.join(", ")}")
+    w("let \{var_name} : Array[Array[@types.Value]] = [")
+    for r in rows {
+      w("  \{r},")
+    }
+    w("]")
+    w("")
+  }
+  w("///|")
+  w(
+    "let seed_database_columns : Array[String] = [\{join_strs(items(get(get(seed, "databases"), "columns")))}]",
+  )
+  w("")
+  w("///|")
+  w(
+    "let seed_system_object_columns : Array[String] = [\{join_strs(items(get(get(seed, "system_objects"), "columns")))}]",
+  )
+  w("")
+  w("///|")
+  w(
+    "let seed_type_columns : Array[String] = [\{join_strs(items(get(get(seed, "types"), "columns")))}]",
+  )
+  let scoped = get(
+    load_json("\{corpus}/sql2025/scoped-configurations.expected.json"),
+    "steps",
+  )
+  let scoped_rows = items(get(at(get(at(scoped, 0), "sets"), 0), "rows"))
+  let scoped_types = items(get(at(get(at(scoped, 1), "sets"), 0), "rows"))
+  w("")
+  w("///|")
+  w("// Captured defaults; mutable settings are overlaid by view_rows.")
+  w("let seed_scoped_configurations : Array[Array[@types.Value]] = [")
+  for i in 0..<@cmp.minimum(scoped_rows.length(), scoped_types.length()) {
+    let row = scoped_rows[i]
+    let props = scoped_types[i]
+    guard at(row, 0) == at(props, 0) && at(row, 3) is Null else {
+      fail("scoped configuration rows and types disagree")
+    }
+    let kind = at(props, 1)
+    let mut ty = match kind {
+      String("int") => Some("Int")
+      String("bit") => Some("Bit")
+      String("smallint") => Some("SmallInt")
+      _ => None
+    }
+    if kind is String("nvarchar") {
+      guard at(props, 4) is String("SQL_Latin1_General_CP1_CI_AS") else {
+        fail("unexpected scoped configuration collation")
+      }
+      ty = Some(
+        "NVarChar(Some(\{floor_div(int_of(at(props, 3)), 2L)}), coll_default)",
+      )
+    }
+    guard ty is Some(ty) else { fail("unknown scoped configuration type") }
+    let payload = value(at(row, 2), ty)
+    w(
+      "  [Int(\{py_str(at(row, 0))}), String(\{mbt_str(text(at(row, 1)))}), Variant(\{payload}, \{ty}), Null, Bit(true)],",
+    )
+  }
+  w("]")
+  let configurations = load_json(
+    "harness/fixtures/configurations.expected.json",
+  )
+  let rows = items(
+    get(at(get(get(configurations, "catalog"), "sets"), 0), "rows"),
+  )
+  let props = items(
+    get(at(get(get(configurations, "catalogTypes"), "sets"), 0), "rows"),
+  )
+  guard rows.length() == props.length() else {
+    fail("configuration rows and types differ in length")
+  }
+  w("")
+  w("///|")
+  w("// Default instance configuration, captured on the pinned oracle.")
+  w("let seed_configurations : Array[Array[@types.Value]] = [")
+  for i, row in rows {
+    let types = items(props[i])
+    let row = items(row)
+    guard types.length() == 5 &&
+      row[0] == types[0] &&
+      types[1:].iter().all(t => t is String("int")) else {
+      fail("unexpected configuration types")
+    }
+    let vals = ["Int(\{py_str(row[0])})", value(row[1], "NVarChar")]
+    for n in row[2:@cmp.minimum(6, row.length())] {
+      vals.push("Variant(Int(\{py_str(n)}), Int)")
+    }
+    vals.push(value(row[6], "NVarChar"))
+    vals.push(value(row[7], "Bit"))
+    vals.push(value(row[8], "Bit"))
+    w("  [" + vals.join(", ") + "],")
+  }
+  w("]")
+  @fs.write_file(out_path, out.join("\n") + "\n")
+  types_by_view
+}
+
+///|
+/// A TSV dump: header and rows, `\N` as None, `\t` `\n` `\\` unescaped.
+async fn read_tsv(name : String) -> (Array[String], Array[Array[String?]]) {
+  let lines = read_text("\{system_dir}/\{name}")
+    .trim_end(chars="\n")
+    .split("\n")
+    .map(l => l.to_owned())
+    .to_array()
+  let head = lines[0].split("\t").map(v => v.to_owned()).to_array()
+  let unesc = fn(v : StringView) -> String? {
+    if v == "\\N" {
+      None
+    } else {
+      Some(
+        v
+        .to_owned()
+        .replace_all(old="\\t", new="\t")
+        .replace_all(old="\\n", new="\n")
+        .replace_all(old="\\\\", new="\\"),
+      )
+    }
+  }
+  (
+    head,
+    lines[1:].iter().map(l => l.split("\t").map(unesc).to_array()).to_array(),
+  )
+}
+
+///|
+fn cell(r : Array[String?], i : Int) -> String raise {
+  guard i < r.length() else { fail("short TSV row") }
+  guard r[i] is Some(v) else { fail("unexpected \\N in TSV column \{i}") }
+  v
+}
+
+///|
+/// Python's `str()` of a TSV cell (`None` for `\N`).
+fn py_cell(r : Array[String?], i : Int) -> String raise {
+  guard i < r.length() else { fail("short TSV row") }
+  match r[i] {
+    Some(v) => v
+    None => "None"
+  }
+}
+
+///|
+/// Python's `int()` of a decimal string (optional sign, digits only).
+fn parse_int(s : String) -> Int64 raise {
+  let digits = if s.has_prefix("-") || s.has_prefix("+") {
+    s.view(start_offset=1)
+  } else {
+    s.view()
+  }
+  guard digits.length() > 0 && digits.iter().all(c => c >= '0' && c <= '9') else {
+    fail("invalid int \{s}")
+  }
+  @string.parse_int64(s.trim_start(chars="+"))
+}
+
+///|
+fn units(raw : String, base : Int) -> Int64 raise {
+  let d = parse_iso(raw)
+  (d.day - base).to_int64() * 25920000L +
+  round_half_even(day_seconds(d) * 300.0)
+}
+
+///|
+/// Code point order, as Python sorts strings.
+fn py_compare(a : String, b : String) -> Int {
+  a.to_array().lexical_compare(b.to_array())
+}
+
+///|
+/// sysviews_system_data.mbt: sys.system_objects, sys.system_columns and
+/// sys.server_principals rows (scripts/system-catalog/*.tsv, dumped by
+/// harness/src/dump-system-catalog.mjs). Objects and columns are compact
+/// text parsed on first use (session/system_catalog.mbt).
+async fn system(types_by_view : Map[String, Map[String, String]]) -> Unit {
+  let out : Array[String] = []
+  let w = fn(line : String) { out.push(line) }
+  w(
+    "// Generated by scripts/gen-sysviews.mbtx from scripts/system-catalog/*.tsv",
+  )
+  w("// (dumped from the oracle by harness/src/dump-system-catalog.mjs).")
+  w("// Do not edit by hand.")
+  w("")
+  let (_, objs) = read_tsv("system_objects.tsv")
+  let mut base : Int? = None
+  for r in objs {
+    let day = parse_iso(cell(r, 5)).day
+    base = match base {
+      Some(b) if b <= day => Some(b)
+      _ => Some(day)
+    }
+  }
+  guard base is Some(base) else { fail("no system objects") }
+  let descs : Map[String, String] = Map([])
+  for r in objs {
+    guard cell(r, 0).find("|") is None else { fail("| in object name") }
+    let code = cell(r, 3)
+    let desc = cell(r, 4)
+    match descs.get(code) {
+      Some(seen) =>
+        if seen != desc {
+          fail("type \{code} has two descriptions")
+        }
+      None => descs[code] = desc
+    }
+  }
+  w("///|")
+  w("/// Day (since 1900-01-01) that system object dates count from.")
+  w("let system_objects_base_day : Int = \{base - day_1900}")
+  w("")
+  w("///|")
+  w("/// type code -> type_desc of system objects.")
+  w("let system_object_descs : Array[(String, String)] = [")
+  let sorted = descs.to_array()
+  sorted.sort_by((a, b) => py_compare(a.0, b.0))
+  for kv in sorted {
+    w("  (\{mbt_str(kv.0)}, \{mbt_str(kv.1)}),")
+  }
+  w("]")
+  w("")
+  w("///|")
+  w(
+    "/// sys.system_objects: name|object_id|schema_id|type|create|modify, dates",
+  )
+  w("/// in datetime units (1/300 s) since the base day.")
+  w("let system_objects_text : String =")
+  for r in objs {
+    w(
+      "  #|\{py_cell(r, 0)}|\{py_cell(r, 1)}|\{py_cell(r, 2)}|\{py_cell(r, 3)}|\{units(cell(r, 5), base)}|\{units(cell(r, 6), base)}",
+    )
+  }
+  w("")
+  let (_, cols) = read_tsv("system_columns.tsv")
+  // Distinct (system_type_id .. collation_name) tuples, in first-seen order.
+  let combo_key = fn(r : Array[String?]) raise {
+    guard r.length() >= 9 else { fail("short TSV row") }
+    r[3:9]
+    .iter()
+    .map(v => {
+      match v {
+        Some(s) => "S" + s
+        None => "N"
+      }
+    })
+    .join("\u{1}")
+  }
+  let combos : Map[String, Int] = Map([])
+  let combo_rows : Array[Array[String?]] = []
+  for r in cols {
+    let k = combo_key(r)
+    if !combos.contains(k) {
+      combos[k] = combos.length()
+      combo_rows.push(r[3:9].to_owned())
+    }
+  }
+  w("///|")
+  w(
+    "/// (system_type_id, user_type_id, max_length, precision, scale, collation",
+  )
+  w("/// or \"\") combinations of system columns.")
+  w("let system_column_types : Array[(Int, Int, Int, Int, Int, String)] = [")
+  for k in combo_rows {
+    let coll = match k[5] {
+      Some(s) => s
+      None => ""
+    }
+    w(
+      "  (\{py_cell(k, 0)}, \{py_cell(k, 1)}, \{py_cell(k, 2)}, \{py_cell(k, 3)}, \{py_cell(k, 4)}, \{mbt_str(coll)}),",
+    )
+  }
+  w("]")
+  w("")
+  w("///|")
+  w("/// sys.system_columns: `@object_id` lines, then one line per column in")
+  w("/// column_id order: name|type index|is_nullable + 2 * is_ansi_padded.")
+  w("let system_columns_text : String =")
+  // Python starts from `prev = None`, which a `\N` object_id also equals.
+  let mut prev : String? = None
+  for r in cols {
+    let name = cell(r, 1)
+    guard name.find("|") is None && !name.has_prefix("@") else {
+      fail("bad column name \{name}")
+    }
+    if r[0] != prev {
+      w("  #|@\{py_cell(r, 0)}")
+      prev = r[0]
+    }
+    guard combos.get(combo_key(r)) is Some(index) else { fail("no combo") }
+    w(
+      "  #|\{name}|\{index}|\{parse_int(cell(r, 9)) + 2L * parse_int(cell(r, 10))}",
+    )
+  }
+  w("")
+  let (head, princ) = read_tsv("server_principals.tsv")
+  guard types_by_view.get("sys.server_principals") is Some(tys) else {
+    fail("no sys.server_principals descriptor")
+  }
+  w("///|")
+  w("/// sys.server_principals. Columns: \{head.join(", ")}")
+  w("let seed_server_principals : Array[Array[@types.Value]] = [")
+  for r in princ {
+    let vals = []
+    for i in 0..<@cmp.minimum(head.length(), r.length()) {
+      guard tys.get(head[i]) is Some(ty) else {
+        fail("sys.server_principals has no column \{head[i]}")
+      }
+      match r[i] {
+        None => vals.push("Null")
+        Some(v) =>
+          if ty.has_prefix("VarBinary") {
+            let data = StringBuilder()
+            let units = v.to_array()
+            for j = 0; j < units.length(); j = j + 2 {
+              data.write_string("\\x")
+              data.write_string(
+                String::from_array(units[j:@cmp.minimum(j + 2, units.length())]).to_lower(),
+              )
+            }
+            vals.push("Binary(b\"\{data.to_string()}\")")
+          } else if ty is ("Bit" | "TinyInt" | "SmallInt" | "Int" | "BigInt") {
+            let n = parse_int(v)
+            vals.push(
+              value(Json::number(n.to_double(), repr=n.to_string()), ty),
+            )
+          } else {
+            vals.push(value(Json::string(v), ty))
+          }
+      }
+    }
+    w("  [" + vals.join(", ") + "],")
+  }
+  w("]")
+  w("")
+  w("///|")
+  w(
+    "let seed_server_principal_columns : Array[String] = [\{head.map(mbt_str).join(", ")}]",
+  )
+  @fs.write_file(out_system_path, out.join("\n") + "\n")
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-sysviews.mbtx") {
+    fail("run from the repo root: moon run scripts/gen-sysviews.mbtx")
+  }
+  system(main_data())
+}

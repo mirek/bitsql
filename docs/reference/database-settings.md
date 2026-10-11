@@ -145,7 +145,7 @@ UPPER/LOWER of nvarchar map every UTF-16 unit by the collation's table
 version: version-0 collations (SQL_Latin1_General_CP1_*, Latin1_General_*)
 change 1326 units, version-100 collations 1764 (all `_100` variants alike,
 BIN2 included), from the captured msduck `unicode-case` tables
-(`scripts/gen-case-map.py`). Surrogates and supplementary letters are
+(`scripts/gen-case-map.mbtx`). Surrogates and supplementary letters are
 unchanged.
 
 ## Session SET options (2026-10-04, corpus `tail/settings-*`, msduck-runs session-property-context)

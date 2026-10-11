@@ -1,6 +1,6 @@
 -- Result descriptors (column names, types, flags) of the catalog views bitsql
 -- emulates. src/core/session/sysviews_schema.mbt is generated from this
--- capture (scripts/gen-sysviews.py).
+-- capture (scripts/gen-sysviews.mbtx).
 SELECT * FROM sys.objects WHERE 1 = 0;
 SELECT * FROM sys.tables WHERE 1 = 0;
 SELECT * FROM sys.views WHERE 1 = 0;

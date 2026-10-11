@@ -119,7 +119,7 @@ state 2 after result metadata.
 `harness/fixtures/configurations.expected.json` contains all 107 default
 `sys.configurations` rows and their captured variant base types (all int),
 plus 26 sequential configuration procedure/RECONFIGURE probes. Generate the
-view with `scripts/gen-sysviews.py`. Reproduce the fixture with
+view with `scripts/gen-sysviews.mbtx`. Reproduce the fixture with
 `node gen/capture-configurations.mjs --verify` from `harness/`; the script
 mutates only its own disposable oracle, never the shared instance.
 

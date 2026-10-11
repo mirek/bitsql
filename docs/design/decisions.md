@@ -364,7 +364,7 @@ it no longer folds string ↔ date/time casts (`session_dependent_cast` in
 dateformat-dependent conversions are evaluated too. Language data (34
 languages: names, aliases, date order, first weekday, month and day names,
 INFO 5703 text) is generated from the oracle's sys.syslanguages
-(`scripts/gen-languages.py`). SET LANGUAGE applies the language's DATEFORMAT
+(`scripts/gen-languages.mbtx`). SET LANGUAGE applies the language's DATEFORMAT
 and DATEFIRST unless SET DATEFORMAT / DATEFIRST already ran in the same
 request (captured; flags reset per request). Error messages under a language
 with localized messages (German, French, …) stay English: fidelity trap.

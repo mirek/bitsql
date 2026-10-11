@@ -1,0 +1,201 @@
+///|
+// Generates src/core/types/case_data.mbt: UPPER/LOWER of every UTF-16 code
+// unit as SQL Server maps it, for version-0 collations
+// (SQL_Latin1_General_CP1_*, Latin1_General_*) and version-100 collations
+// (Latin1_General_100_*), from the captured msduck unicode-case mappings
+// (harness/corpus/msduck-runs/unicode-case.expected.json, cases
+// 001-sql-latin1-general-cp1-ci-as-mapping and
+// 012-latin1-general-100-ci-as-mapping; every _100 collation, BIN2 included,
+// maps alike).
+//
+// Run from the repo root: moon run scripts/gen-case-map.mbtx && moon fmt
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+let src_path : String = "harness/corpus/msduck-runs/unicode-case.expected.json"
+
+///|
+let out_path : String = "src/core/types/case_data.mbt"
+
+///|
+fn get(j : Json, key : String) -> Json raise {
+  guard j is Object(m) else { fail("not an object looking up \{key}") }
+  guard m.get(key) is Some(v) else { fail("missing key \{key}") }
+  v
+}
+
+///|
+fn items(j : Json) -> Array[Json] raise {
+  guard j is Array(a) else { fail("not an array") }
+  a
+}
+
+///|
+fn first(j : Json) -> Json raise {
+  guard items(j) is [v, ..] else { fail("empty array") }
+  v
+}
+
+///|
+fn last(j : Json) -> Json raise {
+  guard items(j).last() is Some(v) else { fail("empty array") }
+  v
+}
+
+///|
+/// Python's f-string rendering of a JSON integer. Non-integral numbers are
+/// refused: the capture holds none, and a parsed Json cannot tell `1.0` (a
+/// Python float) from `1`.
+fn py_int(j : Json) -> String raise {
+  match j {
+    Number(_, repr=Some(r)) if r
+      .iter()
+      .all(c => c == '-' || (c >= '0' && c <= '9')) =>
+      if r == "-0" {
+        "0"
+      } else {
+        r
+      }
+    Number(d, repr=None) if d == d.floor() && d.abs() < 9007199254740992.0 =>
+      d.to_int64().to_string()
+    _ => fail("not an integer: \{j.stringify()}")
+  }
+}
+
+///|
+/// Value of the `\uXXXX` escape at `i` (pointing at the backslash), if any.
+fn escape_unit(t : Array[Char], i : Int) -> Int? {
+  guard i + 5 < t.length() && t[i] == '\\' && t[i + 1] == 'u' else {
+    return None
+  }
+  let mut v = 0
+  for k in (i + 2)..<(i + 6) {
+    let c = t[k]
+    let d = if c >= '0' && c <= '9' {
+      c.to_int() - '0'.to_int()
+    } else if c >= 'a' && c <= 'f' {
+      c.to_int() - 'a'.to_int() + 10
+    } else if c >= 'A' && c <= 'F' {
+      c.to_int() - 'A'.to_int() + 10
+    } else {
+      return None
+    }
+    v = v * 16 + d
+  }
+  Some(v)
+}
+
+///|
+/// `@json.parse` rejects lone UTF-16 surrogate escapes (`"\ud83e"`), which
+/// Python's json accepts and which the capture holds in string cells (the
+/// mapping of each surrogate unit is captured too). Only the numeric rows of
+/// two cases are read here, so lone surrogate escapes become `�`;
+/// paired ones and every other escape are kept as they are.
+fn replace_lone_surrogates(text : String) -> String {
+  let t = text.to_array()
+  let b = StringBuilder()
+  let mut i = 0
+  while i < t.length() {
+    if t[i] != '\\' || i + 1 >= t.length() {
+      b.write_char(t[i])
+      i += 1
+      continue
+    }
+    match escape_unit(t, i) {
+      Some(hi) if hi >= 0xD800 && hi <= 0xDBFF =>
+        match escape_unit(t, i + 6) {
+          Some(lo) if lo >= 0xDC00 && lo <= 0xDFFF => {
+            b.write_string(String::from_array(t[i:i + 12]))
+            i += 12
+          }
+          _ => {
+            b.write_string("\\ufffd")
+            i += 6
+          }
+        }
+      Some(lo) if lo >= 0xDC00 && lo <= 0xDFFF => {
+        b.write_string("\\ufffd")
+        i += 6
+      }
+      _ => {
+        // Any other escape (`\\` included) is copied as a pair, so the scan
+        // never mistakes an escaped backslash for the start of an escape.
+        b.write_char(t[i])
+        b.write_char(t[i + 1])
+        i += 2
+      }
+    }
+  }
+  b.to_string()
+}
+
+///|
+/// One `let` table of (unit, LOWER, UPPER) rows, packed onto lines of at most
+/// 88 characters.
+fn table(
+  cases : Json,
+  name : String,
+  label : String,
+  comment : String,
+) -> Array[String] raise {
+  let out = [
+    "///|",
+    "/// \{comment}",
+    "let \{label} : Array[(Int, Int, Int)] = [",
+  ]
+  let mut line = " "
+  for
+    r in items(
+      get(first(get(last(get(get(cases, name), "steps")), "sets")), "rows"),
+    ) {
+    guard items(r) is [unit, lower, upper] else {
+      fail("\{name}: row is not a triple")
+    }
+    let item = " (\{py_int(unit)}, \{py_int(lower)}, \{py_int(upper)}),"
+    if line.length() + item.length() > 88 {
+      out.push(line)
+      line = " "
+    }
+    line = line + item
+  }
+  out.push(line)
+  out.push("]")
+  out
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-case-map.mbtx") {
+    fail("run from the repo root: moon run scripts/gen-case-map.mbtx")
+  }
+  let source = @fs.read_file(src_path).text().replace_all(old="\r\n", new="\n")
+  let cases = get(@json.parse(replace_lone_surrogates(source)), "cases")
+  let lines = [
+    "// Generated by scripts/gen-case-map.mbtx from captured SQL Server case", "// mappings (harness/corpus/msduck-runs/unicode-case.expected.json). Do not",
+    "// edit. Rows: (unit, LOWER, UPPER) for every UTF-16 unit LOWER or UPPER", "// changes, sorted by unit.",
+    "",
+  ]
+  lines.append(
+    table(
+      cases, "001-sql-latin1-general-cp1-ci-as-mapping", "case_map_v0", "Version-0 collations.",
+    ),
+  )
+  lines.push("")
+  lines.append(
+    table(
+      cases, "012-latin1-general-100-ci-as-mapping", "case_map_v100", "Version-100 collations.",
+    ),
+  )
+  @fs.write_file(out_path, lines.join("\n") + "\n")
+  let root = match @env.current_dir() {
+    Some(dir) => dir
+    None => "."
+  }
+  println("wrote \{root}/\{out_path}")
+}

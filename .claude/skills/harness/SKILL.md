@@ -435,7 +435,7 @@ Start the host with `--database NAME` so the app's database exists at login
   in a setup step and drops it at the end (orm/object-ids).
   `npm run probe` rejects `@param` names that are not identifiers (`@0`).
 - 2026-10-04 (long tail round 4): `harness/src/dump-system-catalog.mjs`
-  dumps sys.system_objects / system_columns for `scripts/gen-sysviews.py`.
+  dumps sys.system_objects / system_columns for `scripts/gen-sysviews.mbtx`.
   In process isolation the case database is master, so captures that read
   another database as `master` (gaps-catalog #107/#115/#117, sys-databases
   #003) or print `master` fail only there; check them with `BITSQL_ADDR`

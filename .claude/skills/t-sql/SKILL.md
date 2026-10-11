@@ -792,7 +792,7 @@ mention the correction here.
   varchar(min(8n, 8000)) and LEFT/RIGHT/SUBSTRING(…, k) varchar(min(8k, n)),
   `_SC` LEN/LEFT/RIGHT/SUBSTRING/REVERSE count a surrogate pair once.
   UPPER/LOWER map units by table version (v0: 1326 units, v100: 1764;
-  msduck unicode-case, `scripts/gen-case-map.py`).
+  msduck unicode-case, `scripts/gen-case-map.mbtx`).
 
 
 - 2026-10-04 (cursors, msduck-runs `cursor`, corpus `stmts/cursor-*`,

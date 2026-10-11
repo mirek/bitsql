@@ -1,7 +1,7 @@
 // Dumps the rows of SQL Server's system objects (sys.system_objects), their
 // columns (sys.system_columns) and the built-in server principals
 // (sys.server_principals) from a fresh oracle database into compact TSV files
-// read by scripts/gen-sysviews.py.
+// read by scripts/gen-sysviews.mbtx.
 // Usage (in harness/): node src/dump-system-catalog.mjs ../scripts/system-catalog
 //
 // Only the columns that vary are dumped; the generator documents the

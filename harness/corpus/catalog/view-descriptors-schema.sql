@@ -1,5 +1,5 @@
 -- Result descriptors of INFORMATION_SCHEMA parameter, constraint-usage and schema views
--- (appended to view_defs by scripts/gen-sysviews.py after
+-- (appended to view_defs by scripts/gen-sysviews.mbtx after
 -- view-descriptors-types.sql).
 SELECT * FROM INFORMATION_SCHEMA.PARAMETERS WHERE 1 = 0;
 SELECT * FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE 1 = 0;
