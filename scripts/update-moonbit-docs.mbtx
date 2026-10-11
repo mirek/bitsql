@@ -1,0 +1,799 @@
+///|
+// Refresh the vendored MoonBit reference docs under docs/moonbit/.
+//
+// Idempotent and safe to rerun whenever a new MoonBit toolchain, docs revision
+// or moonbitlang/async release appears. Needs only `git`, `moon` and `moonc`.
+//
+// Sources (all fetched fresh, shallow):
+//   * moonbitlang/moonbit-docs  -> docs/moonbit/language, docs/moonbit/toolchain
+//       `{literalinclude}` directives are resolved inline so each page is
+//       self-contained (the upstream pages are mostly includes).
+//   * moonbitlang/skills        -> docs/moonbit/agent-guide (moonbit-agent-guide skill)
+//   * moonbitlang/async @ tag   -> docs/moonbit/async (README, examples index, every
+//                                  package's pkg.generated.mbti)
+//   * local toolchain core lib  -> docs/moonbit/core-api (every pkg.generated.mbti
+//                                  of ~/.moon/lib/core, matching the installed moonc)
+//
+// Writes docs/moonbit/VERSIONS.md recording exactly what was fetched.
+//
+// Run it where the pinned toolchain is installed (on Intel macOS: inside the
+// dev container, see `.devcontainer/`):
+//   moon run scripts/update-moonbit-docs.mbtx                # latest async from registry
+//   moon run scripts/update-moonbit-docs.mbtx --async-version 0.22.4
+//   moon run scripts/update-moonbit-docs.mbtx --keep-tmp     # leave clones for inspection
+//
+// Text handling mirrors Python's `read_text` (universal newlines),
+// `str.splitlines` and `str.strip` exactly, so the output is byte-identical to
+// the Python script this replaced.
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/async/stdio",
+  "moonbitlang/core/argparse",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+}
+
+///|
+const DOCS_REPO = "https://github.com/moonbitlang/moonbit-docs.git"
+
+///|
+const SKILLS_REPO = "https://github.com/moonbitlang/skills.git"
+
+///|
+const ASYNC_REPO = "https://github.com/moonbitlang/async.git"
+
+///|
+/// Pages from moonbit-docs/next worth vendoring. Others (tutorials, wasm
+/// component model, examples) are irrelevant to this project.
+let language_pages : Array[String] = [
+  "introduction", "fundamentals", "methods", "derive", "error-handling", "packages",
+  "tests", "benchmarks", "docs", "attributes", "ffi", "async-experimental", "lexical-conventions",
+]
+
+///|
+let toolchain_pages : Array[String] = [
+  "moon/index", "moon/tutorial", "moon/commands", "moon/module", "moon/package",
+  "moon/workspace", "moon/coverage", "moon/package-manage-tour", "moonide/index",
+]
+
+// --- Python string semantics ----------------------------------------------------
+
+///|
+/// `str.isspace` (and regex `\s`) for one UTF-16 unit; every such character is
+/// in the BMP, so code-unit offsets found with it are code-point safe.
+fn is_space(u : UInt16) -> Bool {
+  match u.to_int() {
+    0x09..=0x0d | 0x1c..=0x20 | 0x85 | 0xa0 | 0x1680 | 0x2000..=0x200a => true
+    0x2028 | 0x2029 | 0x202f | 0x205f | 0x3000 => true
+    _ => false
+  }
+}
+
+///|
+/// `s.lstrip()`: the offset of the first non-space unit.
+fn space_prefix(s : String) -> Int {
+  for i = 0; i < s.length(); i = i + 1 {
+    if !is_space(s.at(i)) {
+      break i
+    }
+  } nobreak {
+    s.length()
+  }
+}
+
+///|
+/// `s.strip()`.
+fn strip(s : String) -> String {
+  let start = space_prefix(s)
+  for end = s.length(); end > start; end = end - 1 {
+    if !is_space(s.at(end - 1)) {
+      break s.unsafe_substring(start~, end~)
+    }
+  } nobreak {
+    ""
+  }
+}
+
+///|
+/// `s.splitlines()`: splits on every Python line boundary and drops the
+/// terminators; a trailing terminator does not add an empty line.
+fn splitlines(s : String) -> Array[String] {
+  let lines = []
+  let n = s.length()
+  let mut start = 0
+  let mut i = 0
+  while i < n {
+    match s.at(i).to_int() {
+      0x0a | 0x0b | 0x0c | 0x1c | 0x1d | 0x1e | 0x85 | 0x2028 | 0x2029 => {
+        lines.push(s.unsafe_substring(start~, end=i))
+        i += 1
+        start = i
+      }
+      0x0d => {
+        lines.push(s.unsafe_substring(start~, end=i))
+        i += if i + 1 < n && s.at(i + 1).to_int() == 0x0a { 2 } else { 1 }
+        start = i
+      }
+      _ => i += 1
+    }
+  }
+  if start < n {
+    lines.push(s.unsafe_substring(start~, end=n))
+  }
+  lines
+}
+
+///|
+/// `lines[lo:hi]` with Python's negative-index and clamping rules.
+fn py_slice(lines : Array[String], lo : Int, hi : Int) -> Array[String] {
+  let n = lines.length()
+  let norm = (i : Int) => {
+    if i < 0 {
+      if i + n < 0 {
+        0
+      } else {
+        i + n
+      }
+    } else if i > n {
+      n
+    } else {
+      i
+    }
+  }
+  let lo = norm(lo)
+  let hi = norm(hi)
+  if lo >= hi {
+    []
+  } else {
+    lines[lo:hi].to_owned()
+  }
+}
+
+///|
+/// `int(s)` for ASCII decimal text: surrounding whitespace, an optional sign
+/// and single underscores between digits are accepted.
+fn py_int(s : String) -> Int raise {
+  let t = strip(s)
+  let (neg, digits) = match t.strip_prefix("-") {
+    Some(rest) => (true, rest.to_owned())
+    None => (false, t.strip_prefix("+").map(v => v.to_owned()).unwrap_or(t))
+  }
+  let mut value = 0
+  let mut prev_digit = false
+  for c in digits {
+    match c {
+      '0'..='9' => {
+        value = value * 10 + (c.to_int() - '0'.to_int())
+        prev_digit = true
+      }
+      '_' if prev_digit => prev_digit = false
+      _ => fail("invalid literal for int() with base 10: '\{s}'")
+    }
+  }
+  if !prev_digit {
+    fail("invalid literal for int() with base 10: '\{s}'")
+  }
+  if neg {
+    -value
+  } else {
+    value
+  }
+}
+
+///|
+/// Python's `str` ordering (by code point, then length).
+fn py_compare(a : String, b : String) -> Int {
+  let a = a.to_array()
+  let b = b.to_array()
+  for i = 0; i < a.length() && i < b.length(); i = i + 1 {
+    if a[i] != b[i] {
+      break a[i].compare(b[i])
+    }
+  } nobreak {
+    a.length().compare(b.length())
+  }
+}
+
+///|
+/// `PurePosixPath` ordering: component lists compared element-wise.
+fn parts_compare(a : Array[String], b : Array[String]) -> Int {
+  for i = 0; i < a.length() && i < b.length(); i = i + 1 {
+    let c = py_compare(a[i], b[i])
+    if c != 0 {
+      break c
+    }
+  } nobreak {
+    a.length().compare(b.length())
+  }
+}
+
+// --- paths and files --------------------------------------------------------------
+
+///|
+/// `str(PurePosixPath(p))`: collapses `//` and `.` components, drops a
+/// trailing slash, keeps `..`.
+fn normpath(p : String) -> String {
+  let parts = p
+    .split("/")
+    .filter(s => s != "" && s != ".")
+    .map(s => s.to_owned())
+    .to_array()
+  let body = parts.join("/")
+  if p.has_prefix("//") && !p.has_prefix("///") {
+    "//" + body
+  } else if p.has_prefix("/") {
+    "/" + body
+  } else if body == "" {
+    "."
+  } else {
+    body
+  }
+}
+
+///|
+fn join(base : String, rel : String) -> String {
+  normpath(base + "/" + rel)
+}
+
+///|
+fn parent(p : String) -> String {
+  match p.rev_find("/") {
+    Some(0) => "/"
+    Some(i) => p.unsafe_substring(start=0, end=i)
+    None => "."
+  }
+}
+
+///|
+fn basename(p : String) -> String {
+  match p.rev_find("/") {
+    Some(i) => p.unsafe_substring(start=i + 1, end=p.length())
+    None => p
+  }
+}
+
+///|
+/// `Path.read_text(encoding="utf-8")`: strict UTF-8 (a BOM is kept) with
+/// universal newlines (`\r\n` and `\r` become `\n`).
+async fn read_text(path : String) -> String {
+  let text = @utf8.decode(@fs.read_file(path).binary())
+  if !text.contains_char('\r') {
+    return text
+  }
+  let out = StringBuilder()
+  let n = text.length()
+  for i = 0; i < n; i = i + 1 {
+    let u = text.at(i)
+    if u.to_int() != 0x0d {
+      out.write_char(u.to_int().unsafe_to_char())
+    } else if i + 1 >= n || text.at(i + 1).to_int() != 0x0a {
+      out.write_char('\n')
+    }
+  }
+  out.to_string()
+}
+
+///|
+async fn write(path : String, text : String) -> Unit {
+  @fs.mkdir(parent(path), recursive=true, allow_exist=true)
+  @fs.write_file(path, text, sync=NoSync)
+}
+
+///|
+async fn kind_of(path : String) -> @fs.FileKind? {
+  try @fs.kind(path) catch {
+    _ => None
+  } noraise {
+    k => Some(k)
+  }
+}
+
+///|
+async fn rmtree(path : String) -> Unit {
+  if @fs.exists(path) {
+    @fs.rmdir(path, recursive=true)
+  }
+}
+
+///|
+/// Names in a directory (hidden ones included), unordered.
+async fn entries(dir : String) -> Array[@fs.DirectoryEntry] {
+  let d = @fs.opendir(dir)
+  defer d.close()
+  let out = []
+  while d.next(include_hidden=true) is Some(e) {
+    out.push(e)
+  }
+  out
+}
+
+///|
+/// `sorted(Path(base).rglob(name))` as path components relative to `base`:
+/// every entry called `name` in `base` or any directory below it, not
+/// descending into symlinked directories.
+async fn rglob(base : String, name : String) -> Array[Array[String]] {
+  let found : Array[Array[String]] = []
+  let pending : Array[Array[String]] = [[]]
+  while pending.pop() is Some(rel) {
+    let dir = if rel.is_empty() { base } else { base + "/" + rel.join("/") }
+    for e in entries(dir) {
+      let child = [..rel, e.name]
+      if e.name == name {
+        found.push(child)
+      }
+      if e.is_dir {
+        pending.push(child)
+      }
+    }
+  }
+  found.sort_by(parts_compare)
+  found
+}
+
+///|
+fn has_part(base : String, rel : Array[String], part : String) -> Bool {
+  normpath(base).split("/").any(p => p.to_owned() == part) || rel.contains(part)
+}
+
+// --- processes ----------------------------------------------------------------------
+
+///|
+/// Runs a command, failing on a non-zero exit; returns its stripped stdout.
+async fn run(prog : String, args : Array[String], cwd? : String) -> String {
+  let out = @shell.Cmd(prog, args, cwd?).output()
+  if out.exit_code() != 0 {
+    fail(
+      "\{prog} \{args.join(" ")} exited with \{out.exit_code()}: \{out.stderr()}",
+    )
+  }
+  strip(out.stdout())
+}
+
+///|
+async fn clone(url : String, dest : String, branch? : String) -> String {
+  let args = ["clone", "--depth", "1", "--quiet"]
+  if branch is Some(r) {
+    args.append(["--branch", r])
+  }
+  args.append([url, dest])
+  run("git", args) |> ignore
+  run("git", ["log", "-1", "--format=%H %cs"], cwd=dest)
+}
+
+// --- literalinclude resolution ---------------------------------------------------------
+
+///|
+/// A fence line ``^(\s*)(`{3,})\{literalinclude\}\s+(\S+)\s*$``:
+/// returns `(indent, fence, path)`.
+fn match_fence(line : String) -> (String, String, String)? {
+  let indent_end = space_prefix(line)
+  let mut i = indent_end
+  while i < line.length() && line.at(i).to_int() == '`'.to_int() {
+    i += 1
+  }
+  if i - indent_end < 3 {
+    return None
+  }
+  let fence_end = i
+  let rest = line.unsafe_substring(start=fence_end, end=line.length())
+  guard rest.strip_prefix("{literalinclude}") is Some(tail) else { return None }
+  let tail = tail.to_owned()
+  let path = strip(tail)
+  if space_prefix(tail) == 0 || path == "" {
+    return None
+  }
+  for j in 0..<path.length() {
+    if is_space(path.at(j)) {
+      return None
+    }
+  }
+  Some(
+    (
+      line.unsafe_substring(start=0, end=indent_end),
+      line.unsafe_substring(start=indent_end, end=fence_end),
+      path,
+    ),
+  )
+}
+
+///|
+fn dedent(lines : Array[String]) -> Array[String] {
+  let mut n : Int? = None
+  for l in lines {
+    if strip(l) != "" {
+      let w = space_prefix(l)
+      if n is Some(m) && m <= w {
+        continue
+      }
+      n = Some(w)
+    }
+  }
+  let n = n.unwrap_or(0)
+  lines.map(l => {
+    if strip(l) != "" {
+      l.unsafe_substring(start=n, end=l.length())
+    } else {
+      ""
+    }
+  })
+}
+
+///|
+fn first_index(lines : Array[String], needle : String) -> Int? {
+  for i, l in lines {
+    if l.contains(needle) {
+      return Some(i)
+    }
+  }
+  None
+}
+
+///|
+fn slice_include(
+  text : String,
+  opts : Map[String, String],
+) -> Array[String] raise {
+  let mut lines = splitlines(text)
+  if opts.get("start-after") is Some(marker) &&
+    first_index(lines, marker) is Some(idx) {
+    lines = lines[idx + 1:].to_owned()
+  }
+  if opts.get("end-before") is Some(marker) &&
+    first_index(lines, marker) is Some(idx) {
+    lines = lines[:idx].to_owned()
+  }
+  if opts.get("lines") is Some(spec) {
+    let picked = []
+    for part in spec.split(",") {
+      let part = part.to_owned()
+      let (a, b) = match part.split_once("-") {
+        Some((a, b)) => (a.to_owned(), b.to_owned())
+        None => (part, "")
+      }
+      let lo = py_int(a) - 1
+      let hi = if b != "" { py_int(b) } else { py_int(a) }
+      picked.append(py_slice(lines, lo, hi))
+    }
+    lines = picked
+  }
+  if opts.contains("dedent") {
+    lines = dedent(lines)
+  }
+  // drop MoonBit block separators: noise for a reader
+  lines.filter(l => strip(l) != "///|")
+}
+
+///|
+async fn resolve_includes(
+  md : String,
+  docs_root : String,
+  page : String,
+) -> String {
+  let out = []
+  let src = splitlines(md)
+  let mut i = 0
+  while i < src.length() {
+    guard match_fence(src[i]) is Some((indent, fence, path)) else {
+      out.push(src[i])
+      i += 1
+      continue
+    }
+    let opts : Map[String, String] = Map([])
+    i += 1
+    while i < src.length() && strip(src[i]) != fence {
+      let opt = strip(src[i])
+      if opt.strip_prefix(":") is Some(kv) {
+        let kv = kv.to_owned()
+        match kv.split_once(":") {
+          Some((k, v)) => opts[strip(k.to_owned())] = strip(v.to_owned())
+          None => opts[strip(kv)] = ""
+        }
+      }
+      i += 1
+    }
+    i += 1 // closing fence
+    let target = if path.has_prefix("/") {
+      join(docs_root, path.trim_start(chars="/").to_owned())
+    } else {
+      join(parent(page), path)
+    }
+    let lang = opts.get("language").unwrap_or("")
+    if !@fs.exists(target) {
+      out.push("\{indent}<!-- unresolved include: \{path} -->")
+      continue
+    }
+    let body = slice_include(read_text(target), opts)
+    out.push("\{indent}```\{lang}")
+    for l in body {
+      out.push(if l != "" { indent + l } else { "" })
+    }
+    out.push("\{indent}```")
+  }
+  out.join("\n") + "\n"
+}
+
+// --- sections ----------------------------------------------------------------------
+
+///|
+fn header(src : String) -> String {
+  "<!-- GENERATED by scripts/update-moonbit-docs.mbtx from \{src} -- do not edit; rerun the script -->\n\n"
+}
+
+///|
+async fn sync_docs(tmp : String, out : String) -> String {
+  let rev = clone(DOCS_REPO, tmp + "/moonbit-docs")
+  let next_root = tmp + "/moonbit-docs/next"
+  for
+    group_pages in [
+      ("language", language_pages),
+      ("toolchain", toolchain_pages),
+    ] {
+    let (group, pages) = group_pages
+    for name in pages {
+      let page = "\{next_root}/\{group}/\{name}.md"
+      if !@fs.exists(page) {
+        @stdio.stderr.write(
+          "  ! missing upstream page \{group}/\{name}.md (renamed?)\n",
+        )
+        continue
+      }
+      let text = resolve_includes(read_text(page), next_root, page)
+      let dest = "\{out}/\{group}/\{name.replace_all(old="/", new="-")}.md"
+      write(dest, header("moonbit-docs next/\{group}/\{name}.md") + text)
+    }
+  }
+  // error code index is large; keep only the listing of codes -> titles
+  let codes_dir = next_root + "/language/error_codes"
+  if kind_of(codes_dir) is Some(Directory) {
+    let names = entries(codes_dir)
+      .map(e => e.name)
+      .filter(n => n.has_prefix("E") && n.has_suffix(".md"))
+    names.sort_by(py_compare)
+    let rows = []
+    for f in names {
+      let lines = splitlines(read_text("\{codes_dir}/\{f}"))
+      let stem = f.unsafe_substring(start=0, end=f.length() - 3)
+      let first = lines
+        .iter()
+        .find_first(l => l.has_prefix("#"))
+        .unwrap_or(stem)
+      rows.push("- \{strip(first.trim_start(chars="# ").to_owned())}")
+    }
+    write(
+      out + "/language/error-codes-index.md",
+      header("moonbit-docs next/language/error_codes") +
+      "# Compiler error/warning codes\n\nUse `moon explain <code>` for details.\n\n" +
+      rows.join("\n") +
+      "\n",
+    )
+  }
+  rev
+}
+
+///|
+async fn sync_agent_guide(tmp : String, out : String) -> String {
+  let rev = clone(SKILLS_REPO, tmp + "/skills")
+  let src = tmp + "/skills/skills/moonbit-agent-guide"
+  let dest = out + "/agent-guide"
+  for
+    f in [
+      "SKILL.md", "ide.md", "references/moonbit-language-fundamentals.md", "references/advanced-moonbit-build.md",
+    ] {
+    let p = "\{src}/\{f}"
+    if @fs.exists(p) {
+      write(
+        "\{dest}/\{basename(f)}",
+        header("moonbitlang/skills moonbit-agent-guide/\{f}") + read_text(p),
+      )
+    }
+  }
+  rev
+}
+
+///|
+/// The `Latest:` version from `moon view moonbitlang/async`
+/// (regex `Latest:\s*(\S+)`).
+async fn latest_async_version() -> String {
+  let out = run("moon", ["view", "moonbitlang/async"])
+  let mut rest = out.view()
+  while rest.find("Latest:") is Some(at) {
+    rest = rest.view(start_offset=at + "Latest:".length())
+    let s = rest.to_owned()
+    let start = space_prefix(s)
+    let mut end = start
+    while end < s.length() && !is_space(s.at(end)) {
+      end += 1
+    }
+    if end > start {
+      return s.unsafe_substring(start~, end~)
+    }
+  }
+  fail("could not determine latest moonbitlang/async version")
+}
+
+///|
+async fn sync_async(tmp : String, out : String, version : String) -> String {
+  let src = tmp + "/async"
+  let rev = clone(ASYNC_REPO, src, branch="v\{version}")
+  let dest = out + "/async"
+  write(
+    dest + "/README.md",
+    header("moonbitlang/async v\{version} README.md") +
+    read_text(src + "/README.md"),
+  )
+  let ex = src + "/examples/README.md"
+  if @fs.exists(ex) {
+    write(
+      dest + "/examples.md",
+      header("moonbitlang/async v\{version} examples/README.md") + read_text(ex),
+    )
+  }
+  for name in ["tcp_echo_server", "tcp_server_benchmark"] {
+    let d = "\{src}/examples/\{name}"
+    if kind_of(d) is Some(Directory) {
+      let files = entries(d).map(e => e.name)
+      files.sort_by(py_compare)
+      let body = StringBuilder()
+      for f in files {
+        let p = "\{d}/\{f}"
+        if kind_of(p) is Some(Regular) {
+          body.write_string("\n## \{f}\n\n```moonbit\n\{read_text(p)}```\n")
+        }
+      }
+      write(
+        "\{dest}/example-\{name}.md",
+        header("moonbitlang/async v\{version} examples/\{name}") +
+        "# \{name}\n" +
+        body.to_string(),
+      )
+    }
+  }
+  let api = StringBuilder()
+  let src_dir = src + "/src"
+  for m in rglob(src_dir, "pkg.generated.mbti") {
+    if has_part(src_dir, m, "internal") {
+      continue
+    }
+    let rel = m[:m.length() - 1].join("/")
+    let pkg = if rel == "" { "." } else { rel }
+    api.write_string(
+      "\n## \{pkg}\n\n```moonbit\n\{read_text(src_dir + "/" + m.join("/"))}```\n",
+    )
+  }
+  write(
+    dest + "/api.md",
+    header("moonbitlang/async v\{version} src/**/pkg.generated.mbti") +
+    "# moonbitlang/async \{version} public API\n" +
+    api.to_string(),
+  )
+  rev
+}
+
+///|
+async fn sync_core_api(out : String) -> String {
+  let moon_home = match @env.get_env_var("MOON_HOME") {
+    Some(h) => h
+    None =>
+      match @env.get_env_var("HOME") {
+        Some(home) => home + "/.moon"
+        None => fail("HOME is not set")
+      }
+  }
+  let core = join(moon_home, "lib/core")
+  let version = run("moonc", ["-v"])
+  let files = rglob(core, "pkg.generated.mbti").filter(m => {
+    !has_part(core, m, "_build") && !has_part(core, m, "internal")
+  })
+  let dest = out + "/core-api"
+  rmtree(dest)
+  let index = []
+  for m in files {
+    let rel = m[:m.length() - 1].join("/")
+    let pkg = if rel == "" { "." } else { rel }
+    let name = pkg.replace_all(old="/", new="-")
+    write("\{dest}/\{name}.mbti", read_text(core + "/" + m.join("/")))
+    index.push("- [`moonbitlang/core/\{pkg}`](\{name}.mbti)")
+  }
+  write(
+    dest + "/INDEX.md",
+    header("\{core} (moonc \{version})") +
+    "# moonbitlang/core API (\{version})\n\n" +
+    index.join("\n") +
+    "\n",
+  )
+  version
+}
+
+///|
+/// Today's date (UTC) as `YYYY-MM-DD`; the dev container runs in UTC.
+fn today() -> String {
+  // days-from-civil inverse (H. Hinnant)
+  let z = (@env.now() / 86_400_000UL).to_int() + 719468
+  let era = z / 146097
+  let doe = z - era * 146097
+  let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
+  let doy = doe - (365 * yoe + yoe / 4 - yoe / 100)
+  let mp = (5 * doy + 2) / 153
+  let d = doy - (153 * mp + 2) / 5 + 1
+  let m = if mp < 10 { mp + 3 } else { mp - 9 }
+  let y = yoe + era * 400 + (if m <= 2 { 1 } else { 0 })
+  "\{y}-\{m.to_string().pad_start(2, '0')}-\{d.to_string().pad_start(2, '0')}"
+}
+
+///|
+/// The repository root: the parent of the directory holding this script.
+/// `moon run` builds the script into `<script dir>/_build/<file>/...` and
+/// passes that artifact as `args()[0]`.
+async fn repo_root() -> String {
+  let exe = @env.args()[0]
+  guard exe.rev_find("/_build/") is Some(at) else {
+    fail("cannot locate the script directory from \{exe}")
+  }
+  parent(@fs.realpath(exe.unsafe_substring(start=0, end=at)))
+}
+
+///|
+async fn main {
+  let matches = @argparse.Command(
+    "update-moonbit-docs",
+    about="Refresh the vendored MoonBit reference docs under docs/moonbit/.",
+    options=[
+      @argparse.OptionArg(
+        "async-version",
+        about="moonbitlang/async version (default: latest in registry)",
+      ),
+    ],
+    flags=[
+      @argparse.FlagArg("keep-tmp", about="leave the clones in the temp dir"),
+    ],
+  ).parse()
+  let keep_tmp = matches.flags.get("keep-tmp").unwrap_or(false)
+  let root = repo_root()
+  let out = root + "/docs/moonbit"
+  let tmp = @fs.tmpdir(prefix="moonbit-docs-")
+  defer (if keep_tmp {
+    println("clones kept in \{tmp}")
+  } else {
+    @fs.rmdir(tmp, recursive=true) catch {
+      _ => ()
+    }
+  })
+  for sub in ["language", "toolchain", "agent-guide", "async"] {
+    rmtree("\{out}/\{sub}")
+  }
+  println("moonbit-docs ...")
+  let docs_rev = sync_docs(tmp, out)
+  println("agent guide ...")
+  let skills_rev = sync_agent_guide(tmp, out)
+  let async_version = match matches.values.get("async-version") {
+    Some([v, ..]) => v
+    _ => latest_async_version()
+  }
+  println("async \{async_version} ...")
+  let async_rev = sync_async(tmp, out, async_version)
+  println("core api ...")
+  let core_version = sync_core_api(out)
+  let moon_version = splitlines(run("moon", ["version"]))[0]
+  write(
+    out + "/VERSIONS.md",
+    (
+      $|# Vendored MoonBit docs: versions
+      $|
+      $|Generated by `scripts/update-moonbit-docs.mbtx` on \{today()}. Rerun it to refresh;
+      $|see `.claude/skills/moonbit-docs-update/SKILL.md` for the full procedure.
+      $|
+      $|| Source | Revision |
+      $|| --- | --- |
+      $|| toolchain (`moon version`) | `\{moon_version}` |
+      $|| compiler / core (`moonc -v`) | `\{core_version}` |
+      $|| moonbitlang/moonbit-docs (next/) | `\{docs_rev}` |
+      $|| moonbitlang/skills (moonbit-agent-guide) | `\{skills_rev}` |
+      $|| moonbitlang/async | `v\{async_version}` (`\{async_rev}`) |
+      $|
+    ),
+  )
+  println("done -> docs/moonbit")
+}

@@ -299,3 +299,25 @@ like `.github/workflows/pages.yml`, so bump both together).
 - 2026-10-09: `moon test -f` filters **test names**, not source filenames. To run
   one white-box file use `moon test src/core/session/monitoring_wbtest.mbt`;
   `-f monitoring_wbtest.mbt` compiles it but runs zero tests. Inspect the count.
+
+- 2026-10-11: script mode (`.mbtx`, `scripts/update-moonbit-docs.mbtx`).
+  `moon run x.mbtx` builds to `<script dir>/_build/x.mbtx/wasm/...` and
+  `@env.args()[0]` is that `.wasm` path, not the `.mbtx` (derive the script
+  dir from the `/_build/` prefix); the cwd is kept. `moon run x.mbtx --help`
+  prints moon's help: pass script flags after `--`. `@fs`, `@shell.Cmd` and
+  `defer` with async calls (`defer @fs.rmdir(d, recursive=true)`) all work on
+  the default wasm target, and the defer runs when main raises. An uncaught
+  error exits 1 printing `Failure(<loc> FAILED: msg)`. `@argparse.Command(..)
+  .parse()` reads `@env.args()[1:]`, prints usage and exits on bad input;
+  values are `matches.values["long-name"] : Array[String]`, flags
+  `matches.flags["long-name"]`. `moon fmt x.mbtx` formats a script (adds a
+  `///|` before a leading file comment).
+- 2026-10-11: `@fs.readdir(sort=true)` uses `String::compare` (length first),
+  so names come out `cmp, env, int, ...`: sort yourself for Python-like order.
+  `@fs.write_file` fsyncs by default (`sync=Data`); pass `sync=NoSync` for bulk
+  generated files. `@fs.tmpdir(prefix="p-")` names `/tmp/p-.<pid>.<hex>`.
+  `@utf8.decode` keeps a BOM unless `ignore_bom=true`. `ref` is reserved
+  (warning 0035, also as a labelled argument). `for { ... }` is parsed as a
+  `for .. in` header, not an infinite loop: use `while` or a C-style `for`.
+- 2026-10-11: piping `moon check` output into `head` aborted moon on the closed
+  pipe and left an 18 MB ELF `core` file in the cwd: delete it, never commit.
