@@ -69,7 +69,8 @@ the top priority: a false green is worse than an explicit "not supported" error.
 ```bash
 scripts/check.sh                   # gate before push (moon check/test/fmt/info + harness)
 moon test -p mirek/bitsql/core/tds # one package
-scripts/update-moonbit-docs.py     # refresh vendored MoonBit docs
+moon run scripts/update-moonbit-docs.mbtx  # refresh vendored MoonBit docs (needs the
+                                           # pinned toolchain: dev container on Intel macOS)
 ```
 
 Reference projects (public domain, same author): msduck (Rust/DuckDB) and

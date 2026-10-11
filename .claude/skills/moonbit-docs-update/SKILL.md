@@ -24,15 +24,23 @@ in your report): `moon upgrade`. Then `moon version` again.
 ## 2. Regenerate docs
 
 ```bash
-scripts/update-moonbit-docs.py                         # latest async from registry
-scripts/update-moonbit-docs.py --async-version 0.22.4  # or pin explicitly
+moon run scripts/update-moonbit-docs.mbtx                         # latest async from registry
+moon run scripts/update-moonbit-docs.mbtx --async-version 0.22.4  # or pin explicitly
+moon run scripts/update-moonbit-docs.mbtx --keep-tmp              # keep the clones
+moon run scripts/update-moonbit-docs.mbtx -- --help               # script help (`--` needed)
 ```
+
+Run it where the pinned toolchain lives: it reads that toolchain's
+`~/.moon/lib/core` and `moonc -v`. On Intel macOS (no native toolchain) that
+is the dev container, e.g.
+`docker exec bitsql-devcontainer bash -lc 'cd /workspaces/bitsql && moon run scripts/update-moonbit-docs.mbtx'`.
+`moon run` builds the script into `scripts/_build/` (gitignored).
 
 The script clones moonbit-docs, moonbitlang/skills and moonbitlang/async
 shallowly into a temp dir, resolves `{literalinclude}` directives, copies the
 installed core's `pkg.generated.mbti` files, and rewrites `VERSIONS.md`. It is
 idempotent. If it warns `missing upstream page`, the docs repo renamed a page:
-fix `LANGUAGE_PAGES` / `TOOLCHAIN_PAGES` in the script and rerun.
+fix `language_pages` / `toolchain_pages` in the script and rerun.
 
 ## 3. Bump the pinned dependency (if async changed)
 
