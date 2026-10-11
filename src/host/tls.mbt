@@ -36,6 +36,11 @@ let openssl_conf : String =
 /// `--tls-key` name files), points OpenSSL at the 1.2 cap, then runs a
 /// loopback handshake so a missing libssl or a bad key disables TLS at
 /// startup with a message instead of failing every encrypted login.
+/// The self-test client trusts the built-in certificate (self-signed CA,
+/// valid to 2046) directly: `NoVerification` would build the shared client
+/// context, which parses the whole system CA store (~26 ms per process start;
+/// the harness starts one process per corpus case). A `--tls-cert` may chain
+/// to a CA the server does not have, so it keeps `NoVerification`.
 async fn setup_tls(args : Array[String]) -> TlsFiles? {
   if args.contains("--no-tls") {
     return None
@@ -43,12 +48,17 @@ async fn setup_tls(args : Array[String]) -> TlsFiles? {
   try {
     let dir = tls_dir()
     @env.set_env_var("OPENSSL_CONF", dir + "/openssl.cnf")
-    let files = match (flag(args, "--tls-cert"), flag(args, "--tls-key")) {
-      (Some(cert), Some(key)) => { key, cert, }
-      (None, None) => { key: dir + "/key.pem", cert: dir + "/cert.pem", }
+    let (files, trust) : (TlsFiles, @tls.TrustedRoot) = match
+      (flag(args, "--tls-cert"), flag(args, "--tls-key")) {
+      (Some(cert), Some(key)) => ({ key, cert, }, NoVerification)
+      (None, None) =>
+        (
+          { key: dir + "/key.pem", cert: dir + "/cert.pem", },
+          CustomPemFile(dir + "/cert.pem"),
+        )
       _ => fail("--tls-cert and --tls-key go together")
     }
-    @async.with_timeout(5000, () => self_test(files))
+    @async.with_timeout(5000, () => self_test(files, trust))
     Some(files)
   } catch {
     e => {
@@ -127,7 +137,7 @@ fn fnv1a(text : String) -> String {
 ///|
 /// One handshake and one record each way over in-memory pipes.
 #warnings("-alert_internal")
-async fn self_test(files : TlsFiles) -> Unit {
+async fn self_test(files : TlsFiles, trust : @tls.TrustedRoot) -> Unit {
   let (server_in, client_out) = @io.pipe()
   let (client_in, server_out) = @io.pipe()
   @async.with_task_group(group => {
@@ -143,11 +153,7 @@ async fn self_test(files : TlsFiles) -> Unit {
       defer tls.close()
       tls.write(tls.read_exactly(4))
     })
-    let tls = @tls.Tls::client_from_pair(
-      client_in,
-      client_out,
-      trust=NoVerification,
-    )
+    let tls = @tls.Tls::client_from_pair(client_in, client_out, trust~)
     defer tls.close()
     tls.write("ping")
     guard tls.read_exactly(4) == b"ping" else { fail("TLS self-test echo") }

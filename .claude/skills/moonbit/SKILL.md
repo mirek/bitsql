@@ -63,6 +63,10 @@ moon info && moon fmt            # before committing API changes
 scripts/check.sh                 # everything CI runs; must be green to push
 ```
 
+No native MoonBit toolchain for Intel macOS: use `.devcontainer/` (VS Code
+"Reopen in Container"; Linux on the host's own architecture, toolchain pinned
+like `.github/workflows/pages.yml`, so bump both together).
+
 ## Gotchas and learnings (append, dated)
 
 - 2026-10-03: toolchain moon 0.1.20260920 / moonc v0.10.14 uses `moon.mod` and

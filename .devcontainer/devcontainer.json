@@ -1,0 +1,30 @@
+// VS Code "Reopen in Container". Docker (Colima or Docker Desktop) on the
+// host; the oracle needs >= 4 GB VM memory, and `npm test` is CPU-bound
+// (corpus cases run in parallel), so give the VM cores:
+// `colima start --cpu 8 --memory 8`.
+{
+  "name": "bitsql",
+  "build": { "dockerfile": "Dockerfile" },
+  // Host network: the harness reaches the oracle container (started through the
+  // host docker socket) on 127.0.0.1:47314 exactly as on a Linux host.
+  // Hostname: tedious sends os.hostname() in LOGIN7, and captures such as
+  // sysprocs/sp-who were recorded from a client host named `linux`.
+  "runArgs": ["--network=host", "--hostname=linux", "--name=bitsql-devcontainer"],
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "24.13.0", "pnpmVersion": "11.3.0" },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  // Build output and package caches on volumes: much faster than the macOS bind mount.
+  "mounts": [
+    "source=bitsql-build,target=${containerWorkspaceFolder}/_build,type=volume",
+    "source=bitsql-mooncakes,target=${containerWorkspaceFolder}/.mooncakes,type=volume",
+    "source=bitsql-harness-modules,target=${containerWorkspaceFolder}/harness/node_modules,type=volume"
+  ],
+  "postCreateCommand": "sudo chown vscode: _build .mooncakes harness/node_modules && moon update && (cd harness && npm ci)",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": ["moonbit.moonbit-lang"]
+    }
+  }
+}

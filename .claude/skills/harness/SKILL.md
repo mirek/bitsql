@@ -183,7 +183,8 @@ every `corpus/smoke` case and the selectors in `harness/allowlist.txt`. A test
 whose emulator output contains an `Emulator:` error is **skipped** (unless
 `BITSQL_REQUIRE=1`); any other divergence **fails**. Add cases to
 `allowlist.txt` once `npm run diff -- <selector>` passes, so they cannot
-regress.
+regress. Corpus cases run concurrently (`BITSQL_CORPUS_CONCURRENCY`, default
+available parallelism with process isolation, 1 with `BITSQL_ADDR`).
 
 `test/parse.test.mjs` runs the parser over every captured (compared or
 hand-written setup) batch in the whole corpus, no server needed. Replayed run
@@ -294,6 +295,20 @@ ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
   emulator run of the whole corpus takes ~2.5 s.
 - 2026-10-03: mssql's default pool validation runs `SELECT 1;` via RPC on every
   acquire; tests use `validateConnection: 'socket'` (see tedious skill).
+- 2026-10-10: Emulator requests time out after 25 s (was 15 s):
+  `sql2025/vector-index-integrated#cosine-d8-n5000-dop1` takes ~18 s on the
+  debug build on an Intel i9-9980HK inside the `.devcontainer` (Colima VM).
+  The dev container uses `--network=host` so the oracle's `127.0.0.1:47314`
+  publish is reachable unchanged, and `--hostname=linux` because tedious sends
+  `os.hostname()` in LOGIN7 and `sysprocs/sp-who` was captured from a client
+  host named `linux`. That setup is native amd64 end to end (Colima `vz` VM,
+  no binfmt/QEMU).
+- 2026-10-11: `npm test` took 1822 s there (4 vCPUs): ~23.7k corpus cases ran
+  serially, one emulator process each, with a ~45 ms first TLS login per
+  process, 26 ms of it the TLS self-test's `NoVerification` client parsing
+  the system CA store (fixed in `src/host/tls.mbt`; first login now ~20 ms).
+  With corpus cases also run concurrently (`test/corpus.test.mjs`) it takes
+  777 s, CPU-bound: more cores scale it further.
 
 ## Emulator test isolation (for app test suites)
 

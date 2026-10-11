@@ -44,6 +44,10 @@ moon check --target native && moon test --target native
 Review `git diff docs/moonbit/async/api.md` for API changes affecting
 `src/host` (the only async consumer). Fix the host, never the core.
 
+If the toolchain (moonc) changed, bump the pinned `MOON_VERSION` in both
+`.github/workflows/pages.yml` and `.devcontainer/Dockerfile` (moonc version,
+`+` escaped as `%2B`).
+
 ## 4. Review the diff and record learnings
 
 ```bash
