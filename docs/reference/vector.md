@@ -76,7 +76,7 @@ fused binary32 arithmetic at exact rounding midpoints. `vector-distance-special`
 includes tiny residuals on either side of ties, and a float32 overflow midpoint.
 The pure implementation retains the TwoSum residual and corrects midpoint
 rounding without FFI or host-dependent intrinsics. Generated unit expectations
-come only from captured SQL Server outputs (`scripts/gen-vector-tests.py`).
+come only from captured SQL Server outputs (`moon run scripts/gen-vector-tests.mbtx`).
 
 ## Open contracts
 
@@ -232,7 +232,7 @@ differences. Candidate tie ordering and pending-edge ordering remain open.
 
 `vector-pruning.cases.json` contains 48 independently repeated fixtures for
 cosine, Euclidean and dot metrics. Its normalized graph-page results provide
-1,476 ordered neighbor lists. `scripts/gen-vector-pruning-tests.py` generates
+1,476 ordered neighbor lists. `moon run scripts/gen-vector-pruning-tests.mbtx` generates
 pure storage-core tests directly from those captures and their input vectors;
 all 48 tests pass. The fixtures include signed random components, dimensions
 3–64, up to 96 source rows, 76 Euclidean lists reaching degree 48, identical

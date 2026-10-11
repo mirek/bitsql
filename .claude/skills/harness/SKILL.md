@@ -596,7 +596,7 @@ There is no SQL-file directive for this opt-in.
   HTTPS embedding fixture against a uniquely named disposable oracle; `--force`
   recaptures it. It never enables REST on the shared oracle. The fixture records
   outgoing HTTP payloads as well as SQL metadata/results/errors; generated pure
-  tests come from `scripts/gen-embedding-tests.py`. Certificate setup, automatic
+  tests come from `moon run scripts/gen-embedding-tests.mbtx`. Certificate setup, automatic
   Docker port changes after restart, and the explicitly fatal malformed-options
   case are documented in `docs/reference/external-models.md`.
 
