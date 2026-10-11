@@ -299,3 +299,31 @@ like `.github/workflows/pages.yml`, so bump both together).
 - 2026-10-09: `moon test -f` filters **test names**, not source filenames. To run
   one white-box file use `moon test src/core/session/monitoring_wbtest.mbt`;
   `-f monitoring_wbtest.mbt` compiles it but runs zero tests. Inspect the count.
+
+- 2026-10-11: script mode (`.mbtx`, ports of Python generators and the
+  profiler report). `moon run s.mbtx -- ARGS` consumes `--`;
+  `@env.args()[0]` is the built wasm (`<dir>/_build/s.mbtx/wasm/...`), so
+  arguments start at index 1 (`@argparse.Command(..).parse(argv=args[1:])`).
+  The script cannot find its own directory: run from the repo root and check
+  a marker (`@fs.exists("scripts/s.mbtx")`). The default wasm target reads
+  and writes any path and spawns processes (`@shell.Cmd("addr2line", ..)`)
+  with no `--wasm-policy`. `Cmd::output` caps captured output at 8 MiB by
+  default and inherits stderr; `each_line(..)` streams, and
+  `stderr=Discard` mirrors Python's `capture_output`. Cold `moon run` costs
+  1–2 s (compile), warm ~0.1 s. `moon fmt` formats a script only when named
+  explicitly and prepends `///|` above the header comment.
+- 2026-10-11: no `?` on Option values (parse error 3002); for hand-written
+  regex-equivalent matchers use a local `suberror NoMatch` and
+  `try m(s, i) catch { NoMatch => .. } noraise { .. }`. `Json::String(s)` /
+  `Array(xs)` cannot construct Json (error 4036 read-only type; `Array(..)`
+  resolves to the Array constructor): use `s.to_json()`, `Json::array(xs)`
+  or a `{ "k": v }` literal. `for i, k, v in map` is error 4133 (two loop
+  variables at most). `ArrayView::to_array` and `x |> _.f()` are deprecated
+  (`to_owned`, `x |> y => y.f()`). `Map` iterates in insertion order like a
+  Python dict, which makes `collections.Counter.most_common` ports exact
+  (sort by count, then insertion index). Python `f'{x:.1f}'` rounds the
+  exact binary value half-to-even: port it with `@bigint` on the IEEE
+  mantissa (scripts/profile/report.mbtx `fixed1`), not by scaling doubles.
+  Python `set()` iteration order is hash-randomized per process, so output
+  ordered by it is not reproducible even in Python: pick a deterministic
+  order and say so.

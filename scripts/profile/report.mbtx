@@ -1,0 +1,390 @@
+///|
+// Flat profile from scripts/profile/sampler.c output (see scripts/profile.sh).
+//
+//   moon run scripts/profile/report.mbtx -- DATA EXE [--top N]
+//       self and inclusive time per function
+//   ... --callers FUNC   first bitsql caller of FUNC's samples
+//                        (FUNC: substring, e.g. drop_object)
+//   ... --focus FUNC     only samples with FUNC on the stack
+//                        (e.g. rpc__executesql)
+//
+// Runs on the default wasm script target: addr2line is spawned through
+// moonbitlang/async (no shell). Inclusive ties are ordered by first
+// appearance on the stack; report.py used set() order, which varied per run.
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/argparse",
+  "moonbitlang/core/bigint",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+///|
+/// Must match sampler.c.
+const DEPTH = 64
+
+///|
+fn is_upper(c : Char) -> Bool {
+  c >= 'A' && c <= 'Z'
+}
+
+///|
+fn is_digit(c : Char) -> Bool {
+  c >= '0' && c <= '9'
+}
+
+///|
+/// Length of the `[A-Z]` run of `cs` starting at `i`.
+fn upper_run(cs : Array[Char], i : Int) -> Int {
+  let mut j = i
+  while j < cs.length() && is_upper(cs[j]) {
+    j += 1
+  }
+  j - i
+}
+
+///|
+/// Runtime frames: `^(moonbit_|_mi_|mi_|\?|scan_|_M0[A-Z]+PC|_M0[A-Z]+PB)`.
+fn is_runtime(f : String) -> Bool {
+  if ["moonbit_", "_mi_", "mi_", "?", "scan_"].iter().any(p => f.has_prefix(p)) {
+    return true
+  }
+  if !f.has_prefix("_M0") {
+    return false
+  }
+  // `[A-Z]+` backtracks to any "PC"/"PB" inside the run after one letter.
+  let cs = f.to_array()
+  let run = upper_run(cs, 3)
+  for j in 1..<(run - 1) {
+    if cs[3 + j] == 'P' && (cs[3 + j + 1] == 'C' || cs[3 + j + 1] == 'B') {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// `cs[start:end]` with Python's clamping, as a String.
+fn slice(cs : Array[Char], start : Int, end : Int) -> String {
+  let end = if end > cs.length() { cs.length() } else { end }
+  if start >= end {
+    ""
+  } else {
+    String::from_array(cs[start:end])
+  }
+}
+
+///|
+/// _M0FP45mirek6bitsql4core4exec4eval -> exec.eval (length-prefixed path).
+/// Slicing counts code points, like Python's str.
+fn short(f : String) -> String {
+  // ^_M0([A-Z]+)P(\d)(.*)$: the run must end in P and be followed by a digit.
+  let cs = f.to_array()
+  if !f.has_prefix("_M0") {
+    return f
+  }
+  let run = upper_run(cs, 3)
+  let p = 3 + run - 1
+  if run < 2 || cs[p] != 'P' || p + 1 >= cs.length() || !is_digit(cs[p + 1]) {
+    return f
+  }
+  // `.` stops at newlines; `$` also matches before one final newline.
+  let mut tail = cs[p + 2:].to_owned()
+  match tail.search('\n') {
+    None => ()
+    Some(i) if i == tail.length() - 1 => tail = tail[:i].to_owned()
+    Some(_) => return f
+  }
+  let parts = []
+  let mut rest = tail
+  while rest.length() > 0 && is_digit(rest[0]) {
+    let mut d = 0
+    while d < rest.length() && is_digit(rest[d]) {
+      d += 1
+    }
+    // Lengths beyond the remaining text clamp like Python slices.
+    let k = if d > 9 {
+      rest.length()
+    } else {
+      @string.parse_int(slice(rest, 0, d)) catch {
+        _ => rest.length()
+      }
+    }
+    parts.push(slice(rest, d, d + k))
+    rest = if d + k >= rest.length() { [] } else { rest[d + k:].to_owned() }
+  }
+  let kept = parts.filter(p => {
+    !(p is ("mirek" | "bitsql" | "core" | "moonbitlang"))
+  })
+  kept.join(".") + (if rest.is_empty() { "" } else { " " + slice(rest, 0, 40) })
+}
+
+///|
+/// Python `collections.Counter` with `most_common`: insertion-ordered keys,
+/// sorted by count descending and stable on ties.
+struct Counter {
+  counts : Map[String, Int]
+}
+
+///|
+fn Counter::new() -> Counter {
+  { counts: Map([]), }
+}
+
+///|
+fn Counter::add(self : Counter, key : String) -> Unit {
+  self.counts[key] = self.counts.get(key).unwrap_or(0) + 1
+}
+
+///|
+fn Counter::most_common(self : Counter, n : Int) -> Array[(String, Int)] {
+  let items = []
+  for i, entry in self.counts.iter().collect() {
+    items.push((i, entry.0, entry.1))
+  }
+  items.sort_by((a, b) => {
+    if a.2 != b.2 {
+      b.2.compare(a.2)
+    } else {
+      a.0.compare(b.0)
+    }
+  })
+  let n = if n < 0 {
+    0
+  } else if n > items.length() {
+    items.length()
+  } else {
+    n
+  }
+  items[:n].map(e => (e.1, e.2))
+}
+
+///|
+/// Python `format(d, '.1f')` for a finite non-negative double: the exact
+/// binary value rounded half-to-even, as CPython does.
+fn fixed1(d : Double) -> String {
+  let bits = d.reinterpret_as_uint64()
+  let biased = ((bits >> 52) & 0x7FF).reinterpret_as_int64().to_int()
+  let frac = bits & ((1UL << 52) - 1)
+  let (mant, exp) = if biased == 0 {
+    (frac, -1074)
+  } else {
+    (frac | (1UL << 52), biased - 1075)
+  }
+  // tenths = round_half_even(mant * 10 * 2^exp)
+  let scaled = @bigint.BigInt::from_uint64(mant) * @bigint.BigInt::from_int(10)
+  let tenths = if exp >= 0 {
+    scaled.shl(exp)
+  } else {
+    let q = scaled.shr(-exp)
+    let rem = scaled - q.shl(-exp)
+    let half = @bigint.BigInt::from_int(1).shl(-exp - 1)
+    let c = rem.compare(half)
+    let odd = !q.land(@bigint.BigInt::from_int(1)).is_zero()
+    if c > 0 || (c == 0 && odd) {
+      q + @bigint.BigInt::from_int(1)
+    } else {
+      q
+    }
+  }
+  let digits = tenths.to_string().pad_start(2, '0')
+  let cut = digits.length() - 1
+  digits.unsafe_substring(start=0, end=cut) +
+  "." +
+  digits.unsafe_substring(start=cut, end=digits.length())
+}
+
+///|
+/// Python `f'{100 * k / n:5.1f}'` (and `:.1f` with `width=0`).
+fn pct(k : Int, n : Int, width? : Int = 5) -> String {
+  fixed1((100 * k).to_double() / n.to_double()).pad_start(width, ' ')
+}
+
+///|
+/// Python `'%x' % v` for a possibly negative offset.
+fn hex(v : Int64) -> String {
+  if v < 0 {
+    "-" + (-v).to_string(radix=16)
+  } else {
+    v.to_string(radix=16)
+  }
+}
+
+///|
+/// Python `int(text, 16)` for the leading field of a maps line.
+fn parse_hex(text : StringView) -> UInt64 raise {
+  let text = text.trim(chars=" \t\n\r\u{0B}\u{0C}")
+  let text = if text.has_prefix("0x") || text.has_prefix("0X") {
+    text.view(start_offset=2)
+  } else {
+    text
+  }
+  if text.is_empty() {
+    fail("invalid hex address in maps")
+  }
+  let mut v = 0UL
+  for c in text {
+    let digit = match c {
+      '0'..='9' => c.to_int() - '0'.to_int()
+      'a'..='f' => c.to_int() - 'a'.to_int() + 10
+      'A'..='F' => c.to_int() - 'A'.to_int() + 10
+      _ => fail("invalid hex address in maps: \{text}")
+    }
+    v = (v << 4) | digit.to_uint64()
+  }
+  v
+}
+
+///|
+async fn main {
+  let cmd = @argparse.Command(
+    "report.mbtx",
+    about="Flat profile from scripts/profile/sampler.c output",
+    options=[
+      @argparse.OptionArg("top", default_values=["30"]),
+      @argparse.OptionArg("callers"),
+      @argparse.OptionArg("focus"),
+    ],
+    positionals=[@argparse.PositionArg("data"), @argparse.PositionArg("exe")],
+  )
+  let m = cmd.parse(argv=@env.args()[1:])
+  let value = (key : String) => {
+    match m.values.get(key) {
+      Some([.., v]) if v != "" => Some(v)
+      _ => None
+    }
+  }
+  guard value("data") is Some(data) && value("exe") is Some(exe) else {
+    fail(
+      "usage: report.mbtx DATA EXE [--top N] [--callers FUNC] [--focus FUNC]",
+    )
+  }
+  let top = @string.parse_int(value("top").unwrap_or("30"))
+  let exe_name = exe.split("/").collect().last().unwrap().to_owned()
+  let mut base : UInt64? = None
+  for line in @fs.read_file(data + ".maps").text().split("\n") {
+    if line.trim_end(chars=" \t\n\r\u{0B}\u{0C}").has_suffix(exe_name) {
+      base = Some(parse_hex(line.split("-").collect()[0]))
+      break
+    }
+  }
+  guard base is Some(base) else {
+    fail("\{exe_name} is not mapped in \{data}.maps")
+  }
+  let raw = @fs.read_file(data).binary()
+  let rec = 8 * (DEPTH + 1)
+  let word = (off : Int) => {
+    let mut w = 0UL
+    for b in 0..<8 {
+      w = w | (raw[off + b].to_uint64() << (8 * b))
+    }
+    w
+  }
+  let samples : Array[Array[UInt64]] = []
+  for off = 0; off + rec <= raw.length(); off = off + rec {
+    // w[2:1 + w[0]]: drop the signal handler frame.
+    let count = word(off)
+    let end = if count >= (DEPTH + 1).to_uint64() {
+      DEPTH + 1
+    } else {
+      count.to_int() + 1
+    }
+    let frames = []
+    for i in 2..<end {
+      frames.push(word(off + 8 * i))
+    }
+    samples.push(frames)
+  }
+  let in_exe = (x : UInt64) => x >= base && x - base < 1UL << 28
+  let seen : Set[UInt64] = Set([])
+  for s in samples {
+    for x in s {
+      if in_exe(x) {
+        seen.add(x)
+      }
+    }
+  }
+  let addrs = seen.iter().collect()
+  addrs.sort()
+  let args = ["-f", "-e", exe]
+  for x in addrs {
+    args.push(hex((x - base).reinterpret_as_int64() - 1L))
+  }
+  // Like subprocess.run(capture_output=True): stderr and exit status ignored.
+  let out = []
+  let _ = @shell.Cmd("addr2line", args, stderr=Discard).each_line(line => {
+    out.push(line)
+  })
+  let name : Map[UInt64, String] = Map([])
+  for i, x in addrs {
+    guard out.get(2 * i) is Some(f) else { fail("addr2line output is short") }
+    name[x] = f
+  }
+  let stacks : Array[Array[String]] = []
+  for s in samples {
+    let mut fs = s.map(x => name.get(x).unwrap_or("?"))
+    if fs.length() > 1 && fs[0] == "?" {
+      fs = fs[1:].to_owned() // libc trampoline
+    }
+    if fs.length() > 0 {
+      stacks.push(fs)
+    }
+  }
+  let stacks = match value("focus") {
+    None => stacks
+    Some(focus) => {
+      let kept = stacks.filter(fs => fs.iter().any(f => f.contains(focus)))
+      println("focus \{focus}: \{kept.length()} of \{stacks.length()} samples")
+      kept
+    }
+  }
+  let n = stacks.length()
+  println(
+    "\{n} samples (proportions only: SIGPROF samples undercount CPU ~2x; bench/profile.mjs prints exact server CPU)",
+  )
+  if value("callers") is Some(callers) {
+    let c = Counter::new()
+    let mut hits = 0
+    for fs in stacks {
+      if !fs[0].contains(callers) {
+        continue
+      }
+      hits += 1
+      c.add(short(fs.iter().find_first(f => !is_runtime(f)).unwrap_or("?")))
+    }
+    let share = pct(hits, if n > 1 { n } else { 1 }, width=0)
+    println("--- callers of \{callers}: \{hits} samples (\{share}%)")
+    for item in c.most_common(top) {
+      println("\{pct(item.1, hits)}% \{item.0}")
+    }
+    return
+  }
+  let selfc = Counter::new()
+  let incl = Counter::new()
+  for fs in stacks {
+    selfc.add(fs[0])
+    let once : Set[String] = Set([])
+    for f in fs {
+      if !once.contains(f) {
+        once.add(f)
+        incl.add(f)
+      }
+    }
+  }
+  println("--- self")
+  for item in selfc.most_common(top) {
+    println("\{pct(item.1, n)}% \{short(item.0)}")
+  }
+  println("--- inclusive")
+  for item in incl.most_common(top + 15) {
+    let f = item.0
+    if is_runtime(f) &&
+      !["moonbit_", "_mi_", "mi_"].iter().any(p => f.has_prefix(p)) {
+      continue
+    }
+    println("\{pct(item.1, n)}% \{short(f)}")
+  }
+}

@@ -8,7 +8,8 @@
 #   REPS=50 scripts/profile.sh 'UPDATE all' --callers drop_object
 #   WORKLOAD=requests REPS=3 scripts/profile.sh   # per-request workload (compare.mjs)
 #
-# Extra arguments go to scripts/profile/report.py (--top N, --callers FUNC).
+# Extra arguments go to scripts/profile/report.mbtx (--top N, --callers FUNC,
+# --focus FUNC), a MoonBit script run on the default wasm target.
 # Samples live in _build/profile/ and are replaced on each run.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -26,4 +27,4 @@ SH
 chmod +x "$out/host.sh"
 (cd harness && SHAPE="$shape" BITSQL_BIN="$PWD/../$out/host.sh" node bench/profile.mjs)
 data=$(ls "$out"/prof.* | grep -v '\.maps$' | head -n 1)
-python3 scripts/profile/report.py "$data" "$exe" "$@"
+moon run scripts/profile/report.mbtx -- "$data" "$exe" "$@"

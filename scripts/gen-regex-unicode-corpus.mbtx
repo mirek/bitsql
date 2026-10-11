@@ -1,0 +1,340 @@
+///|
+// Generate SQL inputs at every pinned RE2 property boundary and fold pair.
+//
+// Expected output must be captured by the harness from SQL Server, never from
+// these reference tables. Boundary probes identify version differences too.
+//
+//   moon run scripts/gen-regex-unicode-corpus.mbtx    (from the repo root)
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/string",
+}
+
+///|
+const VENDOR = "docs/reference/vendor/re2/probes-15.1"
+
+///|
+/// Python `Path.read_text()` of an ASCII C source. The hand-written matchers
+/// below treat `\w` and `\d` as ASCII, so non-ASCII input is refused rather
+/// than matched differently from Python's Unicode classes.
+async fn read_ascii(path : String) -> String {
+  let text = @fs.read_file(path).text()
+  if text.iter().any(c => c.to_int() > 0x7F) {
+    fail("\{path}: non-ASCII input; extend the matchers first")
+  }
+  text.replace_all(old="\r\n", new="\n").replace_all(old="\r", new="\n")
+}
+
+///|
+/// A pattern did not match at the tried position.
+suberror NoMatch
+
+///|
+fn unit(s : String, i : Int) -> Int {
+  if i < s.length() {
+    s.at(i).to_int()
+  } else {
+    -1
+  }
+}
+
+///|
+/// The literal `p` at `i`: the position after it.
+fn lit(s : String, i : Int, p : String) -> Int raise NoMatch {
+  for k in 0..<p.length() {
+    if unit(s, i + k) != p.at(k).to_int() {
+      raise NoMatch
+    }
+  }
+  i + p.length()
+}
+
+///|
+/// A non-empty greedy run of units accepted by `ok` at `i`.
+fn run(s : String, i : Int, ok : (Int) -> Bool) -> (String, Int) raise NoMatch {
+  let mut j = i
+  while ok(unit(s, j)) {
+    j += 1
+  }
+  if j == i {
+    raise NoMatch
+  }
+  (s.unsafe_substring(start=i, end=j), j)
+}
+
+///|
+fn is_digit(u : Int) -> Bool {
+  u >= '0'.to_int() && u <= '9'.to_int()
+}
+
+///|
+fn is_word(u : Int) -> Bool {
+  is_digit(u) ||
+  (u >= 'a'.to_int() && u <= 'z'.to_int()) ||
+  (u >= 'A'.to_int() && u <= 'Z'.to_int()) ||
+  u == '_'.to_int()
+}
+
+///|
+/// Python `re.findall` with a matcher returning the groups and the end.
+fn findall(
+  s : String,
+  try_at : (String, Int) -> (Array[String], Int) raise NoMatch,
+) -> Array[Array[String]] {
+  let out = []
+  let mut i = 0
+  while i <= s.length() {
+    try try_at(s, i) catch {
+      NoMatch => i += 1
+    } noraise {
+      (groups, end) => {
+        out.push(groups)
+        i = if end == i { i + 1 } else { end }
+      }
+    }
+  }
+  out
+}
+
+///|
+/// `static const URange(?:16|32) (\w+)\[\] = \{(.*?)\};` with re.S.
+fn range_table(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let i = lit(s, i, "static const URange")
+  let i = lit(s, i, "16") catch { NoMatch => lit(s, i, "32") }
+  let (name, i) = run(s, lit(s, i, " "), is_word)
+  let start = lit(s, i, "[] = {")
+  guard s.view(start_offset=start).find("};") is Some(len) else {
+    raise NoMatch
+  }
+  ([name, s.unsafe_substring(start~, end=start + len)], start + len + 2)
+}
+
+///|
+/// `\{ (\d+), (\d+) \}`
+fn range_pair(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let (a, i) = run(s, lit(s, i, "{ "), is_digit)
+  let (b, i) = run(s, lit(s, i, ", "), is_digit)
+  ([a, b], lit(s, i, " }"))
+}
+
+///|
+/// `\{ "([^"]+)", \+1, (\w+), \d+, (\w+), \d+ \}`
+fn group_entry(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let (name, i) = run(s, lit(s, i, "{ \""), u => u >= 0 && u != '"'.to_int())
+  let (r16, i) = run(s, lit(s, i, "\", +1, "), is_word)
+  let (_, i) = run(s, lit(s, i, ", "), is_digit)
+  let (r32, i) = run(s, lit(s, i, ", "), is_word)
+  let (_, i) = run(s, lit(s, i, ", "), is_digit)
+  ([name, r16, r32], lit(s, i, " }"))
+}
+
+///|
+/// `\{ (\d+), (\d+), ([\w-]+) \}`
+fn fold_entry(s : String, i : Int) -> (Array[String], Int) raise NoMatch {
+  let (a, i) = run(s, lit(s, i, "{ "), is_digit)
+  let (b, i) = run(s, lit(s, i, ", "), is_digit)
+  let (d, i) = run(s, lit(s, i, ", "), u => is_word(u) || u == '-'.to_int())
+  ([a, b, d], lit(s, i, " }"))
+}
+
+///|
+/// Python `int()` of a `[\w-]+` token: an optional minus, then digits with
+/// single underscores between them. Anything else is a ValueError there too.
+fn py_int(token : String) -> Int raise {
+  let digits = if token.has_prefix("-") {
+    token.view(start_offset=1)
+  } else {
+    token[:]
+  }
+  if digits.has_prefix("_") || digits.has_suffix("_") || digits.contains("__") {
+    fail("invalid literal for int(): \{token}")
+  }
+  @string.parse_int(token.replace_all(old="_", new=""))
+}
+
+///|
+/// Python `text.split(sep)[index]`.
+fn split_part(text : String, sep : String, index : Int) -> String raise {
+  let parts = text.split(sep).collect()
+  guard parts.get(index) is Some(part) else {
+    fail("separator \{sep} not found")
+  }
+  part.to_owned()
+}
+
+///|
+fn hex2(b : Int) -> String {
+  b.to_string(radix=16).pad_start(2, '0')
+}
+
+///|
+/// The code point as SQL: its UTF-16LE bytes in an nvarchar(2) CONVERT.
+fn sqltext(cp : Int) -> String raise {
+  if cp < 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF) {
+    fail("code point \{cp} has no UTF-16 encoding")
+  }
+  let units = if cp < 0x10000 {
+    [cp]
+  } else {
+    [0xD800 + ((cp - 0x10000) >> 10), 0xDC00 + ((cp - 0x10000) & 0x3FF)]
+  }
+  let hex = units.map(u => hex2(u & 0xFF) + hex2(u >> 8)).join("")
+  "CONVERT(nvarchar(2),0x" + hex + ")"
+}
+
+///|
+/// Python `json.dumps(s)` (ensure_ascii=True) of a string, over UTF-16 code
+/// units so astral characters come out as escaped surrogate pairs like Python.
+fn json_string(s : String) -> String {
+  let b = StringBuilder()
+  b.write_char('"')
+  for u in s.code_units() {
+    match u.to_int() {
+      0x22 => b.write_string("\\\"")
+      0x5C => b.write_string("\\\\")
+      0x0A => b.write_string("\\n")
+      0x0D => b.write_string("\\r")
+      0x09 => b.write_string("\\t")
+      0x08 => b.write_string("\\b")
+      0x0C => b.write_string("\\f")
+      u if u >= 0x20 && u <= 0x7E => b.write_char(u.unsafe_to_char())
+      u => b.write_string("\\u" + u.to_string(radix=16).pad_start(4, '0'))
+    }
+  }
+  b.write_char('"')
+  b.to_string()
+}
+
+///|
+/// Python `json.dumps(value, indent=2)` for objects, arrays and strings.
+fn dump(b : StringBuilder, value : Json, depth : Int) -> Unit raise {
+  let inner = "\n" + " ".repeat(2 * (depth + 1))
+  let close = "\n" + " ".repeat(2 * depth)
+  match value {
+    String(s) => b.write_string(json_string(s))
+    Array([]) => b.write_string("[]")
+    Object(fields) if fields.is_empty() => b.write_string("{}")
+    Array(items) => {
+      b.write_char('[')
+      for i, item in items {
+        b.write_string(if i == 0 { inner } else { "," + inner })
+        dump(b, item, depth + 1)
+      }
+      b.write_string(close + "]")
+    }
+    Object(fields) => {
+      b.write_char('{')
+      let mut first = true
+      for key, item in fields {
+        b.write_string(if first { inner } else { "," + inner })
+        first = false
+        b.write_string(json_string(key) + ": ")
+        dump(b, item, depth + 1)
+      }
+      b.write_string(close + "}")
+    }
+    _ => fail("unsupported JSON value")
+  }
+}
+
+///|
+fn batch_case(name : String, sql : String) -> Json {
+  {
+    "name": name.to_json(),
+    "steps": [{ "kind": "batch", "sql": sql.to_json() }],
+  }
+}
+
+///|
+async fn main {
+  if !@fs.exists("scripts/gen-regex-unicode-corpus.mbtx") {
+    fail(
+      "run from the repo root: moon run scripts/gen-regex-unicode-corpus.mbtx",
+    )
+  }
+  let data = read_ascii("\{VENDOR}/unicode_groups.cc")
+  let ranges : Map[String, Array[(Int, Int)]] = Map([])
+  for table in findall(data, range_table) {
+    ranges[table[0]] = findall(table[1], range_pair).map(p => {
+      (@string.parse_int(p[0]), @string.parse_int(p[1]))
+    })
+  }
+  let cases : Array[Json] = []
+  for entry in findall(data, group_entry) {
+    let name = entry[0]
+    let rows = ranges.get(entry[1]).unwrap_or([]) +
+      ranges.get(entry[2]).unwrap_or([])
+    let seen : Set[Int] = Set([])
+    for r in rows {
+      for v in [r.0 - 1, r.0, r.1, r.1 + 1] {
+        if v >= 0 && v <= 0x10FFFF && !(v >= 0xD800 && v <= 0xDFFF) {
+          seen.add(v)
+        }
+      }
+    }
+    let points = seen.iter().collect()
+    points.sort()
+    for start = 0; start < points.length(); start = start + 256 {
+      let chunk = points[start:@cmp.minimum(start + 256, points.length())]
+      let values = []
+      for cp in chunk {
+        values.push("(\{cp},\{sqltext(cp)})")
+      }
+      let sql = "SELECT cp, CASE WHEN REGEXP_LIKE(ch, N'\\p{\{name}}') THEN 1 ELSE 0 END AS matches FROM (VALUES " +
+        values.join(",") +
+        ") v(cp,ch) ORDER BY cp;"
+      cases.push(batch_case(name + "-" + (start / 256).to_string(), sql))
+    }
+  }
+  let body = split_part(
+    split_part(
+      read_ascii("\{VENDOR}/unicode_casefold.cc"),
+      "const CaseFold unicode_casefold[] = {",
+      1,
+    ),
+    "};",
+    0,
+  )
+  let pairs : Array[(Int, Int)] = []
+  for fold in findall(body, fold_entry) {
+    let (a, b, d) = (
+      @string.parse_int(fold[0]),
+      @string.parse_int(fold[1]),
+      fold[2],
+    )
+    for cp in a..<=b {
+      let other = match d {
+        "EvenOdd" => cp ^ 1
+        "OddEven" => ((cp - 1) ^ 1) + 1
+        d => cp + py_int(d)
+      }
+      pairs.push((cp, other))
+    }
+  }
+  for start = 0; start < pairs.length(); start = start + 128 {
+    let values = []
+    for pair in pairs[start:@cmp.minimum(start + 128, pairs.length())] {
+      let (cp, other) = pair
+      values.push("(\{cp},\{other},\{sqltext(cp)},\{sqltext(other)})")
+    }
+    let sql = "SELECT cp, other_cp, REGEXP_COUNT(ch, other_ch, 1, 'i') AS matches FROM (VALUES " +
+      values.join(",") +
+      ") v(cp,other_cp,ch,other_ch) ORDER BY cp;"
+    cases.push(batch_case("fold-" + (start / 128).to_string(), sql))
+  }
+  let doc : Json = {
+    "source": "RE2 2025-11-05 Unicode 15.1 boundaries and simple-fold pairs; expected results captured from SQL Server",
+    "cases": Json::array(cases),
+  }
+  let b = StringBuilder()
+  dump(b, doc, 0)
+  b.write_char('\n')
+  @fs.write_file(
+    "harness/corpus/sql2025/regex-unicode-boundaries.cases.json",
+    b.to_string(),
+  )
+  println("\{cases.length()} cases")
+}
