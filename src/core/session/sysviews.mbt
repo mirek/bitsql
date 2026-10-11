@@ -218,9 +218,8 @@ fn opt_s(x : String?) -> @types.Value {
 ///|
 /// datetime value of a stamp (100 ns ticks since 0001-01-01).
 fn dt(ticks : Int64) -> @types.Value {
-  let days = (ticks / @types.TICKS_PER_DAY).to_int() - @types.DAYS_TO_1900
-  let t = ticks % @types.TICKS_PER_DAY
-  DateTime(days, @types.ticks_to_datetime_units(t).to_int())
+  let (days, units) = @types.datetime_parts(ticks)
+  DateTime(days - @types.DAYS_TO_1900, units)
 }
 
 ///|

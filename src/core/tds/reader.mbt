@@ -22,7 +22,7 @@ pub fn Reader::at_end(self : Reader) -> Bool {
 
 ///|
 fn Reader::need(self : Reader, n : Int, what : String) -> Unit raise TdsError {
-  if n < 0 || self.pos + n > self.data.length() {
+  if !@proved.fits(self.pos, n, 1, self.data.length()) {
     raise Malformed("truncated \{what}")
   }
 }
@@ -107,7 +107,9 @@ pub fn Reader::skip(self : Reader, n : Int) -> Unit raise TdsError {
 ///|
 /// `n` UCS-2 code units (2n bytes) as a String.
 pub fn Reader::ucs2(self : Reader, n : Int) -> String raise TdsError {
-  self.need(n * 2, "UCS-2 string")
+  if !@proved.fits(self.pos, n, 2, self.data.length()) {
+    raise Malformed("truncated UCS-2 string")
+  }
   let d = self.data
   let p = self.pos
   self.pos += n * 2

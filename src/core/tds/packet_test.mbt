@@ -44,3 +44,21 @@ test "reassembler rejects short length" {
     _ => fail("expected error")
   }
 }
+
+///|
+test "reader rejects lengths that overflow the bounds check" {
+  // pos + n wrapped negative for n near 2^31, the check passed, and the next
+  // read aborted the process (every session with it).
+  let r = @tds.Reader::new(Bytes::make(32, b'\x00'))
+  r.skip(20)
+  let got = try r.bytes(0x7FFFFFF0) catch {
+    e => e.message()
+  } noraise {
+    _ => "read"
+  }
+  inspect(got, content="truncated bytes")
+  inspect(r.remaining(), content="12")
+  let s = r.ucs2(-0x7FFFFFFF) catch { e => e.message() }
+  inspect(s, content="truncated UCS-2 string")
+  inspect(r.u8(), content="0")
+}

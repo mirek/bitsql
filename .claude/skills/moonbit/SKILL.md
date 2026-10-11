@@ -406,3 +406,21 @@ thin launcher. Conventions:
   `moonbitlang/core/encoding/hex`.
 - 2026-10-11: a crashing `moon` in the dev container writes an ELF `core` dump
   (5-18 MB) into the cwd; the dev container now runs with `--ulimit core=0`.
+- 2026-10-11: `moon prove` (src/core/proved, docs/design/verification.md).
+  Needs z3 or cvc5 on PATH (Why3 is bundled). **`a && (b → c)` in a
+  `.mbtp` predicate lowers to `(a && b) → c`** (the parentheses are lost,
+  the spec silently weakens); `(b → c) && a` and named predicates lower
+  correctly, so put each implication in its own predicate and read the
+  lowered `_build/verif/**/*.mlw` when a spec looks too easy. The default
+  prelude uses unbounded integers; set `MOON_PROVE_PRELUDE_OVERRIDE` to
+  `~/.moon/lib/prelude_proof_machine_int` for overflow checks, and write
+  specs that do not overflow themselves (`n <= len - pos`, not
+  `pos + n <= len`). A proof-enabled package lowers all its type definitions
+  and breaks on an `Array` field (`unbound type symbol 'array'`). Contracted
+  bodies may not `raise`, `abort`, interpolate strings or convert Int↔Int64;
+  uncontracted functions are ignored. Logic code (`.mbtp`) has no `let`, no
+  `else if` chains (nest `else { if … }`), no integer-literal `match`; Int64
+  literals need `L` in contracts. After a frontend error `moon prove` exits
+  1 but reprints the previous "proved" summary: trust the exit code.
+  `moon prove` with no path proves every proof-enabled package; reports are
+  `_build/verif/<pkg>/*.proof.json` (`jq .failures`).

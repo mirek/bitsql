@@ -407,9 +407,8 @@ fn call_values(
     GetDate | GetUtcDate => {
       // datetime: days since 1900 and 1/300 s units (UTC; no time zone)
       let now = rt.read_clock()
-      let days = (now / @types.TICKS_PER_DAY).to_int() - @types.DAYS_TO_1900
-      let ticks = now % @types.TICKS_PER_DAY
-      DateTime(days, @types.ticks_to_datetime_units(ticks).to_int())
+      let (days, units) = @types.datetime_parts(now)
+      DateTime(days - @types.DAYS_TO_1900, units)
     }
     SysDateTime | SysUtcDateTime => DateTime2(rt.read_clock())
     SysDateTimeOffset => DateTimeOffset(rt.read_clock(), 0)

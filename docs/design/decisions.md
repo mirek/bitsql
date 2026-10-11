@@ -1394,3 +1394,15 @@ subcommand were deleted because there is nothing left to import. Identifiers
 inside the captured SQL (`msduck_seq`, `msduck_audit_*` databases, …) were
 left as they are: they appear in the captured messages and rows, and
 expectations are never hand-edited.
+
+### 2026-10-11: formal proofs with `moon prove` for arithmetic kernels
+
+Small pure arithmetic kernels (TDS reader bounds, calendar and tick
+arithmetic) moved into `src/core/proved`, a proof-enabled package with
+`moon prove` contracts. `scripts/check.sh` proves them with the
+machine-integer prelude, so overflow freedom is part of every proof. The
+dev container installs z3 and cvc5. A separate package is required because
+proof lowering cannot handle `Array`/`String` type definitions in a
+proof-enabled package. Writing the specs exposed a pre-auth server abort in
+`Reader::need` and a missing midnight carry in `GETDATE()`. Scope, limits and
+candidates: [verification.md](verification.md#formal-proofs-moon-prove).

@@ -1,0 +1,12 @@
+// Specs of bounds.mbt.
+
+// A positive answer leaves room for count * width bytes, so neither that
+// product nor `pos + count * width` can overflow.
+predicate fits_sound(pos : Int, count : Int, width : Int, len : Int, ok : Bool) {
+  ok → 0 <= count && count * width <= len - pos
+}
+
+// Nothing that fits is refused.
+predicate fits_complete(pos : Int, count : Int, width : Int, len : Int, ok : Bool) {
+  0 <= count && count <= (len - pos) / width → ok
+}

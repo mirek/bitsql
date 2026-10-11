@@ -17,6 +17,18 @@ grep -q "bitsql_version : String = \"$mod\"" src/core/exec/version.mbt \
 echo "== moon test"
 # MOON_TEST_JOBS=2 keeps parallel test links within an 8 GB dev container VM.
 moon test --target native ${MOON_TEST_JOBS:+-j "$MOON_TEST_JOBS"} 2>&1 | tail -n 5
+echo "== moon prove (proof-enabled packages, machine integers)"
+# Machine-integer prelude: overflow is a proof obligation (the default prelude
+# uses unbounded integers). Trust the exit code: after a frontend error moon
+# prove still prints the previous run's "proved" summary.
+prelude="${MOON_HOME:-$HOME/.moon}/lib/prelude_proof_machine_int"
+[ -f "$prelude/moonbit_builtin_prelude.mlw" ] || { echo "missing $prelude (toolchain too old?)"; exit 1; }
+command -v z3 >/dev/null || command -v cvc5 >/dev/null \
+  || { echo "moon prove needs an SMT solver: apt-get install z3 cvc5 (the dev container image has them)"; exit 1; }
+if ! out=$(MOON_PROVE_PRELUDE_OVERRIDE="$prelude" moon prove --deny-warn 2>&1); then
+  echo "$out" | grep -v '^Warning, file' | tail -n 40; exit 1
+fi
+echo "$out" | grep 'goals proved' | tail -n 1
 echo "== moon fmt / info drift"
 snapshot() { find src -type f \( -name '*.mbt' -o -name '*.mbti' -o -name 'moon.pkg' \) -print0 | sort -z | xargs -0 sha1sum; }
 before=$(snapshot)

@@ -1,0 +1,78 @@
+// Specs of temporal.mbt. Each implication is its own predicate: moonc
+// v0.10.14 lowers `a && (b → c)` to `(a && b) → c` (docs/design/verification.md).
+
+predicate thirty_ok(m : Int, d : Int) {
+  m == 4 || m == 6 || m == 9 || m == 11 → d <= 30
+}
+
+// A valid date except that February 29 is not tied to leap years: SMT
+// solvers time out on it, and temporal_test.mbt checks every day exhaustively.
+predicate civil_shape(r : (Int, Int, Int)) {
+  match r {
+    (y, m, d) =>
+      1 <= y &&
+      y <= 9999 &&
+      1 <= m &&
+      m <= 12 &&
+      1 <= d &&
+      d <= 31 &&
+      february_shape(m, d) &&
+      thirty_ok(m, d)
+  }
+}
+
+predicate february_shape(m : Int, d : Int) {
+  m == 2 → d <= 29
+}
+
+fn pow10(n : Int) -> Int64 {
+  if n <= 3 {
+    if n == 0 { 1L } else { if n == 1 { 10L } else { if n == 2 { 100L } else { 1000L } } }
+  } else {
+    if n == 4 { 10000L } else { if n == 5 { 100000L } else { if n == 6 { 1000000L } else { 10000000L } } }
+  }
+}
+
+predicate exact_when_unit_one(ticks : Int64, unit : Int64, r : Int64) {
+  unit == 1L → r == ticks
+}
+
+predicate nearest_when_unit_even(ticks : Int64, unit : Int64, r : Int64) {
+  unit > 1L → r - unit / 2L <= ticks && ticks < r + unit / 2L
+}
+
+// `r` is `ticks` rounded half up to a multiple of `unit` (1 or even).
+predicate rounded_half_up(ticks : Int64, unit : Int64, r : Int64) {
+  0L <= r &&
+  r % unit == 0L &&
+  exact_when_unit_one(ticks, unit, r) &&
+  nearest_when_unit_even(ticks, unit, r)
+}
+
+// 1/300 s units of `t` ticks, rounded half up.
+fn day_units(t : Int64) -> Int64 {
+  (t * 3L + 50000L) / 100000L
+}
+
+predicate same_day_when_below_midnight(ticks : Int64, days : Int64, units : Int64) {
+  day_units(ticks % 864000000000L) < 25920000L →
+  days == ticks / 864000000000L &&
+  units == day_units(ticks % 864000000000L)
+}
+
+predicate next_day_when_midnight(ticks : Int64, days : Int64, units : Int64) {
+  day_units(ticks % 864000000000L) == 25920000L →
+  days == ticks / 864000000000L + 1L && units == 0L
+}
+
+// (days, units) is a valid legacy datetime: `ticks` rounded to the nearest
+// 1/300 s, a rounding up to midnight carried into the next day.
+predicate datetime_parts_ok(ticks : Int64, r : (Int64, Int64)) {
+  match r {
+    (days, units) =>
+      0L <= units &&
+      units < 25920000L &&
+      same_day_when_below_midnight(ticks, days, units) &&
+      next_day_when_midnight(ticks, days, units)
+  }
+}

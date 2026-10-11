@@ -81,6 +81,7 @@ replication are deferred.
 - [x] MoonBit module, vendored docs with rerunnable update script
 - [x] Design split into topic docs, project skills
 - [x] Reuse inventory of mssqlite (`docs/reuse/`)
+- [x] `moon prove` gate for arithmetic kernels (`src/core/proved`, machine integers; docs/design/verification.md)
 - [ ] CI workflow — deferred on purpose (too much churn); local `scripts/check.sh` is the gate
 
 ## Phase 1: capture and harness
