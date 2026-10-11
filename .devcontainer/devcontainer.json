@@ -20,7 +20,8 @@
     "source=bitsql-mooncakes,target=${containerWorkspaceFolder}/.mooncakes,type=volume",
     "source=bitsql-harness-modules,target=${containerWorkspaceFolder}/harness/node_modules,type=volume"
   ],
-  "postCreateCommand": "sudo chown vscode: _build .mooncakes harness/node_modules && moon update && (cd harness && npm ci)",
+  // safe.directory: the bind mount is owned by the host user (e.g. uid 501 on macOS).
+  "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && sudo chown vscode: _build .mooncakes harness/node_modules && moon update && (cd harness && npm ci)",
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {

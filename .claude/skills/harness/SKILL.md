@@ -308,7 +308,8 @@ ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
   process, 26 ms of it the TLS self-test's `NoVerification` client parsing
   the system CA store (fixed in `src/host/tls.mbt`; first login now ~20 ms).
   With corpus cases also run concurrently (`test/corpus.test.mjs`) it takes
-  777 s, CPU-bound: more cores scale it further.
+  777 s, CPU-bound: with 8 vCPUs it is 628 s (whole `scripts/check.sh` 770 s,
+  was ~34 min).
 
 ## Emulator test isolation (for app test suites)
 
