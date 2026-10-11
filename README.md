@@ -17,6 +17,16 @@ emulator doesn't support fails with an `Emulator: …` error (numbers
 statement executions and index usage. Optional
 [query diagnostics](docs/design/query-diagnostics.md) inspect execution on demand.
 
+Some core arithmetic is formally verified, not only tested: on every gate run
+`moon prove` checks with SMT solvers that the TDS packet reader's bounds check
+never overflows or accepts a truncated packet, that date ↔ day-number
+conversion stays inside 0001–9999, that `datetime2`/`time` scale rounding is
+exact half-up and never leaves the day, and that legacy `datetime` 1/300 s
+rounding round-trips and carries midnight into the next day. Writing these
+specs exposed two bugs, both fixed: a packet that could crash the server and a
+`GETDATE()` that could return 24:00. See
+[formal proofs](docs/design/verification.md#formal-proofs-moon-prove).
+
 ```bash
 docker run --rm -p 1433:1433 mirek/bitsql --auto-create-databases
 ```
