@@ -431,7 +431,7 @@
     {
       "input": {
         "api": "OpenAI",
-        "response": {"body":{"data":[{"embedding":[1,2]}]},"delayMs":400},
+        "response": {"body":{"data":[{"embedding":[1,2]}]},"delayMs":1000},
         "name": "clock-after-http",
         "sql": "DECLARE @before datetime2=SYSDATETIME(); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; SELECT CASE WHEN DATEDIFF(millisecond,@before,SYSDATETIME())>=300 THEN 1 ELSE 0 END AS advanced;"
       },

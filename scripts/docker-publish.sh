@@ -103,7 +103,13 @@ fi
 base=gcr.io/distroless/cc-debian12
 base_index=$(docker manifest inspect "$base:nonroot")
 for arch in "${arches[@]}"; do
-  digest=$(python3 -c "import json,sys; print(next(m['digest'] for m in json.load(sys.stdin)['manifests'] if m['platform']['architecture'] == sys.argv[1]))" "$arch" <<<"$base_index")
+  digest=$(node -e '
+const [arch] = process.argv.slice(1)
+const index = JSON.parse(require("fs").readFileSync(0, "utf8"))
+const m = index.manifests.find(m => m.platform.architecture === arch)
+if (!m) throw new Error(`no ${arch} manifest`)
+console.log(m.digest)
+' "$arch" <<<"$base_index")
   docker pull -q --platform "linux/$arch" "$base@$digest" >/dev/null
   docker build -q --platform "linux/$arch" --build-arg "BASE=$base@$digest" \
     --build-arg "BITSQL_BIN=$out/$arch/bitsql" \
@@ -125,12 +131,12 @@ if ((push)); then
   # Preserve only other architectures already validated for this version.
   # A registry/network error must not silently erase their manifest entries.
   if existing=$(docker manifest inspect "$repo:$version" 2>&1); then
-    references=$(python3 -c '
-import json,sys
-index=json.load(sys.stdin)
-for entry in index.get("manifests", []):
-    if entry["platform"]["architecture"] not in sys.argv[1].split():
-        print(sys.argv[2] + "@" + entry["digest"])
+    references=$(node -e '
+const [arches, repo] = process.argv.slice(1)
+const index = JSON.parse(require("fs").readFileSync(0, "utf8"))
+for (const entry of index.manifests ?? [])
+  if (!arches.split(/\s+/).includes(entry.platform.architecture))
+    console.log(repo + "@" + entry.digest)
 ' "${arches[*]}" "$repo" <<<"$existing")
     previous=()
     if [[ -n $references ]]; then mapfile -t previous <<<"$references"; fi

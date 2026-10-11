@@ -1375,3 +1375,7 @@ Python printed ints, non-ASCII where Python `\w`/`\d` are Unicode).
 generated file differs from its generator's output (`SKIP_GENERATORS=1` to
 skip, ~30 s). Shell launchers (`check.sh`, `profile.sh`, `docker-publish.sh`)
 are unchanged. Conventions and gotchas: moonbit skill, "Scripts (`.mbtx`)".
+Same day: `docker-publish.sh`'s two inline manifest-JSON helpers moved from
+`python3 -c` to `node -e` (node is already required by its harness smoke
+run; outputs compared on the live distroless and bitsql manifests), and the
+dev container no longer installs python3: the repo has no Python dependency.

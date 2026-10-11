@@ -6,7 +6,7 @@ export const embeddingExecutionCases = [
   { name: 'seeded-rand', sql: "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND(42)); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;" },
   { name: 'volatile-rand', volatileSource: true, sql: "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND()); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;" },
   { name: 'volatile-time', volatileSource: true, sql: "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),SYSDATETIME(),126); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding;" },
-  { name: 'clock-after-http', response: { body: { data: [{ embedding: [1,2] }] }, delayMs: 400 }, sql: "DECLARE @before datetime2=SYSDATETIME(); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; SELECT CASE WHEN DATEDIFF(millisecond,@before,SYSDATETIME())>=300 THEN 1 ELSE 0 END AS advanced;" },
+  { name: 'clock-after-http', response: { body: { data: [{ embedding: [1,2] }] }, delayMs: 1000 }, sql: "DECLARE @before datetime2=SYSDATETIME(); SELECT AI_GENERATE_EMBEDDINGS(N'hello' USE MODEL m) AS embedding; SELECT CASE WHEN DATEDIFF(millisecond,@before,SYSDATETIME())>=300 THEN 1 ELSE 0 END AS advanced;" },
   { name: 'random-continuation', sql: "DECLARE @s nvarchar(100)=CONVERT(nvarchar(100),RAND(42)); SELECT @s AS source, AI_GENERATE_EMBEDDINGS(@s USE MODEL m) AS embedding; SELECT RAND() AS after_http; SELECT RAND() AS next_value;" },
   { name: 'two-rows', sql: "SELECT s, AI_GENERATE_EMBEDDINGS(s USE MODEL m) AS embedding FROM (VALUES(N'first'),(N'second')) AS v(s);" },
 ].map(c => ({ api: 'OpenAI', response: { body: { data: [{ embedding: [1,2] }] } }, ...c }))

@@ -3,11 +3,11 @@
 # container's own architecture only (see CLAUDE.md, native host rule).
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
-# gcc/libc (and addr2line) for the native backend and profiler, python3 for
-# the inline JSON helpers in scripts/docker-publish.sh.
+# gcc/libc (and addr2line) for the native backend and profiler. No Python:
+# automation is MoonBit script mode (scripts/*.mbtx).
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      build-essential libssl3 python3 ca-certificates curl \
+      build-essential libssl3 ca-certificates curl \
  && rm -rf /var/lib/apt/lists/*
 
 # Keep in step with .github/workflows/pages.yml and docs/moonbit/VERSIONS.md

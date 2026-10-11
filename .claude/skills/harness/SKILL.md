@@ -310,6 +310,15 @@ ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
   With corpus cases also run concurrently (`test/corpus.test.mjs`) it takes
   777 s, CPU-bound: with 8 vCPUs it is 628 s (whole `scripts/check.sh` 770 s,
   was ~34 min).
+- 2026-10-11: the Colima VM's wall clock runs ~1.1% fast and is stepped back
+  ~110 ms every ~10 s (measured: wall minus `performance.now()` skew -665 ms
+  over 60 s). Real SQL Server and bitsql both read the wall clock for
+  `SYSDATETIME()`, so elapsed-time assertions need slack well above 110 ms.
+  `embedding-execution#clock-after-http` checked >=300 ms across a 400 ms
+  fixture delay and failed ~1 run in 3 (client and server both saw ~298 ms);
+  the delay is now 1000 ms (`gen/embedding-execution-cases.mjs`, re-captured
+  with `gen/capture-embeddings.mjs --execution --force`; results unchanged),
+  20/20 runs pass. `scripts/check.sh` on an 8 GB VM: `MOON_TEST_JOBS=2`.
 
 ## Emulator test isolation (for app test suites)
 
