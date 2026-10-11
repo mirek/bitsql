@@ -1,6 +1,6 @@
 // Dumps SQL Server's AT TIME ZONE behaviour for every sys.time_zone_info name
 // into scripts/timezones/sqlserver-timezones.json, the input of
-// scripts/gen-timezones.py (which derives the compact rule tables embedded in
+// scripts/gen-timezones.mbtx (which derives the compact rule tables embedded in
 // src/core/types/timezone_data.mbt).
 //
 // Usage (in harness/): node src/dump-timezones.mjs ../scripts/timezones/sqlserver-timezones.json

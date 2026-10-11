@@ -157,7 +157,7 @@ Anything a function cannot leave with (lock waits, control flow) becomes an
 
 AT TIME ZONE and sys.time_zone_info use tables generated from a dump of the
 oracle's own answers (`scripts/timezones/sqlserver-timezones.json` →
-`scripts/gen-timezones.py` → `src/core/types/timezone_data.mbt`), not from
+`scripts/gen-timezones.mbtx` → `src/core/types/timezone_data.mbt`), not from
 IANA tzdata or a CLDR Windows→IANA mapping. SQL Server applies Windows
 yearly rules, extrapolates the first and last rule over years 1–9999, and has
 year-boundary quirks (one-hour blips) that no IANA-based model reproduces.
