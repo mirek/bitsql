@@ -1,5 +1,4 @@
-// Real SQL Server ("the oracle") in a docker container, adapted from msduck
-// scripts/lib/reference-container.mjs. Differences: the container is named
+// Real SQL Server ("the oracle") in a docker container. The container is named
 // `bitsql-oracle`, binds a fixed loopback port (47314 by default) and is reused
 // between runs for fast iteration; `npm run oracle:stop` removes it.
 //
@@ -12,8 +11,8 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
 import { connect, close, tediousConfig } from './client.mjs'
 
-// msduck pins sha256:86cc6144… (17.0.4065.4); that digest is not on this host,
-// so bitsql pins the locally pulled 2025-latest instead (recorded 2026-10-03).
+// Pinned to the locally pulled 2025-latest (17.0.5005.3, recorded 2026-10-03).
+// Some older captures were taken on 17.0.4065.4 (image digest 86cc6144…).
 export const oracleImage = 'mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726'
 export const containerName = process.env.BITSQL_ORACLE_NAME ?? 'bitsql-oracle'
 if (!containerName.startsWith('bitsql-oracle')) throw new Error('BITSQL_ORACLE_NAME must start with bitsql-oracle')

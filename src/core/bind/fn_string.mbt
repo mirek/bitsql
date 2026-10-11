@@ -2,8 +2,8 @@
 // Server does (captured: LEFT('abcdef', 3) is varchar(3), REPLICATE('x', 1+2)
 // varchar(3), SPACE(NULL) varchar(8000)); nearly every result is nullable
 // (flags 33) even for literal arguments. Evaluated in exec/fn_string.mbt.
-// Captures: harness/corpus/functions/string.cases.json and msduck
-// left-right*, replicate*, space-*, trim-collation, character-*.
+// Captures: harness/corpus/functions/string.cases.json and 
+// captured/left-right*, replicate*, space-*, trim-collation, character-*.
 
 ///|
 fn with_collation(t : @types.SqlType, c : @types.Collation) -> @types.SqlType {
@@ -434,7 +434,7 @@ fn bind_string_fn(
         raise bad_arg_type(s.ty, 1, "string_escape")
       }
       // a NULL literal kind is a compile error (lower-case name, state 1);
-      // a typed NULL fails at run time (msduck string-escape-format)
+      // a typed NULL fails at run time (captured-runs/string-escape-format)
       let k = b(1)
       if is_null_lit(k) {
         raise null_arg(2, "string_escape")
@@ -515,7 +515,7 @@ fn bind_string_fn(
         _ => env.collation
       }
       // compatibility level 100 and below: H and W always separate
-      // (captured: msduck soundex-difference #015)
+      // (captured: captured-runs/soundex-difference #015)
       let fname = if (env.catalog.compat_level)() < 110 {
         "SOUNDEX_100"
       } else {
@@ -540,7 +540,7 @@ fn bind_string_fn(
   // A string argument without a collation (a CASE or `+` over different
   // implicit collations) fails in every collation-aware string function
   // (captured probes: LEN/UPPER/LEFT(a+b) is 4191 "for len operation").
-  // CONCAT only propagates it (451 later, msduck collation-functions #038).
+  // CONCAT only propagates it (451 later, captured/collation-functions #038).
   if !(name is ("CONCAT" | "CONCAT_WS")) && r.kind is Call(_, args) {
     let op = match name {
       "TRIM LEADING" | "TRIM TRAILING" => "trim"
@@ -619,7 +619,7 @@ fn concat_type(
   }
   let cap = if unicode { 4000 } else { 8000 }
   // capped, not max, without a max argument (captured: CONCAT_WS(N'',
-  // nvarchar(3999), nvarchar(2)) is nvarchar(4000); msduck concat-boundary)
+  // nvarchar(3999), nvarchar(2)) is nvarchar(4000); captured-runs/concat-boundary)
   let n = if max {
     None
   } else {

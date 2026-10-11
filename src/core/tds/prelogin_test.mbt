@@ -1,5 +1,5 @@
 ///|
-// MS-TDS example 4.1 request (ENCRYPT_ON), vector shared with msduck/mssqlite.
+// MS-TDS example 4.1 request (ENCRYPT_ON), vector shared with mssqlite.
 let example_4_1 : String = "00 00 1A 00 06 01 00 20 00 01 02 00 21 00 01 03 00 22 00 04 04 00 26 00 01 FF 09 00 00 00 00 00 01 00 B8 0D 00 00 01"
 
 ///|
@@ -36,7 +36,7 @@ test "encryption negotiation with TLS (captured replies)" {
 }
 
 ///|
-test "PRELOGIN response matches msduck vector" {
+test "PRELOGIN response matches captured vector" {
   let bytes = @tds.encode_prelogin_response(
     version=(16, 0, 0, 0),
     encryption=@tds.ENCRYPT_NOT_SUP,
@@ -108,7 +108,7 @@ test "LOGIN7 decode with scrambled password" {
 }
 
 ///|
-test "scramble vector from msduck" {
+test "scramble vector" {
   assert_eq(
     @tds.hex(@tds.scramble_password("p@ssw0rd!")),
     "a2 a5 a1 a5 92 a5 92 a5 d2 a5 a6 a5 82 a5 e3 a5 b7 a5",

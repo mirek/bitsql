@@ -126,10 +126,10 @@ fn Session::set_options(
             self.rt.datefirst = d
             self.datefirst_set = true
           }
-          // captured: msduck rpc-session-scope, statement-level
+          // captured: captured-runs/rpc-session-scope, statement-level
           Some(d) =>
             raise @types.sql_error(2742, "SET DATEFIRST \{d} is out of range.")
-          // a NULL variable is 0 (captured: msduck rpc-session-scope #022)
+          // a NULL variable is 0 (captured: captured-runs/rpc-session-scope #022)
           None if value is ValueExpr(e) && self.eval(e).0 is Null =>
             raise @types.sql_error(2742, "SET DATEFIRST 0 is out of range.")
           _ => raise unsupported(n)

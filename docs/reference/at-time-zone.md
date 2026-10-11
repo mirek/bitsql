@@ -1,7 +1,7 @@
 # AT TIME ZONE and sys.time_zone_info
 
-SQL Server 17.0.5005.3 behaviour, derived from captures: msduck
-`at-time-zone*` cases (`harness/corpus/msduck/at-time-zone*.cases.json`),
+SQL Server 17.0.5005.3 behaviour, derived from captures: 
+`captured/at-time-zone*` cases (`harness/corpus/captured/at-time-zone*.cases.json`),
 `harness/corpus/timezone/at-time-zone.cases.json` (generator
 `harness/gen/timezone.mjs`) and the rule dump
 `scripts/timezones/sqlserver-timezones.json`. Implementation:
@@ -113,9 +113,8 @@ Everything is SQL Server's own answer; no IANA or registry data is used.
    dump, checked against the MoonBit port).
 3. `moon fmt && moon test -p mirek/bitsql/core/types`.
 
-Cross-check (2026-10-03, `moon run scripts/gen-timezones.mbtx xcheck-msduck PATH/TO/msduck`): msduck's independent history captures
-(`reference/at-time-zone-history-*.json`, SQL Server 17.0.4065.4, daily
-offsets 0001–2500) agree on all 345,109 daily changes except 47 artifacts of
+Cross-check (2026-10-03): independent history captures (SQL Server
+17.0.4065.4, daily offsets 0001–2500) agree on all 345,109 daily changes except 47 artifacts of
 the year-1 clamp described above.
 
 ## Coverage limits

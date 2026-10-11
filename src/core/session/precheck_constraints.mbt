@@ -77,7 +77,7 @@ fn Session::constraint_errors(
 
 ///|
 /// A column COLLATE name SQL Server does not know: 448 state 2 for the
-/// whole batch (captured: msduck default-collation columns-unknown-name*).
+/// whole batch (captured: captured-runs/default-collation columns-unknown-name*).
 /// Real collations bitsql does not model stay the binder's Emulator error.
 fn bad_collation(body : @ast.TableBody) -> String? {
   for c in body.columns {

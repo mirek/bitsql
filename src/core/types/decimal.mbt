@@ -205,7 +205,7 @@ pub fn Decimal::mul(self : Decimal, other : Decimal) -> Decimal {
 
 ///|
 /// Quotient at `scale`, rounded as asked (SQL Server truncates decimal
-/// division toward zero: msduck reference/decimal-division.json). The divisor
+/// division toward zero: captured/decimal-division). The divisor
 /// must be non-zero.
 pub fn Decimal::div(
   self : Decimal,

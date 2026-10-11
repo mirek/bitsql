@@ -20,7 +20,7 @@ it in exactly one place:
 | Catalog view contracts | `.claude/skills/sys/SKILL.md` → "bitsql findings" |
 | tedious / mssql client behavior | `.claude/skills/tedious/SKILL.md` → "bitsql findings" |
 | MoonBit language/tooling surprise | `.claude/skills/moonbit/SKILL.md` → "Gotchas and learnings" |
-| Something ported (or deliberately not) from msduck/mssqlite | `docs/reuse/README.md` checklist |
+| Something ported (or deliberately not) from mssqlite | `docs/reuse/README.md` checklist |
 | How to run/extend the harness changed | `.claude/skills/harness/SKILL.md` |
 | A repeatable workflow emerged that no skill covers | a new `.claude/skills/<name>/SKILL.md` + a line in `CLAUDE.md` |
 | A release (version bump + `scripts/docker-publish.sh --push`) that changes speed, startup, image size or memory materially (executor/storage/protocol work, dependency or toolchain bumps) | README "Benchmarks" tables re-measured with `npm run bench:compare` against the new image (harness skill), plus `docs/design/performance.md` results for executor work |

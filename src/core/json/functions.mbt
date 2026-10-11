@@ -26,7 +26,7 @@ fn states(lob : Bool, json_type : Bool) -> States {
 
 ///|
 /// The single value a multi-value path selected, or the error/NULL it
-/// yields (captured: msduck json-extraction-wildcard, json-advanced-path).
+/// yields (captured: captured-runs/json-extraction-wildcard, json-advanced-path).
 /// A JSON null anywhere among the values is NULL even under strict; no
 /// value, or a value of the wrong kind, is 13608 under strict; several
 /// values are 13608 (JSON_VALUE) or 13624 (JSON_QUERY).

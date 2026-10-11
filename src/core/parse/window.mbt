@@ -1,7 +1,7 @@
 ///|
 /// Named windows (`SELECT … WINDOW w AS (…)`, `OVER w`, `OVER (w …)`),
 /// resolved while parsing into plain OVER clauses. Rules captured on SQL
-/// Server 17 (tail5/b1-named-window, msduck distribution-reference#006):
+/// Server 17 (tail5/b1-named-window, captured-runs/distribution-reference#006):
 /// names are case-insensitive and local to their SELECT (a subquery does not
 /// see them; its query's ORDER BY does); a window may name another one
 /// (also defined later); OVER/definition elements (PARTITION BY, ORDER BY,

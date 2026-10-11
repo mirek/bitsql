@@ -5,7 +5,7 @@
 // DateTimeOffset standard and custom formats, and TimeSpan formats for
 // time. Culture data comes from culture_data.mbt. An invalid format string
 // is a .NET FormatException, which FORMAT returns as NULL. Captures:
-// msduck-runs/format, functions2/format-*.
+// captured-runs/format, functions2/format-*.
 
 ///|
 /// Digits of |d| rounded half away from zero to `dec` decimals, after

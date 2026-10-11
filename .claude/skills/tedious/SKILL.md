@@ -3,10 +3,10 @@ name: tedious
 description: "Using the tedious MSSQL client against bitsql (and real SQL Server) — connection options that matter (TLS, port, useColumnNames), Request API and events (row, infoMessage on the connection, done vs doneInProc), how tedious maps operations to the wire (sp_executesql RPC, sp_prepare handles, transaction manager), and e2e testing patterns. Use when writing server e2e tests or debugging client interop."
 ---
 
-> **Provenance.** Reference content ported from the sibling projects msduck and
-> mssqlite (same author, public domain). Notes that mention `packages/*`,
-> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
-> are field notes verified against SQL Server there, not claims about bitsql.
+> **Provenance.** Reference content ported from earlier sibling projects (same
+> author, public domain). Notes that mention `packages/*`, `mssqlite` or SQLite
+> describe *those* implementations. They are field notes verified against SQL
+> Server there, not claims about bitsql.
 > Real SQL Server captures remain the authority (docs/design/verification.md).
 
 ## bitsql implementation
@@ -142,11 +142,11 @@ new Connection({
 | `beginTransaction/commitTransaction/rollbackTransaction` | Transaction manager (0x0E) types 5/7/8 | engine transactions + ENVCHANGE 8/9/10 |
 | `newBulkLoad` + `execBulkLoad` | SQL batch `INSERT BULK`, then Bulk Load (0x07) | incremental decoder + atomic engine loader |
 | `cancel()` | Attention (0x06) | DONE with DONE_ATTN |
-| `connection.reset()` (tedious 20) | SQL batch (0x01), first packet `RESETCONNECTION` status (0x08) | The copied upstream mssqlite notes called reset a no-op; this is not an msduck or SQL Server behavior claim. |
+| `connection.reset()` (tedious 20) | SQL batch (0x01), first packet `RESETCONNECTION` status (0x08) | The copied upstream mssqlite notes called reset a no-op; this is not a SQL Server behavior claim. |
 
 Tedious 20's `Connection.reset()` sets `resetConnectionOnNextRequest` and sends
 `getInitialSql()` through `execSqlBatch`; its packet writer maps the flag to
-status bit 0x08. The [msduck SQL Server 2025 capture](../../../docs/session-reset-reference.md)
+status bit 0x08. A SQL Server 2025 capture
 observes the outgoing Batch message and reset flag, callback, response events,
 and follow-up session state, including invalidation of a server prepared handle
 (error 8179 on reuse). It does not test `RESETCONNECTIONSKIPTRAN` (0x10).

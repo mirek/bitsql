@@ -1,5 +1,5 @@
 // sp_rename: tables, modules, constraints, columns and indexes. Rules
-// captured from SQL Server 17 (msduck gaps-catalog #034-#045 and
+// captured from SQL Server 17 (captured-gaps/gaps-catalog #034-#045 and
 // #118-#159, corpus tail/catalog-sp-rename):
 //
 // - arguments: @objname, @newname required (201), @objtype optional;

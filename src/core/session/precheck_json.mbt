@@ -1,6 +1,6 @@
 ///|
 /// Batch-level compile errors of FOR JSON: SQL Server rejects the whole
-/// batch before running anything (captured: msduck gaps-json_string#052,
+/// batch before running anything (captured: captured-gaps/gaps-json_string#052,
 /// `SELECT 1 AS k; SELECT 2 AS v FOR JSON AUTO` returns only the error):
 /// 13620 for ROOT with WITHOUT_ARRAY_WRAPPER, 13600 for FOR JSON AUTO
 /// without a table (no FROM, or only table-valued functions).

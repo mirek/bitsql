@@ -14,7 +14,7 @@ fn run_window(
     columns.push(values)
   }
   // SQL Server's window operator emits rows sorted by the window's
-  // PARTITION BY then ORDER BY keys (captured: msduck order-token #046,
+  // PARTITION BY then ORDER BY keys (captured: captured-runs/order-token #046,
   // SELECT a, ROW_NUMBER() OVER(ORDER BY a) without ORDER BY returns a in
   // order; order-token-expanded #032 ties keep that order). With several
   // window specifications the last one decides (unverified).
@@ -84,8 +84,8 @@ fn window_values_ordered(
 ) -> (Array[@types.Value], Array[Int]) raise @types.SqlError {
   let result = Array::make(rows.length(), @types.Value::Null)
   // the percentile is evaluated once per call, also for no rows (captured:
-  // RAND() in it advances the generator once, msduck
-  // percentile-runtime-fraction rand-advancement)
+  // RAND() in it advances the generator once, 
+  // captured-runs/percentile-runtime-fraction rand-advancement)
   let fraction = if call.func is (PercentileCont | PercentileDisc) {
     eval(ctx, call.args[0])
   } else {

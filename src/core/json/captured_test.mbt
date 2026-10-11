@@ -1,5 +1,5 @@
 ///|
-// Generated from msduck reference/json-extraction-boundaries.json (SQL Server
+// Generated from captured-runs/json-extraction-boundaries (SQL Server
 // 2025 captures). Regenerate rather than edit; see .claude/skills/harness.
 fn check(
   f : String,

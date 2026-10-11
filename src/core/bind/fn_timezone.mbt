@@ -1,5 +1,5 @@
 // `expr AT TIME ZONE zone`: bound as the named call "AT TIME ZONE"
-// (evaluated in exec/fn_timezone.mbt). Captures: msduck at-time-zone*,
+// (evaluated in exec/fn_timezone.mbt). Captures: captured/at-time-zone*,
 // harness/corpus/timezone/.
 
 ///|

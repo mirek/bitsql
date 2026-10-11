@@ -44,7 +44,7 @@ fn Session::resolve_dml_target(
             from,
             purpose,
           )
-        // `UPDATE i ... FROM @t AS i` (captured: msduck gaps-temp_tables
+        // `UPDATE i ... FROM @t AS i` (captured: captured-gaps/gaps-temp_tables
         // #035)
         TableVar(_, alias_=Some(a), ..) if a.name.to_lower() == wanted =>
           return (self.dml_target(leaf), None)
@@ -265,7 +265,7 @@ fn Session::dml_scan(
       None => ()
     }
     // a target on the NULL-extended side of an outer join has no row to
-    // modify (captured: msduck gaps-outer_dml #003-#005, #020)
+    // modify (captured: captured-gaps/gaps-outer_dml #003-#005, #020)
     if r[src.rowid] is Null {
       continue
     }
@@ -485,7 +485,7 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
             "Cannot update identity column '\{c.name}'.",
           )
         }
-        // captured: also SET rv = DEFAULT (msduck gaps-rowversion_identity
+        // captured: also SET rv = DEFAULT (captured-gaps/gaps-rowversion_identity
         // #027/#028)
         if c.ty is RowVersion {
           raise @types.sql_error(272, "Cannot update a timestamp column.")
@@ -955,8 +955,8 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         let out = []
         for i, c in t.columns {
           // captured: the timestamp column is a target of an INSERT
-          // without a column list (DEFAULT or NULL for it; msduck
-          // gaps-rowversion_identity #022/#025)
+          // without a column list (DEFAULT or NULL for it; 
+          // captured-gaps/gaps-rowversion_identity #022/#025)
           if c.identity is None && c.computed is None {
             out.push(i)
           }
@@ -983,7 +983,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       }
   }
   // a value for the identity column without a column list (compile time,
-  // captured: msduck identity-insert-shapes)
+  // captured: captured-runs/identity-insert-shapes)
   let has_identity = t.columns.iter().any(c => c.identity is Some(_))
   // the table name as written (captured: 'dbo.alpha', 't')
   let written = match ins.target.kind {
@@ -1113,7 +1113,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         }
       }
       // DEFAULT or a NULL literal for the identity column is a compile-time
-      // error (captured: msduck identity-insert-conversion, CurCmd 253)
+      // error (captured: captured-runs/identity-insert-conversion, CurCmd 253)
       match identity_pos {
         Some(j) if identity_insert =>
           for r in bound {
@@ -1146,8 +1146,8 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
         let row = []
         let tys = []
         // under IDENTITY_INSERT the explicit identity value counts even
-        // when another column of the row then fails (captured: msduck
-        // identity-insert-errors, IDENT_CURRENT 400 after a 245 on v)
+        // when another column of the row then fails (captured: 
+        // captured-runs/identity-insert-errors, IDENT_CURRENT 400 after a 245 on v)
         let early = match identity_pos {
           Some(j) if identity_insert && r[j] is Some(b) => {
             let v = @exec.eval(ctx, b)
@@ -1284,7 +1284,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
       for j, ci in cols {
         if j < src.length() {
           let is_default = ri < default_marks.length() && default_marks[ri][j]
-          // captured: msduck identity-insert-conversion (339)
+          // captured: captured-runs/identity-insert-conversion (339)
           if t.columns[ci].identity is Some(_) && (is_default || src[j] is Null) {
             raise @types.sql_error(
               339, "DEFAULT or NULL are not allowed as explicit identity values.",
@@ -1395,7 +1395,7 @@ fn Session::exec_insert(self : Session, ins : @ast.Insert) -> Unit raise {
   } else if !has_identity {
     // captured: an INSERT into a table without an identity column (even
     // of no rows, also a table variable) makes SCOPE_IDENTITY() and
-    // @@IDENTITY NULL (msduck gaps-rowversion_identity #125/#137)
+    // @@IDENTITY NULL (captured-gaps/gaps-rowversion_identity #125/#137)
     self.rt.identity = Null
     self.rt.scope_identity = Null
   }
@@ -1452,7 +1452,7 @@ fn Session::bump_identity(
 
 ///|
 /// 273 (compile time): an INSERT value for a timestamp column other than
-/// DEFAULT or a NULL literal (captured: msduck gaps-rowversion_identity
+/// DEFAULT or a NULL literal (captured: captured-gaps/gaps-rowversion_identity
 /// #019/#024/#026).
 fn timestamp_insert_error() -> @types.SqlError {
   @types.sql_error(

@@ -4,7 +4,7 @@
 // `to` the target; `style` is CONVERT's third argument (None for CAST, which
 // for most types equals style 0 but not for datetime2-family → text).
 //
-// Error texts/states marked "captured" come from msduck reference/*.json
+// Error texts/states marked "captured" come from harness/corpus/captured*
 // (SQL Server 2025 RTM-CU7); the rest follow SQL Server's message catalog
 // and are listed as unverified in .claude/skills/t-sql/SKILL.md findings.
 
@@ -94,7 +94,7 @@ pub fn cast(
     FMoney => to_money(v, from, to)
     FFloat => to_float(v, from, to)
     // captured: CONVERT(varchar, rowversion, 1) copies the raw bytes like
-    // style 0 (msduck gaps-rowversion_identity #071)
+    // style 0 (captured-gaps/gaps-rowversion_identity #071)
     FString =>
       to_character(
         v,
@@ -337,7 +337,7 @@ fn check_source_length(s : String, from : SqlType) -> Unit raise SqlError {
 /// Integer text as SQL Server reads it: ASCII spaces trimmed; optional
 /// sign, optionally followed by spaces; ASCII digits. Empty text and a
 /// lone sign are 0. Tabs, NBSP, NUL, fractions, exponents and fullwidth
-/// digits are invalid (captured: msduck reference/unicode-integer.json).
+/// digits are invalid (captured: captured-runs/unicode-integer).
 pub fn parse_int_text(text : String) -> @bigint.BigInt? {
   let s = trim_spaces(text)
   let n = s.length()
@@ -434,7 +434,7 @@ fn to_integer(v : Value, from : SqlType, to : SqlType) -> Value raise SqlError {
       int_value(to, n.to_int64())
     }
     Money(_) => {
-      // money → integer rounds (msduck docs/integer-conversion.md)
+      // money → integer rounds
       let m = v.as_decimal().unwrap_or(Decimal::from_int64(0L))
       let n = m.rescale(0).coef()
       if n.compare_int64(lo) < 0 || n.compare_int64(hi) > 0 {

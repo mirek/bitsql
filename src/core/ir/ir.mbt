@@ -5,7 +5,7 @@
 pub(all) enum Origin {
   BaseColumn(identity~ : Bool)
   /// An identity column of the table under SET IDENTITY_INSERT ON: 0x10
-  /// with the updateable bit 0x08 (captured: msduck identity-insert-*,
+  /// with the updateable bit 0x08 (captured: captured-runs/identity-insert-*,
   /// flags 24 instead of 16).
   InsertableIdentity
   Computed

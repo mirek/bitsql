@@ -431,7 +431,7 @@ fn Session::check_other_db_module(
 ///|
 fn Session::find_table_var(self : Session, name : String) -> @store.Table? {
   // only the current module's frame: dynamic SQL, procedures and triggers
-  // do not see their caller's table variables (1087; captured: msduck-runs
+  // do not see their caller's table variables (1087; captured: captured-runs
   // table-variable #023/#024)
   let key = name.to_lower()
   match self.frames.last() {
@@ -618,7 +618,7 @@ fn Session::abort_transaction(self : Session) -> Unit {
 ///|
 /// Transaction or savepoint name of BEGIN/ROLLBACK/SAVE (identifier or
 /// variable); None without a name or for a NULL variable (captured:
-/// msduck-runs/savepoint length run): identifiers over 32 characters are
+/// captured-runs/savepoint length run): identifiers over 32 characters are
 /// 103, variables are cut to 32 and must be character strings (3914).
 fn Session::tran_name(self : Session, name : @ast.Expr?) -> String? raise {
   match name {

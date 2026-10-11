@@ -1,6 +1,6 @@
 ///|
 /// BACKUP options SQL Server accepts (anything else is 155, state 1 for a
-/// bare word, 2 for `word = value`; captured: msduck gaps-backup#029,
+/// bare word, 2 for `word = value`; captured: captured-gaps/gaps-backup#029,
 /// tail/backup-errors).
 let backup_options : Array[String] = [
   "BLOCKSIZE", "BUFFERCOUNT", "CHECKSUM", "COMPRESSION", "CONTINUE_AFTER_ERROR",

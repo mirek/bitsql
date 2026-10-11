@@ -2,8 +2,8 @@
 /// Every syntax error SQL Server reports for a batch, in order (empty when
 /// it parses). After an error the parser recovers like SQL Server's yacc
 /// parser: an error at `WITH` also reports 319 there (the `WITH` restarts as
-/// an unterminated CTE statement; captured: tail/tablevar-hints, msduck
-/// gaps-merge#008), then statements restart at later tokens and a further
+/// an unterminated CTE statement; captured: tail/tablevar-hints, 
+/// captured-gaps/gaps-merge#008), then statements restart at later tokens and a further
 /// error is reported only once three tokens were accepted since the last
 /// one (yacc's error-recovery rule; captured: `MERGE @t WITH (HOLDLOCK) AS x
 /// USING (SELECT 1 AS a) s` adds 102 near 's', `... VALUES (1) SELECT 2 x

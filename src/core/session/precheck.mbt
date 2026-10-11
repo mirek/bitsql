@@ -69,14 +69,14 @@ fn precheck_batch(
         }
         // captured: ranking and offset functions with the wrong number of
         // arguments are 4114 / 10755 (class 15) for the whole batch
-        // (msduck-runs count-ranking-declarations#054, tail/window-arity)
+        // (captured-runs count-ranking-declarations#054, tail/window-arity)
         Call(c) if failure is None &&
           c.over is Some(_) &&
           window_arity_error(c.name.base(), c.args.length()) is Some(e) =>
           failure = Some((e, x.span.line))
         // captured: window-only functions without OVER are 10753 for the
         // whole batch, state 3 for ranking/distribution, 1 for offset and
-        // value functions (msduck-runs distribution-reference#009,
+        // value functions (captured-runs distribution-reference#009,
         // tail/window-arity)
         Call(c) if failure is None &&
           c.over is None &&
@@ -94,8 +94,8 @@ fn precheck_batch(
             ),
           )
         // captured: COUNT(NULL) / COUNT_BIG(NULL), also parenthesized,
-        // DISTINCT or windowed, is 8117 for the whole batch (msduck
-        // count-null-compilation)
+        // DISTINCT or windowed, is 8117 for the whole batch (
+        // captured-runs/count-null-compilation)
         Call(c) if failure is None && !c.star && c.args.length() == 1 => {
           let fname = c.name.base().to_lower()
           if (fname == "count" || fname == "count_big") &&
@@ -211,7 +211,7 @@ fn precheck_batch(
       DeclareTable(name, _) => declared.add(name.to_lower())
       // conflicting cursor options are compile errors of the batch: 1048
       // at the statement's line, 1049 (old and new syntax) at line 0
-      // (captured: msduck-runs/cursor #029-#034, stmts/cursor-options)
+      // (captured: captured-runs/cursor #029-#034, stmts/cursor-options)
       DeclareCursor(c) | SetCursor(c) => {
         if s.kind is SetCursor(_) {
           check_name(c.name.name, line)
@@ -224,7 +224,7 @@ fn precheck_batch(
       }
       // two CREATE TABLEs of one temp table name (also ## and in other
       // branches or after a DROP) fail the whole batch: 2714 state 1 at
-      // the second (captured: msduck gaps-temp_tables #015, corpus
+      // the second (captured: captured-gaps/gaps-temp_tables #015, corpus
       // stmts/temp-duplicate-create)
       CreateTable(ct) if ct.name.base().has_prefix("#") => {
         let base = ct.name.base()
@@ -277,7 +277,7 @@ fn precheck_batch(
           }
         }
         // captured: an undeclared table variable in FROM is 1087 state 2
-        // for the whole batch, and at CREATE PROCEDURE (msduck-runs
+        // for the whole batch, and at CREATE PROCEDURE (captured-runs
         // table-variable #014, #038)
         if failure is None {
           match undeclared_table_var(q.body, declared) {
@@ -306,7 +306,7 @@ fn precheck_batch(
           failure = Some((e, line))
         }
         // captured: a variable or parameter as STRING_SPLIT's
-        // enable_ordinal is 8748 for the whole batch (msduck string-split
+        // enable_ordinal is 8748 for the whole batch (captured-runs/string-split
         // #036, #048)
         if failure is None && q.body is Select(sel) {
           for t in sel.from {
@@ -316,7 +316,7 @@ fn precheck_batch(
           }
         }
         // captured: ORDER BY a bare variable is 1008 for the whole batch
-        // (msduck order-token-expanded #076)
+        // (captured-runs/order-token-expanded #076)
         if failure is None {
           for i, o in q.order_by {
             if o.expr.kind is Var(_) {
@@ -398,7 +398,7 @@ fn precheck_batch(
         }
       }
       // captured: a malformed WAITFOR literal is compile error 148 for the
-      // whole batch, not caught by TRY (msduck gaps-transactions #093/#094)
+      // whole batch, not caught by TRY (captured-gaps/gaps-transactions #093/#094)
       WaitFor(_, e) => {
         expr(e, line)
         if failure is None &&
@@ -500,7 +500,7 @@ fn precheck_batch(
             ),
           )
         }
-        // captured: a constant DML TOP is checked like SELECT's (msduck-runs
+        // captured: a constant DML TOP is checked like SELECT's (captured-runs
         // merge-top#062/#066/#070)
         if failure is None && top is Some(t) && !t.percent {
           failure = top_constant_error(t, types).map(e => (e, line))
@@ -512,7 +512,7 @@ fn precheck_batch(
       Return(Some(e)) if in_proc => expr(e, line)
       Return(Some(e)) => {
         // RETURN with a value outside a procedure (batch, sp_executesql
-        // text): compile error 178 (captured: msduck raiserror-rpc)
+        // text): compile error 178 (captured: captured/raiserror-rpc)
         if failure is None {
           failure = Some(
             (
@@ -645,7 +645,7 @@ fn walk_expr(e : @ast.Expr, f : (@ast.Expr) -> Unit) -> Unit {
 
 ///|
 /// RAISERROR argument errors SQL Server raises while compiling the batch
-/// (captured: msduck raiserror-arguments): more than 20 substitution
+/// (captured: captured/raiserror-arguments): more than 20 substitution
 /// parameters (2747); a variable whose type cannot be substituted (2748).
 fn raiserror_compile_error(
   args : Array[@ast.Expr],
@@ -686,7 +686,7 @@ fn raiserror_compile_error(
 
 ///|
 /// A constant SELECT TOP count fails the whole batch (class 15; captured:
-/// msduck-runs select-top-percent, tail/top-invalid): PERCENT outside
+/// captured-runs select-top-percent, tail/top-invalid): PERCENT outside
 /// 0..100 is 1031, NULL 1014; a row count below 0 is 127, NULL 1060.
 fn top_constant_error(
   t : @ast.Top,
@@ -873,7 +873,7 @@ fn undeclared_table_var(b : @ast.QueryBody, declared : Set[String]) -> String? {
 }
 
 ///|
-/// MERGE WHEN clauses, checked for the whole batch (captured: msduck-runs
+/// MERGE WHEN clauses, checked for the whole batch (captured: captured-runs
 /// merge-execution #043/#044, tail/merge-when-clauses): an action repeated
 /// within one WHEN kind is 10714 (class 15); a clause after one of the
 /// same kind without a search condition is 5324.
@@ -989,7 +989,7 @@ let known_table_hints : Array[String] = [
 
 ///|
 /// Compile-time checks of a DML target's table hints, which fail the whole
-/// batch (captured: msduck gaps-merge #006/#007, stmts/merge-hints): an
+/// batch (captured: captured-gaps/gaps-merge #006/#007, stmts/merge-hints): an
 /// unknown hint is 321 (statement line), NOLOCK / READUNCOMMITTED on a
 /// target is 1065, which SQL Server always reports at line 15.
 fn target_hint_error(

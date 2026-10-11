@@ -2,8 +2,8 @@
 
 The TDS codec lives in the pure core (`src/core/tds`). Reference material:
 `.claude/skills/tds-protocol/` (MS-TDS digest with annotated hex examples),
-`tedious` source in `harness/node_modules/tedious`, and the codecs of the sibling
-projects (msduck `crates/msduck-tds`, mssqlite `packages/tds`). It starts without
+`tedious` source in `harness/node_modules/tedious`, and the codec of the sibling
+project (mssqlite `packages/tds`). It starts without
 TLS.
 
 | Client → server | Server → client |

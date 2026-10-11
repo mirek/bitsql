@@ -501,8 +501,8 @@ fn compare_for_sort(
 
 ///|
 /// char/varchar sort keys: SQL_ collations order them with the SQL sort
-/// order (string sort: '-a' before '_'), not word sort (captured: msduck
-/// default-collation table-ordering-weights).
+/// order (string sort: '-a' before '_'), not word sort (captured: 
+/// captured-runs/default-collation table-ordering-weights).
 fn ansi_key(k : @ir.SortKey) -> Bool {
   k.expr.ty.family() is FString && !k.expr.ty.is_unicode()
 }

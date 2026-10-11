@@ -428,7 +428,7 @@ fn Session::resolve_object(
     }
   }
   // system objects: catalog views, system procedures, functions and tables
-  // (captured: msduck-runs system-all-columns, OBJECT_ID(N'sys.columns'))
+  // (captured: captured-runs system-all-columns, OBJECT_ID(N'sys.columns'))
   if is_db_scope(scope) {
     match system_object_named(sid, base) {
       Some(o) =>
@@ -516,7 +516,7 @@ fn Session::columns_of(self : Session, id : Int) -> Array[@store.Column]? {
       match db.get_module(id) {
         Some(m) if m.kind is View => Some(m.columns)
         _ => {
-          // a table type's table (captured: COL_NAME, msduck-runs
+          // a table type's table (captured: COL_NAME, captured-runs
           // table-type-catalog #013)
           for ut in db.user_types() {
             if ut.table is Some(t) && t.id == id {

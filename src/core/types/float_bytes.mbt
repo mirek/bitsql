@@ -1,6 +1,6 @@
 // Storage bytes of float, real, money, smallmoney and decimal/numeric, as
 // CONVERT(varbinary, x) shows them, and the conversions back (captured:
-// msduck concat-numeric-format *-native, harness/corpus/conversion/
+// captured-runs/concat-numeric-format *-native, harness/corpus/conversion/
 // numeric-bytes):
 //
 // - float / real: IEEE 754 binary64 / binary32, big-endian (-1.5 real is

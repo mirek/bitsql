@@ -23,7 +23,7 @@ fn bind_parse(
     raise bad_arg_type(a.ty, 1, "parse")
   }
   // captured: a user alias type is 10761 naming it as written
-  // (msduck parse-try-parse#076)
+  // (captured-runs/parse-try-parse#076)
   let t = resolve_type(
     tn,
     Conversion,

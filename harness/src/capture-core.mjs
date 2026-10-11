@@ -1,13 +1,12 @@
-// Full-fidelity capture of one request through tedious, ported from msduck
-// scripts/lib/compatibility.mjs (capture/canonical/differences) and
-// scripts/lib/reference.mjs (bounded first-difference description).
+// Full-fidelity capture of one request through tedious: capture, canonical
+// form, differences and a bounded first-difference description.
 //
 // A capture records what a tedious client can observe:
 //   sets:   [{ columns: [{name,type,length,precision,scale,flags,collation}], rows }]
 //   done:   [{ kind: done|doneInProc|doneProc, rowCount, more }]
 //   errors / info: [{ number, state, class, lineNumber, message }]
 //   returnStatus, rowCount (request callback), outputs (RETURNVALUE)
-//   tokens: DONE-family tokens with curCmd and status bits (msduck layout)
+//   tokens: DONE-family tokens with curCmd and status bits
 //   stream: the compact token sequence (ROW runs collapsed), bitsql only
 import { Request, ISOLATION_LEVEL } from 'tedious'
 import { isDeepStrictEqual } from 'node:util'
@@ -65,7 +64,7 @@ export function capture(connection, step, { rowLimit = 100000, onTokenRow } = {}
       else result.stream.push(entry.name === 'ROW' || entry.name === 'NBCROW' ? { name: entry.name, count: 1 } : entry)
     }
     // tedious keeps a RETURNSTATUS on the connection until a DONEPROC clears
-    // it, so an earlier request's status could leak into this one (msduck).
+    // it, so an earlier request's status could leak into this one.
     if ('procReturnStatusValue' in connection) connection.procReturnStatusValue = undefined
     const request = new Request(step.sql, (error, rowCount) => finish(error, rowCount))
     request.on('columnMetadata', metadata => result.sets.push({ columns: metadata.map(columnFields), rows: [] }))
@@ -172,7 +171,7 @@ export function normalizeQueryStoreDatabaseIds(value) {
   return value
 }
 
-// JSON-pointer diff (msduck). Returns every differing leaf.
+// JSON-pointer diff. Returns every differing leaf.
 export function differences(actual, expected, path = '') {
   if (Object.is(actual, expected)) return []
   if (actual && expected && typeof actual === 'object' && typeof expected === 'object' && Array.isArray(actual) === Array.isArray(expected)) {
@@ -184,7 +183,7 @@ export function differences(actual, expected, path = '') {
 
 // The first difference in document order, with array length mismatches
 // reported at the array (not at its first missing element). Bounded: never
-// serializes whole captures (node:assert on big captures OOMs, msduck).
+// serializes whole captures (node:assert on big captures OOMs).
 export function firstDifference(actual, expected, path = '') {
   if (isDeepStrictEqual(actual, expected)) return null
   const kindOf = v => v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v

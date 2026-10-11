@@ -6,8 +6,8 @@
 // counters, sequences, procedures), so a restore is O(1) and the copy is
 // independent of the original. Nothing touches the file system: a path is
 // "missing" exactly when no BACKUP in this process wrote it. Messages,
-// errors and result shapes are captured (corpus backup/*, msduck
-// gaps-backup); page counts, sizes, LSNs, GUIDs and times are synthesized.
+// errors and result shapes are captured (corpus backup/*, 
+// captured-gaps/gaps-backup); page counts, sizes, LSNs, GUIDs and times are synthesized.
 
 ///|
 /// Pages SQL Server reports for a fresh, empty database's data and log
@@ -338,7 +338,7 @@ let backup_supported_options : Array[String] = [
 ]
 
 ///|
-/// BACKUP DATABASE|LOG (CurCmd 228 / 235). Captured: msduck gaps-backup,
+/// BACKUP DATABASE|LOG (CurCmd 228 / 235). Captured: captured-gaps/gaps-backup,
 /// corpus tail/backup-errors and backup/*.
 fn Session::exec_backup(
   self : Session,

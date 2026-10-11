@@ -1,4 +1,4 @@
-// Generated from msduck reference/checked-integer.json (SQL Server 2025,
+// Generated from captured-runs/checked-integer (SQL Server 2025,
 // ARITHABORT/ANSI_WARNINGS ON): CAST(l AS <width>) <op> CAST(r AS <width>)
 // (BIGINT rows with one INT side cast that side to INT: see sql column).
 // Columns: left type, left, op, right type, right, outcome ("value",

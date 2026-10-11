@@ -224,14 +224,14 @@ fn Session::run_module(
   )
   // SET IDENTITY_INSERT inside a procedure or dynamic SQL (also an
   // sp_executesql RPC) reverts when it ends, and SCOPE_IDENTITY() is per
-  // scope (captured: msduck identity-insert-rpc)
+  // scope (captured: captured-runs/identity-insert-rpc)
   let saved_identity_insert = self.identity_insert
   let saved_scope_identity = self.rt.scope_identity
-  // SET ANSI_WARNINGS / ARITHABORT revert too (captured: msduck
-  // session-property-context, after sp_executesql N'SET … OFF')
+  // SET ANSI_WARNINGS / ARITHABORT revert too (captured: 
+  // captured-runs/session-property-context, after sp_executesql N'SET … OFF')
   let saved_flags = Map::from_array(self.session_flags.iter().to_array())
   // local temp tables created by the module are dropped when it ends
-  // (captured: msduck gaps-temp_tables #022/#023, an sp_executesql RPC)
+  // (captured: captured-gaps/gaps-temp_tables #022/#023, an sp_executesql RPC)
   let temps_before : Set[Int] = Set([])
   for t in self.temp.tables() {
     temps_before.add(t.id)
@@ -1469,7 +1469,7 @@ fn Session::write_back_outputs(
       continue
     }
     // CURSOR VARYING OUTPUT: the caller's variable takes the cursor over
-    // (captured: msduck-runs/cursor #075)
+    // (captured: captured-runs/cursor #075)
     if is_cursor_type(params[k].type_) {
       match self.frame().cursor_vars.get(vname.to_lower()) {
         Some(old) => {
@@ -1508,7 +1508,7 @@ fn Session::write_back_outputs(
 }
 
 ///|
-/// EXEC argument checks (captured: msduck gaps-procedures). Compile-time
+/// EXEC argument checks (captured: captured-gaps/gaps-procedures). Compile-time
 /// errors (119, 179, 8144) end the batch; the others fail the EXEC (ERROR
 /// at line 0 + DONEPROC with the error bit) and return false.
 fn Session::check_proc_args(

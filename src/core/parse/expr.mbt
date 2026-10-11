@@ -493,7 +493,7 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
           self.pos += 3
           let name = self.object_name()
           // NEXT VALUE FOR s OVER (ORDER BY ...) numbers rows in that order
-          // (captured: msduck-runs sequence-reference#005,
+          // (captured: captured-runs sequence-reference#005,
           // tail5/b1-next-value-over); only ORDER BY is allowed
           let over = if self.is_kw("OVER") {
             let o = self.over()
@@ -526,7 +526,7 @@ fn Parser::primary_inner(self : Parser) -> @ast.Expr raise @ast.SyntaxError {
         _ =>
           if niladic(u) && next_paren {
             // `CURRENT_TIMESTAMP()`, `USER()`: 102 near the token after the
-            // parenthesis (captured: msduck-runs tedious-compat-gaps#010,
+            // parenthesis (captured: captured-runs tedious-compat-gaps#010,
             // tail/niladic-parentheses)
             raise near(self.peek_at(2))
           } else if niladic(u) {

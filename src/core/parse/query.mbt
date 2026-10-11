@@ -532,7 +532,7 @@ fn Parser::column_alias(self : Parser) -> @ast.Ident? raise @ast.SyntaxError {
 
 ///|
 /// `[AS] alias` after a table source. `USING` is a bare alias anywhere but
-/// after a MERGE target (captured: msduck gaps-identifiers using-alias-bare,
+/// after a MERGE target (captured: captured-gaps/gaps-identifiers using-alias-bare,
 /// `FROM using using`).
 fn Parser::table_alias(
   self : Parser,

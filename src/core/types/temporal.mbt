@@ -94,9 +94,8 @@ pub fn scale_unit(scale : Int) -> Int64 {
 
 ///|
 /// Round non-negative ticks to a temporal scale, half up (SQL Server rounds
-/// datetime2/time/datetimeoffset scale reductions: msduck
-/// reference/temporal-guid-format.json, `2024-02-29T23:59:59.9999999` as
-/// DATETIME2(0) is `2024-03-01 00:00:00`).
+/// datetime2/time/datetimeoffset scale reductions: captured-runs/temporal-guid-format,
+/// `2024-02-29T23:59:59.9999999` as DATETIME2(0) is `2024-03-01 00:00:00`).
 pub fn round_ticks(ticks : Int64, scale : Int) -> Int64 {
   let unit = scale_unit(scale)
   if unit == 1L {
@@ -110,7 +109,7 @@ pub fn round_ticks(ticks : Int64, scale : Int) -> Int64 {
 /// Round time-of-day ticks to a scale without leaving the day: a value that
 /// would round to 24:00:00 is clamped to the last representable unit
 /// (captured: `23:59:59.9999999` as TIME(0) is `23:59:59`, as TIME(3)
-/// `23:59:59.999`; msduck reference/temporal-guid-format.json). Whether
+/// `23:59:59.999`; captured-runs/temporal-guid-format). Whether
 /// SQL Server rounds or truncates mid-day for TIME is unverified; bitsql
 /// rounds, like datetime2.
 pub fn round_time_ticks(ticks : Int64, scale : Int) -> Int64 {
@@ -162,7 +161,7 @@ fn is_digit(c : UInt16) -> Bool {
 
 ///|
 /// Trim leading and trailing U+0020 only (SQL Server conversions trim ASCII
-/// spaces, not tabs or other whitespace: msduck reference/unicode-integer.json).
+/// spaces, not tabs or other whitespace: captured-runs/unicode-integer).
 pub fn trim_spaces(s : String) -> String {
   let n = s.length()
   let mut a = 0

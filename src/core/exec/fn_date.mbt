@@ -766,7 +766,7 @@ fn from_parts(
 fn tz_minutes(v : @types.Value, t : @types.SqlType) -> Int? {
   match v {
     String(s) => {
-      // captured: ' +01:30 ' is invalid (msduck offset-functions #052);
+      // captured: ' +01:30 ' is invalid (captured-runs/offset-functions #052);
       // trailing blanks of char values are dropped (unverified)
       let s = s.trim_end(chars=" ").to_owned()
       if s.length() != 6 {
@@ -832,7 +832,7 @@ fn to_offset(
   }
   let fname = name.to_lower()
   // states: text zone 0 (SWITCHOFFSET) / 2 (TODATETIMEOFFSET), numeric
-  // zone 1 / 3 (captured: msduck offset-functions)
+  // zone 1 / 3 (captured: captured-runs/offset-functions)
   let base_state = if name == "SWITCHOFFSET" { 0 } else { 2 }
   guard tz_minutes(v[1], args[1].ty) is Some(off) else {
     raise @types.sql_error(

@@ -7,9 +7,7 @@ description: The bitsql TypeScript/Node test harness (harness/) — starting/sto
 
 `harness/` is a plain Node ≥ 24 ESM package (`.mjs`, no build step) that drives
 real clients — tedious 20.3.3 and mssql 12.7.2, pinned — against either real
-SQL Server (**the oracle**) or the bitsql binary (**the emulator**). Most of
-the code is ported from msduck `scripts/lib/{compatibility,reference,reference-container}.mjs`
-and `tests/support/client.mjs`.
+SQL Server (**the oracle**) or the bitsql binary (**the emulator**).
 
 ```bash
 cd harness && npm install          # once; scripts/check.sh runs `npm test` when node_modules exists
@@ -29,19 +27,18 @@ npm run bench:compare              # mirek/bitsql:<moon.mod version> container v
 ## Rules
 
 - **Never hand-write or hand-edit `*.expected.json`.** They are captured from
-  the oracle (`npm run capture`) or imported from msduck captures. If a case
+  the oracle (`npm run capture`) or imported captures (`corpus/captured*`). If a case
   changes, recapture: `npm run capture -- --force <selector>` (explicit
   selectors are required with `--force`). A case edited after capture shows up
   in `diff` as `stale expectation`.
-- **Shared host.** Other agents run msduck servers and MSSQL containers here.
+- **Shared host.** Other agents run their own servers and MSSQL containers here.
   The oracle container is `bitsql-oracle` (override `BITSQL_ORACLE_NAME`, must
   start with `bitsql-oracle`), bound to `127.0.0.1:47314` (`BITSQL_ORACLE_PORT`).
   The harness only ever removes that container. The emulator listens on port 0.
   Any other fixed port you need: 47340–47349.
 - Image: `mcr.microsoft.com/mssql/server:2025-latest@sha256:2b5b5816…d726`
-  (SQL Server 17.0.5005.3, pulled locally). msduck's pin `@sha256:86cc6144…a74a`
-  (17.0.4065.4) is not on this host; imported msduck expectations were
-  re-verified against the local image instead.
+  (SQL Server 17.0.5005.3, pulled locally). The imported `corpus/captured*`
+  expectations (originally 17.0.4065.4) were re-verified against it.
 - The container is reused between runs (fast). Its random SA password lives
   only in the container env and is read back with `docker inspect`.
   `BITSQL_ORACLE_ADDR=host:port` + `BITSQL_ORACLE_PASSWORD` uses an external
@@ -54,7 +51,7 @@ npm run bench:compare              # mirek/bitsql:<moon.mod version> container v
 - `BITSQL_BIN=path`: spawn that binary.
 - Default: `moon build --target native` at the repo root, then spawn the newest
   `_build/native/**/host/host.exe` with `--listen 127.0.0.1:0` and read
-  `listening on 127.0.0.1:<port>` from stderr (msduck contract).
+  `listening on 127.0.0.1:<port>` from stderr.
 - Emulator and oracle logins both use `encrypt:true,
   trustServerCertificate:true` (bitsql has TLS since 2026-10-04;
   `test/tls.test.mjs` covers encrypt true/false and login-only TLS).
@@ -128,7 +125,7 @@ SELECT @out = n FROM t WHERE id = @id
   bulk load) live in `harness/test/*.test.mjs`; pin their expectations to a
   capture made with the same calls against the oracle (see
   `test/mssql-workflow.test.mjs`).
-- Follow msduck capture conventions: never read the clock, name constraints
+- Capture conventions: never read the clock, name constraints
   explicitly, express counters relative to a baseline (see
   `traps/rowversion-modification-time.sql`), unique statement text for
   plan-dependent sequences.
@@ -141,7 +138,7 @@ SELECT @out = n FROM t WHERE id = @id
 Generated multi-case files are `<name>.cases.json`
 (`{source, cases:[{name, steps:[{kind, sql, params?, compare?}]}]}`) with one
 `<name>.expected.json` (`{server, cases:{<name>: expected}}`). Select one with
-`msduck/raiserror-rpc.cases.json#003`.
+`captured/raiserror-rpc.cases.json#003`.
 
 ## What is captured and compared
 
@@ -151,10 +148,10 @@ length, precision, scale, raw flags, collation; rows canonicalized —
 (`{kind, rowCount, more}`), `errors` / `info` (`{number, state, class,
 lineNumber, message}`), `returnStatus`, `rowCount` (request callback),
 `outputs` (RETURNVALUE), `tokens` (DONE-family tokens with `curCmd` and status
-bits, msduck layout) and `stream` (compact token sequence, ROW runs
+bits) and `stream` (compact token sequence, ROW runs
 collapsed — catches ORDER, RETURNSTATUS/RETURNVALUE order, INFO placement).
-Only keys present in an expectation are compared (imported msduck captures
-lack `outputs`/`stream`; some are metadata-only without `rows`).
+Only keys present in an expectation are compared (imported `captured*`
+cases lack `outputs`/`stream`; some are metadata-only without `rows`).
 
 ## Reading the diff report
 
@@ -189,59 +186,11 @@ available parallelism with process isolation, 1 with `BITSQL_ADDR`).
 `test/parse.test.mjs` runs the parser over every captured (compared or
 hand-written setup) batch in the whole corpus, no server needed. Replayed run
 prefixes are skipped (they are checked in their own case). Disagreements
-listed in `harness/parse-known.txt` (seeded with the msduck layout import's
-226: ALTER DATABASE, DBCC, ALTER INDEX … DISABLE, …; the JSON aggregate
-entries were removed 2026-10-04) are tolerated; new ones fail. Delete lines
-as the parser catches up (the test prints the ones that now agree).
-
-## msduck import
-
-`npm run import:msduck -- --from "$TMPDIR/msduck" --force` regenerates
-`corpus/msduck/` from msduck `reference/*.json` files ≤ 1 MB in the clean
-`{results:[{query, reference, tokens?}]}` layout. Mode heuristics: `*-rpc.json`
-and `raiserror-failure-counter.json` are RPC; entries with `value` are RPC with
-`@s nvarchar`; `parameters` (sp_prepare) entries are skipped. Every imported
-case is re-run on the local oracle and kept only if reproduced exactly;
-`corpus/msduck/_import.json` lists counts and rejections. Each file keeps
-`source: "msduck/reference/<file>"`.
-
-## msduck layout import (gaps-* and other sequential captures)
-
-```bash
-npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --oracles 5 --stop-oracles   # all adapters
-npm run import:msduck-layouts -- --from "$TMPDIR/msduck" --only savepoint,gaps-merge --oracles 5
-npm run import:msduck-layouts -- --only gaps-keys --dry-run --report /tmp/r.json      # verify, write nothing
-npm run import:msduck-layouts -- --list                                                # adapters
-```
-
-- Regenerates `corpus/msduck-gaps/` (`gaps-*.json`) and `corpus/msduck-runs/`
-  (everything else not in the clean layout). `--only` rewrites just those
-  files and merges their stats into `_import.json` (per file: entries,
-  cases, imported, `skipped` reasons, `rejected` reasons, rejected ids with
-  the first msduck/oracle difference).
-- Adapters live in `src/msduck-layouts/*.mjs`, one function per msduck file
-  (`(doc, ctx) => Run[]`, shape in `project.mjs`). They read the matching
-  `msduck/scripts/capture-<file>.mjs` semantics: connection, request kind
-  (batch / `rpc` / `proc` with typed params), what was recorded.
-- **Sequential runs** (one connection, state carries over): every entry
-  becomes its own case `<file>#NNN-<slug>`; all earlier entries of the run
-  replay as uncompared setup. The setup is stored once per file in the
-  cases.json `runs` table and referenced as `{run, prefix}`
-  (`corpus.mjs expandSteps`); the case hash covers the expanded steps.
-  Runs marked `independent` have no prefix.
-- Unrepresentable entries (transaction-manager requests, prepared handles,
-  second connections, reconnects, session reset, attention, bulk load, TVPs)
-  are skipped by reason, and the rest of their run with them (its state
-  would differ) unless marked `stateless`.
-- Verification: each case runs on the oracle; msduck's recorded result is
-  compared with a *projection* of the harness capture (only what msduck
-  recorded, in its shape); if equal the case runs a second time and the full
-  harness capture must reproduce (determinism). The stored expectation is the
-  oracle's full harness capture (`toExpected`), not msduck's partial one.
-  Login/request timeouts are retried, never counted as rejections.
-- `--oracles N` spreads verification over dedicated containers
-  `bitsql-oracle-import-1..N` on 47340+ (CREATE DATABASE serializes inside one
-  server; one oracle does ~2 cases/s). `--stop-oracles` removes them.
+listed in `harness/parse-known.txt` (seeded with 226
+entries from the `captured-gaps`/`captured-runs` import: ALTER DATABASE,
+DBCC, ALTER INDEX … DISABLE, …; the JSON aggregate entries were removed
+2026-10-04) are tolerated; new ones fail. Delete lines as the parser catches up (the
+test prints the ones that now agree).
 
 ## ORM compatibility suite (`harness/orm`)
 
@@ -285,14 +234,6 @@ ORM_PROGRESS=1 ORM_DEBUG=1 npm test -- sequelize   # step progress, error stacks
 
 ## Findings
 
-- 2026-10-03: Local oracle is 17.0.5005.3; 1153 of 1158 importable msduck
-  entries (captured on 17.0.4065.4) reproduce exactly. Rejected: 3
-  `unicode-rpc-bindings` (msduck declared a different nvarchar length than
-  tedious infers), 1 `nocount-completions-rpc` return status, 1
-  `output-typed-stages` message text.
-- 2026-10-03: CREATE DATABASE costs ~0.4 s on the oracle; a full msduck
-  verification (1158 cases, concurrency 6) takes ~6.5 min. A process-isolated
-  emulator run of the whole corpus takes ~2.5 s.
 - 2026-10-03: mssql's default pool validation runs `SELECT 1;` via RPC on every
   acquire; tests use `validateConnection: 'socket'` (see tedious skill).
 - 2026-10-10: Emulator requests time out after 25 s (was 15 s):
@@ -351,31 +292,9 @@ Start the host with `--database NAME` so the app's database exists at login
   an hour on the shared oracle (CREATE DATABASE per case dominates); for a
   quick oracle-vs-emulator loop run the SQL of single-batch cases on one
   connection to each server instead and compare rows/errors.
-- 2026-10-03: msduck capture layouts (import-msduck-layouts): 154 non-clean
-  files, 13875 entries (plus ~16k grid entries sampled out) → 12885 cases →
-  12829 kept (4495 gaps, 8334 others); 56 rejected (43 msduck/oracle value
-  differences, 13 nondeterministic: generated constraint names). Lessons: (1) msduck's capture scripts,
-  not the fixtures, hold part of the SQL (applock batches, gaps-functions,
-  identifiers, json_string setup, missing RPC params) — adapters evaluate the
-  script's literal sections with `node:vm`. (2) Fixtures name the database in
-  many ways: `msduck_audit_<hex>`, `<fresh-database>`, `<database>`, `<db>`,
-  `msduck_audit_<database>`, fixed names (`gaps_constraints`,
-  `msduck_catalog_reference`), or `master` (unicode-storage,
-  windows-1252-best-fit, aggregate-warning-boundaries ran in master) — all
-  map to `{db}`. (3) Recorded fields bitsql cannot observe (`procName`,
-  `serverName`, column `userType`/`udtInfo`, DONE_INXACT status, raw
-  COLMETADATA hex, the raw row count of an uncounted DONE, which SQL Server
-  sends as 1 under NOCOUNT) are dropped from the projection, not rejected.
-  (4) -0 floats survive only where msduck kept `bits`. (5) Server-version
-  probes differ (msduck 17.0.4065.4 / some on 16.0.4236.2) and are skipped.
-  (6) Cost: a run of n entries costs n²/2 replayed steps; adapters mark runs
-  `independent` or replay only state-changing earlier entries. One oracle
-  verifies ~2 cases/s (CREATE DATABASE serializes); `--oracles 5` did the
-  full import (2 runs per case) in ~50 min on a busy host.
 - 2026-10-03: Under heavy shared-host load the oracle drops logins (15 s
-  connect timeout) and requests (30 s); the layout importer retries those
-  and never counts them as rejections. Port 47345 is used by another
-  agent's `bitsql-oracle-tz`; extra import oracles use 47340–47344.
+  connect timeout) and requests (30 s); rerun the affected cases
+  rather than recapturing them. Port 47345 is used by another agent's `bitsql-oracle-tz`.
 - 2026-10-03: `harness/gen/xml.mjs` generates `corpus/xml/*.cases.json`
   (FOR XML, the xml type and its methods; one batch per case, `setup`
   steps for tables). Template strings hold T-SQL literals: double the
@@ -496,16 +415,7 @@ Start the host with `--database NAME` so the app's database exists at login
   everything after LOGIN7 is plaintext) and the server that logs each TDS
   packet as hex works on both targets; it can also inject raw packets (an
   idle ATTENTION `06 01 00 08 00 00 01 00`) and swallow their replies.
-- 2026-10-04 (msduck re-import): to find msduck captures newer than the
-  last import, clone msduck shallowly into the scratchpad and list
-  `git log --since=<last import> --name-only -- reference`, then compare
-  `reference/*.json` against the `source` fields of `corpus/msduck*/`.
-  Re-import changed files with `--only a,b,c --oracles 3` (~1,200 cases in
-  ~12 min); a jump in rejections means the fixture's setup changed (msduck
-  #889 recaptured gaps-unicode-predicates under the server default instead
-  of BIN2: the adapter now takes `doc.collation`). Remove the
-  `bitsql-oracle-import-*` containers afterwards. `harness/src/
-  dump-collation-weights.mjs` regenerates
+- 2026-10-04: `harness/src/dump-collation-weights.mjs` regenerates
   `src/core/types/collation_weights_data.mbt` (ignorable code units,
   accent ranks) from the oracle.
 - 2026-10-05: per-request profiling without the oracle:

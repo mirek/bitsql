@@ -1,7 +1,7 @@
 # text, ntext, image
 
 Captured on SQL Server 2025 (`harness/corpus/conversion/lob-conversions`,
-`lob-functions`, `lob-table`; msduck `concat-legacy-family`,
+`lob-functions`, `lob-table`; `captured-runs/concat-legacy-family`,
 `charindex-patindex`, `compress-decompress`, `hashbytes-checksum`). Code:
 `src/core/types/lob.mbt`, `bind/fn_lob.mbt`, `tds/type_info.mbt`.
 

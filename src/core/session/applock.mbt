@@ -13,7 +13,7 @@ fn rtrim_spaces(s : String) -> String {
 
 ///|
 /// Lock modes sp_getapplock and APPLOCK_TEST accept; case-insensitive,
-/// trailing spaces ignored (captured: msduck gaps-applock #010, #067).
+/// trailing spaces ignored (captured: captured-gaps/gaps-applock #010, #067).
 fn applock_mode(name : String) -> (String, @sched.LockMode)? {
   match rtrim_spaces(name).to_lower() {
     "shared" => Some(("Shared", S))
@@ -129,7 +129,7 @@ fn applock_params(
 ///|
 /// sp_getapplock / sp_releaseapplock as SQL Server runs them: system T-SQL
 /// procedures whose own statements produce DONEINPROC tokens. The token
-/// sequences per path are captured (corpus applock/, msduck gaps-applock):
+/// sequences per path are captured (corpus applock/, captured-gaps/gaps-applock):
 /// 193 = assignment (count 1), 192 = IF, 224 = the internal EXEC of
 /// xp_userlock, 246 = RAISERROR.
 ///

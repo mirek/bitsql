@@ -2,7 +2,7 @@
 // definitions, as SQL Server regenerates it from the parse tree
 // (sys.check_constraints.definition, INFORMATION_SCHEMA.COLUMNS.COLUMN_DEFAULT,
 // ...). Rules captured on SQL Server 17.0 (corpus catalog/definitions,
-// msduck gaps-catalog v2-check-definitions / v2-default-definitions /
+// captured-gaps/gaps-catalog v2-check-definitions / v2-default-definitions /
 // v2-computed-definitions): the whole text is wrapped in parentheses,
 // numeric literals are parenthesized (leading zeros dropped, -0 is (0)),
 // columns bracketed, operators unspaced, built-in function names
@@ -158,8 +158,8 @@ fn def_digits(t : String) -> String {
 }
 
 ///|
-/// Decimal literal text: `.5` prints as `0.5` (captured: msduck
-/// gaps-catalog k49).
+/// Decimal literal text: `.5` prints as `0.5` (captured: 
+/// captured-gaps/gaps-catalog k49).
 fn def_decimal(t : String) -> String {
   if t.has_prefix(".") {
     "0" + t

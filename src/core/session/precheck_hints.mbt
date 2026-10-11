@@ -1,5 +1,5 @@
 ///|
-/// Batch-level checks of table hints in FROM clauses (captured: msduck-runs
+/// Batch-level checks of table hints in FROM clauses (captured: captured-runs
 /// tedious-compat-gaps #080-#098, tail/table-hints). SQL Server rejects the
 /// whole batch before running anything. First pass, over the whole batch:
 /// unknown hints 321 (as written), conflicting locking hints 1047,

@@ -142,7 +142,7 @@ pub fn write_type_info(w : Writer, ti : TypeInfo) -> Unit {
       w.u16le(1)
       w.ucs2("x")
     }
-    // captured lengths (msduck concat-legacy-family: Text 2147483647,
+    // captured lengths (captured-runs/concat-legacy-family: Text 2147483647,
     // NText 2147483646, Image 2147483647)
     TextLob(c) => {
       w.u32le(2147483647L)

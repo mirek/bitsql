@@ -8,7 +8,7 @@ export const corpusDir = resolve(harnessDir, 'corpus')
 export const outDir = resolve(harnessDir, 'out')
 
 // tedious derives bound DATETIMEOFFSET/Date parameter offsets from the client
-// process time zone (msduck finding). Force UTC before any Date is created.
+// process time zone. Force UTC before any Date is created.
 export function useUtcTimeZone(env = process.env) {
   env.TZ = 'UTC'
   if (env === process.env && new Date(0).getTimezoneOffset() !== 0) throw new Error('could not switch the process time zone to UTC')

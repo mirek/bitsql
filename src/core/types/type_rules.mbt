@@ -3,9 +3,9 @@
 // comparisons, UNION columns and CASE branches.
 //
 // Decimal result rules follow Microsoft's "Precision, scale, and length"
-// page and are checked against captured metadata in msduck
-// reference/decimal-division.json, numeric-arithmetic-context.json and
-// numeric-literal-metadata.json.
+// page and are checked against captured metadata in
+// captured/decimal-division, captured-runs/numeric-arithmetic-context and
+// captured-runs/numeric-literal-metadata.
 
 ///|
 /// T-SQL data type precedence: higher wins (the lower-precedence operand is
@@ -150,7 +150,7 @@ pub fn can_convert_explicitly(from : SqlType, to : SqlType) -> Bool {
     // conversion/binary-to-date; 0x01 AS date is 241, not 529)
     (FBinary, FDateTime | FDate | FTime) => true
     // date, time, datetime2 and datetimeoffset convert to their storage
-    // bytes (captured: msduck temporal-guid-format, tail/functions-binary)
+    // bytes (captured: captured-runs/temporal-guid-format, tail/functions-binary)
     (FDateTime, FBinary) => true
     (FDate | FTime, FBinary) => true
     _ => false
@@ -330,7 +330,7 @@ fn string_len_units(t : SqlType) -> Int? {
 pub fn concat_result_type(a : SqlType, b : SqlType) -> SqlType {
   let coll = a.collation().unwrap_or(default_collation)
   let unicode = a.is_unicode() || b.is_unicode()
-  // captured (msduck character-concat-declarations, probes): two fixed
+  // captured (captured/character-concat-declarations, probes): two fixed
   // operands give a fixed result (char+char char, char+nchar nchar, capped
   // at char(8000) / nchar(4000)); any varying operand gives varying
   let fixed = a is (Char(_, _) | NChar(_, _)) && b is (Char(_, _) | NChar(_, _))
@@ -569,7 +569,7 @@ pub fn common_type(a : SqlType, b : SqlType) -> SqlType raise SqlError {
     return match (string_len_units(a), string_len_units(b)) {
       (Some(x), Some(y)) => {
         // a long varchar meeting nvarchar caps at nvarchar(4000) (captured:
-        // msduck conditional-literal-folding #012, varchar(5000) vs N'x')
+        // captured/conditional-literal-folding #012, varchar(5000) vs N'x')
         let n = if unicode {
           min_int(max_int(x, y), 4000)
         } else {

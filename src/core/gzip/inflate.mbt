@@ -1,6 +1,6 @@
 // Inflate (RFC 1951) and DECOMPRESS's reading of a gzip member (RFC 1952).
 //
-// DECOMPRESS outcomes, captured (msduck compress-decompress #052-#065,
+// DECOMPRESS outcomes, captured (captured-runs/compress-decompress #052-#065,
 // harness/corpus/conversion/decompress.cases.json):
 //
 // - empty input: empty output;

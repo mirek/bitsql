@@ -1,35 +1,26 @@
 # Reuse from sibling projects
 
-msduck (Rust/DuckDB) and mssqlite (TypeScript/SQLite) are earlier SQL Server
-emulators by the same author. They are public domain and need no attribution.
-Inventories:
+mssqlite (TypeScript/SQLite) is an earlier SQL Server emulator by the same
+author. It is public domain and needs no attribution. Inventories:
 
-- [msduck.md](msduck.md): SQL Server reference captures, harness libs, behavior docs, TDS vectors
 - [mssqlite.md](mssqlite.md): TDS/T-SQL packages, differential harness, tedious gotchas
 - [mssqlite-todo/](mssqlite-todo/): five briefs on how real SQL Server responses differ (ORDER token, RPC completions, error stream, CAST width, catalog types)
 
-To consult the sources, clone them shallowly into a scratch directory, not into
+To consult the source, clone it shallowly into a scratch directory, not into
 this repo:
 
 ```bash
-git clone --depth 1 https://github.com/mirek/msduck.git   "$TMPDIR/msduck"
 git clone --depth 1 https://github.com/mirek/mssqlite.git "$TMPDIR/mssqlite"
 ```
 
 ## Port checklist (tick when done; keep current)
 
-- [x] Skills: tds-protocol, t-sql, sys, tedious → `.claude/skills/` (from msduck, the newer copies)
+- [x] Skills: tds-protocol, t-sql, sys, tedious → `.claude/skills/`
 - [x] mssqlite divergence briefs → `docs/reuse/mssqlite-todo/`
-- [x] Harness: msduck `scripts/lib/{compatibility,reference,reference-container}.mjs` → `harness/src/`
-- [x] Host CLI contract `--listen 127.0.0.1:0` + stderr `listening on 127.0.0.1:<port>` (msduck `tests/support/client.mjs`; harness side in `harness/src/emulator.mjs`)
-- [x] Small `reference/*.json` captures (≤ 1 MB each) → `harness/corpus/msduck/` via `harness/src/import-msduck.mjs` (clean `results` layout: 1153 cases)
-- [x] Other capture layouts (gaps-* workload files, sequential `runs`/`run`/`cases`/`groups`/`containers` grids, rpc entries) → `harness/corpus/msduck-gaps/` (4495 cases) and `harness/corpus/msduck-runs/` (8334 cases) via `harness/src/import-msduck-layouts.mjs` + per-file adapters in `harness/src/msduck-layouts/`; oracle-verified, huge grids sampled. Not importable: attention, bulk load, TVP, login, transaction-manager and prepared-handle entries, second connections/reconnects (counted in `_import.json`)
-- [~] TDS byte vectors (msduck `reference_vectors`, mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds` (PRELOGIN 4.1, scramble, ALL_HEADERS, DONE/ENVCHANGE/RPC 4.8 done; mssqlite value.test.ts per-type vectors pending)
+- [x] Bootstrap corpus of real SQL Server captures, oracle-verified: `harness/corpus/captured/` (1153 cases), `harness/corpus/captured-gaps/` (4495 cases) and `harness/corpus/captured-runs/` (8334 cases)
+- [~] TDS byte vectors (mssqlite `token.test.ts`, `prelogin.test.ts`, `requests.test.ts`, `value.test.ts`) → MoonBit tests in `src/core/tds` (PRELOGIN 4.1, scramble, ALL_HEADERS, DONE/ENVCHANGE/RPC 4.8 done; mssqlite value.test.ts per-type vectors pending)
 - [ ] Lexer rules from mssqlite `packages/tsql/src/lex.ts` (with spans added)
-- [ ] msduck `tests/tedious.test.mjs` / `tests/compat/*` cases → harness client tests (selectively)
-- [~] msduck captures as MoonBit test tables in `src/core/types/*_data_test.mbt`:
+- [~] Captures as MoonBit test tables in `src/core/types/*_data_test.mbt`:
       float-default-grid (subset), unicode-integer, checked-integer,
       temporal-guid-format (us_english modern + legacy), unicode-collation;
       decimal-division / numeric-* / guid-* / integer-overflow as hand-written asserts
-- [ ] Behavior docs worth keeping in-repo → `docs/reference/` (only when a feature is being implemented; cite the source)
-- [ ] Attention design (msduck `docs/attention-*.md`) → session/engine design

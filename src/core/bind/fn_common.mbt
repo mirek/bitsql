@@ -1,6 +1,6 @@
 // Shared helpers for the built-in function binders (fn_*.mbt). Result types,
 // lengths and nullability follow captures in harness/corpus/functions and
-// msduck imports; see the t-sql skill findings for the rules.
+// harness/corpus/captured*; see the t-sql skill findings for the rules.
 
 ///|
 /// Builds a `Fn::Named` call.

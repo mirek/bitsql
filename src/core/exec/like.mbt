@@ -1,4 +1,4 @@
-// LIKE and PATINDEX pattern matching (captured: msduck like-patterns,
+// LIKE and PATINDEX pattern matching (captured: captured-runs/like-patterns,
 // charindex-patindex):
 //
 // - `%`, `_`, `[set]`, `[^set]`, ranges `[a-c]` with `-` literal first or

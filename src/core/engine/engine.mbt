@@ -228,7 +228,7 @@ fn Engine::on_message(
         if self.config.auto_create_databases {
           self.server.create_database(db)
         } else {
-          // Captured (msduck login-database-error): 4060 + 18456 +
+          // Captured (login to an unknown database): 4060 + 18456 +
           // DONE_ERROR, then the server closes the connection.
           let w = @tds.Writer::new()
           @tds.write_message(
@@ -381,7 +381,7 @@ fn done_only() -> Bytes {
 }
 
 ///|
-/// Login response, in the order msduck/mssqlite verified with tedious:
+/// Login response, in the order mssqlite verified with tedious:
 /// ENVCHANGE database, INFO 5701, ENVCHANGE collation, ENVCHANGE language,
 /// INFO 5703, LOGINACK, ENVCHANGE packet size, DONE.
 fn Engine::login_response(

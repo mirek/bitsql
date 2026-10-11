@@ -123,7 +123,7 @@ fn accumulate(
           }
           let acc = st.fsum[g] + f
           // captured: 1e308 + 1e308 is 8115 even when a later value
-          // would cancel it (msduck float-aggregates #040-#044)
+          // would cancel it (captured-runs/float-aggregates #040-#044)
           if acc.is_inf() {
             raise @types.overflow_expression(Float)
           }

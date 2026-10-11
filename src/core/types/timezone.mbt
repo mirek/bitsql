@@ -28,8 +28,8 @@ pub fn tz_name(zone : Int) -> String {
 }
 
 ///|
-/// Looks a zone name up the way AT TIME ZONE does (captured in msduck
-/// at-time-zone-names and corpus/timezone): ASCII case-insensitive (plus the Kelvin sign), U+0000
+/// Looks a zone name up the way AT TIME ZONE does (captured in 
+/// captured/at-time-zone-names and corpus/timezone): ASCII case-insensitive (plus the Kelvin sign), U+0000
 /// ignored anywhere, everything else exact (spaces, accents, width,
 /// non-ASCII case).
 pub fn tz_lookup(name : String) -> Int? {

@@ -305,8 +305,8 @@ fn global(ctx : Ctx, g : @ir.Global) -> @types.Value {
     ServiceName => String("MSSQLSERVER")
     NestLevel => Int(rt.nest_level)
     // 5496 = the login defaults tedious sets (captured @@OPTIONS); a SET
-    // flips its bit (ANSI_WARNINGS OFF clears 8: 5488, captured msduck
-    // session-property-context)
+    // flips its bit (ANSI_WARNINGS OFF clears 8: 5488, captured 
+    // captured-runs/session-property-context)
     Options => Int(5496 ^ ctx.rt.option_bits)
     Language => String(@types.language(ctx.rt.dates.language).name)
     DateFirst => TinyInt(ctx.rt.datefirst)

@@ -1,4 +1,4 @@
-// Generated from msduck reference/temporal-guid-format.json (SQL Server
+// Generated from captured-runs/temporal-guid-format (SQL Server
 // 2025, us_english): CAST(<literal> AS <type>) rendered by CAST to
 // VARCHAR(MAX), CONVERT style 0 and CONVERT style 121 (or the error).
 

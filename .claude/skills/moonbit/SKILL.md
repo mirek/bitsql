@@ -78,7 +78,7 @@ thin launcher. Conventions:
   packages (`moonbitlang/core/*`, `moonbitlang/async/*`; versions are not
   pinned, the cache resolves them), then `fn main` / `async fn main`. Scripts
   cannot import `mirek/bitsql/*` packages or each other: related tools share
-  a file via a subcommand (`gen-timezones.mbtx xcheck-msduck <msduck>`).
+  a file via a subcommand.
 - Run from the repo root (`moon run scripts/x.mbtx [args]`, script flags after
   `--`); scripts check that and fail clearly otherwise. Generators then need
   `moon fmt` on their output, as the checked-in files are formatted.

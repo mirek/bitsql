@@ -24,7 +24,7 @@ pub(all) struct Column {
   computed : String?
   /// Nullability in result metadata: a computed column declared PERSISTED
   /// NOT NULL is NOT NULL in sys.columns but keeps its expression's
-  /// nullability on the wire (captured: msduck-runs tedious-compat-gaps
+  /// nullability on the wire (captured: captured-runs tedious-compat-gaps
   /// #038/#039). Equal to `nullable` otherwise.
   result_nullable : Bool
   persisted : Bool

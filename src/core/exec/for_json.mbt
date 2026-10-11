@@ -162,7 +162,7 @@ fn json_write(node : Array[(String, JsonNode)], buf : StringBuilder) -> Unit {
 
 ///|
 /// One FOR JSON value: JSON text columns (`raw`) are embedded as is
-/// (captured: msduck gaps-json_string#039/#044, unicode-json-storage
+/// (captured: captured-gaps/gaps-json_string#039/#044, unicode-json-storage
 /// for-json-fragment).
 fn json_cell(
   v : @types.Value,
@@ -260,7 +260,7 @@ priv struct AutoNode {
 }
 
 ///|
-/// FOR JSON AUTO nesting (captured: msduck gaps-json_string#010-#046): one
+/// FOR JSON AUTO nesting (captured: captured-gaps/gaps-json_string#010-#046): one
 /// level per source table in the order of its first selected column; a
 /// row joins the previous object of a level when that level's values equal
 /// the previous row's (consecutive rows only, source columns only, compared

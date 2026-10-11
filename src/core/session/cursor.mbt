@@ -2,7 +2,7 @@
 // `SET @c = CURSOR ...`, `SET @c = name`, CURSOR VARYING OUTPUT
 // parameters), OPEN / FETCH / CLOSE / DEALLOCATE, CURSOR_STATUS,
 // @@CURSOR_ROWS, @@FETCH_STATUS, sys.dm_exec_cursors and positioned
-// UPDATE/DELETE (WHERE CURRENT OF). Captured: msduck-runs/cursor,
+// UPDATE/DELETE (WHERE CURRENT OF). Captured: captured-runs/cursor,
 // harness/corpus/stmts/cursor-*.
 //
 // The created cursor type follows SQL Server's implicit conversions
@@ -532,7 +532,7 @@ fn Session::new_cursor(
 
 ///|
 /// INFO 16956 when TYPE_WARNING was given and the created type is not the
-/// requested one (captured: msduck-runs/cursor #035, at the DECLARE's line
+/// requested one (captured: captured-runs/cursor #035, at the DECLARE's line
 /// before its DONE).
 fn Session::cursor_type_warning(self : Session, st : CursorState) -> Unit {
   let o = st.def.options
@@ -1264,7 +1264,7 @@ fn Session::exec_close_cursor(
 
 ///|
 /// DEALLOCATE removes one reference (a name or a variable); the cursor
-/// lives on while another one holds it (captured: msduck-runs/cursor #052).
+/// lives on while another one holds it (captured: captured-runs/cursor #052).
 fn Session::exec_deallocate(
   self : Session,
   name : @ast.Ident,
@@ -1316,7 +1316,7 @@ fn is_cursor_type(t : @ast.TypeName) -> Bool {
 
 ///|
 /// CURSOR_STATUS('local' | 'global' | 'variable', name) (captured,
-/// harness/corpus/conversion/cursor-status, msduck-runs/cursor): -3 no such
+/// harness/corpus/conversion/cursor-status, captured-runs/cursor): -3 no such
 /// cursor (a LOCAL lookup sees only LOCAL cursors) or variable, -2 a
 /// variable without a cursor, -1 declared or closed, 0 an open static or
 /// keyset cursor without rows, 1 otherwise (dynamic cursors always 1); an
@@ -1420,7 +1420,7 @@ fn Session::cursor_view_rows(self : Session) -> Array[VRow] {
 ///|
 /// WHERE CURRENT OF: the predicate selecting the cursor's current base row
 /// in a DML source whose row id is column `rowid`. Errors (captured:
-/// msduck-runs/cursor #037-#048): 16929 read-only cursor, 16933 another
+/// captured-runs/cursor #037-#048): 16929 read-only cursor, 16933 another
 /// table, 16932 a column outside FOR UPDATE OF, 16931 no current row,
 /// 16947 the row is gone.
 fn Session::current_of_predicate(

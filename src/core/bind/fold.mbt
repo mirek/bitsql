@@ -6,7 +6,7 @@ fn is_constant(e : @ir.Expr) -> Bool {
     Lit(_) => true
     // NOT LIKE does not fold (captured: CASE WHEN 'abc' NOT LIKE 'z%' THEN 1
     // … and CASE WHEN 'ac' LIKE 'a_c' THEN 1 WHEN NOT ('ac' LIKE 'a_c') THEN 0
-    // ELSE NULL END are nullable; msduck like-patterns)
+    // ELSE NULL END are nullable; captured-runs/like-patterns)
     Not({ kind: Like(_, _, ..), .. }) => false
     // string <-> date/time conversions depend on SET DATEFORMAT and SET
     // LANGUAGE, which the binder does not see: evaluated at run time
@@ -26,13 +26,13 @@ fn is_constant(e : @ir.Expr) -> Bool {
         None => true
       })
     // deterministic string built-ins over constants fold too (captured:
-    // msduck bin2-constant-edges, CASE WHEN LEFT(N'..',0) COLLATE .. = N''
+    // captured/bin2-constant-edges, CASE WHEN LEFT(N'..',0) COLLATE .. = N''
     // THEN 1 .. is Int NOT NULL)
     Call(Named(name), args) =>
       foldable_fns.contains(name) && args.iter().all(is_constant)
     Call(IsNull | NullIf | Iif, args) => args.iter().all(is_constant)
     // captured: CASE WHEN 'alpha' LIKE 'a%' THEN 1 … is int NOT NULL
-    // (msduck like-patterns)
+    // (captured-runs/like-patterns)
     Like(a, p, escape~, negated=false, ..) =>
       is_constant(a) &&
       is_constant(p) &&
@@ -104,8 +104,8 @@ fn try_fold(e : @ir.Expr) -> @types.Value? {
 /// Constant folding of arithmetic: a successful fold becomes a literal that
 /// keeps the expression's nullability (captured probe: `1+1` is IntN 33,
 /// `N'a'+N'b'` NVarChar 32, `'a'+NULL` 33); a failing one (1/0, overflow)
-/// stays a run-time expression and is nullable (captured: msduck
-/// integer-overflow, error-continuation IntN 33). String results stay
+/// stays a run-time expression and is nullable (captured: 
+/// captured/integer-overflow, error-continuation IntN 33). String results stay
 /// unfolded so COLLATE labels inside them keep their coercibility.
 fn fold_arith(e : @ir.Expr) -> @ir.Expr {
   if !is_constant(e) {
@@ -126,7 +126,7 @@ fn fold_arith(e : @ir.Expr) -> @ir.Expr {
 /// Same type up to string/binary length and fixed/varying (both bounded).
 /// Captured probes: IIF(1=1, CAST('a' AS char(2)), 'abc') is char(2),
 /// IIF(1=1, CHAR(65), 'abc') char(1), but 'a' against N'longer' converts
-/// (msduck conditional-literal-folding #009).
+/// (captured/conditional-literal-folding #009).
 fn same_family(a : @types.SqlType, b : @types.SqlType) -> Bool {
   match (a, b) {
     (VarChar(Some(_), _) | Char(_, _), VarChar(Some(_), _) | Char(_, _))
@@ -174,7 +174,7 @@ fn is_lob(t : @types.SqlType) -> Bool {
 }
 
 ///|
-/// Constant CASE folding (captured: msduck case-constant-properties,
+/// Constant CASE folding (captured: captured/case-constant-properties,
 /// conditional-literal-folding). Leading constant-FALSE branches are
 /// dropped; a constant-TRUE branch replaces the CASE:
 /// - if its type equals the CASE type up to length, it is returned as is
@@ -204,8 +204,8 @@ fn fold_case(
     }
   }
   // constant conditions fold for max types too: COALESCE(NULL, m) over an
-  // nvarchar(max) column is the column (flags 9; captured: msduck
-  // openjson-isnull, constraints probes)
+  // nvarchar(max) column is the column (flags 9; captured: 
+  // captured-runs/openjson-isnull, constraints probes)
   let mut i = 0
   while i < branches.length() {
     let cond = branches[i].0
@@ -241,13 +241,13 @@ fn fold_case(
 ///|
 /// JSON_VALUE / JSON_QUERY over literal arguments are evaluated while
 /// compiling: an error is a compile error (no column metadata, the batch
-/// ends; captured: traps/json-lax-strict, msduck error-continuation#005).
+/// ends; captured: traps/json-lax-strict, captured/error-continuation#005).
 fn constant_json_check(e : @ir.Expr) -> @ir.Expr raise @types.SqlError {
   guard e.kind is Call(_, args) && args.iter().all(a => a.kind is Lit(_)) else {
     return e
   }
   // a NULL path is 8116 at run time, after the column metadata (captured:
-  // msduck json-extraction-boundaries#052)
+  // captured-runs/json-extraction-boundaries#052)
   if args.iter().any(a => a.kind is Lit(Null)) {
     return e
   }

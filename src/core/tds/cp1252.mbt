@@ -9,7 +9,7 @@ let cp1252_high : FixedArray[Int] = [
 ///|
 /// Encodes to Windows-1252; unmappable characters become '?', as SQL Server
 /// does for varchar without a best-fit mapping. (Best-fit mapping is a
-/// known gap: see msduck windows-1252-best-fit captures.)
+/// known gap: see captured-runs/windows-1252-best-fit captures.)
 pub fn cp1252_encode(s : String) -> Bytes {
   let out = Buffer(size_hint=s.length())
   for c in s {
@@ -21,7 +21,7 @@ pub fn cp1252_encode(s : String) -> Bytes {
       for i in 0..<32 {
         // the five undefined bytes (0x81, 0x8D, 0x8F, 0x90, 0x9D) are held
         // as U+0081… and go out as themselves (captured: CHAR(129) reaches
-        // tedious as byte 0x81, msduck char-byte)
+        // tedious as byte 0x81, captured-runs/char-byte)
         if (cp1252_high[i] == cp && cp != 0) ||
           (cp1252_high[i] == 0 && cp == 0x80 + i) {
           found = 0x80 + i

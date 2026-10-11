@@ -122,8 +122,8 @@ fn Session::exec_set_session_context(
     }
     vals[k] = self.eval(a.value)
   }
-  // the procedure's own checks, in this order (captured: msduck
-  // session-property-context #051-#059): argument count 16903 / 16914,
+  // the procedure's own checks, in this order (captured: 
+  // captured-runs/session-property-context #051-#059): argument count 16903 / 16914,
   // NULL key 225, empty or over 256-byte key 15666, NULL @read_only or a
   // max-type value 15600, a read-only key 15664
   let fail = (number : Int, message : String) => (number, message)
@@ -393,8 +393,8 @@ fn Session::exec_sp_refreshview(
 /// The stored session-context key equal to `k`. SQL Server compares keys
 /// ignoring trailing spaces and case, except that the last character must
 /// match exactly (probed: 'email' is found by 'Email', 'eMail', 'EMAIl',
-/// 'email ' but not by 'EMAIL' or 'emaiL'; 'x' not by 'X'; captured: msduck
-/// session-property-context #042, #068, gaps-computed
+/// 'email ' but not by 'EMAIL' or 'emaiL'; 'x' not by 'X'; captured: 
+/// captured-runs/session-property-context #042, #068, gaps-computed
 /// session-default-values-6). Setting uses the same equality.
 fn Session::context_key(self : Session, k : String) -> String? {
   if self.session_context.contains(k) {

@@ -1,4 +1,4 @@
--- FOR JSON AUTO nesting beyond the msduck captures: a self join, a GROUP BY
+-- FOR JSON AUTO nesting beyond the captured/ cases: a self join, a GROUP BY
 -- over a join, expressions between source columns, NULL parents, and the
 -- batch-level 13600 / 13620 compile errors inside subqueries.
 -- @step setup

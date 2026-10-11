@@ -1,6 +1,6 @@
 // Arithmetic with SQL Server overflow and divide-by-zero semantics.
 //
-// Captured (msduck reference/checked-integer.json, integer-overflow.json,
+// Captured (captured-runs/checked-integer, integer-overflow.json,
 // decimal-division.json): integer overflow → 8115 state 2 "Arithmetic
 // overflow error converting expression to data type int." (also for
 // MIN / -1 and MIN % -1); x / 0 and x % 0 → 8134 state 1 "Divide by zero

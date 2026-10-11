@@ -82,7 +82,7 @@ fn Session::constraint_error(
   state? : Int,
 ) -> @types.SqlError {
   self.pending.push(cause)
-  // captured (catalog/*, msduck gaps-constraints, gaps-keys): state 1
+  // captured (catalog/*, captured-gaps/gaps-constraints, gaps-keys): state 1
   // after 2714, 1505 and the foreign key definition errors; state 0 after
   // 1779, 1911, 1769, 1752, 1781, 8111, 1919, 1909 and a CHECK's 1764
   let state = match state {
@@ -317,8 +317,8 @@ fn Session::claim_name(
   name : String,
 ) -> Unit raise {
   let k = name.to_lower()
-  // captured: two constraints named alike in one statement (msduck
-  // gaps-constraints definition-errors-10, gaps-keys diagnostics-6)
+  // captured: two constraints named alike in one statement (
+  // captured-gaps/gaps-constraints definition-errors-10, gaps-keys diagnostics-6)
   if b.names.contains(k) {
     raise @types.sql_error(
       8168,
@@ -383,7 +383,7 @@ fn Session::new_check(
     }
   }
   // a table-level CHECK over exactly one column belongs to that column
-  // (parent_column_id, system name; captured: msduck gaps-constraints
+  // (parent_column_id, system name; captured: captured-gaps/gaps-constraints
   // alter-lifecycle-8)
   let column = match column {
     Some(c) => Some(c)
@@ -444,7 +444,7 @@ fn Session::new_check(
 
 ///|
 /// Precision, scale and length arguments of a column type (captured:
-/// corpus tail/catalog-column-types, msduck-runs table-type-catalog): a
+/// corpus tail/catalog-column-types, captured-runs table-type-catalog): a
 /// zero length or precision is 1001 and a fractional-seconds scale above
 /// 7 is 1002 (class 15, "Line n:"), a precision above the maximum 2750
 /// naming the column ordinal, a scale above the precision 183 (class 15).
@@ -533,7 +533,7 @@ fn Session::add_column(
 ) -> Unit raise {
   let position = position.unwrap_or(b.columns.length() + 1)
   // names compare under the database collation ([Ä] and [ä] collide under
-  // CI; captured: msduck-runs table-type-catalog #005)
+  // CI; captured: captured-runs table-type-catalog #005)
   let coll = self.db_collation()
   if b.col_index(c.name.name) >= 0 ||
     b.columns
@@ -562,8 +562,8 @@ fn Session::add_column(
     Some(i) =>
       match @types.Collation::parse(i.name) {
         Some(x) => x
-        // state 2 in a column definition (captured: msduck
-        // default-collation columns-unknown-name)
+        // state 2 in a column definition (captured: 
+        // captured-runs/default-collation columns-unknown-name)
         None =>
           raise match @types.unknown_collation_error(i.name) {
             SqlError(number=448, message~, ..) =>
@@ -594,8 +594,8 @@ fn Session::add_column(
       }
     }
     (None, Some(e)) => {
-      // a computed column cannot use another one (captured: msduck
-      // gaps-computed unicode-errors-1)
+      // a computed column cannot use another one (captured: 
+      // captured-gaps/gaps-computed unicode-errors-1)
       // (also itself or one declared later in the statement: probed)
       for n in expr_column_names(e) {
         let i = b.col_index(n)
@@ -655,7 +655,7 @@ fn Session::add_column(
         "The definition for column '\{c.name.name}' must include a data type.",
       )
   }
-  // captured: msduck default-collation columns-non-character
+  // captured: captured-runs/default-collation columns-non-character
   if c.collate is Some(_) && c.computed is None && ty.collation() is None {
     raise @types.sql_error(
       447,
@@ -672,7 +672,7 @@ fn Session::add_column(
       c.identity is None &&
       !(ty is RowVersion)
   }
-  // captured (msduck gaps-rowversion_identity #044/#045/#096/#097/#101)
+  // captured (captured-gaps/gaps-rowversion_identity #044/#045/#096/#097/#101)
   if ty is RowVersion && b.columns.iter().any(x => x.ty is RowVersion) {
     raise @types.sql_error(
       2738,
@@ -840,8 +840,8 @@ fn Session::add_key(
   let has_clustered = b.indexes.iter().any(i => i.clustered)
   let clustered = match clustered {
     Some(true) => {
-      // two clustered constraints in one statement (captured: msduck
-      // gaps-keys clustered-conflicts-6)
+      // two clustered constraints in one statement (captured: 
+      // captured-gaps/gaps-keys clustered-conflicts-6)
       // the table as written with an inline clustered INDEX (captured:
       // catalog/inline-index-options)
       if b.inline_clustered ||
@@ -934,7 +934,7 @@ fn Session::add_key(
 ///|
 fn next_index_id(indexes : Array[@store.Index]) -> Int {
   // the lowest free nonclustered id: a dropped index's id is reused
-  // (captured: msduck-runs index-catalog #017)
+  // (captured: captured-runs index-catalog #017)
   let mut k = 2
   while indexes.iter().any(ix => ix.index_id == k) {
     k += 1
@@ -1163,7 +1163,7 @@ fn Session::foreign_key(
       )
     }
   }
-  // cycles or multiple cascade paths (captured: msduck gaps-constraints
+  // cycles or multiple cascade paths (captured: captured-gaps/gaps-constraints
   // cascade-paths, referential-actions-19..22)
   if b.scope == 0 &&
     !(on_delete is NoAction && on_update is NoAction) &&
@@ -1316,7 +1316,7 @@ fn Session::table_from_body(
     },
     scope,
     // a table variable's messages use its declared name (captured: 2705
-    // "in table '@t'", msduck-runs table-variable#009)
+    // "in table '@t'", captured-runs table-variable#009)
     written: as_written.unwrap_or(name),
     columns: [],
     indexes: [],
@@ -1367,7 +1367,7 @@ fn Session::table_from_body(
     .fold(init=0, (a, n) => a + n) +
     body.constraints.iter().filter(k => k.kind is PrimaryKey(_, ..)).count()
   if primaries > 1 {
-    // captured: a single error, state 0 (msduck gaps-keys diagnostics-2);
+    // captured: a single error, state 0 (captured-gaps/gaps-keys diagnostics-2);
     // a table type is named 'schema.name'
     raise @types.sql_error(
       8110,
@@ -1521,7 +1521,7 @@ fn Session::exec_declare_table(
 ) -> Unit raise {
   let key = name.to_lower()
   // DECLARE is compile-time: run again (a loop) it keeps the table and its
-  // rows (captured: msduck gaps-temp_tables #039)
+  // rows (captured: captured-gaps/gaps-temp_tables #039)
   match self.frame().tables.get(key) {
     Some(id) if self.tvar_sites.get(id) == Some(site) => return
     _ => ()
@@ -1551,7 +1551,7 @@ fn Session::exec_declare_table(
 
 ///|
 /// Table variables declared in a branch that does not run still exist
-/// (declarations are compile-time; captured: msduck gaps-temp_tables #040).
+/// (declarations are compile-time; captured: captured-gaps/gaps-temp_tables #040).
 fn Session::declare_skipped_tables(self : Session, s : @ast.Stmt) -> Unit raise {
   match s.kind {
     DeclareTable(name, body) =>
@@ -1797,7 +1797,7 @@ fn same_key_type(a : @types.SqlType, b : @types.SqlType) -> Bool? {
 /// System constraint name `<kind>__<table>__<column>__<object id hex>`:
 /// at most 30 characters, so table and column share 14 (table 9 and column
 /// 5 when both are longer; the shorter one leaves its room to the other),
-/// a table-level CHECK gives the table 16 (captured: msduck gaps-catalog
+/// a table-level CHECK gives the table 16 (captured: captured-gaps/gaps-catalog
 /// v2-default-naming, v2-constraint-naming).
 fn system_name(
   kind : String,
@@ -1941,7 +1941,7 @@ fn expr_column_names(e : @ast.Expr) -> Array[String] {
 ///|
 /// DEFAULT definitions are checked when created: no column references
 /// (128), no subqueries (1046), and the value must convert implicitly to
-/// the column type (captured: msduck gaps-constraints definition-errors-19,
+/// the column type (captured: captured-gaps/gaps-constraints definition-errors-19,
 /// gaps-computed session-default-variant-1: SESSION_CONTEXT into nvarchar
 /// is 257 at CREATE TABLE).
 fn Session::check_default(
@@ -1977,7 +1977,7 @@ fn Session::check_default(
     return
   }
   // binding problems surface on use, as before, except type errors
-  // (captured: msduck gaps-computed session-variant-writes, ISNULL(int,
+  // (captured: captured-gaps/gaps-computed session-variant-writes, ISNULL(int,
   // SESSION_CONTEXT(..)) is 257 at CREATE TABLE)
   let bound = @bind.bind_expr(
     @bind.Env::new(Map([]), catalog=self.catalog()),
@@ -2009,8 +2009,8 @@ fn is_datepart_function(name : String) -> Bool {
 }
 
 ///|
-/// sys.columns.is_nullable of a computed column (captured: msduck
-/// gaps-catalog definitions-computed / v2-computed): a column reference
+/// sys.columns.is_nullable of a computed column (captured: 
+/// captured-gaps/gaps-catalog definitions-computed / v2-computed): a column reference
 /// keeps the column's nullability, a non-NULL literal is NOT NULL,
 /// ISNULL(x, y) follows y, CASE is NOT NULL when every branch (with an
 /// ELSE) is; anything else (arithmetic, CAST, COALESCE, functions) is

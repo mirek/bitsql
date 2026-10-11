@@ -96,11 +96,11 @@ src/replay/              replays an event log through a fresh engine (native)
 src/parsecheck/          parses SQL files / JSON batch lists (parser coverage, parse differential)
 harness/                 TypeScript test tooling (tedious + mssql are the real clients)
   corpus/                SQL + RPC cases with expected SQL Server output
-  src/                   runner, differential diff, capture, parse-diff, msduck importer
+  src/                   runner, differential diff, capture, parse-diff
 docs/design/             this design
 docs/reference/          SQL Server rules distilled from captures (completions, metadata)
 docs/moonbit/            vendored MoonBit docs (generated, see VERSIONS.md)
-docs/reuse/              what to reuse from msduck / mssqlite
+docs/reuse/              what to reuse from mssqlite
 .claude/skills/          project skills (kept current as we learn)
 scripts/                 check.sh (pre-push gate), *.mbtx automation (generators, docs refresh)
 Dockerfile               distroless image around the release binary
@@ -121,7 +121,7 @@ lands.
 | **Pure MoonBit, native host (chosen)** | One language, one native binary, smallest image; all fidelity-sensitive code in one place | Pre-1.0 toolchain; async library API churn, confined to the host |
 | MoonBit wasm core + TS/Node host | Wasm portability today | Node in the image; second language for a trivial shell |
 | Pure TypeScript | Fastest iteration | Larger runtime; less learning value (mssqlite went this way) |
-| Rust | Most mature product base | Slowest iteration; not the learning goal (msduck went this way) |
+| Rust | Most mature product base | Slowest iteration; not the learning goal (an earlier prototype went this way) |
 
 The core/host split is about determinism and testability, not about languages.
 The harness stays TypeScript because the suite's real clients are `tedious` and

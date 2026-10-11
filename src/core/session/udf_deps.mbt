@@ -1,5 +1,5 @@
 // Dependencies on functions and tables that SQL Server enforces (captured:
-// msduck gaps-functions #133-#151):
+// captured-gaps/gaps-functions #133-#151):
 //
 // - a function used by a computed column or a DEFAULT constraint, and any
 //   object used by a WITH SCHEMABINDING module, cannot be dropped (3729

@@ -37,7 +37,7 @@ fn render_outcome(
 
 ///|
 test "temporal and guid text matches the capture" {
-  // msduck reference/temporal-guid-format.json
+  // captured-runs/temporal-guid-format
   let failures = []
   for row in temporal_format_cases {
     let (name, literal, cast_text, style0, style121) = row

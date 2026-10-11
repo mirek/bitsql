@@ -1,8 +1,8 @@
 ///|
 /// SQL Server declares a scope's variables when it compiles it: a variable
 /// declared inside a branch that does not run exists (NULL) afterwards,
-/// and a DECLARE inside a loop does not reset the value (captured: msduck
-/// gaps-functions #071, `DECLARE @z int` in a WHILE keeps counting).
+/// and a DECLARE inside a loop does not reset the value (captured: 
+/// captured-gaps/gaps-functions #071, `DECLARE @z int` in a WHILE keeps counting).
 /// Scalar variables are pre-declared here at their first DECLARE; the
 /// DECLARE statement then only runs its initializer. Declarations whose
 /// type does not resolve (or table, cursor and LOB variables) are left to

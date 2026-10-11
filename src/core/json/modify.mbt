@@ -219,7 +219,7 @@ pub fn json_modify(
   if p.append {
     let c = doc.code_unit_at(pos).to_int()
     if c != 0x5B {
-      // captured: msduck json-constructors#035
+      // captured: captured-runs/json-constructors#035
       if p.strict {
         raise JsonError(
           13621, 1, "Array cannot be found in the specified JSON path.",

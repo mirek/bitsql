@@ -254,8 +254,8 @@ pub fn is_null_argument(e : @ast.Expr) -> Bool {
 
 ///|
 /// The innermost COUNT/COUNT_BIG/SUM/AVG call over a NULL literal in `e`
-/// (lower-case name): SQL Server rejects it with 8117 (captured: msduck
-/// count-null-compilation, COUNT(SUM(NULL)) names sum, SUM(COUNT(NULL))
+/// (lower-case name): SQL Server rejects it with 8117 (captured: 
+/// captured-runs/count-null-compilation, COUNT(SUM(NULL)) names sum, SUM(COUNT(NULL))
 /// count).
 fn null_aggregate(e : @ast.Expr) -> String? {
   let mut found : String? = None
@@ -288,7 +288,7 @@ fn null_aggregate(e : @ast.Expr) -> String? {
 
 ///|
 /// 8117 for a COUNT/COUNT_BIG/SUM/AVG over a NULL literal anywhere in `e`
-/// (it wins over 157 in an UPDATE SET list; captured: msduck-runs
+/// (it wins over 157 in an UPDATE SET list; captured: captured-runs
 /// count-null-compilation#064).
 pub fn null_aggregate_error(e : @ast.Expr) -> @types.SqlError? {
   null_aggregate(e).map(n => {
@@ -357,8 +357,8 @@ pub fn has_next_value_over(e : @ast.Expr) -> Bool {
 
 ///|
 /// A NEXT VALUE FOR without OVER outside window function calls (inside one
-/// it is 11720 when the call binds; captured: msduck
-/// percentile-runtime-fraction#040).
+/// it is 11720 when the call binds; captured: 
+/// captured-runs/percentile-runtime-fraction#040).
 fn plain_next_value(e : @ast.Expr) -> Bool {
   let mut found = false
   ignore(

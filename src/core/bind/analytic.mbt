@@ -127,7 +127,7 @@ fn bind_percentile(
   if call.args.length() != 1 {
     raise err(174, "The \{name} function requires 1 argument(s).", severity=15)
   }
-  // captured (msduck percentile-runtime-fraction): any expression without
+  // captured (captured-runs/percentile-runtime-fraction): any expression without
   // column references is accepted (@p + 0, ABS(@p), (SELECT .5), RAND()...)
   // ... but column references, also inside a subquery with a FROM clause,
   // are 8726, and NEXT VALUE FOR is 11720
@@ -153,14 +153,14 @@ fn bind_percentile(
   let key = bind_expr(env, o.expr)
   let cont = name == "PERCENTILE_CONT"
   // captured: PERCENTILE_DISC over xml is 305, even over no rows
-  // (msduck percentile-order-type #166-#168)
+  // (captured-runs/percentile-order-type #166-#168)
   if !cont && key.ty is Xml {
     raise xml_not_comparable()
   }
   if !cont && key.ty is Json {
     raise json_not_comparable(2)
   }
-  // bit is accepted (msduck percentile-order-type); max types print as
+  // bit is accepted (captured-runs/percentile-order-type); max types print as
   // varchar(max) in the message
   if cont &&
     !(key.ty.family() is (FInteger | FDecimal | FMoney | FFloat) ||
@@ -204,7 +204,7 @@ fn check_string_agg_separator(
   }
   let null_lit = sep.kind is Lit(Null) && sep.ty is Int
   // a constant NULL (CAST(NULL AS nvarchar(10))) counts as a literal
-  // (msduck string-agg#006)
+  // (captured-runs/string-agg#006)
   let null_const = is_constant(sep) && try_fold(sep) is Some(Null)
   match sep.ty {
     Char(_, _) | VarChar(_, _) => ()

@@ -7,7 +7,7 @@ priv enum MergeOp {
 }
 
 ///|
-/// MERGE (msduck docs/gaps-merge.md, captures merge-*.json): every joined row
+/// MERGE (captured-gaps/gaps-merge, captured-runs/merge-*): every joined row
 /// takes the first clause of its family whose condition holds; everything is
 /// materialized before any write; a target row matched by several source
 /// rows fails with 8672 when an UPDATE is selected for it.
@@ -80,8 +80,8 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let t = target.table
   let n = t.columns.length()
   let identity_insert = self.identity_insert == Some(t.id)
-  // compile-time checks of the action clauses (DONE 253; captured: msduck
-  // gaps-merge #035-#037, stmts/merge-hints)
+  // compile-time checks of the action clauses (DONE 253; captured: 
+  // captured-gaps/gaps-merge #035-#037, stmts/merge-hints)
   let mut identity_error : @types.SqlError? = None
   for w in m.whens {
     match w.action {
@@ -364,7 +364,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
     Some(tp) => {
       let (v, vty) = self.eval(tp.count)
       if tp.percent {
-        // captured (msduck-runs/merge-top-percent): ceil(n * p / 100) of
+        // captured (captured-runs/merge-top-percent): ceil(n * p / 100) of
         // the action rows; NULL is 1014, outside 0..100 is 1031 (class 15)
         if v is Null {
           self.cur_cmd = 253

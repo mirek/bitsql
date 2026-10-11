@@ -60,7 +60,7 @@ fn compare_bound(
   // collation precedence decides the comparison collation (or raises 468)
   let coll = resolve_collation(env, cmp_op_name(op), [a, b])
   // an untyped NULL takes the other side's type: `n = NULL` never converts
-  // n to int (captured: msduck gaps-unicode-predicates equality-18)
+  // n to int (captured: captured-gaps/gaps-unicode-predicates equality-18)
   let (a, b) = match (is_untyped_null(a), is_untyped_null(b)) {
     (false, true) => (a, typed_null(a.ty))
     (true, false) => (typed_null(b.ty), b)
@@ -93,7 +93,7 @@ pub fn unify_types(
   tys : Array[@types.SqlType],
 ) -> @types.SqlType raise @types.SqlError {
   // captured: a UNION ALL of rowversion columns stays timestamp (BINARY(8)
-  // on the wire, msduck gaps-rowversion_identity #066); mixed branches are
+  // on the wire, captured-gaps/gaps-rowversion_identity #066); mixed branches are
   // left to common_type
   if tys.iter().all(x => x is RowVersion) {
     return RowVersion
@@ -172,7 +172,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
       variant_unary_check(op, a)
       match op {
         Neg => {
-          // captured: msduck try-binding-error (-bit is a compile error)
+          // captured: captured/try-binding-error (-bit is a compile error)
           if !is_untyped_null(a) &&
             !(a.ty.family() is (FInteger | FDecimal | FMoney | FFloat)) {
             raise err(
@@ -235,8 +235,8 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           raise @types.lob_operator_error(a.ty, b.ty, "equal to")
         }
       }
-      // untyped NULL items take no part in the type (captured: msduck
-      // gaps-unicode-predicates membership-4/5, n IN (N'x', NULL))
+      // untyped NULL items take no part in the type (captured: 
+      // captured-gaps/gaps-unicode-predicates membership-4/5, n IN (N'x', NULL))
       let typed = bs.filter(b => !is_untyped_null(b))
       let t = unify_types([a.ty] + typed.map(b => b.ty))
       let coll = resolve_collation(env, "equal to", [a] + bs)
@@ -310,7 +310,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
         vals.push(x)
       }
       // captured: CASE whose results are all the NULL constant is 8133
-      // (msduck count-null-compilation #032)
+      // (captured-runs/count-null-compilation #032)
       let asts = whens.map(w => w.1)
       if else_ is Some(x) {
         asts.push(x)
@@ -397,7 +397,7 @@ fn bind_expr_kind(env : Env, e : @ast.Expr) -> @ir.Expr raise @types.SqlError {
           raise err(
             447,
             "Expression type \{other.base_name()} is invalid for COLLATE clause.",
-            // captured: msduck collation-precedence #016
+            // captured: captured/collation-precedence #016
             state=0,
           )
       }
@@ -477,7 +477,7 @@ fn conversion(
 ) -> @ir.Expr raise @types.SqlError {
   // a bare NULL converts to any type (CAST(NULL AS date)); a typed NULL
   // keeps its type's rules (captured: CONVERT(varchar(max), CAST(NULL AS
-  // image)) is 529, msduck concat-text-conversion#148)
+  // image)) is 529, captured-runs/concat-text-conversion#148)
   if a.kind is Lit(Null) && a.ty is Int && !(t is Int) {
     return { kind: Lit(Null), ty: t, nullable: true, }
   }
@@ -771,7 +771,7 @@ fn binary(
   }
   // an untyped NULL next to a string concatenates as varchar(1)
   // (captured probes: N'a'+NULL is nvarchar(2), CAST('a' AS CHAR(2))+NULL
-  // varchar(3); msduck character-concat #022)
+  // varchar(3); captured/character-concat #022)
   let null_str = (x : @ir.Expr, other : @ir.Expr) => {
     if op is Add && is_untyped_null(x) && other.ty.family() == FString {
       mk(Lit(Null), VarChar(Some(1), env.collation), true)

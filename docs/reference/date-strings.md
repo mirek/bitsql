@@ -127,8 +127,8 @@ bitsql implements 0, 1–5, 10, 11, 20, 21, 101–105, 110–112, 120, 121, 126,
 Captured 2026-10-04: `harness/corpus/settings/dateformat.cases.json` (every
 numeric shape × the six date orders × date/datetime/smalldatetime/
 datetime2/datetimeoffset/ISDATE) and `language.cases.json` (17 languages:
-settings, month and day names, styles, month names in strings), plus msduck
-`dateformat`, `temporal-guid-format`, `parse-try-parse`. Implementation:
+settings, month and day names, styles, month names in strings), plus 
+`captured-runs/dateformat`, `temporal-guid-format`, `parse-try-parse`. Implementation:
 `DateStyle.order` / `lang` in `date_parse.mbt` from `@types.DateSettings`.
 
 Numeric dates (`a/b/c`, any of `/ - .`):

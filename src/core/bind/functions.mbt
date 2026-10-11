@@ -15,7 +15,7 @@ fn arity(
 
 ///|
 /// Aggregates name themselves in upper case (captured probes: "The SUM
-/// function requires 1 argument(s).", msduck statistical-aggregates).
+/// function requires 1 argument(s).", captured-runs/statistical-aggregates).
 fn agg_arity(
   name : String,
   args : Array[@ast.Expr],
@@ -59,7 +59,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
   }
   if call.over is Some(_) {
     // windowed calls are extracted by the query binder (SELECT list and
-    // ORDER BY); anywhere else is 4108 (captured: msduck output-typed-stages)
+    // ORDER BY); anywhere else is 4108 (captured: captured/output-typed-stages)
     raise err(
       4108,
       "Windowed functions can only appear in the SELECT or ORDER BY clauses.",
@@ -98,8 +98,8 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       // a constant replacement that folds to a value makes the result NOT
       // NULL even if the replacement alone reports nullable (captured
       // probes: ISNULL(CAST(NULL AS int), CAST(1 AS int)) is int flags 32,
-      // ISNULL(.., CHAR(NULL)) 33, ISNULL(.., 1/0) 33; msduck
-      // character-result-flags #003, space-capacity #012)
+      // ISNULL(.., CHAR(NULL)) 33, ISNULL(.., 1/0) 33; 
+      // captured/character-result-flags #003, space-capacity #012)
       let known = (x : @ir.Expr) => {
         !x.nullable || (try_fold(x) is Some(v) && !(v is Null))
       }
@@ -108,7 +108,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
       // a replacement that may be cut to the first argument's length keeps
       // the result nullable (captured: ISNULL(@n nvarchar(10), [key]) over
       // OPENJSON and ISNULL(CAST(NULL AS nvarchar(5)), k nvarchar(10)) are
-      // flags 33; msduck openjson-isnull carrier-as-replacement)
+      // flags 33; captured-runs/openjson-isnull carrier-as-replacement)
       let cut = !known(b[0]) && try_fold(b[1]) is None && truncates(b[1].ty, ty)
       let nullable = ty is (Xml | Json | Image | Vector(_, _)) ||
         !(known(b[0]) || known(b[1])) ||
@@ -130,8 +130,8 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
           4127, "At least one of the arguments to COALESCE must be an expression that is not the NULL constant.",
         )
       }
-      // captured: COALESCE(NULL, N'longer') is nvarchar(6) (msduck
-      // conditional-literal-folding #021)
+      // captured: COALESCE(NULL, N'longer') is nvarchar(6) (
+      // captured/conditional-literal-folding #021)
       let t = unify_args(b)
       let branches = []
       for i in 0..<(b.length() - 1) {
@@ -175,7 +175,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         )
       }
       // captured: IIF(1=1, NULL, N'x') is nvarchar(1), IIF(1=2, 1, 2.5)
-      // numeric(2,1) (msduck conditional-literal-folding #018, logic#022)
+      // numeric(2,1) (captured/conditional-literal-folding #018, logic#022)
       let t = unify_args([a, b2])
       fold_case([(c, a)], Some(b2), t, a.nullable || b2.nullable)
     }
@@ -195,7 +195,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     }
     "ROWCOUNT_BIG" => {
       // captured: bigint NOT NULL (flags 32), the @@ROWCOUNT value
-      // (msduck gaps-conversion#1322-1324)
+      // (captured-gaps/gaps-conversion#1322-1324)
       arity(name, args, 0)
       mk(Call(Named("ROWCOUNT_BIG"), []), BigInt, false)
     }
@@ -291,8 +291,8 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "JSON_VALUE" => {
       arity(name, args, 2)
       // captured: a bare NULL path is 8116 at compile time for JSON_VALUE
-      // only (JSON_QUERY reports it at run time; msduck
-      // unicode-json-storage#450)
+      // only (JSON_QUERY reports it at run time; 
+      // captured-runs/unicode-json-storage#450)
       if args[1].kind is Null {
         raise null_arg(2, "json_value")
       }
@@ -328,7 +328,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
     "ISJSON" => {
       arity_range(name, args, 1, 2)
       // captured: a non-character argument (also a typed NULL) is 8116
-      // (msduck isjson-coercion); text/ntext are rejected by lob_guard
+      // (captured-runs/isjson-coercion); text/ntext are rejected by lob_guard
       let x = bind_expr(env, args[0])
       if !is_null_lit(x) && x.ty.family() != FString && !(x.ty is Json) {
         raise bad_arg_type(x.ty, 1, "isjson")
@@ -337,7 +337,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
         // ISJSON(x, VALUE | ARRAY | OBJECT | SCALAR): a bare (or bracketed)
         // word, case-insensitive; an unknown word is 155, anything else
         // (string, NULL, variable) 1023 (captured json3 probes)
-        // captured: text/ntext are 8116 here too (msduck isjson-coercion)
+        // captured: text/ntext are 8116 here too (captured-runs/isjson-coercion)
         if x.ty.is_lob() {
           raise bad_arg_type(x.ty, 1, "isjson")
         }

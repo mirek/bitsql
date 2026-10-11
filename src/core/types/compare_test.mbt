@@ -15,7 +15,7 @@ fn cmp(
 
 ///|
 test "unicode collation comparisons match the capture" {
-  // msduck reference/unicode-collation.json (140 comparisons)
+  // captured/unicode-collation (140 comparisons)
   let failures = []
   for row in unicode_collation_cases {
     let (name, l, r, expected) = row
@@ -112,7 +112,7 @@ test "three-valued comparison of values" {
 
 ///|
 test "uniqueidentifier text, bytes and ordering" {
-  // msduck reference/guid-conversion-order.json
+  // captured-runs/guid-conversion-order
   let cases = [
     ("zero", "00000000-0000-0000-0000-000000000000"),
     ("first_low", "00000001-0000-0000-0000-000000000000"),

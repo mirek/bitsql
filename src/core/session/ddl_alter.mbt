@@ -156,7 +156,7 @@ fn Session::alter_add(
   with_check : Bool,
   written : String,
 ) -> Unit raise {
-  // a failing ALTER TABLE ADD consumes no object ids (captured: msduck-runs
+  // a failing ALTER TABLE ADD consumes no object ids (captured: captured-runs
   // alter-named-default, the table after two failed ADDs keeps the id
   // sequence)
   let ids_mark = self.server.next_object_id
@@ -228,11 +228,11 @@ fn Session::alter_add(
       let v : @types.Value = match (c.identity, c.default_) {
         (Some(idn), _) =>
           identity_value(c.ty, self.next_identity(scope, nt, idn))
-        // captured: existing rows get rowversion values (msduck
-        // gaps-rowversion_identity #079)
+        // captured: existing rows get rowversion values (
+        // captured-gaps/gaps-rowversion_identity #079)
         _ if c.ty is RowVersion => self.next_rowversion()
         // a default failing for an existing row: the error, then 1750
-        // state 0 (captured: msduck-runs alter-named-default #059)
+        // state 0 (captured: captured-runs alter-named-default #059)
         (None, Some(d)) if c.computed is None &&
           (!c.nullable || with_values[k - old_width]) =>
           self.eval_default(target, c, d, row + [Null]) catch {
@@ -615,7 +615,7 @@ fn Session::alter_drop(
       }
     }
     if !found && !if_exists {
-      // a constraint of another table (captured: msduck gaps-constraints
+      // a constraint of another table (captured: captured-gaps/gaps-constraints
       // alter-lifecycle-40)
       if self.constraint_owner(scope, key) is Some(_) {
         self.pending.push(
@@ -758,8 +758,8 @@ fn Session::alter_check_constraints(
     let k = n.name.to_lower()
     if !t.checks.iter().any(c => c.name.to_lower() == k) &&
       !t.foreign_keys.iter().any(f => f.name.to_lower() == k) {
-      // a key or default constraint of the table (captured: msduck
-      // gaps-constraints alter-lifecycle-35)
+      // a key or default constraint of the table (captured: 
+      // captured-gaps/gaps-constraints alter-lifecycle-35)
       if t.indexes.iter().any(ix => ix.is_constraint && ix.name.to_lower() == k) ||
         t.columns
         .iter()
@@ -950,7 +950,7 @@ fn Session::filter_terms(
 
 ///|
 /// FILLFACTOR, IGNORE_DUP_KEY and DROP_EXISTING of CREATE INDEX or an
-/// inline INDEX `WITH (...)` (captured: msduck gaps-keys diagnostics-14..17).
+/// inline INDEX `WITH (...)` (captured: captured-gaps/gaps-keys diagnostics-14..17).
 fn index_with_options(
   options : Array[@ast.OptionKV],
   unique : Bool,
@@ -1141,7 +1141,7 @@ fn Session::exec_create_index(
   // traps/computed-persisted-index)
   for c in columns {
     let tc = t.columns[c.0]
-    // captured: msduck-runs tedious-compat-gaps#042 (GETDATE())
+    // captured: captured-runs tedious-compat-gaps#042 (GETDATE())
     let nondeterministic = match tc.computed {
       Some(text) =>
         expr_nondeterministic(@parse.parse_expr(text)) catch {
@@ -1199,7 +1199,7 @@ fn Session::exec_create_index(
   if ci.unique {
     self.check_unique_build(scope, t, ix, db.rows(t.id), false)
   }
-  // maximum key length warnings (captured: msduck gaps-computed
+  // maximum key length warnings (captured: captured-gaps/gaps-computed
   // unicode-virtual-7, 1945 for an nvarchar(4000) key)
   let key_len = columns.fold(init=0, (acc, c) => {
     acc + type_ids(t.columns[c.0].ty).2
@@ -1254,7 +1254,7 @@ fn Session::exec_drop_index(
       }
     }
     // a missing table is state 6, a missing index state 7 (captured:
-    // msduck-runs drop-index #005, #007, #008)
+    // captured-runs drop-index #005, #007, #008)
     let missing = (state : Int) => {
       @types.sql_error(
         3701,

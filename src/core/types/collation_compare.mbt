@@ -1,7 +1,7 @@
 // String comparison under a collation.
 //
 // What is modelled (and checked against the 140 captured comparisons in
-// msduck reference/unicode-collation.json):
+// captured/unicode-collation):
 //
 // - Pad semantics: trailing U+0020 never matters. BIN2 compares UTF-16
 //   code units with the shorter operand space-padded (so 'a' > 'a' + NUL,
@@ -62,7 +62,7 @@ pub fn compare_strings(
   let ansi = ansi && !collation.utf8()
   match collation.kind {
     // Non-UTF8 varchar data uses its declared code page: binary collations order
-    // its bytes (captured: msduck bin2-ansi-comparisons, '€' (0x80) <
+    // its bytes (captured: captured/bin2-ansi-comparisons, '€' (0x80) <
     // NBSP (0xA0) as varchar although U+20AC > U+00A0)
     Bin2 | Bin if ansi => compare_bytes(a, b, collation)
     Bin2 => compare_bin2(a, b)
@@ -544,8 +544,8 @@ pub fn collation_ignores(u : Int, c : Collation) -> Bool {
 /// (collation_ignorable.mbt): NUL; in version 0 also surrogates, U+FFFD,
 /// bidi marks, the BOM and every code point the old tables do not know
 /// (21,229 units, not the soft hyphen); in version 100 the soft hyphen,
-/// ZWNJ/ZWJ and a smaller set of unknown code points (captured: msduck
-/// default-collation weights-ignorable-*).
+/// ZWNJ/ZWJ and a smaller set of unknown code points (captured: 
+/// captured-runs/default-collation weights-ignorable-*).
 fn is_ignorable(u : Int, version : Int) -> Bool {
   if u < 0xAD {
     return u == 0
@@ -641,7 +641,7 @@ fn push_letter(
 /// Is this code unit dropped before element generation? Ignorable units,
 /// except NUL under string sort (SQL sort orders on varchar data give it a
 /// weight below the space; captured: MIN over '', ' ' and CHAR(0) is
-/// CHAR(0); msduck character-extrema #098, #130).
+/// CHAR(0); captured-runs/character-extrema #098, #130).
 fn is_ignored(u : Int, version : Int, word_sort : Bool) -> Bool {
   if u < 0xAD {
     u == 0 && word_sort
@@ -922,8 +922,8 @@ fn compare_elements(
   let primary = compare_level(ea, eb, 0)
   // pad semantics under SQL sort orders on varchar data: the shorter
   // operand is space-padded, so a control character (NUL) after the common
-  // prefix sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), msduck
-  // character-extrema #098)
+  // prefix sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), 
+  // captured-runs/character-extrema #098)
   if ansi && collation.sql_collation && primary != 0 {
     let mut i = 0
     let mut j = 0
@@ -969,7 +969,7 @@ fn compare_elements(
     if c != 0 {
       // SQL sort orders on varchar data put upper case first (captured:
       // 'A' < 'a' COLLATE SQL_Latin1_General_CP1_CS_AS, while N'A' > N'a';
-      // msduck gaps-conversion#1221)
+      // captured-gaps/gaps-conversion#1221)
       return if ansi && collation.sql_collation { -c } else { c }
     }
   }

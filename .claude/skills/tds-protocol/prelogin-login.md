@@ -81,7 +81,7 @@ When encryption is negotiated, TLS handshake messages are wrapped in TDS packets
 Local review correction (2026-09-22): the current Microsoft PRELOGIN specification
 says an OFF client accepts a REQ response and encrypts the entire connection.
 The upstream mssqlite required-mode policy described below is stricter than that
-matrix; do not copy its OFF rejection into msduck. For a server requiring TLS,
+matrix; do not copy its OFF rejection into bitsql. For a server requiring TLS,
 the normative response is REQ to OFF, ON to ON/REQ, and REQ followed by termination
 to NOT_SUP. Source: the Microsoft PRELOGIN page linked in the protocol overview.
 

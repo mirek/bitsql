@@ -1,4 +1,4 @@
--- JSON_ARRAYAGG / JSON_OBJECTAGG beyond the msduck captures: NULL handling
+-- JSON_ARRAYAGG / JSON_OBJECTAGG beyond the captured/ cases: NULL handling
 -- per clause, JSON text values, the scope ordering shared with STRING_AGG,
 -- WITHIN GROUP being ignored, windowed running arrays, and HAVING.
 -- @step setup

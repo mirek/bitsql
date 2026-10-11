@@ -1,4 +1,4 @@
-// Generated from msduck reference/unicode-collation.json (SQL Server 2025):
+// Generated from captured/unicode-collation (SQL Server 2025):
 // NVARCHAR comparisons as (collation, left units, right units, ordering).
 
 ///|

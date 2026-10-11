@@ -4,7 +4,7 @@ Rules distilled from captures on SQL Server 17.0.5005.3 (2026-10-04):
 `harness/corpus/tail5/b2-readpast.sql`, `b2-readpast-snapshot.sql`,
 `b2-hints.sql`, `b2-schema-transfer.sql`, `b2-lob-space.sql`,
 `b2-prepare.sql`, plus `tail/table-hints-gaps.sql`,
-`tail/prepare-in-batch-dml.sql`, msduck-runs `all-objects#029`,
+`tail/prepare-in-batch-dml.sql`, captured-runs `all-objects#029`,
 `object-catalog-width#030/#047/#054/#061`.
 
 ## READPAST (650, 4102)

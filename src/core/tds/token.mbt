@@ -270,7 +270,7 @@ pub const CMD_CONDITIONAL : Int = 0xC0
 ///|
 /// ORDER (0xA9): 1-based projected ordinals of the ORDER BY keys, 0 for a
 /// key that is not projected. Sent between COLMETADATA and the first ROW.
-/// Emission rules are subtle (msduck docs/order-token.md); the binder decides.
+/// Emission rules are subtle (captured-runs/order-token); the binder decides.
 pub fn write_order(w : Writer, ordinals : ArrayView[Int]) -> Unit {
   w.u8(0xA9)
   w.u16le(ordinals.length() * 2)
@@ -350,7 +350,7 @@ pub fn nbcrow_is_smaller(
 ///|
 /// TABNAME (0xA4): the base tables of a browse-mode / cursor result, each
 /// as its name parts (US_VARCHAR each). SQL Server sends it before COLINFO
-/// in FETCH results of server cursors (captured: msduck-runs/cursor).
+/// in FETCH results of server cursors (captured: captured-runs/cursor).
 pub fn write_tabname(w : Writer, tables : ArrayView[Array[String]]) -> Unit {
   let body = Writer::new(size_hint=64)
   for parts in tables {

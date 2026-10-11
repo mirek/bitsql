@@ -89,7 +89,7 @@ fn bind_misc_fn(
       let nullable = x.iter().any(v => v.nullable || !safe_conversion(v.ty, t))
       let conv = x.map(v => if is_null_lit(v) { v } else { coerce(v, t) })
       // max types report 8000 bytes; a longer argument is 8152 state 10 at
-      // run time (captured: msduck greatest-least #049, #095)
+      // run time (captured: captured-runs/greatest-least #049, #095)
       let rt : @types.SqlType = match t {
         VarChar(None, c) => VarChar(Some(8000), c)
         NVarChar(None, c) => NVarChar(Some(4000), c)

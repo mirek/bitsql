@@ -1,6 +1,6 @@
 # COMPRESS, DECOMPRESS, CHECKSUM
 
-Captured on SQL Server 2025 (msduck `compress-decompress`,
+Captured on SQL Server 2025 (`captured-runs/compress-decompress`,
 `hashbytes-checksum`; `harness/corpus/conversion/compress`, `checksum`).
 Code: `src/core/gzip/*`, `src/core/exec/checksum.mbt`.
 
@@ -51,7 +51,7 @@ left by 4 bits). Values:
 | binary/varbinary | fold of the bytes after dropping trailing 0x00 |
 | strings | trailing spaces dropped; BINARY_CHECKSUM folds varchar bytes as signed chars and nvarchar UTF-16 units; CHECKSUM does the same under BIN/BIN2, folds per-byte sort weights for varchar under SQL_Latin1_General_CP1_CI_AS / CS_AS (`exec/checksum_data.mbt`, captured for every byte) and hashes Unicode sort keys otherwise (below) |
 
-decimal/numeric (2026-10-04, oracle probes, msduck hashbytes-checksum
+decimal/numeric (2026-10-04, oracle probes, captured-runs/hashbytes-checksum
 #040/#064, corpus tail/functions-checksum): |value| as a 38-digit integer
 (coefficient at scale 38, divided by 10 while it has more than 38 digits:
 1, 10 and 0.1 are 10^37, 0.01 is 10^36), rotl4-folded over its 32-bit words

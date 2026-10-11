@@ -212,8 +212,8 @@ pub fn write_value(
       w.bytes(b)
     }
     (DecimalN(_, _) | NumericN(_, _), Decimal(neg, mag)) => {
-      // Smallest whole 32-bit group count holding the magnitude (msduck
-      // docs/decimal-wire.md, verified against SQL Server captures).
+      // Smallest whole 32-bit group count holding the magnitude
+      // (verified against SQL Server captures).
       let mut used = mag.length()
       while used > 0 && mag[used - 1] == b'\x00' {
         used -= 1

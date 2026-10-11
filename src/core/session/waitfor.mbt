@@ -5,7 +5,7 @@
 /// again from the restored request state and produce the same output.
 /// Completes with CurCmd 243 (captured: misc/waitfor).
 ///
-/// Argument rules (captured: msduck gaps-transactions #057–#122, corpus
+/// Argument rules (captured: captured-gaps/gaps-transactions #057–#122, corpus
 /// stmts/tx-waitfor-*):
 /// - a string literal must match the WAITFOR time grammar
 ///   (`parse_wait_time`), else compile error 148 for the whole batch

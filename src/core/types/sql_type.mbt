@@ -114,7 +114,7 @@ pub fn SqlType::family(self : SqlType) -> TypeFamily {
 /// The base type name as SQL Server prints it in messages
 /// (`int`, `numeric`, `nvarchar`, ...). Decimal prints as `numeric`, as in
 /// "Arithmetic overflow error converting expression to data type numeric."
-/// (captured even for DECIMAL operands, msduck reference/decimal-division.json).
+/// (captured even for DECIMAL operands, captured/decimal-division).
 pub fn SqlType::message_name(self : SqlType) -> String {
   match self {
     Decimal(_, _) => "numeric"
@@ -126,8 +126,8 @@ pub fn SqlType::message_name(self : SqlType) -> String {
 /// Type name as used by type-clash and disallowed-conversion messages:
 /// like `message_name` but max types print as `varchar(max)` (captured:
 /// "Explicit conversion from data type image to varchar(max) is not
-/// allowed.", msduck reference). Conversion-failure messages (245, 8114)
-/// use the bare name even for max sources (reference/unicode-integer.json).
+/// allowed."). Conversion-failure messages (245, 8114)
+/// use the bare name even for max sources (captured-runs/unicode-integer).
 pub fn SqlType::clash_name(self : SqlType) -> String {
   match self {
     VarChar(None, _) | NVarChar(None, _) | VarBinary(None) =>

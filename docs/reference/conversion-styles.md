@@ -1,7 +1,7 @@
 # CONVERT styles and storage bytes
 
 Rules derived from captures on SQL Server 2025 (17.0.5005.3), us_english.
-Evidence: msduck `gaps-conversion` (format-*, parse-*, binary-*),
+Evidence: `captured-gaps/gaps-conversion` (format-*, parse-*, binary-*),
 `concat-numeric-format`, and `harness/corpus/conversion/*`
 (`hijri`, `input-styles`, `output-styles`, `numeric-styles`). Code:
 `src/core/types/temporal_styles.mbt`, `hijri.mbt`, `date_parse.mbt`

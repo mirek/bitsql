@@ -42,7 +42,7 @@ const ADVANCED_COMMA : String = "Comma operator not yet supported for advanced J
 
 ///|
 /// Path lexer/parser state. Error states (13607) captured from SQL Server
-/// 2025 (harness/corpus/json3/path-syntax, msduck json-advanced-path):
+/// 2025 (harness/corpus/json3/path-syntax, captured-runs/json-advanced-path):
 ///
 /// - 14: a known token in the wrong place (`$ . [ ] * ,`, a number, a
 ///   quoted string, a keyword) or the end of the path;

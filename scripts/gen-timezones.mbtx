@@ -33,15 +33,6 @@
 //     node src/dump-timezones.mjs ../scripts/timezones/sqlserver-timezones.json
 //   moon run scripts/gen-timezones.mbtx && moon fmt && moon test -p mirek/bitsql/core/types
 //
-// Cross-check against msduck's independent captures
-// (reference/at-time-zone-history-*.json: daily offsets of every zone, years
-// 0001-2500, SQL Server 17.0.4065.4):
-//   moon run scripts/gen-timezones.mbtx xcheck-msduck PATH/TO/msduck
-//   (clone: git clone --depth 1 https://github.com/mirek/msduck.git)
-// Expected result (2026-10-03): all 345,109 daily changes agree except 47 at
-// 0001-01-01 for zones west of UTC, where AT TIME ZONE clamps an underflowing
-// local time to +00:00 (an executor rule, not a zone rule).
-//
 // Port notes: Python's `//` and `%` floor; MoonBit's `/` and `%` truncate, so
 // all divisions of possibly negative values go through fdiv/fmod. MoonBit's
 // String compare orders by length first, so string sorts use str_cmp
@@ -1478,121 +1469,15 @@ fn round_half_even(x : Double) -> Int64 {
 // ---------------------------------------------------------------- xcheck
 
 ///|
-/// Text of `s` after the first `sep` (Python `s.split(sep)[1]`, up to the
-/// next `sep`).
-fn after_first(s : StringView, sep : String) -> StringView raise Fail {
-  let parts = s.split(sep).to_array()
-  guard parts.length() >= 2 else { raise Fail("\{sep} not found") }
-  parts[1]
-}
-
-///|
-/// Cross-checks the time zone model against msduck's independent captures
-/// (reference/at-time-zone-history-*.json: daily offsets of every zone, years
-/// 0001-2500, SQL Server 17.0.4065.4).
-async fn xcheck_msduck(msduck : String) -> Unit {
-  let dump = parse_dump(@json.parse(@fs.read_file(DUMP).text()))
-  let models = dump.zones.map(z => (z, model_zone(z, dump)))
-  let mut total = 0
-  // zone -> differences, and its first example, in first-seen order
-  let bad : Map[String, Int] = Map([])
-  let examples : Map[String, String] = Map([])
-  let dir = msduck + "/reference"
-  let files = if @fs.exists(dir) {
-    @fs.readdir(dir).filter(f => {
-      f.has_prefix("at-time-zone-history-") && f.has_suffix(".json")
-    })
-  } else {
-    []
-  }
-  files.sort_by(str_cmp)
-  for f in files {
-    let doc = @json.parse(@fs.read_file(dir + "/" + f).text())
-    for chunk in jarr(jget(doc, "chunks")) {
-      let daily = jget(chunk, "daily")
-      let q = jstr(jget(daily, "query"))
-      let start_s = after_first(q, "CAST('")
-        .split("'")
-        .next()
-        .unwrap()
-        .to_owned()
-      let start = parse_ticks(
-        start_s.view(end_offset=10).to_owned() + " 00:00:00.0000000",
-      )
-      let range = after_first(q, "GENERATE_SERIES(").split(")").next().unwrap()
-      guard range.split(",").to_array() is [a, b] else {
-        raise Fail("bad GENERATE_SERIES")
-      }
-      let lo_k = py_int(a).to_int64()
-      let hi_k = py_int(b).to_int64()
-      let want : Map[String, Set[(Int64, Int, Int)]] = Map([])
-      let sets = jarr(jget(jget(daily, "reference"), "sets"))
-      for row in jarr(jget(sets[0], "rows")) {
-        guard jarr(row) is [z, k, p, o] else { raise Fail("bad row") }
-        let z = jstr(z)
-        if !want.contains(z) {
-          want[z] = Set([])
-        }
-        want.get(z).unwrap().add((jint(k).to_int64(), jint(p), jint(o)))
-      }
-      for m in models {
-        let (z, segs) = m
-        let got : Set[(Int64, Int, Int)] = Set([])
-        for
-          tr in model_transitions(segs, start + lo_k * tpd, start + hi_k * tpd) {
-          // first sampled midnight at or after t
-          let k = -fdiv64(start - tr.0, tpd)
-          if lo_k < k && k <= hi_k {
-            let p = offset_at(segs, start + (k - 1L) * tpd)
-            let o = offset_at(segs, start + k * tpd)
-            if p != o {
-              got.add((k, p, o))
-            }
-          }
-        }
-        let w = want.get_or_default(z, Set([]))
-        total += w.length()
-        if !got.equal(w) {
-          let diff = got.symmetric_difference(w).to_array()
-          bad[z] = bad.get_or_default(z, 0) + diff.length()
-          if !examples.contains(z) {
-            diff.sort()
-            let ex = diff[:@cmp.minimum(4, diff.length())]
-              .to_owned()
-              .map(x => "(\{x.0}, \{x.1}, \{x.2})")
-            examples[z] = "(\{py_repr(start_s)}, [\{ex.join(", ")}])"
-          }
-        }
-      }
-    }
-    let mut nbad = 0
-    for _, n in bad {
-      nbad += n
-    }
-    println("\{f}: \{total} daily changes so far, \{nbad} differences")
-  }
-  // Counter.most_common(): by count, descending, ties in first-seen order
-  let ranked = bad.to_array().mapi((i, e) => (e.0, e.1, i))
-  ranked.sort_by_key(e => (-e.1, e.2))
-  for e in ranked {
-    println("\{e.0} \{e.1} \{examples.get(e.0).unwrap()}")
-  }
-}
-
-///|
 async fn main {
   let args = @env.args()[1:].to_owned()
   if !@fs.exists(DUMP) {
     raise Fail(
-      "run from the repo root (\{DUMP} not found): moon run scripts/gen-timezones.mbtx [xcheck-msduck PATH/TO/msduck]",
+      "run from the repo root (\{DUMP} not found): moon run scripts/gen-timezones.mbtx",
     )
   }
   match args {
     [] => generate()
-    ["xcheck-msduck", msduck] => xcheck_msduck(msduck)
-    _ =>
-      raise Fail(
-        "usage: moon run scripts/gen-timezones.mbtx [xcheck-msduck PATH/TO/msduck]",
-      )
+    _ => raise Fail("usage: moon run scripts/gen-timezones.mbtx")
   }
 }

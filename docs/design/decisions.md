@@ -17,9 +17,9 @@ entry: what changed, why, and which page was updated.
   so the core never converts epochs. (architecture.md)
 - **Emulator error numbers 50100–50199**, severity 16, message prefix
   `Emulator:`. (fidelity-traps.md, scope.md)
-- **Result metadata is binder-computed**, never derived from row values; lesson
-  carried over from msduck. (ir.md, fidelity-traps.md)
-- **Corpus bootstrapped from msduck captures**, because the target app's suite is
+- **Result metadata is binder-computed**, never derived from row values.
+  (ir.md, fidelity-traps.md)
+- **Corpus bootstrapped from earlier SQL Server captures** (`harness/corpus/captured*`), because the target app's suite is
   not in this repo yet. Its capture stays phase 1 work, blocked on access.
   (verification.md, roadmap.md)
 - **Phase 0 and phase 7** added to the roadmap for setup and packaging.
@@ -588,7 +588,7 @@ Fixture cloning (`BACKUP DATABASE foo TO DISK=… WITH FORMAT, COMPRESSION`,
 `RESTORE HEADERONLY/FILELISTONLY`, `RESTORE DATABASE foo_copy … WITH
 REPLACE, MOVE …`, msdb history) was reported as unsupported. The reporter
 needs neither persistence nor Microsoft-format files. Corpus `backup/*`
-(clone-fixture, errors, media-sets) plus msduck gaps-backup.
+(clone-fixture, errors, media-sets) plus captured-gaps/gaps-backup.
 
 - **Backup files live in the server, keyed by the device path**
   (`session/backup.mbt`, `Server.backups`), for the process lifetime. A
@@ -1359,7 +1359,7 @@ invented. Captures: `harness/corpus/report-0127`, SQL Server 2022 16.0.4236.2.
 
 ### 2026-10-11: automation in MoonBit script mode (`.mbtx`), not Python
 
-All 17 Python tools in `scripts/` (generators, the timezone msduck
+All 17 Python tools in `scripts/` (generators, a timezone
 cross-check, the profiler report, the MoonBit docs refresh) are now
 single-file `.mbtx` scripts run with `moon run scripts/<name>.mbtx`, following
 the vendored agent guide ("use `.mbtx` exclusively for agent-authored
@@ -1379,3 +1379,18 @@ Same day: `docker-publish.sh`'s two inline manifest-JSON helpers moved from
 `python3 -c` to `node -e` (node is already required by its harness smoke
 run; outputs compared on the live distroless and bitsql manifests), and the
 dev container no longer installs python3: the repo has no Python dependency.
+
+### 2026-10-11: imported captures renamed `corpus/captured*`; importers removed
+
+The bootstrap corpus imported from an earlier Rust/DuckDB prototype (now
+superseded by bitsql) moved from `harness/corpus/msduck{,-gaps,-runs}/` to
+`harness/corpus/captured{,-gaps,-runs}/`. Case ids, the allowlist,
+`parse-known.txt`, code comments and docs follow the new paths. The
+expectations are real SQL Server captures re-verified on the local oracle, so
+they stay. Their `source` fields now read `SQL Server capture <name>`. The
+one-off importers (`import-msduck*.mjs`, `src/msduck-layouts/`, their npm
+scripts, the `_import.json` reports) and the time zone `xcheck-msduck`
+subcommand were deleted because there is nothing left to import. Identifiers
+inside the captured SQL (`msduck_seq`, `msduck_audit_*` databases, …) were
+left as they are: they appear in the captured messages and rows, and
+expectations are never hand-edited.

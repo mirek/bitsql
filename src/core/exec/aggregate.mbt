@@ -34,7 +34,7 @@ fn agg_inputs(
   }
   // DISTINCT: the first of each run of equal values, in input order
   // non-Unicode values compare as such (NUL below the space under SQL
-  // sort orders; captured: msduck-runs character-extrema)
+  // sort orders; captured: captured-runs character-extrema)
   let (ids, _) = group_ids(
     out.map(x => [x.0]),
     [coll],
@@ -142,7 +142,7 @@ fn sum_values(
           _ => ()
         }
         // captured: 1e308 + 1e308 is 8115 even when a later value would
-        // cancel it (msduck float-aggregates #040-#044)
+        // cancel it (captured-runs/float-aggregates #040-#044)
         if acc.is_inf() {
           raise @types.overflow_expression(Float)
         }
@@ -206,7 +206,7 @@ fn variance(
   arg_ty : @types.SqlType,
   population : Bool,
 ) -> Double? raise @types.SqlError {
-  // SQL Server's one-pass formula (captured: msduck statistical-precision
+  // SQL Server's one-pass formula (captured: captured-runs/statistical-precision
   // and statistical-transition match it bit for bit, cancellation
   // included): (Σx² - (Σx)²/n) / (n - 1 | n) in float, a negative result
   // read as 0, an infinite sum 8115

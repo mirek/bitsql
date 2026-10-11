@@ -127,8 +127,8 @@ fn Session::column_env(self : Session, target : Target) -> @bind.Env {
 fn key_text(v : @types.Value, ty : @types.SqlType) -> String {
   match v {
     Null => "<NULL>"
-    // captured: GUIDs lower-case, binary as 0x + lower-case hex (msduck
-    // gaps-keys message-values)
+    // captured: GUIDs lower-case, binary as 0x + lower-case hex (
+    // captured-gaps/gaps-keys message-values)
     Guid(_) =>
       try
         @types.cast(v, ty, NVarChar(Some(4000), @types.default_collation))
@@ -197,7 +197,7 @@ fn Session::to_column(
       from.family() == FString &&
       rtrim(s).length() > n => {
       // the value as the column stores it: varchar text in code page 1252
-      // with best fit (captured: msduck windows-1252-best-fit, U+2000 is
+      // with best fit (captured: captured-runs/windows-1252-best-fit, U+2000 is
       // shown as ' ', a surrogate half as '?')
       let shown = match col.ty.collation() {
         Some(c) if !col.ty.is_unicode() => @types.to_code_page(s, c)
@@ -253,8 +253,8 @@ fn Session::eval_text(
 
 ///|
 /// Evaluates a column's DEFAULT for a row and stores it like an assigned
-/// value: an over-long string is 2628, not silently cut (captured: msduck
-/// unicode-storage *-overflow-default).
+/// value: an over-long string is 2628, not silently cut (captured: 
+/// captured-runs/unicode-storage *-overflow-default).
 fn Session::eval_default(
   self : Session,
   target : Target,
@@ -340,7 +340,7 @@ fn identity_fits(ty : @types.SqlType, v : Int64) -> Bool {
 
 ///|
 /// 8115 for a generated identity that overflows its column (captured:
-/// msduck gaps-rowversion_identity #105/#109, corpus stmts/rowversion-*):
+/// captured-gaps/gaps-rowversion_identity #105/#109, corpus stmts/rowversion-*):
 /// batch-ending, rolls back an open transaction, followed by INFO 3606;
 /// the identity counter does not advance.
 fn Session::identity_overflow(
@@ -411,7 +411,7 @@ fn Session::check_row(
   let t = target.table
   self.check_index_options(t)
   // captured: MERGE reports "UPDATE fails." for its INSERT and UPDATE
-  // actions alike (msduck gaps-merge #028, #029)
+  // actions alike (captured-gaps/gaps-merge #028, #029)
   let fails = if verb == "MERGE" { "UPDATE" } else { verb }
   for i, c in t.columns {
     if !c.nullable && row[i] is Null {
@@ -478,7 +478,7 @@ fn check_ordinals(t : @store.Table, expr : String) -> Array[Int] {
 
 ///|
 /// INSERT into a unique index WITH (IGNORE_DUP_KEY = ON) holding the row's
-/// key: the row is skipped with INFO 3604 (captured: msduck gaps-keys
+/// key: the row is skipped with INFO 3604 (captured: captured-gaps/gaps-keys
 /// ignore-dup-key-4; UPDATE still fails with 2601).
 fn dup_key_ignored(
   t : @store.Table,

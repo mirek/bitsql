@@ -33,7 +33,7 @@ fn bind_json2_fn(
       !object
     }
     let bound = call.args.map(a => bind_expr(env, a))
-    // captured (json4, msduck json-constructors#018/#019): RETURNING JSON
+    // captured (json4, captured-runs/json-constructors#018/#019): RETURNING JSON
     // or a json-typed value makes the result the json type (lower-case
     // flag: the executor normalizes the text)
     let json = returning || bound.iter().any(b => b.ty is Json)

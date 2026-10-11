@@ -1,4 +1,4 @@
-// Generated from msduck reference/float-default-grid.json (SQL Server 2025,
+// Generated from captured-runs/float-default-grid (SQL Server 2025,
 // CONVERT(VARCHAR(MAX), @p, 0)); every non-power grid value plus every
 // fourth decimal power. Columns: is_real, IEEE bits (hex, big-endian), text.
 

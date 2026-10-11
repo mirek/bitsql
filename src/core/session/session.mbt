@@ -106,7 +106,7 @@ pub fn Server::new() -> Server {
     db_ids: ids,
     next_rowid: 1L,
     // the first user object id of a fresh SQL Server 2025 database (every
-    // capture printing object ids agrees: msduck-runs alter-named-default,
+    // capture printing object ids agrees: captured-runs alter-named-default,
     // table-type-catalog, system-all-columns)
     next_object_id: 1221579390,
     external_model_ids: Map([]),
@@ -714,7 +714,7 @@ fn Session::done(
   // a pending "Null value is eliminated" warning precedes the statement's
   // DONE (captured: INSERT … SELECT MIN(v), UPDATE … SET v = (SELECT MAX(v)
   // …), SET/DECLARE @v = (SELECT MIN(v) …), and after the error and 3621
-  // of a failing INSERT; msduck aggregate-warning-boundaries)
+  // of a failing INSERT; captured-runs/aggregate-warning-boundaries)
   self.emit_null_warning(self.stmt_line)
   let count = if self.nocount { None } else { count }
   if self.rt.nest_level > 0 {
@@ -1013,7 +1013,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
       }
       // COUNT(NULL) fails the whole batch, but the statement's own binding
       // errors come first (captured: a missing table is 208, a missing
-      // column 207; msduck count-null-compilation)
+      // column 207; captured-runs/count-null-compilation)
       let e = if e0.number() == 8117 &&
         e0.message().has_prefix("Operand data type NULL ") {
         self.count_null_error(stmts, e0)
@@ -1021,7 +1021,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
         e0
       }
       // 8748 inside sp_executesql ends the request without a return
-      // status, like a batch-aborting error (captured: msduck string-split
+      // status, like a batch-aborting error (captured: captured-runs/string-split
       // #048)
       if e.number() == 8748 && self.rt.nest_level > 0 && self.try_depth == 0 {
         self.rt.error = e.number()
@@ -1107,8 +1107,8 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
 }
 
 ///|
-/// Parse-time float literal checks (captured: msduck
-/// percentile-numeric-rounding-v2, probes): a literal beyond the double
+/// Parse-time float literal checks (captured: 
+/// captured-runs/percentile-numeric-rounding-v2, probes): a literal beyond the double
 /// range is 168 and nothing in the batch runs; a nonzero literal below the
 /// smallest normal double is INFO 337 (class 0, its line) before anything
 /// runs, also inside a branch that never executes.
@@ -1170,7 +1170,7 @@ fn Session::text_error(
 
 ///|
 /// A doomed transaction still open at the end of a request (batch or RPC) is
-/// rolled back with error 3998 (msduck transaction-recovery; the exact
+/// rolled back with error 3998 (the exact
 /// completion shape is unverified).
 fn Session::end_of_request(self : Session) -> Unit {
   // LOCAL cursors and cursor variables of the batch end with it

@@ -3,10 +3,10 @@ name: tds-protocol
 description: "Comprehensive TDS (Tabular Data Stream) protocol reference for implementing MSSQL clients and servers. Covers packet framing, message types, token streams, data types, login, prelogin, SQL batch, RPC, transactions, error handling, and wire format details. Use when implementing TDS protocol handling, debugging wire-level issues, or understanding MSSQL communication."
 ---
 
-> **Provenance.** Reference content ported from the sibling projects msduck and
-> mssqlite (same author, public domain). Notes that mention `packages/*`,
-> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
-> are field notes verified against SQL Server there, not claims about bitsql.
+> **Provenance.** Reference content ported from earlier sibling projects (same
+> author, public domain). Notes that mention `packages/*`, `mssqlite` or SQLite
+> describe *those* implementations. They are field notes verified against SQL
+> Server there, not claims about bitsql.
 > Real SQL Server captures remain the authority (docs/design/verification.md).
 
 ## bitsql implementation
@@ -57,7 +57,7 @@ mention the correction here.
   variant in an NBCROW saves 4 bytes.
 
 - 2026-10-03: tedious 20.3.3 completes login against bitsql with the
-  msduck login order (ENVCHANGE db, INFO 5701, ENVCHANGE collation, ENVCHANGE
+  captured login order (ENVCHANGE db, INFO 5701, ENVCHANGE collation, ENVCHANGE
   language, INFO 5703, LOGINACK, ENVCHANGE packet size, DONE) and a PRELOGIN
   response carrying only VERSION, ENCRYPTION=NOT_SUP and MARS=0. No
   FEATUREEXTACK needed. Evidence: `src/core/engine/engine_test.mbt`, manual
@@ -67,8 +67,8 @@ mention the correction here.
   Don't copy that length.
 - 2026-10-03: DECIMAL row values use the smallest whole 4-byte group count for
   the magnitude (5/9/13/17 bytes incl. sign) while TYPE_INFO advertises 17
-  (msduck `docs/decimal-wire.md`, captured). Implemented in `write_value`.
-- 2026-10-04 (text/ntext/image, msduck concat-legacy-family, corpus
+  (captured). Implemented in `write_value`.
+- 2026-10-04 (text/ntext/image, captured-runs/concat-legacy-family, corpus
   `conversion/lob-*`): COLMETADATA TEXT 0x23 / NTEXT 0x63 / IMAGE 0x22 carry a
   4-byte max length (tedious reports 2147483647 / 2147483646 / 2147483647),
   the 5-byte collation for text/ntext, and then a TableName (NumParts byte +

@@ -163,7 +163,7 @@ fn Session::exec_create_type(
     )
   }
   // a system type name (int, varchar, sysname) exists in every schema
-  // (captured: msduck-runs table-type-catalog #003, tail/catalog-column-types)
+  // (captured: captured-runs table-type-catalog #003, tail/catalog-column-types)
   if db.lookup_type(schema, base) is Some(_) || is_system_type_name(base) {
     raise @types.sql_error(
       219,

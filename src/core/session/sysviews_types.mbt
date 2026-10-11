@@ -3,7 +3,7 @@
 // procedure / function parameters (sys.parameters). Captures:
 // harness/corpus/tabletypes/{create-table-type,alias-types,synonyms,
 // parameters}.sql. A type table is a system-shipped sys.objects row in
-// schema sys named TT_<type>_<object id hex> (captured: msduck-runs
+// schema sys named TT_<type>_<object id hex> (captured: captured-runs
 // table-type-catalog #011).
 
 ///|

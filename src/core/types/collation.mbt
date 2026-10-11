@@ -10,7 +10,7 @@
 //   apostrophe compare as ordinary punctuation).
 // - `Latin1_General[_100]_{CI|CS}_{AS|AI}[_KS][_WS][_SC]`: Windows
 //   collations, table version 0 (no number) or 100 (there is no
-//   Latin1_General_140: 448, captured msduck default-collation).
+//   Latin1_General_140: 448, captured captured-runs/default-collation).
 // - `Latin1_General[_100]_BIN` and `_BIN2`: binary (code unit) order.
 //
 // The linguistic comparison itself is an approximation; see

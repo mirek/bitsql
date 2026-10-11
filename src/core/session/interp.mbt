@@ -2,7 +2,7 @@
 /// Raised inside TRY: the error was already completed; CATCH takes over.
 /// Fields: error, line, procedure (ERROR_PROCEDURE()), and the nesting
 /// level below which a TRY may catch it: a compile error is caught only by
-/// a TRY of a calling scope (captured: msduck try-binding-error,
+/// a TRY of a calling scope (captured: captured/try-binding-error,
 /// gaps-procedures #061).
 priv suberror Caught {
   Caught(@types.SqlError, Int, String?, Int)
@@ -256,7 +256,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // under SET ANSI_WARNINGS OFF SQL Server truncates strings silently and,
   // with ARITHABORT OFF, makes overflow and division by zero NULL: not
   // modelled; with ARITHABORT ON those errors stay (captured: 8115 and 8134
-  // under OFF, msduck aggregate-warning-boundaries)
+  // under OFF, captured-runs/aggregate-warning-boundaries)
   let e = if !self.ansi_warnings() &&
     (
       [2628, 8152].contains(e.number()) ||
@@ -320,7 +320,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     self.rt.xact_state = -1
   }
   // compile errors (raised while binding, before the statement runs) are
-  // not caught by TRY in the same scope (captured: msduck try-binding-error)
+  // not caught by TRY in the same scope (captured: captured/try-binding-error)
   if (self.cur_cmd == 253 && is_compile_error(e.number())) ||
     e.number() == @types.EMU_WORK_BUDGET {
     self.uncatchable = true
@@ -371,7 +371,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   // catalog/filtered-unique, output/dml-error-completion). A batch-ending
   // error completes with 253 unless an OUTPUT result set had started.
   // positioned UPDATE/DELETE (WHERE CURRENT OF) complete with 125/126
-  // (captured: msduck-runs/cursor #037-#048)
+  // (captured: captured-runs/cursor #037-#048)
   let dml = (self.cur_cmd >= 195 && self.cur_cmd <= 197) ||
     self.cur_cmd == 279 ||
     self.cur_cmd == 125 ||
@@ -383,7 +383,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
     self.xact_abort && !raiserror,
   )
   // IDENTITY_INSERT errors (544, 545, 339) come without 3621 (captured:
-  // msduck identity-insert-*)
+  // captured-runs/identity-insert-*)
   // a negative DML TOP (127) ends the batch after 3621, a NULL one (1014)
   // without it (captured: tail/top-invalid-abort)
   if dml &&
@@ -420,8 +420,8 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   self.flush_trailing(line)
   // A batch-ending error completes with 253 unless the statement had sent
   // a result set: uncaught THROW, assignments, IF conditions, PRINT,
-  // transaction statements under XACT_ABORT (captured: msduck
-  // nocount-completions, datestrings/implicit#009, savepoint abort run)
+  // transaction statements under XACT_ABORT (captured: 
+  // captured/nocount-completions, datestrings/implicit#009, savepoint abort run)
   let result_started = self.out[mark:].iter().any(x => x is ResultSet(_))
   let cmd = if self.throwing || (ends_batch && !result_started) {
     253
@@ -446,7 +446,7 @@ fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
   }
   // an XML parse error in an RPC request has no DONEINPROC: DONEPROC
   // follows the ERROR (captured: xml/rpc#001); so has a JSON error
-  // (captured: msduck isjson-depth, json-constructors#087/#091)
+  // (captured: captured-runs/isjson-depth, json-constructors#087/#091)
   if !(self.rpc &&
     (
       (e.number() >= 9400 && e.number() < 9500) ||
@@ -493,7 +493,7 @@ fn aborts_batch(
   n == 650 ||
   n == 295 ||
   n == 8114 ||
-  // uniqueidentifier conversion (captured: msduck guid-assignment)
+  // uniqueidentifier conversion (captured: captured-runs/guid-assignment)
   n == 8169 ||
   n == 8672 ||
   n == 529 ||
@@ -506,7 +506,7 @@ fn aborts_batch(
   n == 11728 ||
   n == 217 ||
   // *FROMPARTS invalid arguments (captured: an RPC ends without
-  // DONEINPROC, msduck temporal-parts #196)
+  // DONEINPROC, captured-runs/temporal-parts #196)
   n == 289 ||
   is_identity_overflow(e) ||
   // XML parse errors (captured: xml/type#059, xml/rpc#001)
@@ -519,7 +519,7 @@ fn aborts_batch(
 ///|
 /// Invalid TOP / FETCH values at run time (1014 NULL, 127 negative, 1031
 /// percent): class 15, they end the batch without a rollback, and in an RPC
-/// DONEPROC follows the ERROR (captured: tail/top-invalid, msduck-runs
+/// DONEPROC follows the ERROR (captured: tail/top-invalid, captured-runs
 /// select-top-percent#045).
 fn top_value_error(e : @types.SqlError) -> Bool {
   e.severity() == 15 && [1014, 127, 1031, 4116].contains(e.number())
@@ -713,7 +713,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       self.cur_cmd = 247
       let (v, ty) = self.eval(e)
       // up to 8000 bytes (4000 characters of nvarchar); an empty or NULL
-      // message prints one space (captured: msduck print-unicode)
+      // message prints one space (captured: captured/print-unicode)
       let limit : @types.SqlType = if ty.is_unicode() {
         NVarChar(Some(4000), @types.default_collation)
       } else {
@@ -806,7 +806,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       }
       // Bare RETURN completes with 219 and resets @@ROWCOUNT; RETURN <expr>
       // completes like an assignment (193, count 1) (captured:
-      // smoke/proc-return-output, msduck catch-return-rpc, gaps-procedures
+      // smoke/proc-return-output, captured/catch-return-rpc, gaps-procedures
       // #031).
       if status is Some(_) {
         self.rt.rowcount = 1
@@ -864,7 +864,7 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
       // Savepoints first (innermost, names compared under the collation;
       // rolling back to one also removes it and later ones), then the
       // outermost transaction's name (case-sensitive), else 6401; no name
-      // or NULL rolls back everything (captured: msduck-runs/savepoint).
+      // or NULL rolls back everything (captured: captured-runs/savepoint).
       match (self.tran_name(name), self.tx) {
         (Some(n), Some(tx)) =>
           match tx.savepoint_index(n, self.db_collation()) {
@@ -948,8 +948,8 @@ fn Session::exec_stmt(self : Session, s : @ast.Stmt) -> Unit raise {
     SetIdentityInsert(name, on) =>
       match self.find_table(name) {
         Some((_, t)) => {
-          // the name as written (captured: msduck
-          // identity-insert-name-errors, 'DbO.PLAIN'); also for OFF
+          // the name as written (captured: 
+          // captured-runs/identity-insert-name-errors, 'DbO.PLAIN'); also for OFF
           // (gaps-rowversion_identity #180)
           if t.columns.iter().all(c => c.identity is None) {
             raise @types.sql_error(
@@ -1124,10 +1124,10 @@ fn Session::exec_raiserror(
         types.push(if args[k].kind is Null { None } else { Some(values[k].1) })
       }
       // format errors report their own number; @@ERROR becomes 50000
-      // (captured: msduck raiserror-failure-counter)
+      // (captured: captured/raiserror-failure-counter)
       // format errors report their own number; @@ERROR becomes 50000 when
       // the RAISERROR would have set it (severity > 10 or SETERROR;
-      // captured: msduck raiserror-failure-counter)
+      // captured: captured/raiserror-failure-counter)
       if severity > 10 || options.contains("SETERROR") {
         self.error_override = Some(50000)
       }
@@ -1165,7 +1165,7 @@ fn Session::exec_raiserror(
   }
   if severity <= 10 {
     // Informational: INFO token whose class is the severity, except 10 is
-    // sent as 0 (captured: msduck raiserror 9 → 9, 10 → 0).
+    // sent as 0 (captured: captured/raiserror 9 → 9, 10 → 0).
     self.out.push(
       Message({
         number,
@@ -1268,8 +1268,8 @@ fn Session::exec_try(
     }
   }
   // The construct completes with 351 whether or not CATCH ran (captured:
-  // msduck control-completion-tokens #10/#11) and sets @@ROWCOUNT to 0
-  // (captured: msduck-runs aggregate-warning-boundaries#022,
+  // captured/control-completion-tokens #10/#11) and sets @@ROWCOUNT to 0
+  // (captured: captured-runs aggregate-warning-boundaries#022,
   // tail/try-catch-rowcount).
   self.rt.rowcount = 0
   self.done(351)

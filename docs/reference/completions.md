@@ -1,8 +1,7 @@
 # DONE-token (completion) model
 
-How SQL Server reports statement completions. Distilled from msduck
-`docs/control-completions.md` and `docs/nocount.md` (SQL Server 2025 captures),
-plus the bitsql corpus (`harness/corpus/msduck/*completion*`, `nocount-*`,
+How SQL Server reports statement completions. Distilled from SQL Server 2025
+captures in the bitsql corpus (`harness/corpus/captured/*completion*`, `nocount-*`,
 `try-completion-tokens*`). The session interpreter must reproduce this exactly;
 the harness compares `tokens` (name, curCmd, status bits, count) and `stream`.
 
@@ -107,7 +106,7 @@ taken from captures before they are implemented. Add them here when found.
   `@@TRANCOUNT` is fixed `Int` with flags 32; `XACT_STATE()` is `IntN(2)` with
   flags 33.
 
-DDL resets `@@ROWCOUNT` to 0 (msduck `docs/ddl-completion-reference.md`).
+DDL resets `@@ROWCOUNT` to 0.
 
 ## Triggers (corpus `triggers/`)
 
@@ -144,8 +143,8 @@ see `session/applock.mbt` for the captured sequences.
 ## Procedures, EXEC strings and sp_executesql (2026-10-04)
 
 Captured: `harness/corpus/proc/*` (return-status, abort-tokens,
-exec-errors, exec-args, nest-levels, xact-abort-lines), msduck-gaps
-`gaps-procedures`, `gaps-rpc-procedures`, msduck-runs `savepoint`.
+exec-errors, exec-args, nest-levels, xact-abort-lines), captured-gaps
+`gaps-procedures`, `gaps-rpc-procedures`, captured-runs `savepoint`.
 Implemented in `session/rpc.mbt` (`run_module`, `exec_module_end`) and
 `session/interp.mbt` (`exec_one`).
 
@@ -202,7 +201,7 @@ Implemented in `session/rpc.mbt` (`run_module`, `exec_module_end`) and
   RETURNVALUE; a batch-aborting error discards the handle (its number is
   reused). sp_prepare of a non-query sends DONEINPROC 193 with count 0.
 
-## Cursors (2026-10-04, msduck-runs `cursor`, corpus `stmts/cursor-*`)
+## Cursors (2026-10-04, captured-runs `cursor`, corpus `stmts/cursor-*`)
 
 Implemented in `session/cursor.mbt` (its header lists the type conversions
 and data models).

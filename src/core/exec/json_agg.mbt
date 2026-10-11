@@ -1,6 +1,6 @@
 ///|
-/// JSON_ARRAYAGG / JSON_OBJECTAGG over a group (captured: msduck
-/// json-aggregates). No input rows give NULL; otherwise every row adds
+/// JSON_ARRAYAGG / JSON_OBJECTAGG over a group (captured: 
+/// captured-runs/json-aggregates). No input rows give NULL; otherwise every row adds
 /// its value (formatted like JSON_ARRAY / JSON_OBJECT values, JSON text
 /// raw), NULLs skipped under ABSENT ON NULL (the JSON_ARRAYAGG default)
 /// without warning 8153: a group of only NULLs is `[]` / `{}`. A NULL key

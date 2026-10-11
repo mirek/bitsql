@@ -381,7 +381,7 @@ fn to_binary(
 /// 0001-01-01 (little-endian); the others start with their scale, then the
 /// time of day in units of 10^-scale s (3 bytes for scale 0-2, 4 for 3-4,
 /// 5 for 5-7), then the date, then (datetimeoffset, UTC) the offset in
-/// minutes as int16 (captured: msduck temporal-guid-format, corpus
+/// minutes as int16 (captured: captured-runs/temporal-guid-format, corpus
 /// tail/functions-binary).
 fn temporal_storage_bytes(v : Value, from : SqlType) -> Bytes {
   let scale = match from {

@@ -3,8 +3,8 @@
 // CONVERT style 0 (also plain CAST) prints like C's `%.6g` on the *exact*
 // binary value, rounding half away from zero, with an exponent of at least
 // three digits: `1e+006`, `9.94922e-044`, `0.0001`, `123457` (for 123456.5).
-// Verified against the 2,170-value grid in msduck
-// reference/float-default-grid.json (a scaling-based formatter fails it).
+// Verified against the 2,170-value grid in
+// harness/corpus/captured-runs/float-default-grid (a scaling-based formatter fails it).
 // Styles 1 and 2 are `%.7e` / `%.15e` (8 and 16 significant digits) with the
 // same exponent form; style 3 is not implemented.
 

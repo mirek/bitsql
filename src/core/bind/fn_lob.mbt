@@ -65,7 +65,7 @@ fn lob_accepting(name : String) -> Bool {
 /// (the separator included) is a Unicode character type, else to varchar;
 /// xml and sql_variant do not make it Unicode. The first argument in
 /// order that cannot convert raises: xml / sql_variant 257, image 206
-/// (captured: msduck concat-legacy-family, e.g. CONCAT_WS('', xml, text)
+/// (captured: captured-runs/concat-legacy-family, e.g. CONCAT_WS('', xml, text)
 /// is "xml to varchar", CONCAT_WS('', image, xml) is the image 206).
 fn concat_guard(
   env : Env,

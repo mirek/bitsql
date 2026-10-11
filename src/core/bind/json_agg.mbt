@@ -1,6 +1,6 @@
 // JSON_ARRAYAGG / JSON_OBJECTAGG (SQL Server 2025). The parser appends a
-// clause marker argument (parse/json_ctor.mbt `json_agg`). Captures: msduck
-// json-aggregates.
+// clause marker argument (parse/json_ctor.mbt `json_agg`). Captures: 
+// captured-runs/json-aggregates.
 
 ///|
 /// The clause marker of a parsed JSON aggregate call, and the call's other
@@ -31,7 +31,7 @@ fn json_agg_fn(
 ) -> @ir.AggFn {
   let (marker, _) = json_agg_parts(call)
   let clauses = marker.unwrap_or("N")
-  // captured (json4/returning, msduck json-aggregates#025/#055/#102): the
+  // captured (json4/returning, captured-runs/json-aggregates#025/#055/#102): the
   // result is the json type with RETURNING JSON or a json-typed value
   let json = clauses.contains("J") || value.ty is Json
   let absent = clauses.has_prefix("A")
@@ -119,7 +119,7 @@ fn bind_json_agg(
 
 ///|
 /// JSON_ARRAYAGG / JSON_OBJECTAGG (...) OVER (...): a running array or
-/// object (captured: msduck json-aggregates#062, json3/json-aggregates).
+/// object (captured: captured-runs/json-aggregates#062, json3/json-aggregates).
 /// The window arguments are the value and, for JSON_OBJECTAGG, the key.
 fn bind_json_agg_window(
   env : Env,
@@ -147,7 +147,7 @@ fn bind_json_agg_window(
 ///|
 /// The aggregates of one GROUP BY scope: an unordered JSON aggregate sees
 /// the rows in the order of the scope's ordered aggregate (all orders of a
-/// scope agree, 8711; captured: msduck json-aggregates#072, where
+/// scope agree, 8711; captured: captured-runs/json-aggregates#072, where
 /// JSON_OBJECTAGG next to JSON_ARRAYAGG(n ORDER BY seq) lists keys by seq).
 fn scope_ordered_aggs(aggs : Array[@ir.AggCall]) -> Array[@ir.AggCall] {
   let order = match aggs.iter().find_first(a => !a.order.is_empty()) {

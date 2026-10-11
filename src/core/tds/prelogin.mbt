@@ -88,7 +88,7 @@ pub fn negotiate_encryption(client : Int?, tls~ : Bool) -> Int? {
 
 ///|
 /// Server PRELOGIN response payload: VERSION, ENCRYPTION, MARS (off). This
-/// matches the msduck/mssqlite vector that tedious accepts.
+/// matches the mssqlite vector that tedious accepts.
 pub fn encode_prelogin_response(
   version~ : (Int, Int, Int, Int),
   encryption~ : Int,

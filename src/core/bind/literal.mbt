@@ -44,7 +44,7 @@ fn decimal_literal(text : String) -> @ir.Expr raise @types.SqlError {
   let s = frac_part.length()
   let p = @cmp.maximum(1, int_digits + s)
   // captured: a literal with a decimal point and more than 38 digits is
-  // 1007 (msduck percentile-numeric-rounding-v2 #016, #042-#044:
+  // 1007 (captured-runs/percentile-numeric-rounding-v2 #016, #042-#044:
   // 1.00000000000000011102230246251565404236 fails, 38 digits pass)
   if p > 38 && text.contains(".") {
     raise err(
@@ -71,8 +71,8 @@ fn decimal_literal(text : String) -> @ir.Expr raise @types.SqlError {
 ///|
 /// A float literal's value and range class: 0 in range, 1 too small (a
 /// nonzero literal below the smallest normal double reads as 0, with
-/// warning 337 at parse time), 2 too large (error 168). Captured: msduck
-/// percentile-numeric-rounding-v2 (1e-308 and 5e-324 are 0 with 337,
+/// warning 337 at parse time), 2 too large (error 168). Captured: 
+/// captured-runs/percentile-numeric-rounding-v2 (1e-308 and 5e-324 are 0 with 337,
 /// 0e309 is 0, 1e309 is 168). None when the text is not a float literal.
 pub fn float_literal_class(text : String) -> (Double, Int)? {
   let mut mantissa_zero = true

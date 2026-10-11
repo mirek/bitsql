@@ -89,7 +89,7 @@ fn check_depth(depth : Int) -> Unit raise JsonError {
 ///|
 /// Scans one value starting at `pos` (no leading whitespace), validating it
 /// entirely. `depth` is the number of enclosing containers. Nesting is
-/// checked lazily like SQL Server (msduck isjson-depth, json3 probes): a
+/// checked lazily like SQL Server (captured-runs/isjson-depth, json3 probes): a
 /// container opened inside 129 containers fails at once, while a scalar or
 /// a member name inside 129 containers fails only once it is complete (so
 /// `x` or an unterminated string there is a 13609 instead).

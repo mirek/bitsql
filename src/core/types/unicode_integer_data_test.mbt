@@ -1,4 +1,4 @@
-// Generated from msduck reference/unicode-integer.json (SQL Server 2025):
+// Generated from captured-runs/unicode-integer (SQL Server 2025):
 // NVARCHAR(MAX) source as UTF-16 code units, then CAST outcome to
 // tinyint, smallint, int, bigint ("value" or "number/state").
 

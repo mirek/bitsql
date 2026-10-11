@@ -116,8 +116,8 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
   let base = match c.origin {
     // identity columns are not updateable: 0x10 without 0x08 (captured:
     // dml/merge-delete-insert-defaults)
-    // rowversion columns are not updateable either (captured: msduck
-    // gaps-rowversion_identity flags 0)
+    // rowversion columns are not updateable either (captured: 
+    // captured-gaps/gaps-rowversion_identity flags 0)
     BaseColumn(identity~) =>
       if identity {
         0x10
@@ -135,7 +135,7 @@ pub fn column_flags(c : @ir.ResultColumn) -> Int {
     None => false
   }
   // fCaseSen (0x02) is set for case-sensitive and binary collations
-  // (captured: msduck collation-wire flags 34/35).
+  // (captured: captured/collation-wire flags 34/35).
   // captured: xml columns always carry fCaseSen (xml/type flags 3/11/35)
   let case_sensitive = case_sensitive || c.ty is Xml
   base | (if c.nullable { 1 } else { 0 }) | (if case_sensitive { 2 } else { 0 })

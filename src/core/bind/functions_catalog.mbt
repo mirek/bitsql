@@ -97,7 +97,7 @@ fn bind_call_catalog(
 ///|
 /// APPLOCK_MODE/APPLOCK_TEST arguments: the first `checked` (principal,
 /// resource, and APPLOCK_TEST's mode) must be strings; a NULL literal or
-/// another type is 8116 at compile time (captured: msduck gaps-applock
+/// another type is 8116 at compile time (captured: captured-gaps/gaps-applock
 /// #058-#061). The owner argument may be NULL (= Transaction).
 fn applock_args(
   env : Env,

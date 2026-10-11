@@ -1,5 +1,5 @@
 // AT TIME ZONE evaluation (bound in bind/fn_timezone.mbt). Zone rules:
-// src/core/types/timezone.mbt. Captures: msduck at-time-zone*,
+// src/core/types/timezone.mbt. Captures: captured/at-time-zone*,
 // harness/corpus/timezone/.
 
 ///|

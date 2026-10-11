@@ -15,16 +15,15 @@ Faithfulness beats coverage: a false green is worse than an explicit
   what still pins the target suite to MSSQL.
 - Check `.claude/skills/*/SKILL.md` "bitsql findings" and
   `docs/design/fidelity-traps.md` for known traps in the area.
-- Look for prior art in sibling projects (`docs/reuse/README.md`): msduck's
-  `reference/*.json` may already contain the exact SQL Server output, and its
-  `docs/*.md` may describe the semantics.
+- Look for prior art: `harness/corpus/captured*/` may already contain the
+  exact SQL Server output, and `docs/reference/` may describe the semantics.
 
 ## 2. Establish ground truth first
 
 - Write the corpus case (`harness/corpus/...`, see skill `harness`) *before*
   the implementation, and capture expected output from real MSSQL
   (`npm run capture` in harness). Never hand-write expected output.
-- No docker or MSSQL available? You may implement from a msduck reference
+- No docker or MSSQL available? You may implement from an existing corpus
   capture or the t-sql/tds-protocol skills, but mark the case `unverified` and
   add a roadmap item to capture it.
 

@@ -234,8 +234,8 @@ fn scale_arg(
     10760,
     "Scale argument is not valid. Valid expressions for data type \{tname} scale argument are integer constants and integer constant expressions.",
   )
-  // any integer constant expression counts (captured: 7&3, msduck
-  // temporal-parts #134)
+  // any integer constant expression counts (captured: 7&3, 
+  // captured-runs/temporal-parts #134)
   let folded = match fold_int(x) {
     Some(p) => Some(p)
     None if x.ty.family() == FInteger =>

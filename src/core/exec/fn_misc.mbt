@@ -310,7 +310,7 @@ fn call_misc(
     "HASHBYTES" => {
       let alg = match v[0] {
         // trailing blanks are ignored (captured: 'MD5 ' hashes, ' MD5' is
-        // NULL; msduck hashbytes-checksum #016)
+        // NULL; captured-runs/hashbytes-checksum #016)
         String(s) => s.trim_end(chars=" ").to_owned().to_upper()
         _ => return Some(Null)
       }

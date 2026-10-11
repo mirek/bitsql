@@ -4,8 +4,8 @@
 
 ///|
 /// Text of a string argument (None for NULL).
-/// Dates and times convert under the session language (captured: msduck
-/// temporal-guid-format, CONCAT of a datetime under French is 'févr 28 …').
+/// Dates and times convert under the session language (captured: 
+/// captured-runs/temporal-guid-format, CONCAT of a datetime under French is 'févr 28 …').
 fn text(
   v : @types.Value,
   t : @types.SqlType,
@@ -75,7 +75,7 @@ fn collation_of(t : @types.SqlType) -> @types.Collation {
 /// REPLICATE).
 /// Concatenation cut to the result type: a piece that does not fit is cut
 /// by code units but never inside its own surrogate pair, while pairs formed
-/// across pieces may be split (captured: msduck concat-boundary, 3999 'a' +
+/// across pieces may be split (captured: captured-runs/concat-boundary, 3999 'a' +
 /// N'😀' keeps 3999 units, 3999 'a' + NCHAR(0xD83D) + NCHAR(0xDE00) keeps
 /// the high surrogate).
 fn cap_pieces(pieces : Array[String], t : @types.SqlType) -> String {
@@ -405,7 +405,7 @@ fn soundex_code(c : Int) -> Int {
 /// Letters for SOUNDEX, which reads its input as code page 1252: ASCII
 /// letters and the bytes 0xC0-0xFF except × and ÷ (captured: 'ébc' is
 /// É120, non-ASCII letters code like vowels; Š, Œ, Ÿ (0x8A, 0x8C, 0x9F)
-/// end the input: msduck soundex-difference #009).
+/// end the input: captured-runs/soundex-difference #009).
 fn is_soundex_letter(c : Int) -> Bool {
   (c >= 'A'.to_int() && c <= 'Z'.to_int()) ||
   (c >= 'a'.to_int() && c <= 'z'.to_int()) ||
@@ -443,7 +443,7 @@ fn soundex_with(
     }
     // upper-case H and W are skipped without separating equal codes, while
     // lower-case h and w separate like vowels (captured: 'BHB' is B000,
-    // 'Bhb' B100, Ashcraft A226; msduck soundex-difference #009)
+    // 'Bhb' B100, Ashcraft A226; captured-runs/soundex-difference #009)
     if !legacy && (c == 'H'.to_int() || c == 'W'.to_int()) {
       i += 1
       continue
@@ -526,7 +526,7 @@ fn coll_find(
   let window = needle.length() * 3 + 3
   // ignorable code units never take part in a match (captured: CHARINDEX
   // of N'ab' in N'a'+NCHAR(0xAD)+N'b' is 0, of N'b' after a surrogate pair
-  // 3, of a surrogate pair 0; msduck charindex-patindex #042-#049)
+  // 3, of a surrogate pair 0; captured-runs/charindex-patindex #042-#049)
   let ignored = (k : Int) => @types.collation_ignores(hay[k].to_int(), coll)
   if needle.iter().all(c => @types.collation_ignores(c.to_int(), coll)) {
     return None
@@ -586,7 +586,7 @@ fn quotename(s : String, q : String) -> String? {
   if s.length() > 128 {
     return None
   }
-  // captured (msduck quotename, probes): an empty delimiter means '[';
+  // captured (captured-runs/quotename, probes): an empty delimiter means '[';
   // a NUL delimiter returns the input unquoted (an empty input NULL);
   // otherwise an input containing NUL is NULL
   let first = if q.length() == 0 { 0x5B } else { q.code_unit_at(0).to_int() }
@@ -680,7 +680,7 @@ fn call_string(
         Some(s) =>
           String(
             match name {
-              // captured per collation version: msduck unicode-case
+              // captured per collation version: captured-runs/unicode-case
               "UPPER" | "LOWER" if args[0].ty.is_unicode() ||
                 collation_of(args[0].ty).utf8() =>
                 @types.case_map(s, name == "UPPER", collation_of(args[0].ty))
@@ -1030,7 +1030,7 @@ fn call_string(
     }
     "STRING_ESCAPE" => {
       // trailing blanks of the kind are ignored ('json  ', char(8)); a NULL
-      // kind is 8116 state 8 (msduck string-escape-format)
+      // kind is 8116 state 8 (captured-runs/string-escape-format)
       guard str(1) is Some(kind) else {
         raise @types.sql_error(
           8116,

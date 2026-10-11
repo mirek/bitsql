@@ -20,8 +20,8 @@ skills) are for orientation; captures are the authority.
 
 - **Corpus:** the captured traffic from one CI run of the target app (SQL batches
   and RPC calls with parameter types), plus hand-written cases for every fidelity
-  trap and lock pattern, plus cases imported from msduck's `reference/*.json`
-  captures.
+  trap and lock pattern, plus earlier imported SQL Server captures
+  (`harness/corpus/captured*`).
 - **Expected output is captured, not written:** `npm run capture` runs a corpus
   case against real MSSQL and stores the result next to it. Hand-edited
   expectations are not allowed.

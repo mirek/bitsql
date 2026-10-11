@@ -1,7 +1,7 @@
 // FOREIGN KEY enforcement at statement level: referential actions (ON
 // DELETE / ON UPDATE CASCADE, SET NULL, SET DEFAULT), NO ACTION checks
 // against the statement's final state, and their messages. Rules from
-// msduck gaps-constraints captures (referential-actions,
+// captured-gaps/gaps-constraints captures (referential-actions,
 // update-shapes-and-computed-columns, cascade-paths, definition-errors):
 //
 // - an action fires for every referenced row whose key is deleted or

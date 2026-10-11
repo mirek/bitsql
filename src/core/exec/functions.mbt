@@ -270,7 +270,7 @@ fn call_values(
             return String("")
           }
           // Non-max results are truncated to the type's length (8000 bytes;
-          // captured: msduck replicate DATALENGTH 8000). Never build huge
+          // captured: captured/replicate DATALENGTH 8000). Never build huge
           // strings: String::repeat aborts the process on overflow.
           let cap = match e.ty {
             VarChar(Some(k), _) | NVarChar(Some(k), _) => k
@@ -424,8 +424,8 @@ fn call_values(
     JsonValue if v.length() == 3 => json_value_returning(ctx, v, e.ty)
     JsonValue =>
       match (json_text_arg(v[0]), v[1]) {
-        // the NULL path is checked first (captured: msduck
-        // unicode-json-storage#459)
+        // the NULL path is checked first (captured: 
+        // captured-runs/unicode-json-storage#459)
         (_, Null) =>
           raise @types.sql_error(
             8116,

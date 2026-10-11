@@ -29,7 +29,7 @@ fn Parser::stmt_list(
         raise syntax_error(
           319,
           // the keyword prints lower-case whatever its spelling (captured:
-          // msduck gaps-merge#008, tail/table-hints)
+          // captured-gaps/gaps-merge#008, tail/table-hints)
           "Incorrect syntax near the keyword 'with'. If this statement is a common table expression, an xmlnamespaces clause or a change tracking context clause, the previous statement must be terminated with a semicolon.",
           t.span,
         )
@@ -251,7 +251,7 @@ fn Parser::statement_kind(
         raise self.error()
       }
       self.pos += 1
-      // captured (msduck gaps-transactions #095/#096): only a string
+      // captured (captured-gaps/gaps-transactions #095/#096): only a string
       // literal or a variable; `5` and `'..' + ''` are 102
       if !(self.peek().kind is (Str | NStr | Variable)) {
         raise self.error()
@@ -275,7 +275,7 @@ fn Parser::statement_kind(
       self.pos += 1
       self.expect_punct("(")
       // RAISERROR arguments are constants or variables only: no NULL, no
-      // signs, no expressions (msduck raiserror-arguments captures: NULL is
+      // signs, no expressions (captured/raiserror-arguments captures: NULL is
       // 156, '16' as severity, 1+2, (1), +1, -@x are 102).
       let args = [self.raiserror_arg(true, false)]
       while self.eat_punct(",") {
@@ -338,7 +338,7 @@ fn Parser::statement_kind(
           match name {
             Some(_) => Save(name~)
             // captured: "SAVE TRANSACTION" alone is 102 near 'TRANSACTION'
-            // (msduck-runs/savepoint #042), not 156
+            // (captured-runs/savepoint #042), not 156
             None if self.peek().kind is Eof => {
               let prev = self.toks[self.pos - 1]
               raise syntax_error(
@@ -417,7 +417,7 @@ fn Parser::can_start_expr(self : Parser) -> Bool {
 fn Parser::tran_name(self : Parser) -> @ast.Expr? raise @ast.SyntaxError {
   let t = self.peek()
   // captured: transaction and savepoint names longer than 32 characters
-  // are 103 state 2 (msduck-runs/savepoint length run)
+  // are 103 state 2 (captured-runs/savepoint length run)
   if t.kind is (Word | QuotedIdent) && t.text.length() > 32 {
     let name = tok_ident(t).name
     if name.length() > 32 {
@@ -650,7 +650,7 @@ fn Parser::begin_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
   if self.eat_kw("TRY") {
     let body = self.stmt_list(at_end)
     // An empty TRY block is error 102 near the TRY of `END TRY`
-    // (msduck try-completion-tokens capture).
+    // (captured/try-completion-tokens capture).
     if body.length() == 0 && self.is_kw("END") {
       self.pos += 1
       raise self.error()
@@ -1111,7 +1111,7 @@ fn Parser::create_or_alter(
         let options = self.module_options()
         ignore(self.eat_kw("AS"))
         // captured: BEGIN after an inline function's AS is 102 state 31
-        // (msduck gaps-functions #108)
+        // (captured-gaps/gaps-functions #108)
         if self.is_kw("BEGIN") {
           raise module_body_error(self.peek())
         }
@@ -1342,7 +1342,7 @@ fn Parser::create_or_alter(
 /// batch.
 fn Parser::func_block(self : Parser) -> Array[@ast.Stmt] raise @ast.SyntaxError {
   // captured: a scalar function body without BEGIN (`AS RETURN @x`) is
-  // 102 state 31 near 'RETURN' (msduck gaps-functions #109)
+  // 102 state 31 near 'RETURN' (captured-gaps/gaps-functions #109)
   if self.is_kw("RETURN") {
     raise module_body_error(self.peek())
   }

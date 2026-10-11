@@ -1,6 +1,6 @@
 ///|
 /// DBCC statements complete with CurCmd 230. Only USEROPTIONS is emulated
-/// (captured: msduck gaps-transactions #004–#026, corpus stmts/tx-dbcc-*):
+/// (captured: captured-gaps/gaps-transactions #004–#026, corpus stmts/tx-dbcc-*):
 /// a two-column nvarchar result of the options that are ON, then INFO 2528
 /// and a second DONE 230 unless WITH NO_INFOMSGS. Other known commands are
 /// Emulator errors; an unknown name is 2526 state 3.

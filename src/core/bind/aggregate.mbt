@@ -1,7 +1,7 @@
 ///|
 /// Aggregate and window-function binding: result types (captured in
 /// harness/corpus/query/aggregate-basics, window-functions, string-agg,
-/// msduck decimal-avg).
+/// captured/decimal-avg).
 
 ///|
 fn invalid_operand(ty : @types.SqlType, op : String) -> @types.SqlError {
@@ -54,7 +54,7 @@ fn agg_result_type(
       }
     (StringAgg, Some(t)) =>
       match t {
-        // captured: 8116 (variant/functions.sql, msduck string-agg#022)
+        // captured: 8116 (variant/functions.sql, captured-runs/string-agg#022)
         Variant | Xml | Json | Binary(_) | VarBinary(_) | RowVersion =>
           raise bad_arg_type(t, 1, "string_agg")
         VarChar(None, _) | NVarChar(None, _) => t
@@ -324,7 +324,7 @@ fn bind_window_call(
           severity=15,
         )
       }
-      // captured (msduck ntile-types, ntile-null): only tinyint..bigint
+      // captured (captured-runs/ntile-types, ntile-null): only tinyint..bigint
       // are accepted, and a constant NULL or count below 1 is rejected at
       // compile time (also over no rows): 4116, severity 15
       let ok = x.ty is (TinyInt | SmallInt | Int | BigInt) &&
@@ -402,7 +402,7 @@ fn bind_window_call(
             severity=15,
           )
         None =>
-          // captured: msduck error-function-metadata#005
+          // captured: captured/error-function-metadata#005
           raise err(
             4113,
             "The function '\{name}' is not a valid windowing function, and cannot be used with the OVER clause.",

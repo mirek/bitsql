@@ -382,7 +382,7 @@ fn Parser::with_values(self : Parser) -> Bool {
 ///|
 /// A column-level PRIMARY KEY / UNIQUE with a column list
 /// (`b int CONSTRAINT pk PRIMARY KEY (a, b)`) is a table-level constraint:
-/// it goes to `table_constraints` (captured: msduck gaps-keys
+/// it goes to `table_constraints` (captured: captured-gaps/gaps-keys
 /// column-level-list).
 fn Parser::column_def(
   self : Parser,
@@ -401,7 +401,7 @@ fn Parser::column_def(
   } else if name.name.to_lower() == "timestamp" &&
     (self.is_punct(",") || self.is_punct(")")) {
     // captured: a column named timestamp without a type is a timestamp
-    // column (msduck gaps-rowversion_identity #036)
+    // column (captured-gaps/gaps-rowversion_identity #036)
     type_ = Some(@ast.TypeName::{
       schema: None,
       name: "timestamp",
@@ -776,7 +776,7 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
         Some(self.object_name())
       } else {
         if ix.parts.length() < 2 {
-          // captured: msduck-runs drop-index #020
+          // captured: captured-runs drop-index #020
           raise @ast.SyntaxError(
             number=159,
             severity=15,
@@ -788,9 +788,9 @@ fn Parser::drop_stmt(self : Parser) -> @ast.StmtKind raise @ast.SyntaxError {
         None
       }
       // drop options (MAXDOP, MOVE TO ...) apply to clustered indexes only
-      // (captured: msduck gaps-keys clustered-conflicts-8,
+      // (captured: captured-gaps/gaps-keys clustered-conflicts-8,
       // constraints/index-options 3748); ONLINE = OFF is accepted
-      // (msduck-runs drop-index #023)
+      // (captured-runs drop-index #023)
       let options = table is Some(_) &&
         self
         .with_options()

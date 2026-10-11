@@ -5,7 +5,7 @@ data. bitsql reproduces them with a generated culture table
 (`src/core/exec/culture_data.mbt`, written by `harness/gen/cultures.mjs`
 from the oracle's own FORMAT output; regenerate with
 `node gen/cultures.mjs && moon fmt`). Rules below come from
-`msduck-runs/format`, `msduck-runs/parse-try-parse`,
+`captured-runs/format`, `captured-runs/parse-try-parse`,
 `functions2/format-*`, `functions2/parse-cultures` and probes on SQL
 Server 17.0.5005 (Linux).
 

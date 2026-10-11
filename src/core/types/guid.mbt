@@ -47,7 +47,7 @@ fn parse_canonical(s : String, at : Int) -> Bytes? {
 
 ///|
 /// Parse character text as SQL Server converts it to uniqueidentifier
-/// (msduck docs/guid-conversion-order.md, reference/guid-character-conversion.json):
+/// (captured-runs/guid-conversion-order, guid-character-conversion):
 /// a canonical 36-character `8-4-4-4-12` hex prefix converts and anything
 /// after it is ignored; a `{`-braced GUID converts if the closing `}`
 /// follows, again ignoring the rest. Case-insensitive. Leading spaces,
@@ -80,7 +80,7 @@ pub fn format_guid(bytes : Bytes) -> String {
 ///|
 /// Storage byte indexes in SQL Server's comparison order: bytes 10..15
 /// first, then 8..9, 6..7, 4..5 and 0..3, each group in storage order
-/// (captured ORDER BY results: msduck reference/guid-conversion-order.json).
+/// (captured ORDER BY results: captured-runs/guid-conversion-order).
 let guid_compare_order : FixedArray[Int] = [
   10, 11, 12, 13, 14, 15, 8, 9, 6, 7, 4, 5, 0, 1, 2, 3,
 ]

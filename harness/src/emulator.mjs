@@ -1,6 +1,5 @@
-// The emulator under test. Host CLI contract (same as msduck
-// tests/support/client.mjs): `<bin> --listen 127.0.0.1:0` prints
-// `listening on 127.0.0.1:<port>` on stderr once it accepts connections.
+// The emulator under test. Host CLI contract: `<bin> --listen 127.0.0.1:0`
+// prints `listening on 127.0.0.1:<port>` on stderr once it accepts connections.
 //
 //   BITSQL_ADDR=host:port   connect to an already running server (no spawn)
 //   BITSQL_BIN=path         binary to spawn

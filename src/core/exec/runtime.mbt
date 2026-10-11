@@ -19,8 +19,8 @@ pub(all) struct Runtime {
   mut xact_state : Int
   /// The current statement reads data or metadata (FROM, IDENT_CURRENT,
   /// OBJECT_ID): in autocommit its own transaction is active, so
-  /// XACT_STATE() is 1 while @@TRANCOUNT is 0 (captured: msduck
-  /// identity-insert-*, session-reset, gaps-merge).
+  /// XACT_STATE() is 1 while @@TRANCOUNT is 0 (captured: 
+  /// captured-runs/identity-insert-*, session-reset, gaps-merge).
   mut stmt_reads : Bool
   /// The current statement modifies data (INSERT/UPDATE/DELETE/MERGE,
   /// SELECT INTO): @@TRANCOUNT reads one more than the open transactions,

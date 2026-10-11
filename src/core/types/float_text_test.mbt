@@ -10,7 +10,7 @@ fn bits_to_double(is_real : Bool, hex : String) -> Double {
 
 ///|
 test "float style 0 matches the captured SQL Server grid" {
-  // msduck reference/float-default-grid.json
+  // captured-runs/float-default-grid
   let failures = []
   for row in float_grid {
     let (is_real, hex, expected) = row

@@ -271,7 +271,7 @@ fn Session::exec_help_proc(
 ) -> Bool raise {
   guard help_proc_spec(name) is Some((names, nocount)) else { return false }
   // sp_pkeys / sp_fkeys check their arguments like any procedure (201,
-  // 8145, 8144; captured: msduck gaps-catalog #032, #108, #109)
+  // 8145, 8144; captured: captured-gaps/gaps-catalog #032, #108, #109)
   let a = if name is ("sp_pkeys" | "sp_fkeys") {
     let params = sysproc_params(
       names.map(n => (n, !(name == "sp_pkeys" && n == "@table_name"))),
@@ -1853,8 +1853,8 @@ fn Session::sp_fkeys(
     None => None
   }
   // without @pktable_name SQL Server reports only CASCADE (0) and NO
-  // ACTION (1): SET NULL / SET DEFAULT show as 1 (captured: msduck
-  // gaps-catalog #111, corpus tail/catalog-sp-keys)
+  // ACTION (1): SET NULL / SET DEFAULT show as 1 (captured: 
+  // captured-gaps/gaps-catalog #111, corpus tail/catalog-sp-keys)
   let rule = (r : @store.RefAction) => {
     if pk_name is None && r != Cascade {
       1

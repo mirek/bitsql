@@ -1,5 +1,5 @@
-// CHECKSUM / BINARY_CHECKSUM per-value hashes (captured: msduck
-// hashbytes-checksum #038-#084, harness/corpus/conversion/checksum):
+// CHECKSUM / BINARY_CHECKSUM per-value hashes (captured: 
+// captured-runs/hashbytes-checksum #038-#084, harness/corpus/conversion/checksum):
 //
 // - typed NULL 0x7FFFFFFF; bit, tinyint, int their value; smallint
 //   zero-extended (-1 is 65535); bigint and money high ^ low word;
@@ -20,7 +20,7 @@
 //   scale 38, divided by 10 while it has more than 38 digits; 0.01 is
 //   10^36, 1 and 10 are 10^37), folded with rotl4 over its 32-bit words
 //   from the lowest up to the highest nonzero one (derived from oracle
-//   probes, 2026-10-04; msduck hashbytes-checksum #040/#064);
+//   probes, 2026-10-04; captured-runs/hashbytes-checksum #040/#064);
 //
 // - Unicode text under the version-0 Windows tables (nvarchar under
 //   SQL_Latin1_General_CP1_* and Latin1_General_*, varchar under

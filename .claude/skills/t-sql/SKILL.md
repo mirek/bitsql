@@ -3,10 +3,10 @@ name: t-sql
 description: "Comprehensive T-SQL language reference for implementing a T-SQL engine. Covers data types, type conversion, operators, expressions, control flow, queries (SELECT, JOIN, CTE, window functions), DML statements (INSERT, UPDATE, DELETE, MERGE), DDL statements (CREATE/ALTER/DROP TABLE, INDEX, VIEW, PROCEDURE, FUNCTION, TRIGGER), built-in functions (aggregate, string, math, date/time, conversion, JSON), transactions, error handling, and session settings. Use when implementing T-SQL parsing, evaluation, query processing, or SQL Server compatibility."
 ---
 
-> **Provenance.** Reference content ported from the sibling projects msduck and
-> mssqlite (same author, public domain). Notes that mention `packages/*`,
-> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
-> are field notes verified against SQL Server there, not claims about bitsql.
+> **Provenance.** Reference content ported from earlier sibling projects (same
+> author, public domain). Notes that mention `packages/*`, `mssqlite` or SQLite
+> describe *those* implementations. They are field notes verified against SQL
+> Server there, not claims about bitsql.
 > Real SQL Server captures remain the authority (docs/design/verification.md).
 
 ## bitsql implementation
@@ -117,7 +117,7 @@ mention the correction here.
   sql_variant, text, image, timestamp and unknown types (9500); method
   names are case-sensitive (227); `name()` does not exist (2395); XQuery
   sum() of nothing is `0.0E0`.
-- 2026-10-03 (RAISERROR, msduck raiserror-*): argument types must suit
+- 2026-10-03 (RAISERROR, captured/raiserror-*): argument types must suit
   the specification: %d/%i/%u/%x/%o (also with `l`) take tinyint, smallint
   or int; `h` takes tinyint/smallint only; `I64` takes bigint only; %s/%ls
   take character types; `*` takes a non-NULL integer. A mismatch is 2786,
@@ -129,7 +129,7 @@ mention the correction here.
   above 50000 gives 18054 and @@ERROR = the id. Severity > 18 without WITH
   LOG is 2754. RETURN with a value outside a procedure (also sp_executesql
   text) is compile error 178. `-@x` as an argument is 102 near '@x'.
-- 2026-10-03 (OUTPUT clause, corpus `output/`, msduck `output-*`): the
+- 2026-10-03 (OUTPUT clause, corpus `output/`, `captured/output-*`): the
   COLMETADATA of an OUTPUT without INTO is sent before the statement runs, so
   a run-time error (also in WHERE, SET, CHECK, a duplicate key or the OUTPUT
   expression itself) follows an empty or partial result set. UPDATE/DELETE/
@@ -221,7 +221,7 @@ mention the correction here.
   11728 (exhausted) aborts the batch and names the sequence unqualified;
   11703/11702/2714 quote the name as written (2714 state 8). DROP SEQUENCE is
   CurCmd 516. Repeated references to one sequence in a row share one value.
-- 2026-10-03 (collations, corpus `collation/`, msduck bin2-*/collation-*):
+- 2026-10-03 (collations, corpus `collation/`, captured/bin2-*/collation-*):
   two different *implicit* collations meeting in `+`, CONCAT, CASE/IIF/
   COALESCE/CHOOSE or UNION ALL give a value with **no collation**. Using it
   in a comparison/LIKE/IN/string function/MIN-MAX is **4191** state 9
@@ -243,7 +243,7 @@ mention the correction here.
   next to a decimal are typed decimal(digits,0)" was only implemented for
   CHOOSE/GREATEST; it now covers arithmetic (`1.5*2` numeric(4,1)) and
   CASE/IIF/COALESCE branches too, and the type is *numeric*.
-- 2026-10-03 (AT TIME ZONE, corpus `timezone/`, msduck `at-time-zone*`; full
+- 2026-10-03 (AT TIME ZONE, corpus `timezone/`, `captured/at-time-zone*`; full
   rules in docs/reference/at-time-zone.md): input must be datetime,
   smalldatetime, datetime2 or datetimeoffset (else 8116 arg 1; the zone must
   be a string, else 8116 arg 2); result datetimeoffset with the input scale,
@@ -289,8 +289,8 @@ mention the correction here.
   nested container or a step of the wrong kind validates nothing further).
   A root scalar document is 13609 even for `$`. 13609/13607 messages read
   "Unexpected character 'c' is found at position N." (0-based UTF-16 index,
-  `'.'` at end of input). Implemented in `src/core/json`; evidence: msduck
-  `reference/json-extraction-boundaries.json` → `src/core/json/captured_test.mbt`.
+  `'.'` at end of input). Implemented in `src/core/json`; evidence:
+  `captured-runs/json-extraction-boundaries` → `src/core/json/captured_test.mbt`.
 - 2026-10-03 (parser): reserved words follow SQL Server's official list, so
   `THROW`, `OUTPUT`, `USING`, `OFFSET`, `TRY`, `CATCH` are *not* reserved.
   Consequences that match SQL Server: `SELECT 1 THROW 50000, 'x', 1` takes
@@ -298,7 +298,7 @@ mention the correction here.
   rolls back to a savepoint named THROW; MERGE's target alias must special-case
   `USING`. This corrects the inherited mssqlite note that treats USING/OUTPUT
   as reserved.
-- 2026-10-03 (parser): msduck captures confirm message shapes: errors near a
+- 2026-10-03 (parser): captures confirm message shapes: errors near a
   reserved keyword are 156 "Incorrect syntax near the keyword 'x'." using the
   token as written (e.g. 'values', 'ORDER'); others are 102. A CTE after an
   unterminated statement is 319 with the long "previous statement must be
@@ -317,7 +317,7 @@ mention the correction here.
   consumed). Bare `TOP n` takes only a numeric literal; UPDATE/DELETE/INSERT
   require `TOP (expr)`. EXEC arguments are restricted to literals, variables,
   DEFAULT, NULL and bare words (passed as strings): `EXEC p 1 + 1` is 102.
-- 2026-10-03 (src/core/types, from msduck captures): **string → integer**
+- 2026-10-03 (src/core/types, from captured/ cases): **string → integer**
   trims only ASCII spaces (tab, CR/LF, NBSP, NUL, fullwidth digits fail);
   a sign may be followed by spaces (`'+ 7'` = 7); `''`, `'   '`, `'+'`, `'-'`
   are 0. Failures: tinyint/smallint/int → 245 state 1 "Conversion failed
@@ -377,7 +377,7 @@ mention the correction here.
 - 2026-10-03 (query language, `harness/corpus/query/*`): aggregate result
   types — COUNT int, COUNT_BIG bigint, SUM/AVG of tiny/small/int → int,
   bigint → bigint, decimal(p,s) → SUM decimal(38,s) / AVG decimal(38,max(s,6))
-  (quotient truncated, msduck decimal-avg), money → money, real/float → float;
+  (quotient truncated, captured/decimal-avg), money → money, real/float → float;
   MIN/MAX keep the type; STRING_AGG: varchar(n) → varchar(8000), nvarchar(n)
   and non-strings → nvarchar(4000), (n)varchar(max) stays max. All aggregates
   report nullable (flags 1, origin "aggregate"); GROUPING() is NOT NULL
@@ -469,7 +469,7 @@ mention the correction here.
   Unverified: DIFFERENCE beyond the captured pairs, case mapping beyond
   Latin/Greek/Cyrillic, CHECKSUM of NULL columns, GREATEST nullability rule
   (non-null when every argument is non-null and converts without failure).
-- 2026-10-04 (procedures, corpus `proc/*`, msduck gaps-procedures,
+- 2026-10-04 (procedures, corpus `proc/*`, captured-gaps/gaps-procedures,
   gaps-rpc-procedures): a procedure (or EXEC string) without RETURN <value>
   returns 10 - the highest severity of its *own* statements' errors, caught
   or not (11 → -1 … 16 → -6, 2627 → -4, 18 → -8; max, not first or last;
@@ -502,7 +502,7 @@ mention the correction here.
   argument-error order for mixed problems, ERROR_PROCEDURE() of 2812 inside
   a procedure, sp_executesql 8178 status rule (1, or 8178 when an argument
   named no parameter: two captures).
-- 2026-10-04 (savepoints, msduck-runs `savepoint`): savepoints are a stack;
+- 2026-10-04 (savepoints, captured-runs `savepoint`): savepoints are a stack;
   ROLLBACK TRAN name matches the innermost savepoint under the database
   collation (CI: 'casename' finds CaseName, trailing spaces ignored, accents
   significant), removes it and later ones, else the outermost BEGIN TRAN
@@ -580,7 +580,7 @@ mention the correction here.
   returns the first value with i/n >= p in the key's type (NOT NULL for a NOT
   NULL key); errors 8726/8727/10751-10754/10758/402/5308/5309. The
   percentile may be any column-free expression (variables, RAND(),
-  `(SELECT .5)`), evaluated once per call even over no rows (msduck-runs
+  `(SELECT .5)`), evaluated once per call even over no rows (captured-runs
   percentile-* captures, 2026-10-03 import: 580 of 664 pass, the rest are
   literal/float-text edge cases). SQL Server has
   no RANGE offsets: 4194 is faithful; frame offsets are unsigned int literals
@@ -621,7 +621,7 @@ mention the correction here.
   the offset, time wraps, result precision = max(date, origin), messages
   spell "Date_Bucket" (155 is a parse error).
 
-- 2026-10-04 (foreign keys, msduck gaps-constraints, corpus
+- 2026-10-04 (foreign keys, captured-gaps/gaps-constraints, corpus
   `constraints/`): referential actions fire for every referenced row whose
   key a DELETE removes or an UPDATE changes, even when the value exists
   again afterwards (a CASE swap of keys 2 and 3 sets ON UPDATE SET NULL
@@ -666,7 +666,7 @@ mention the correction here.
   1759, non-deterministic PERSISTED 4936. Messages print object names as
   written (3726, 4712, 1776, 1902, 1913, 8101, 8106), 3733 for a constraint
   of another table, 11415 for NOCHECK of a key/default.
-- 2026-10-04 (indexes, msduck gaps-keys, corpus `constraints/`): filtered
+- 2026-10-04 (indexes, captured-gaps/gaps-keys, corpus `constraints/`): filtered
   UNIQUE indexes hold only rows satisfying the filter (AND of column
   comparisons with constants and IS [NOT] NULL are emulated); IGNORE_DUP_KEY
   skips duplicate INSERT rows with INFO 3604 (UPDATE still 2601); options
@@ -677,7 +677,7 @@ mention the correction here.
   1944 (clustered > 900). DROP INDEX … WITH (options) on a nonclustered
   index is 3748 and ends the batch. ALTER COLUMN may widen a bounded
   varchar/nvarchar/varbinary under its indexes and keys.
-- 2026-10-04 (IDENTITY_INSERT, msduck identity-insert-*): without a column
+- 2026-10-04 (IDENTITY_INSERT, captured-runs/identity-insert-*): without a column
   list the identity column is never a target: a value for it is 8101
   (compile time, name as written) even while ON. 544 (OFF) and 545 (ON,
   identity omitted, also DEFAULT VALUES) are raised when the statement
@@ -690,7 +690,7 @@ mention the correction here.
   of 16. SET IDENTITY_INSERT inside a procedure, EXEC(@sql) or an
   sp_executesql RPC reverts when it ends, and SCOPE_IDENTITY() of the
   caller survives the call. A missing table is 1088 state 11.
-- 2026-10-04 (XACT_STATE, msduck identity-insert-*, session-reset,
+- 2026-10-04 (XACT_STATE, captured-runs/identity-insert-*, session-reset,
   gaps-merge): in autocommit, XACT_STATE() is 1 (with @@TRANCOUNT 0) when
   the same statement reads data or metadata — a FROM clause,
   IDENT_CURRENT, OBJECT_ID — and 0 otherwise. Unverified beyond those
@@ -698,7 +698,7 @@ mention the correction here.
 - 2026-10-04: SESSION_CONTEXT keys are set case-sensitively (N'LOCKED' is a
   key distinct from a read-only N'locked') but read case-insensitively
   (SESSION_CONTEXT(N'Tenant') finds 'tenant'); bitsql prefers the exact
-  spelling (msduck session-property-context#068, gaps-computed#071).
+  spelling (captured-runs/session-property-context#068, gaps-computed#071).
 - 2026-10-04 (functions round 2, corpus `functions2/`, docs/reference/
   format-parse.md): FORMAT and PARSE run .NET Framework culture data;
   bitsql reads it back from the oracle (`harness/gen/cultures.mjs` →
@@ -714,7 +714,7 @@ mention the correction here.
   (`'a'0` → `a0`); a NULL format string means `G`; decimal `G` keeps its
   scale (`42.50`). Correction of the 2026-10-03 note: negative en-US
   currency is `($1.50)` (no longer unverified).
-- 2026-10-04 (CONCAT, GREATEST/LEAST; msduck concat-legacy-family,
+- 2026-10-04 (CONCAT, GREATEST/LEAST; captured-runs/concat-legacy-family,
   concat-text-conversion, greatest-least): CONCAT/CONCAT_WS convert to
   nvarchar only when an argument (separator included) is nchar/nvarchar/
   ntext — xml and sql_variant do not count — and report the first
@@ -725,13 +725,13 @@ mention the correction here.
   spelling, max types as 8000 bytes + 8152 state 10, NOT NULL only for
   digit-preserving conversions); this replaces the 2026-10-03
   "unverified" GREATEST nullability note.
-- 2026-10-04 (ORDER BY, msduck order-token*): constant keys leave the
+- 2026-10-04 (ORDER BY, captured-runs/order-token*): constant keys leave the
   ORDER token and the sort; hidden constant keys are 408, a bare variable
   1008 for the whole batch, a name matching two output columns 209, `-1`
   is a position (108 class 16). Window functions emit rows sorted by
   PARTITION BY then ORDER BY (a query without ORDER BY shows it); ties
   and PARTITION-only aggregates come out in plan order (not modelled).
-- 2026-10-04 (literals and conversions, msduck percentile-*): a nonzero
+- 2026-10-04 (literals and conversions, captured-runs/percentile-*): a nonzero
   float literal below 2.2250738585072014e-308 reads as 0 with INFO 337
   (class 0) at parse time, before anything in the batch runs and also in
   dead branches; above the double range it is 168 (class 15) and nothing
@@ -740,7 +740,7 @@ mention the correction here.
   allows only trailing spaces; '1e309' is 8115 (overflow), not 8114.
   Integers and decimals accept only spaces.
 - 2026-10-04 (window and aggregate functions, functions2/offset-window,
-  msduck statistical-*): IGNORE NULLS works on LAG/LEAD/FIRST_VALUE/
+  captured-runs/statistical-*): IGNORE NULLS works on LAG/LEAD/FIRST_VALUE/
   LAST_VALUE; for LAG/LEAD it moves from the offset row further away to
   the first non-NULL value and returns NULL (not the default) when none
   exists. A NULL offset gives NULL, a negative one is 8730. STDEV/VAR are
@@ -749,7 +749,7 @@ mention the correction here.
   SUM/AVG overflow is 8115 even if later values would cancel it.
   Aggregate arity messages use the upper-case name ("The SUM function
   requires 1 argument(s)."); DISTINCT with OVER is 10759 class 15.
-- 2026-10-04 (SWITCHOFFSET/TODATETIMEOFFSET, msduck offset-functions):
+- 2026-10-04 (SWITCHOFFSET/TODATETIMEOFFSET, captured-runs/offset-functions):
   zone text is not trimmed (' +01:30 ' is 9812); numeric zones convert
   like CAST(x AS int) (decimal truncates, money rounds); 9812 states 0/2
   for text, 1/3 for numbers, 9813 states 0/2 for range overflow.
@@ -792,10 +792,10 @@ mention the correction here.
   varchar(min(8n, 8000)) and LEFT/RIGHT/SUBSTRING(…, k) varchar(min(8k, n)),
   `_SC` LEN/LEFT/RIGHT/SUBSTRING/REVERSE count a surrogate pair once.
   UPPER/LOWER map units by table version (v0: 1326 units, v100: 1764;
-  msduck unicode-case, `scripts/gen-case-map.mbtx`).
+  captured-runs/unicode-case, `scripts/gen-case-map.mbtx`).
 
 
-- 2026-10-04 (cursors, msduck-runs `cursor`, corpus `stmts/cursor-*`,
+- 2026-10-04 (cursors, captured-runs `cursor`, corpus `stmts/cursor-*`,
   rules in docs/reference/completions.md "Cursors"): the created type
   follows implicit conversions visible in sys.dm_exec_cursors
   ("TSQL | Dynamic | Optimistic | Global (0)"): STATIC/INSENSITIVE and any
@@ -819,7 +819,7 @@ mention the correction here.
   fixed pair per conflict (not source order); 1049 is line 0. Correction:
   the 2026-10-03 roadmap note that DYNAMIC/KEYSET/FOR UPDATE must raise
   Emulator errors is superseded.
-- 2026-10-04 (MERGE, msduck-runs merge-top-percent, gaps-merge, corpus
+- 2026-10-04 (MERGE, captured-runs merge-top-percent, gaps-merge, corpus
   `stmts/merge-hints`): MERGE TOP (p) PERCENT keeps ceil(n*p/100) action
   rows; outside 0..100 is 1031, NULL 1014 (class 15, batch ends with DONE
   253, also for variables); TOP (NULL) without PERCENT is 1060. Unknown DML
@@ -831,7 +831,7 @@ mention the correction here.
   target row (two DELETEs delete once without error) after streaming the
   earlier OUTPUT rows, ends the batch, rollback ENVCHANGE after the ERROR.
   OUTPUT source columns are nullable when WHEN NOT MATCHED BY SOURCE exists.
-- 2026-10-04 (triggers, msduck gaps-triggers, corpus
+- 2026-10-04 (triggers, captured-gaps/gaps-triggers, corpus
   `stmts/trigger-trancount`): inside INSERT/UPDATE/DELETE/MERGE, SELECT INTO
   and OUTPUT, @@TRANCOUNT reads max(@@TRANCOUNT, 1) + 1; inside a trigger it
   is 1 (XACT_STATE() 1). A trigger starts with @@ROWCOUNT = the firing
@@ -845,7 +845,7 @@ mention the correction here.
   triggers. Definition errors: 2714 state 2, 111 state 6, 2103, 2110, 2111,
   1034, 8197 state 6 (4 for a missing object). Standalone ENABLE/DISABLE
   TRIGGER sends no completion; 1088 state 21 (table) / 119 (trigger).
-- 2026-10-04 (application locks, msduck gaps-applock, corpus
+- 2026-10-04 (application locks, captured-gaps/gaps-applock, corpus
   `stmts/applock-validation`; token paths in `session/applock.mbt`):
   invalid or NULL @LockMode/@LockOwner is INFO 15625 ('(null)' for NULL) at
   lines 26/39 (sp_releaseapplock 20), then 246, 193, -999; values are
@@ -857,7 +857,7 @@ mention the correction here.
   combine: S+IX = SharedIntentExclusive, U+IX = UpdateIntentExclusive, X
   wins. APPLOCK_MODE/APPLOCK_TEST raise 1230/3, 1202, 1225/1-3, 1226, 3918/2
   at run time, 8116 at compile time for NULL literals or non-strings.
-- 2026-10-04 (temp tables, msduck gaps-temp_tables, corpus `stmts/temp-*`):
+- 2026-10-04 (temp tables, captured-gaps/gaps-temp_tables, corpus `stmts/temp-*`):
   `db..#t` / `db.schema.#t` resolve to tempdb for any database name with
   INFO 2701 state 99 (database as written, line of the reference) once per
   reference at batch compile and again before a statement whose temp table
@@ -868,7 +868,7 @@ mention the correction here.
   survive. tempdb catalog views list temp tables padded with `_` to 128
   characters plus 12 hex digits. Table variable DECLAREs are compile-time
   (loops keep rows, skipped branches still declare). 1087 in FROM is state 2.
-- 2026-10-04 (WAITFOR, DBCC, msduck gaps-transactions, corpus
+- 2026-10-04 (WAITFOR, DBCC, captured-gaps/gaps-transactions, corpus
   `stmts/tx-*`): the WAITFOR argument is a string literal or variable only
   (else 102); literals are checked at compile time against
   `h:m[:s[.fff|:fff]]` with optional upper-case ` AM`/` PM` (148 for the
@@ -879,7 +879,7 @@ mention the correction here.
   Option`, nvarchar(46) `Value` (flags 1), fixed row order (textsize,
   language, dateformat, datefirst, lock_timeout, ON flags, isolation level),
   CurCmd 230 + INFO 2528; errors 2532, 2583/3, 2526/3, 195/4.
-- 2026-10-04 (rowversion and identity, msduck gaps-rowversion_identity,
+- 2026-10-04 (rowversion and identity, captured-gaps/gaps-rowversion_identity,
   corpus `stmts/rowversion-identity-rules`): `timestamp` alone declares a
   timestamp column named timestamp; a second one is 2738 state 2, a default
   1755 + 1750; INSERT without a column list includes it and accepts only
@@ -1110,7 +1110,7 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   type-conversion.md row "datetime fractional > 3 digits → truncated" does
   not hold for strings (241), and the old test claiming `.12345678` fails
   for datetime2 was wrong (it rounds).
-- 2026-10-04 (CONVERT styles, msduck gaps-conversion, corpus `conversion/`;
+- 2026-10-04 (CONVERT styles, captured-gaps/gaps-conversion, corpus `conversion/`;
   rules in docs/reference/conversion-styles.md): every temporal type has a
   defined text for styles 0-14, 20-35, 100-115, 120, 121, 126, 127, 130, 131
   (26-35, undocumented, are other day/month/year orders: 26 is yyyy-dd-mm);
@@ -1127,7 +1127,7 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   digits, 126 = 16 (real: 8), anything else = 0; money: anything but 1/2/126
   = 0. Correction: the type-conversion.md style table said float style 3 and
   unknown styles were invalid.
-- 2026-10-04 (storage bytes, msduck concat-numeric-format): CONVERT(varbinary,
+- 2026-10-04 (storage bytes, captured-runs/concat-numeric-format): CONVERT(varbinary,
   x) of float/real is big-endian IEEE, of money/smallmoney the big-endian
   int64/int32 units, of decimal `p, s, 0, sign(1 = +), magnitude LE` in the
   fewest whole 4-byte groups. binary → float/real is 529 (not allowed), binary → money/
@@ -1140,7 +1140,7 @@ Complete reference for the Transact-SQL language used by Microsoft SQL Server.
   DECLARE 2739, index keys 1919; most string functions 8116 (TRIM and
   COMPRESS spell "Trim"/"Compress"), DATALENGTH/SUBSTRING/CHARINDEX/PATINDEX/
   CONCAT/ISNULL work. SUBSTRING(text, s, n) is varchar(n).
-- 2026-10-04 (LIKE / PATINDEX / CHARINDEX, msduck like-patterns,
+- 2026-10-04 (LIKE / PATINDEX / CHARINDEX, captured-runs/like-patterns,
   charindex-patindex): LIKE compares characters and ranges under the
   collation (CI matches 'B' to [a-c], CI_AS does not match 'É' to [e], SQL CS
   varchar orders aAbB so [a-c] matches 'B'); `[]` and an unclosed `[` never
@@ -1218,7 +1218,7 @@ Source https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-s
   (add) / 36 (update) / 28 (drop), ends the batch and rolls back the
   transaction; ERROR_PROCEDURE() is the procedure. The string 'default'
   passed to fn_listextendedproperty is a name, not DEFAULT.
-- 2026-10-04 (corpus `backup/*`, msduck gaps-backup): BACKUP/RESTORE
+- 2026-10-04 (corpus `backup/*`, captured-gaps/gaps-backup): BACKUP/RESTORE
   errors are statement-level: the specific error(s) then 3013 "<BACKUP
   DATABASE|BACKUP LOG|RESTORE DATABASE|RESTORE HEADERONLY|RESTORE
   FILELIST|VERIFY DATABASE> is terminating abnormally." (VERIFYONLY's text
@@ -1593,7 +1593,7 @@ and `XACT_STATE()` advertises nullable smallint width.
   int", both operand orders). `CURRENT_DATE` (2025) is a non-nullable
   date; `CURRENT_DATE()` is 102 near ')'.
 
-- 2026-10-04 (msduck default-collation, openjson-isnull; dumps in
+- 2026-10-04 (captured-runs/default-collation, openjson-isnull; dumps in
   `src/core/types/collation_weights_data.mbt`): under the version-0 tables
   (SQL_Latin1_General_CP1_*, Latin1_General_*) 21,229 BMP code units are
   fully ignorable (NUL, U+0640, U+200D–U+200F, U+2060…, BOM, U+FFFE/F,

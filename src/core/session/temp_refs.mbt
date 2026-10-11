@@ -1,5 +1,5 @@
-// INFO 2701 for database-qualified temp table names (captured: msduck
-// gaps-temp_tables #005, corpus stmts/temp-qualified-names):
+// INFO 2701 for database-qualified temp table names (captured: 
+// captured-gaps/gaps-temp_tables #005, corpus stmts/temp-qualified-names):
 //
 // - `db..#t` / `db.schema.#t` names a temp table whatever `db` is (any
 //   name, even a missing database); compiling it sends INFO 2701 state 99

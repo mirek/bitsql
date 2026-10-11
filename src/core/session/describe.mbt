@@ -1,6 +1,6 @@
 // sys.dm_exec_describe_first_result_set(@tsql, @params, @browse): the
 // metadata of the first result set of a batch, from the binder (captured
-// probes and msduck greatest-least / charindex-patindex / soundex
+// probes and captured-runs/greatest-least / charindex-patindex / soundex
 // describe cases). One row per column: name, type text and facts as
 // sys.columns reports them, nullability, base-column flags (identity,
 // updateable, computed) and the ORDER BY position; compile errors become
@@ -248,7 +248,7 @@ fn describe_facts(
   r[21] = Bit(false)
   r[27] = Bit(identity)
   r[29] = Bit(base && !identity)
-  // captured (msduck json-aggregates#037/#069): aggregates are not
+  // captured (captured-runs/json-aggregates#037/#069): aggregates are not
   // computed columns; a json-typed aggregate is (origin Computed)
   r[30] = Bit(!base && !(c.origin is Aggregate))
   r[31] = Bit(false)
@@ -488,7 +488,7 @@ fn Session::sp_describe_result(
   for r in rows {
     self.out.push(Row(r.map(wire_value)))
   }
-  // captured: DONEINPROC MORE|COUNT with CurCmd 224 (msduck
-  // json-constructors #021)
+  // captured: DONEINPROC MORE|COUNT with CurCmd 224 (
+  // captured-runs/json-constructors #021)
   self.done(224, count=Some(rows.length().to_int64()), result_set=true)
 }

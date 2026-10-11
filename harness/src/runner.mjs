@@ -1,5 +1,4 @@
-// Runs corpus cases against a target (oracle or emulator) in isolation,
-// ported from msduck runCase + isolatedReference.
+// Runs corpus cases against a target (oracle or emulator) in isolation.
 //
 // Isolation modes:
 //   database  CREATE DATABASE [bitsql_case_<random>] on an admin connection,

@@ -5,7 +5,7 @@
 // language (culture.mbt). Numbers follow .NET's ParseNumber state machine
 // with the culture's signs, separators and currency symbol; dates accept a
 // captured subset and raise an emulator error for any other shape.
-// Captures: harness/corpus/analytic/parse-*.sql, msduck-runs/parse-try-parse.
+// Captures: harness/corpus/analytic/parse-*.sql, captured-runs/parse-try-parse.
 
 ///|
 /// .NET number styles used by PARSE.
@@ -438,7 +438,7 @@ fn parse_call(
             None => fail()
           }
         ParsedInvalid => fail()
-        // captured: msduck parse-try-parse#063 (ISO 8601 text, datetime2)
+        // captured: captured-runs/parse-try-parse#063 (ISO 8601 text, datetime2)
         ParsedOverflow if t is DateTime2(_) && text.contains("T") =>
           raise @types.sql_error(
             6521,

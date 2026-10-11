@@ -120,7 +120,7 @@ pub fn bind_dml_source(
         }
       }
       // a table variable target named by its alias or name in FROM
-      // (captured: msduck gaps-temp_tables #035)
+      // (captured: captured-gaps/gaps-temp_tables #035)
       TableVar(name, alias_~, ..) if found.val is None && view is None => {
         let q = match alias_ {
           Some(a) => a.name.to_lower()
@@ -136,7 +136,7 @@ pub fn bind_dml_source(
         view is Some(_) &&
         target_names.contains(a.name.to_lower()) => take(a.name.to_lower())
       // the applied side sees the left row (the target included) as its
-      // outer row (captured: msduck gaps-outer_dml #017-#019)
+      // outer row (captured: captured-gaps/gaps-outer_dml #017-#019)
       Join(CrossApply | OuterApply as kind, left, right, ..) => {
         let (lp, lc) = leaf(left, offset)
         let (rp, rc) = bind_table_ref(env.with_source(lc, lp), right)

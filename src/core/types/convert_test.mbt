@@ -24,7 +24,7 @@ fn short_outcome(
 
 ///|
 test "nvarchar to integer types match the capture" {
-  // msduck reference/unicode-integer.json
+  // captured-runs/unicode-integer
   let targets : Array[@types.SqlType] = [TinyInt, SmallInt, Int, BigInt]
   for case_ in unicode_integer_cases {
     let (name, us, expected) = case_
@@ -54,7 +54,7 @@ test "nvarchar to integer types match the capture" {
 
 ///|
 test "string to integer error texts" {
-  // captured texts: msduck reference/unicode-integer.json, integer-overflow
+  // captured texts: captured-runs/unicode-integer, integer-overflow
   inspect(
     outcome(() => @types.cast(s("abc"), vc(), Int)),
     content="245/1 Conversion failed when converting the varchar value 'abc' to data type int.",
@@ -280,7 +280,7 @@ test "character conversions" {
   assert_eq(text_of(s("hello"), vc(), to=vc(n=3)), "hel")
   assert_eq(text_of(s("hi"), vc(), to=@types.NChar(4, coll)), "hi  ")
   // Unicode → varchar: exact CP1252, then best fit, else '?' per UTF-16
-  // unit (captured: msduck left-right-casts, cp1252_best_fit.mbt)
+  // unit (captured: captured/left-right-casts, cp1252_best_fit.mbt)
   assert_eq(text_of(s("caf\u{e9} \u{20ac}"), nvc(), to=vc()), "café €")
   assert_eq(text_of(s("\u{100}\u{142}e\u{301}"), nvc(), to=vc()), "Ale\u{b4}")
   assert_eq(text_of(s("\u{4e00}\u{1f986}"), nvc(), to=vc()), "???")

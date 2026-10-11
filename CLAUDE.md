@@ -53,7 +53,7 @@ the top priority: a false green is worse than an explicit "not supported" error.
   host architecture first; add other architectures only after native-host
   validation. Combine only the same version in a manifest and coordinate
   manifest updates between hosts.
-- **Shared host:** other agents run msduck servers and MSSQL containers here.
+- **Shared host:** other agents run their own servers and MSSQL containers here.
   bitsql uses ports 47300–47399 (emulator 47333, oracle MSSQL 47314, or port 0)
   and docker containers named `bitsql-*`. Never stop containers you didn't start.
 - **`/tmp` hygiene:** `/tmp` is RAM-backed (tmpfs, limited inodes, shared by
@@ -75,5 +75,5 @@ moon run scripts/update-moonbit-docs.mbtx  # refresh vendored MoonBit docs (need
                                            # pinned toolchain: dev container on Intel macOS)
 ```
 
-Reference projects (public domain, same author): msduck (Rust/DuckDB) and
-mssqlite (TS/SQLite). What to reuse from them is listed in `docs/reuse/README.md`.
+Reference project (public domain, same author): mssqlite (TS/SQLite). What to
+reuse from it is listed in `docs/reuse/README.md`.

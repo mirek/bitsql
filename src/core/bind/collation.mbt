@@ -23,7 +23,7 @@ fn is_string(t : @types.SqlType) -> Bool {
 ///|
 /// Coercibility of a column reference: what the column's defining
 /// expression had when the column comes from a derived table, CTE or view
-/// (captured: msduck collation-precedence #000/#001), else implicit.
+/// (captured: captured/collation-precedence #000/#001), else implicit.
 type ColumnCoercibility = (Int, Int, @types.SqlType) -> Coercibility
 
 ///|
@@ -106,7 +106,7 @@ fn plan_column(plan : @ir.Plan, j : Int, t : @types.SqlType) -> Coercibility {
     Values(_) => Default
     // OPENJSON's value column has the database collation as a
     // coercible default: COALESCE(value, key) takes key's implicit BIN2
-    // (captured: msduck openjson-isnull coalesce-mixes)
+    // (captured: captured-runs/openjson-isnull coalesce-mixes)
     TableFunc(OpenJsonDefault, _) if j == 1 => Default
     Aggregate(p, keys, _, ..) =>
       if j < keys.length() {
@@ -169,7 +169,7 @@ fn coercibility_in(e : @ir.Expr, col : ColumnCoercibility) -> Coercibility {
       combine(coercibility_in(a, col), coercibility_in(b, col), "add") catch {
         _ => Default
       }
-    // captured (msduck collation-functions #001-#003, #042-#045): ISNULL
+    // captured (captured/collation-functions #001-#003, #042-#045): ISNULL
     // takes its first argument's collation, the second's only when the
     // first is an untyped NULL
     Call(IsNull, args) if args.length() == 2 =>
@@ -246,11 +246,11 @@ fn conflict_error(
 ///|
 /// The collation a collation-sensitive operation uses. Raises 468 when two
 /// different explicit collations meet, or two different implicit ones meet
-/// directly in this operation (later operand named first, captured: msduck
-/// collation-functions "between CS_AS and BIN2" for BIN2 = CS_AS), and 4191
+/// directly in this operation (later operand named first, captured: 
+/// captured/collation-functions "between CS_AS and BIN2" for BIN2 = CS_AS), and 4191
 /// "Cannot resolve collation conflict for <op> operation." when an operand
 /// already has no collation (a CASE or `+` over different implicit
-/// collations; captured: msduck bin2-comparisons *-deferred,
+/// collations; captured: captured/bin2-comparisons *-deferred,
 /// collation-sensitive *-deferred).
 fn resolve_collation(
   env : Env,
@@ -292,8 +292,8 @@ fn resolve_collation(
 ///|
 /// 4191 when a string argument has no collation and no explicit collation
 /// among the arguments repairs it (captured probes: LEN(a+b), UPPER(a+b),
-/// LEFT(CASE .. END, 1) over two implicit collations; msduck
-/// collation-sensitive #002/#003). Conflicts between the arguments
+/// LEFT(CASE .. END, 1) over two implicit collations; 
+/// captured/collation-sensitive #002/#003). Conflicts between the arguments
 /// themselves are the function binder's (468, collate_args).
 fn check_deferred_collation(
   env : Env,
@@ -341,8 +341,8 @@ fn check_result_collations(bq : BoundQuery) -> Unit raise @types.SqlError {
 ///|
 /// Collation of column `j` of a UNION / INTERSECT / EXCEPT (collation
 /// sensitive, unlike UNION ALL): 468 "in the UNION operation" for two
-/// different implicit or explicit collations (captured: msduck
-/// collation-precedence #018, probes for INTERSECT/EXCEPT).
+/// different implicit or explicit collations (captured: 
+/// captured/collation-precedence #018, probes for INTERSECT/EXCEPT).
 fn set_op_collation(
   env : Env,
   op : String,
@@ -413,7 +413,7 @@ fn cmp_op_name(op : @ir.CmpOp) -> String {
 ///|
 /// The collation label of a function result over string arguments (CONCAT):
 /// the combined explicit/implicit collation, else the database default
-/// (captured: msduck collation-functions #006, #040).
+/// (captured: captured/collation-functions #006, #040).
 fn label_collation(env : Env, args : Array[@ir.Expr]) -> @types.Collation {
   let mut c = Default
   for a in args {
@@ -431,7 +431,7 @@ fn label_collation(env : Env, args : Array[@ir.Expr]) -> @types.Collation {
 
 ///|
 /// 456 when a value with no collation (two implicit collations met) is
-/// converted to sql_variant (captured: msduck collation-functions #038,
+/// converted to sql_variant (captured: captured/collation-functions #038,
 /// #046, #050, #052).
 fn variant_collation_check(
   env : Env,
@@ -448,8 +448,8 @@ fn variant_collation_check(
 ///|
 /// A CASE / COALESCE result takes the collation that wins by precedence,
 /// not the one of the branch with the widest type: COALESCE(value, key)
-/// over OPENJSON is key's implicit Latin1_General_BIN2 (captured: msduck
-/// openjson-isnull coalesce-mixes). Conflicts stay for the result column.
+/// over OPENJSON is key's implicit Latin1_General_BIN2 (captured: 
+/// captured-runs/openjson-isnull coalesce-mixes). Conflicts stay for the result column.
 fn adopt_collation(env : Env, e : @ir.Expr) -> @ir.Expr {
   guard e.ty.collation() is Some(current) else { return e }
   match coercibility(env, e) {

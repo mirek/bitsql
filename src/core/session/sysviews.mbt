@@ -473,8 +473,8 @@ fn Session::catalog_name(self : Session) -> @types.Value {
 
 ///|
 /// Binding ids of `tempdb.sys.x` views: the view index plus this offset.
-/// Their rows describe the session's temp tables (captured: msduck
-/// gaps-temp_tables #013, corpus stmts/temp-tempdb-catalog).
+/// Their rows describe the session's temp tables (captured: 
+/// captured-gaps/gaps-temp_tables #013, corpus stmts/temp-tempdb-catalog).
 const TEMPDB_VIEW_OFFSET : Int = 1048576
 
 ///|
@@ -1344,7 +1344,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         }
       }
     // sys.all_objects = sys.objects + sys.system_objects, sys.all_columns =
-    // sys.columns + sys.system_columns (captured: msduck-runs all-objects,
+    // sys.columns + sys.system_columns (captured: captured-runs all-objects,
     // system-all-columns #011)
     "sys.system_objects" => out.append(system_objects_rows())
     "sys.all_objects" => {

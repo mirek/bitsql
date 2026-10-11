@@ -453,8 +453,8 @@ fn bind_variant_fn(
       named(name, [text_arg(0, varchar)], Variant)
     }
     // captured: sql_variant, nullable (misc/session-context)
-    // the key must be Unicode: varchar and NULL are 8116 (captured: msduck
-    // session-property-context #069, #070)
+    // the key must be Unicode: varchar and NULL are 8116 (captured: 
+    // captured-runs/session-property-context #069, #070)
     "SESSION_CONTEXT" => {
       arity_n(name, args, 1)
       let k = bind_expr(env, args[0])

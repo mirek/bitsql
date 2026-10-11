@@ -16,7 +16,7 @@ export function formatJson(value, width = 140, indent = '') {
   return `{\n${entries.map(([k, v]) => `${inner}${JSON.stringify(k)}: ${formatJson(v, width, inner)}`).join(',\n')}\n${indent}}`
 }
 
-// flag 'wx' refuses to overwrite (msduck writeNewFixture); 'w' overwrites.
+// flag 'wx' refuses to overwrite; 'w' overwrites.
 export async function writeJson(path, value, { overwrite = false } = {}) {
   await writeFile(path, formatJson(value) + '\n', { flag: overwrite ? 'w' : 'wx' })
 }

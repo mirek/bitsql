@@ -1,6 +1,6 @@
 ///|
 /// `ALTER SCHEMA s TRANSFER [class::] name` (captured: tail5/b2-schema-
-/// transfer, msduck-runs all-objects#029). Success sends no DONE of its own
+/// transfer, captured-runs all-objects#029). Success sends no DONE of its own
 /// (like CREATE SCHEMA); errors are statement-level and complete with
 /// CurCmd 170. The object keeps its object_id; a table takes its
 /// constraints and triggers along; a module's text is unchanged, so views

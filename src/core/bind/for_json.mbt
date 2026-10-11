@@ -1,14 +1,14 @@
 // FOR JSON PATH / AUTO binding and the "is this JSON text" property of
-// expressions. Captures: harness/corpus/query/for-json, json2/, msduck
-// gaps-json_string, json-aggregates, unicode-json-storage.
+// expressions. Captures: harness/corpus/query/for-json, json2/, 
+// captured-gaps/gaps-json_string, json-aggregates, unicode-json-storage.
 
 ///|
 /// Whether SQL Server treats `e`'s text as JSON when embedding it (JSON_OBJECT,
 /// JSON_ARRAY, JSON_MODIFY values, FOR JSON columns, the JSON aggregates):
 /// results of JSON_QUERY, JSON_MODIFY, JSON_OBJECT, JSON_ARRAY, the JSON
 /// aggregates and FOR JSON subqueries with the array wrapper, also through
-/// columns of derived tables, CTEs and views (captured: msduck
-/// json-aggregates#054). A WITHOUT_ARRAY_WRAPPER subquery, a variable
+/// columns of derived tables, CTEs and views (captured: 
+/// captured-runs/json-aggregates#054). A WITHOUT_ARRAY_WRAPPER subquery, a variable
 /// holding JSON_QUERY's result and JSON_VALUE are plain strings.
 fn is_json_expr(env : Env, e : @ir.Expr) -> Bool {
   json_expr_in(e, (depth, i) => {

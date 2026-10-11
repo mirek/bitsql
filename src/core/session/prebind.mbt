@@ -2,7 +2,7 @@
 /// SQL Server compiles a whole batch before running it: a type error in
 /// any statement (206, 257, 402, 8116, 8117) fails the batch with nothing
 /// run, also inside an IF branch or TRY block (captured:
-/// conversion/datetime-arithmetic, msduck try-binding-error,
+/// conversion/datetime-arithmetic, captured/try-binding-error,
 /// gaps-computed session-variant-writes). bitsql binds statement by
 /// statement, so this pass binds the batch up front, in compile-only mode,
 /// when nothing in it can change what later statements bind against (no

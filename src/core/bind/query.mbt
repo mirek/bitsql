@@ -156,7 +156,7 @@ fn object_text(name : @ast.ObjectName) -> String {
 
 ///|
 /// 208 for a missing table. A temp table is named without its database
-/// and schema qualifiers, state 0 (captured: msduck gaps-temp_tables #016,
+/// and schema qualifiers, state 0 (captured: captured-gaps/gaps-temp_tables #016,
 /// #017; corpus stmts/temp-qualified-names).
 pub fn missing_object_error(name : @ast.ObjectName) -> @types.SqlError {
   let base = name.base()
@@ -192,7 +192,7 @@ fn derived_origin(o : @ir.Origin) -> @ir.Origin {
 /// Origin of a column read through a view or an inline table-valued
 /// function: computed columns keep fComputed (captured: catalog/view-select),
 /// every other column reads as a base column, aggregates, UNION and
-/// derived-table columns included (flags 9; captured: msduck-runs
+/// derived-table columns included (flags 9; captured: captured-runs
 /// aggregate-warning-boundaries, apply-full-join, tail/views-column-flags).
 fn module_column_origin(o : @ir.Origin) -> @ir.Origin {
   match o {
@@ -378,7 +378,7 @@ fn bind_table_ref(
           raise err(
             1087,
             "Must declare the table variable \"\{name}\".",
-            // captured: state 2 in a FROM clause (msduck table-variable
+            // captured: state 2 in a FROM clause (captured-runs/table-variable
             // #014, gaps-temp_tables #033)
             state=2,
             severity=15,
@@ -469,7 +469,7 @@ fn bind_table_ref(
           name: columns[j].name,
           ty: t,
           nullable,
-          // captured: VALUES columns report flags 0 (msduck output-dml)
+          // captured: VALUES columns report flags 0 (captured/output-dml)
           origin: SetOperation,
         })
       }
@@ -523,7 +523,7 @@ let legacy_table_hints : Array[String] = [
 
 ///|
 /// `FROM t (NOLOCK)`: one hint without WITH on a table or view (captured:
-/// msduck-runs tedious-compat-gaps#088) reads as `t WITH (NOLOCK)`.
+/// captured-runs tedious-compat-gaps#088) reads as `t WITH (NOLOCK)`.
 fn legacy_hint_ref(
   env : Env,
   r : @ast.TableRef,
@@ -834,7 +834,7 @@ fn bind_table_function(
     }
     "STRING_SPLIT" => {
       // arity errors are the procedure-style 313/8144 state 3; argument
-      // checks follow msduck string-split captures
+      // checks follow captured-runs/string-split captures
       if args.length() < 2 {
         raise err(
           313,
@@ -1005,7 +1005,7 @@ fn bind_clause(
         Some(c) => {
           // a base table or view is named as written in FROM, schema
           // included, even when aliased (captured: tail5/b1-ungrouped-name,
-          // msduck json-aggregates#033 'dbo.json_agg_src.g')
+          // captured-runs/json-aggregates#033 'dbo.json_agg_src.g')
           let name = if c.qualifier == "" {
             c.name
           } else {
@@ -1378,7 +1378,7 @@ fn conjuncts(e : @ir.Expr, out : Array[@ir.Expr]) -> Unit {
 ///|
 /// WHERE over CROSS/OUTER APPLY: conjuncts reading only the left input
 /// filter it before the applied side runs, like SQL Server's plans, so the
-/// right side never sees rows the WHERE removes (captured: msduck-runs
+/// right side never sees rows the WHERE removes (captured: captured-runs
 /// apply-full-join#014, an OPENJSON conversion error of another row).
 /// `width` is the source's row width.
 fn push_filter(source : @ir.Plan, pred : @ir.Expr, width : Int) -> @ir.Plan {
@@ -1458,7 +1458,7 @@ fn bind_select_query(
       let pred = bind_expr(inner, w)
       // a contradiction between integer literals (`WHERE 1=0`) removes
       // the source from the plan: nothing under it runs, so a view's
-      // aggregate raises no 8153 (captured: msduck-runs
+      // aggregate raises no 8153 (captured: captured-runs
       // aggregate-warning-boundaries#001)
       let source = if literal_contradiction(pred) {
         @ir.Plan::Values([])
@@ -1705,7 +1705,7 @@ fn bind_select_query(
   let keys : Array[@ir.SortKey] = []
   let order : Array[Int] = []
   for i, o in order_by {
-    // captured: a bare variable is 1008 (msduck order-token-expanded #076)
+    // captured: a bare variable is 1008 (captured-runs/order-token-expanded #076)
     if o.expr.kind is Var(_) {
       raise err(
         1008,
@@ -1877,7 +1877,7 @@ fn limit(
 }
 
 ///|
-/// An ORDER BY key and its ORDER token ordinal (msduck docs/order-token.md:
+/// An ORDER BY key and its ORDER token ordinal (captured-runs/order-token:
 /// output alias, position or a projected expression → its ordinal; other
 /// keys → 0).
 fn order_key(

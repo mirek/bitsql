@@ -51,7 +51,7 @@ fn Session::security_fn(
         None => Null
       }
     "SUSER_NAME" | "SUSER_SNAME" =>
-      // sa's sid is 0x01 (captured: msduck-runs tedious-compat-gaps#018)
+      // sa's sid is 0x01 (captured: captured-runs tedious-compat-gaps#018)
       if args.is_empty() ||
         num(0) == Some(1) ||
         text(0) == Some("\u{01}") ||

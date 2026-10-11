@@ -3,7 +3,7 @@
 SQL Server 17.0.5005.3. Derived from captures in `harness/corpus/settings/`
 (`alter-database.sql`, `database-collation.sql`, `rcsi.sql`,
 `snapshot-isolation.sql`, `utf8.sql`, generated `dateformat` / `language`
-cases from `harness/gen/settings.mjs`) and the msduck imports
+cases from `harness/gen/settings.mjs`) and the captured imports
 (`gaps-unicode-predicates`, `gaps-transactions`, `savepoint`,
 `soundex-difference`, `cursor`, `unicode-case`, `windows-1252-best-fit`).
 Implementation: `src/core/session/database_options.mbt`,
@@ -144,11 +144,11 @@ Not modelled: CHECKSUM of UTF-8 varchar under linguistic collations (50100),
 UPPER/LOWER of nvarchar map every UTF-16 unit by the collation's table
 version: version-0 collations (SQL_Latin1_General_CP1_*, Latin1_General_*)
 change 1326 units, version-100 collations 1764 (all `_100` variants alike,
-BIN2 included), from the captured msduck `unicode-case` tables
+BIN2 included), from the captured `captured-runs/unicode-case` tables
 (`scripts/gen-case-map.mbtx`). Surrogates and supplementary letters are
 unchanged.
 
-## Session SET options (2026-10-04, corpus `tail/settings-*`, msduck-runs session-property-context)
+## Session SET options (2026-10-04, corpus `tail/settings-*`, captured-runs session-property-context)
 
 - `SET ANSI_NULLS OFF`: `=`, `<>`, `!=` are two-valued when one operand is
   a NULL literal (also parenthesized) or a bare variable/parameter (`NULL =

@@ -5,7 +5,7 @@ Rules derived from captures (SQL Server 17.0.5005.3) in long-tail round 4,
 runs, not even ones before the failing statement. Implemented in
 `src/core/session/precheck.mbt` and `precheck_hints.mbt` unless noted.
 
-## Table hints in FROM (corpus `tail/table-hints`, `tail/table-hints-gaps`, msduck-runs tedious-compat-gaps #080-#098)
+## Table hints in FROM (corpus `tail/table-hints`, `tail/table-hints-gaps`, captured-runs tedious-compat-gaps #080-#098)
 
 Checked in two passes over the batch. First pass (class 15):
 
@@ -47,7 +47,7 @@ take no hints: `FROM @t WITH (…)` is 319 (the WITH starts a new statement),
 `INSERT/UPDATE @t WITH (…)` 156 near 'WITH' (+ 319, which bitsql does not
 report). 319's keyword always prints as `'with'`.
 
-## TOP (corpus `tail/top-invalid`, `top-invalid-abort`, `top-fractional`, msduck-runs select-top-percent, merge-top)
+## TOP (corpus `tail/top-invalid`, `top-invalid-abort`, `top-fractional`, captured-runs select-top-percent, merge-top)
 
 | Count | Constant (whole batch, class 15) | Variable (run time, class 15, ends the batch) |
 | --- | --- | --- |
@@ -61,7 +61,7 @@ Run-time ones come after COLMETADATA, end the batch without a rollback, and
 in an RPC the DONEPROC follows the ERROR directly. A DML TOP adds INFO 3621
 after 127 but not after 1014. The same applies to UPDATE/DELETE/MERGE TOP
 constants. Run-time NTILE ≤ 0 or NULL (4116) behaves like the run-time TOP
-errors in an RPC (msduck-runs ntile-null #013/#015).
+errors in an RPC (captured-runs ntile-null #013/#015).
 
 ## Window functions (corpus `tail/window-arity`, `tail/window-missing-over`)
 
@@ -73,7 +73,7 @@ errors in an RPC (msduck-runs ntile-null #013/#015).
   for ROW_NUMBER/RANK/DENSE_RANK/NTILE/CUME_DIST/PERCENT_RANK, state 1 for
   LAG/LEAD/FIRST_VALUE/LAST_VALUE.
 
-## MERGE WHEN clauses (corpus `tail/merge-when-clauses`, msduck-runs merge-execution #043/#044)
+## MERGE WHEN clauses (corpus `tail/merge-when-clauses`, captured-runs merge-execution #043/#044)
 
 Within one WHEN kind (`WHEN MATCHED`, `WHEN NOT MATCHED`, `WHEN NOT MATCHED
 BY SOURCE`): a repeated action is 10714 (class 15) `An action of type 'WHEN
@@ -84,7 +84,7 @@ is 5324 (class 16). Both fail the whole batch.
 ## Other whole-batch checks
 
 - An undeclared table variable in FROM: 1087 state 2 (class 15), also at
-  CREATE PROCEDURE (msduck-runs table-variable #014/#038). A table variable
+  CREATE PROCEDURE (captured-runs table-variable #014/#038). A table variable
   is visible only in its own batch/module: EXEC(), sp_executesql and
   procedures get 1087 (#023/#024).
 - A named constraint inside `DECLARE @t TABLE (…)` is 156 near 'CONSTRAINT'
@@ -105,7 +105,7 @@ is 5324 (class 16). Both fail the whole batch.
   3013 (not emulated: 50100).
 - END CATCH (CurCmd 351) sets @@ROWCOUNT to 0 whether or not the CATCH
   block ran (`tail/try-catch-rowcount`).
-- COUNT(NULL) in an UPDATE SET is 8117 before 157 (msduck-runs
+- COUNT(NULL) in an UPDATE SET is 8117 before 157 (captured-runs
   count-null-compilation#064).
 - A computed column declared `PERSISTED NOT NULL` is NOT NULL in
   sys.columns but keeps its expression's nullability in result metadata
@@ -113,7 +113,7 @@ is 5324 (class 16). Both fail the whole batch.
   column is 2729.
 - UPDATE/DELETE … FROM with an outer join skip rows where the target is
   NULL-extended; APPLY in their FROM sees the target row
-  (msduck gaps-outer_dml).
+  (captured-gaps/gaps-outer_dml).
 - EXEC sp_prepare in T-SQL: a single SELECT compiles at prepare time and
   sends COLMETADATA (+ ORDER) and DONEINPROC 193 count 0; a compile error is
   the error + 8180 `Statement(s) could not be prepared.`, status 8180, no

@@ -46,7 +46,7 @@ fn arith_outcome(
 
 ///|
 test "checked integer arithmetic matches the capture" {
-  // msduck reference/checked-integer.json (240 cases)
+  // captured-runs/checked-integer (240 cases)
   let failures = []
   for row in checked_integer_cases {
     let (lt, l, op, rt, r, expected) = row
@@ -84,7 +84,7 @@ test "checked integer arithmetic matches the capture" {
 
 ///|
 test "integer arithmetic messages and promotion" {
-  // msduck reference/integer-overflow.json
+  // captured/integer-overflow
   inspect(
     outcome(() => {
       @types.arith(Add, @types.Int(2147483647), Int, @types.Int(1), Int)
@@ -133,7 +133,7 @@ test "integer arithmetic messages and promotion" {
 
 ///|
 test "decimal division matches the capture" {
-  // msduck reference/decimal-division.json
+  // captured/decimal-division
   let div = fn(
     a : String,
     ta : @types.SqlType,
@@ -198,7 +198,7 @@ test "decimal division matches the capture" {
 
 ///|
 test "decimal result types match captured metadata" {
-  // msduck reference/numeric-arithmetic-context.json and
+  // captured-runs/numeric-arithmetic-context and
   // numeric-literal-metadata.json (the binder types integer literals next to
   // a decimal as (digits, 0) of the other operand's name, e.g. 2 next to
   // a numeric → numeric(1,0); numeric beside decimal is numeric)

@@ -1,6 +1,6 @@
 // UPPER / LOWER of UTF-16 code units under a collation's sort table version
 // (data: case_data.mbt, generated from captures). Surrogates and
-// supplementary characters are unchanged (captured: msduck unicode-case
+// supplementary characters are unchanged (captured: captured-runs/unicode-case
 // supplementary-letters, isolated surrogates).
 
 ///|

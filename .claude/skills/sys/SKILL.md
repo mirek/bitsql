@@ -3,10 +3,10 @@ name: sys
 description: "MSSQL system catalog views technical specification for implementing sys.* emulation in bitsql. Covers schema definitions, column types, relationships, built-in data, and SQLite backing-table design for all essential catalog views."
 ---
 
-> **Provenance.** Reference content ported from the sibling projects msduck and
-> mssqlite (same author, public domain). Notes that mention `packages/*`,
-> `mssqlite`, `msduck`, SQLite or DuckDB describe *those* implementations. They
-> are field notes verified against SQL Server there, not claims about bitsql.
+> **Provenance.** Reference content ported from earlier sibling projects (same
+> author, public domain). Notes that mention `packages/*`, `mssqlite` or SQLite
+> describe *those* implementations. They are field notes verified against SQL
+> Server there, not claims about bitsql.
 > Real SQL Server captures remain the authority (docs/design/verification.md).
 
 ## bitsql implementation
@@ -122,7 +122,7 @@ mention the correction here.
   default; a scalar function's return value is parameter_id 0 with an empty
   name and is_output 1. Descriptors: catalog/view-descriptors-types.sql.
 
-- 2026-10-04 (definitions, msduck gaps-catalog v2-*-definitions, corpus
+- 2026-10-04 (definitions, captured-gaps/gaps-catalog v2-*-definitions, corpus
   `constraints/definition-format`): parentheses follow operator classes:
   arithmetic operands of the same or a lower class are wrapped on either
   side (`((1)-(2))-(3)`, `[a]/([b]*[c])`, `([a]+[b])*[c]`), comparison

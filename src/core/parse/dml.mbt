@@ -34,7 +34,7 @@ fn Parser::output_clauses(
     let start = self.start()
     self.pos += 1
     // OUTPUT needs a qualified star (inserted.* / deleted.*); a bare `*` is
-    // error 102 near '*' (msduck output-unqualified capture).
+    // error 102 near '*' (captured/output-unqualified capture).
     let items = []
     while true {
       if self.is_punct("*") {

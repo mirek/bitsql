@@ -2,8 +2,8 @@
 
 Rules captured on SQL Server 17.0.5005.3 (2026-10-04). Cases:
 `harness/corpus/tail5/b1-named-window.sql`, `b1-next-value-over.sql`,
-`b1-syntax-recovery.sql`, `b1-ungrouped-name.sql`; msduck
-`distribution-reference#006`, `sequence-reference#005..#019`,
+`b1-syntax-recovery.sql`, `b1-ungrouped-name.sql`; 
+`captured-runs/distribution-reference#006`, `sequence-reference#005..#019`,
 `gaps-merge#008`, `json-aggregates#033`, corpus `tail/tablevar-hints`.
 
 ## Named windows (`WINDOW` clause)

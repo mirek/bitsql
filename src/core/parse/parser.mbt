@@ -8,7 +8,7 @@ priv struct Parser {
   /// keyword, not 111 (captured: gaps-procedures #137).
   mut in_procedure : Bool
   /// Parsing a table variable's columns: named constraints are a syntax
-  /// error there (captured: msduck-runs table-variable#010).
+  /// error there (captured: captured-runs table-variable#010).
   mut table_variable : Bool
   /// Named windows of the SELECT being parsed (its WINDOW clause, found by
   /// a look-ahead before the select list; window.mbt)

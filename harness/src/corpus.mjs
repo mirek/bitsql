@@ -22,13 +22,13 @@
 //    values that read the clock (sp_help's Created_datetime).
 //    Expected output: sibling `name.expected.json` (captured, never hand-written).
 //
-// 2. `name.cases.json` (generated, e.g. msduck imports): many cases per file,
+// 2. `name.cases.json` (generated, e.g. captured/): many cases per file,
 //      { "source": "...", "cases": [{ "name", "steps": [{kind, sql, params?, compare?}] }] }
 //    Expected output: sibling `name.expected.json` = { server, cases: { <name>: expected } },
 //    optionally with `defaultReuse` (the reuse capture of cases that omit `reuse`).
 //    Optional `runs: { <id>: [steps] }`: a case `{ name, run, prefix, steps }`
 //    replays the first `prefix` steps of that run (compare:false) before its
-//    own steps (msduck sequential captures; see expandSteps).
+//    own steps (captured-runs sequential captures; see expandSteps).
 //
 // A loaded case is { id, file, expectedFile, key, steps, source? } where `key`
 // is the case name inside a multi-case file (null for .sql cases).
@@ -130,7 +130,7 @@ async function walk(dir) {
 }
 
 // selectors: corpus-relative paths or prefixes (`smoke`, `traps/collation.sql`,
-// `msduck/raiserror-rpc.cases.json#003-name`); empty means everything.
+// `captured/raiserror-rpc.cases.json#003-name`); empty means everything.
 export async function loadCorpus(selectors = []) {
   const files = await walk(corpusDir)
   const cases = []

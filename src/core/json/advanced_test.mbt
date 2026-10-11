@@ -1,6 +1,6 @@
 ///|
 // Advanced path accessors and path syntax, expected values captured from
-// SQL Server 2025 (msduck json-advanced-path, json-extraction-wildcard;
+// SQL Server 2025 (captured-runs/json-advanced-path, json-extraction-wildcard;
 // harness/corpus/json3).
 fn show(f : () -> String? raise @json.JsonError) -> String {
   try f() catch {

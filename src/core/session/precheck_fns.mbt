@@ -3,7 +3,7 @@
 
 ///|
 /// 8748 when STRING_SPLIT's enable_ordinal mentions a variable or
-/// parameter (captured: msduck string-split #036, #048).
+/// parameter (captured: captured-runs/string-split #036, #048).
 fn string_split_ordinal_error(t : @ast.TableRef) -> (@types.SqlError, Int)? {
   match t.kind {
     TableFunc(name, args, ..) if name.base().to_upper() == "STRING_SPLIT" &&

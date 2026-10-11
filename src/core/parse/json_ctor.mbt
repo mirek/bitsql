@@ -81,8 +81,8 @@ fn Parser::json_ctor(
 /// the clauses travel in a trailing string literal `@ast.JSON_AGG_MARKER` +
 /// `N`/`A` (+ `J` for RETURNING json), and an inner ORDER BY becomes the
 /// call's WITHIN GROUP list (a real WITHIN GROUP clause is ignored). `JSON_OBJECTAGG(k, v)` parses as a plain call
-/// (the binder reports 174). Syntax errors captured in msduck
-/// json-aggregates (#009, #026, #028-#032, #056, #057, #061).
+/// (the binder reports 174). Syntax errors captured in 
+/// captured-runs/json-aggregates (#009, #026, #028-#032, #056, #057, #061).
 fn Parser::json_agg(
   self : Parser,
   object : Bool,
@@ -210,7 +210,7 @@ fn Parser::json_agg(
         span=t.span,
       )
     }
-    // captured: accepted but ignored (msduck json-aggregates#058/#059 list
+    // captured: accepted but ignored (captured-runs/json-aggregates#058/#059 list
     // the rows in scan order)
     self.pos += 2
     self.expect_punct("(")

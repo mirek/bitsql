@@ -34,13 +34,9 @@ and amended as the project learns. Amendments are logged in
 
 ## Sibling projects (reference material)
 
-Two earlier emulators by the same author are public domain and freely reusable.
-Use them for specs, captured SQL Server ground truth and test ideas, not for
-architecture:
+An earlier emulator by the same author is public domain and freely reusable.
+Use it for specs and test ideas, not for architecture:
 
-- **msduck** (Rust + DuckDB), github.com/mirek/msduck. Large `reference/*.json`
-  corpus of real SQL Server captures, ~340 behavior docs, a TDS codec with tests,
-  and tedious client tests.
 - **mssqlite** (TypeScript + SQLite), github.com/mirek/mssqlite. TDS and T-SQL
   parser packages and a differential package.
 

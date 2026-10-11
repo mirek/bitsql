@@ -398,7 +398,7 @@ fn xml_guard(
           number=@types.EMU_XML_NOT_SUPPORTED,
         )
       // captured: GREATEST(xml, xml) is 8116 state 4 (like text/ntext),
-      // CHECKSUM(xml) too (msduck hashbytes-checksum #061)
+      // CHECKSUM(xml) too (captured-runs/hashbytes-checksum #061)
       "GREATEST" | "LEAST" | "CHECKSUM" =>
         raise bad_arg_type(ty, i + 1, name.to_lower(), state=4)
       _ => raise bad_arg_type(ty, i + 1, name.to_lower())

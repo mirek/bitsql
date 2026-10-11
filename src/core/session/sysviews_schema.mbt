@@ -1,7 +1,7 @@
 // INFORMATION_SCHEMA.PARAMETERS, CHECK_CONSTRAINTS, CONSTRAINT_COLUMN_USAGE
 // and SCHEMATA (sys.parameters is in sysviews_types.mbt). Descriptors:
 // harness/corpus/catalog/view-descriptors-schema.sql; values captured in
-// msduck gaps-catalog v2-information-schema-*:
+// captured-gaps/gaps-catalog v2-information-schema-*:
 //
 // - parameters of procedures and functions in declaration order from 1;
 //   a scalar function also has its return value as ordinal 0 with an empty

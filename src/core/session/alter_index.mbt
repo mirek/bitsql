@@ -1,6 +1,6 @@
 ///|
 /// ALTER INDEX { name | ALL } ON t { DISABLE | REBUILD [WITH (...)] |
-/// REORGANIZE }. Captured (msduck-runs index-catalog #018/#019, corpus
+/// REORGANIZE }. Captured (captured-runs index-catalog #018/#019, corpus
 /// tail/catalog-alter-index): completion CurCmd 337; a missing table is
 /// 1088 state 9, a missing index 2727 class 11 (both end the batch). A
 /// disabled nonclustered index holds no rows and enforces nothing (a

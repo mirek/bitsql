@@ -10,8 +10,8 @@ pub fn format_raiserror(
   let mut ai = 0
   let n = fmt.length()
   let mut i = 0
-  // Argument types must suit their specification (captured: msduck
-  // raiserror-format-types/-extra): None marks an untyped NULL literal.
+  // Argument types must suit their specification (captured: 
+  // captured/raiserror-format-types/-extra): None marks an untyped NULL literal.
   // Without `types` (tests), nothing is checked.
   let checked = !types.is_empty()
   let mismatch = (k : Int) => {
@@ -133,7 +133,7 @@ pub fn format_raiserror(
     }
     let ty = fmt.code_unit_at(i).to_int().unsafe_to_char()
     i += 1
-    // Captured (msduck raiserror-format*): unknown types and size prefixes on
+    // Captured (captured/raiserror-format*): unknown types and size prefixes on
     // %s are error 2787 naming the whole specification.
     let valid = match ty {
       'd' | 'i' | 'u' | 'x' | 'X' | 'o' => true

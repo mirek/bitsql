@@ -35,7 +35,7 @@ fn bind_call_security(
     arity_range(name, call.args, lo, hi)
   }
   let bound = call.args.map(a => bind_expr(env, a))
-  // captured: MIN_ACTIVE_ROWVERSION() is NOT NULL (flags 32, msduck
-  // gaps-rowversion_identity #072)
+  // captured: MIN_ACTIVE_ROWVERSION() is NOT NULL (flags 32, 
+  // captured-gaps/gaps-rowversion_identity #072)
   Some(mk(Call(Named(name), bound), ty, name != "MIN_ACTIVE_ROWVERSION"))
 }

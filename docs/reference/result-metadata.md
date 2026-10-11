@@ -2,7 +2,7 @@
 
 SQL Server's column metadata (type, length, precision/scale, flags) depends on
 how an expression is written, not on row values. These rules come from captures
-(harness corpus: msduck imports and traps). The binder implements them
+(harness corpus: captured imports and traps). The binder implements them
 (`src/core/bind`, `src/core/session/wire.mbt`). Add a rule here, with its
 evidence, whenever a capture forces one.
 
@@ -11,7 +11,7 @@ evidence, whenever a capture forces one.
 | Bit | Meaning | When |
 | --- | --- | --- |
 | 0x01 | nullable | expression nullability (below) |
-| 0x02 | case-sensitive | collation is CS, BIN or BIN2 (msduck collation-wire: 34/35) |
+| 0x02 | case-sensitive | collation is CS, BIN or BIN2 (captured/collation-wire: 34/35) |
 | 0x08 | updateable "unknown" | base table columns (`SELECT col FROM t`: 8/9) |
 | 0x10 | identity | identity base column, *without* 0x08 (flags 16/17) |
 | 0x20 | computed | any non-column expression (32/33) |
@@ -82,8 +82,8 @@ right side nullable.
   that is a constant folding to a non-NULL value counts as NOT NULL even if
   it alone reports nullable: `ISNULL(CAST(NULL AS int), CAST(1 AS int))`
   and `ISNULL(.., 1+1)` are int 32, `ISNULL(.., LEFT('abc',2))` 32, but
-  `ISNULL(.., CHAR(NULL))` and `ISNULL(.., 1/0)` 33 (msduck
-  character-result-flags #003, space-capacity #012, probes in
+  `ISNULL(.., CHAR(NULL))` and `ISNULL(.., 1/0)` 33 (
+  captured/character-result-flags #003, space-capacity #012, probes in
   collation/expression-metadata).
 - `NULLIF(a, b)`: type of `a`, where an integer literal `a` is typed by its
   value: 0..255 tinyint, -32768..32767 smallint, else int (`NULLIF(1,1)` is
@@ -102,18 +102,18 @@ right side nullable.
   (varchar(8000) / nvarchar(4000)); max if either side is max.
 - Two fixed-length operands give a fixed result: char+char is char,
   char+nchar / nchar+char / nchar+nchar nchar (capped char(8000) /
-  nchar(4000)); one varying operand makes it varying (msduck
-  character-concat-declarations, collation/expression-metadata).
+  nchar(4000)); one varying operand makes it varying (
+  captured/character-concat-declarations, collation/expression-metadata).
 - An untyped NULL next to a string counts as varchar(1): `N'a'+NULL` is
   nvarchar(2), `CAST('a' AS CHAR(2))+NULL` varchar(3), `NULL+CAST('a' AS
-  NCHAR(2))` nvarchar(3); `NULL+NULL` stays int (msduck character-concat
+  NCHAR(2))` nvarchar(3); `NULL+NULL` stays int (captured/character-concat
   #022).
 - `@@TRANCOUNT`, `@@ROWCOUNT`, `@@ERROR`: `int` non-null (flags 32). `XACT_STATE()`: `smallint` nullable (IntN(2) 33).
 - Aggregates: `COUNT(*)` IntN(4) flags 1, `COUNT_BIG` IntN(8), `SUM(int)` int, `AVG(int)` int.
 
 ## Constant folding (CASE / IIF / COALESCE)
 
-From msduck `conditional-literal-folding` and `case-constant-properties`:
+From `captured/conditional-literal-folding` and `case-constant-properties`:
 
 1. Leading WHEN branches whose condition is constant FALSE are dropped. A
    constant TRUE condition selects its branch (COALESCE's `x IS NOT NULL`
@@ -123,14 +123,14 @@ From msduck `conditional-literal-folding` and `case-constant-properties`:
    binary/varbinary), the result is that branch unchanged: its own length
    (`CASE WHEN 1=1 THEN N'a' ELSE N'longer' END` gives nvarchar(1)),
    nullability and column origin. `IIF(1=1, CAST('a' AS char(2)), 'abc')`
-   is char(2), `IIF(1=1, CHAR(65), 'abc')` char(1) (msduck
-   character-result-flags #003, collation/expression-metadata).
+   is char(2), `IIF(1=1, CHAR(65), 'abc')` char(1) (
+   captured/character-result-flags #003, collation/expression-metadata).
 3. Otherwise the branch is converted to the CASE type (all branches unified).
    The result is nullable if any branch is (an untyped `NULL` literal does
    not count: `CASE WHEN 1=1 THEN 'a' ELSE N'longer' END` gives
    nvarchar(6), flags 32), or if the conversion can cut the value: a
    4001-character literal against `N'x'` is nvarchar(4000) flags 33, a
-   4000-character one flags 32 (msduck conditional-literal-folding #012,
+   4000-character one flags 32 (captured/conditional-literal-folding #012,
    probes).
 4. LOB results (`max`) are never folded: unified type, nullable when any branch is.
 5. Branch types unify without untyped `NULL` branches (`IIF(1=1, NULL,
@@ -139,14 +139,14 @@ From msduck `conditional-literal-folding` and `case-constant-properties`:
 6. Conditions fold through deterministic string built-ins over constants
    (LEFT, RIGHT, SPACE, CHAR, NCHAR, LEN, `+`, CAST, COLLATE…): `CASE WHEN
    LEFT(N'🦆',0) COLLATE Latin1_General_100_BIN2 = N'' THEN 1 WHEN NOT (…)
-   THEN 0 ELSE NULL END` is int NOT NULL (msduck bin2-constant-edges,
+   THEN 0 ELSE NULL END` is int NOT NULL (captured/bin2-constant-edges,
    bin2-comparisons, bin2-ansi-comparisons). A condition that folds to
    UNKNOWN (`CHAR(256)`, `SPACE(-1)`, NULL operands) falls through to the
    ELSE NULL (IntN 33).
 
 ## GREATEST / LEAST
 
-(msduck greatest-least, functions2/order-and-types.) The type is the
+(captured-runs/greatest-least, functions2/order-and-types.) The type is the
 highest-precedence argument type; decimal results widen like CASE (an
 integer literal counts as numeric(digits, 0); `GREATEST(7, CAST(3.25 AS
 decimal(5,2)))` is decimal(5,2), bigint with decimal(5,2) decimal(21,2),
@@ -162,7 +162,7 @@ float, decimal widening that keeps every digit (`GREATEST(1.5, 2.25)`
 
 ## ORDER BY keys and the ORDER token
 
-(msduck order-token, order-token-expanded, functions2/order-and-types.)
+(captured-runs/order-token, order-token-expanded, functions2/order-and-types.)
 A key that is a constant (literal, `CAST(NULL AS int)`, `1+2`, also
 through an alias or position) sends no ORDER token entry and does not
 sort; when every key is constant there is no ORDER token at all. A hidden
@@ -176,7 +176,7 @@ BY a`), while `t.a` is fine. Positions count wildcard-expanded columns
 
 ## sys.dm_exec_describe_first_result_set / sp_describe_first_result_set
 
-(session/describe.mbt; msduck greatest-least, json-constructors,
+(session/describe.mbt; captured-runs/greatest-least, json-constructors,
 parse-try-parse, probes.) The binder's result columns of the first
 statement that returns rows (SELECT without assignment or INTO; DECLARE
 and SET before it are skipped). Per column: system_type_id, `to_sql()`
@@ -199,7 +199,7 @@ two errors from the procedure.
 
 - Folded function results take the length of their value (`LEFT('abcdef',3)`
   gives varchar(3), `SPACE(3)` varchar(3)). The REPLICATE edge cases (`''`, `0`) are not understood yet.
-- Expressions over VALUES-derived columns: a non-constant CASE over them showed flags 0 (msduck conditional-literal-folding #006).
+- Expressions over VALUES-derived columns: a non-constant CASE over them showed flags 0 (captured/conditional-literal-folding #006).
 
 ## Collation precedence (bind/collation.mbt)
 
@@ -207,15 +207,15 @@ Coercibility: `COLLATE` gives explicit, column references implicit, literals
 and variables default. Derived tables, CTEs and views pass their column's
 coercibility through: `SELECT N'a' COLLATE BIN2 AS x` read back as `x` is
 still explicit (468 against another explicit collation), `SELECT N'a' AS x`
-read back stays default (no conflict with an implicit column) (msduck
-collation-precedence #000–#002, #020, #021). String-to-string CAST keeps the
+read back stays default (no conflict with an implicit column) (
+captured/collation-precedence #000–#002, #020, #021). String-to-string CAST keeps the
 input's label. `ISNULL(a, b)` takes `a`'s collation, `b`'s only when `a` is
-an untyped NULL (msduck collation-functions #001–#003, #042–#045); NULLIF
+an untyped NULL (captured/collation-functions #001–#003, #042–#045); NULLIF
 takes its first argument's.
 
 Two different implicit collations combine to **no collation** in operators
 that do not compare (`+`, CONCAT, CASE / IIF / COALESCE / CHOOSE, UNION
-ALL). What then happens (msduck bin2-comparisons, collation-precedence,
+ALL). What then happens (captured/bin2-comparisons, collation-precedence,
 collation-sensitive; corpus collation/deferred-conflicts):
 
 | Situation | Error |
@@ -243,11 +243,11 @@ Latin1_General_100_CI_AS and Latin1_General_BIN2):
 - 452 more map by Windows "best fit" (`Ā` → `A`, `Đ` → `Ð`, `∞` → `8`,
   U+0301 → `´` 0xB4), table in src/core/types/cp1252_best_fit.mbt;
 - every other unit becomes `?`, surrogate halves included, so a
-  supplementary character becomes `??` (msduck left-right-casts #001:
+  supplementary character becomes `??` (captured/left-right-casts #001:
   `CAST(LEFT(N'🦆xy',2) AS VARCHAR(3))` is `??`, unicode-bindings #003/#006).
 
 Binary collations compare varchar data by these bytes: `'€'` (0x80) <
-NBSP (0xA0) as varchar under BIN2 although U+20AC > U+00A0 (msduck
-bin2-ansi-comparisons). Under SQL_ collations varchar uses string sort:
+NBSP (0xA0) as varchar under BIN2 although U+20AC > U+00A0 (
+captured/bin2-ansi-comparisons). Under SQL_ collations varchar uses string sort:
 `'ß'` sorts after `'ss'` and before `'st'` but is not equal to `'ss'`
 (`CHARINDEX('ss', 'straße')` is 0; nvarchar `ß` = `ss`).

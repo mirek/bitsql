@@ -1,4 +1,4 @@
--- sp_rename beyond the msduck gaps-catalog captures: duplicate index
+-- sp_rename beyond the captured-gaps/gaps-catalog captures: duplicate index
 -- names, schema-bound dependencies (15336 for columns and tables), objtype
 -- spelling, TRY behaviour, @@ERROR afterwards, brackets in the new name.
 -- @step setup

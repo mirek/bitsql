@@ -1,7 +1,7 @@
 # System catalog rows and catalog procedures
 
-Rules derived from captures in long-tail round 4 (2026-10-04; msduck
-gaps-catalog, msduck-runs system-all-columns / all-objects / index-catalog /
+Rules derived from captures in long-tail round 4 (2026-10-04; 
+captured-gaps/gaps-catalog, captured-runs system-all-columns / all-objects / index-catalog /
 drop-index / table-type-catalog / tedious-compat-gaps, corpus
 `tail/catalog-*`). Implementation: `session/system_catalog.mbt`,
 `sp_rename.mbt`, `alter_index.mbt`, generated `sysviews_system_data.mbt`.

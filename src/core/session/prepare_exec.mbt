@@ -1,7 +1,7 @@
 ///|
 /// EXEC sp_prepare / sp_execute / sp_unprepare inside T-SQL (a batch or
 /// sp_executesql text). They share the handles of the RPC forms. Captured:
-/// msduck-runs count-null-compilation #066-#071, tail/prepare-in-batch.
+/// captured-runs count-null-compilation #066-#071, tail/prepare-in-batch.
 fn Session::exec_prepare_proc(
   self : Session,
   which : String,
@@ -144,7 +144,7 @@ fn Session::exec_sp_prepare(
   match self.describe_batch(sql, Some(decls), None) {
     Columns(_, bq) => {
       self.out.push(ResultSet(bq.columns.map(tds_column)))
-      // captured: the ORDER token follows (msduck-runs order-token-expanded
+      // captured: the ORDER token follows (captured-runs order-token-expanded
       // #094-#097)
       if !bq.order.is_empty() {
         self.out.push(Order(bq.order))

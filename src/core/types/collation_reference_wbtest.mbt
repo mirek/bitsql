@@ -93,8 +93,8 @@ fn ref_collation_elements(
   let version = collation.version
   let word_sort = !(ansi && collation.sql_collation)
   // SQL sort orders on varchar data give NUL a weight below the space
-  // (captured: MIN over '', ' ' and CHAR(0) is CHAR(0); msduck
-  // character-extrema #098, #130)
+  // (captured: MIN over '', ' ' and CHAR(0) is CHAR(0); 
+  // captured-runs/character-extrema #098, #130)
   let ignored = (u : Int) => is_ignorable(u, version) && !(u == 0 && !word_sort)
   // pad semantics: drop trailing spaces (and trailing ignorables)
   let mut n = s.length()
@@ -291,7 +291,7 @@ fn ref_collation_elements(
     }
   }
   // accents sort in the table's order, not by code point (captured:
-  // msduck default-collation weights-accented-letter-order: á < à < ä < ā)
+  // captured-runs/default-collation weights-accented-letter-order: á < à < ä < ā)
   for k, e in out {
     if e.secondary != 0 {
       out[k] = { ..e, secondary: accent_weight(e.secondary, version), }
@@ -352,8 +352,8 @@ fn ref_compare_linguistic(
   let primary = ref_compare_level(ea, eb, e => e.primary, true)
   // pad semantics under SQL sort orders on varchar: the shorter operand
   // is space-padded, so a control character (NUL) after the common prefix
-  // sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), msduck
-  // character-extrema #098)
+  // sorts below it (captured: MIN('', CHAR(0)) is CHAR(0), 
+  // captured-runs/character-extrema #098)
   if ansi && collation.sql_collation && primary != 0 {
     let xs = ea.filter(e => e.primary != 0)
     let ys = eb.filter(e => e.primary != 0)
@@ -380,7 +380,7 @@ fn ref_compare_linguistic(
     if c != 0 {
       // SQL sort orders on varchar data put upper case first (captured:
       // 'A' < 'a' COLLATE SQL_Latin1_General_CP1_CS_AS, while N'A' > N'a';
-      // msduck gaps-conversion#1221)
+      // captured-gaps/gaps-conversion#1221)
       return if ansi && collation.sql_collation { -c } else { c }
     }
   }

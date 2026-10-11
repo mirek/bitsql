@@ -1,6 +1,6 @@
 // Date/time → character CONVERT styles (us_english).
 //
-// Every rule here is captured (msduck gaps-conversion format-* for all six
+// Every rule here is captured (captured-gaps/gaps-conversion format-* for all six
 // temporal types × 47 styles, harness/corpus/conversion/hijri):
 //
 // - date-only styles (1-7, 10-12, 23, 101-107, 110-112) print no time and
@@ -53,7 +53,7 @@ fn invalid_style(style : Int, from : SqlType) -> SqlError {
 ///
 /// CAST of date/time/datetime2/datetimeoffset is ISO with the declared
 /// number of fraction digits (`2024-03-01 00:00:00.00 +01:30`); CAST of
-/// datetime/smalldatetime is style 0 (msduck temporal-guid-format).
+/// datetime/smalldatetime is style 0 (captured-runs/temporal-guid-format).
 pub fn render_temporal(
   v : Value,
   from : SqlType,

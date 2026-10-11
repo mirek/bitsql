@@ -14,7 +14,7 @@ function compareCapture(actual, expected, base) {
   if (!actual) return { path: base, actual: '<missing>', expected: 'capture' }
   for (const key of orderedKeys(expected)) {
     let value = actual[key]
-    // Metadata-only expectations (some msduck imports) omit `rows`.
+    // Metadata-only expectations (some captured/ cases) omit `rows`.
     if (key === 'sets' && Array.isArray(value) && Array.isArray(expected.sets)) {
       value = value.map((set, i) => expected.sets[i] && !('rows' in expected.sets[i]) ? { columns: set.columns } : set)
     }

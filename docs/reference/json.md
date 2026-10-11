@@ -1,7 +1,7 @@
 # JSON functions, paths, aggregates, FOR JSON and the json type (SQL Server 2025)
 
 Rules distilled from captures on 17.0.5005.3: `harness/corpus/json3/*.sql`
-(2026-10-04), msduck `json-advanced-path`, `json-extraction-wildcard`,
+(2026-10-04), `captured-runs/json-advanced-path`, `json-extraction-wildcard`,
 `json-extraction-boundaries`, `isjson-depth`, `unicode-json-storage`,
 `json-aggregates`, `json-constructors`, `gaps-json_string`. Code:
 `src/core/json` (paths, scanning, selection), `bind/for_json.mbt`,
@@ -174,8 +174,8 @@ WITHOUT_ARRAY_WRAPPER subquery and JSON_VALUE are strings.
 
 ## The json data type (SQL Server 2025)
 
-Captures: `harness/corpus/json4/*.sql` (2026-10-04), msduck
-`json-constructors` #016-#020, `json-aggregates` #025/#037/#038/#055/#069/
+Captures: `harness/corpus/json4/*.sql` (2026-10-04), 
+`captured-runs/json-constructors` #016-#020, `json-aggregates` #025/#037/#038/#055/#069/
 #102. Code: `types/json_type.mbt` (parser, normalizer, conversions),
 `bind/xml_methods.mbt` (`json_arg_check`, comparison checks shared with
 xml), `exec/fn_json2.mbt`, `exec/json_agg.mbt`.
