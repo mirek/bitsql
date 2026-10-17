@@ -33,9 +33,10 @@ docker run --rm -p 1433:1433 mirek/bitsql --auto-create-databases
 
 Published image: `mirek/bitsql` (tags `X.Y.Z`, `X.Y`, `latest`). Release 0.1.28
 publishes native-validated amd64; inspect the tag’s manifest for availability.
-Other architectures require validation and publication on their native hosts. `SELECT @@VERSION` returns `Microsoft SQL Server 2025
-(bitsql emulator X.Y.Z)`, so you can tell which release you're connected to,
-and the image has `org.opencontainers.image.version` and `revision` labels.
+Other architectures require validation and publication on their native hosts.
+`SELECT @@VERSION` returns `mirek/bitsql@X.Y.Z`, so you can tell which release
+you're connected to, and the image has `org.opencontainers.image.version` and
+`revision` labels.
 
 ## Drop-in replacement for `mcr.microsoft.com/mssql/server`
 
@@ -48,7 +49,9 @@ Change the image name. Connection settings stay the same:
 - **TLS:** works with tedious / mssql defaults (`encrypt: true` plus
   `trustServerCertificate: true`, as for SQL Server's self-signed
   certificate), and with `encrypt: false`. Prisma URLs work with
-  `encrypt=true` or `encrypt=false`.
+  `encrypt=true` or `encrypt=false`. The built-in certificate's private key
+  is public (it's in the source), so the default TLS protects nothing. It is
+  for tests only. Pass `--tls-cert`/`--tls-key` for anything else.
 - **Databases:** `master`, `tempdb`, `model` and `msdb` exist at start.
   `CREATE DATABASE` works. If the tests connect straight to a database that
   nothing creates, start the server with `--database NAME` (repeatable) or
@@ -268,3 +271,12 @@ Build, test and publish the native host architecture with
 ## License
 
 Public domain, [CC0 1.0](LICENSE.md); see [AUTHORS.md](AUTHORS.md).
+Contributions are accepted only under the same dedication: add your name to
+AUTHORS.md in your first contribution. Third-party parts (the MoonBit standard
+library and `moonbitlang/async` compiled into the binary, the RE2 Unicode
+tables, the vendored MoonBit docs) keep their own licenses; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Microsoft and SQL Server are trademarks of the Microsoft group of companies.
+bitsql is an independent project. It is not affiliated with, endorsed by or
+sponsored by Microsoft.

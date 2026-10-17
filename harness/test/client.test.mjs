@@ -66,5 +66,5 @@ test('@@VERSION names the bitsql release', async t => {
   t.after(() => close(connection))
   const version = readFileSync(join(repoDir, 'moon.mod'), 'utf8').match(/^version = "(.*)"/m)[1]
   const { rows } = await query(connection, 'SELECT @@VERSION')
-  assert.equal(rows[0][0], `Microsoft SQL Server 2025 (bitsql emulator ${version})`)
+  assert.equal(rows[0][0], `mirek/bitsql@${version}`)
 })

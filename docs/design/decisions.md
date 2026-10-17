@@ -1406,3 +1406,23 @@ proof lowering cannot handle `Array`/`String` type definitions in a
 proof-enabled package. Writing the specs exposed a pre-auth server abort in
 `Reader::need` and a missing midnight carry in `GETDATE()`. Scope, limits and
 candidates: [verification.md](verification.md#formal-proofs-moon-prove).
+
+## 2026-10-17: licensing hygiene; @@VERSION is `mirek/bitsql@X.Y.Z`
+
+A licensing review found the repo labelled everything CC0 although some
+material is third-party. `THIRD_PARTY_NOTICES.md` and `licenses/` now list
+what keeps its own license: moonbitlang/core (Apache-2.0, plus its NOTICE with
+BSD and MIT notices) and moonbitlang/async (Apache-2.0), both compiled into
+every build, the RE2 tables (BSD), and the vendored MoonBit docs
+(`docs/moonbit/LICENSES.md`; moonbit-docs prose is CC BY-SA 4.0 or, before
+2024-07-04, copyright reserved). The Docker image ships these texts under
+`/usr/share/licenses/bitsql/`. README and website say that bitsql is not
+affiliated with Microsoft.
+
+`@@VERSION` no longer starts with `Microsoft SQL Server 2025`. It is
+`mirek/bitsql@X.Y.Z`, so the emulator doesn't present itself under Microsoft's
+product name. Clients that gate on the version read
+SERVERPROPERTY('ProductVersion') or the LOGINACK version (still 17.0.5005),
+which are unchanged. LOGINACK `ProgName` and msdb `software_name` keep
+"Microsoft SQL Server" because clients and tools see them as protocol and
+catalog values. (README.md, src/core/exec/runtime.mbt)

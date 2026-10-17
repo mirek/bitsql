@@ -27,7 +27,7 @@ test('production site: SQL worker, safe rendering, reset, stop, mobile layout', 
     assert.equal(await page.locator('.chart').count(), 6);
     await page.locator('#run').click();
     await page.waitForFunction(() => document.querySelector('#query-status')?.textContent?.startsWith('Completed'));
-    assert.match(await page.locator('#results').innerText(), /bitsql emulator/);
+    assert.match(await page.locator('#results').innerText(), /mirek\/bitsql@/);
     await page.locator('#example').selectOption('1');
     await page.locator('#run').click();
     await page.waitForFunction(() => document.querySelector('#query-status')?.textContent?.startsWith('Completed'));
