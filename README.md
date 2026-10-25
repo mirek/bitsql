@@ -233,7 +233,14 @@ images: bitsql=mirek/bitsql:0.1.28-amd64, mssql=mcr.microsoft.com/mssql/server:2
 Point SELECTs: median of five 1000-query batches after one full warm-up batch; all executions check SQL errors.
 
 Startup, footprint and writes are the main gains in this run; point reads are
-slower than SQL Server. Shared-host measurements vary between runs. These
+slower than SQL Server.
+
+Unreleased `main` (2026-10-25, a locally built image of the same kind, same
+host and harness): bitsql is ahead on every row in the medians of three
+full runs, among them 1000 point SELECTs 113 vs 122 ms (faster in 10 of 11
+runs that day, one 1% tie), MERGE 19.4 vs 31.6 ms, UPDATE all rows 17.7 vs
+27.7 ms and the report query 0.67 vs 0.85 ms. These tables are re-measured
+with the next release (decisions.md 2026-10-25). Shared-host measurements vary between runs. These
 measurements include native statement-history collection but do not isolate its
 overhead or benchmark Query Store capture mode ALL. The earlier 0.1.26 opt-in
 profiling experiment applies to that release only. See [the measurements and
