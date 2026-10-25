@@ -21,6 +21,11 @@ pub fn Db::external_models(self : Db) -> Array[ExternalModel] {
 }
 
 ///|
+pub fn Db::has_external_models(self : Db) -> Bool {
+  !self.external_models.is_empty()
+}
+
+///|
 pub fn Db::external_model(self : Db, name : String) -> ExternalModel? {
   self.external_models.get(name.to_lower())
 }

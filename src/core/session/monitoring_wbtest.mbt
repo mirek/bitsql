@@ -17,6 +17,14 @@ fn monitored_run(
     out = s.run_batch(sql, tick)
     s.charge_cpu(100L)
   }
+  // the end sample the engine requests after the batch
+  if s.needs_sample() {
+    if turns == 0 {
+      s.charge_cpu(100L)
+    }
+    tick += 100000L
+    s.sample(tick, 0L)
+  }
   for item in out {
     if item is @reply.Message(m) && m.class >= 11 {
       fail(m.message)

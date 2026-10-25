@@ -23,11 +23,19 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
       s.span.start >= 0 &&
       s.span.end <= self.text.length() &&
       s.kind is (Select(_) | Insert(_) | Update(_) | Delete(_) | Merge(_))
-    if measured && self.statement_sample is None {
-      self.prepare_sample(s)
+    if measured && self.statement_sample is Some({ finished: true, .. }) {
+      // an earlier statement still waits for its end sample
       self.sample_boundary(stmts[i:].to_owned())
     }
-    let saved = if root {
+    if measured && self.statement_sample is None {
+      self.prepare_sample(s)
+      if self.sample_fresh && self.statement_sample is Some(sample) {
+        sample.start = self.rt.now
+      } else {
+        self.sample_boundary(stmts[i:].to_owned())
+      }
+    }
+    let saved = if root && self.may_resume(s) {
       Some(
         (
           self.snapshot_request(),
@@ -84,14 +92,32 @@ fn Session::exec_list(self : Session, stmts : Array[@ast.Stmt]) -> Unit raise {
       }
       sample.rows = self.rt.rowcount
       sample.finished = true
-      self.sample_boundary(stmts[i + 1:].to_owned())
+      if i + 1 == stmts.length() {
+        // nothing later in this list can read the statistics: the engine
+        // requests the end sample after the request (or between RPC calls)
+        self.sample_requested = true
+      } else {
+        self.sample_boundary(stmts[i + 1:].to_owned())
+      }
     }
   }
 }
 
 ///|
+/// Whether a park in root statement `s` can resume the batch at `s`, which
+/// needs the request state from before it: after a sample boundary
+/// (`batch_resuming`, which `s` cannot change), or at an embedding call. A
+/// query cannot create an external model, so it calls none if none exists.
+fn Session::may_resume(self : Session, s : @ast.Stmt) -> Bool {
+  self.batch_resuming ||
+  !(s.kind is Select({ body: Select({ into: None, .. }), .. })) ||
+  self.server.dbs.values().any(db => db.has_external_models())
+}
+
+///|
 /// Executes one statement and applies SQL Server's error disposition.
 fn Session::exec_one(self : Session, s : @ast.Stmt) -> Unit raise {
+  self.sample_fresh = false
   self.diagnostic_statement += 1L
   let line = s.span.line
   self.stmt_line = line

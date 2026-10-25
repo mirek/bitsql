@@ -90,9 +90,21 @@ fn DbOptions::default(name : String) -> DbOptions {
 
 ///|
 fn Server::db_options(self : Server, name : String) -> DbOptions {
-  match self.db_options.get(name.to_lower()) {
+  let key = name.to_lower()
+  match self.db_options.get(key) {
     Some(o) => o
-    None => DbOptions::default(name)
+    None =>
+      match self.default_db_options.get(key) {
+        Some(o) => o
+        None => {
+          let o = DbOptions::default(key)
+          if self.default_db_options.length() >= 1024 {
+            self.default_db_options.clear()
+          }
+          self.default_db_options[key] = o
+          o
+        }
+      }
   }
 }
 

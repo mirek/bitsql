@@ -132,13 +132,16 @@ pub fn Engine::handle(self : Engine, event : Event) -> Array[Output] {
         session.charge_cpu(cpu)
       }
     Measured(id, cpu) =>
-      if self.parked.contains(id) && self.sessions[id].needs_sample() {
-        self.sessions[id].sample(event.now, cpu)
-        try {
-          self.rerun(id, event.now, out)
-          self.drain(event.now, out)
-        } catch {
-          e => out.push(Log("measurement resume: \{e}"))
+      if self.sessions.get(id) is Some(session) && session.needs_sample() {
+        session.sample(event.now, cpu)
+        // the end sample of a finished request resumes nothing
+        if self.parked.contains(id) {
+          try {
+            self.rerun(id, event.now, out)
+            self.drain(event.now, out)
+          } catch {
+            e => out.push(Log("measurement resume: \{e}"))
+          }
         }
       }
     Resume => ()
@@ -456,6 +459,9 @@ fn Engine::run_batch(
     out,
     complete=!disconnected || items.any(i => i is FatalDone(_)),
   )
+  if session.needs_sample() {
+    out.push(Sample(conn.id))
+  }
   if disconnected {
     out.push(Close(conn.id))
   }
@@ -474,7 +480,7 @@ fn Engine::run_rpc(
   let w = @tds.Writer::new()
   w.bytes(done_bytes)
   for i, call in calls {
-    let items = session.run_rpc(call, now)
+    let items = session.run_rpc(call, now, first=i == 0)
     if session.is_parked() {
       self.parked[conn.id] = ParkedRpc(calls[i:].to_owned(), w.to_bytes())
       self.arm_timeout(conn.id, out)
@@ -488,6 +494,13 @@ fn Engine::run_rpc(
       break
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
+    if session.needs_sample() && i + 1 < calls.length() &&
+      !items.any(it => it is Disconnect) {
+      // the call's end sample comes before later calls can read statistics
+      self.parked[conn.id] = ParkedRpc(calls[i + 1:].to_owned(), w.to_bytes())
+      out.push(Sample(conn.id))
+      return
+    }
     if items.any(it => it is Disconnect) {
       self.send(
         conn,
@@ -500,6 +513,9 @@ fn Engine::run_rpc(
     }
   }
   self.send(conn, w.to_bytes(), out)
+  if session.needs_sample() {
+    out.push(Sample(conn.id))
+  }
 }
 
 ///|

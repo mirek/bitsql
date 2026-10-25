@@ -329,10 +329,11 @@ fn Session::lock_reads(self : Session, q : @ast.Query) -> Unit raise {
         fn visit(r : @ast.TableRef) -> Unit raise {
           match r.kind {
             Table(name, alias_~, hints~) => {
-              if self.find_table(name) is Some((sc, _)) && is_db_scope(sc) {
+              let found = self.find_table(name)
+              if found is Some((sc, _)) && is_db_scope(sc) {
                 self.check_snapshot_allowed()
               }
-              match (self.read_lock(hints), self.find_table(name)) {
+              match (self.read_lock(hints), found) {
                 (Some((mode, duration)), Some((sc, t))) if is_db_scope(sc) => {
                   let a = match alias_ {
                     Some(x) => x.name.to_lower()

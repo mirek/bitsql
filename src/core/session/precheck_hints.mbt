@@ -308,6 +308,17 @@ fn HintCheck::table_hints(
   if self.failure is Some(_) {
     return
   }
+  if hints.is_empty() {
+    // without hints only the second pass's disabled clustered index applies
+    if self.phase == 2 &&
+      !is_cte &&
+      self.session.find_table(name) is Some((_, t)) &&
+      t.indexes.iter().any(ix => ix.clustered && ix.disabled) &&
+      disabled_cluster_error(t, object_text(name)) is Some(e) {
+      self.fail(e, line)
+    }
+    return
+  }
   let names = hints.map(h => h.name)
   let iso = names.filter_map(isolation_class)
   if self.phase == 1 {

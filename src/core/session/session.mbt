@@ -54,6 +54,8 @@ pub struct Server {
   /// ALTER DATABASE settings by lowercased database name (absent: the
   /// defaults of `DbOptions::default`).
   priv db_options : Map[String, DbOptions]
+  /// `DbOptions::default` per lowercased name (immutable, so shared)
+  priv default_db_options : Map[String, DbOptions]
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
   /// Parsed texts (session/parse_cache.mbt).
@@ -123,6 +125,7 @@ pub fn Server::new() -> Server {
     victims: [],
     udfs: Map([]),
     db_options: Map([]),
+    default_db_options: Map([]),
     backups: BackupStore::new(),
     monitoring: false,
     system_facts: Map([]),
@@ -352,6 +355,9 @@ pub struct Session {
   priv mut batch_resuming : Bool
   priv mut statement_sample : StatementSample?
   priv mut sample_requested : Bool
+  /// Nothing has executed since the request's event time `rt.now`, so a
+  /// measured statement may start its sample at that time without parking.
+  priv mut sample_fresh : Bool
   priv mut diagnostic_statement : Int64
   priv mut list_depth : Int
   priv mut batch_outer_refs : Array[(Int, Int, String)]
@@ -559,6 +565,7 @@ pub fn Session::new(
     batch_resuming: false,
     statement_sample: None,
     sample_requested: false,
+    sample_fresh: false,
     diagnostic_statement: 0L,
     list_depth: 0,
     batch_outer_refs: [],
@@ -807,6 +814,7 @@ pub fn Session::run_batch(
 ) -> Array[@reply.Item] {
   let continuation = self.batch_resume
   self.batch_resume = None
+  self.sample_fresh = continuation is None && !self.parked
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
   if !self.parked {

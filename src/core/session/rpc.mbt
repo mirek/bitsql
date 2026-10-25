@@ -358,14 +358,17 @@ fn tran_count_error(before : Int, after : Int) -> @types.SqlError {
 }
 
 ///|
-/// Runs an RPC request (sp_executesql, or a procedure by name).
+/// Runs an RPC request (sp_executesql, or a procedure by name). `first`:
+/// no earlier call of the same request has run since `now`.
 pub fn Session::run_rpc(
   self : Session,
   call : @tds.RpcCall,
   now : Int64,
+  first? : Bool = true,
 ) -> Array[@reply.Item] {
   let continuation = self.rpc_continuation
   self.rpc_continuation = None
+  self.sample_fresh = first && continuation is None && !self.parked
   self.rt.now = now
   self.rt.begin_attempt(self.parked)
   if !self.parked {

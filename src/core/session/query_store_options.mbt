@@ -10,6 +10,20 @@ priv struct QueryStoreOptions {
 }
 
 ///|
+/// Shared by every default: option changes copy `numbers` before writing.
+let default_query_store_numbers : Map[String, Int] = Map([
+  ("DATA_FLUSH_INTERVAL_SECONDS", 900),
+  ("INTERVAL_LENGTH_MINUTES", 60),
+  ("MAX_STORAGE_SIZE_MB", 1000),
+  ("CLEANUP_POLICY.STALE_QUERY_THRESHOLD_DAYS", 30),
+  ("MAX_PLANS_PER_QUERY", 200),
+  ("QUERY_CAPTURE_POLICY.EXECUTION_COUNT", 30),
+  ("QUERY_CAPTURE_POLICY.TOTAL_COMPILE_CPU_TIME_MS", 1000),
+  ("QUERY_CAPTURE_POLICY.TOTAL_EXECUTION_CPU_TIME_MS", 100),
+  ("QUERY_CAPTURE_POLICY.STALE_CAPTURE_POLICY_THRESHOLD", 24),
+])
+
+///|
 fn QueryStoreOptions::default(db : String) -> QueryStoreOptions {
   {
     enabled: !(db.to_lower() is ("master" | "tempdb" | "model" | "msdb")),
@@ -17,17 +31,7 @@ fn QueryStoreOptions::default(db : String) -> QueryStoreOptions {
     capture: 2,
     cleanup: true,
     waits: true,
-    numbers: Map([
-      ("DATA_FLUSH_INTERVAL_SECONDS", 900),
-      ("INTERVAL_LENGTH_MINUTES", 60),
-      ("MAX_STORAGE_SIZE_MB", 1000),
-      ("CLEANUP_POLICY.STALE_QUERY_THRESHOLD_DAYS", 30),
-      ("MAX_PLANS_PER_QUERY", 200),
-      ("QUERY_CAPTURE_POLICY.EXECUTION_COUNT", 30),
-      ("QUERY_CAPTURE_POLICY.TOTAL_COMPILE_CPU_TIME_MS", 1000),
-      ("QUERY_CAPTURE_POLICY.TOTAL_EXECUTION_CPU_TIME_MS", 100),
-      ("QUERY_CAPTURE_POLICY.STALE_CAPTURE_POLICY_THRESHOLD", 24),
-    ]),
+    numbers: default_query_store_numbers,
   }
 }
 
