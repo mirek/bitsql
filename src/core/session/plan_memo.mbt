@@ -144,7 +144,7 @@ fn Session::remember_plan(
     self.stamp_holds(stamp) else {
     return
   }
-  let entry = { query: q, stamp, bound }
+  let entry = { query: q, stamp, bound, }
   for i, m in self.plan_memo {
     if physical_equal(m.query, q) {
       self.plan_memo[i] = entry
@@ -171,7 +171,8 @@ fn memo_plan_ok(p : @ir.Plan) -> Bool {
     Values(rows) => rows.iter().all(r => r.iter().all(memo_expr_ok))
     Project(p, es) => memo_plan_ok(p) && es.iter().all(memo_expr_ok)
     Filter(p, e) => memo_plan_ok(p) && memo_expr_ok(e)
-    Sort(p, keys) => memo_plan_ok(p) && keys.iter().all(k => memo_expr_ok(k.expr))
+    Sort(p, keys) =>
+      memo_plan_ok(p) && keys.iter().all(k => memo_expr_ok(k.expr))
     Limit(p, a, b) =>
       memo_plan_ok(p) &&
       a.map(memo_expr_ok).unwrap_or(true) &&
@@ -211,7 +212,9 @@ fn memo_expr_ok(e : @ir.Expr) -> Bool {
     | And(a, b)
     | Or(a, b) => memo_expr_ok(a) && memo_expr_ok(b)
     Like(a, b, escape~, ..) =>
-      memo_expr_ok(a) && memo_expr_ok(b) && escape.map(memo_expr_ok).unwrap_or(true)
+      memo_expr_ok(a) &&
+      memo_expr_ok(b) &&
+      escape.map(memo_expr_ok).unwrap_or(true)
     InList(x, xs, ..) => memo_expr_ok(x) && xs.iter().all(memo_expr_ok)
     Case(arms, other) =>
       arms.iter().all(a => memo_expr_ok(a.0) && memo_expr_ok(a.1)) &&
@@ -220,7 +223,8 @@ fn memo_expr_ok(e : @ir.Expr) -> Bool {
     Call(Named(_), _) => false
     Call(_, args) => args.iter().all(memo_expr_ok)
     Subquery(p) | Exists(p) => memo_plan_ok(p)
-    InQuery(x, p, ..) | Quantified(_, x, p, ..) => memo_expr_ok(x) && memo_plan_ok(p)
+    InQuery(x, p, ..) | Quantified(_, x, p, ..) =>
+      memo_expr_ok(x) && memo_plan_ok(p)
     UserFn(_, _) => false
   }
 }

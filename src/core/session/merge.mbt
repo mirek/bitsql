@@ -238,15 +238,38 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
   let width_s = source_cols.length()
   let null_target = Array::make(n, @types.Value::Null)
   let null_source = Array::make(width_s, @types.Value::Null)
+  // one evaluation context for the statement's rows (the frame and the
+  // session it reads stay the same)
+  let base_ctx = self.ctx()
+  // SET and VALUES expressions bind when a row first needs them, then are
+  // reused (binding is deterministic; one that leaves deferred messages
+  // binds again, as before)
+  let bound_exprs : Array[(@ast.Expr, @ir.Expr)] = []
+  let bind_once = (e : @ast.Expr) => {
+    for p in bound_exprs {
+      if physical_equal(p.0, e) {
+        return p.1
+      }
+    }
+    let before = self.deferred.length()
+    let b = @bind.bind_expr(env, e)
+    if self.deferred.length() == before {
+      bound_exprs.push((e, b))
+    }
+    b
+  }
+  let compound_exprs : Array[(@ast.Expr, @ir.Expr)] = []
   let pick = (family : (@ast.MergeMatch) -> Bool, row : Array[@types.Value]) => {
-    let ctx = self.ctx().with_row(row)
     for bw in bound_whens {
       let (w, cond) = bw
       if !family(w.match_) {
         continue
       }
       match cond {
-        Some(c) => if !@exec.is_true(@exec.eval(ctx, c)) { continue }
+        Some(c) =>
+          if !@exec.is_true(@exec.eval(base_ctx.with_row(row), c)) {
+            continue
+          }
         None => ()
       }
       return Some(w)
@@ -471,7 +494,7 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
           }
           guard w.action is MergeUpdate(sets) else { continue }
           let row = old.copy()
-          let ctx = self.ctx().with_row(old + s)
+          let ctx = base_ctx.with_row(old + s)
           for sc in sets {
             guard sc.target is SetColumn(parts) else {
               raise @types.not_supported("MERGE SET @variable")
@@ -492,13 +515,10 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
               }
               bound
             } else {
-              @bind.bind_expr(env, sc.value)
+              bind_once(sc.value)
             }
             let (v, ty) = if sc.mutator {
-              (
-                @exec.eval(self.ctx().with_row(old + s + [old[ci]]), rhs),
-                rhs.ty,
-              )
+              (@exec.eval(base_ctx.with_row(old + s + [old[ci]]), rhs), rhs.ty)
             } else if sc.op is Assign {
               (@exec.eval(ctx, rhs), rhs.ty)
             } else {
@@ -509,8 +529,19 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
                 ty: c.ty,
                 nullable: c.nullable,
               }
-              let b = @bind.compound_assignment(env, sc.op, current, rhs)
-              (@exec.eval(self.ctx().with_row(old + s + [old[ci]]), b), b.ty)
+              let b = match
+                compound_exprs.search_by(p => physical_equal(p.0, sc.value)) {
+                Some(i) => compound_exprs[i].1
+                None => {
+                  let before = self.deferred.length()
+                  let b = @bind.compound_assignment(env, sc.op, current, rhs)
+                  if self.deferred.length() == before {
+                    compound_exprs.push((sc.value, b))
+                  }
+                  b
+                }
+              }
+              (@exec.eval(base_ctx.with_row(old + s + [old[ci]]), b), b.ty)
             }
             row[ci] = self.to_column(target, c, v, ty)
           }
@@ -565,10 +596,10 @@ fn Session::exec_merge(self : Session, m : @ast.Merge) -> Unit raise {
                 }
               })
             }
-            let ctx = self.ctx().with_row(null_target + s)
+            let ctx = base_ctx.with_row(null_target + s)
             for j, e in values {
               if j < cols.length() && !(e.kind is Default) {
-                let b = @bind.bind_expr(env, e)
+                let b = bind_once(e)
                 row[cols[j]] = self.to_column(
                   target,
                   t.columns[cols[j]],

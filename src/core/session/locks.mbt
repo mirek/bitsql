@@ -274,7 +274,15 @@ fn Session::pk_point(
     }
     match found {
       Some(e) => {
-        let (v, ty) = self.eval(e)
+        let (v, ty) = match e.kind {
+          // a variable binds to its slot (and passes the binder's SET option
+          // checks unless NUMERIC_ROUNDABORT meets a rounding type)
+          Var(name) if self.frame().vars.get(name.to_lower()) is Some(info) &&
+            !(self.bind_options().numeric_roundabort &&
+            @bind.rounding_type(info.ty)) =>
+            (self.frame().values[info.slot], info.ty)
+          _ => self.eval(e)
+        }
         values.push(@types.cast(v, ty, t.columns[c.0].ty))
       }
       None => return None

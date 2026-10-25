@@ -1645,9 +1645,16 @@ fn Session::check_proc_args(
 fn proc_keyword_at_start(sql : String) -> String? {
   // the first four words separated by space, LF, TAB or CR (scanned, not
   // split: the text can be long and this runs for every sp_executesql)
-  let words : Array[String] = []
   let n = sql.length()
   let mut i = 0
+  while i < n && sql.code_unit_at(i) is (' ' | '\n' | '\t' | '\r') {
+    i += 1
+  }
+  // only CREATE or ALTER can start one
+  guard i < n && sql.code_unit_at(i) is ('C' | 'c' | 'A' | 'a') else {
+    return None
+  }
+  let words : Array[String] = []
   while i < n && words.length() < 4 {
     let c = sql.code_unit_at(i)
     if c == ' ' || c == '\n' || c == '\t' || c == '\r' {

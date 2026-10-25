@@ -494,7 +494,8 @@ fn Engine::run_rpc(
       break
     }
     w.bytes(@reply.render(Rpc, items, self.config.server_name))
-    if session.needs_sample() && i + 1 < calls.length() &&
+    if session.needs_sample() &&
+      i + 1 < calls.length() &&
       !items.any(it => it is Disconnect) {
       // the call's end sample comes before later calls can read statistics
       self.parked[conn.id] = ParkedRpc(calls[i + 1:].to_owned(), w.to_bytes())
