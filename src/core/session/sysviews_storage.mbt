@@ -89,18 +89,16 @@ fn record_footprint(
   data : Array[(Int64, @store.Row)],
   keyed : Bool,
 ) -> Footprint {
-  let fixed = shape.cols.fold(init=shape.extra, (acc, c) => {
-    let ty = t.columns[c].ty
-    if storage_kind(ty) is Fixed {
-      acc + type_ids(ty).2.max(0)
+  let kinds = shape.cols.map(c => storage_kind(t.columns[c].ty))
+  let mut fixed = shape.extra
+  let mut nvar = 0
+  for i, c in shape.cols {
+    if kinds[i] is Fixed {
+      fixed += type_ids(t.columns[c].ty).2.max(0)
     } else {
-      acc
+      nvar += 1
     }
-  })
-  let nvar = shape.cols
-    .iter()
-    .filter(c => !(storage_kind(t.columns[c].ty) is Fixed))
-    .count()
+  }
   let bitmap = 2 + ceil_div(shape.cols.length(), 8)
   let mut n = 0
   let mut in_row = 0
@@ -111,46 +109,61 @@ fn record_footprint(
     let row = entry.1
     guard keep(row) else { continue }
     n += 1
-    let vars : Array[Int] = []
     let mut size = shape.header + fixed + bitmap
-    for c in shape.cols {
+    // in-row bytes of the variable columns (16-byte pointers for LOBs)
+    let mut var_sum = 0
+    for i, c in shape.cols {
       let ty = t.columns[c].ty
       let v = if c < row.length() { row[c] } else { Null }
-      match storage_kind(ty) {
+      match kinds[i] {
         Fixed => ()
-        Variable => vars.push(value_bytes(v, ty))
+        Variable => var_sum += value_bytes(v, ty)
         LargeValue => {
           let len = value_bytes(v, ty)
           if len > 8000 {
             lob += len
-            vars.push(16)
+            var_sum += 16
           } else {
-            vars.push(len)
+            var_sum += len
           }
         }
         TextPointer =>
           if !(v is Null) {
             lob += value_bytes(v, ty)
-            vars.push(16)
-          } else {
-            vars.push(0)
+            var_sum += 16
           }
       }
     }
     if nvar > 0 {
       size += 2 + 2 * nvar
     }
-    // the largest variable values move to row-overflow pages until the
-    // record fits
-    vars.sort()
-    let mut k = vars.length() - 1
-    let mut total = size + vars.fold(init=0, (a, x) => a + x)
-    while total > max_row_bytes && k >= 0 {
-      if vars[k] > 24 {
-        overflow += vars[k]
-        total = total - vars[k] + 24
+    let mut total = size + var_sum
+    if total > max_row_bytes {
+      // the largest variable values move to row-overflow pages until the
+      // record fits
+      let vars : Array[Int] = []
+      for i, c in shape.cols {
+        let ty = t.columns[c].ty
+        let v = if c < row.length() { row[c] } else { Null }
+        match kinds[i] {
+          Fixed => ()
+          Variable => vars.push(value_bytes(v, ty))
+          LargeValue => {
+            let len = value_bytes(v, ty)
+            vars.push(if len > 8000 { 16 } else { len })
+          }
+          TextPointer => vars.push(if v is Null { 0 } else { 16 })
+        }
       }
-      k -= 1
+      vars.sort()
+      let mut k = vars.length() - 1
+      while total > max_row_bytes && k >= 0 {
+        if vars[k] > 24 {
+          overflow += vars[k]
+          total = total - vars[k] + 24
+        }
+        k -= 1
+      }
     }
     in_row += total + 2
     key_bytes += total

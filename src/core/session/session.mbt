@@ -358,6 +358,7 @@ pub struct Session {
   /// Nothing has executed since the request's event time `rt.now`, so a
   /// measured statement may start its sample at that time without parking.
   priv mut sample_fresh : Bool
+  priv mut sample_texts : SampleTexts?
   priv mut diagnostic_statement : Int64
   priv mut list_depth : Int
   priv mut batch_outer_refs : Array[(Int, Int, String)]
@@ -578,6 +579,7 @@ pub fn Session::new(
     statement_sample: None,
     sample_requested: false,
     sample_fresh: false,
+    sample_texts: None,
     diagnostic_statement: 0L,
     list_depth: 0,
     batch_outer_refs: [],

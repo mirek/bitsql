@@ -1318,7 +1318,7 @@ fn is_compile_error(n : Int) -> Bool {
 /// FROM clause, IDENT_CURRENT, OBJECT_ID)? Token-level, so string literals
 /// and comments do not count.
 fn statement_reads(text : String) -> Bool {
-  if !text.to_upper().contains("XACT_STATE") {
+  if !contains_ascii_upper(text, "XACT_STATE") {
     return false
   }
   let toks = @lex.lex(text) catch { _ => return false }
@@ -1329,6 +1329,35 @@ fn statement_reads(text : String) -> Bool {
     if (t.is_kw("IDENT_CURRENT") || t.is_kw("OBJECT_ID")) &&
       k + 1 < toks.length() &&
       toks[k + 1].is_punct("(") {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// `text.to_upper().contains(word)` for an upper-case ASCII `word` without
+/// copying `text`: ASCII letters, dotless i and long s are the characters
+/// that upper-case to ASCII letters.
+fn contains_ascii_upper(text : String, word : String) -> Bool {
+  let n = text.length()
+  let m = word.length()
+  for i in 0..<(n - m + 1) {
+    let mut j = 0
+    while j < m {
+      let c = text.code_unit_at(i + j).to_int()
+      let u = match c {
+        0x131 => 'I'.to_int()
+        0x17F => 'S'.to_int()
+        _ if c >= 'a'.to_int() && c <= 'z'.to_int() => c - 32
+        _ => c
+      }
+      if u != word.code_unit_at(j).to_int() {
+        break
+      }
+      j += 1
+    }
+    if j == m {
       return true
     }
   }

@@ -195,12 +195,47 @@ fn Session::sample_boundary(
 }
 
 ///|
+/// `prepare_sample`'s texts of the last measured statement.
+priv struct SampleTexts {
+  stmt : @ast.Stmt
+  source : String
+  db : String
+  settings : (Int, Int, Int, Int)
+  text : String
+  context : String
+  database : String
+  identity : String
+}
+
+///|
 fn Session::prepare_sample(self : Session, stmt : @ast.Stmt) -> Unit {
   let options = self.server.db_options(self.rt.database).query_store
-  let text = self.slice(stmt.span).trim().trim_end(chars=";").to_owned()
   let settings = self.query_store_context()
-  let context = "\{settings.0}:\{settings.1}:\{settings.2}:\{settings.3}"
-  let database = self.rt.database.to_lower()
+  // the texts of a repeated statement (same parse, source text, database
+  // and settings) are those of its previous run
+  let (text, context, database, identity) = match self.sample_texts {
+    Some(m) if physical_equal(m.stmt, stmt) &&
+      physical_equal(m.source, self.text) &&
+      physical_equal(m.db, self.rt.database) &&
+      m.settings == settings => (m.text, m.context, m.database, m.identity)
+    _ => {
+      let text = self.slice(stmt.span).trim().trim_end(chars=";").to_owned()
+      let context = "\{settings.0}:\{settings.1}:\{settings.2}:\{settings.3}"
+      let database = self.rt.database.to_lower()
+      let identity = text + "\n--context:" + context
+      self.sample_texts = Some({
+        stmt,
+        source: self.text,
+        db: self.rt.database,
+        settings,
+        text,
+        context,
+        database,
+        identity,
+      })
+      (text, context, database, identity)
+    }
+  }
   let context_key = (database, context)
   let context_id = match self.server.query_contexts.get(context_key) {
     Some(c) => c.id
@@ -216,7 +251,6 @@ fn Session::prepare_sample(self : Session, stmt : @ast.Stmt) -> Unit {
       id
     }
   }
-  let identity = text + "\n--context:" + context
   self.statement_sample = Some({
     database,
     text,
