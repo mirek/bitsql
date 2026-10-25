@@ -90,7 +90,16 @@ fn DbOptions::default(name : String) -> DbOptions {
 
 ///|
 fn Server::db_options(self : Server, name : String) -> DbOptions {
-  let key = name.to_lower()
+  // callers pass the same database name string over and over: lower-case
+  // it once (strings are immutable)
+  let key = match self.db_key_memo {
+    Some((seen, key)) if physical_equal(seen, name) => key
+    _ => {
+      let key = name.to_lower()
+      self.db_key_memo = Some((name, key))
+      key
+    }
+  }
   match self.db_options.get(key) {
     Some(o) => o
     None =>

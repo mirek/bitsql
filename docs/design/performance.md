@@ -78,9 +78,10 @@ they short-cut (`top_n_wbtest`, `normalized_sort_wbtest`,
 - **Lock escalation**: SQL Server escalates when key + page locks reach
   ~6250, and page locks depend on row width, which bitsql does not model
   (decisions.md); not faithful, so not done.
-- **Cross-request plan cache** (SQL Server's): the binder reads too many
-  session states without one version stamp; needs a catalog generation
-  counter first (decisions.md).
+- **Cross-request plan cache** (SQL Server's, shared by sessions): not
+  needed as such; the per-session plan memo (2026-10-25 below) validates
+  plans by physical identity of the persistent catalogs instead of a
+  catalog generation counter.
 - **Vectorized execution** (Boncz, Zukowski & Nes, MonetDB/X100, CIDR 2005):
   with boxed `Value`s most of its benefit is lost; closures took most of
   the interpretation overhead at a fraction of the effort.
@@ -1315,3 +1316,29 @@ The full packaged-binary gate passed 1,783 MoonBit and 23,728 client/corpus
 checks (three existing skips); website checks/build passed. The pulled immutable
 registry image passed all 18 report cases, populated diagnostic metadata and
 the TDS version test. [Publication evidence](query-store.md#publication).
+
+## Request path (2026-10-25)
+
+Per-request costs of a parameterized point SELECT (sp_executesql), from
+`WORKLOAD=requests POINTS_ONLY=1 scripts/profile.sh`; details and the
+equivalence arguments in decisions.md 2026-10-25.
+
+| Change | Code | Server CPU per request |
+| --- | --- | ---: |
+| baseline (0.1.28) | | 62 µs |
+| no measurement parks for a request's first/last statement | `session/interp.mbt` `exec_list`, `engine.mbt` | 48 µs |
+| shared option defaults, copy-on-write SET flags, memoized option bits | `database_options.mbt`, `set_options.mbt` | 44 µs |
+| per-session plan memo (bound plan + hint precheck) | `session/plan_memo.mbt` | 34 µs |
+| variable lock keys, footprint and text scans, sample texts | `locks.mbt`, `sysviews_storage.mbt`, `monitoring.mbt` | ~31 µs |
+
+| host spins up to 100 µs before sleeping (`--spin-us`) | `host/main.mbt` | ~31 µs (latency, not CPU) |
+
+What is left: the TLS write and its `write` syscall (~19%, which wakes the
+client over loopback), executing the seek (~11%), the binder-input stamp
+checks (~4%) and frame/parameter setup. In the container comparison the
+client (tedious, ~100 µs CPU per query), docker-proxy and thread wake-ups
+dominate the wall time: 1000 point SELECTs 157 → 116 ms with the CPU work
+above (SQL Server 123 ms), 104 ms with the spin (SQL Server 125 ms).
+
+MERGE: SET/VALUES expressions bound once per statement, one evaluation
+context: 29.5 → 19.5 ms server CPU (20k rows; SQL Server 31 ms).

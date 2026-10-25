@@ -115,7 +115,10 @@ Server options (append them after the image name): `--version`, `--listen HOST:P
 (PEM; default a built-in self-signed localhost certificate), `--no-tls`,
 `--http-ca FILE` (PEM trust roots for outbound HTTPS; default system roots),
 `--max-request-work N` (runaway-request budget; a request past it fails with
-Emulator error 50108), `--record FILE` (event log for `replay`).
+Emulator error 50108), `--record FILE` (event log for `replay`), `--spin-us N`
+(after a request, poll N µs for the next one before sleeping, as SQL Server's
+schedulers do: lower latency for back-to-back requests at the cost of CPU
+while they run; default 100, `0` sleeps at once).
 
 ## Row ordering compatibility
 

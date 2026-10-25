@@ -15,6 +15,8 @@
 ///               (default: a built-in self-signed localhost certificate)
 ///   --http-ca FILE  PEM trust roots for outbound HTTPS (default: system roots)
 ///   --no-tls    refuse encryption like a server without a certificate
+///   --spin-us N  after a request, keep polling for the next one for N µs
+///               instead of sleeping at once (default 100; 0: never)
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
@@ -98,10 +100,32 @@ async fn main {
   // pending timers: id → generation (a re-set or cancel invalidates it)
   let timers : Map[Int, Int] = Map([])
   let mut timer_gen = 0
+  // Waking a sleeping thread from an idle core costs tens of µs per
+  // request; a client's next request usually follows within that window.
+  let spin_ticks = 10L *
+    (match flag(args, "--spin-us") {
+      Some(n) => @string.parse_int64(n) catch { _ => 100L }
+      None => 100L
+    })
+  let mut spin_until = 0L
+  let mut spinning = false
   @async.with_task_group(group => {
     group.spawn_bg(() => {
       while true {
         let input = queue.get()
+        if spin_ticks > 0L && input is Received(_, _) {
+          spin_until = clock_ticks() + spin_ticks
+          if !spinning {
+            spinning = true
+            // a ready task makes the event loop poll without blocking
+            group.spawn_bg(() => {
+              while clock_ticks() < spin_until {
+                @async.pause()
+              }
+              spinning = false
+            })
+          }
+        }
         let event : @engine.Event = { input, now: now_ticks(), }
         if record is Some(f) {
           f.write(@engine.encode_event(event))

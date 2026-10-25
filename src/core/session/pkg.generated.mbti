@@ -126,7 +126,7 @@ pub struct Session {
   mut compile_only : Bool
   mut ddl_cmd : Int
   mut uncatchable : Bool
-  session_flags : Map[String, Bool]
+  mut session_flags : Map[String, Bool]
   mut tvp_error : Bool
   mut abort_cmd : Int?
   mut error_line : Int?
@@ -153,7 +153,7 @@ pub fn Session::resample(Self) -> Bool
 pub fn Session::reset(Self) -> Array[@reply.Item]
 pub fn Session::run_batch(Self, String, Int64) -> Array[@reply.Item]
 pub fn Session::run_bulk(Self, Array[@tds.BulkColumn], Array[Array[@tds.WireValue]], Int64) -> Array[@reply.Item]
-pub fn Session::run_rpc(Self, @tds.RpcCall, Int64) -> Array[@reply.Item]
+pub fn Session::run_rpc(Self, @tds.RpcCall, Int64, first? : Bool) -> Array[@reply.Item]
 pub fn Session::run_tm(Self, @tds.TmRequest, Int64) -> Array[@reply.Item]
 pub fn Session::sample(Self, Int64, Int64) -> Unit
 pub fn Session::set_login(Self, String, String, String, library? : String, encrypted? : Bool, now? : Int64) -> Unit

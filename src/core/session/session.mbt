@@ -56,6 +56,7 @@ pub struct Server {
   priv db_options : Map[String, DbOptions]
   /// `DbOptions::default` per lowercased name (immutable, so shared)
   priv default_db_options : Map[String, DbOptions]
+  priv mut db_key_memo : (String, String)?
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
   /// Parsed texts (session/parse_cache.mbt).
@@ -126,6 +127,7 @@ pub fn Server::new() -> Server {
     udfs: Map([]),
     db_options: Map([]),
     default_db_options: Map([]),
+    db_key_memo: None,
     backups: BackupStore::new(),
     monitoring: false,
     system_facts: Map([]),
@@ -514,11 +516,11 @@ pub struct Session {
   mut session_flags : Map[String, Bool]
   /// `session_flags` is also a module's saved copy (`run_module`): the
   /// next write copies it first.
-  mut flags_shared : Bool
+  priv mut flags_shared : Bool
   /// Bumped by every change of `session_flags`; keys `bind_options_memo`.
-  mut flags_version : Int
-  mut bind_options_memo : (Int, @bind.BindOptions)?
-  mut option_bits_memo : (Int, Int)?
+  priv mut flags_version : Int
+  priv mut bind_options_memo : (Int, @bind.BindOptions)?
+  priv mut option_bits_memo : (Int, Int)?
   /// A TVP of the RPC request is being loaded (its errors are reported at
   /// line 0, followed by 3621).
   mut tvp_error : Bool

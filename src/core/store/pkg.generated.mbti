@@ -74,6 +74,7 @@ pub fn Db::external_models(Self) -> Array[ExternalModel]
 pub fn Db::find_key(Self, Int, Int, Array[@types.Value]) -> Int64?
 pub fn Db::get_module(Self, Int) -> Module?
 pub fn Db::get_type(Self, Int) -> UserType?
+pub fn Db::has_external_models(Self) -> Bool
 pub fn Db::insert_row(Self, Int, Int64, Array[@types.Value]) -> Self
 pub fn Db::insert_rows(Self, Int, Array[(Int64, Array[@types.Value])]) -> Self
 pub fn Db::lookup(Self, String, String) -> Int?
@@ -90,6 +91,7 @@ pub fn Db::replace_table(Self, Table, Array[(Int64, Array[@types.Value])]) -> Se
 pub fn Db::row(Self, Int, Int64) -> Array[@types.Value]?
 pub fn Db::row_count(Self, Int) -> Int
 pub fn Db::rows(Self, Int) -> Array[(Int64, Array[@types.Value])]
+pub fn Db::same_catalog(Self, Self) -> Bool
 pub fn Db::same_table_data(Self, Self, Int) -> Bool
 pub fn Db::schema_id(Self, String) -> Int?
 pub fn Db::schema_name(Self, Int) -> String?

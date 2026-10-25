@@ -1426,3 +1426,57 @@ SERVERPROPERTY('ProductVersion') or the LOGINACK version (still 17.0.5005),
 which are unchanged. LOGINACK `ProgName` and msdb `software_name` keep
 "Microsoft SQL Server" because clients and tools see them as protocol and
 catalog values. (README.md, src/core/exec/runtime.mbt)
+
+## 2026-10-25: point reads without measurement parks; cross-request plan memo
+
+Amends 2026-10-05 ("Not done: a cross-request plan cache"). The 1000
+point-SELECT benchmark had regressed to 62 µs server CPU per request
+(0.1.28: 157 ms vs SQL Server's 117 ms in the container comparison).
+Profiling (`WORKLOAD=requests POINTS_ONLY=1 scripts/profile.sh`) showed:
+
+- **Measurement parks.** Every measured statement parked twice (start and
+  end sample for sys.dm_exec_query_stats / Query Store), each park
+  re-running the request from the engine. Now a statement that starts a
+  request (`sample_fresh`: nothing ran since the request's event time)
+  takes `rt.now` as its start, and the last statement of a root list sets
+  `sample_requested` without parking: the engine emits `Sample` after the
+  reply (or parks between the calls of a multi-call RPC request, so a later
+  call still sees the statistics). Multi-statement batches keep the parks
+  between statements. The host stamps samples before socket I/O, as
+  before, but sends replies before handling CpuUsed/Measured.
+- **Plan memo** (`session/plan_memo.mbt`). Instead of a catalog generation
+  counter, a per-session memo keys a query's bound plan on the parsed AST
+  object (the parse cache returns one per text) plus a `BindStamp` of every
+  binder input: catalogs by physical identity of the persistent `Db` maps
+  (`Db::same_catalog`, rows excluded, so inserts keep plans), database
+  names/ids/options, temp and table-variable catalogs, SET options (a
+  version counter on the now copy-on-write `session_flags`), date
+  settings, identity insert, isolation, nesting, frames and variable
+  slots. Only plans over database tables and built-in expressions qualify
+  (no catalog views, TVFs, UDFs, `Named` built-ins, sequences); binds with
+  deferred errors, output or a transaction are not kept. A batch's
+  no-failure `precheck_hints` is memoized the same way. Guarded by
+  `plan_memo_wbtest` (each catalog/settings change: first run = memo hit =
+  fresh bind).
+- Smaller: shared defaults for database/Query Store options, a hint-free
+  precheck fast path, no root request snapshot when no park can resume at
+  the statement, variable point-lock keys read from their slot,
+  allocation-free footprint and XACT_STATE scans.
+
+MERGE (29.6 ms vs SQL Server's 31.4 ms) bound every SET and VALUES
+expression and built a context per row; it now binds each once per
+statement (again if a bind leaves deferred messages): 19.5 ms.
+
+Result: 62 → ~31 µs server CPU per point read. Even so, the container
+comparison was a tie (112–116 ms vs SQL Server's 115–123 ms): SQL Server
+spends more CPU per point read (~55 µs of container CPU) but its
+schedulers spin instead of sleeping, while bitsql's thread slept in
+epoll_wait between requests and paid an idle-core wake-up on each one.
+
+- **Spin before sleeping** (host `--spin-us N`, default 100, 0 disables):
+  after a request the host keeps one task yielding (a ready task makes the
+  event loop poll epoll without blocking) until N µs pass without another
+  request. An idle server still uses no CPU; a back-to-back client keeps
+  one core busy, as SQL Server does. Container comparison: 1000 point
+  SELECTs 104 ms vs 125 ms (samples 99–105 ms), container CPU ~99 µs per
+  query (SQL Server ~62 µs).
