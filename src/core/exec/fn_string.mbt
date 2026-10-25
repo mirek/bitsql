@@ -1161,7 +1161,16 @@ fn char_value(
   ansi : Bool,
   collation? : @types.Collation = @types.default_collation,
 ) -> @types.Value raise @types.SqlError {
-  let n = int_of(v).unwrap_or(-1L)
+  char_code(int_of(v).unwrap_or(-1L), ansi, collation~)
+}
+
+///|
+/// CHAR/NCHAR of an integer code (-1: a NULL argument).
+fn char_code(
+  n : Int64,
+  ansi : Bool,
+  collation? : @types.Collation = @types.default_collation,
+) -> @types.Value {
   let limit = if ansi { 255L } else { 0xFFFFL }
   if n < 0L || n > limit {
     Null

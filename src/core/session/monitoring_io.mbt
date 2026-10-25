@@ -20,13 +20,22 @@ fn Session::read_pages(
   }
   if scope != 2 {
     guard self.db_of(scope).table(id) is Some(t) else { return 0L }
-    let fp = record_footprint(
-      t,
-      { cols: stored_columns(t), extra: 0, header: 4, },
-      _ => true,
-      rows,
-      false,
-    )
+    // a table value's stored columns are fixed: kept for repeated reads
+    let (shape, layout) = match self.read_shape_memo {
+      Some((table, shape, layout)) if physical_equal(table, t) =>
+        (shape, layout)
+      _ => {
+        let shape : RecordShape = {
+          cols: stored_columns(t),
+          extra: 0,
+          header: 4,
+        }
+        let layout = record_layout(t, shape)
+        self.read_shape_memo = Some((t, shape, layout))
+        (shape, layout)
+      }
+    }
+    let fp = footprint_with(t, shape, layout, _ => true, rows, false)
     return fp.data.to_int64() + fp.overflow.to_int64() + fp.lob.to_int64()
   }
   // Virtual catalog rows have no stored table. Measure their typed payload

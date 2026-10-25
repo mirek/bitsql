@@ -224,6 +224,67 @@ fn Session::pk_point(
   where_ : @ast.Expr?,
 ) -> (Int, LockKey)? raise {
   guard where_ is Some(w) else { return None }
+  // which conjunct gives each key column depends only on the (immutable)
+  // table, the alias and the WHERE: kept for a repeated statement
+  let (pk_i, keys) = match self.pk_memo {
+    Some(m) if physical_equal(m.table, t) &&
+      physical_equal(m.where_, w) &&
+      m.alias_ == alias_ => (m.index, m.keys)
+    _ =>
+      match pk_point_keys(t, alias_, w) {
+        Some((pk_i, keys)) => {
+          self.pk_memo = Some({
+            table: t,
+            alias_,
+            where_: w,
+            index: pk_i,
+            keys,
+          })
+          (pk_i, keys)
+        }
+        None => return None
+      }
+  }
+  let pk = t.indexes[pk_i]
+  let values = []
+  for k, c in pk.columns {
+    match keys[k] {
+      Some(e) => {
+        let (v, ty) = match e.kind {
+          // a variable binds to its slot (and passes the binder's SET option
+          // checks unless NUMERIC_ROUNDABORT meets a rounding type)
+          Var(name) if self.frame().vars.get(name.to_lower()) is Some(info) &&
+            !(self.bind_options().numeric_roundabort &&
+            @bind.rounding_type(info.ty)) =>
+            (self.frame().values[info.slot], info.ty)
+          _ => self.eval(e)
+        }
+        values.push(@types.cast(v, ty, t.columns[c.0].ty))
+      }
+      None => return None
+    }
+  }
+  Some((pk_i, { values, colls: index_colls(t, pk), }))
+}
+
+///|
+/// `pk_point`'s analysis of a statement.
+priv struct PkPointMemo {
+  table : @store.Table
+  alias_ : String
+  where_ : @ast.Expr
+  index : Int
+  keys : Array[@ast.Expr?]
+}
+
+///|
+/// The primary key's position and, per key column in order, the `col =
+/// expr` conjunct of `w` that pins it (None: none does).
+fn pk_point_keys(
+  t : @store.Table,
+  alias_ : String,
+  w : @ast.Expr,
+) -> (Int, Array[@ast.Expr?])? {
   let pk_i = match t.indexes.search_by(ix => ix.primary) {
     Some(i) => i
     None => return None
@@ -242,7 +303,7 @@ fn Session::pk_point(
   }
 
   split(w)
-  let values = []
+  let keys = []
   for c in pk.columns {
     let col = t.columns[c.0].name.to_lower()
     let mut found : @ast.Expr? = None
@@ -272,23 +333,9 @@ fn Session::pk_point(
         found = Some(l)
       }
     }
-    match found {
-      Some(e) => {
-        let (v, ty) = match e.kind {
-          // a variable binds to its slot (and passes the binder's SET option
-          // checks unless NUMERIC_ROUNDABORT meets a rounding type)
-          Var(name) if self.frame().vars.get(name.to_lower()) is Some(info) &&
-            !(self.bind_options().numeric_roundabort &&
-            @bind.rounding_type(info.ty)) =>
-            (self.frame().values[info.slot], info.ty)
-          _ => self.eval(e)
-        }
-        values.push(@types.cast(v, ty, t.columns[c.0].ty))
-      }
-      None => return None
-    }
+    keys.push(found)
   }
-  Some((pk_i, { values, colls: index_colls(t, pk), }))
+  Some((pk_i, keys))
 }
 
 ///|

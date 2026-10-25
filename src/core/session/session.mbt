@@ -57,6 +57,8 @@ pub struct Server {
   /// `DbOptions::default` per lowercased name (immutable, so shared)
   priv default_db_options : Map[String, DbOptions]
   priv mut db_key_memo : (String, String)?
+  /// Query Store contexts removed so far (keys `SampleTexts::context_id`)
+  priv mut contexts_removed : Int
   /// BACKUP files and msdb backup history (session/backup.mbt).
   priv backups : BackupStore
   /// Parsed texts (session/parse_cache.mbt).
@@ -128,6 +130,7 @@ pub fn Server::new() -> Server {
     db_options: Map([]),
     default_db_options: Map([]),
     db_key_memo: None,
+    contexts_removed: 0,
     backups: BackupStore::new(),
     monitoring: false,
     system_facts: Map([]),
@@ -361,6 +364,10 @@ pub struct Session {
   /// measured statement may start its sample at that time without parking.
   priv mut sample_fresh : Bool
   priv mut sample_texts : SampleTexts?
+  priv mut pk_memo : PkPointMemo?
+  priv mut missing_memo : MissingIndexMemo?
+  priv mut columns_memo : (@bind.BoundQuery, Array[@tds.Column])?
+  priv mut read_shape_memo : (@store.Table, RecordShape, RecordLayout)?
   priv mut diagnostic_statement : Int64
   priv mut list_depth : Int
   priv mut batch_outer_refs : Array[(Int, Int, String)]
@@ -582,6 +589,10 @@ pub fn Session::new(
     sample_requested: false,
     sample_fresh: false,
     sample_texts: None,
+    pk_memo: None,
+    missing_memo: None,
+    columns_memo: None,
+    read_shape_memo: None,
     diagnostic_statement: 0L,
     list_depth: 0,
     batch_outer_refs: [],

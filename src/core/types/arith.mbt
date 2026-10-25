@@ -123,8 +123,20 @@ fn int_arith_with_range(
   if !is_int(a) || !is_int(b) {
     raise internal("integer arithmetic on non-integers")
   }
-  let x = a.int64_or(0L)
-  let y = b.int64_or(0L)
+  int_value(rt, int_arith_i64(op, a.int64_or(0L), b.int64_or(0L), rt, lo, hi))
+}
+
+///|
+/// Integer arithmetic of integer values `x` and `y` with result type `rt`
+/// (range `lo..hi`): divide-by-zero and overflow raise as SQL Server does.
+pub fn int_arith_i64(
+  op : ArithOp,
+  x : Int64,
+  y : Int64,
+  rt : SqlType,
+  lo : Int64,
+  hi : Int64,
+) -> Int64 raise SqlError {
   if op is (Div | Mod) && y == 0L {
     raise divide_by_zero_error()
   }
@@ -147,7 +159,7 @@ fn int_arith_with_range(
     if r < lo || r > hi {
       raise overflow_expression(rt)
     }
-    return int_value(rt, r)
+    return r
   }
   // exact in BigInt, then range-checked (covers MIN / -1 and MIN % -1,
   // which SQL Server also reports as overflow)
@@ -182,7 +194,7 @@ fn int_arith_with_range(
   if r.compare_int64(lo) < 0 || r.compare_int64(hi) > 0 {
     raise overflow_expression(rt)
   }
-  int_value(rt, r.to_int64())
+  r.to_int64()
 }
 
 ///|

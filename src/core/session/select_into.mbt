@@ -188,7 +188,15 @@ fn Session::exec_bound_query(
   profile? : @exec.QueryProfile? = None,
 ) -> Int64 raise {
   self.check_json_index_paths(bound.plan)
-  let cols = bound.columns.map(tds_column)
+  // the wire columns of a bound query (immutable) are those of its last run
+  let cols = match self.columns_memo {
+    Some((b, cols)) if physical_equal(b, bound) => cols
+    _ => {
+      let cols = bound.columns.map(tds_column)
+      self.columns_memo = Some((bound, cols))
+      cols
+    }
+  }
   self.out.push(ResultSet(cols))
   self.cur_cmd = 193
   // a lock timeout (1222) or snapshot error (3952) follows the COLMETADATA

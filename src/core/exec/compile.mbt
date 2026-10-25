@@ -34,6 +34,21 @@ pub fn compile(e : @ir.Expr) -> Compiled {
       }
     }
     Concat(a, b) => compile({ ..e, kind: Arith(Add, a, b), })
+    // nested integer arithmetic: one boxed result (compile_int)
+    Arith(_, a, b) if (a.kind is Arith(_, _, _) || b.kind is Arith(_, _, _)) &&
+      compile_int(e, Ref(false)) is Some(_) => {
+      let null = Ref(false)
+      let ci = compile_int(e, null).unwrap()
+      let rt = e.ty
+      (c, r) => {
+        let n = ci(c, r)
+        if null.val {
+          Null
+        } else {
+          @types.int_value(rt, n)
+        }
+      }
+    }
     Arith(op, a, b) => {
       let ca = compile(a)
       let cb = compile(b)
@@ -65,6 +80,27 @@ pub fn compile(e : @ir.Expr) -> Compiled {
             let vb = cb(c, r)
             @types.arith(op, va, ta, vb, tb)
           }
+      }
+    }
+    // integer comparison of arithmetic: no boxed operands
+    Cmp(op, a, b, _) if (a.kind is Arith(_, _, _) || b.kind is Arith(_, _, _)) &&
+      compile_int(a, Ref(false)) is Some(_) &&
+      compile_int(b, Ref(false)) is Some(_) => {
+      let null = Ref(false)
+      let ia = compile_int(a, null).unwrap()
+      let ib = compile_int(b, null).unwrap()
+      (c, r) => {
+        let x = ia(c, r)
+        let na = null.val
+        null.val = false
+        let y = ib(c, r)
+        let nb = null.val
+        null.val = false
+        if na || nb {
+          Null
+        } else {
+          of_bool(Some(cmp_holds(op, x.compare(y))))
+        }
       }
     }
     Cmp(op, a, b, coll) => {
@@ -156,6 +192,26 @@ pub fn compile(e : @ir.Expr) -> Compiled {
         }
       }
     }
+    // an int/smallint/tinyint code computed without boxing (int_of reads
+    // those directly; bigint keeps its range check below)
+    Call(Named(name), [arg]) if (name == "CHAR" || name == "NCHAR") &&
+      arg.ty is (Int | SmallInt | TinyInt) &&
+      arg.kind is Arith(_, _, _) &&
+      compile_int(arg, Ref(false)) is Some(_) => {
+      let null = Ref(false)
+      let ia = compile_int(arg, null).unwrap()
+      let ansi = name == "CHAR"
+      let collation = e.ty.collation().unwrap_or(@types.default_collation)
+      (c, r) => {
+        let n = ia(c, r)
+        if null.val {
+          null.val = false
+          char_code(-1L, ansi, collation~)
+        } else {
+          char_code(n, ansi, collation~)
+        }
+      }
+    }
     Call(Named(name), [arg]) if name == "CHAR" || name == "NCHAR" => {
       let ca = compile(arg)
       let ansi = name == "CHAR"
@@ -171,5 +227,77 @@ pub fn compile(e : @ir.Expr) -> Compiled {
     Subquery(plan) =>
       (c, r) => scalar_subquery_value(subquery_rows_at(c, plan, r).0)
     _ => (c, r) => eval(c.with_row(r), e)
+  }
+}
+
+///|
+/// Integer expressions (bit/integer columns, variables, literals and the
+/// integer arithmetic of `Arith`) evaluated in Int64 without boxing the
+/// intermediate results. A NULL sets `null` and returns 0; a node clears
+/// `null` before each operand, so a NULL operand in one subtree never skips
+/// the other's evaluation or its errors. Operands evaluate left then right
+/// and a NULL operand gives NULL, as in the boxed integer arithmetic
+/// (`@types.prepare_arith`), whose checks `@types.int_arith_i64` performs.
+fn compile_int(
+  e : @ir.Expr,
+  null : Ref[Bool],
+) -> ((Ctx, Row) -> Int64 raise @types.SqlError)? {
+  guard e.ty.family() is (FInteger | FBit) else { return None }
+  match e.kind {
+    Lit(v) =>
+      if v is Null {
+        Some((_, _) => {
+          null.val = true
+          0L
+        })
+      } else {
+        let n = v.int64_or(0L)
+        Some((_, _) => n)
+      }
+    Col(i) =>
+      Some((_, r) => {
+        let v = r[i]
+        if v is Null {
+          null.val = true
+          0L
+        } else {
+          v.int64_or(0L)
+        }
+      })
+    Var(slot) =>
+      Some((c, _) => {
+        let v = c.vars[slot]
+        if v is Null {
+          null.val = true
+          0L
+        } else {
+          v.int64_or(0L)
+        }
+      })
+    Arith(op, a, b) => {
+      let rt = @types.arith_result_type(op, a.ty, b.ty) catch {
+        _ => return None
+      }
+      guard rt.family() is FInteger &&
+        compile_int(a, null) is Some(ia) &&
+        compile_int(b, null) is Some(ib) else {
+        return None
+      }
+      let (lo, hi) = @types.int_range(rt)
+      Some((c, r) => {
+        null.val = false
+        let x = ia(c, r)
+        let na = null.val
+        null.val = false
+        let y = ib(c, r)
+        if na || null.val {
+          null.val = true
+          0L
+        } else {
+          @types.int_arith_i64(op, x, y, rt, lo, hi)
+        }
+      })
+    }
+    _ => None
   }
 }

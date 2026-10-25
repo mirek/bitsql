@@ -85,6 +85,7 @@ fn Session::exec_drop_database(
     for context_key in context_keys {
       if context_key.0 == key {
         self.server.query_contexts.remove(context_key)
+        self.server.contexts_removed += 1
       }
     }
     let usage_keys = self.server.index_usage.keys().to_array()

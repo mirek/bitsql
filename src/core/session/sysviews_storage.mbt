@@ -89,6 +89,20 @@ fn record_footprint(
   data : Array[(Int64, @store.Row)],
   keyed : Bool,
 ) -> Footprint {
+  footprint_with(t, shape, record_layout(t, shape), keep, data, keyed)
+}
+
+///|
+/// What `record_footprint` derives from the table and shape alone.
+priv struct RecordLayout {
+  kinds : Array[StorageKind]
+  fixed : Int
+  nvar : Int
+  bitmap : Int
+}
+
+///|
+fn record_layout(t : @store.Table, shape : RecordShape) -> RecordLayout {
   let kinds = shape.cols.map(c => storage_kind(t.columns[c].ty))
   let mut fixed = shape.extra
   let mut nvar = 0
@@ -99,7 +113,19 @@ fn record_footprint(
       nvar += 1
     }
   }
-  let bitmap = 2 + ceil_div(shape.cols.length(), 8)
+  { kinds, fixed, nvar, bitmap: 2 + ceil_div(shape.cols.length(), 8), }
+}
+
+///|
+fn footprint_with(
+  t : @store.Table,
+  shape : RecordShape,
+  layout : RecordLayout,
+  keep : (Array[@types.Value]) -> Bool,
+  data : Array[(Int64, @store.Row)],
+  keyed : Bool,
+) -> Footprint {
+  let { kinds, fixed, nvar, bitmap, } = layout
   let mut n = 0
   let mut in_row = 0
   let mut overflow = 0

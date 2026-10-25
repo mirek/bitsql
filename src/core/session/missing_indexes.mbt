@@ -79,7 +79,17 @@ fn Session::observe_missing_index(
   plan : @ir.Plan,
   returned : Int64,
 ) -> Unit {
-  guard missing_index_shape(plan) is Some((scope, id, equality, included)) &&
+  // the shape is a function of the plan, and coverage of the table value:
+  // both kept for a repeated statement
+  let shape = match self.missing_memo {
+    Some(m) if physical_equal(m.plan, plan) => m.shape
+    _ => {
+      let shape = missing_index_shape(plan)
+      self.missing_memo = Some({ plan, shape, covered: None, })
+      shape
+    }
+  }
+  guard shape is Some((scope, id, equality, included)) &&
     scope != 2 &&
     scope != 1 &&
     scope != 3 else {
@@ -87,7 +97,17 @@ fn Session::observe_missing_index(
   }
   let db = self.db_of(scope)
   guard db.table(id) is Some(t) else { return }
-  if missing_index_covered(t, equality, included) {
+  let covered = match self.missing_memo {
+    Some({ covered: Some((table, c)), .. }) if physical_equal(table, t) => c
+    _ => {
+      let c = missing_index_covered(t, equality, included)
+      if self.missing_memo is Some(m) && physical_equal(m.plan, plan) {
+        m.covered = Some((t, c))
+      }
+      c
+    }
+  }
+  if covered {
     return
   }
   let candidates = db.rows(id).length().to_int64()
@@ -185,4 +205,12 @@ fn Server::missing_index_rows(self : Server, out : Array[VRow]) -> Unit {
       ]),
     )
   }
+}
+
+///|
+/// `observe_missing_index`'s analysis of the last plan.
+priv struct MissingIndexMemo {
+  plan : @ir.Plan
+  shape : (Int, Int, Array[Int], Array[Int])?
+  mut covered : (@store.Table, Bool)?
 }

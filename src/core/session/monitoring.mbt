@@ -205,6 +205,9 @@ priv struct SampleTexts {
   context : String
   database : String
   identity : String
+  /// context_settings_id, valid while `Server::contexts_removed` is the
+  /// first value (contexts are only added here or dropped with a database)
+  mut context_id : (Int, Int64)?
 }
 
 ///|
@@ -232,24 +235,37 @@ fn Session::prepare_sample(self : Session, stmt : @ast.Stmt) -> Unit {
         context,
         database,
         identity,
+        context_id: None,
       })
       (text, context, database, identity)
     }
   }
+  let memo = match self.sample_texts {
+    Some(m) if physical_equal(m.identity, identity) => Some(m)
+    _ => None
+  }
   let context_key = (database, context)
-  let context_id = match self.server.query_contexts.get(context_key) {
-    Some(c) => c.id
-    None => {
-      let id = self.server.query_contexts.length().to_int64() + 1L
-      self.server.query_contexts[context_key] = {
-        id,
-        options: settings.0,
-        language: settings.1,
-        format: settings.2,
-        datefirst: settings.3,
+  let context_id = match memo {
+    Some({ context_id: Some((gen, id)), .. }) if gen ==
+      self.server.contexts_removed => id
+    _ =>
+      match self.server.query_contexts.get(context_key) {
+        Some(c) => c.id
+        None => {
+          let id = self.server.query_contexts.length().to_int64() + 1L
+          self.server.query_contexts[context_key] = {
+            id,
+            options: settings.0,
+            language: settings.1,
+            format: settings.2,
+            datefirst: settings.3,
+          }
+          id
+        }
       }
-      id
-    }
+  }
+  if memo is Some(m) {
+    m.context_id = Some((self.server.contexts_removed, context_id))
   }
   self.statement_sample = Some({
     database,

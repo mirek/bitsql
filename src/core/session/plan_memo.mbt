@@ -71,49 +71,84 @@ fn Session::bind_stamp(self : Session) -> BindStamp {
 }
 
 ///|
-/// Every binder input is as when `s` was taken.
+/// Every binder input is as when `s` was taken (cheapest checks first).
 fn Session::stamp_holds(self : Session, s : BindStamp) -> Bool {
+  guard self.flags_version == s.flags_version &&
+    self.rt.option_bits == s.option_bits &&
+    self.rt.datefirst == s.datefirst &&
+    self.rt.nest_level == s.nest_level &&
+    self.rt.trancount == s.trancount &&
+    self.frames.length() == s.frames &&
+    self.rpc == s.rpc &&
+    self.identity_insert == s.identity_insert &&
+    (
+      physical_equal(self.rt.database, s.database) ||
+      self.rt.database == s.database
+    ) &&
+    (
+      physical_equal(self.isolation, s.isolation) ||
+      self.isolation == s.isolation
+    ) &&
+    self.rt.dates == s.dates &&
+    self.temp.same_catalog(s.temp) &&
+    self.tvars.same_catalog(s.tvars) else {
+    return false
+  }
   let frame = self.frame()
-  self.rt.database == s.database &&
-  self.flags_version == s.flags_version &&
-  self.rt.option_bits == s.option_bits &&
-  self.rt.dates == s.dates &&
-  self.rt.datefirst == s.datefirst &&
-  self.identity_insert == s.identity_insert &&
-  self.isolation == s.isolation &&
-  self.rt.nest_level == s.nest_level &&
-  self.rt.trancount == s.trancount &&
-  self.frames.length() == s.frames &&
-  frame.proc_name == s.proc_name &&
-  self.rpc == s.rpc &&
-  self.temp.same_catalog(s.temp) &&
-  self.tvars.same_catalog(s.tvars) &&
-  same_entries(self.server.dbs, s.dbs, (a, b) => a.same_catalog(b)) &&
-  same_entries(self.server.db_names, s.db_names, (a, b) => a == b) &&
-  same_entries(self.server.db_ids, s.db_ids, (a, b) => a == b) &&
-  same_entries(self.server.db_options, s.db_options, (a, b) => {
-    physical_equal(a, b)
-  }) &&
-  same_entries(frame.vars, s.vars, (a, b) => a.slot == b.slot && a.ty == b.ty)
-}
-
-///|
-/// `m` has exactly the entries of `entries`, in order.
-fn[V] same_entries(
-  m : Map[String, V],
-  entries : Array[(String, V)],
-  same : (V, V) -> Bool,
-) -> Bool {
-  guard m.length() == entries.length() else { return false }
+  guard frame.proc_name == s.proc_name &&
+    self.server.dbs.length() == s.dbs.length() &&
+    self.server.db_names.length() == s.db_names.length() &&
+    self.server.db_ids.length() == s.db_ids.length() &&
+    self.server.db_options.length() == s.db_options.length() &&
+    frame.vars.length() == s.vars.length() else {
+    return false
+  }
   let mut i = 0
-  for k, v in m {
-    let (k2, v2) = entries[i]
-    if !(physical_equal(k, k2) || k == k2) || !same(v, v2) {
+  for k, v in self.server.dbs {
+    let (k2, v2) = s.dbs[i]
+    if !same_key(k, k2) || !v.same_catalog(v2) {
+      return false
+    }
+    i += 1
+  }
+  i = 0
+  for k, v in self.server.db_names {
+    let (k2, v2) = s.db_names[i]
+    if !same_key(k, k2) || !same_key(v, v2) {
+      return false
+    }
+    i += 1
+  }
+  i = 0
+  for k, v in self.server.db_ids {
+    let (k2, v2) = s.db_ids[i]
+    if !same_key(k, k2) || v != v2 {
+      return false
+    }
+    i += 1
+  }
+  i = 0
+  for k, v in self.server.db_options {
+    let (k2, v2) = s.db_options[i]
+    if !same_key(k, k2) || !physical_equal(v, v2) {
+      return false
+    }
+    i += 1
+  }
+  i = 0
+  for k, v in frame.vars {
+    let (k2, v2) = s.vars[i]
+    if !same_key(k, k2) || v.slot != v2.slot || v.ty != v2.ty {
       return false
     }
     i += 1
   }
   true
+}
+
+///|
+fn same_key(a : String, b : String) -> Bool {
+  physical_equal(a, b) || a == b
 }
 
 ///|

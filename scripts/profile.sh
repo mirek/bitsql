@@ -7,6 +7,7 @@
 #   SQL='SELECT SUM(p + 1) FROM w' scripts/profile.sh
 #   REPS=50 scripts/profile.sh 'UPDATE all' --callers drop_object
 #   WORKLOAD=requests REPS=3 scripts/profile.sh   # per-request workload (compare.mjs)
+#   HOST_ARGS='--spin-us 0' ...    # host flags (the spin's polling would dilute samples)
 #
 # Extra arguments go to scripts/profile/report.mbtx (--top N, --callers FUNC,
 # --focus FUNC), a MoonBit script run on the default wasm target.
@@ -22,7 +23,7 @@ exe=$PWD/_build/native/release/build/host/host.exe
 cc -O2 -shared -fPIC -w -o "$out/sampler.so" scripts/profile/sampler.c
 cat > "$out/host.sh" <<SH
 #!/bin/sh
-SAMPLER_OUT=$PWD/$out/prof LD_PRELOAD=$PWD/$out/sampler.so exec $exe "\$@"
+SAMPLER_OUT=$PWD/$out/prof LD_PRELOAD=$PWD/$out/sampler.so exec $exe \${HOST_ARGS:-} "\$@"
 SH
 chmod +x "$out/host.sh"
 (cd harness && SHAPE="$shape" BITSQL_BIN="$PWD/../$out/host.sh" node bench/profile.mjs)
