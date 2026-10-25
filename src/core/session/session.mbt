@@ -496,6 +496,11 @@ pub struct Session {
   /// The batch pre-bind's plan of the batch's first statement, a query,
   /// for that statement's run (prebind.mbt).
   priv mut prebound : Prebound?
+  /// Bound plans reused across requests (plan_memo.mbt).
+  priv plan_memo : Array[PlanMemo]
+  /// Batches whose `precheck_hints` found nothing, and under what stamp.
+  priv hints_memo : Array[(Array[@ast.Stmt], BindStamp)]
+  priv mut plan_memo_next : Int
   priv mut prebound_candidate : @ast.Query?
   /// CurCmd a failed DDL statement completes with inside TRY (outside TRY
   /// it fails with 253 and ends the batch); 0 for other statements.
@@ -505,7 +510,14 @@ pub struct Session {
   mut uncatchable : Bool
   /// SET options SESSIONPROPERTY reports that bitsql lets change without
   /// an emulator error (ARITHABORT): upper-cased name → ON.
-  session_flags : Map[String, Bool]
+  mut session_flags : Map[String, Bool]
+  /// `session_flags` is also a module's saved copy (`run_module`): the
+  /// next write copies it first.
+  mut flags_shared : Bool
+  /// Bumped by every change of `session_flags`; keys `bind_options_memo`.
+  mut flags_version : Int
+  mut bind_options_memo : (Int, @bind.BindOptions)?
+  mut option_bits_memo : (Int, Int)?
   /// A TVP of the RPC request is being loaded (its errors are reported at
   /// line 0, followed by 3621).
   mut tvp_error : Bool
@@ -632,11 +644,18 @@ pub fn Session::new(
     trailing: [],
     schema_ddl: false,
     compile_only: false,
+    plan_memo: [],
+    hints_memo: [],
+    plan_memo_next: 0,
     prebound: None,
     prebound_candidate: None,
     ddl_cmd: 0,
     uncatchable: false,
     session_flags: Map([]),
+    flags_shared: false,
+    flags_version: 0,
+    bind_options_memo: None,
+    option_bits_memo: None,
     tvp_error: false,
     abort_cmd: None,
     error_line: None,
@@ -1060,7 +1079,7 @@ fn Session::run_text(self : Session, text : String) -> Unit raise {
     }
     None => ()
   }
-  match self.precheck_hints(stmts) {
+  match self.memo_precheck_hints(stmts) {
     Err(errors) => {
       for i in 0..<(errors.length() - 1) {
         self.message(errors[i].0, errors[i].1)
@@ -1311,9 +1330,20 @@ fn Session::ansi_nulls(self : Session) -> Bool {
 }
 
 ///|
+/// `session_flags` for writing (copy on write, see `flags_shared`).
+fn Session::flags_mut(self : Session) -> Map[String, Bool] {
+  if self.flags_shared {
+    self.session_flags = Map::from_array(self.session_flags.iter().to_array())
+    self.flags_shared = false
+  }
+  self.flags_version += 1
+  self.session_flags
+}
+
+///|
 /// Sets ANSI_NULLS for SESSIONPROPERTY, the binder and @@OPTIONS (bit 32).
 fn Session::set_ansi_nulls(self : Session, on : Bool) -> Unit {
-  self.session_flags["ANSI_NULLS"] = on
+  self.flags_mut()["ANSI_NULLS"] = on
   self.rt.option_bits = if on {
     self.rt.option_bits & (32 ^ -1)
   } else {

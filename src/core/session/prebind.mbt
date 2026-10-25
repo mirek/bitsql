@@ -78,9 +78,22 @@ fn Session::prebind_stmt(
         let out_len = self.out.length()
         let cur_cmd = self.cur_cmd
         let error = self.rt.error
-        let bound = @bind.bind_query(self.env(), q)
-        self.check_json_index_paths(bound.plan) catch {
-          e => indexed_error = Some(e)
+        let bound = match self.memo_plan(q) {
+          Some(bound) => bound
+          None => {
+            let stamp = self.bind_stamp()
+            let bound = @bind.bind_query(self.env(), q)
+            self.check_json_index_paths(bound.plan) catch {
+              e => indexed_error = Some(e)
+            }
+            if indexed_error is None &&
+              self.out.length() == out_len &&
+              self.cur_cmd == cur_cmd &&
+              self.rt.error == error {
+              self.remember_plan(q, stamp, bound)
+            }
+            bound
+          }
         }
         self.keep_prebound(q, bound, out_len, cur_cmd, error)
       })

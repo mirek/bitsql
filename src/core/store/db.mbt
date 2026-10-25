@@ -760,3 +760,22 @@ pub fn Db::vector_graph(self : Db, id : Int, index_id : Int) -> VectorGraph? {
   }
   d.indexes[k].vector
 }
+
+///|
+/// The same catalog (everything but table rows and index entries), by
+/// physical identity: a catalog write builds new maps, so unchanged maps
+/// mean an unchanged catalog. Row writes keep it (plan reuse across them).
+pub fn Db::same_catalog(self : Db, other : Db) -> Bool {
+  physical_equal(self, other) ||
+  (
+    physical_equal(self.names, other.names) &&
+    physical_equal(self.tables, other.tables) &&
+    physical_equal(self.modules, other.modules) &&
+    physical_equal(self.schemas, other.schemas) &&
+    physical_equal(self.types, other.types) &&
+    physical_equal(self.type_names, other.type_names) &&
+    physical_equal(self.props, other.props) &&
+    physical_equal(self.external_models, other.external_models) &&
+    physical_equal(self.configurations, other.configurations)
+  )
+}

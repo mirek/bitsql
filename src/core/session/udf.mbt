@@ -174,8 +174,8 @@ fn[T] Session::in_function(
   let restore = () => {
     ignore(self.frames.pop())
     match saved_ansi_nulls {
-      Some(v) => self.session_flags["ANSI_NULLS"] = v
-      None => self.session_flags.remove("ANSI_NULLS")
+      Some(v) => self.flags_mut()["ANSI_NULLS"] = v
+      None => self.flags_mut().remove("ANSI_NULLS")
     }
     self.rt.option_bits = saved_bits
     self.rt.nest_level -= 1

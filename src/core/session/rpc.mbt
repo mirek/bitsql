@@ -229,7 +229,9 @@ fn Session::run_module(
   let saved_scope_identity = self.rt.scope_identity
   // SET ANSI_WARNINGS / ARITHABORT revert too (captured: 
   // captured-runs/session-property-context, after sp_executesql N'SET … OFF')
-  let saved_flags = Map::from_array(self.session_flags.iter().to_array())
+  let saved_flags = self.session_flags
+  let saved_shared = self.flags_shared
+  self.flags_shared = true
   // local temp tables created by the module are dropped when it ends
   // (captured: captured-gaps/gaps-temp_tables #022/#023, an sp_executesql RPC)
   let temps_before : Set[Int] = Set([])
@@ -260,10 +262,11 @@ fn Session::run_module(
     self.rt.dates = saved.6
     self.identity_insert = saved_identity_insert
     self.rt.scope_identity = saved_scope_identity
-    self.session_flags.clear()
-    for k, v in saved_flags {
-      self.session_flags[k] = v
+    if !physical_equal(self.session_flags, saved_flags) {
+      self.session_flags = saved_flags
+      self.flags_version += 1
     }
+    self.flags_shared = saved_shared
     // the calling EXEC statement's own state (its errors complete with 253)
     self.cur_cmd = 253
     self.ddl_cmd = 0

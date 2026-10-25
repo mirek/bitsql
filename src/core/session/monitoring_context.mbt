@@ -10,6 +10,26 @@ priv struct QueryStoreContext {
 ///|
 /// Oracle context-settings: NOCOUNT/XACT_ABORT do not change plan identity.
 fn Session::query_store_context(self : Session) -> (Int, Int, Int, Int) {
+  let bits = self.query_store_option_bits()
+  let format = match self.rt.dates.format {
+    Mdy => 1
+    Dmy => 2
+    Ymd => 3
+    Ydm => 4
+    Myd => 5
+    Dym => 6
+  }
+  (bits, self.rt.dates.language, format, self.rt.datefirst)
+}
+
+///|
+/// The set_options bits of `query_store_context` (memoized per
+/// `flags_version`).
+fn Session::query_store_option_bits(self : Session) -> Int {
+  if self.option_bits_memo is Some((version, bits)) &&
+    version == self.flags_version {
+    return bits
+  }
   let mut bits = 130 // ANSI_NULL_DFLT_ON plus the captured default status bit.
   for
     (name, mask, default_) in [
@@ -25,15 +45,8 @@ fn Session::query_store_context(self : Session) -> (Int, Int, Int, Int) {
       bits = bits | mask
     }
   }
-  let format = match self.rt.dates.format {
-    Mdy => 1
-    Dmy => 2
-    Ymd => 3
-    Ydm => 4
-    Myd => 5
-    Dym => 6
-  }
-  (bits, self.rt.dates.language, format, self.rt.datefirst)
+  self.option_bits_memo = Some((self.flags_version, bits))
+  bits
 }
 
 ///|

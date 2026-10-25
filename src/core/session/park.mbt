@@ -243,7 +243,7 @@ pub fn Session::reset(self : Session) -> Array[@reply.Item] {
   self.rt.datefirst = 7
   self.rt.dates = @types.default_date_settings
   self.rt.option_bits = 0
-  self.session_flags.clear()
+  self.flags_mut().clear()
   self.server.set_priority(self.rt.spid, 0)
   self.context_info = None
   self.session_context.clear()

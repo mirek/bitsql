@@ -238,8 +238,8 @@ fn Session::run_triggers(
     }
     self.frames.pop() |> ignore
     match outer_ansi_nulls {
-      Some(v) => self.session_flags["ANSI_NULLS"] = v
-      None => self.session_flags.remove("ANSI_NULLS")
+      Some(v) => self.flags_mut()["ANSI_NULLS"] = v
+      None => self.flags_mut().remove("ANSI_NULLS")
     }
     self.rt.nest_level -= 1
     self.triggers.pop() |> ignore

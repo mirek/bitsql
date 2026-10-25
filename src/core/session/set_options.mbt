@@ -54,7 +54,7 @@ fn Session::set_options(
       // OFF drops the 8153 warning; the run-time errors it would turn into
       // silent truncation or NULL are Emulator errors (interp.mbt)
       "ANSI_WARNINGS" => {
-        self.session_flags["ANSI_WARNINGS"] = on
+        self.flags_mut()["ANSI_WARNINGS"] = on
         self.rt.option_bits = if on {
           self.rt.option_bits & (8 ^ -1)
         } else {
@@ -283,7 +283,7 @@ fn Session::set_option_flag(
   bit : Int,
   default : Bool,
 ) -> Unit {
-  self.session_flags[key] = on
+  self.flags_mut()[key] = on
   self.rt.option_bits = if on == default {
     self.rt.option_bits & (bit ^ -1)
   } else {
@@ -316,7 +316,11 @@ fn Session::wrong_index_options(self : Session) -> Array[String] {
 ///|
 /// Binder view of the SET options it checks.
 fn Session::bind_options(self : Session) -> @bind.BindOptions {
-  {
+  if self.bind_options_memo is Some((version, options)) &&
+    version == self.flags_version {
+    return options
+  }
+  let options : @bind.BindOptions = {
     concat_null_yields_null: self.session_flags
     .get("CONCAT_NULL_YIELDS_NULL")
     .unwrap_or(true),
@@ -325,6 +329,8 @@ fn Session::bind_options(self : Session) -> @bind.BindOptions {
     .unwrap_or(false),
     wrong_for_indexes: self.wrong_index_options(),
   }
+  self.bind_options_memo = Some((self.flags_version, options))
+  options
 }
 
 ///|
