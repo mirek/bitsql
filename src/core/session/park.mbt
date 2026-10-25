@@ -29,12 +29,9 @@ priv struct RequestSnapshot {
 }
 
 ///|
-fn[K : Hash + Eq, V] copy_map(m : Map[K, V]) -> Map[K, V] {
-  let out = Map([])
-  for k, v in m {
-    out[k] = v
-  }
-  out
+fn[K, V] copy_map(m : Map[K, V]) -> Map[K, V] {
+  // same entries in the same order, without re-hashing each key
+  m.copy()
 }
 
 ///|

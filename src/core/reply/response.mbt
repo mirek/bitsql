@@ -84,7 +84,7 @@ pub fn render(
       }
       ResultSet(c) => {
         cols = c
-        @tds.write_colmetadata(w, c)
+        w.bytes(colmetadata_bytes(c))
       }
       Order(ordinals) => @tds.write_order(w, ordinals)
       BrowseInfo(tables, cols) => {
@@ -192,4 +192,23 @@ pub fn render(
     }
   }
   w.to_bytes()
+}
+
+///|
+/// The COLMETADATA token of the last column array rendered: a repeated
+/// statement renders the same (never modified) array again.
+let colmetadata_memo : Ref[(Array[@tds.Column], Bytes)?] = Ref(None)
+
+///|
+fn colmetadata_bytes(cols : Array[@tds.Column]) -> Bytes {
+  match colmetadata_memo.val {
+    Some((seen, bytes)) if physical_equal(seen, cols) => bytes
+    _ => {
+      let w = @tds.Writer::new()
+      @tds.write_colmetadata(w, cols)
+      let bytes = w.to_bytes()
+      colmetadata_memo.val = Some((cols, bytes))
+      bytes
+    }
+  }
 }
