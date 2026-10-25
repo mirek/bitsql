@@ -1342,3 +1342,20 @@ above (SQL Server 123 ms), 104 ms with the spin (SQL Server 125 ms).
 
 MERGE: SET/VALUES expressions bound once per statement, one evaluation
 context: 29.5 → 19.5 ms server CPU (20k rows; SQL Server 31 ms).
+
+Follow-up the same day (median of three native runs of compare.mjs's
+workload, and four container comparisons): CHAR/NCHAR codes, nested integer
+arithmetic and integer comparisons of arithmetic evaluate unboxed in Int64
+(`exec/compile.mbt` `compile_int`; ORDER BY accented text −12%);
+`copy_map` copies the map structure instead of re-inserting; the lock,
+read-footprint, missing-index and TDS-column analyses of a repeated
+statement are memoized by identity of their immutable inputs (point read
+~28 µs CPU). UPDATE without OUTPUT no longer builds an OUTPUT image per row
+(UPDATE all rows 19.5 → 17.3 ms, UPDATE FROM join 20.6 → 18.5 ms): after
+the request-path commits those images had made UPDATE all rows 24 ms under
+compare.mjs's full workload (not in isolation), the reason the 2026-10-25
+container runs showed it at 24 ms.
+
+Container comparison, medians of four runs (2026-10-25, local image of
+main): bitsql ahead on every row in every run except UPDATE all rows (3 of
+4, before the OUTPUT fix); 1000 point SELECTs 104 vs 114 ms (4 of 4).

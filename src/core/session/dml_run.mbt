@@ -577,10 +577,16 @@ fn Session::exec_update(self : Session, u : @ast.Update) -> Unit raise {
         touched,
       )
       if instead.is_empty() {
-        let out_row = self.update_output_row(
-          view, src, extra_idx, old, full, row,
-        )
-        evaluated.push(self.output_eval(outputs, out_row))
+        // without OUTPUT nothing reads the images of a table row (a view
+        // row is still built: building it can fail)
+        if outputs.is_empty() && view is None {
+          evaluated.push([])
+        } else {
+          let out_row = self.update_output_row(
+            view, src, extra_idx, old, full, row,
+          )
+          evaluated.push(self.output_eval(outputs, out_row))
+        }
       }
       images.push((rowid, old, row))
     }
