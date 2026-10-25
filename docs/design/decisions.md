@@ -1480,3 +1480,16 @@ epoll_wait between requests and paid an idle-core wake-up on each one.
   one core busy, as SQL Server does. Container comparison: 1000 point
   SELECTs 104 ms vs 125 ms (samples 99–105 ms), container CPU ~99 µs per
   query (SQL Server ~62 µs).
+
+## 2026-10-25: profile-guided release images
+
+Release images are built with GCC profile-guided optimization from a
+training run of the client suite and the benchmark workloads on the build
+host (`scripts/docker-publish.sh` `pgo_arch`). PGO changes only how the
+same C is compiled (layout, inlining, branches); the profile comes from
+this repository's own tests, the smoke suite runs on the optimized binary,
+and `PGO=0` gives the plain build. Native development builds (`moon build
+--release`) stay plain `-O2`. Reason: request latency was dominated by
+cold instruction and data fetches between requests (performance.md
+"Profile-guided release builds"), which PGO's code layout reduces
+(point read 30.5 → 23 µs server CPU).

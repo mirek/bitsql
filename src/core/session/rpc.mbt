@@ -4,6 +4,22 @@ fn Server::parse_param_decls(
   self : Server,
   decls : String,
 ) -> Array[@ast.Param] raise {
+  // a repeated declaration list (every sp_executesql of one statement) is
+  // the parse of its last call (parsing is pure; the AST is not mutated)
+  if self.param_decls_memo is Some((seen, params)) &&
+    (physical_equal(seen, decls) || seen == decls) {
+    return params
+  }
+  let params = self.parse_param_decls_text(decls)
+  self.param_decls_memo = Some((decls, params))
+  params
+}
+
+///|
+fn Server::parse_param_decls_text(
+  self : Server,
+  decls : String,
+) -> Array[@ast.Param] raise {
   if decls.trim().is_empty() {
     return []
   }
@@ -235,8 +251,10 @@ fn Session::run_module(
   // local temp tables created by the module are dropped when it ends
   // (captured: captured-gaps/gaps-temp_tables #022/#023, an sp_executesql RPC)
   let temps_before : Set[Int] = Set([])
-  for t in self.temp.tables() {
-    temps_before.add(t.id)
+  if self.temp.has_tables() {
+    for t in self.temp.tables() {
+      temps_before.add(t.id)
+    }
   }
   self.frames.push(frame)
   self.rt.nest_level += levels
@@ -274,9 +292,11 @@ fn Session::run_module(
     self.uncatchable = false
     self.error_line = None
     self.error_module = None
-    for t in self.temp.tables() {
-      if !temps_before.contains(t.id) && !t.name.has_prefix("##") {
-        self.temp = self.temp.drop_object(t.id)
+    if self.temp.has_tables() {
+      for t in self.temp.tables() {
+        if !temps_before.contains(t.id) && !t.name.has_prefix("##") {
+          self.temp = self.temp.drop_object(t.id)
+        }
       }
     }
     // TVPs loaded for this call die with it

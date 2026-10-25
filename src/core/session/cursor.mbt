@@ -1298,6 +1298,9 @@ fn Session::exec_deallocate(
 /// cursor variables release their references (CURSOR OUTPUT parameters
 /// keep theirs until the caller took them over).
 fn Session::release_frame_cursors(self : Session, f : Frame) -> Unit {
+  if f.cursors.is_empty() && f.cursor_vars.is_empty() {
+    return
+  }
   for _, c in f.cursors {
     self.release_ref(Some(c))
   }

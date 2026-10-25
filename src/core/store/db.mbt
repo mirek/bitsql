@@ -166,6 +166,11 @@ pub fn Db::tables(self : Db) -> Array[Table] {
 }
 
 ///|
+pub fn Db::has_tables(self : Db) -> Bool {
+  !self.tables.is_empty()
+}
+
+///|
 pub fn Db::modules(self : Db) -> Array[Module] {
   self.modules.iter().map(kv => kv.1).collect()
 }

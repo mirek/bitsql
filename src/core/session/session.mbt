@@ -57,6 +57,7 @@ pub struct Server {
   /// `DbOptions::default` per lowercased name (immutable, so shared)
   priv default_db_options : Map[String, DbOptions]
   priv mut db_key_memo : (String, String)?
+  priv mut param_decls_memo : (String, Array[@ast.Param])?
   /// Query Store contexts removed so far (keys `SampleTexts::context_id`)
   priv mut contexts_removed : Int
   /// BACKUP files and msdb backup history (session/backup.mbt).
@@ -130,6 +131,7 @@ pub fn Server::new() -> Server {
     db_options: Map([]),
     default_db_options: Map([]),
     db_key_memo: None,
+    param_decls_memo: None,
     contexts_removed: 0,
     backups: BackupStore::new(),
     monitoring: false,

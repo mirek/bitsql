@@ -1359,3 +1359,26 @@ container runs showed it at 24 ms.
 Container comparison, medians of four runs (2026-10-25, local image of
 main): bitsql ahead on every row in every run except UPDATE all rows (3 of
 4, before the OUTPUT fix); 1000 point SELECTs 104 vs 114 ms (4 of 4).
+
+### Profile-guided release builds; one task per request (2026-10-25)
+
+The in-process point read (`session/point_read_wbtest.mbt`, `moon bench
+--target native --release -p mirek/bitsql/core/session -f
+point_read_wbtest.mbt`) takes 6.2 µs; inside the server `engine.handle`
+took ~16 µs for the same work. Evicting a 4 MiB working set between
+benchmark iterations raised the in-process figure to ~9.7 µs: between
+requests the kernel's network path and TLS run on the same core, and the
+11 MB of generated C code is fetched again. Two changes follow:
+
+- `scripts/docker-publish.sh` builds the host-architecture binary with
+  profile-guided optimization (`pgo_arch`; `PGO=0` skips): an instrumented
+  build runs the client suite and the benchmark workloads, then host.c is
+  compiled again with that profile (code layout, inlining and branch
+  decisions; `-ffp-contract=off` stays). Point read 30.5 → 23 µs server CPU;
+  most query shapes 5–10% faster. The smoke suite runs on the final binary.
+- The host processes an input in the task that received it when nothing is
+  queued or running (`submit` in host/main.mbt; one engine lock, the queue
+  keeps arrival order otherwise): no task switch between TLS and engine.
+
+Container comparison with a PGO image (three runs): every row faster in
+every run; 1000 point SELECTs 104 vs 124 ms (84%, 98%, 75%).

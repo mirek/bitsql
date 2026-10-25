@@ -5,7 +5,17 @@ fn Session::precheck_vector(
   self : Session,
   stmts : Array[@ast.Stmt],
 ) -> Array[(@types.SqlError, Int)] {
-  let vars = Map::from_array(self.frame().vars.iter().to_array())
+  // the frame's variables, copied before this pass declares more or hands
+  // them to the binder
+  let mut vars = self.frame().vars
+  let mut copied = false
+  let own = () => {
+    if !copied {
+      vars = Map::from_array(vars.iter().to_array())
+      copied = true
+    }
+    vars
+  }
   let errors : Array[(@types.SqlError, Int)] = []
   let mut defer_schema = false
   fn has_vector(q : @ast.Query) -> Bool {
@@ -71,6 +81,7 @@ fn Session::precheck_vector(
           ) catch {
             _ => continue
           }
+          let vars = own()
           vars[v.name.to_lower()] = { slot: vars.length(), ty, }
         }
       CreateIndex(ci) if ci.vector &&
@@ -104,7 +115,7 @@ fn Session::precheck_vector(
       Select(q) if !defer_schema && has_vector(q) => {
         let before = []
         let env = @bind.Env::new(
-          vars,
+          own(),
           catalog=self.catalog(),
           collation=self.db_collation(),
           deferred=before,

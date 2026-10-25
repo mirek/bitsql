@@ -3,6 +3,8 @@
 #   scripts/docker-publish.sh          build and test this host's architecture
 #   scripts/docker-publish.sh --push   publish it and update version aliases
 #   scripts/docker-publish.sh --push --multiarch  cross-build ARM64, test native only
+#   LOCAL_TAG=bitsql:dev scripts/docker-publish.sh   a local image only (no --push)
+#   PGO=0 ...                          skip the profile-guided rebuild
 # Other architectures are built/tested on their own native hosts. Publication
 # preserves architectures already published under the SAME version; coordinate
 # manifest updates across hosts. Never mix binaries from different versions.
@@ -20,6 +22,9 @@ for arg in "$@"; do
   esac
 done
 
+if [[ -n ${LOCAL_TAG:-} ]] && ((push)); then
+  echo "LOCAL_TAG builds a local image only; drop --push" >&2; exit 2
+fi
 repo=mirek/bitsql
 version=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
 minor=${version%.*}
@@ -79,12 +84,51 @@ build_arch() {
     -e "s#\./$src/#./$dst/#g" \
     -e "s#^/usr/bin/cc #$cc -ffp-contract=off #" -e "s#^/usr/bin/ar #$ar #" \
     -e "s#\\\$MOON_HOME#/moon#g" >"$out/$arch/plan.sh"
-  docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -v "$moon_runtime:/moon:ro" -w /src \
-    bitsql-xbuild sh -e "$out/$arch/plan.sh"
+  xbuild "$moon_runtime" "$out/$arch/plan.sh"
   rm -f "$out/$arch/bitsql" && cp "$dst/host/host.exe" "$out/$arch/bitsql"
   echo "== $arch: $(file -b "$out/$arch/bitsql" | cut -d, -f1-2), $(du -h "$out/$arch/bitsql" | cut -f1)"
 }
+xbuild() {
+  docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -v "$1:/moon:ro" -w /src \
+    bitsql-xbuild sh -e "$2"
+}
 for arch in "${arches[@]}"; do build_arch "$arch"; done
+
+# Profile-guided optimization of the host-architecture binary (PGO=0 skips):
+# an instrumented build runs the client suite and the benchmark workloads
+# natively, then host.c is compiled again with that profile. It changes code
+# layout, inlining and branch decisions only; flags such as -ffp-contract=off
+# stay. Point reads: ~30 → ~23 µs server CPU (decisions.md 2026-10-25).
+pgo_arch() {
+  local arch=$1 dst=$out/$arch/build prof=$out/$arch/pgo line bin
+  rm -rf "$prof" && mkdir -p "$prof"
+  line=$(grep -E ' -o \./[^ ]*/host/host\.exe ' "$out/$arch/plan.sh")
+  printf '%s\n' "$line" | sed \
+    -e "s# -O2 # -O2 -fprofile-generate -fprofile-update=single -fprofile-dir=/src/$prof #" \
+    -e "s#\(-o \./[^ ]*/host/host\.exe\)#\1 ./scripts/pgo/exit_on_term.c#" >"$out/$arch/pgo-gen.sh"
+  xbuild "$HOME/.moon" "$out/$arch/pgo-gen.sh"
+  bin=$PWD/$out/$arch/bitsql-pgo-gen
+  cp "$dst/host/host.exe" "$bin"
+  # the profile's compiled-in path is under /src (the build container's
+  # mount of this checkout): written here instead
+  (
+    cd harness
+    export GCOV_PREFIX="$PWD/.." GCOV_PREFIX_STRIP=1 BITSQL_BIN="$bin"
+    npm test --silent || true
+    REPS=3 node bench/points.mjs
+    WORKLOAD=requests REPS=3 node bench/profile.mjs
+    REPS=5 node bench/profile.mjs
+  ) >/dev/null 2>&1
+  rm -f "$bin"
+  [[ -n $(find "$prof" -name '*.gcda' | head -n 1) ]] || { echo "PGO: no profile was written" >&2; exit 1; }
+  printf '%s\n' "$line" | sed \
+    -e "s# -O2 # -O2 -fprofile-use -fprofile-partial-training -Wno-missing-profile -fprofile-dir=/src/$prof #" \
+    >"$out/$arch/pgo-use.sh"
+  xbuild "$HOME/.moon" "$out/$arch/pgo-use.sh"
+  rm -f "$out/$arch/bitsql" && cp "$dst/host/host.exe" "$out/$arch/bitsql"
+  echo "== $arch: profile-guided build, $(du -h "$out/$arch/bitsql" | cut -f1)"
+}
+if [[ ${PGO:-1} == 1 ]]; then pgo_arch "$host_arch"; fi
 
 # The full client suite runs directly on the host architecture.
 smoke() {
@@ -116,8 +160,8 @@ console.log(m.digest)
     --label "org.opencontainers.image.version=$version" \
     --label "org.opencontainers.image.revision=$(git rev-parse HEAD)" \
     --label "org.opencontainers.image.title=bitsql" \
-    -t "$repo:$version-$arch" . >/dev/null
-  [[ $(docker image inspect -f '{{.Architecture}}' "$repo:$version-$arch") == "$arch" ]] ||
+    -t "${LOCAL_TAG:-$repo:$version-$arch}" . >/dev/null
+  [[ $(docker image inspect -f '{{.Architecture}}' "${LOCAL_TAG:-$repo:$version-$arch}") == "$arch" ]] ||
     { echo "image $repo:$version-$arch has the wrong architecture" >&2; exit 1; }
 done
 echo "== images: ${arches[*]} ($version); runtime-tested architecture: $host_arch"

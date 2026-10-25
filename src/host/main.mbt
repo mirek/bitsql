@@ -109,145 +109,171 @@ async fn main {
     })
   let mut spin_until = 0L
   let mut spinning = false
+  let engine_busy = @async.Semaphore(1)
+  let mut queued = 0
   @async.with_task_group(group => {
+    // One input at a time through the engine and its outputs. A producer
+    // runs its input itself when nothing is queued or running (no task
+    // switch on the request path); otherwise the engine task takes it from
+    // the queue in arrival order.
+    async fn process(input : @engine.Input) -> Unit {
+      if spin_ticks > 0L && input is Received(_, _) {
+        spin_until = clock_ticks() + spin_ticks
+        if !spinning {
+          spinning = true
+          // a ready task makes the event loop poll without blocking
+          group.spawn_bg(() => {
+            while clock_ticks() < spin_until {
+              @async.pause()
+            }
+            spinning = false
+          })
+        }
+      }
+      let event : @engine.Event = { input, now: now_ticks(), }
+      if record is Some(f) {
+        f.write(@engine.encode_event(event))
+      }
+      let cpu_before = cpu_us()
+      let mut outputs = engine.handle(event)
+      let mut charge = match input {
+        Received(id, _) | TimerFired(id) | HttpCompleted(id, _, _) =>
+          Some((id, cpu_us() - cpu_before, event.now))
+        _ => None
+      }
+      // Each round: measurement samples are stamped before any socket I/O
+      // (no write is charged to the measured statement), the replies go
+      // out, then the engine's bookkeeping (CPU charges, sample handling,
+      // which may resume parked requests: the next round's outputs).
+      while true {
+        let samples = []
+        for o in outputs {
+          if o is Sample(id) {
+            samples.push((id, clock_ticks()))
+          }
+        }
+        for o in outputs {
+          match o {
+            Sample(_) => ()
+            Send(id, bytes) =>
+              match conns.get(id) {
+                Some(conn) =>
+                  try {
+                    match conn.mode {
+                      Tls({ tls: Some(tls), .. }) => tls.write(bytes)
+                      _ => conn.tcp.write(bytes)
+                    }
+                  } catch {
+                    _ => {
+                      conn.tcp.close()
+                      conns.remove(id)
+                    }
+                  }
+                None => ()
+              }
+            Close(id) =>
+              match conns.get(id) {
+                Some(conn) => {
+                  conn.tcp.close()
+                  conns.remove(id)
+                }
+                None => ()
+              }
+            StartTls(id) =>
+              match conns.get(id) {
+                Some(conn) => conn.mode = Pending
+                None => ()
+              }
+            EndTls(id) =>
+              match conns.get(id) {
+                Some(conn) => {
+                  if conn.mode is Tls(wire) {
+                    wire.chunks.close()
+                  }
+                  conn.mode = Plain
+                }
+                None => ()
+              }
+            Log(msg) => @stdio.stderr.write("\{msg}\n")
+            SetTimer(id, ms) => {
+              timer_gen += 1
+              let gen = timer_gen
+              timers[id] = gen
+              group.spawn_bg(() => {
+                @async.sleep(ms)
+                if timers.get(id) == Some(gen) {
+                  timers.remove(id)
+                  queued += 1
+                  queue.put(TimerFired(id))
+                }
+              })
+            }
+            CancelTimer(id) => timers.remove(id)
+            FetchHttp(id, generation, request) => {
+              let task = group.spawn(allow_failure=true, () => {
+                let result = perform_http(request, http_trust)
+                http_tasks.remove(generation)
+                queued += 1
+                queue.put(HttpCompleted(id, generation, result))
+              })
+              http_tasks[generation] = task
+            }
+            CancelHttp(_, generation) =>
+              if http_tasks.get(generation) is Some(task) {
+                http_tasks.remove(generation)
+                task.cancel()
+              }
+            Yield => ()
+          }
+        }
+        if charge is Some((id, cpu, now)) {
+          let event : @engine.Event = { input: CpuUsed(id, cpu), now, }
+          if record is Some(f) {
+            f.write(@engine.encode_event(event))
+          }
+          ignore(engine.handle(event))
+          charge = None
+        }
+        guard !samples.is_empty() else { break }
+        outputs = []
+        for sampled in samples {
+          let (id, now) = sampled
+          let sample : @engine.Event = { input: Measured(id, 0L), now, }
+          if record is Some(f) {
+            f.write(@engine.encode_event(sample))
+          }
+          let before = cpu_us()
+          outputs.append(engine.handle(sample))
+          let event : @engine.Event = {
+            input: CpuUsed(id, cpu_us() - before),
+            now,
+          }
+          if record is Some(f) {
+            f.write(@engine.encode_event(event))
+          }
+          ignore(engine.handle(event))
+        }
+      }
+    }
+
+    async fn submit(input : @engine.Input) -> Unit {
+      if queued == 0 && engine_busy.try_acquire() {
+        defer engine_busy.release()
+        process(input)
+      } else {
+        queued += 1
+        queue.put(input)
+      }
+    }
+
     group.spawn_bg(() => {
       while true {
         let input = queue.get()
-        if spin_ticks > 0L && input is Received(_, _) {
-          spin_until = clock_ticks() + spin_ticks
-          if !spinning {
-            spinning = true
-            // a ready task makes the event loop poll without blocking
-            group.spawn_bg(() => {
-              while clock_ticks() < spin_until {
-                @async.pause()
-              }
-              spinning = false
-            })
-          }
-        }
-        let event : @engine.Event = { input, now: now_ticks(), }
-        if record is Some(f) {
-          f.write(@engine.encode_event(event))
-        }
-        let cpu_before = cpu_us()
-        let mut outputs = engine.handle(event)
-        let mut charge = match input {
-          Received(id, _) | TimerFired(id) | HttpCompleted(id, _, _) =>
-            Some((id, cpu_us() - cpu_before, event.now))
-          _ => None
-        }
-        // Each round: measurement samples are stamped before any socket I/O
-        // (no write is charged to the measured statement), the replies go
-        // out, then the engine's bookkeeping (CPU charges, sample handling,
-        // which may resume parked requests: the next round's outputs).
-        while true {
-          let samples = []
-          for o in outputs {
-            if o is Sample(id) {
-              samples.push((id, clock_ticks()))
-            }
-          }
-          for o in outputs {
-            match o {
-              Sample(_) => ()
-              Send(id, bytes) =>
-                match conns.get(id) {
-                  Some(conn) =>
-                    try {
-                      match conn.mode {
-                        Tls({ tls: Some(tls), .. }) => tls.write(bytes)
-                        _ => conn.tcp.write(bytes)
-                      }
-                    } catch {
-                      _ => {
-                        conn.tcp.close()
-                        conns.remove(id)
-                      }
-                    }
-                  None => ()
-                }
-              Close(id) =>
-                match conns.get(id) {
-                  Some(conn) => {
-                    conn.tcp.close()
-                    conns.remove(id)
-                  }
-                  None => ()
-                }
-              StartTls(id) =>
-                match conns.get(id) {
-                  Some(conn) => conn.mode = Pending
-                  None => ()
-                }
-              EndTls(id) =>
-                match conns.get(id) {
-                  Some(conn) => {
-                    if conn.mode is Tls(wire) {
-                      wire.chunks.close()
-                    }
-                    conn.mode = Plain
-                  }
-                  None => ()
-                }
-              Log(msg) => @stdio.stderr.write("\{msg}\n")
-              SetTimer(id, ms) => {
-                timer_gen += 1
-                let gen = timer_gen
-                timers[id] = gen
-                group.spawn_bg(() => {
-                  @async.sleep(ms)
-                  if timers.get(id) == Some(gen) {
-                    timers.remove(id)
-                    queue.put(TimerFired(id))
-                  }
-                })
-              }
-              CancelTimer(id) => timers.remove(id)
-              FetchHttp(id, generation, request) => {
-                let task = group.spawn(allow_failure=true, () => {
-                  let result = perform_http(request, http_trust)
-                  http_tasks.remove(generation)
-                  queue.put(HttpCompleted(id, generation, result))
-                })
-                http_tasks[generation] = task
-              }
-              CancelHttp(_, generation) =>
-                if http_tasks.get(generation) is Some(task) {
-                  http_tasks.remove(generation)
-                  task.cancel()
-                }
-              Yield => ()
-            }
-          }
-          if charge is Some((id, cpu, now)) {
-            let event : @engine.Event = { input: CpuUsed(id, cpu), now, }
-            if record is Some(f) {
-              f.write(@engine.encode_event(event))
-            }
-            ignore(engine.handle(event))
-            charge = None
-          }
-          guard !samples.is_empty() else { break }
-          outputs = []
-          for sampled in samples {
-            let (id, now) = sampled
-            let sample : @engine.Event = { input: Measured(id, 0L), now, }
-            if record is Some(f) {
-              f.write(@engine.encode_event(sample))
-            }
-            let before = cpu_us()
-            outputs.append(engine.handle(sample))
-            let event : @engine.Event = {
-              input: CpuUsed(id, cpu_us() - before),
-              now,
-            }
-            if record is Some(f) {
-              f.write(@engine.encode_event(event))
-            }
-            ignore(engine.handle(event))
-          }
-        }
+        engine_busy.acquire()
+        defer engine_busy.release()
+        // still counted while waiting for the lock, so no producer overtakes it
+        queued -= 1
+        process(input)
       }
     })
     let mut next_id = 0
@@ -257,13 +283,16 @@ async fn main {
       let id = next_id
       let conn = { tcp, mode: Plain, }
       conns[id] = conn
-      queue.put(Connected(id))
+      submit(Connected(id))
       group.spawn_bg(allow_failure=true, () => {
-        defer queue.try_put(Closed(id)) |> ignore
+        defer {
+          queued += 1
+          queue.try_put(Closed(id)) |> ignore
+        }
         defer (if conn.mode is Tls(wire) { wire.chunks.close() })
         while tcp.read_some() is Some(bytes) {
           match conn.mode {
-            Plain => queue.put(Received(id, bytes))
+            Plain => submit(Received(id, bytes))
             Tls(wire) => wire.chunks.put(bytes)
             Pending =>
               match tls_files {
@@ -272,7 +301,7 @@ async fn main {
                   conn.mode = Tls(wire)
                   wire.chunks.put(bytes)
                   group.spawn_bg(allow_failure=true, () => {
-                    run_tls(wire, files, b => queue.put(Received(id, b))) catch {
+                    run_tls(wire, files, b => submit(Received(id, b))) catch {
                       e => {
                         @stdio.stderr.write("connection \{id}: TLS: \{e}\n")
                         tcp.close()
