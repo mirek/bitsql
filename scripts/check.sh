@@ -14,6 +14,8 @@ echo "== release version"
 mod=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
 grep -q "bitsql_version : String = \"$mod\"" src/core/exec/version.mbt \
   || { echo "src/core/exec/version.mbt bitsql_version differs from moon.mod $mod"; exit 1; }
+grep -q "\"version\": \"$mod\"" npm/bitsql/package.json \
+  || { echo "npm/bitsql/package.json version differs from moon.mod $mod"; exit 1; }
 echo "== moon test"
 # MOON_TEST_JOBS=2 keeps parallel test links within an 8 GB dev container VM.
 moon test --target native ${MOON_TEST_JOBS:+-j "$MOON_TEST_JOBS"} 2>&1 | tail -n 5
@@ -66,5 +68,9 @@ if [ -d website/node_modules ]; then
   echo "== website (JS engine, TypeScript, capture tests, production build)"
   pnpm --dir website test
   pnpm --dir website build
+fi
+if [ -d npm/bitsql/node_modules ]; then
+  echo "== npm package (wasm engine, TypeScript host, client tests, typings)"
+  (cd npm/bitsql && npm run --silent build && npm test --silent)
 fi
 echo "OK"

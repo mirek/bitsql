@@ -424,3 +424,13 @@ thin launcher. Conventions:
   1 but reprints the previous "proved" summary: trust the exit code.
   `moon prove` with no path proves every proof-enabled package; reports are
   `_build/verif/<pkg>/*.proof.json` (`jq .failures`).
+- 2026-10-26 (`src/wasm`): a wasm-gc module with `"export-memory-name"`
+  and `"memory-limits"` gets a linear memory even though MoonBit data lives
+  in GC objects; inline `extern "wasm"` functions (`i32.load8_u`,
+  `i32.store8`, `memory.size`, `memory.grow`) copy bytes between it and
+  `Bytes`, which is how a JS host exchanges data without
+  `use-js-builtin-string`. The engine's wasm-gc build has no imports at all.
+  Error types such as `@tds.TdsError` have no `Show`, so `"\{e}"` on them
+  fails to compile (4018). Node's main-thread stack (~1 MB) is too small for
+  some engine recursion that the native 8 MB stack handles; run it in a
+  worker with `resourceLimits.stackSizeMb`.

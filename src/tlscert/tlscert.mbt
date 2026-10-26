@@ -8,7 +8,7 @@
 ///     -not_before 20260101000000Z -not_after 20460101000000Z -subj /CN=localhost \
 ///     -addext subjectAltName=DNS:localhost,IP:127.0.0.1,IP:::1 \
 ///     -addext extendedKeyUsage=serverAuth
-let builtin_certificate : String =
+pub let builtin_certificate : String =
   #|-----BEGIN CERTIFICATE-----
   #|MIIDTjCCAjagAwIBAgIURwxWKAaKb1zFYkAefdvHtsW1JMUwDQYJKoZIhvcNAQEL
   #|BQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI2MDEwMTAwMDAwMFoXDTQ2MDEw
@@ -31,7 +31,7 @@ let builtin_certificate : String =
   #|-----END CERTIFICATE-----
 
 ///|
-let builtin_private_key : String =
+pub let builtin_private_key : String =
   #|-----BEGIN PRIVATE KEY-----
   #|MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCzvTO/uZNxfsad
   #|0RvO2feV//oedmRESozPXTyoygJIqcrVYIJ/HbDsKVKICyKDNSuHcm5KiaOdAu2p

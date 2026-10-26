@@ -1,25 +1,59 @@
 {
   "name": "bitsql",
-  "version": "0.0.0",
-  "description": "Memory-only SQL Server emulator speaking TDS: start it from Node tests instead of the mssql/server container",
-  "keywords": ["sql", "tsql", "mssql", "sqlserver", "tds", "tedious", "emulator", "testing", "jest"],
+  "version": "0.1.30",
+  "description": "SQL Server emulator for tests: start it in-process (WebAssembly) and connect with tedious or mssql over TDS",
+  "keywords": [
+    "sql",
+    "tsql",
+    "mssql",
+    "sqlserver",
+    "tds",
+    "tedious",
+    "emulator",
+    "testing",
+    "jest",
+    "wasm"
+  ],
   "homepage": "https://github.com/mirek/bitsql#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/mirek/bitsql.git", "directory": "npm/bitsql" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/bitsql.git",
+    "directory": "npm/bitsql"
+  },
   "license": "CC0-1.0",
   "author": "Mirek Rusin",
   "type": "commonjs",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./index.mjs",
-      "require": "./index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
-  "bin": { "bitsql": "bin/bitsql.js" },
-  "files": ["index.js", "index.mjs", "index.d.ts", "bin/bitsql.js"],
-  "engines": { "node": ">=18" },
-  "optionalDependencies": {}
+  "bin": {
+    "bitsql": "dist/cli.js"
+  },
+  "files": [
+    "dist/*.js",
+    "dist/index.d.ts",
+    "bitsql.wasm",
+    "LICENSE.md",
+    "THIRD_PARTY_NOTICES.md",
+    "licenses"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "cd ../.. && moon build --target wasm-gc --release src/wasm && cp _build/wasm-gc/release/build/wasm/wasm.wasm npm/bitsql/bitsql.wasm && cd npm/bitsql && tsc -p . && chmod +x dist/cli.js",
+    "test": "node --test test/*.test.mjs && tsc --noEmit --strict --target es2022 --module nodenext --types node test/types.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "mssql": "^12.7.2",
+    "tedious": "^20.3.3",
+    "typescript": "~5.9.3"
+  }
 }

@@ -24,7 +24,3 @@ extern "C" fn container_type() -> Int = "bitsql_container_type"
 
 ///|
 extern "C" fn boot_ms() -> Int64 = "bitsql_boot_ms"
-
-///|
-/// Ends the process at once: all state is in memory, nothing to flush.
-extern "C" fn exit_now(code : Int) = "bitsql_exit"

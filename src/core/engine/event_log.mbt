@@ -80,57 +80,7 @@ pub fn decode_event_log(
   let seed = r.u64le().reinterpret_as_int64()
   let events = []
   while !r.at_end() {
-    let record : Event? = try {
-      let tag = r.u8()
-      let now = r.u64le().reinterpret_as_int64()
-      let id = r.i32le()
-      let input : Input = match tag {
-        0 => Connected(id)
-        1 => {
-          let n = r.u32le().to_int()
-          Received(id, r.bytes(n))
-        }
-        2 => Closed(id)
-        3 => TimerFired(id)
-        4 => Resume
-        6 => Measured(id, r.u64le().reinterpret_as_int64())
-        7 => MonitoringStarted(id, r.u64le().reinterpret_as_int64())
-        8 => CpuUsed(id, r.u64le().reinterpret_as_int64())
-        9 => {
-          let n = r.u32le().to_int()
-          if n < 0 || n > 128 {
-            raise @tds.Malformed("too many system facts")
-          }
-          let facts = []
-          for _ in 0..<n {
-            let key = @utf8.decode(r.bytes(r.u32le().to_int())) catch {
-              _ => raise @tds.Malformed("invalid system fact name")
-            }
-            facts.push((key, r.u64le().reinterpret_as_int64()))
-          }
-          SystemFacts(facts)
-        }
-        5 => {
-          let generation = r.i32le()
-          let status = r.i32le()
-          let bytes = r.bytes(r.u32le().to_int())
-          let body = @utf8.decode(bytes) catch {
-            _ => raise @tds.Malformed("invalid UTF-8 HTTP event")
-          }
-          HttpCompleted(
-            id,
-            generation,
-            if status == -1 {
-              HttpFailure(body)
-            } else {
-              HttpResponse(status, body)
-            },
-          )
-        }
-        t => raise @tds.Malformed("bad event tag \{t}")
-      }
-      Some({ input, now, })
-    } catch {
+    let record : Event? = Some(decode_event(r)) catch {
       @tds.Malformed(m) if m.has_prefix("truncated") => None
       e => raise e
     }
@@ -140,4 +90,59 @@ pub fn decode_event_log(
     }
   }
   (seed, events)
+}
+
+///|
+/// One event-log record (the format above), e.g. an event from a host that
+/// is not linked with the engine (the npm package's TypeScript host).
+pub fn decode_event(r : @tds.Reader) -> Event raise @tds.TdsError {
+  let tag = r.u8()
+  let now = r.u64le().reinterpret_as_int64()
+  let id = r.i32le()
+  let input : Input = match tag {
+    0 => Connected(id)
+    1 => {
+      let n = r.u32le().to_int()
+      Received(id, r.bytes(n))
+    }
+    2 => Closed(id)
+    3 => TimerFired(id)
+    4 => Resume
+    6 => Measured(id, r.u64le().reinterpret_as_int64())
+    7 => MonitoringStarted(id, r.u64le().reinterpret_as_int64())
+    8 => CpuUsed(id, r.u64le().reinterpret_as_int64())
+    9 => {
+      let n = r.u32le().to_int()
+      if n < 0 || n > 128 {
+        raise @tds.Malformed("too many system facts")
+      }
+      let facts = []
+      for _ in 0..<n {
+        let key = @utf8.decode(r.bytes(r.u32le().to_int())) catch {
+          _ => raise @tds.Malformed("invalid system fact name")
+        }
+        facts.push((key, r.u64le().reinterpret_as_int64()))
+      }
+      SystemFacts(facts)
+    }
+    5 => {
+      let generation = r.i32le()
+      let status = r.i32le()
+      let bytes = r.bytes(r.u32le().to_int())
+      let body = @utf8.decode(bytes) catch {
+        _ => raise @tds.Malformed("invalid UTF-8 HTTP event")
+      }
+      HttpCompleted(
+        id,
+        generation,
+        if status == -1 {
+          HttpFailure(body)
+        } else {
+          HttpResponse(status, body)
+        },
+      )
+    }
+    t => raise @tds.Malformed("bad event tag \{t}")
+  }
+  { input, now, }
 }

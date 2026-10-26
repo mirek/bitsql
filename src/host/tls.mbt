@@ -84,7 +84,9 @@ async fn tls_dir() -> String {
     _ => "/tmp"
   }
   let user = @env.get_env_var("USER").unwrap_or("user")
-  let hash = fnv1a(openssl_conf + builtin_private_key + builtin_certificate)
+  let hash = fnv1a(
+    openssl_conf + @tlscert.builtin_private_key + @tlscert.builtin_certificate,
+  )
   let dir = "\{base}/bitsql-tls-\{user}-\{hash}"
   if @fs.exists(dir) {
     return dir
@@ -104,13 +106,13 @@ async fn tls_dir() -> String {
   )
   @fs.write_file(
     staging + "/key.pem",
-    builtin_private_key,
+    @tlscert.builtin_private_key,
     create_mode=CreateOrTruncate,
     permission=0o600,
   )
   @fs.write_file(
     staging + "/cert.pem",
-    builtin_certificate,
+    @tlscert.builtin_certificate,
     create_mode=CreateOrTruncate,
   )
   // loses the race harmlessly when another start renamed first

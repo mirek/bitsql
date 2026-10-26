@@ -1494,28 +1494,41 @@ cold instruction and data fetches between requests (performance.md
 "Profile-guided release builds"), which PGO's code layout reduces
 (point read 30.5 → 23 µs server CPU).
 
-## 2026-10-26: npm packages launch the native binary
+## 2026-10-26: npm package = engine as WebAssembly + TypeScript host
 
 `npm install bitsql` lets Node tests start a server in `beforeAll` /
-`globalSetup` without Docker. The package is a launcher around the same
-release binary as the image, not a JS build of the engine: the browser
-build (`src/browser`) has no TDS listener, TLS or host scheduler, and a
-second host would be a second thing to keep faithful. Layout follows
-esbuild: `bitsql` (JS launcher, hand-written `index.d.ts`, CJS with an ESM
-wrapper, no dependencies) lists `bitsql-<os>-<cpu>` packages as exact-version
-optional dependencies gated by `os`/`cpu`/`libc`, so npm installs only the
-matching binary. Versions equal the server version (`scripts/npm-publish.sh`
-refuses a binary whose `--version` differs). Each native host publishes its
-own platform package; the launcher lists the packages already on the
-registry for that version, so an architecture published later reaches users
-with the next version.
+`globalSetup` without Docker, on any OS, from one package. The pure core
+compiles to WebAssembly GC (`src/wasm`, no imports at all) and
+`npm/bitsql` is a TypeScript port of the thin native host
+(`src/host`): sockets, TDS-wrapped TLS on `node:tls`, timers, the
+exact outbound HTTP request, monitoring facts and `--record`. A first
+cut shipped the native binary as per-platform packages and spawned it;
+replaced the same day, before publication, because it needed a binary per
+OS/CPU/libc and each platform validated on its own host.
 
-Servers must not outlive the test run. Jest gives test modules a sandboxed
-`process` whose `exit` listeners never fire (found with a test file that
-never called `stop()`: the server stayed up after Jest exited), and Jest
-SIGKILLs stuck workers, which no JS hook observes. So the host gained
-`--exit-with-stdin`: the launcher holds the server's stdin pipe, and the
-kernel closes it however the parent dies; the server is gone ~12 ms after
-Jest exits. It is opt-in because a container's stdin is usually
-`/dev/null` (immediate end of file). The child and its pipes are unref'd, so
-a forgotten `stop()` never keeps the runner alive.
+- **Boundary:** one buffer at the start of the module's exported linear
+  memory. Inputs are event-log records (`@engine.decode_event`, so the TS
+  host's `--record` logs replay natively), outputs a small tagged encoding
+  (`src/wasm/main.mbt`). MoonBit strings stay MoonBit strings (no JS
+  string builtins): the engine is string-heavy and needs no JS calls inside.
+- **One worker thread per server**, with `resourceLimits` of a 64 MB
+  stack and a heap cap of the machine's memory. Node's main-thread defaults
+  failed the harness: a LIKE on `nvarchar(max)` overflowed the ~1 MB stack
+  (gaps-unicode-predicates#073–076), and report-0127/index-usage's setup
+  needs ~4 GB, which the native host also uses (roadmap). The worker also
+  keeps engine work off the test's event loop, and an engine trap ends only
+  that server, reported through `onLog` instead of as a socket error. The
+  compiled module is shared with every worker.
+- **Fidelity gate:** `dist/cli.js` takes the native flags and prints
+  `listening on`, so the whole client suite runs against the package
+  (`scripts/npm-publish.sh`). Speed vs native (same queries): 1000
+  INSERTs 179 vs 93 ms, 1000 point SELECTs 162 vs 68 ms, sort/window over
+  21k rows 88 vs 60 ms; start-up ~0.1 s including the module compile.
+- **TLS:** Node emits `secure` before its final handshake flight
+  (NewSessionTicket, ChangeCipherSpec, Finished) reaches the transport, so
+  the switch from PRELOGIN-wrapped to bare records waits a turn; switching
+  at `secure` sent that flight bare and tedious timed out.
+- **Never keeps the process alive:** the worker is unref'd once listening
+  (not before: an unref'd worker let `node -e "start()"` exit
+  mid-start), and `stop()` refs it again until it has exited (otherwise
+  `await server.stop()` in a script left an unsettled top-level await).

@@ -118,13 +118,14 @@ Server options (append them after the image name): `--version`, `--listen HOST:P
 Emulator error 50108), `--record FILE` (event log for `replay`), `--spin-us N`
 (after a request, poll N µs for the next one before sleeping, as SQL Server's
 schedulers do: lower latency for back-to-back requests at the cost of CPU
-while they run; default 100, `0` sleeps at once), `--exit-with-stdin` (exit when
-stdin reaches end of file, so a supervising parent's death stops the server).
+while they run; default 100, `0` sleeps at once).
 
 ## Node tests without Docker (npm)
 
-The `bitsql` npm package starts the native server from test setup, with
-TypeScript typings included. No container, no EULA:
+The `bitsql` npm package runs the same engine compiled to WebAssembly, with
+a thin TypeScript host for sockets, TLS and timers. It starts from test setup
+on any OS with Node 22+, with TypeScript typings included. There's no
+container, no native binary and no EULA:
 
 ```bash
 npm install --save-dev bitsql
@@ -144,11 +145,12 @@ test("query", () => {
 })
 ```
 
-Each `start()` runs its own server on a free port, so parallel Jest workers never
-share data. A server never outlives the Node process that started it, even
-one killed with SIGKILL. The package ships the Linux x64 (glibc 2.34+)
-binary; other platforms can set `BITSQL_BIN` or use the container. Options
-and a Jest `globalSetup` example: [npm/bitsql/README.md](npm/bitsql/README.md).
+Each `start()` runs its own server in a worker thread on a free port, so
+parallel Jest workers never share data, and a forgotten `stop()` doesn't
+keep the runner alive. Startup takes about 0.1 s. Queries run about 1.5–2.5×
+slower than the native image, which is still fast for tests. Every release
+passes the same client suite as the image. Options and a Jest `globalSetup`
+example: [npm/bitsql/README.md](npm/bitsql/README.md).
 
 ## Row ordering compatibility
 
@@ -303,8 +305,9 @@ docker run -p 1433:1433 bitsql --database app
 ```
 
 Build, test and publish the native host architecture with
-`scripts/docker-publish.sh --push`, then the npm packages from the same
-binary with `scripts/npm-publish.sh --push` (after `npm login`).
+`scripts/docker-publish.sh --push`. The npm package (WebAssembly, any
+platform) is built, run through the harness and published with
+`scripts/npm-publish.sh --push` (after `npm login`).
 
 - Design: [docs/design/](docs/design/README.md)
 - Contributing and agent guide: [CLAUDE.md](CLAUDE.md)
