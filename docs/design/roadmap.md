@@ -572,3 +572,9 @@ project: the breadth of transaction and error semantics in phases 5–6.
   cases, populated diagnostic metadata and TDS version pass in the pulled
   registry image; version/minor/latest manifests agree. See
   [publication evidence](query-store.md#publication).
+- [x] Publish native amd64 0.1.29 (profile-guided build; per-session plan
+  memo, deferred measurement parks, spin-polling host): full gate green
+  (1,792 MoonBit tests, 23,728 client checks, three skips; `moon prove`
+  not run, no SMT solver on this host), smoke suite passes in the image,
+  README and website re-measured against the published image; point reads
+  now beat SQL Server (performance.md, "Release 0.1.29").

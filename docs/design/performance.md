@@ -1382,3 +1382,12 @@ requests the kernel's network path and TLS run on the same core, and the
 
 Container comparison with a PGO image (three runs): every row faster in
 every run; 1000 point SELECTs 104 vs 124 ms (84%, 98%, 75%).
+
+Release 0.1.29 (2026-10-26, the published `mirek/bitsql:0.1.29-amd64`,
+three full `bench:compare` runs, raw samples of the README run in
+`website/public/benchmark-0.1.29.json`): 1000 point SELECTs 97.6 vs 114,
+92.4 vs 107 and 95.8 vs 119 ms (80–86%); the 24 shapes total 207–213 vs
+619–662 ms. One run has every row better; in the others one shape each did
+not win (EXISTS correlated tied 4.44 vs 4.48 ms; EXCEPT 7.55 vs 6.67 ms, an
+outlier against 5.3–5.4 ms in the other runs). Per-row medians across the
+three runs are all better; closest EXISTS 90%, EXCEPT 88%, GROUP BY v 85%.
