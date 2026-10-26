@@ -434,3 +434,11 @@ thin launcher. Conventions:
   fails to compile (4018). Node's main-thread stack (~1 MB) is too small for
   some engine recursion that the native 8 MB stack handles; run it in a
   worker with `resourceLimits.stackSizeMb`.
+- 2026-10-26: every top-level `let` initializer runs in the module's start
+  function, and an array (or `Map`/`Set`) literal compiles to one
+  constructor call per element there; release builds even hoist each
+  element into its own global. Large generated tables made the wasm start
+  function 932 KB, which V8 compiled to 7.5 MB and later tiered up with a
+  2 GB TurboFan compile. Keep big tables as `#|` string constants decoded
+  on first use (`@tabletext`, decisions.md 2026-10-26). `derive(FromJson)`
+  hard-codes the `@json` alias, which clashes with `core/json` here.

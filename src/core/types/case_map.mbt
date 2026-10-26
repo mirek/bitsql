@@ -4,10 +4,28 @@
 // supplementary-letters, isolated surrogates).
 
 ///|
+let case_map_tables : Ref[(Array[(Int, Int, Int)], Array[(Int, Int, Int)])?] = Ref(
+  None,
+)
+
+///|
+/// (version 0, version 100) case rows.
+fn case_map_rows() -> (Array[(Int, Int, Int)], Array[(Int, Int, Int)]) {
+  if case_map_tables.val is Some(tables) {
+    return tables
+  }
+  let decode = text => @tabletext.int_rows(text).map(r => (r[0], r[1], r[2]))
+  let tables = (decode(case_map_v0_text), decode(case_map_v100_text))
+  case_map_tables.val = Some(tables)
+  tables
+}
+
+///|
 /// UPPER (or LOWER) of one UTF-16 code unit under collations of `version`
 /// (0 or 100).
 pub fn case_map_unit(unit : Int, upper : Bool, version : Int) -> Int {
-  let table = if version >= 100 { case_map_v100 } else { case_map_v0 }
+  let (v0, v100) = case_map_rows()
+  let table = if version >= 100 { v100 } else { v0 }
   let mut lo = 0
   let mut hi = table.length()
   while lo < hi {

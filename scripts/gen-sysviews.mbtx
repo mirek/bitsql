@@ -58,34 +58,31 @@ let out_path : String = "src/core/session/sysviews_data.mbt"
 let skip : Array[String] = []
 
 ///|
+/// Hand-written descriptor (cursor work, commit 59e22ac): sys.dm_exec_cursors
+/// is read as a table function (bind_table_function) and has no
+/// `SELECT * ... WHERE 1 = 0` capture.
 let extra_views : String =
-  #|  {
-  #|    // read as sys.dm_exec_cursors(session_id) (bind_table_function)
-  #|    schema: "sys",
-  #|    name: "dm_exec_cursors",
-  #|    columns: [
-  #|      vc("session_id", Int, false, false),
-  #|      vc("cursor_id", Int, false, false),
-  #|      vc("name", NVarChar(Some(128), coll_default), true, false),
-  #|      vc("properties", NVarChar(Some(128), coll_default), false, false),
-  #|      vc("sql_handle", VarBinary(Some(64)), true, false),
-  #|      vc("statement_start_offset", Int, true, false),
-  #|      vc("statement_end_offset", Int, true, false),
-  #|      vc("plan_generation_num", BigInt, true, false),
-  #|      vc("creation_time", DateTime, true, false),
-  #|      vc("is_open", Bit, false, false),
-  #|      vc("is_async_population", Bit, false, false),
-  #|      vc("is_close_on_commit", Bit, false, false),
-  #|      vc("fetch_status", Int, false, false),
-  #|      vc("fetch_buffer_size", Int, false, false),
-  #|      vc("fetch_buffer_start", Int, false, false),
-  #|      vc("ansi_position", Int, false, false),
-  #|      vc("worker_time", BigInt, false, false),
-  #|      vc("reads", BigInt, false, false),
-  #|      vc("writes", BigInt, false, false),
-  #|      vc("dormant_duration", BigInt, false, false),
-  #|    ],
-  #|  },
+  #|sys.dm_exec_cursors
+  #|vc("session_id", Int, false, false)
+  #|vc("cursor_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("properties", NVarChar(Some(128), coll_default), false, false)
+  #|vc("sql_handle", VarBinary(Some(64)), true, false)
+  #|vc("statement_start_offset", Int, true, false)
+  #|vc("statement_end_offset", Int, true, false)
+  #|vc("plan_generation_num", BigInt, true, false)
+  #|vc("creation_time", DateTime, true, false)
+  #|vc("is_open", Bit, false, false)
+  #|vc("is_async_population", Bit, false, false)
+  #|vc("is_close_on_commit", Bit, false, false)
+  #|vc("fetch_status", Int, false, false)
+  #|vc("fetch_buffer_size", Int, false, false)
+  #|vc("fetch_buffer_start", Int, false, false)
+  #|vc("ansi_position", Int, false, false)
+  #|vc("worker_time", BigInt, false, false)
+  #|vc("reads", BigInt, false, false)
+  #|vc("writes", BigInt, false, false)
+  #|vc("dormant_duration", BigInt, false, false)
 
 ///|
 /// Reads a text file the way Python's text mode does: universal newlines
@@ -284,7 +281,10 @@ fn sql_type(c : Json) -> String raise {
 }
 
 ///|
-fn mbt_str(s : String) -> String {
+fn mbt_str(s : String) -> String raise {
+  if s.contains("\n") || s.contains("\r") {
+    fail("line break in \{s}: the tables are line-based text")
+  }
   "\"" +
   s.replace_all(old="\\", new="\\\\").replace_all(old="\"", new="\\\"") +
   "\""
@@ -505,8 +505,10 @@ async fn main_data() -> Map[String, Map[String, String]] {
   w("// scripts/sysviews-seed.json). Do not edit by hand.")
   w("")
   w("///|")
-  w("/// Catalog view result descriptors, in SQL Server column order.")
-  w("let view_defs : Array[ViewDef] = [")
+  w("/// Catalog view result descriptors, in SQL Server column order: a")
+  w("/// schema.name line, then its columns (text: decoded on first use, see")
+  w("/// sysviews_text.mbt).")
+  w("let view_def_text : String =")
   let types_by_view : Map[String, Map[String, String]] = Map([])
   for i, v in views {
     let s = desc[i]
@@ -532,16 +534,14 @@ async fn main_data() -> Map[String, Map[String, String]] {
       tys[cname] = ty
     }
     types_by_view[v] = tys
-    w("  { schema: \{mbt_str(schema)}, name: \{mbt_str(name)}, columns: [")
+    w("  #|\{schema}.\{name}")
     for c in cols {
-      w("    \{c},")
+      w("  #|\{c}")
     }
-    w("  ] },")
   }
-  // Hand-written descriptor (cursor work, commit 59e22ac): the DMV is read
-  // as a table function and has no `SELECT * ... WHERE 1 = 0` capture.
-  w(extra_views.trim_end(chars="\n").to_owned())
-  w("]")
+  for line in extra_views.split("\n") {
+    w("  #|\{line}")
+  }
   w("")
   let seed_rows = fn(key : String, view : String) raise {
     let d = get(seed, key)
@@ -571,11 +571,10 @@ async fn main_data() -> Map[String, Map[String, String]] {
     let (names, rows) = seed_rows(key, view)
     w("///|")
     w("/// Columns: \{names.join(", ")}")
-    w("let \{var_name} : Array[Array[@types.Value]] = [")
+    w("let \{var_name}_text : String =")
     for r in rows {
-      w("  \{r},")
+      w("  #|\{r}")
     }
-    w("]")
     w("")
   }
   w("///|")
@@ -601,7 +600,7 @@ async fn main_data() -> Map[String, Map[String, String]] {
   w("")
   w("///|")
   w("// Captured defaults; mutable settings are overlaid by view_rows.")
-  w("let seed_scoped_configurations : Array[Array[@types.Value]] = [")
+  w("let seed_scoped_configurations_text : String =")
   for i in 0..<@cmp.minimum(scoped_rows.length(), scoped_types.length()) {
     let row = scoped_rows[i]
     let props = scoped_types[i]
@@ -626,10 +625,9 @@ async fn main_data() -> Map[String, Map[String, String]] {
     guard ty is Some(ty) else { fail("unknown scoped configuration type") }
     let payload = value(at(row, 2), ty)
     w(
-      "  [Int(\{py_str(at(row, 0))}), String(\{mbt_str(text(at(row, 1)))}), Variant(\{payload}, \{ty}), Null, Bit(true)],",
+      "  #|[Int(\{py_str(at(row, 0))}), String(\{mbt_str(text(at(row, 1)))}), Variant(\{payload}, \{ty}), Null, Bit(true)]",
     )
   }
-  w("]")
   let configurations = load_json(
     "harness/fixtures/configurations.expected.json",
   )
@@ -645,7 +643,7 @@ async fn main_data() -> Map[String, Map[String, String]] {
   w("")
   w("///|")
   w("// Default instance configuration, captured on the pinned oracle.")
-  w("let seed_configurations : Array[Array[@types.Value]] = [")
+  w("let seed_configurations_text : String =")
   for i, row in rows {
     let types = items(props[i])
     let row = items(row)
@@ -661,9 +659,8 @@ async fn main_data() -> Map[String, Map[String, String]] {
     vals.push(value(row[6], "NVarChar"))
     vals.push(value(row[7], "Bit"))
     vals.push(value(row[8], "Bit"))
-    w("  [" + vals.join(", ") + "],")
+    w("  #|[" + vals.join(", ") + "]")
   }
-  w("]")
   @fs.write_file(out_path, out.join("\n") + "\n")
   types_by_view
 }
@@ -827,21 +824,21 @@ async fn system(types_by_view : Map[String, Map[String, String]]) -> Unit {
     }
   }
   w("///|")
-  w(
-    "/// (system_type_id, user_type_id, max_length, precision, scale, collation",
-  )
-  w("/// or \"\") combinations of system columns.")
-  w("let system_column_types : Array[(Int, Int, Int, Int, Int, String)] = [")
+  w("/// system_type_id,user_type_id,max_length,precision,scale,collation (or")
+  w("/// empty) combinations of system columns (text: decoded on first use).")
+  w("let system_column_type_text : String =")
   for k in combo_rows {
     let coll = match k[5] {
       Some(s) => s
       None => ""
     }
+    if coll.contains(",") {
+      fail("comma in collation \{coll}")
+    }
     w(
-      "  (\{py_cell(k, 0)}, \{py_cell(k, 1)}, \{py_cell(k, 2)}, \{py_cell(k, 3)}, \{py_cell(k, 4)}, \{mbt_str(coll)}),",
+      "  #|\{py_cell(k, 0)},\{py_cell(k, 1)},\{py_cell(k, 2)},\{py_cell(k, 3)},\{py_cell(k, 4)},\{coll}",
     )
   }
-  w("]")
   w("")
   w("///|")
   w("/// sys.system_columns: `@object_id` lines, then one line per column in")
@@ -870,7 +867,7 @@ async fn system(types_by_view : Map[String, Map[String, String]]) -> Unit {
   }
   w("///|")
   w("/// sys.server_principals. Columns: \{head.join(", ")}")
-  w("let seed_server_principals : Array[Array[@types.Value]] = [")
+  w("let seed_server_principals_text : String =")
   for r in princ {
     let vals = []
     for i in 0..<@cmp.minimum(head.length(), r.length()) {
@@ -900,9 +897,8 @@ async fn system(types_by_view : Map[String, Map[String, String]]) -> Unit {
           }
       }
     }
-    w("  [" + vals.join(", ") + "],")
+    w("  #|[" + vals.join(", ") + "]")
   }
-  w("]")
   w("")
   w("///|")
   w(

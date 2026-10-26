@@ -62,7 +62,7 @@ fn Session::query_diagnostics(
   self.check_json_index_paths(bound.plan)
   let plan = @ir.explain_plan(bound.plan, (scope, id) => {
     if scope == 2 {
-      match view_defs.get(id % TEMPDB_VIEW_OFFSET) {
+      match view_defs().get(id % TEMPDB_VIEW_OFFSET) {
         Some(v) => return v.schema + "." + v.name
         None => ()
       }

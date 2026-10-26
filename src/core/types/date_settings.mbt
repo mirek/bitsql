@@ -62,11 +62,44 @@ pub(all) struct Language {
 }
 
 ///|
+let language_rows : Ref[Array[Language]?] = Ref(None)
+
+///|
+/// The languages of sys.syslanguages, by langid (language_data.mbt).
+pub fn languages() -> Array[Language] {
+  if language_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = language_text
+    .split("\n")
+    .map(line => {
+      let f = line.split("|").collect()
+      let list = (i : Int) => f[i].split(",").map(p => p.to_owned()).collect()
+      {
+        langid: @tabletext.int(f[0]),
+        name: f[1].to_owned(),
+        alias_name: f[2].to_owned(),
+        dateformat: DateFormat::parse(f[3].to_owned()).unwrap(),
+        datefirst: @tabletext.int(f[4]),
+        months: list(5),
+        short_months: list(6),
+        days: list(7),
+        lcid: @tabletext.int(f[8]),
+        msglangid: @tabletext.int(f[9]),
+        changed_message: f[10].to_owned(),
+      }
+    })
+    .collect()
+  language_rows.val = Some(rows)
+  rows
+}
+
+///|
 /// The language with `langid` (us_english for unknown ids).
 pub fn language(langid : Int) -> Language {
-  match languages.get(langid) {
+  match languages().get(langid) {
     Some(l) => l
-    None => languages[0]
+    None => languages()[0]
   }
 }
 
@@ -74,7 +107,7 @@ pub fn language(langid : Int) -> Language {
 /// SET LANGUAGE: a language by name or alias, compared like the server's
 /// default collation (case-insensitive, accent-sensitive).
 pub fn find_language(name : String) -> Language? {
-  for l in languages {
+  for l in languages() {
     if compare_strings(l.name, name, default_collation) == 0 ||
       compare_strings(l.alias_name, name, default_collation) == 0 {
       return Some(l)

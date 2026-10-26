@@ -1532,3 +1532,37 @@ OS/CPU/libc and each platform validated on its own host.
   (not before: an unref'd worker let `node -e "start()"` exit
   mid-start), and `stop()` refs it again until it has exited (otherwise
   `await server.stop()` in a script left an unsettled top-level await).
+
+## 2026-10-26: generated tables are text, decoded on first use
+
+Measuring the npm build's memory found each server worker costing 63–86
+MB idle, a 20k-row workload taking the test process to 1 GB, and memory
+still growing after every server stopped. The cause was the module's start
+function (MoonBit's global initializers): 932 KB of the 3 MB of wasm code,
+because every element of a generated array literal (collation properties,
+cultures, regex Unicode ranges, CHECKSUM keys, case maps, time zones,
+sysview descriptors and seeds, code pages, languages) compiles to
+constructor calls there. Liftoff turned it into 7.5 MB of machine code per
+process, and after a few instantiations V8 tiered it up with TurboFan:
+12 s and 2.2 GB of compiler memory for code that had already run.
+
+- Generated tables are now string constants (data, not code) in a line
+  format, decoded on first use behind a `Ref` cache: comma-separated
+  integers (`@tabletext.int_rows`), JSON lines for cultures (std `json`,
+  aliased `@stdjson` beside the SQL JSON package), the generator's own
+  MoonBit expressions for sysview columns and seed values
+  (`session/sysviews_text.mbt`). Generators emit the new format; those
+  that need the oracle (cultures, CHECKSUM keys, collation weights, CP1252
+  best fit) had their existing output converted mechanically, and their
+  emitters produce the same text.
+- Start function 932 → 80 KB (about 30 KB of it is the core library's
+  `strconv` tables). With ~100 instantiations it still tiers up once per
+  process: 0.1 s and 45 MB instead of 12 s and 2.2 GB.
+- npm, one process: first server +35 MB (was +63), each extra server
+  19 MB (was 86), the 20k-row workload 252 MB total (was 998), after
+  stopping every server 221 MB (was 1,274).
+- Workers also cap the young generation at 64 MB: V8 derives it from the
+  old-generation limit, and a busy server's new space reached 128 MB.
+  Below 64 MB the sort/window benchmark slowed from ~92 to ~140 ms.
+- Native benefits too: binary 18.8 → 12.3 MB, idle RSS 10.3 → 7.4 MB,
+  same start-up and benchmark times (24 shapes 250–255 vs 250–272 ms).

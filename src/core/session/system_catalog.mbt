@@ -129,8 +129,30 @@ fn sys_object_row(o : SysObject) -> VRow {
 }
 
 ///|
+let system_column_type_rows : Ref[Array[(Int, Int, Int, Int, Int, String)]?] = Ref(
+  None,
+)
+
+///|
+fn system_column_types() -> Array[(Int, Int, Int, Int, Int, String)] {
+  if system_column_type_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = system_column_type_text
+    .split("\n")
+    .map(line => {
+      let f = line.split(",").collect()
+      let n = k => @tabletext.int(f[k])
+      (n(0), n(1), n(2), n(3), n(4), f[5].to_owned())
+    })
+    .collect()
+  system_column_type_rows.val = Some(rows)
+  rows
+}
+
+///|
 fn sys_column_row(c : SysColumn) -> VRow {
-  let (st, ut, len, p, sc, coll) = system_column_types[c.ty]
+  let (st, ut, len, p, sc, coll) = system_column_types()[c.ty]
   vrow([
     ("object_id", i(c.object_id)),
     ("name", s(c.name)),
@@ -171,7 +193,7 @@ fn system_object_named(schema_id : Int, name : String) -> CatObj? {
     Some(k) => return Some(sys_cat_obj(c.objects[k]))
     None => ()
   }
-  for r in seed_system_objects {
+  for r in seed_system_objects() {
     if r[3] is Int(sid) &&
       sid == schema_id &&
       r[0] is String(n) &&
@@ -190,7 +212,7 @@ fn system_object_by_id(id : Int) -> CatObj? {
     Some(k) => return Some(sys_cat_obj(c.objects[k]))
     None => ()
   }
-  for r in seed_system_objects {
+  for r in seed_system_objects() {
     if r[1] is Int(oid) && oid == id {
       return Some(seed_cat_obj(r))
     }
@@ -323,13 +345,13 @@ fn name_guid(name : String, salt : Int) -> @types.Value {
 fn is_system_type_name(name : String) -> Bool {
   let k = name.to_lower()
   let col = seed_type_columns.search("name").unwrap_or(0)
-  seed_types.iter().any(r => r[col] is String(n) && n.to_lower() == k)
+  seed_types().iter().any(r => r[col] is String(n) && n.to_lower() == k)
 }
 
 ///|
 /// sys.server_principals rows (the built-in logins and server roles).
 fn server_principal_rows() -> Array[VRow] {
-  seed_server_principals.map(r => {
+  seed_server_principals().map(r => {
     let m : Map[String, @types.Value] = Map([])
     for j, c in seed_server_principal_columns {
       m[c] = r[j]

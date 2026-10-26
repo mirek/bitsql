@@ -475,7 +475,7 @@ fn Session::system_info_row(self : Session) -> VRow {
     ("cores_per_socket", i(self.server.monitor_cpus)),
     ("numa_node_count", i(1)),
   ])
-  let descriptor = view_defs[view_index("sys", "dm_os_sys_info").unwrap()]
+  let descriptor = view_defs()[view_index("sys", "dm_os_sys_info").unwrap()]
   for c in descriptor.columns {
     if self.server.system_facts.get(c.name) is Some(n) {
       row[c.name] = if c.ty is BigInt { BigInt(n) } else { Int(n.to_int()) }

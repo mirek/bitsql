@@ -1299,36 +1299,33 @@ async fn emit(dump : Dump, zones : Array[OutZone]) -> Unit {
   l.push("")
   l.push("///|")
   l.push(
-    "/// (start UTC ticks or tz_neg_inf, fixed offset in minutes, annual rule",
+    "/// start UTC ticks (- for tz_neg_inf),fixed offset in minutes,annual rule",
   )
-  l.push("/// index or -1 for a fixed offset, fixed offset is daylight time).")
-  l.push("let tz_segments : Array[(Int64, Int, Int, Bool)] = [")
+  l.push(
+    "/// index or -1 for a fixed offset,1 if the fixed offset is daylight time",
+  )
+  l.push("/// (text: decoded on first use, see @tabletext).")
+  l.push("let tz_segment_text : String =")
   for row in seg_rows {
     let (st, ini, r, dl) = row
-    let stv = if st == neg_inf { "tz_neg_inf" } else { "\{st}L" }
-    l.push("  (\{stv}, \{ini}, \{r}, \{dl}),")
+    let stv = if st == neg_inf { "-" } else { "\{st}" }
+    l.push("  #|\{stv},\{ini},\{r},\{if dl { 1 } else { 0 }}")
   }
-  l.push("]")
   l.push("")
   l.push("///|")
-  l.push(
-    "/// Annual rules: (standard offset, daylight offset, start month, week",
-  )
+  l.push("/// Annual rules: standard offset,daylight offset,start month,week")
   l.push(
     "/// (5 = last), weekday (0 = Sunday), start wall ticks in standard time,",
   )
-  l.push("/// end month, week, weekday, end wall ticks in daylight time).")
-  l.push(
-    "let tz_rules : Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)] = [",
-  )
+  l.push("/// end month,week,weekday,end wall ticks in daylight time.")
+  l.push("let tz_rule_text : String =")
   for r in rules {
     let (sm, sw, sd) = r.s_spec
     let (em, ew, ed) = r.e_spec
     l.push(
-      "  (\{r.std}, \{r.dst}, \{sm}, \{sw}, \{sd}, \{r.s_tod}L, \{em}, \{ew}, \{ed}, \{r.e_tod}L),",
+      "  #|\{r.std},\{r.dst},\{sm},\{sw},\{sd},\{r.s_tod},\{em},\{ew},\{ed},\{r.e_tod}",
     )
   }
-  l.push("]")
   l.push("")
   l.push("///|")
   l.push(

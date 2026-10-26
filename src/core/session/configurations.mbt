@@ -89,7 +89,7 @@ fn Session::exec_sp_configure(
   guard sysproc_text(vals.get("@configname").map(p => p.0)) is Some(name) else {
     raise @types.not_supported("sp_configure without an option name")
   }
-  let matches = seed_configurations.filter(row => {
+  let matches = seed_configurations().filter(row => {
     row[1] is String(s) && s.to_lower().has_prefix(name.to_lower())
   })
   if matches.is_empty() {
@@ -218,12 +218,12 @@ fn Session::configuration_scan_row(
   if scope != 2 || id < 0 {
     return
   }
-  let v = view_defs[id % TEMPDB_VIEW_OFFSET]
+  let v = view_defs()[id % TEMPDB_VIEW_OFFSET]
   if v.schema != "sys" || v.name != "configurations" {
     return
   }
   self.configuration_lock(
-    configuration_int(seed_configurations[row.to_int()][0]),
+    configuration_int(seed_configurations()[row.to_int()][0]),
     S,
   )
 }

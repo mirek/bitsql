@@ -177,7 +177,7 @@ fn Session::catalog_fn(
         Some(n) if self.user_type_id(n) is Some(id) => Int(id)
         Some(n) => {
           let mut found : @types.Value = Null
-          for r in seed_types {
+          for r in seed_types() {
             if r[0] is String(tn) && tn.to_lower() == n.to_lower() {
               found = r[2]
             }
@@ -191,7 +191,7 @@ fn Session::catalog_fn(
         Some(id) if self.db_of(0).get_type(id) is Some(ut) => String(ut.name)
         Some(id) => {
           let mut found : @types.Value = Null
-          for r in seed_types {
+          for r in seed_types() {
             if r[2] is Int(u) && u == id {
               found = r[0]
             }

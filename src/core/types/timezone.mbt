@@ -16,6 +16,73 @@
 let tz_neg_inf : Int64 = -9_223_372_036_854_775_807L - 1L
 
 ///|
+let tz_tables : Ref[
+  (
+    Array[(Int64, Int, Int, Bool)],
+    Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)],
+  )?,
+] = Ref(None)
+
+///|
+/// (segments, annual rules), decoded from timezone_data.mbt on first use.
+fn tz_data() -> (
+  Array[(Int64, Int, Int, Bool)],
+  Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)],
+) {
+  if tz_tables.val is Some(tables) {
+    return tables
+  }
+  let segments = tz_segment_text
+    .split("\n")
+    .map(line => {
+      let f = line.split(",").collect()
+      (
+        if f[0] == "-" {
+          tz_neg_inf
+        } else {
+          @tabletext.int64(f[0])
+        },
+        @tabletext.int(f[1]),
+        @tabletext.int(f[2]),
+        f[3] == "1",
+      )
+    })
+    .collect()
+  let rules = tz_rule_text
+    .split("\n")
+    .map(line => {
+      let f = line.split(",").collect()
+      let i = k => @tabletext.int(f[k])
+      (
+        i(0),
+        i(1),
+        i(2),
+        i(3),
+        i(4),
+        @tabletext.int64(f[5]),
+        i(6),
+        i(7),
+        i(8),
+        @tabletext.int64(f[9]),
+      )
+    })
+    .collect()
+  let tables = (segments, rules)
+  tz_tables.val = Some(tables)
+  tables
+}
+
+///|
+fn tz_segments() -> Array[(Int64, Int, Int, Bool)] {
+  tz_data().0
+}
+
+///|
+fn tz_rules() -> Array[(Int, Int, Int, Int, Int, Int64, Int, Int, Int, Int64)] {
+  tz_data().1
+}
+
+///|
 /// Number of zones in sys.time_zone_info.
 pub fn tz_count() -> Int {
   tz_names.length()
@@ -100,7 +167,7 @@ fn tz_spec_day(year : Int, month : Int, week : Int, wd : Int) -> Int {
 ///|
 /// (DST start, DST end) UTC instants of rule `r` in rule year `year`.
 fn tz_rule_bounds(r : Int, year : Int) -> (Int64, Int64) {
-  let (std, dst, sm, sw, sd, stod, em, ew, ed, etod) = tz_rules[r]
+  let (std, dst, sm, sw, sd, stod, em, ew, ed, etod) = tz_rules()[r]
   let s = tz_spec_day(year, sm, sw, sd).to_int64() * TICKS_PER_DAY +
     stod -
     std.to_int64() * TICKS_PER_MINUTE
@@ -132,7 +199,7 @@ fn tz_clamp_year(y : Int) -> Int {
 /// Standard Time: DST end at 1903-01-01 04:00 UTC instead of 03:00, a
 /// one-hour standard-time blip at 1904-01-01 03:00 UTC).
 fn tz_rule_offset(r : Int, utc : Int64) -> (Int, Bool) {
-  let (std, dst, sm, sw, sd, stod, em, ew, ed, etod) = tz_rules[r]
+  let (std, dst, sm, sw, sd, stod, em, ew, ed, etod) = tz_rules()[r]
   let y = tz_clamp_year(tz_year_of(utc + std.to_int64() * TICKS_PER_MINUTE))
   let d = utc + dst.to_int64() * TICKS_PER_MINUTE
   let days = floor_div(d, TICKS_PER_DAY)
@@ -162,7 +229,7 @@ fn tz_segment(zone : Int, utc : Int64) -> Int {
   let mut hi = tz_first[zone + 1] - 1
   while lo < hi {
     let mid = (lo + hi + 1) / 2
-    if tz_segments[mid].0 <= utc {
+    if tz_segments()[mid].0 <= utc {
       lo = mid
     } else {
       hi = mid - 1
@@ -175,7 +242,7 @@ fn tz_segment(zone : Int, utc : Int64) -> Int {
 /// (offset in minutes, daylight saving time?) of `zone` at UTC instant `utc`
 /// (100 ns ticks since 0001-01-01).
 pub fn tz_offset_info(zone : Int, utc : Int64) -> (Int, Bool) {
-  let (_, fixed, r, daylight) = tz_segments[tz_segment(zone, utc)]
+  let (_, fixed, r, daylight) = tz_segments()[tz_segment(zone, utc)]
   if r < 0 {
     (fixed, daylight)
   } else {
@@ -200,8 +267,8 @@ fn tz_transitions(
   let cands : Array[Int64] = []
   let last = tz_first[zone + 1] - 1
   for i in tz_segment(zone, lo + 1)..<=tz_segment(zone, hi) {
-    let (start, _, r, _) = tz_segments[i]
-    let end = if i < last { tz_segments[i + 1].0 } else { hi + 1L }
+    let (start, _, r, _) = tz_segments()[i]
+    let end = if i < last { tz_segments()[i + 1].0 } else { hi + 1L }
     let a = if start > lo + 1L { start } else { lo + 1L }
     let b = if end < hi + 1L { end } else { hi + 1L }
     if a >= b {
@@ -211,8 +278,8 @@ fn tz_transitions(
       cands.push(a)
     }
     if r >= 0 {
-      let std = tz_rules[r].0.to_int64() * TICKS_PER_MINUTE
-      let dst = tz_rules[r].1.to_int64() * TICKS_PER_MINUTE
+      let std = tz_rules()[r].0.to_int64() * TICKS_PER_MINUTE
+      let dst = tz_rules()[r].1.to_int64() * TICKS_PER_MINUTE
       let y0 = tz_year_of(a) - 1
       let y1 = tz_year_of(b - 1L) + 1
       for

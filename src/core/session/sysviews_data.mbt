@@ -3,4782 +3,1848 @@
 // scripts/sysviews-seed.json). Do not edit by hand.
 
 ///|
-/// Catalog view result descriptors, in SQL Server column order.
-let view_defs : Array[ViewDef] = [
-  {
-    schema: "sys",
-    name: "objects",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "tables",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("lob_data_space_id", Int, false, true),
-      vc("filestream_data_space_id", Int, true, false),
-      vc("max_column_id_used", Int, false, false),
-      vc("lock_on_bulk_load", Bit, false, true),
-      vc("uses_ansi_nulls", Bit, true, true),
-      vc("is_replicated", Bit, true, true),
-      vc("has_replication_filter", Bit, true, true),
-      vc("is_merge_published", Bit, true, true),
-      vc("is_sync_tran_subscribed", Bit, true, true),
-      vc("has_unchecked_assembly_data", Bit, false, true),
-      vc("text_in_row_limit", Int, true, false),
-      vc("large_value_types_out_of_row", Bit, true, true),
-      vc("is_tracked_by_cdc", Bit, true, true),
-      vc("lock_escalation", TinyInt, true, true),
-      vc("lock_escalation_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_filetable", Bit, true, true),
-      vc("is_memory_optimized", Bit, true, true),
-      vc("durability", TinyInt, true, true),
-      vc("durability_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("temporal_type", TinyInt, true, true),
-      vc("temporal_type_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("history_table_id", Int, true, true),
-      vc("is_remote_data_archive_enabled", Bit, true, true),
-      vc("is_external", Bit, false, true),
-      vc("history_retention_period", Int, true, true),
-      vc("history_retention_period_unit", Int, true, true),
-      vc(
-        "history_retention_period_unit_desc",
-        NVarChar(Some(10), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("is_node", Bit, true, true),
-      vc("is_edge", Bit, true, true),
-      vc("data_retention_period", Int, true, true),
-      vc("data_retention_period_unit", Int, true, true),
-      vc(
-        "data_retention_period_unit_desc",
-        NVarChar(Some(10), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("ledger_type", TinyInt, true, true),
-      vc("ledger_type_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("ledger_view_id", Int, true, false),
-      vc("is_dropped_ledger_table", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "views",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("is_replicated", Bit, true, true),
-      vc("has_replication_filter", Bit, true, true),
-      vc("has_opaque_metadata", Bit, false, true),
-      vc("has_unchecked_assembly_data", Bit, false, true),
-      vc("with_check_option", Bit, false, true),
-      vc("is_date_correlation_view", Bit, false, true),
-      vc("is_tracked_by_cdc", Bit, true, true),
-      vc("has_snapshot", Bit, true, true),
-      vc("ledger_view_type", TinyInt, true, true),
-      vc("ledger_view_type_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("is_dropped_ledger_view", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "procedures",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("is_auto_executed", Bit, false, true),
-      vc("is_execution_replicated", Bit, true, true),
-      vc("is_repl_serializable_only", Bit, true, true),
-      vc("skips_repl_constraints", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("column_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_ansi_padded", Bit, false, true),
-      vc("is_rowguidcol", Bit, false, true),
-      vc("is_identity", Bit, false, true),
-      vc("is_computed", Bit, true, true),
-      vc("is_filestream", Bit, false, true),
-      vc("is_replicated", Bit, true, true),
-      vc("is_non_sql_subscribed", Bit, true, true),
-      vc("is_merge_published", Bit, true, true),
-      vc("is_dts_replicated", Bit, true, true),
-      vc("is_xml_document", Bit, false, true),
-      vc("xml_collection_id", Int, false, false),
-      vc("default_object_id", Int, false, false),
-      vc("rule_object_id", Int, false, false),
-      vc("is_sparse", Bit, true, true),
-      vc("is_column_set", Bit, true, true),
-      vc("generated_always_type", TinyInt, true, true),
-      vc(
-        "generated_always_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("encryption_type", Int, true, true),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("column_encryption_key_id", Int, true, false),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("is_hidden", Bit, true, true),
-      vc("is_masked", Bit, false, true),
-      vc("graph_type", Int, true, true),
-      vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_data_deletion_filter_column", Bit, true, true),
-      vc("ledger_view_column_type", Int, true, true),
-      vc(
-        "ledger_view_column_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("is_dropped_ledger_column", Bit, true, true),
-      vc("vector_dimensions", Int, true, true),
-      vc("vector_base_type", TinyInt, true, true),
-      vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "types",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("schema_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_user_defined", Bit, false, true),
-      vc("is_assembly_type", Bit, false, true),
-      vc("default_object_id", Int, false, false),
-      vc("rule_object_id", Int, false, false),
-      vc("is_table_type", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "schemas",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("schema_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "indexes",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("index_id", Int, false, false),
-      vc("type", TinyInt, false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_unique", Bit, true, true),
-      vc("data_space_id", Int, true, true),
-      vc("ignore_dup_key", Bit, true, true),
-      vc("is_primary_key", Bit, true, true),
-      vc("is_unique_constraint", Bit, true, true),
-      vc("fill_factor", TinyInt, false, false),
-      vc("is_padded", Bit, true, true),
-      vc("is_disabled", Bit, true, true),
-      vc("is_hypothetical", Bit, true, true),
-      vc("is_ignored_in_optimization", Bit, true, true),
-      vc("allow_row_locks", Bit, true, true),
-      vc("allow_page_locks", Bit, true, true),
-      vc("has_filter", Bit, true, true),
-      vc("filter_definition", NVarChar(None, coll_default), true, true),
-      vc("compression_delay", Int, true, true),
-      vc("suppress_dup_key_messages", Bit, true, true),
-      vc("auto_created", Bit, true, true),
-      vc("optimize_for_sequential_key", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "index_columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("index_id", Int, false, false),
-      vc("index_column_id", Int, false, false),
-      vc("column_id", Int, false, false),
-      vc("key_ordinal", TinyInt, false, false),
-      vc("partition_ordinal", TinyInt, false, false),
-      vc("is_descending_key", Bit, true, true),
-      vc("is_included_column", Bit, true, true),
-      vc("column_store_order_ordinal", TinyInt, true, true),
-      vc("data_clustering_ordinal", TinyInt, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "key_constraints",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("unique_index_id", Int, true, false),
-      vc("is_system_named", Bit, false, true),
-      vc("is_enforced", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "foreign_keys",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("referenced_object_id", Int, true, false),
-      vc("key_index_id", Int, true, false),
-      vc("is_disabled", Bit, false, true),
-      vc("is_not_for_replication", Bit, false, true),
-      vc("is_not_trusted", Bit, false, true),
-      vc("delete_referential_action", TinyInt, true, true),
-      vc(
-        "delete_referential_action_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("update_referential_action", TinyInt, true, true),
-      vc(
-        "update_referential_action_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("is_system_named", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "foreign_key_columns",
-    columns: [
-      vc("constraint_object_id", Int, false, false),
-      vc("constraint_column_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("parent_column_id", Int, false, false),
-      vc("referenced_object_id", Int, false, false),
-      vc("referenced_column_id", Int, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "check_constraints",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("is_disabled", Bit, false, true),
-      vc("is_not_for_replication", Bit, false, true),
-      vc("is_not_trusted", Bit, false, true),
-      vc("parent_column_id", Int, false, false),
-      vc("definition", NVarChar(None, coll_default), true, true),
-      vc("uses_database_collation", Bit, true, true),
-      vc("is_system_named", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "default_constraints",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("parent_column_id", Int, false, false),
-      vc("definition", NVarChar(None, coll_default), true, true),
-      vc("is_system_named", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "computed_columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("column_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_ansi_padded", Bit, false, true),
-      vc("is_rowguidcol", Bit, false, true),
-      vc("is_identity", Bit, false, true),
-      vc("is_filestream", Bit, false, true),
-      vc("is_replicated", Bit, true, true),
-      vc("is_non_sql_subscribed", Bit, true, true),
-      vc("is_merge_published", Bit, true, true),
-      vc("is_dts_replicated", Bit, true, true),
-      vc("is_xml_document", Bit, false, true),
-      vc("xml_collection_id", Int, false, false),
-      vc("default_object_id", Int, false, false),
-      vc("rule_object_id", Int, false, false),
-      vc("definition", NVarChar(None, coll_default), true, true),
-      vc("uses_database_collation", Bit, false, true),
-      vc("is_persisted", Bit, false, true),
-      vc("is_computed", Bit, true, true),
-      vc("is_sparse", Bit, false, true),
-      vc("is_column_set", Bit, false, true),
-      vc("generated_always_type", TinyInt, true, true),
-      vc(
-        "generated_always_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("encryption_type", Int, true, true),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("column_encryption_key_id", Int, true, true),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("is_hidden", Bit, true, true),
-      vc("is_masked", Bit, false, true),
-      vc("graph_type", Int, true, true),
-      vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("is_data_deletion_filter_column", Bit, true, true),
-      vc("ledger_view_column_type", Int, true, true),
-      vc(
-        "ledger_view_column_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("is_dropped_ledger_column", Bit, true, true),
-      vc("is_index_column_expression", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "sql_modules",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("definition", NVarChar(None, coll_default), true, true),
-      vc("uses_ansi_nulls", Bit, true, true),
-      vc("uses_quoted_identifier", Bit, true, true),
-      vc("is_schema_bound", Bit, true, true),
-      vc("uses_database_collation", Bit, true, true),
-      vc("is_recompiled", Bit, true, true),
-      vc("null_on_null_input", Bit, true, true),
-      vc("execute_as_principal_id", Int, true, false),
-      vc("uses_native_compilation", Bit, true, true),
-      vc("inline_type", Bit, true, true),
-      vc("is_inlineable", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "triggers",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("parent_class", TinyInt, false, false),
-      vc("parent_class_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("parent_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_disabled", Bit, false, true),
-      vc("is_not_for_replication", Bit, false, true),
-      vc("is_instead_of_trigger", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "databases",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("database_id", Int, false, false),
-      vc("source_database_id", Int, true, false),
-      vc("owner_sid", VarBinary(Some(85)), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("compatibility_level", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("user_access", TinyInt, true, true),
-      vc("user_access_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("is_read_only", Bit, true, true),
-      vc("is_auto_close_on", Bit, false, true),
-      vc("is_auto_shrink_on", Bit, true, true),
-      vc("state", TinyInt, true, true),
-      vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("is_in_standby", Bit, true, true),
-      vc("is_cleanly_shutdown", Bit, true, true),
-      vc("is_supplemental_logging_enabled", Bit, true, true),
-      vc("snapshot_isolation_state", TinyInt, true, true),
-      vc(
-        "snapshot_isolation_state_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("is_read_committed_snapshot_on", Bit, true, true),
-      vc("recovery_model", TinyInt, true, true),
-      vc("recovery_model_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("page_verify_option", TinyInt, true, false),
-      vc("page_verify_option_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_auto_create_stats_on", Bit, true, true),
-      vc("is_auto_create_stats_incremental_on", Bit, true, true),
-      vc("is_auto_update_stats_on", Bit, true, true),
-      vc("is_auto_update_stats_async_on", Bit, true, true),
-      vc("is_ansi_null_default_on", Bit, true, true),
-      vc("is_ansi_nulls_on", Bit, true, true),
-      vc("is_ansi_padding_on", Bit, true, true),
-      vc("is_ansi_warnings_on", Bit, true, true),
-      vc("is_arithabort_on", Bit, true, true),
-      vc("is_concat_null_yields_null_on", Bit, true, true),
-      vc("is_numeric_roundabort_on", Bit, true, true),
-      vc("is_quoted_identifier_on", Bit, true, true),
-      vc("is_recursive_triggers_on", Bit, true, true),
-      vc("is_cursor_close_on_commit_on", Bit, true, true),
-      vc("is_local_cursor_default", Bit, true, true),
-      vc("is_fulltext_enabled", Bit, true, true),
-      vc("is_trustworthy_on", Bit, true, true),
-      vc("is_db_chaining_on", Bit, true, true),
-      vc("is_parameterization_forced", Bit, true, true),
-      vc("is_master_key_encrypted_by_server", Bit, false, true),
-      vc("is_query_store_on", Bit, true, true),
-      vc("is_published", Bit, false, true),
-      vc("is_subscribed", Bit, false, true),
-      vc("is_merge_published", Bit, false, true),
-      vc("is_distributor", Bit, false, true),
-      vc("is_sync_with_backup", Bit, false, true),
-      vc("service_broker_guid", UniqueIdentifier, false, false),
-      vc("is_broker_enabled", Bit, false, true),
-      vc("log_reuse_wait", TinyInt, true, false),
-      vc("log_reuse_wait_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_date_correlation_on", Bit, false, true),
-      vc("is_cdc_enabled", Bit, false, true),
-      vc("is_encrypted", Bit, true, true),
-      vc("is_honor_broker_priority_on", Bit, true, true),
-      vc("replica_id", UniqueIdentifier, true, false),
-      vc("group_database_id", UniqueIdentifier, true, false),
-      vc("resource_pool_id", Int, true, false),
-      vc("default_language_lcid", SmallInt, true, true),
-      vc("default_language_name", NVarChar(Some(128), coll_default), true, true),
-      vc("default_fulltext_language_lcid", Int, true, true),
-      vc(
-        "default_fulltext_language_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("is_nested_triggers_on", Bit, true, true),
-      vc("is_transform_noise_words_on", Bit, true, true),
-      vc("two_digit_year_cutoff", SmallInt, true, true),
-      vc("containment", TinyInt, true, true),
-      vc("containment_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("target_recovery_time_in_seconds", Int, true, false),
-      vc("delayed_durability", Int, true, false),
-      vc(
-        "delayed_durability_desc",
-        NVarChar(Some(60), coll_default),
-        true,
-        true,
-      ),
-      vc("is_memory_optimized_elevate_to_snapshot_on", Bit, true, true),
-      vc("is_federation_member", Bit, true, true),
-      vc("is_remote_data_archive_enabled", Bit, true, true),
-      vc("is_mixed_page_allocation_on", Bit, true, false),
-      vc("is_temporal_history_retention_enabled", Bit, true, false),
-      vc("catalog_collation_type", Int, false, true),
-      vc(
-        "catalog_collation_type_desc",
-        NVarChar(Some(60), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "physical_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        false,
-      ),
-      vc("is_result_set_caching_on", Bit, true, true),
-      vc("is_accelerated_database_recovery_on", Bit, true, false),
-      vc("is_tempdb_spill_to_remote_store", Bit, true, false),
-      vc("is_stale_page_detection_on", Bit, true, false),
-      vc("is_memory_optimized_enabled", Bit, true, false),
-      vc("is_data_retention_enabled", Bit, true, false),
-      vc("is_ledger_on", Bit, true, false),
-      vc("is_change_feed_enabled", Bit, true, true),
-      vc("is_data_lake_replication_enabled", Bit, true, true),
-      vc("is_event_stream_enabled", Bit, true, true),
-      vc("data_compaction", TinyInt, true, false),
-      vc("data_compaction_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("data_lake_log_publishing", TinyInt, true, false),
-      vc(
-        "data_lake_log_publishing_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("is_vorder_enabled", Bit, true, true),
-      vc("is_proactive_statistics_refresh_on", Bit, true, true),
-      vc("is_optimized_locking_on", Bit, true, false),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "TABLES",
-    columns: [
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("TABLE_TYPE", VarChar(Some(10), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "COLUMNS",
-    columns: [
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false),
-      vc("ORDINAL_POSITION", Int, true, true),
-      vc("COLUMN_DEFAULT", NVarChar(Some(4000), coll_default), true, true),
-      vc("IS_NULLABLE", VarChar(Some(3), coll_default), true, true),
-      vc("DATA_TYPE", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true),
-      vc("CHARACTER_OCTET_LENGTH", Int, true, true),
-      vc("NUMERIC_PRECISION", TinyInt, true, true),
-      vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true),
-      vc("NUMERIC_SCALE", Int, true, true),
-      vc("DATETIME_PRECISION", SmallInt, true, true),
-      vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("DOMAIN_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("DOMAIN_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("DOMAIN_NAME", NVarChar(Some(128), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "ROUTINES",
-    columns: [
-      vc("SPECIFIC_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("SPECIFIC_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("SPECIFIC_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("ROUTINE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("ROUTINE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("ROUTINE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("ROUTINE_TYPE", NVarChar(Some(20), coll_default), true, true),
-      vc("MODULE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("MODULE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("MODULE_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("UDT_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("UDT_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("UDT_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("DATA_TYPE", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true),
-      vc("CHARACTER_OCTET_LENGTH", Int, true, true),
-      vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("NUMERIC_PRECISION", TinyInt, true, true),
-      vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true),
-      vc("NUMERIC_SCALE", Int, true, true),
-      vc("DATETIME_PRECISION", SmallInt, true, true),
-      vc("INTERVAL_TYPE", NVarChar(Some(30), coll_default), true, true),
-      vc("INTERVAL_PRECISION", SmallInt, true, true),
-      vc("TYPE_UDT_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("TYPE_UDT_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("TYPE_UDT_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("SCOPE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("SCOPE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("SCOPE_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("MAXIMUM_CARDINALITY", BigInt, true, true),
-      vc("DTD_IDENTIFIER", NVarChar(Some(128), coll_default), true, true),
-      vc("ROUTINE_BODY", NVarChar(Some(30), coll_default), true, true),
-      vc("ROUTINE_DEFINITION", NVarChar(Some(4000), coll_default), true, true),
-      vc("EXTERNAL_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("EXTERNAL_LANGUAGE", NVarChar(Some(30), coll_default), true, true),
-      vc("PARAMETER_STYLE", NVarChar(Some(30), coll_default), true, true),
-      vc("IS_DETERMINISTIC", NVarChar(Some(10), coll_default), true, true),
-      vc("SQL_DATA_ACCESS", NVarChar(Some(30), coll_default), true, true),
-      vc("IS_NULL_CALL", NVarChar(Some(10), coll_default), true, true),
-      vc("SQL_PATH", NVarChar(Some(128), coll_default), true, true),
-      vc("SCHEMA_LEVEL_ROUTINE", NVarChar(Some(10), coll_default), true, true),
-      vc("MAX_DYNAMIC_RESULT_SETS", SmallInt, true, true),
-      vc("IS_USER_DEFINED_CAST", NVarChar(Some(10), coll_default), true, true),
-      vc(
-        "IS_IMPLICITLY_INVOCABLE",
-        NVarChar(Some(10), coll_default),
-        true,
-        true,
-      ),
-      vc("CREATED", DateTime, false, false),
-      vc("LAST_ALTERED", DateTime, false, false),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "VIEWS",
-    columns: [
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("VIEW_DEFINITION", NVarChar(Some(4000), coll_default), true, true),
-      vc("CHECK_OPTION", VarChar(Some(7), coll_default), true, true),
-      vc("IS_UPDATABLE", VarChar(Some(2), coll_default), false, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "TABLE_CONSTRAINTS",
-    columns: [
-      vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_TYPE", VarChar(Some(11), coll_default), true, true),
-      vc("IS_DEFERRABLE", VarChar(Some(2), coll_default), false, true),
-      vc("INITIALLY_DEFERRED", VarChar(Some(2), coll_default), false, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "KEY_COLUMN_USAGE",
-    columns: [
-      vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, false),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false),
-      vc("ORDINAL_POSITION", Int, false, false),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "REFERENTIAL_CONSTRAINTS",
-    columns: [
-      vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc(
-        "UNIQUE_CONSTRAINT_CATALOG",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "UNIQUE_CONSTRAINT_SCHEMA",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "UNIQUE_CONSTRAINT_NAME",
-        NVarChar(Some(128), coll_default),
-        true,
-        false,
-      ),
-      vc("MATCH_OPTION", VarChar(Some(7), coll_default), true, true),
-      vc("UPDATE_RULE", VarChar(Some(11), coll_default), true, true),
-      vc("DELETE_RULE", VarChar(Some(11), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "time_zone_info",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("current_utc_offset", NVarChar(Some(6), coll_default), false, false),
-      vc("is_currently_dst", Bit, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_sessions",
-    columns: [
-      vc("session_id", SmallInt, false, false),
-      vc("login_time", DateTime, false, false),
-      vc("host_name", NVarChar(Some(128), coll_default), true, false),
-      vc("program_name", NVarChar(Some(128), coll_default), true, false),
-      vc("host_process_id", Int, true, false),
-      vc("client_version", Int, true, false),
-      vc("client_interface_name", NVarChar(Some(32), coll_default), true, false),
-      vc("security_id", VarBinary(Some(85)), false, false),
-      vc("login_name", NVarChar(Some(128), coll_default), false, false),
-      vc("nt_domain", NVarChar(Some(128), coll_default), true, false),
-      vc("nt_user_name", NVarChar(Some(128), coll_default), true, false),
-      vc("status", NVarChar(Some(30), coll_default), false, false),
-      vc("context_info", VarBinary(Some(128)), true, false),
-      vc("cpu_time", Int, false, false),
-      vc("memory_usage", Int, false, false),
-      vc("total_scheduled_time", Int, false, false),
-      vc("total_elapsed_time", Int, false, false),
-      vc("endpoint_id", Int, false, false),
-      vc("last_request_start_time", DateTime, false, false),
-      vc("last_request_end_time", DateTime, true, false),
-      vc("reads", BigInt, false, false),
-      vc("writes", BigInt, false, false),
-      vc("logical_reads", BigInt, false, false),
-      vc("is_user_process", Bit, false, false),
-      vc("text_size", Int, false, false),
-      vc("language", NVarChar(Some(128), coll_default), true, false),
-      vc("date_format", NVarChar(Some(3), coll_default), true, false),
-      vc("date_first", SmallInt, false, false),
-      vc("quoted_identifier", Bit, false, false),
-      vc("arithabort", Bit, false, false),
-      vc("ansi_null_dflt_on", Bit, false, false),
-      vc("ansi_defaults", Bit, false, false),
-      vc("ansi_warnings", Bit, false, false),
-      vc("ansi_padding", Bit, false, false),
-      vc("ansi_nulls", Bit, false, false),
-      vc("concat_null_yields_null", Bit, false, false),
-      vc("transaction_isolation_level", SmallInt, false, false),
-      vc("lock_timeout", Int, false, false),
-      vc("deadlock_priority", Int, false, false),
-      vc("row_count", BigInt, false, false),
-      vc("prev_error", Int, false, false),
-      vc("original_security_id", VarBinary(Some(85)), false, false),
-      vc("original_login_name", NVarChar(Some(128), coll_default), false, false),
-      vc("last_successful_logon", DateTime, true, false),
-      vc("last_unsuccessful_logon", DateTime, true, false),
-      vc("unsuccessful_logons", BigInt, true, false),
-      vc("group_id", Int, false, false),
-      vc("database_id", SmallInt, false, false),
-      vc("authenticating_database_id", Int, true, false),
-      vc("open_transaction_count", Int, false, false),
-      vc("page_server_reads", BigInt, false, false),
-      vc("contained_availability_group_id", UniqueIdentifier, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_requests",
-    columns: [
-      vc("session_id", SmallInt, false, false),
-      vc("request_id", Int, false, false),
-      vc("start_time", DateTime, false, false),
-      vc("status", NVarChar(Some(30), coll_default), false, false),
-      vc("command", NVarChar(Some(32), coll_default), false, false),
-      vc("sql_handle", VarBinary(Some(64)), true, false),
-      vc("statement_start_offset", Int, true, false),
-      vc("statement_end_offset", Int, true, false),
-      vc("plan_handle", VarBinary(Some(64)), true, false),
-      vc("database_id", SmallInt, false, false),
-      vc("user_id", Int, false, false),
-      vc("connection_id", UniqueIdentifier, true, false),
-      vc("blocking_session_id", SmallInt, true, false),
-      vc("wait_type", NVarChar(Some(60), coll_default), true, false),
-      vc("wait_time", Int, false, false),
-      vc("last_wait_type", NVarChar(Some(60), coll_default), false, false),
-      vc("wait_resource", NVarChar(Some(256), coll_default), false, false),
-      vc("open_transaction_count", Int, false, false),
-      vc("open_resultset_count", Int, false, false),
-      vc("transaction_id", BigInt, false, false),
-      vc("context_info", VarBinary(Some(128)), true, false),
-      vc("percent_complete", Real, false, false),
-      vc("estimated_completion_time", BigInt, false, false),
-      vc("cpu_time", Int, false, false),
-      vc("total_elapsed_time", Int, false, false),
-      vc("scheduler_id", Int, true, false),
-      vc("task_address", VarBinary(Some(8)), true, false),
-      vc("reads", BigInt, false, false),
-      vc("writes", BigInt, false, false),
-      vc("logical_reads", BigInt, false, false),
-      vc("text_size", Int, false, false),
-      vc("language", NVarChar(Some(128), coll_default), true, false),
-      vc("date_format", NVarChar(Some(3), coll_default), true, false),
-      vc("date_first", SmallInt, false, false),
-      vc("quoted_identifier", Bit, false, false),
-      vc("arithabort", Bit, false, false),
-      vc("ansi_null_dflt_on", Bit, false, false),
-      vc("ansi_defaults", Bit, false, false),
-      vc("ansi_warnings", Bit, false, false),
-      vc("ansi_padding", Bit, false, false),
-      vc("ansi_nulls", Bit, false, false),
-      vc("concat_null_yields_null", Bit, false, false),
-      vc("transaction_isolation_level", SmallInt, false, false),
-      vc("lock_timeout", Int, false, false),
-      vc("deadlock_priority", Int, false, false),
-      vc("row_count", BigInt, false, false),
-      vc("prev_error", Int, false, false),
-      vc("nest_level", Int, false, false),
-      vc("granted_query_memory", Int, false, false),
-      vc("executing_managed_code", Bit, false, false),
-      vc("group_id", Int, false, false),
-      vc("query_hash", Binary(8), true, false),
-      vc("query_plan_hash", Binary(8), true, false),
-      vc("statement_sql_handle", VarBinary(Some(64)), true, false),
-      vc("statement_context_id", BigInt, true, false),
-      vc("dop", Int, false, false),
-      vc("parallel_worker_count", Int, true, false),
-      vc("external_script_request_id", UniqueIdentifier, true, false),
-      vc("is_resumable", Bit, false, false),
-      vc("page_resource", VarBinary(Some(8)), true, false),
-      vc("page_server_reads", BigInt, false, false),
-      vc("dist_statement_id", UniqueIdentifier, true, false),
-      vc("label", NVarChar(Some(255), coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_connections",
-    columns: [
-      vc("session_id", Int, true, false),
-      vc("most_recent_session_id", Int, true, false),
-      vc("connect_time", DateTime, false, false),
-      vc("net_transport", NVarChar(Some(40), coll_default), false, false),
-      vc("protocol_type", NVarChar(Some(40), coll_default), true, false),
-      vc("protocol_version", Int, true, false),
-      vc("endpoint_id", Int, true, false),
-      vc("encrypt_option", NVarChar(Some(40), coll_default), false, false),
-      vc("auth_scheme", NVarChar(Some(40), coll_default), false, false),
-      vc("node_affinity", SmallInt, false, false),
-      vc("num_reads", Int, true, false),
-      vc("num_writes", Int, true, false),
-      vc("last_read", DateTime, true, false),
-      vc("last_write", DateTime, true, false),
-      vc("net_packet_size", Int, true, false),
-      vc("client_net_address", NVarChar(Some(48), coll_default), true, false),
-      vc("client_tcp_port", Int, true, false),
-      vc("local_net_address", NVarChar(Some(48), coll_default), true, false),
-      vc("local_tcp_port", Int, true, false),
-      vc("connection_id", UniqueIdentifier, false, false),
-      vc("parent_connection_id", UniqueIdentifier, true, false),
-      vc("most_recent_sql_handle", VarBinary(Some(64)), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "identity_columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("column_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_ansi_padded", Bit, false, true),
-      vc("is_rowguidcol", Bit, false, true),
-      vc("is_identity", Bit, false, true),
-      vc("is_filestream", Bit, false, true),
-      vc("is_replicated", Bit, true, true),
-      vc("is_non_sql_subscribed", Bit, true, true),
-      vc("is_merge_published", Bit, true, true),
-      vc("is_dts_replicated", Bit, true, true),
-      vc("is_xml_document", Bit, false, true),
-      vc("xml_collection_id", Int, false, true),
-      vc("default_object_id", Int, false, true),
-      vc("rule_object_id", Int, false, true),
-      vc("seed_value", Variant, true, true),
-      vc("increment_value", Variant, true, true),
-      vc("last_value", Variant, true, true),
-      vc("is_not_for_replication", Bit, true, true),
-      vc("is_computed", Bit, false, true),
-      vc("is_sparse", Bit, false, true),
-      vc("is_column_set", Bit, false, true),
-      vc("generated_always_type", TinyInt, true, true),
-      vc(
-        "generated_always_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("encryption_type", Int, true, true),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("column_encryption_key_id", Int, true, true),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("is_hidden", Bit, false, true),
-      vc("is_masked", Bit, false, true),
-      vc("graph_type", Int, true, true),
-      vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_data_deletion_filter_column", Bit, true, true),
-      vc("ledger_view_column_type", Int, true, true),
-      vc(
-        "ledger_view_column_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("is_dropped_ledger_column", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "sequences",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("start_value", Variant, false, false),
-      vc("increment", Variant, false, false),
-      vc("minimum_value", Variant, false, false),
-      vc("maximum_value", Variant, false, false),
-      vc("is_cycling", Bit, true, true),
-      vc("is_cached", Bit, true, true),
-      vc("cache_size", Int, true, true),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, true),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, true, true),
-      vc("current_value", Variant, false, false),
-      vc("is_exhausted", Bit, false, false),
-      vc("last_used_value", Variant, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "table_types",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("schema_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_user_defined", Bit, false, true),
-      vc("is_assembly_type", Bit, false, true),
-      vc("default_object_id", Int, false, true),
-      vc("rule_object_id", Int, false, true),
-      vc("is_table_type", Bit, false, true),
-      vc("type_table_object_id", Int, false, false),
-      vc("is_memory_optimized", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "synonyms",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, false, true),
-      vc("is_published", Bit, false, true),
-      vc("is_schema_published", Bit, false, true),
-      vc("base_object_name", NVarChar(Some(1035), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "parameters",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("parameter_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("is_output", Bit, false, true),
-      vc("is_cursor_ref", Bit, false, true),
-      vc("has_default_value", Bit, false, true),
-      vc("is_xml_document", Bit, false, true),
-      vc("default_value", Variant, true, false),
-      vc("xml_collection_id", Int, false, false),
-      vc("is_readonly", Bit, false, true),
-      vc("is_nullable", Bit, true, true),
-      vc("encryption_type", Int, true, true),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("column_encryption_key_id", Int, true, false),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("vector_dimensions", Int, true, true),
-      vc("vector_base_type", TinyInt, true, true),
-      vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "PARAMETERS",
-    columns: [
-      vc("SPECIFIC_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("SPECIFIC_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("SPECIFIC_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("ORDINAL_POSITION", Int, false, false),
-      vc("PARAMETER_MODE", NVarChar(Some(10), coll_default), true, true),
-      vc("IS_RESULT", NVarChar(Some(10), coll_default), true, true),
-      vc("AS_LOCATOR", NVarChar(Some(10), coll_default), true, true),
-      vc("PARAMETER_NAME", NVarChar(Some(128), coll_default), true, false),
-      vc("DATA_TYPE", NVarChar(Some(128), coll_default), false, true),
-      vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true),
-      vc("CHARACTER_OCTET_LENGTH", Int, true, true),
-      vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("NUMERIC_PRECISION", TinyInt, true, true),
-      vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true),
-      vc("NUMERIC_SCALE", Int, true, true),
-      vc("DATETIME_PRECISION", SmallInt, true, true),
-      vc("INTERVAL_TYPE", NVarChar(Some(30), coll_default), true, true),
-      vc("INTERVAL_PRECISION", SmallInt, true, true),
-      vc(
-        "USER_DEFINED_TYPE_CATALOG",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "USER_DEFINED_TYPE_SCHEMA",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "USER_DEFINED_TYPE_NAME",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("SCOPE_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("SCOPE_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("SCOPE_NAME", NVarChar(Some(128), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "CHECK_CONSTRAINTS",
-    columns: [
-      vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true),
-      vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("CHECK_CLAUSE", NVarChar(Some(4000), coll_default), true, true),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "CONSTRAINT_COLUMN_USAGE",
-    columns: [
-      vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, false),
-      vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false),
-      vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, false),
-      vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false),
-    ],
-  },
-  {
-    schema: "INFORMATION_SCHEMA",
-    name: "SCHEMATA",
-    columns: [
-      vc("CATALOG_NAME", NVarChar(Some(128), coll_default), true, true),
-      vc("SCHEMA_NAME", NVarChar(Some(128), coll_default), false, false),
-      vc("SCHEMA_OWNER", NVarChar(Some(128), coll_default), true, true),
-      vc(
-        "DEFAULT_CHARACTER_SET_CATALOG",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "DEFAULT_CHARACTER_SET_SCHEMA",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc(
-        "DEFAULT_CHARACTER_SET_NAME",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "syslanguages",
-    columns: [
-      vc("langid", SmallInt, false, false),
-      vc("dateformat", NChar(3, coll_default), false, false),
-      vc("datefirst", TinyInt, false, false),
-      vc("upgrade", Int, true, true),
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("alias", NVarChar(Some(128), coll_default), false, false),
-      vc("months", NVarChar(Some(372), coll_default), true, true),
-      vc("shortmonths", NVarChar(Some(132), coll_default), true, true),
-      vc("days", NVarChar(Some(217), coll_default), true, true),
-      vc("lcid", Int, false, false),
-      vc("msglangid", SmallInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "all_objects",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, false),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), true, true),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, true, true),
-      vc("is_published", Bit, true, true),
-      vc("is_schema_published", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "system_objects",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, true),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, true, true),
-      vc("type", Char(2, coll_ks_ws), false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, true, true),
-      vc("is_published", Bit, true, true),
-      vc("is_schema_published", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "all_columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("column_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, false),
-      vc("is_nullable", Bit, true, false),
-      vc("is_ansi_padded", Bit, false, false),
-      vc("is_rowguidcol", Bit, false, false),
-      vc("is_identity", Bit, false, false),
-      vc("is_computed", Bit, true, false),
-      vc("is_filestream", Bit, false, false),
-      vc("is_replicated", Bit, true, false),
-      vc("is_non_sql_subscribed", Bit, true, false),
-      vc("is_merge_published", Bit, true, false),
-      vc("is_dts_replicated", Bit, true, false),
-      vc("is_xml_document", Bit, false, false),
-      vc("xml_collection_id", Int, false, false),
-      vc("default_object_id", Int, false, false),
-      vc("rule_object_id", Int, false, false),
-      vc("is_sparse", Bit, true, false),
-      vc("is_column_set", Bit, true, false),
-      vc("generated_always_type", TinyInt, true, false),
-      vc(
-        "generated_always_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("encryption_type", Int, true, false),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, false),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("column_encryption_key_id", Int, true, false),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        false,
-      ),
-      vc("is_hidden", Bit, true, false),
-      vc("is_masked", Bit, false, false),
-      vc("graph_type", Int, true, false),
-      vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_data_deletion_filter_column", Bit, true, false),
-      vc("ledger_view_column_type", Int, true, false),
-      vc(
-        "ledger_view_column_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("is_dropped_ledger_column", Bit, true, false),
-      vc("vector_dimensions", Int, true, false),
-      vc("vector_base_type", TinyInt, true, false),
-      vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "system_columns",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, true),
-      vc("column_id", Int, false, false),
-      vc("system_type_id", TinyInt, false, false),
-      vc("user_type_id", Int, false, false),
-      vc("max_length", SmallInt, false, false),
-      vc("precision", TinyInt, false, false),
-      vc("scale", TinyInt, false, false),
-      vc("collation_name", NVarChar(Some(128), coll_default), true, true),
-      vc("is_nullable", Bit, true, true),
-      vc("is_ansi_padded", Bit, false, true),
-      vc("is_rowguidcol", Bit, false, true),
-      vc("is_identity", Bit, false, true),
-      vc("is_computed", Bit, false, true),
-      vc("is_filestream", Bit, false, true),
-      vc("is_replicated", Bit, false, true),
-      vc("is_non_sql_subscribed", Bit, false, true),
-      vc("is_merge_published", Bit, false, true),
-      vc("is_dts_replicated", Bit, false, true),
-      vc("is_xml_document", Bit, false, true),
-      vc("xml_collection_id", Int, false, true),
-      vc("default_object_id", Int, false, true),
-      vc("rule_object_id", Int, false, true),
-      vc("is_sparse", Bit, false, true),
-      vc("is_column_set", Bit, false, true),
-      vc("generated_always_type", TinyInt, true, true),
-      vc(
-        "generated_always_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("encryption_type", Int, true, true),
-      vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true),
-      vc(
-        "encryption_algorithm_name",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("column_encryption_key_id", Int, true, true),
-      vc(
-        "column_encryption_key_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        true,
-      ),
-      vc("is_hidden", Bit, false, true),
-      vc("is_masked", Bit, false, true),
-      vc("graph_type", Int, true, true),
-      vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, true),
-      vc("is_data_deletion_filter_column", Bit, false, true),
-      vc("ledger_view_column_type", Int, true, true),
-      vc(
-        "ledger_view_column_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("is_dropped_ledger_column", Bit, false, true),
-      vc("vector_dimensions", Int, true, true),
-      vc("vector_base_type", TinyInt, true, true),
-      vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "server_principals",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("principal_id", Int, false, false),
-      vc("sid", VarBinary(Some(85)), true, false),
-      vc("type", Char(1, coll_ks_ws), false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_disabled", Bit, true, true),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc(
-        "default_database_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        false,
-      ),
-      vc(
-        "default_language_name",
-        NVarChar(Some(128), coll_default),
-        true,
-        false,
-      ),
-      vc("credential_id", Int, true, false),
-      vc("owning_principal_id", Int, true, true),
-      vc("is_fixed_role", Bit, false, true),
-      vc("tenant_id", UniqueIdentifier, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "database_files",
-    columns: [
-      vc("file_id", Int, false, false),
-      vc("file_guid", UniqueIdentifier, true, false),
-      vc("type", TinyInt, false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("data_space_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, true),
-      vc("physical_name", NVarChar(Some(260), coll_default), true, true),
-      vc("state", TinyInt, true, true),
-      vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("size", Int, false, true),
-      vc("max_size", Int, false, false),
-      vc("growth", Int, false, false),
-      vc("is_media_read_only", Bit, false, true),
-      vc("is_read_only", Bit, false, true),
-      vc("is_sparse", Bit, false, true),
-      vc("is_percent_growth", Bit, false, true),
-      vc("is_name_reserved", Bit, false, true),
-      vc("is_persistent_log_buffer", Bit, false, true),
-      vc("create_lsn", Numeric(25, 0), true, true),
-      vc("drop_lsn", Numeric(25, 0), true, true),
-      vc("read_only_lsn", Numeric(25, 0), true, true),
-      vc("read_write_lsn", Numeric(25, 0), true, true),
-      vc("differential_base_lsn", Numeric(25, 0), true, true),
-      vc("differential_base_guid", UniqueIdentifier, true, false),
-      vc("differential_base_time", DateTime, true, true),
-      vc("redo_start_lsn", Numeric(25, 0), true, true),
-      vc("redo_start_fork_guid", UniqueIdentifier, true, false),
-      vc("redo_target_lsn", Numeric(25, 0), true, true),
-      vc("redo_target_fork_guid", UniqueIdentifier, true, false),
-      vc("backup_lsn", Numeric(25, 0), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "extended_properties",
-    columns: [
-      vc("class", TinyInt, false, false),
-      vc("class_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("major_id", Int, false, false),
-      vc("minor_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("value", Variant, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "partitions",
-    columns: [
-      vc("partition_id", BigInt, false, false),
-      vc("object_id", Int, false, false),
-      vc("index_id", Int, false, false),
-      vc("partition_number", Int, false, false),
-      vc("hobt_id", BigInt, false, false),
-      vc("rows", BigInt, true, false),
-      vc("filestream_filegroup_id", SmallInt, false, false),
-      vc("data_compression", TinyInt, false, false),
-      vc("data_compression_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("xml_compression", Bit, true, false),
-      vc("xml_compression_desc", VarChar(Some(3), coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "allocation_units",
-    columns: [
-      vc("allocation_unit_id", BigInt, false, false),
-      vc("type", TinyInt, false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("container_id", BigInt, false, false),
-      vc("data_space_id", Int, true, true),
-      vc("total_pages", BigInt, false, true),
-      vc("used_pages", BigInt, false, true),
-      vc("data_pages", BigInt, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "database_scoped_configurations",
-    columns: [
-      vc("configuration_id", Int, true, false),
-      vc("name", NVarChar(Some(60), coll_default), true, false),
-      vc("value", Variant, true, false),
-      vc("value_for_secondary", Variant, true, false),
-      vc("is_value_default", Bit, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "json_indexes",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("index_id", Int, false, false),
-      vc("type", TinyInt, false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_unique", Bit, true, true),
-      vc("data_space_id", Int, false, true),
-      vc("ignore_dup_key", Bit, true, true),
-      vc("is_primary_key", Bit, true, true),
-      vc("is_unique_constraint", Bit, true, true),
-      vc("fill_factor", TinyInt, false, false),
-      vc("is_padded", Bit, true, true),
-      vc("is_disabled", Bit, true, true),
-      vc("is_hypothetical", Bit, true, true),
-      vc("is_ignored_in_optimization", Bit, true, true),
-      vc("allow_row_locks", Bit, true, true),
-      vc("allow_page_locks", Bit, true, true),
-      vc("has_filter", Bit, false, true),
-      vc("filter_definition", NVarChar(None, coll_default), true, true),
-      vc("auto_created", Bit, true, true),
-      vc("optimize_for_array_search", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "json_index_paths",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("index_id", Int, false, false),
-      vc("path", VarChar(Some(8000), @types.json_collation), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "stats",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("stats_id", Int, false, false),
-      vc("auto_created", Bit, true, false),
-      vc("user_created", Bit, true, false),
-      vc("no_recompute", Bit, true, false),
-      vc("has_filter", Bit, true, false),
-      vc("filter_definition", NVarChar(None, coll_default), true, false),
-      vc("is_temporary", Bit, true, false),
-      vc("is_incremental", Bit, true, false),
-      vc("has_persisted_sample", Bit, true, false),
-      vc("stats_generation_method", Int, false, false),
-      vc(
-        "stats_generation_method_desc",
-        VarChar(Some(80), coll_ks_ws),
-        false,
-        false,
-      ),
-      vc("auto_drop", Bit, true, false),
-      vc("replica_role_id", TinyInt, true, false),
-      vc("replica_role_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("replica_name", NVarChar(Some(128), coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "internal_tables",
-    columns: [
-      vc("name", NVarChar(Some(128), coll_default), false, false),
-      vc("object_id", Int, false, false),
-      vc("principal_id", Int, true, true),
-      vc("schema_id", Int, false, false),
-      vc("parent_object_id", Int, false, false),
-      vc("type", Char(2, coll_ks_ws), false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_date", DateTime, false, false),
-      vc("modify_date", DateTime, false, false),
-      vc("is_ms_shipped", Bit, true, true),
-      vc("is_published", Bit, true, true),
-      vc("is_schema_published", Bit, true, true),
-      vc("internal_type", TinyInt, true, true),
-      vc("internal_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("parent_id", Int, true, false),
-      vc("parent_minor_id", Int, true, false),
-      vc("lob_data_space_id", Int, false, true),
-      vc("filestream_data_space_id", Int, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "vector_indexes",
-    columns: [
-      vc("object_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("index_id", Int, false, false),
-      vc("type", TinyInt, false, false),
-      vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("is_unique", Bit, true, true),
-      vc("data_space_id", Int, false, true),
-      vc("ignore_dup_key", Bit, true, true),
-      vc("is_primary_key", Bit, true, true),
-      vc("is_unique_constraint", Bit, true, true),
-      vc("fill_factor", TinyInt, false, false),
-      vc("is_padded", Bit, true, true),
-      vc("is_disabled", Bit, true, true),
-      vc("is_hypothetical", Bit, true, true),
-      vc("is_ignored_in_optimization", Bit, true, true),
-      vc("allow_row_locks", Bit, true, true),
-      vc("allow_page_locks", Bit, true, true),
-      vc("has_filter", Bit, false, true),
-      vc("filter_definition", NVarChar(None, coll_default), true, true),
-      vc("auto_created", Bit, true, true),
-      vc("vector_index_type", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("distance_metric", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc(
-        "build_parameters",
-        NVarChar(Some(4000), @types.json_collation),
-        true,
-        false,
-      ),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "external_models",
-    columns: [
-      vc("external_model_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, true),
-      vc("principal_id", Int, true, false),
-      vc("location", NVarChar(Some(4000), coll_default), true, true),
-      vc("api_format", NVarChar(Some(100), coll_default), true, true),
-      vc("model_type_id", Int, true, false),
-      vc("model_type_desc", NVarChar(Some(65), coll_default), true, true),
-      vc("model", NVarChar(Some(100), coll_default), true, true),
-      vc("credential_id", Int, true, false),
-      vc("parameters", Json, true, true),
-      vc("create_time", DateTime2(7), true, true),
-      vc("modify_time", DateTime2(7), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "configurations",
-    columns: [
-      vc("configuration_id", Int, false, false),
-      vc("name", NVarChar(Some(35), coll_default), false, false),
-      vc("value", Variant, true, true),
-      vc("minimum", Variant, true, true),
-      vc("maximum", Variant, true, true),
-      vc("value_in_use", Variant, true, true),
-      vc("description", NVarChar(Some(255), coll_default), false, false),
-      vc("is_dynamic", Bit, false, true),
-      vc("is_advanced", Bit, false, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "database_query_store_options",
-    columns: [
-      vc("desired_state", SmallInt, false, false),
-      vc("desired_state_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("actual_state", SmallInt, false, false),
-      vc("actual_state_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("readonly_reason", Int, true, false),
-      vc("current_storage_size_mb", BigInt, true, false),
-      vc("flush_interval_seconds", BigInt, true, false),
-      vc("interval_length_minutes", BigInt, true, false),
-      vc("max_storage_size_mb", BigInt, true, false),
-      vc("stale_query_threshold_days", BigInt, true, false),
-      vc("max_plans_per_query", BigInt, true, false),
-      vc("query_capture_mode", SmallInt, false, false),
-      vc("query_capture_mode_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("capture_policy_execution_count", Int, true, false),
-      vc("capture_policy_total_compile_cpu_time_ms", BigInt, true, false),
-      vc("capture_policy_total_execution_cpu_time_ms", BigInt, true, false),
-      vc("capture_policy_stale_threshold_hours", Int, true, false),
-      vc("size_based_cleanup_mode", SmallInt, false, false),
-      vc(
-        "size_based_cleanup_mode_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("wait_stats_capture_mode", SmallInt, false, false),
-      vc(
-        "wait_stats_capture_mode_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc(
-        "actual_state_additional_info",
-        NVarChar(Some(4000), coll_ks_ws),
-        true,
-        true,
-      ),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_context_settings",
-    columns: [
-      vc("context_settings_id", BigInt, false, false),
-      vc("set_options", VarBinary(Some(8)), true, true),
-      vc("language_id", SmallInt, false, false),
-      vc("date_format", SmallInt, false, false),
-      vc("date_first", TinyInt, false, false),
-      vc("status", VarBinary(Some(2)), true, true),
-      vc("required_cursor_options", Int, false, false),
-      vc("acceptable_cursor_options", Int, false, false),
-      vc("merge_action_type", SmallInt, false, false),
-      vc("default_schema_id", Int, false, false),
-      vc("is_replication_specific", Bit, false, false),
-      vc("is_contained", VarBinary(Some(1)), true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_plan",
-    columns: [
-      vc("plan_id", BigInt, false, false),
-      vc("query_id", BigInt, false, false),
-      vc("plan_group_id", BigInt, true, false),
-      vc("engine_version", NVarChar(Some(32), coll_default), true, true),
-      vc("compatibility_level", SmallInt, false, false),
-      vc("query_plan_hash", Binary(8), false, false),
-      vc("query_plan", NVarChar(None, coll_default), true, true),
-      vc("is_online_index_plan", Bit, false, false),
-      vc("is_trivial_plan", Bit, false, false),
-      vc("is_parallel_plan", Bit, false, false),
-      vc("is_forced_plan", Bit, false, false),
-      vc("is_natively_compiled", Bit, false, false),
-      vc("force_failure_count", BigInt, false, false),
-      vc("last_force_failure_reason", Int, false, false),
-      vc(
-        "last_force_failure_reason_desc",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("count_compiles", BigInt, true, false),
-      vc("initial_compile_start_time", DateTimeOffset(7), false, false),
-      vc("last_compile_start_time", DateTimeOffset(7), true, false),
-      vc("last_execution_time", DateTimeOffset(7), true, false),
-      vc("avg_compile_duration", Float, true, true),
-      vc("last_compile_duration", BigInt, true, false),
-      vc("plan_forcing_type", Int, false, false),
-      vc("plan_forcing_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("has_compile_replay_script", Bit, false, false),
-      vc("is_optimized_plan_forcing_disabled", Bit, false, false),
-      vc("plan_type", Int, false, false),
-      vc("plan_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_query",
-    columns: [
-      vc("query_id", BigInt, false, false),
-      vc("query_text_id", BigInt, false, false),
-      vc("context_settings_id", BigInt, false, false),
-      vc("object_id", BigInt, true, false),
-      vc("batch_sql_handle", VarBinary(Some(44)), true, true),
-      vc("query_hash", Binary(8), false, false),
-      vc("is_internal_query", Bit, false, false),
-      vc("query_parameterization_type", TinyInt, false, false),
-      vc(
-        "query_parameterization_type_desc",
-        NVarChar(Some(60), coll_ks_ws),
-        true,
-        false,
-      ),
-      vc("initial_compile_start_time", DateTimeOffset(7), false, false),
-      vc("last_compile_start_time", DateTimeOffset(7), true, false),
-      vc("last_execution_time", DateTimeOffset(7), true, false),
-      vc("last_compile_batch_sql_handle", VarBinary(Some(44)), true, true),
-      vc("last_compile_batch_offset_start", BigInt, true, false),
-      vc("last_compile_batch_offset_end", BigInt, true, false),
-      vc("count_compiles", BigInt, true, false),
-      vc("avg_compile_duration", Float, true, true),
-      vc("last_compile_duration", BigInt, true, false),
-      vc("avg_bind_duration", Float, true, true),
-      vc("last_bind_duration", BigInt, true, false),
-      vc("avg_bind_cpu_time", Float, true, true),
-      vc("last_bind_cpu_time", BigInt, true, false),
-      vc("avg_optimize_duration", Float, true, true),
-      vc("last_optimize_duration", BigInt, true, false),
-      vc("avg_optimize_cpu_time", Float, true, true),
-      vc("last_optimize_cpu_time", BigInt, true, false),
-      vc("avg_compile_memory_kb", Float, true, true),
-      vc("last_compile_memory_kb", BigInt, true, false),
-      vc("max_compile_memory_kb", BigInt, true, false),
-      vc("is_clouddb_internal_query", Bit, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_query_text",
-    columns: [
-      vc("query_text_id", BigInt, false, false),
-      vc("query_sql_text", NVarChar(None, coll_default), true, false),
-      vc("statement_sql_handle", VarBinary(Some(44)), true, false),
-      vc("is_part_of_encrypted_module", Bit, false, false),
-      vc("has_restricted_text", Bit, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_runtime_stats",
-    columns: [
-      vc("runtime_stats_id", BigInt, false, false),
-      vc("plan_id", BigInt, false, false),
-      vc("runtime_stats_interval_id", BigInt, false, false),
-      vc("execution_type", TinyInt, false, false),
-      vc("execution_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("first_execution_time", DateTimeOffset(7), false, false),
-      vc("last_execution_time", DateTimeOffset(7), false, false),
-      vc("count_executions", BigInt, false, false),
-      vc("avg_duration", Float, true, false),
-      vc("last_duration", BigInt, false, false),
-      vc("min_duration", BigInt, false, false),
-      vc("max_duration", BigInt, false, false),
-      vc("stdev_duration", Float, true, true),
-      vc("avg_cpu_time", Float, true, false),
-      vc("last_cpu_time", BigInt, false, false),
-      vc("min_cpu_time", BigInt, false, false),
-      vc("max_cpu_time", BigInt, false, false),
-      vc("stdev_cpu_time", Float, true, true),
-      vc("avg_logical_io_reads", Float, true, false),
-      vc("last_logical_io_reads", BigInt, false, false),
-      vc("min_logical_io_reads", BigInt, false, false),
-      vc("max_logical_io_reads", BigInt, false, false),
-      vc("stdev_logical_io_reads", Float, true, true),
-      vc("avg_logical_io_writes", Float, true, false),
-      vc("last_logical_io_writes", BigInt, false, false),
-      vc("min_logical_io_writes", BigInt, false, false),
-      vc("max_logical_io_writes", BigInt, false, false),
-      vc("stdev_logical_io_writes", Float, true, true),
-      vc("avg_physical_io_reads", Float, true, false),
-      vc("last_physical_io_reads", BigInt, false, false),
-      vc("min_physical_io_reads", BigInt, false, false),
-      vc("max_physical_io_reads", BigInt, false, false),
-      vc("stdev_physical_io_reads", Float, true, true),
-      vc("avg_clr_time", Float, true, false),
-      vc("last_clr_time", BigInt, false, false),
-      vc("min_clr_time", BigInt, false, false),
-      vc("max_clr_time", BigInt, false, false),
-      vc("stdev_clr_time", Float, true, true),
-      vc("avg_dop", Float, true, false),
-      vc("last_dop", BigInt, false, false),
-      vc("min_dop", BigInt, false, false),
-      vc("max_dop", BigInt, false, false),
-      vc("stdev_dop", Float, true, true),
-      vc("avg_query_max_used_memory", Float, true, false),
-      vc("last_query_max_used_memory", BigInt, false, false),
-      vc("min_query_max_used_memory", BigInt, false, false),
-      vc("max_query_max_used_memory", BigInt, false, false),
-      vc("stdev_query_max_used_memory", Float, true, true),
-      vc("avg_rowcount", Float, true, false),
-      vc("last_rowcount", BigInt, false, false),
-      vc("min_rowcount", BigInt, false, false),
-      vc("max_rowcount", BigInt, false, false),
-      vc("stdev_rowcount", Float, true, true),
-      vc("avg_num_physical_io_reads", Float, true, false),
-      vc("last_num_physical_io_reads", BigInt, true, false),
-      vc("min_num_physical_io_reads", BigInt, true, false),
-      vc("max_num_physical_io_reads", BigInt, true, false),
-      vc("stdev_num_physical_io_reads", Float, true, true),
-      vc("avg_log_bytes_used", Float, true, false),
-      vc("last_log_bytes_used", BigInt, true, false),
-      vc("min_log_bytes_used", BigInt, true, false),
-      vc("max_log_bytes_used", BigInt, true, false),
-      vc("stdev_log_bytes_used", Float, true, true),
-      vc("avg_tempdb_space_used", Float, true, false),
-      vc("last_tempdb_space_used", BigInt, true, false),
-      vc("min_tempdb_space_used", BigInt, true, false),
-      vc("max_tempdb_space_used", BigInt, true, false),
-      vc("stdev_tempdb_space_used", Float, true, true),
-      vc("avg_page_server_io_reads", Float, true, false),
-      vc("last_page_server_io_reads", BigInt, true, false),
-      vc("min_page_server_io_reads", BigInt, true, false),
-      vc("max_page_server_io_reads", BigInt, true, false),
-      vc("stdev_page_server_io_reads", Float, true, true),
-      vc("replica_group_id", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_wait_stats",
-    columns: [
-      vc("wait_stats_id", BigInt, false, false),
-      vc("plan_id", BigInt, false, false),
-      vc("runtime_stats_interval_id", BigInt, false, false),
-      vc("wait_category", SmallInt, false, false),
-      vc("wait_category_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("execution_type", TinyInt, false, false),
-      vc("execution_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("total_query_wait_time_ms", BigInt, false, false),
-      vc("avg_query_wait_time_ms", Float, true, false),
-      vc("last_query_wait_time_ms", BigInt, false, false),
-      vc("min_query_wait_time_ms", BigInt, false, false),
-      vc("max_query_wait_time_ms", BigInt, false, false),
-      vc("stdev_query_wait_time_ms", Float, true, true),
-      vc("replica_group_id", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_runtime_stats_interval",
-    columns: [
-      vc("runtime_stats_interval_id", BigInt, false, false),
-      vc("start_time", DateTimeOffset(7), false, false),
-      vc("end_time", DateTimeOffset(7), false, false),
-      vc("comment", NVarChar(None, coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "database_query_store_internal_state",
-    columns: [
-      vc("pending_message_count", BigInt, false, false),
-      vc("messaging_memory_used_mb", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_query_hints",
-    columns: [
-      vc("query_hint_id", BigInt, false, false),
-      vc("query_id", BigInt, false, false),
-      vc("replica_group_id", BigInt, false, false),
-      vc("query_hint_text", NVarChar(None, coll_default), true, false),
-      vc("last_query_hint_failure_reason", Int, false, false),
-      vc(
-        "last_query_hint_failure_reason_desc",
-        NVarChar(Some(128), coll_ks_ws),
-        true,
-        true,
-      ),
-      vc("query_hint_failure_count", BigInt, false, false),
-      vc("source", Int, true, false),
-      vc("source_desc", NVarChar(Some(128), coll_ks_ws), true, true),
-      vc("comment", NVarChar(None, coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_plan_feedback",
-    columns: [
-      vc("plan_feedback_id", BigInt, false, false),
-      vc("plan_id", BigInt, false, false),
-      vc("feature_id", TinyInt, false, false),
-      vc("feature_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("feedback_data", NVarChar(None, coll_default), true, false),
-      vc("state", Int, true, false),
-      vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-      vc("create_time", DateTimeOffset(7), false, false),
-      vc("last_updated_time", DateTimeOffset(7), true, false),
-      vc("replica_group_id", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_query_variant",
-    columns: [
-      vc("query_variant_query_id", BigInt, false, false),
-      vc("parent_query_id", BigInt, false, false),
-      vc("dispatcher_plan_id", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_replicas",
-    columns: [
-      vc("replica_group_id", BigInt, false, false),
-      vc("role_type", SmallInt, false, false),
-      vc("replica_name", NVarChar(Some(644), coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "query_store_plan_forcing_locations",
-    columns: [
-      vc("plan_forcing_location_id", BigInt, false, false),
-      vc("query_id", BigInt, false, false),
-      vc("plan_id", BigInt, false, false),
-      vc("replica_group_id", BigInt, false, false),
-      vc("timestamp", DateTime, false, false),
-      vc("plan_forcing_type", Int, false, false),
-      vc("plan_forcing_type_desc", NVarChar(Some(60), coll_ks_ws), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_query_stats",
-    columns: [
-      vc("sql_handle", VarBinary(Some(64)), false, false),
-      vc("statement_start_offset", Int, false, false),
-      vc("statement_end_offset", Int, false, false),
-      vc("plan_generation_num", BigInt, true, false),
-      vc("plan_handle", VarBinary(Some(64)), false, false),
-      vc("creation_time", DateTime, true, false),
-      vc("last_execution_time", DateTime, true, false),
-      vc("execution_count", BigInt, false, false),
-      vc("total_worker_time", BigInt, false, false),
-      vc("last_worker_time", BigInt, false, false),
-      vc("min_worker_time", BigInt, false, false),
-      vc("max_worker_time", BigInt, false, false),
-      vc("total_physical_reads", BigInt, false, false),
-      vc("last_physical_reads", BigInt, false, false),
-      vc("min_physical_reads", BigInt, false, false),
-      vc("max_physical_reads", BigInt, false, false),
-      vc("total_logical_writes", BigInt, false, false),
-      vc("last_logical_writes", BigInt, false, false),
-      vc("min_logical_writes", BigInt, false, false),
-      vc("max_logical_writes", BigInt, false, false),
-      vc("total_logical_reads", BigInt, false, false),
-      vc("last_logical_reads", BigInt, false, false),
-      vc("min_logical_reads", BigInt, false, false),
-      vc("max_logical_reads", BigInt, false, false),
-      vc("total_clr_time", BigInt, false, false),
-      vc("last_clr_time", BigInt, false, false),
-      vc("min_clr_time", BigInt, false, false),
-      vc("max_clr_time", BigInt, false, false),
-      vc("total_elapsed_time", BigInt, false, false),
-      vc("last_elapsed_time", BigInt, false, false),
-      vc("min_elapsed_time", BigInt, false, false),
-      vc("max_elapsed_time", BigInt, false, false),
-      vc("query_hash", Binary(8), true, false),
-      vc("query_plan_hash", Binary(8), true, false),
-      vc("total_rows", BigInt, true, false),
-      vc("last_rows", BigInt, true, false),
-      vc("min_rows", BigInt, true, false),
-      vc("max_rows", BigInt, true, false),
-      vc("statement_sql_handle", VarBinary(Some(64)), true, false),
-      vc("statement_context_id", BigInt, true, false),
-      vc("total_dop", BigInt, true, false),
-      vc("last_dop", BigInt, true, false),
-      vc("min_dop", BigInt, true, false),
-      vc("max_dop", BigInt, true, false),
-      vc("total_grant_kb", BigInt, true, false),
-      vc("last_grant_kb", BigInt, true, false),
-      vc("min_grant_kb", BigInt, true, false),
-      vc("max_grant_kb", BigInt, true, false),
-      vc("total_used_grant_kb", BigInt, true, false),
-      vc("last_used_grant_kb", BigInt, true, false),
-      vc("min_used_grant_kb", BigInt, true, false),
-      vc("max_used_grant_kb", BigInt, true, false),
-      vc("total_ideal_grant_kb", BigInt, true, false),
-      vc("last_ideal_grant_kb", BigInt, true, false),
-      vc("min_ideal_grant_kb", BigInt, true, false),
-      vc("max_ideal_grant_kb", BigInt, true, false),
-      vc("total_reserved_threads", BigInt, true, false),
-      vc("last_reserved_threads", BigInt, true, false),
-      vc("min_reserved_threads", BigInt, true, false),
-      vc("max_reserved_threads", BigInt, true, false),
-      vc("total_used_threads", BigInt, true, false),
-      vc("last_used_threads", BigInt, true, false),
-      vc("min_used_threads", BigInt, true, false),
-      vc("max_used_threads", BigInt, true, false),
-      vc("total_columnstore_segment_reads", BigInt, true, false),
-      vc("last_columnstore_segment_reads", BigInt, true, false),
-      vc("min_columnstore_segment_reads", BigInt, true, false),
-      vc("max_columnstore_segment_reads", BigInt, true, false),
-      vc("total_columnstore_segment_skips", BigInt, true, false),
-      vc("last_columnstore_segment_skips", BigInt, true, false),
-      vc("min_columnstore_segment_skips", BigInt, true, false),
-      vc("max_columnstore_segment_skips", BigInt, true, false),
-      vc("total_spills", BigInt, true, false),
-      vc("last_spills", BigInt, true, false),
-      vc("min_spills", BigInt, true, false),
-      vc("max_spills", BigInt, true, false),
-      vc("total_num_physical_reads", BigInt, false, false),
-      vc("last_num_physical_reads", BigInt, false, false),
-      vc("min_num_physical_reads", BigInt, false, false),
-      vc("max_num_physical_reads", BigInt, false, false),
-      vc("total_page_server_reads", BigInt, false, false),
-      vc("last_page_server_reads", BigInt, false, false),
-      vc("min_page_server_reads", BigInt, false, false),
-      vc("max_page_server_reads", BigInt, false, false),
-      vc("total_num_page_server_reads", BigInt, false, false),
-      vc("last_num_page_server_reads", BigInt, false, false),
-      vc("min_num_page_server_reads", BigInt, false, false),
-      vc("max_num_page_server_reads", BigInt, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_db_index_usage_stats",
-    columns: [
-      vc("database_id", SmallInt, false, false),
-      vc("object_id", Int, false, false),
-      vc("index_id", Int, false, false),
-      vc("user_seeks", BigInt, false, false),
-      vc("user_scans", BigInt, false, false),
-      vc("user_lookups", BigInt, false, false),
-      vc("user_updates", BigInt, false, false),
-      vc("last_user_seek", DateTime, true, false),
-      vc("last_user_scan", DateTime, true, false),
-      vc("last_user_lookup", DateTime, true, false),
-      vc("last_user_update", DateTime, true, false),
-      vc("system_seeks", BigInt, false, false),
-      vc("system_scans", BigInt, false, false),
-      vc("system_lookups", BigInt, false, false),
-      vc("system_updates", BigInt, false, false),
-      vc("last_system_seek", DateTime, true, false),
-      vc("last_system_scan", DateTime, true, false),
-      vc("last_system_lookup", DateTime, true, false),
-      vc("last_system_update", DateTime, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_db_missing_index_details",
-    columns: [
-      vc("index_handle", Int, false, false),
-      vc("database_id", SmallInt, false, false),
-      vc("object_id", Int, false, false),
-      vc("equality_columns", NVarChar(Some(4000), coll_default), true, false),
-      vc("inequality_columns", NVarChar(Some(4000), coll_default), true, false),
-      vc("included_columns", NVarChar(Some(4000), coll_default), true, false),
-      vc("statement", NVarChar(Some(4000), coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_db_missing_index_groups",
-    columns: [
-      vc("index_group_handle", Int, false, false),
-      vc("index_handle", Int, false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_db_missing_index_group_stats",
-    columns: [
-      vc("group_handle", Int, false, false),
-      vc("unique_compiles", BigInt, true, false),
-      vc("user_seeks", BigInt, true, false),
-      vc("user_scans", BigInt, true, false),
-      vc("last_user_seek", DateTime, true, true),
-      vc("last_user_scan", DateTime, true, true),
-      vc("avg_total_user_cost", Float, true, true),
-      vc("avg_user_impact", Float, true, true),
-      vc("system_seeks", BigInt, true, false),
-      vc("system_scans", BigInt, true, false),
-      vc("last_system_seek", DateTime, true, true),
-      vc("last_system_scan", DateTime, true, true),
-      vc("avg_total_system_cost", Float, true, true),
-      vc("avg_system_impact", Float, true, true),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_db_partition_stats",
-    columns: [
-      vc("partition_id", BigInt, true, false),
-      vc("object_id", Int, false, false),
-      vc("index_id", Int, false, false),
-      vc("partition_number", Int, false, false),
-      vc("in_row_data_page_count", BigInt, true, false),
-      vc("in_row_used_page_count", BigInt, true, false),
-      vc("in_row_reserved_page_count", BigInt, true, false),
-      vc("lob_used_page_count", BigInt, true, false),
-      vc("lob_reserved_page_count", BigInt, true, false),
-      vc("row_overflow_used_page_count", BigInt, true, false),
-      vc("row_overflow_reserved_page_count", BigInt, true, false),
-      vc("used_page_count", BigInt, true, false),
-      vc("reserved_page_count", BigInt, true, false),
-      vc("row_count", BigInt, true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_os_sys_info",
-    columns: [
-      vc("cpu_ticks", BigInt, false, false),
-      vc("ms_ticks", BigInt, false, false),
-      vc("cpu_count", Int, false, false),
-      vc("hyperthread_ratio", Int, false, false),
-      vc("physical_memory_kb", BigInt, false, false),
-      vc("virtual_memory_kb", BigInt, false, false),
-      vc("committed_kb", BigInt, false, false),
-      vc("committed_target_kb", BigInt, false, false),
-      vc("visible_target_kb", BigInt, false, false),
-      vc("stack_size_in_bytes", Int, false, false),
-      vc("os_quantum", BigInt, false, false),
-      vc("os_error_mode", Int, false, false),
-      vc("os_priority_class", Int, true, false),
-      vc("max_workers_count", Int, false, false),
-      vc("scheduler_count", Int, false, false),
-      vc("scheduler_total_count", Int, false, false),
-      vc("deadlock_monitor_serial_number", Int, false, false),
-      vc("sqlserver_start_time_ms_ticks", BigInt, false, false),
-      vc("sqlserver_start_time", DateTime, false, false),
-      vc("affinity_type", Int, false, false),
-      vc("affinity_type_desc", NVarChar(Some(60), coll_default), false, false),
-      vc("process_kernel_time_ms", BigInt, false, false),
-      vc("process_user_time_ms", BigInt, false, false),
-      vc("time_source", Int, false, false),
-      vc("time_source_desc", NVarChar(Some(60), coll_default), false, false),
-      vc("virtual_machine_type", Int, false, false),
-      vc(
-        "virtual_machine_type_desc",
-        NVarChar(Some(60), coll_default),
-        false,
-        false,
-      ),
-      vc("softnuma_configuration", Int, false, false),
-      vc(
-        "softnuma_configuration_desc",
-        NVarChar(Some(60), coll_default),
-        false,
-        false,
-      ),
-      vc(
-        "process_physical_affinity",
-        NVarChar(Some(3072), coll_default),
-        false,
-        false,
-      ),
-      vc("sql_memory_model", Int, false, false),
-      vc(
-        "sql_memory_model_desc",
-        NVarChar(Some(60), coll_default),
-        false,
-        false,
-      ),
-      vc("socket_count", Int, false, false),
-      vc("cores_per_socket", Int, false, false),
-      vc("numa_node_count", Int, false, false),
-      vc("container_type", Int, false, false),
-      vc("container_type_desc", NVarChar(Some(60), coll_default), false, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_sql_text",
-    columns: [
-      vc("dbid", SmallInt, true, false),
-      vc("objectid", Int, true, false),
-      vc("number", SmallInt, true, false),
-      vc("encrypted", Bit, false, false),
-      vc("text", NVarChar(None, coll_default), true, false),
-    ],
-  },
-  {
-    schema: "sys",
-    name: "dm_exec_plan_attributes",
-    columns: [
-      vc("attribute", NVarChar(Some(128), coll_default), false, false),
-      vc("value", Variant, true, false),
-      vc("is_cache_key", Bit, false, false),
-    ],
-  },
-  {
-    // read as sys.dm_exec_cursors(session_id) (bind_table_function)
-    schema: "sys",
-    name: "dm_exec_cursors",
-    columns: [
-      vc("session_id", Int, false, false),
-      vc("cursor_id", Int, false, false),
-      vc("name", NVarChar(Some(128), coll_default), true, false),
-      vc("properties", NVarChar(Some(128), coll_default), false, false),
-      vc("sql_handle", VarBinary(Some(64)), true, false),
-      vc("statement_start_offset", Int, true, false),
-      vc("statement_end_offset", Int, true, false),
-      vc("plan_generation_num", BigInt, true, false),
-      vc("creation_time", DateTime, true, false),
-      vc("is_open", Bit, false, false),
-      vc("is_async_population", Bit, false, false),
-      vc("is_close_on_commit", Bit, false, false),
-      vc("fetch_status", Int, false, false),
-      vc("fetch_buffer_size", Int, false, false),
-      vc("fetch_buffer_start", Int, false, false),
-      vc("ansi_position", Int, false, false),
-      vc("worker_time", BigInt, false, false),
-      vc("reads", BigInt, false, false),
-      vc("writes", BigInt, false, false),
-      vc("dormant_duration", BigInt, false, false),
-    ],
-  },
-]
+/// Catalog view result descriptors, in SQL Server column order: a
+/// schema.name line, then its columns (text: decoded on first use, see
+/// sysviews_text.mbt).
+let view_def_text : String =
+  #|sys.objects
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|sys.tables
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("lob_data_space_id", Int, false, true)
+  #|vc("filestream_data_space_id", Int, true, false)
+  #|vc("max_column_id_used", Int, false, false)
+  #|vc("lock_on_bulk_load", Bit, false, true)
+  #|vc("uses_ansi_nulls", Bit, true, true)
+  #|vc("is_replicated", Bit, true, true)
+  #|vc("has_replication_filter", Bit, true, true)
+  #|vc("is_merge_published", Bit, true, true)
+  #|vc("is_sync_tran_subscribed", Bit, true, true)
+  #|vc("has_unchecked_assembly_data", Bit, false, true)
+  #|vc("text_in_row_limit", Int, true, false)
+  #|vc("large_value_types_out_of_row", Bit, true, true)
+  #|vc("is_tracked_by_cdc", Bit, true, true)
+  #|vc("lock_escalation", TinyInt, true, true)
+  #|vc("lock_escalation_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_filetable", Bit, true, true)
+  #|vc("is_memory_optimized", Bit, true, true)
+  #|vc("durability", TinyInt, true, true)
+  #|vc("durability_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("temporal_type", TinyInt, true, true)
+  #|vc("temporal_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("history_table_id", Int, true, true)
+  #|vc("is_remote_data_archive_enabled", Bit, true, true)
+  #|vc("is_external", Bit, false, true)
+  #|vc("history_retention_period", Int, true, true)
+  #|vc("history_retention_period_unit", Int, true, true)
+  #|vc("history_retention_period_unit_desc", NVarChar(Some(10), coll_ks_ws), true, true)
+  #|vc("is_node", Bit, true, true)
+  #|vc("is_edge", Bit, true, true)
+  #|vc("data_retention_period", Int, true, true)
+  #|vc("data_retention_period_unit", Int, true, true)
+  #|vc("data_retention_period_unit_desc", NVarChar(Some(10), coll_ks_ws), true, true)
+  #|vc("ledger_type", TinyInt, true, true)
+  #|vc("ledger_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("ledger_view_id", Int, true, false)
+  #|vc("is_dropped_ledger_table", Bit, true, true)
+  #|sys.views
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("is_replicated", Bit, true, true)
+  #|vc("has_replication_filter", Bit, true, true)
+  #|vc("has_opaque_metadata", Bit, false, true)
+  #|vc("has_unchecked_assembly_data", Bit, false, true)
+  #|vc("with_check_option", Bit, false, true)
+  #|vc("is_date_correlation_view", Bit, false, true)
+  #|vc("is_tracked_by_cdc", Bit, true, true)
+  #|vc("has_snapshot", Bit, true, true)
+  #|vc("ledger_view_type", TinyInt, true, true)
+  #|vc("ledger_view_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_dropped_ledger_view", Bit, true, true)
+  #|sys.procedures
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("is_auto_executed", Bit, false, true)
+  #|vc("is_execution_replicated", Bit, true, true)
+  #|vc("is_repl_serializable_only", Bit, true, true)
+  #|vc("skips_repl_constraints", Bit, true, true)
+  #|sys.columns
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("column_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_ansi_padded", Bit, false, true)
+  #|vc("is_rowguidcol", Bit, false, true)
+  #|vc("is_identity", Bit, false, true)
+  #|vc("is_computed", Bit, true, true)
+  #|vc("is_filestream", Bit, false, true)
+  #|vc("is_replicated", Bit, true, true)
+  #|vc("is_non_sql_subscribed", Bit, true, true)
+  #|vc("is_merge_published", Bit, true, true)
+  #|vc("is_dts_replicated", Bit, true, true)
+  #|vc("is_xml_document", Bit, false, true)
+  #|vc("xml_collection_id", Int, false, false)
+  #|vc("default_object_id", Int, false, false)
+  #|vc("rule_object_id", Int, false, false)
+  #|vc("is_sparse", Bit, true, true)
+  #|vc("is_column_set", Bit, true, true)
+  #|vc("generated_always_type", TinyInt, true, true)
+  #|vc("generated_always_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("encryption_type", Int, true, true)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("column_encryption_key_id", Int, true, false)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_hidden", Bit, true, true)
+  #|vc("is_masked", Bit, false, true)
+  #|vc("graph_type", Int, true, true)
+  #|vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_data_deletion_filter_column", Bit, true, true)
+  #|vc("ledger_view_column_type", Int, true, true)
+  #|vc("ledger_view_column_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_dropped_ledger_column", Bit, true, true)
+  #|vc("vector_dimensions", Int, true, true)
+  #|vc("vector_base_type", TinyInt, true, true)
+  #|vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true)
+  #|sys.types
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_user_defined", Bit, false, true)
+  #|vc("is_assembly_type", Bit, false, true)
+  #|vc("default_object_id", Int, false, false)
+  #|vc("rule_object_id", Int, false, false)
+  #|vc("is_table_type", Bit, false, true)
+  #|sys.schemas
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|sys.indexes
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("type", TinyInt, false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_unique", Bit, true, true)
+  #|vc("data_space_id", Int, true, true)
+  #|vc("ignore_dup_key", Bit, true, true)
+  #|vc("is_primary_key", Bit, true, true)
+  #|vc("is_unique_constraint", Bit, true, true)
+  #|vc("fill_factor", TinyInt, false, false)
+  #|vc("is_padded", Bit, true, true)
+  #|vc("is_disabled", Bit, true, true)
+  #|vc("is_hypothetical", Bit, true, true)
+  #|vc("is_ignored_in_optimization", Bit, true, true)
+  #|vc("allow_row_locks", Bit, true, true)
+  #|vc("allow_page_locks", Bit, true, true)
+  #|vc("has_filter", Bit, true, true)
+  #|vc("filter_definition", NVarChar(None, coll_default), true, true)
+  #|vc("compression_delay", Int, true, true)
+  #|vc("suppress_dup_key_messages", Bit, true, true)
+  #|vc("auto_created", Bit, true, true)
+  #|vc("optimize_for_sequential_key", Bit, true, true)
+  #|sys.index_columns
+  #|vc("object_id", Int, false, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("index_column_id", Int, false, false)
+  #|vc("column_id", Int, false, false)
+  #|vc("key_ordinal", TinyInt, false, false)
+  #|vc("partition_ordinal", TinyInt, false, false)
+  #|vc("is_descending_key", Bit, true, true)
+  #|vc("is_included_column", Bit, true, true)
+  #|vc("column_store_order_ordinal", TinyInt, true, true)
+  #|vc("data_clustering_ordinal", TinyInt, true, true)
+  #|sys.key_constraints
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("unique_index_id", Int, true, false)
+  #|vc("is_system_named", Bit, false, true)
+  #|vc("is_enforced", Bit, true, true)
+  #|sys.foreign_keys
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("referenced_object_id", Int, true, false)
+  #|vc("key_index_id", Int, true, false)
+  #|vc("is_disabled", Bit, false, true)
+  #|vc("is_not_for_replication", Bit, false, true)
+  #|vc("is_not_trusted", Bit, false, true)
+  #|vc("delete_referential_action", TinyInt, true, true)
+  #|vc("delete_referential_action_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("update_referential_action", TinyInt, true, true)
+  #|vc("update_referential_action_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_system_named", Bit, false, true)
+  #|sys.foreign_key_columns
+  #|vc("constraint_object_id", Int, false, false)
+  #|vc("constraint_column_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("parent_column_id", Int, false, false)
+  #|vc("referenced_object_id", Int, false, false)
+  #|vc("referenced_column_id", Int, false, false)
+  #|sys.check_constraints
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("is_disabled", Bit, false, true)
+  #|vc("is_not_for_replication", Bit, false, true)
+  #|vc("is_not_trusted", Bit, false, true)
+  #|vc("parent_column_id", Int, false, false)
+  #|vc("definition", NVarChar(None, coll_default), true, true)
+  #|vc("uses_database_collation", Bit, true, true)
+  #|vc("is_system_named", Bit, false, true)
+  #|sys.default_constraints
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("parent_column_id", Int, false, false)
+  #|vc("definition", NVarChar(None, coll_default), true, true)
+  #|vc("is_system_named", Bit, false, true)
+  #|sys.computed_columns
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("column_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_ansi_padded", Bit, false, true)
+  #|vc("is_rowguidcol", Bit, false, true)
+  #|vc("is_identity", Bit, false, true)
+  #|vc("is_filestream", Bit, false, true)
+  #|vc("is_replicated", Bit, true, true)
+  #|vc("is_non_sql_subscribed", Bit, true, true)
+  #|vc("is_merge_published", Bit, true, true)
+  #|vc("is_dts_replicated", Bit, true, true)
+  #|vc("is_xml_document", Bit, false, true)
+  #|vc("xml_collection_id", Int, false, false)
+  #|vc("default_object_id", Int, false, false)
+  #|vc("rule_object_id", Int, false, false)
+  #|vc("definition", NVarChar(None, coll_default), true, true)
+  #|vc("uses_database_collation", Bit, false, true)
+  #|vc("is_persisted", Bit, false, true)
+  #|vc("is_computed", Bit, true, true)
+  #|vc("is_sparse", Bit, false, true)
+  #|vc("is_column_set", Bit, false, true)
+  #|vc("generated_always_type", TinyInt, true, true)
+  #|vc("generated_always_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("encryption_type", Int, true, true)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("column_encryption_key_id", Int, true, true)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_hidden", Bit, true, true)
+  #|vc("is_masked", Bit, false, true)
+  #|vc("graph_type", Int, true, true)
+  #|vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_data_deletion_filter_column", Bit, true, true)
+  #|vc("ledger_view_column_type", Int, true, true)
+  #|vc("ledger_view_column_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_dropped_ledger_column", Bit, true, true)
+  #|vc("is_index_column_expression", Bit, true, true)
+  #|sys.sql_modules
+  #|vc("object_id", Int, false, false)
+  #|vc("definition", NVarChar(None, coll_default), true, true)
+  #|vc("uses_ansi_nulls", Bit, true, true)
+  #|vc("uses_quoted_identifier", Bit, true, true)
+  #|vc("is_schema_bound", Bit, true, true)
+  #|vc("uses_database_collation", Bit, true, true)
+  #|vc("is_recompiled", Bit, true, true)
+  #|vc("null_on_null_input", Bit, true, true)
+  #|vc("execute_as_principal_id", Int, true, false)
+  #|vc("uses_native_compilation", Bit, true, true)
+  #|vc("inline_type", Bit, true, true)
+  #|vc("is_inlineable", Bit, true, true)
+  #|sys.triggers
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("parent_class", TinyInt, false, false)
+  #|vc("parent_class_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("parent_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_disabled", Bit, false, true)
+  #|vc("is_not_for_replication", Bit, false, true)
+  #|vc("is_instead_of_trigger", Bit, false, true)
+  #|sys.databases
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("database_id", Int, false, false)
+  #|vc("source_database_id", Int, true, false)
+  #|vc("owner_sid", VarBinary(Some(85)), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("compatibility_level", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("user_access", TinyInt, true, true)
+  #|vc("user_access_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_read_only", Bit, true, true)
+  #|vc("is_auto_close_on", Bit, false, true)
+  #|vc("is_auto_shrink_on", Bit, true, true)
+  #|vc("state", TinyInt, true, true)
+  #|vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_in_standby", Bit, true, true)
+  #|vc("is_cleanly_shutdown", Bit, true, true)
+  #|vc("is_supplemental_logging_enabled", Bit, true, true)
+  #|vc("snapshot_isolation_state", TinyInt, true, true)
+  #|vc("snapshot_isolation_state_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_read_committed_snapshot_on", Bit, true, true)
+  #|vc("recovery_model", TinyInt, true, true)
+  #|vc("recovery_model_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("page_verify_option", TinyInt, true, false)
+  #|vc("page_verify_option_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_auto_create_stats_on", Bit, true, true)
+  #|vc("is_auto_create_stats_incremental_on", Bit, true, true)
+  #|vc("is_auto_update_stats_on", Bit, true, true)
+  #|vc("is_auto_update_stats_async_on", Bit, true, true)
+  #|vc("is_ansi_null_default_on", Bit, true, true)
+  #|vc("is_ansi_nulls_on", Bit, true, true)
+  #|vc("is_ansi_padding_on", Bit, true, true)
+  #|vc("is_ansi_warnings_on", Bit, true, true)
+  #|vc("is_arithabort_on", Bit, true, true)
+  #|vc("is_concat_null_yields_null_on", Bit, true, true)
+  #|vc("is_numeric_roundabort_on", Bit, true, true)
+  #|vc("is_quoted_identifier_on", Bit, true, true)
+  #|vc("is_recursive_triggers_on", Bit, true, true)
+  #|vc("is_cursor_close_on_commit_on", Bit, true, true)
+  #|vc("is_local_cursor_default", Bit, true, true)
+  #|vc("is_fulltext_enabled", Bit, true, true)
+  #|vc("is_trustworthy_on", Bit, true, true)
+  #|vc("is_db_chaining_on", Bit, true, true)
+  #|vc("is_parameterization_forced", Bit, true, true)
+  #|vc("is_master_key_encrypted_by_server", Bit, false, true)
+  #|vc("is_query_store_on", Bit, true, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_subscribed", Bit, false, true)
+  #|vc("is_merge_published", Bit, false, true)
+  #|vc("is_distributor", Bit, false, true)
+  #|vc("is_sync_with_backup", Bit, false, true)
+  #|vc("service_broker_guid", UniqueIdentifier, false, false)
+  #|vc("is_broker_enabled", Bit, false, true)
+  #|vc("log_reuse_wait", TinyInt, true, false)
+  #|vc("log_reuse_wait_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_date_correlation_on", Bit, false, true)
+  #|vc("is_cdc_enabled", Bit, false, true)
+  #|vc("is_encrypted", Bit, true, true)
+  #|vc("is_honor_broker_priority_on", Bit, true, true)
+  #|vc("replica_id", UniqueIdentifier, true, false)
+  #|vc("group_database_id", UniqueIdentifier, true, false)
+  #|vc("resource_pool_id", Int, true, false)
+  #|vc("default_language_lcid", SmallInt, true, true)
+  #|vc("default_language_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("default_fulltext_language_lcid", Int, true, true)
+  #|vc("default_fulltext_language_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nested_triggers_on", Bit, true, true)
+  #|vc("is_transform_noise_words_on", Bit, true, true)
+  #|vc("two_digit_year_cutoff", SmallInt, true, true)
+  #|vc("containment", TinyInt, true, true)
+  #|vc("containment_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("target_recovery_time_in_seconds", Int, true, false)
+  #|vc("delayed_durability", Int, true, false)
+  #|vc("delayed_durability_desc", NVarChar(Some(60), coll_default), true, true)
+  #|vc("is_memory_optimized_elevate_to_snapshot_on", Bit, true, true)
+  #|vc("is_federation_member", Bit, true, true)
+  #|vc("is_remote_data_archive_enabled", Bit, true, true)
+  #|vc("is_mixed_page_allocation_on", Bit, true, false)
+  #|vc("is_temporal_history_retention_enabled", Bit, true, false)
+  #|vc("catalog_collation_type", Int, false, true)
+  #|vc("catalog_collation_type_desc", NVarChar(Some(60), coll_default), true, true)
+  #|vc("physical_database_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("is_result_set_caching_on", Bit, true, true)
+  #|vc("is_accelerated_database_recovery_on", Bit, true, false)
+  #|vc("is_tempdb_spill_to_remote_store", Bit, true, false)
+  #|vc("is_stale_page_detection_on", Bit, true, false)
+  #|vc("is_memory_optimized_enabled", Bit, true, false)
+  #|vc("is_data_retention_enabled", Bit, true, false)
+  #|vc("is_ledger_on", Bit, true, false)
+  #|vc("is_change_feed_enabled", Bit, true, true)
+  #|vc("is_data_lake_replication_enabled", Bit, true, true)
+  #|vc("is_event_stream_enabled", Bit, true, true)
+  #|vc("data_compaction", TinyInt, true, false)
+  #|vc("data_compaction_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("data_lake_log_publishing", TinyInt, true, false)
+  #|vc("data_lake_log_publishing_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_vorder_enabled", Bit, true, true)
+  #|vc("is_proactive_statistics_refresh_on", Bit, true, true)
+  #|vc("is_optimized_locking_on", Bit, true, false)
+  #|INFORMATION_SCHEMA.TABLES
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("TABLE_TYPE", VarChar(Some(10), coll_default), true, true)
+  #|INFORMATION_SCHEMA.COLUMNS
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("ORDINAL_POSITION", Int, true, true)
+  #|vc("COLUMN_DEFAULT", NVarChar(Some(4000), coll_default), true, true)
+  #|vc("IS_NULLABLE", VarChar(Some(3), coll_default), true, true)
+  #|vc("DATA_TYPE", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true)
+  #|vc("CHARACTER_OCTET_LENGTH", Int, true, true)
+  #|vc("NUMERIC_PRECISION", TinyInt, true, true)
+  #|vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true)
+  #|vc("NUMERIC_SCALE", Int, true, true)
+  #|vc("DATETIME_PRECISION", SmallInt, true, true)
+  #|vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DOMAIN_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DOMAIN_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DOMAIN_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|INFORMATION_SCHEMA.ROUTINES
+  #|vc("SPECIFIC_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SPECIFIC_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SPECIFIC_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("ROUTINE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("ROUTINE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("ROUTINE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("ROUTINE_TYPE", NVarChar(Some(20), coll_default), true, true)
+  #|vc("MODULE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("MODULE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("MODULE_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("UDT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("UDT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("UDT_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DATA_TYPE", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true)
+  #|vc("CHARACTER_OCTET_LENGTH", Int, true, true)
+  #|vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("NUMERIC_PRECISION", TinyInt, true, true)
+  #|vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true)
+  #|vc("NUMERIC_SCALE", Int, true, true)
+  #|vc("DATETIME_PRECISION", SmallInt, true, true)
+  #|vc("INTERVAL_TYPE", NVarChar(Some(30), coll_default), true, true)
+  #|vc("INTERVAL_PRECISION", SmallInt, true, true)
+  #|vc("TYPE_UDT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TYPE_UDT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TYPE_UDT_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("MAXIMUM_CARDINALITY", BigInt, true, true)
+  #|vc("DTD_IDENTIFIER", NVarChar(Some(128), coll_default), true, true)
+  #|vc("ROUTINE_BODY", NVarChar(Some(30), coll_default), true, true)
+  #|vc("ROUTINE_DEFINITION", NVarChar(Some(4000), coll_default), true, true)
+  #|vc("EXTERNAL_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("EXTERNAL_LANGUAGE", NVarChar(Some(30), coll_default), true, true)
+  #|vc("PARAMETER_STYLE", NVarChar(Some(30), coll_default), true, true)
+  #|vc("IS_DETERMINISTIC", NVarChar(Some(10), coll_default), true, true)
+  #|vc("SQL_DATA_ACCESS", NVarChar(Some(30), coll_default), true, true)
+  #|vc("IS_NULL_CALL", NVarChar(Some(10), coll_default), true, true)
+  #|vc("SQL_PATH", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCHEMA_LEVEL_ROUTINE", NVarChar(Some(10), coll_default), true, true)
+  #|vc("MAX_DYNAMIC_RESULT_SETS", SmallInt, true, true)
+  #|vc("IS_USER_DEFINED_CAST", NVarChar(Some(10), coll_default), true, true)
+  #|vc("IS_IMPLICITLY_INVOCABLE", NVarChar(Some(10), coll_default), true, true)
+  #|vc("CREATED", DateTime, false, false)
+  #|vc("LAST_ALTERED", DateTime, false, false)
+  #|INFORMATION_SCHEMA.VIEWS
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("VIEW_DEFINITION", NVarChar(Some(4000), coll_default), true, true)
+  #|vc("CHECK_OPTION", VarChar(Some(7), coll_default), true, true)
+  #|vc("IS_UPDATABLE", VarChar(Some(2), coll_default), false, true)
+  #|INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+  #|vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_TYPE", VarChar(Some(11), coll_default), true, true)
+  #|vc("IS_DEFERRABLE", VarChar(Some(2), coll_default), false, true)
+  #|vc("INITIALLY_DEFERRED", VarChar(Some(2), coll_default), false, true)
+  #|INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+  #|vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, false)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("ORDINAL_POSITION", Int, false, false)
+  #|INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+  #|vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("UNIQUE_CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("UNIQUE_CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("UNIQUE_CONSTRAINT_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("MATCH_OPTION", VarChar(Some(7), coll_default), true, true)
+  #|vc("UPDATE_RULE", VarChar(Some(11), coll_default), true, true)
+  #|vc("DELETE_RULE", VarChar(Some(11), coll_default), true, true)
+  #|sys.time_zone_info
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("current_utc_offset", NVarChar(Some(6), coll_default), false, false)
+  #|vc("is_currently_dst", Bit, false, false)
+  #|sys.dm_exec_sessions
+  #|vc("session_id", SmallInt, false, false)
+  #|vc("login_time", DateTime, false, false)
+  #|vc("host_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("program_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("host_process_id", Int, true, false)
+  #|vc("client_version", Int, true, false)
+  #|vc("client_interface_name", NVarChar(Some(32), coll_default), true, false)
+  #|vc("security_id", VarBinary(Some(85)), false, false)
+  #|vc("login_name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("nt_domain", NVarChar(Some(128), coll_default), true, false)
+  #|vc("nt_user_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("status", NVarChar(Some(30), coll_default), false, false)
+  #|vc("context_info", VarBinary(Some(128)), true, false)
+  #|vc("cpu_time", Int, false, false)
+  #|vc("memory_usage", Int, false, false)
+  #|vc("total_scheduled_time", Int, false, false)
+  #|vc("total_elapsed_time", Int, false, false)
+  #|vc("endpoint_id", Int, false, false)
+  #|vc("last_request_start_time", DateTime, false, false)
+  #|vc("last_request_end_time", DateTime, true, false)
+  #|vc("reads", BigInt, false, false)
+  #|vc("writes", BigInt, false, false)
+  #|vc("logical_reads", BigInt, false, false)
+  #|vc("is_user_process", Bit, false, false)
+  #|vc("text_size", Int, false, false)
+  #|vc("language", NVarChar(Some(128), coll_default), true, false)
+  #|vc("date_format", NVarChar(Some(3), coll_default), true, false)
+  #|vc("date_first", SmallInt, false, false)
+  #|vc("quoted_identifier", Bit, false, false)
+  #|vc("arithabort", Bit, false, false)
+  #|vc("ansi_null_dflt_on", Bit, false, false)
+  #|vc("ansi_defaults", Bit, false, false)
+  #|vc("ansi_warnings", Bit, false, false)
+  #|vc("ansi_padding", Bit, false, false)
+  #|vc("ansi_nulls", Bit, false, false)
+  #|vc("concat_null_yields_null", Bit, false, false)
+  #|vc("transaction_isolation_level", SmallInt, false, false)
+  #|vc("lock_timeout", Int, false, false)
+  #|vc("deadlock_priority", Int, false, false)
+  #|vc("row_count", BigInt, false, false)
+  #|vc("prev_error", Int, false, false)
+  #|vc("original_security_id", VarBinary(Some(85)), false, false)
+  #|vc("original_login_name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("last_successful_logon", DateTime, true, false)
+  #|vc("last_unsuccessful_logon", DateTime, true, false)
+  #|vc("unsuccessful_logons", BigInt, true, false)
+  #|vc("group_id", Int, false, false)
+  #|vc("database_id", SmallInt, false, false)
+  #|vc("authenticating_database_id", Int, true, false)
+  #|vc("open_transaction_count", Int, false, false)
+  #|vc("page_server_reads", BigInt, false, false)
+  #|vc("contained_availability_group_id", UniqueIdentifier, true, false)
+  #|sys.dm_exec_requests
+  #|vc("session_id", SmallInt, false, false)
+  #|vc("request_id", Int, false, false)
+  #|vc("start_time", DateTime, false, false)
+  #|vc("status", NVarChar(Some(30), coll_default), false, false)
+  #|vc("command", NVarChar(Some(32), coll_default), false, false)
+  #|vc("sql_handle", VarBinary(Some(64)), true, false)
+  #|vc("statement_start_offset", Int, true, false)
+  #|vc("statement_end_offset", Int, true, false)
+  #|vc("plan_handle", VarBinary(Some(64)), true, false)
+  #|vc("database_id", SmallInt, false, false)
+  #|vc("user_id", Int, false, false)
+  #|vc("connection_id", UniqueIdentifier, true, false)
+  #|vc("blocking_session_id", SmallInt, true, false)
+  #|vc("wait_type", NVarChar(Some(60), coll_default), true, false)
+  #|vc("wait_time", Int, false, false)
+  #|vc("last_wait_type", NVarChar(Some(60), coll_default), false, false)
+  #|vc("wait_resource", NVarChar(Some(256), coll_default), false, false)
+  #|vc("open_transaction_count", Int, false, false)
+  #|vc("open_resultset_count", Int, false, false)
+  #|vc("transaction_id", BigInt, false, false)
+  #|vc("context_info", VarBinary(Some(128)), true, false)
+  #|vc("percent_complete", Real, false, false)
+  #|vc("estimated_completion_time", BigInt, false, false)
+  #|vc("cpu_time", Int, false, false)
+  #|vc("total_elapsed_time", Int, false, false)
+  #|vc("scheduler_id", Int, true, false)
+  #|vc("task_address", VarBinary(Some(8)), true, false)
+  #|vc("reads", BigInt, false, false)
+  #|vc("writes", BigInt, false, false)
+  #|vc("logical_reads", BigInt, false, false)
+  #|vc("text_size", Int, false, false)
+  #|vc("language", NVarChar(Some(128), coll_default), true, false)
+  #|vc("date_format", NVarChar(Some(3), coll_default), true, false)
+  #|vc("date_first", SmallInt, false, false)
+  #|vc("quoted_identifier", Bit, false, false)
+  #|vc("arithabort", Bit, false, false)
+  #|vc("ansi_null_dflt_on", Bit, false, false)
+  #|vc("ansi_defaults", Bit, false, false)
+  #|vc("ansi_warnings", Bit, false, false)
+  #|vc("ansi_padding", Bit, false, false)
+  #|vc("ansi_nulls", Bit, false, false)
+  #|vc("concat_null_yields_null", Bit, false, false)
+  #|vc("transaction_isolation_level", SmallInt, false, false)
+  #|vc("lock_timeout", Int, false, false)
+  #|vc("deadlock_priority", Int, false, false)
+  #|vc("row_count", BigInt, false, false)
+  #|vc("prev_error", Int, false, false)
+  #|vc("nest_level", Int, false, false)
+  #|vc("granted_query_memory", Int, false, false)
+  #|vc("executing_managed_code", Bit, false, false)
+  #|vc("group_id", Int, false, false)
+  #|vc("query_hash", Binary(8), true, false)
+  #|vc("query_plan_hash", Binary(8), true, false)
+  #|vc("statement_sql_handle", VarBinary(Some(64)), true, false)
+  #|vc("statement_context_id", BigInt, true, false)
+  #|vc("dop", Int, false, false)
+  #|vc("parallel_worker_count", Int, true, false)
+  #|vc("external_script_request_id", UniqueIdentifier, true, false)
+  #|vc("is_resumable", Bit, false, false)
+  #|vc("page_resource", VarBinary(Some(8)), true, false)
+  #|vc("page_server_reads", BigInt, false, false)
+  #|vc("dist_statement_id", UniqueIdentifier, true, false)
+  #|vc("label", NVarChar(Some(255), coll_default), true, false)
+  #|sys.dm_exec_connections
+  #|vc("session_id", Int, true, false)
+  #|vc("most_recent_session_id", Int, true, false)
+  #|vc("connect_time", DateTime, false, false)
+  #|vc("net_transport", NVarChar(Some(40), coll_default), false, false)
+  #|vc("protocol_type", NVarChar(Some(40), coll_default), true, false)
+  #|vc("protocol_version", Int, true, false)
+  #|vc("endpoint_id", Int, true, false)
+  #|vc("encrypt_option", NVarChar(Some(40), coll_default), false, false)
+  #|vc("auth_scheme", NVarChar(Some(40), coll_default), false, false)
+  #|vc("node_affinity", SmallInt, false, false)
+  #|vc("num_reads", Int, true, false)
+  #|vc("num_writes", Int, true, false)
+  #|vc("last_read", DateTime, true, false)
+  #|vc("last_write", DateTime, true, false)
+  #|vc("net_packet_size", Int, true, false)
+  #|vc("client_net_address", NVarChar(Some(48), coll_default), true, false)
+  #|vc("client_tcp_port", Int, true, false)
+  #|vc("local_net_address", NVarChar(Some(48), coll_default), true, false)
+  #|vc("local_tcp_port", Int, true, false)
+  #|vc("connection_id", UniqueIdentifier, false, false)
+  #|vc("parent_connection_id", UniqueIdentifier, true, false)
+  #|vc("most_recent_sql_handle", VarBinary(Some(64)), true, false)
+  #|sys.identity_columns
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("column_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_ansi_padded", Bit, false, true)
+  #|vc("is_rowguidcol", Bit, false, true)
+  #|vc("is_identity", Bit, false, true)
+  #|vc("is_filestream", Bit, false, true)
+  #|vc("is_replicated", Bit, true, true)
+  #|vc("is_non_sql_subscribed", Bit, true, true)
+  #|vc("is_merge_published", Bit, true, true)
+  #|vc("is_dts_replicated", Bit, true, true)
+  #|vc("is_xml_document", Bit, false, true)
+  #|vc("xml_collection_id", Int, false, true)
+  #|vc("default_object_id", Int, false, true)
+  #|vc("rule_object_id", Int, false, true)
+  #|vc("seed_value", Variant, true, true)
+  #|vc("increment_value", Variant, true, true)
+  #|vc("last_value", Variant, true, true)
+  #|vc("is_not_for_replication", Bit, true, true)
+  #|vc("is_computed", Bit, false, true)
+  #|vc("is_sparse", Bit, false, true)
+  #|vc("is_column_set", Bit, false, true)
+  #|vc("generated_always_type", TinyInt, true, true)
+  #|vc("generated_always_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("encryption_type", Int, true, true)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("column_encryption_key_id", Int, true, true)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_hidden", Bit, false, true)
+  #|vc("is_masked", Bit, false, true)
+  #|vc("graph_type", Int, true, true)
+  #|vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_data_deletion_filter_column", Bit, true, true)
+  #|vc("ledger_view_column_type", Int, true, true)
+  #|vc("ledger_view_column_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_dropped_ledger_column", Bit, true, true)
+  #|sys.sequences
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("start_value", Variant, false, false)
+  #|vc("increment", Variant, false, false)
+  #|vc("minimum_value", Variant, false, false)
+  #|vc("maximum_value", Variant, false, false)
+  #|vc("is_cycling", Bit, true, true)
+  #|vc("is_cached", Bit, true, true)
+  #|vc("cache_size", Int, true, true)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, true)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, true, true)
+  #|vc("current_value", Variant, false, false)
+  #|vc("is_exhausted", Bit, false, false)
+  #|vc("last_used_value", Variant, true, false)
+  #|sys.table_types
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_user_defined", Bit, false, true)
+  #|vc("is_assembly_type", Bit, false, true)
+  #|vc("default_object_id", Int, false, true)
+  #|vc("rule_object_id", Int, false, true)
+  #|vc("is_table_type", Bit, false, true)
+  #|vc("type_table_object_id", Int, false, false)
+  #|vc("is_memory_optimized", Bit, true, true)
+  #|sys.synonyms
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, false, true)
+  #|vc("is_published", Bit, false, true)
+  #|vc("is_schema_published", Bit, false, true)
+  #|vc("base_object_name", NVarChar(Some(1035), coll_default), true, true)
+  #|sys.parameters
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("parameter_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("is_output", Bit, false, true)
+  #|vc("is_cursor_ref", Bit, false, true)
+  #|vc("has_default_value", Bit, false, true)
+  #|vc("is_xml_document", Bit, false, true)
+  #|vc("default_value", Variant, true, false)
+  #|vc("xml_collection_id", Int, false, false)
+  #|vc("is_readonly", Bit, false, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("encryption_type", Int, true, true)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("column_encryption_key_id", Int, true, false)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("vector_dimensions", Int, true, true)
+  #|vc("vector_base_type", TinyInt, true, true)
+  #|vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true)
+  #|INFORMATION_SCHEMA.PARAMETERS
+  #|vc("SPECIFIC_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SPECIFIC_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SPECIFIC_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("ORDINAL_POSITION", Int, false, false)
+  #|vc("PARAMETER_MODE", NVarChar(Some(10), coll_default), true, true)
+  #|vc("IS_RESULT", NVarChar(Some(10), coll_default), true, true)
+  #|vc("AS_LOCATOR", NVarChar(Some(10), coll_default), true, true)
+  #|vc("PARAMETER_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("DATA_TYPE", NVarChar(Some(128), coll_default), false, true)
+  #|vc("CHARACTER_MAXIMUM_LENGTH", Int, true, true)
+  #|vc("CHARACTER_OCTET_LENGTH", Int, true, true)
+  #|vc("COLLATION_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("COLLATION_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("NUMERIC_PRECISION", TinyInt, true, true)
+  #|vc("NUMERIC_PRECISION_RADIX", SmallInt, true, true)
+  #|vc("NUMERIC_SCALE", Int, true, true)
+  #|vc("DATETIME_PRECISION", SmallInt, true, true)
+  #|vc("INTERVAL_TYPE", NVarChar(Some(30), coll_default), true, true)
+  #|vc("INTERVAL_PRECISION", SmallInt, true, true)
+  #|vc("USER_DEFINED_TYPE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("USER_DEFINED_TYPE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("USER_DEFINED_TYPE_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCOPE_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|INFORMATION_SCHEMA.CHECK_CONSTRAINTS
+  #|vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("CHECK_CLAUSE", NVarChar(Some(4000), coll_default), true, true)
+  #|INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
+  #|vc("TABLE_CATALOG", NVarChar(Some(128), coll_default), true, false)
+  #|vc("TABLE_SCHEMA", NVarChar(Some(128), coll_default), true, false)
+  #|vc("TABLE_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("COLUMN_NAME", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_CATALOG", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_SCHEMA", NVarChar(Some(128), coll_default), true, false)
+  #|vc("CONSTRAINT_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|INFORMATION_SCHEMA.SCHEMATA
+  #|vc("CATALOG_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|vc("SCHEMA_NAME", NVarChar(Some(128), coll_default), false, false)
+  #|vc("SCHEMA_OWNER", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DEFAULT_CHARACTER_SET_CATALOG", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DEFAULT_CHARACTER_SET_SCHEMA", NVarChar(Some(128), coll_default), true, true)
+  #|vc("DEFAULT_CHARACTER_SET_NAME", NVarChar(Some(128), coll_default), true, true)
+  #|sys.syslanguages
+  #|vc("langid", SmallInt, false, false)
+  #|vc("dateformat", NChar(3, coll_default), false, false)
+  #|vc("datefirst", TinyInt, false, false)
+  #|vc("upgrade", Int, true, true)
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("alias", NVarChar(Some(128), coll_default), false, false)
+  #|vc("months", NVarChar(Some(372), coll_default), true, true)
+  #|vc("shortmonths", NVarChar(Some(132), coll_default), true, true)
+  #|vc("days", NVarChar(Some(217), coll_default), true, true)
+  #|vc("lcid", Int, false, false)
+  #|vc("msglangid", SmallInt, false, false)
+  #|sys.all_objects
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, false)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), true, true)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, true, true)
+  #|vc("is_published", Bit, true, true)
+  #|vc("is_schema_published", Bit, true, true)
+  #|sys.system_objects
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, true)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, true, true)
+  #|vc("type", Char(2, coll_ks_ws), false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, true, true)
+  #|vc("is_published", Bit, true, true)
+  #|vc("is_schema_published", Bit, true, true)
+  #|sys.all_columns
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("column_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("is_nullable", Bit, true, false)
+  #|vc("is_ansi_padded", Bit, false, false)
+  #|vc("is_rowguidcol", Bit, false, false)
+  #|vc("is_identity", Bit, false, false)
+  #|vc("is_computed", Bit, true, false)
+  #|vc("is_filestream", Bit, false, false)
+  #|vc("is_replicated", Bit, true, false)
+  #|vc("is_non_sql_subscribed", Bit, true, false)
+  #|vc("is_merge_published", Bit, true, false)
+  #|vc("is_dts_replicated", Bit, true, false)
+  #|vc("is_xml_document", Bit, false, false)
+  #|vc("xml_collection_id", Int, false, false)
+  #|vc("default_object_id", Int, false, false)
+  #|vc("rule_object_id", Int, false, false)
+  #|vc("is_sparse", Bit, true, false)
+  #|vc("is_column_set", Bit, true, false)
+  #|vc("generated_always_type", TinyInt, true, false)
+  #|vc("generated_always_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("encryption_type", Int, true, false)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, false)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, false)
+  #|vc("column_encryption_key_id", Int, true, false)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("is_hidden", Bit, true, false)
+  #|vc("is_masked", Bit, false, false)
+  #|vc("graph_type", Int, true, false)
+  #|vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_data_deletion_filter_column", Bit, true, false)
+  #|vc("ledger_view_column_type", Int, true, false)
+  #|vc("ledger_view_column_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_dropped_ledger_column", Bit, true, false)
+  #|vc("vector_dimensions", Int, true, false)
+  #|vc("vector_base_type", TinyInt, true, false)
+  #|vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, false)
+  #|sys.system_columns
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("column_id", Int, false, false)
+  #|vc("system_type_id", TinyInt, false, false)
+  #|vc("user_type_id", Int, false, false)
+  #|vc("max_length", SmallInt, false, false)
+  #|vc("precision", TinyInt, false, false)
+  #|vc("scale", TinyInt, false, false)
+  #|vc("collation_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_nullable", Bit, true, true)
+  #|vc("is_ansi_padded", Bit, false, true)
+  #|vc("is_rowguidcol", Bit, false, true)
+  #|vc("is_identity", Bit, false, true)
+  #|vc("is_computed", Bit, false, true)
+  #|vc("is_filestream", Bit, false, true)
+  #|vc("is_replicated", Bit, false, true)
+  #|vc("is_non_sql_subscribed", Bit, false, true)
+  #|vc("is_merge_published", Bit, false, true)
+  #|vc("is_dts_replicated", Bit, false, true)
+  #|vc("is_xml_document", Bit, false, true)
+  #|vc("xml_collection_id", Int, false, true)
+  #|vc("default_object_id", Int, false, true)
+  #|vc("rule_object_id", Int, false, true)
+  #|vc("is_sparse", Bit, false, true)
+  #|vc("is_column_set", Bit, false, true)
+  #|vc("generated_always_type", TinyInt, true, true)
+  #|vc("generated_always_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("encryption_type", Int, true, true)
+  #|vc("encryption_type_desc", NVarChar(Some(64), coll_ks_ws), true, true)
+  #|vc("encryption_algorithm_name", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("column_encryption_key_id", Int, true, true)
+  #|vc("column_encryption_key_database_name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("is_hidden", Bit, false, true)
+  #|vc("is_masked", Bit, false, true)
+  #|vc("graph_type", Int, true, true)
+  #|vc("graph_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_data_deletion_filter_column", Bit, false, true)
+  #|vc("ledger_view_column_type", Int, true, true)
+  #|vc("ledger_view_column_type_desc", NVarChar(Some(60), coll_ks_ws), true, true)
+  #|vc("is_dropped_ledger_column", Bit, false, true)
+  #|vc("vector_dimensions", Int, true, true)
+  #|vc("vector_base_type", TinyInt, true, true)
+  #|vc("vector_base_type_desc", NVarChar(Some(10), coll_ks_ws), true, true)
+  #|sys.server_principals
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("principal_id", Int, false, false)
+  #|vc("sid", VarBinary(Some(85)), true, false)
+  #|vc("type", Char(1, coll_ks_ws), false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_disabled", Bit, true, true)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("default_database_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("default_language_name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("credential_id", Int, true, false)
+  #|vc("owning_principal_id", Int, true, true)
+  #|vc("is_fixed_role", Bit, false, true)
+  #|vc("tenant_id", UniqueIdentifier, true, false)
+  #|sys.database_files
+  #|vc("file_id", Int, false, false)
+  #|vc("file_guid", UniqueIdentifier, true, false)
+  #|vc("type", TinyInt, false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("data_space_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("physical_name", NVarChar(Some(260), coll_default), true, true)
+  #|vc("state", TinyInt, true, true)
+  #|vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("size", Int, false, true)
+  #|vc("max_size", Int, false, false)
+  #|vc("growth", Int, false, false)
+  #|vc("is_media_read_only", Bit, false, true)
+  #|vc("is_read_only", Bit, false, true)
+  #|vc("is_sparse", Bit, false, true)
+  #|vc("is_percent_growth", Bit, false, true)
+  #|vc("is_name_reserved", Bit, false, true)
+  #|vc("is_persistent_log_buffer", Bit, false, true)
+  #|vc("create_lsn", Numeric(25, 0), true, true)
+  #|vc("drop_lsn", Numeric(25, 0), true, true)
+  #|vc("read_only_lsn", Numeric(25, 0), true, true)
+  #|vc("read_write_lsn", Numeric(25, 0), true, true)
+  #|vc("differential_base_lsn", Numeric(25, 0), true, true)
+  #|vc("differential_base_guid", UniqueIdentifier, true, false)
+  #|vc("differential_base_time", DateTime, true, true)
+  #|vc("redo_start_lsn", Numeric(25, 0), true, true)
+  #|vc("redo_start_fork_guid", UniqueIdentifier, true, false)
+  #|vc("redo_target_lsn", Numeric(25, 0), true, true)
+  #|vc("redo_target_fork_guid", UniqueIdentifier, true, false)
+  #|vc("backup_lsn", Numeric(25, 0), true, true)
+  #|sys.extended_properties
+  #|vc("class", TinyInt, false, false)
+  #|vc("class_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("major_id", Int, false, false)
+  #|vc("minor_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("value", Variant, true, false)
+  #|sys.partitions
+  #|vc("partition_id", BigInt, false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("partition_number", Int, false, false)
+  #|vc("hobt_id", BigInt, false, false)
+  #|vc("rows", BigInt, true, false)
+  #|vc("filestream_filegroup_id", SmallInt, false, false)
+  #|vc("data_compression", TinyInt, false, false)
+  #|vc("data_compression_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("xml_compression", Bit, true, false)
+  #|vc("xml_compression_desc", VarChar(Some(3), coll_default), true, false)
+  #|sys.allocation_units
+  #|vc("allocation_unit_id", BigInt, false, false)
+  #|vc("type", TinyInt, false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("container_id", BigInt, false, false)
+  #|vc("data_space_id", Int, true, true)
+  #|vc("total_pages", BigInt, false, true)
+  #|vc("used_pages", BigInt, false, true)
+  #|vc("data_pages", BigInt, false, true)
+  #|sys.database_scoped_configurations
+  #|vc("configuration_id", Int, true, false)
+  #|vc("name", NVarChar(Some(60), coll_default), true, false)
+  #|vc("value", Variant, true, false)
+  #|vc("value_for_secondary", Variant, true, false)
+  #|vc("is_value_default", Bit, true, false)
+  #|sys.json_indexes
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("type", TinyInt, false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_unique", Bit, true, true)
+  #|vc("data_space_id", Int, false, true)
+  #|vc("ignore_dup_key", Bit, true, true)
+  #|vc("is_primary_key", Bit, true, true)
+  #|vc("is_unique_constraint", Bit, true, true)
+  #|vc("fill_factor", TinyInt, false, false)
+  #|vc("is_padded", Bit, true, true)
+  #|vc("is_disabled", Bit, true, true)
+  #|vc("is_hypothetical", Bit, true, true)
+  #|vc("is_ignored_in_optimization", Bit, true, true)
+  #|vc("allow_row_locks", Bit, true, true)
+  #|vc("allow_page_locks", Bit, true, true)
+  #|vc("has_filter", Bit, false, true)
+  #|vc("filter_definition", NVarChar(None, coll_default), true, true)
+  #|vc("auto_created", Bit, true, true)
+  #|vc("optimize_for_array_search", Bit, true, true)
+  #|sys.json_index_paths
+  #|vc("object_id", Int, false, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("path", VarChar(Some(8000), @types.json_collation), true, false)
+  #|sys.stats
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("stats_id", Int, false, false)
+  #|vc("auto_created", Bit, true, false)
+  #|vc("user_created", Bit, true, false)
+  #|vc("no_recompute", Bit, true, false)
+  #|vc("has_filter", Bit, true, false)
+  #|vc("filter_definition", NVarChar(None, coll_default), true, false)
+  #|vc("is_temporary", Bit, true, false)
+  #|vc("is_incremental", Bit, true, false)
+  #|vc("has_persisted_sample", Bit, true, false)
+  #|vc("stats_generation_method", Int, false, false)
+  #|vc("stats_generation_method_desc", VarChar(Some(80), coll_ks_ws), false, false)
+  #|vc("auto_drop", Bit, true, false)
+  #|vc("replica_role_id", TinyInt, true, false)
+  #|vc("replica_role_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("replica_name", NVarChar(Some(128), coll_default), true, false)
+  #|sys.internal_tables
+  #|vc("name", NVarChar(Some(128), coll_default), false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("principal_id", Int, true, true)
+  #|vc("schema_id", Int, false, false)
+  #|vc("parent_object_id", Int, false, false)
+  #|vc("type", Char(2, coll_ks_ws), false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_date", DateTime, false, false)
+  #|vc("modify_date", DateTime, false, false)
+  #|vc("is_ms_shipped", Bit, true, true)
+  #|vc("is_published", Bit, true, true)
+  #|vc("is_schema_published", Bit, true, true)
+  #|vc("internal_type", TinyInt, true, true)
+  #|vc("internal_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("parent_id", Int, true, false)
+  #|vc("parent_minor_id", Int, true, false)
+  #|vc("lob_data_space_id", Int, false, true)
+  #|vc("filestream_data_space_id", Int, true, false)
+  #|sys.vector_indexes
+  #|vc("object_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("type", TinyInt, false, false)
+  #|vc("type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("is_unique", Bit, true, true)
+  #|vc("data_space_id", Int, false, true)
+  #|vc("ignore_dup_key", Bit, true, true)
+  #|vc("is_primary_key", Bit, true, true)
+  #|vc("is_unique_constraint", Bit, true, true)
+  #|vc("fill_factor", TinyInt, false, false)
+  #|vc("is_padded", Bit, true, true)
+  #|vc("is_disabled", Bit, true, true)
+  #|vc("is_hypothetical", Bit, true, true)
+  #|vc("is_ignored_in_optimization", Bit, true, true)
+  #|vc("allow_row_locks", Bit, true, true)
+  #|vc("allow_page_locks", Bit, true, true)
+  #|vc("has_filter", Bit, false, true)
+  #|vc("filter_definition", NVarChar(None, coll_default), true, true)
+  #|vc("auto_created", Bit, true, true)
+  #|vc("vector_index_type", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("distance_metric", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("build_parameters", NVarChar(Some(4000), @types.json_collation), true, false)
+  #|sys.external_models
+  #|vc("external_model_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, true)
+  #|vc("principal_id", Int, true, false)
+  #|vc("location", NVarChar(Some(4000), coll_default), true, true)
+  #|vc("api_format", NVarChar(Some(100), coll_default), true, true)
+  #|vc("model_type_id", Int, true, false)
+  #|vc("model_type_desc", NVarChar(Some(65), coll_default), true, true)
+  #|vc("model", NVarChar(Some(100), coll_default), true, true)
+  #|vc("credential_id", Int, true, false)
+  #|vc("parameters", Json, true, true)
+  #|vc("create_time", DateTime2(7), true, true)
+  #|vc("modify_time", DateTime2(7), true, true)
+  #|sys.configurations
+  #|vc("configuration_id", Int, false, false)
+  #|vc("name", NVarChar(Some(35), coll_default), false, false)
+  #|vc("value", Variant, true, true)
+  #|vc("minimum", Variant, true, true)
+  #|vc("maximum", Variant, true, true)
+  #|vc("value_in_use", Variant, true, true)
+  #|vc("description", NVarChar(Some(255), coll_default), false, false)
+  #|vc("is_dynamic", Bit, false, true)
+  #|vc("is_advanced", Bit, false, true)
+  #|sys.database_query_store_options
+  #|vc("desired_state", SmallInt, false, false)
+  #|vc("desired_state_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("actual_state", SmallInt, false, false)
+  #|vc("actual_state_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("readonly_reason", Int, true, false)
+  #|vc("current_storage_size_mb", BigInt, true, false)
+  #|vc("flush_interval_seconds", BigInt, true, false)
+  #|vc("interval_length_minutes", BigInt, true, false)
+  #|vc("max_storage_size_mb", BigInt, true, false)
+  #|vc("stale_query_threshold_days", BigInt, true, false)
+  #|vc("max_plans_per_query", BigInt, true, false)
+  #|vc("query_capture_mode", SmallInt, false, false)
+  #|vc("query_capture_mode_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("capture_policy_execution_count", Int, true, false)
+  #|vc("capture_policy_total_compile_cpu_time_ms", BigInt, true, false)
+  #|vc("capture_policy_total_execution_cpu_time_ms", BigInt, true, false)
+  #|vc("capture_policy_stale_threshold_hours", Int, true, false)
+  #|vc("size_based_cleanup_mode", SmallInt, false, false)
+  #|vc("size_based_cleanup_mode_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("wait_stats_capture_mode", SmallInt, false, false)
+  #|vc("wait_stats_capture_mode_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("actual_state_additional_info", NVarChar(Some(4000), coll_ks_ws), true, true)
+  #|sys.query_context_settings
+  #|vc("context_settings_id", BigInt, false, false)
+  #|vc("set_options", VarBinary(Some(8)), true, true)
+  #|vc("language_id", SmallInt, false, false)
+  #|vc("date_format", SmallInt, false, false)
+  #|vc("date_first", TinyInt, false, false)
+  #|vc("status", VarBinary(Some(2)), true, true)
+  #|vc("required_cursor_options", Int, false, false)
+  #|vc("acceptable_cursor_options", Int, false, false)
+  #|vc("merge_action_type", SmallInt, false, false)
+  #|vc("default_schema_id", Int, false, false)
+  #|vc("is_replication_specific", Bit, false, false)
+  #|vc("is_contained", VarBinary(Some(1)), true, true)
+  #|sys.query_store_plan
+  #|vc("plan_id", BigInt, false, false)
+  #|vc("query_id", BigInt, false, false)
+  #|vc("plan_group_id", BigInt, true, false)
+  #|vc("engine_version", NVarChar(Some(32), coll_default), true, true)
+  #|vc("compatibility_level", SmallInt, false, false)
+  #|vc("query_plan_hash", Binary(8), false, false)
+  #|vc("query_plan", NVarChar(None, coll_default), true, true)
+  #|vc("is_online_index_plan", Bit, false, false)
+  #|vc("is_trivial_plan", Bit, false, false)
+  #|vc("is_parallel_plan", Bit, false, false)
+  #|vc("is_forced_plan", Bit, false, false)
+  #|vc("is_natively_compiled", Bit, false, false)
+  #|vc("force_failure_count", BigInt, false, false)
+  #|vc("last_force_failure_reason", Int, false, false)
+  #|vc("last_force_failure_reason_desc", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("count_compiles", BigInt, true, false)
+  #|vc("initial_compile_start_time", DateTimeOffset(7), false, false)
+  #|vc("last_compile_start_time", DateTimeOffset(7), true, false)
+  #|vc("last_execution_time", DateTimeOffset(7), true, false)
+  #|vc("avg_compile_duration", Float, true, true)
+  #|vc("last_compile_duration", BigInt, true, false)
+  #|vc("plan_forcing_type", Int, false, false)
+  #|vc("plan_forcing_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("has_compile_replay_script", Bit, false, false)
+  #|vc("is_optimized_plan_forcing_disabled", Bit, false, false)
+  #|vc("plan_type", Int, false, false)
+  #|vc("plan_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|sys.query_store_query
+  #|vc("query_id", BigInt, false, false)
+  #|vc("query_text_id", BigInt, false, false)
+  #|vc("context_settings_id", BigInt, false, false)
+  #|vc("object_id", BigInt, true, false)
+  #|vc("batch_sql_handle", VarBinary(Some(44)), true, true)
+  #|vc("query_hash", Binary(8), false, false)
+  #|vc("is_internal_query", Bit, false, false)
+  #|vc("query_parameterization_type", TinyInt, false, false)
+  #|vc("query_parameterization_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("initial_compile_start_time", DateTimeOffset(7), false, false)
+  #|vc("last_compile_start_time", DateTimeOffset(7), true, false)
+  #|vc("last_execution_time", DateTimeOffset(7), true, false)
+  #|vc("last_compile_batch_sql_handle", VarBinary(Some(44)), true, true)
+  #|vc("last_compile_batch_offset_start", BigInt, true, false)
+  #|vc("last_compile_batch_offset_end", BigInt, true, false)
+  #|vc("count_compiles", BigInt, true, false)
+  #|vc("avg_compile_duration", Float, true, true)
+  #|vc("last_compile_duration", BigInt, true, false)
+  #|vc("avg_bind_duration", Float, true, true)
+  #|vc("last_bind_duration", BigInt, true, false)
+  #|vc("avg_bind_cpu_time", Float, true, true)
+  #|vc("last_bind_cpu_time", BigInt, true, false)
+  #|vc("avg_optimize_duration", Float, true, true)
+  #|vc("last_optimize_duration", BigInt, true, false)
+  #|vc("avg_optimize_cpu_time", Float, true, true)
+  #|vc("last_optimize_cpu_time", BigInt, true, false)
+  #|vc("avg_compile_memory_kb", Float, true, true)
+  #|vc("last_compile_memory_kb", BigInt, true, false)
+  #|vc("max_compile_memory_kb", BigInt, true, false)
+  #|vc("is_clouddb_internal_query", Bit, true, true)
+  #|sys.query_store_query_text
+  #|vc("query_text_id", BigInt, false, false)
+  #|vc("query_sql_text", NVarChar(None, coll_default), true, false)
+  #|vc("statement_sql_handle", VarBinary(Some(44)), true, false)
+  #|vc("is_part_of_encrypted_module", Bit, false, false)
+  #|vc("has_restricted_text", Bit, false, false)
+  #|sys.query_store_runtime_stats
+  #|vc("runtime_stats_id", BigInt, false, false)
+  #|vc("plan_id", BigInt, false, false)
+  #|vc("runtime_stats_interval_id", BigInt, false, false)
+  #|vc("execution_type", TinyInt, false, false)
+  #|vc("execution_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("first_execution_time", DateTimeOffset(7), false, false)
+  #|vc("last_execution_time", DateTimeOffset(7), false, false)
+  #|vc("count_executions", BigInt, false, false)
+  #|vc("avg_duration", Float, true, false)
+  #|vc("last_duration", BigInt, false, false)
+  #|vc("min_duration", BigInt, false, false)
+  #|vc("max_duration", BigInt, false, false)
+  #|vc("stdev_duration", Float, true, true)
+  #|vc("avg_cpu_time", Float, true, false)
+  #|vc("last_cpu_time", BigInt, false, false)
+  #|vc("min_cpu_time", BigInt, false, false)
+  #|vc("max_cpu_time", BigInt, false, false)
+  #|vc("stdev_cpu_time", Float, true, true)
+  #|vc("avg_logical_io_reads", Float, true, false)
+  #|vc("last_logical_io_reads", BigInt, false, false)
+  #|vc("min_logical_io_reads", BigInt, false, false)
+  #|vc("max_logical_io_reads", BigInt, false, false)
+  #|vc("stdev_logical_io_reads", Float, true, true)
+  #|vc("avg_logical_io_writes", Float, true, false)
+  #|vc("last_logical_io_writes", BigInt, false, false)
+  #|vc("min_logical_io_writes", BigInt, false, false)
+  #|vc("max_logical_io_writes", BigInt, false, false)
+  #|vc("stdev_logical_io_writes", Float, true, true)
+  #|vc("avg_physical_io_reads", Float, true, false)
+  #|vc("last_physical_io_reads", BigInt, false, false)
+  #|vc("min_physical_io_reads", BigInt, false, false)
+  #|vc("max_physical_io_reads", BigInt, false, false)
+  #|vc("stdev_physical_io_reads", Float, true, true)
+  #|vc("avg_clr_time", Float, true, false)
+  #|vc("last_clr_time", BigInt, false, false)
+  #|vc("min_clr_time", BigInt, false, false)
+  #|vc("max_clr_time", BigInt, false, false)
+  #|vc("stdev_clr_time", Float, true, true)
+  #|vc("avg_dop", Float, true, false)
+  #|vc("last_dop", BigInt, false, false)
+  #|vc("min_dop", BigInt, false, false)
+  #|vc("max_dop", BigInt, false, false)
+  #|vc("stdev_dop", Float, true, true)
+  #|vc("avg_query_max_used_memory", Float, true, false)
+  #|vc("last_query_max_used_memory", BigInt, false, false)
+  #|vc("min_query_max_used_memory", BigInt, false, false)
+  #|vc("max_query_max_used_memory", BigInt, false, false)
+  #|vc("stdev_query_max_used_memory", Float, true, true)
+  #|vc("avg_rowcount", Float, true, false)
+  #|vc("last_rowcount", BigInt, false, false)
+  #|vc("min_rowcount", BigInt, false, false)
+  #|vc("max_rowcount", BigInt, false, false)
+  #|vc("stdev_rowcount", Float, true, true)
+  #|vc("avg_num_physical_io_reads", Float, true, false)
+  #|vc("last_num_physical_io_reads", BigInt, true, false)
+  #|vc("min_num_physical_io_reads", BigInt, true, false)
+  #|vc("max_num_physical_io_reads", BigInt, true, false)
+  #|vc("stdev_num_physical_io_reads", Float, true, true)
+  #|vc("avg_log_bytes_used", Float, true, false)
+  #|vc("last_log_bytes_used", BigInt, true, false)
+  #|vc("min_log_bytes_used", BigInt, true, false)
+  #|vc("max_log_bytes_used", BigInt, true, false)
+  #|vc("stdev_log_bytes_used", Float, true, true)
+  #|vc("avg_tempdb_space_used", Float, true, false)
+  #|vc("last_tempdb_space_used", BigInt, true, false)
+  #|vc("min_tempdb_space_used", BigInt, true, false)
+  #|vc("max_tempdb_space_used", BigInt, true, false)
+  #|vc("stdev_tempdb_space_used", Float, true, true)
+  #|vc("avg_page_server_io_reads", Float, true, false)
+  #|vc("last_page_server_io_reads", BigInt, true, false)
+  #|vc("min_page_server_io_reads", BigInt, true, false)
+  #|vc("max_page_server_io_reads", BigInt, true, false)
+  #|vc("stdev_page_server_io_reads", Float, true, true)
+  #|vc("replica_group_id", BigInt, false, false)
+  #|sys.query_store_wait_stats
+  #|vc("wait_stats_id", BigInt, false, false)
+  #|vc("plan_id", BigInt, false, false)
+  #|vc("runtime_stats_interval_id", BigInt, false, false)
+  #|vc("wait_category", SmallInt, false, false)
+  #|vc("wait_category_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("execution_type", TinyInt, false, false)
+  #|vc("execution_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("total_query_wait_time_ms", BigInt, false, false)
+  #|vc("avg_query_wait_time_ms", Float, true, false)
+  #|vc("last_query_wait_time_ms", BigInt, false, false)
+  #|vc("min_query_wait_time_ms", BigInt, false, false)
+  #|vc("max_query_wait_time_ms", BigInt, false, false)
+  #|vc("stdev_query_wait_time_ms", Float, true, true)
+  #|vc("replica_group_id", BigInt, false, false)
+  #|sys.query_store_runtime_stats_interval
+  #|vc("runtime_stats_interval_id", BigInt, false, false)
+  #|vc("start_time", DateTimeOffset(7), false, false)
+  #|vc("end_time", DateTimeOffset(7), false, false)
+  #|vc("comment", NVarChar(None, coll_default), true, false)
+  #|sys.database_query_store_internal_state
+  #|vc("pending_message_count", BigInt, false, false)
+  #|vc("messaging_memory_used_mb", BigInt, false, false)
+  #|sys.query_store_query_hints
+  #|vc("query_hint_id", BigInt, false, false)
+  #|vc("query_id", BigInt, false, false)
+  #|vc("replica_group_id", BigInt, false, false)
+  #|vc("query_hint_text", NVarChar(None, coll_default), true, false)
+  #|vc("last_query_hint_failure_reason", Int, false, false)
+  #|vc("last_query_hint_failure_reason_desc", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("query_hint_failure_count", BigInt, false, false)
+  #|vc("source", Int, true, false)
+  #|vc("source_desc", NVarChar(Some(128), coll_ks_ws), true, true)
+  #|vc("comment", NVarChar(None, coll_default), true, false)
+  #|sys.query_store_plan_feedback
+  #|vc("plan_feedback_id", BigInt, false, false)
+  #|vc("plan_id", BigInt, false, false)
+  #|vc("feature_id", TinyInt, false, false)
+  #|vc("feature_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("feedback_data", NVarChar(None, coll_default), true, false)
+  #|vc("state", Int, true, false)
+  #|vc("state_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|vc("create_time", DateTimeOffset(7), false, false)
+  #|vc("last_updated_time", DateTimeOffset(7), true, false)
+  #|vc("replica_group_id", BigInt, false, false)
+  #|sys.query_store_query_variant
+  #|vc("query_variant_query_id", BigInt, false, false)
+  #|vc("parent_query_id", BigInt, false, false)
+  #|vc("dispatcher_plan_id", BigInt, false, false)
+  #|sys.query_store_replicas
+  #|vc("replica_group_id", BigInt, false, false)
+  #|vc("role_type", SmallInt, false, false)
+  #|vc("replica_name", NVarChar(Some(644), coll_default), true, false)
+  #|sys.query_store_plan_forcing_locations
+  #|vc("plan_forcing_location_id", BigInt, false, false)
+  #|vc("query_id", BigInt, false, false)
+  #|vc("plan_id", BigInt, false, false)
+  #|vc("replica_group_id", BigInt, false, false)
+  #|vc("timestamp", DateTime, false, false)
+  #|vc("plan_forcing_type", Int, false, false)
+  #|vc("plan_forcing_type_desc", NVarChar(Some(60), coll_ks_ws), true, false)
+  #|sys.dm_exec_query_stats
+  #|vc("sql_handle", VarBinary(Some(64)), false, false)
+  #|vc("statement_start_offset", Int, false, false)
+  #|vc("statement_end_offset", Int, false, false)
+  #|vc("plan_generation_num", BigInt, true, false)
+  #|vc("plan_handle", VarBinary(Some(64)), false, false)
+  #|vc("creation_time", DateTime, true, false)
+  #|vc("last_execution_time", DateTime, true, false)
+  #|vc("execution_count", BigInt, false, false)
+  #|vc("total_worker_time", BigInt, false, false)
+  #|vc("last_worker_time", BigInt, false, false)
+  #|vc("min_worker_time", BigInt, false, false)
+  #|vc("max_worker_time", BigInt, false, false)
+  #|vc("total_physical_reads", BigInt, false, false)
+  #|vc("last_physical_reads", BigInt, false, false)
+  #|vc("min_physical_reads", BigInt, false, false)
+  #|vc("max_physical_reads", BigInt, false, false)
+  #|vc("total_logical_writes", BigInt, false, false)
+  #|vc("last_logical_writes", BigInt, false, false)
+  #|vc("min_logical_writes", BigInt, false, false)
+  #|vc("max_logical_writes", BigInt, false, false)
+  #|vc("total_logical_reads", BigInt, false, false)
+  #|vc("last_logical_reads", BigInt, false, false)
+  #|vc("min_logical_reads", BigInt, false, false)
+  #|vc("max_logical_reads", BigInt, false, false)
+  #|vc("total_clr_time", BigInt, false, false)
+  #|vc("last_clr_time", BigInt, false, false)
+  #|vc("min_clr_time", BigInt, false, false)
+  #|vc("max_clr_time", BigInt, false, false)
+  #|vc("total_elapsed_time", BigInt, false, false)
+  #|vc("last_elapsed_time", BigInt, false, false)
+  #|vc("min_elapsed_time", BigInt, false, false)
+  #|vc("max_elapsed_time", BigInt, false, false)
+  #|vc("query_hash", Binary(8), true, false)
+  #|vc("query_plan_hash", Binary(8), true, false)
+  #|vc("total_rows", BigInt, true, false)
+  #|vc("last_rows", BigInt, true, false)
+  #|vc("min_rows", BigInt, true, false)
+  #|vc("max_rows", BigInt, true, false)
+  #|vc("statement_sql_handle", VarBinary(Some(64)), true, false)
+  #|vc("statement_context_id", BigInt, true, false)
+  #|vc("total_dop", BigInt, true, false)
+  #|vc("last_dop", BigInt, true, false)
+  #|vc("min_dop", BigInt, true, false)
+  #|vc("max_dop", BigInt, true, false)
+  #|vc("total_grant_kb", BigInt, true, false)
+  #|vc("last_grant_kb", BigInt, true, false)
+  #|vc("min_grant_kb", BigInt, true, false)
+  #|vc("max_grant_kb", BigInt, true, false)
+  #|vc("total_used_grant_kb", BigInt, true, false)
+  #|vc("last_used_grant_kb", BigInt, true, false)
+  #|vc("min_used_grant_kb", BigInt, true, false)
+  #|vc("max_used_grant_kb", BigInt, true, false)
+  #|vc("total_ideal_grant_kb", BigInt, true, false)
+  #|vc("last_ideal_grant_kb", BigInt, true, false)
+  #|vc("min_ideal_grant_kb", BigInt, true, false)
+  #|vc("max_ideal_grant_kb", BigInt, true, false)
+  #|vc("total_reserved_threads", BigInt, true, false)
+  #|vc("last_reserved_threads", BigInt, true, false)
+  #|vc("min_reserved_threads", BigInt, true, false)
+  #|vc("max_reserved_threads", BigInt, true, false)
+  #|vc("total_used_threads", BigInt, true, false)
+  #|vc("last_used_threads", BigInt, true, false)
+  #|vc("min_used_threads", BigInt, true, false)
+  #|vc("max_used_threads", BigInt, true, false)
+  #|vc("total_columnstore_segment_reads", BigInt, true, false)
+  #|vc("last_columnstore_segment_reads", BigInt, true, false)
+  #|vc("min_columnstore_segment_reads", BigInt, true, false)
+  #|vc("max_columnstore_segment_reads", BigInt, true, false)
+  #|vc("total_columnstore_segment_skips", BigInt, true, false)
+  #|vc("last_columnstore_segment_skips", BigInt, true, false)
+  #|vc("min_columnstore_segment_skips", BigInt, true, false)
+  #|vc("max_columnstore_segment_skips", BigInt, true, false)
+  #|vc("total_spills", BigInt, true, false)
+  #|vc("last_spills", BigInt, true, false)
+  #|vc("min_spills", BigInt, true, false)
+  #|vc("max_spills", BigInt, true, false)
+  #|vc("total_num_physical_reads", BigInt, false, false)
+  #|vc("last_num_physical_reads", BigInt, false, false)
+  #|vc("min_num_physical_reads", BigInt, false, false)
+  #|vc("max_num_physical_reads", BigInt, false, false)
+  #|vc("total_page_server_reads", BigInt, false, false)
+  #|vc("last_page_server_reads", BigInt, false, false)
+  #|vc("min_page_server_reads", BigInt, false, false)
+  #|vc("max_page_server_reads", BigInt, false, false)
+  #|vc("total_num_page_server_reads", BigInt, false, false)
+  #|vc("last_num_page_server_reads", BigInt, false, false)
+  #|vc("min_num_page_server_reads", BigInt, false, false)
+  #|vc("max_num_page_server_reads", BigInt, false, false)
+  #|sys.dm_db_index_usage_stats
+  #|vc("database_id", SmallInt, false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("user_seeks", BigInt, false, false)
+  #|vc("user_scans", BigInt, false, false)
+  #|vc("user_lookups", BigInt, false, false)
+  #|vc("user_updates", BigInt, false, false)
+  #|vc("last_user_seek", DateTime, true, false)
+  #|vc("last_user_scan", DateTime, true, false)
+  #|vc("last_user_lookup", DateTime, true, false)
+  #|vc("last_user_update", DateTime, true, false)
+  #|vc("system_seeks", BigInt, false, false)
+  #|vc("system_scans", BigInt, false, false)
+  #|vc("system_lookups", BigInt, false, false)
+  #|vc("system_updates", BigInt, false, false)
+  #|vc("last_system_seek", DateTime, true, false)
+  #|vc("last_system_scan", DateTime, true, false)
+  #|vc("last_system_lookup", DateTime, true, false)
+  #|vc("last_system_update", DateTime, true, false)
+  #|sys.dm_db_missing_index_details
+  #|vc("index_handle", Int, false, false)
+  #|vc("database_id", SmallInt, false, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("equality_columns", NVarChar(Some(4000), coll_default), true, false)
+  #|vc("inequality_columns", NVarChar(Some(4000), coll_default), true, false)
+  #|vc("included_columns", NVarChar(Some(4000), coll_default), true, false)
+  #|vc("statement", NVarChar(Some(4000), coll_default), true, false)
+  #|sys.dm_db_missing_index_groups
+  #|vc("index_group_handle", Int, false, false)
+  #|vc("index_handle", Int, false, false)
+  #|sys.dm_db_missing_index_group_stats
+  #|vc("group_handle", Int, false, false)
+  #|vc("unique_compiles", BigInt, true, false)
+  #|vc("user_seeks", BigInt, true, false)
+  #|vc("user_scans", BigInt, true, false)
+  #|vc("last_user_seek", DateTime, true, true)
+  #|vc("last_user_scan", DateTime, true, true)
+  #|vc("avg_total_user_cost", Float, true, true)
+  #|vc("avg_user_impact", Float, true, true)
+  #|vc("system_seeks", BigInt, true, false)
+  #|vc("system_scans", BigInt, true, false)
+  #|vc("last_system_seek", DateTime, true, true)
+  #|vc("last_system_scan", DateTime, true, true)
+  #|vc("avg_total_system_cost", Float, true, true)
+  #|vc("avg_system_impact", Float, true, true)
+  #|sys.dm_db_partition_stats
+  #|vc("partition_id", BigInt, true, false)
+  #|vc("object_id", Int, false, false)
+  #|vc("index_id", Int, false, false)
+  #|vc("partition_number", Int, false, false)
+  #|vc("in_row_data_page_count", BigInt, true, false)
+  #|vc("in_row_used_page_count", BigInt, true, false)
+  #|vc("in_row_reserved_page_count", BigInt, true, false)
+  #|vc("lob_used_page_count", BigInt, true, false)
+  #|vc("lob_reserved_page_count", BigInt, true, false)
+  #|vc("row_overflow_used_page_count", BigInt, true, false)
+  #|vc("row_overflow_reserved_page_count", BigInt, true, false)
+  #|vc("used_page_count", BigInt, true, false)
+  #|vc("reserved_page_count", BigInt, true, false)
+  #|vc("row_count", BigInt, true, false)
+  #|sys.dm_os_sys_info
+  #|vc("cpu_ticks", BigInt, false, false)
+  #|vc("ms_ticks", BigInt, false, false)
+  #|vc("cpu_count", Int, false, false)
+  #|vc("hyperthread_ratio", Int, false, false)
+  #|vc("physical_memory_kb", BigInt, false, false)
+  #|vc("virtual_memory_kb", BigInt, false, false)
+  #|vc("committed_kb", BigInt, false, false)
+  #|vc("committed_target_kb", BigInt, false, false)
+  #|vc("visible_target_kb", BigInt, false, false)
+  #|vc("stack_size_in_bytes", Int, false, false)
+  #|vc("os_quantum", BigInt, false, false)
+  #|vc("os_error_mode", Int, false, false)
+  #|vc("os_priority_class", Int, true, false)
+  #|vc("max_workers_count", Int, false, false)
+  #|vc("scheduler_count", Int, false, false)
+  #|vc("scheduler_total_count", Int, false, false)
+  #|vc("deadlock_monitor_serial_number", Int, false, false)
+  #|vc("sqlserver_start_time_ms_ticks", BigInt, false, false)
+  #|vc("sqlserver_start_time", DateTime, false, false)
+  #|vc("affinity_type", Int, false, false)
+  #|vc("affinity_type_desc", NVarChar(Some(60), coll_default), false, false)
+  #|vc("process_kernel_time_ms", BigInt, false, false)
+  #|vc("process_user_time_ms", BigInt, false, false)
+  #|vc("time_source", Int, false, false)
+  #|vc("time_source_desc", NVarChar(Some(60), coll_default), false, false)
+  #|vc("virtual_machine_type", Int, false, false)
+  #|vc("virtual_machine_type_desc", NVarChar(Some(60), coll_default), false, false)
+  #|vc("softnuma_configuration", Int, false, false)
+  #|vc("softnuma_configuration_desc", NVarChar(Some(60), coll_default), false, false)
+  #|vc("process_physical_affinity", NVarChar(Some(3072), coll_default), false, false)
+  #|vc("sql_memory_model", Int, false, false)
+  #|vc("sql_memory_model_desc", NVarChar(Some(60), coll_default), false, false)
+  #|vc("socket_count", Int, false, false)
+  #|vc("cores_per_socket", Int, false, false)
+  #|vc("numa_node_count", Int, false, false)
+  #|vc("container_type", Int, false, false)
+  #|vc("container_type_desc", NVarChar(Some(60), coll_default), false, false)
+  #|sys.dm_exec_sql_text
+  #|vc("dbid", SmallInt, true, false)
+  #|vc("objectid", Int, true, false)
+  #|vc("number", SmallInt, true, false)
+  #|vc("encrypted", Bit, false, false)
+  #|vc("text", NVarChar(None, coll_default), true, false)
+  #|sys.dm_exec_plan_attributes
+  #|vc("attribute", NVarChar(Some(128), coll_default), false, false)
+  #|vc("value", Variant, true, false)
+  #|vc("is_cache_key", Bit, false, false)
+  #|sys.dm_exec_cursors
+  #|vc("session_id", Int, false, false)
+  #|vc("cursor_id", Int, false, false)
+  #|vc("name", NVarChar(Some(128), coll_default), true, false)
+  #|vc("properties", NVarChar(Some(128), coll_default), false, false)
+  #|vc("sql_handle", VarBinary(Some(64)), true, false)
+  #|vc("statement_start_offset", Int, true, false)
+  #|vc("statement_end_offset", Int, true, false)
+  #|vc("plan_generation_num", BigInt, true, false)
+  #|vc("creation_time", DateTime, true, false)
+  #|vc("is_open", Bit, false, false)
+  #|vc("is_async_population", Bit, false, false)
+  #|vc("is_close_on_commit", Bit, false, false)
+  #|vc("fetch_status", Int, false, false)
+  #|vc("fetch_buffer_size", Int, false, false)
+  #|vc("fetch_buffer_start", Int, false, false)
+  #|vc("ansi_position", Int, false, false)
+  #|vc("worker_time", BigInt, false, false)
+  #|vc("reads", BigInt, false, false)
+  #|vc("writes", BigInt, false, false)
+  #|vc("dormant_duration", BigInt, false, false)
 
 ///|
 /// Columns: name, object_id, principal_id, schema_id, parent_object_id, type, type_desc, create_date, modify_date
-let seed_system_objects : Array[Array[@types.Value]] = [
-  [
-    String("sysrscols"),
-    Int(3),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183696),
-    DateTime(46259, 11183880),
-  ],
-  [
-    String("sysrowsets"),
-    Int(5),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025328),
-    DateTime(46259, 11183769),
-  ],
-  [
-    String("sysclones"),
-    Int(6),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183741),
-    DateTime(46259, 11183743),
-  ],
-  [
-    String("sysallocunits"),
-    Int(7),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025323),
-    DateTime(46259, 11183703),
-  ],
-  [
-    String("sysfiles1"),
-    Int(8),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(37717, 9965428),
-    DateTime(37717, 9965428),
-  ],
-  [
-    String("sysseobjvalues"),
-    Int(9),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183775),
-    DateTime(46259, 11183777),
-  ],
-  [
-    String("syspriorities"),
-    Int(17),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183719),
-    DateTime(46259, 11183723),
-  ],
-  [
-    String("sysdbfrag"),
-    Int(18),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183765),
-    DateTime(46259, 11183768),
-  ],
-  [
-    String("sysfgfrag"),
-    Int(19),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183691),
-    DateTime(46259, 11183693),
-  ],
-  [
-    String("sysdbfiles"),
-    Int(20),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183733),
-    DateTime(46259, 11183735),
-  ],
-  [
-    String("syspru"),
-    Int(21),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183766),
-    DateTime(46259, 11183768),
-  ],
-  [
-    String("sysbrickfiles"),
-    Int(22),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183766),
-    DateTime(46259, 11183768),
-  ],
-  [
-    String("sysphfg"),
-    Int(23),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183691),
-    DateTime(46259, 11183693),
-  ],
-  [
-    String("sysprufiles"),
-    Int(24),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183692),
-    DateTime(46259, 11183694),
-  ],
-  [
-    String("sysftinds"),
-    Int(25),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025417),
-    DateTime(46259, 11183688),
-  ],
-  [
-    String("sysowners"),
-    Int(27),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025412),
-    DateTime(46259, 11183931),
-  ],
-  [
-    String("sysdbreg"),
-    Int(28),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183757),
-    DateTime(46259, 11183761),
-  ],
-  [
-    String("sysprivs"),
-    Int(29),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025295),
-    DateTime(39914, 14025295),
-  ],
-  [
-    String("sysschobjs"),
-    Int(34),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025351),
-    DateTime(46259, 11183753),
-  ],
-  [
-    String("syscsrowgroups"),
-    Int(35),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183789),
-    DateTime(46259, 11183871),
-  ],
-  [
-    String("sysextsources"),
-    Int(36),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183822),
-    DateTime(46259, 11183863),
-  ],
-  [
-    String("sysexttables"),
-    Int(37),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183801),
-    DateTime(46259, 11183856),
-  ],
-  [
-    String("sysextfileformats"),
-    Int(38),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183824),
-    DateTime(46259, 11183875),
-  ],
-  [
-    String("sysmultiobjvalues"),
-    Int(40),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183807),
-    DateTime(46259, 11183810),
-  ],
-  [
-    String("syscolpars"),
-    Int(41),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025393),
-    DateTime(46259, 11183688),
-  ],
-  [
-    String("sysxlgns"),
-    Int(42),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183762),
-    DateTime(46259, 11183910),
-  ],
-  [
-    String("sysxsrvs"),
-    Int(43),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183764),
-    DateTime(46259, 11183767),
-  ],
-  [
-    String("sysnsobjs"),
-    Int(44),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025360),
-    DateTime(39914, 14025360),
-  ],
-  [
-    String("sysusermsgs"),
-    Int(45),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183761),
-    DateTime(46259, 11183763),
-  ],
-  [
-    String("syscerts"),
-    Int(46),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025904),
-    DateTime(46259, 11183837),
-  ],
-  [
-    String("sysrmtlgns"),
-    Int(47),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183760),
-    DateTime(46259, 11183762),
-  ],
-  [
-    String("syslnklgns"),
-    Int(48),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183760),
-    DateTime(46259, 11183762),
-  ],
-  [
-    String("sysxprops"),
-    Int(49),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025450),
-    DateTime(39914, 14025450),
-  ],
-  [
-    String("sysscalartypes"),
-    Int(50),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025285),
-    DateTime(39914, 14025285),
-  ],
-  [
-    String("systypedsubobjs"),
-    Int(51),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025403),
-    DateTime(39914, 14025403),
-  ],
-  [
-    String("sysidxstats"),
-    Int(54),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025408),
-    DateTime(39914, 14025408),
-  ],
-  [
-    String("sysiscols"),
-    Int(55),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025408),
-    DateTime(46259, 11183827),
-  ],
-  [
-    String("sysendpts"),
-    Int(56),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183759),
-    DateTime(46259, 11183913),
-  ],
-  [
-    String("syswebmethods"),
-    Int(57),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183761),
-    DateTime(46259, 11183763),
-  ],
-  [
-    String("sysbinobjs"),
-    Int(58),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025740),
-    DateTime(39914, 14025748),
-  ],
-  [
-    String("sysaudacts"),
-    Int(59),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183724),
-    DateTime(46259, 11183726),
-  ],
-  [
-    String("sysobjvalues"),
-    Int(60),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025351),
-    DateTime(39914, 14025351),
-  ],
-  [
-    String("syscscolsegments"),
-    Int(62),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183755),
-    DateTime(46259, 11183876),
-  ],
-  [
-    String("syscsdictionaries"),
-    Int(63),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183756),
-    DateTime(46259, 11183861),
-  ],
-  [
-    String("sysclsobjs"),
-    Int(64),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025360),
-    DateTime(39914, 14025360),
-  ],
-  [
-    String("sysrowsetrefs"),
-    Int(65),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025412),
-    DateTime(46259, 11183690),
-  ],
-  [
-    String("sysremsvcbinds"),
-    Int(67),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025858),
-    DateTime(39914, 14025865),
-  ],
-  [
-    String("sysxmitqueue"),
-    Int(68),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025867),
-    DateTime(46259, 11183739),
-  ],
-  [
-    String("sysrts"),
-    Int(69),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025862),
-    DateTime(39914, 14025870),
-  ],
-  [
-    String("sysconvgroup"),
-    Int(71),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025862),
-    DateTime(39914, 14025865),
-  ],
-  [
-    String("sysdesend"),
-    Int(72),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025871),
-    DateTime(39914, 14025901),
-  ],
-  [
-    String("sysdercv"),
-    Int(73),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025900),
-    DateTime(46259, 11183753),
-  ],
-  [
-    String("syssingleobjrefs"),
-    Int(74),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025290),
-    DateTime(39914, 14025290),
-  ],
-  [
-    String("sysmultiobjrefs"),
-    Int(75),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025295),
-    DateTime(39914, 14025295),
-  ],
-  [
-    String("sysguidrefs"),
-    Int(78),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025773),
-    DateTime(39914, 14025780),
-  ],
-  [
-    String("sysfoqueues"),
-    Int(79),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183770),
-    DateTime(46259, 11183772),
-  ],
-  [
-    String("syschildinsts"),
-    Int(80),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183757),
-    DateTime(46259, 11183759),
-  ],
-  [
-    String("syscompfragments"),
-    Int(82),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183726),
-    DateTime(46259, 11183728),
-  ],
-  [
-    String("sysftsemanticsdb"),
-    Int(84),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183767),
-    DateTime(46259, 11183769),
-  ],
-  [
-    String("sysftstops"),
-    Int(85),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183726),
-    DateTime(46259, 11183728),
-  ],
-  [
-    String("sysftproperties"),
-    Int(86),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183737),
-    DateTime(46259, 11183741),
-  ],
-  [
-    String("sysxmitbody"),
-    Int(87),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183739),
-    DateTime(46259, 11183741),
-  ],
-  [
-    String("sysfos"),
-    Int(89),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183769),
-    DateTime(46259, 11183772),
-  ],
-  [
-    String("sysqnames"),
-    Int(90),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025778),
-    DateTime(39914, 14025782),
-  ],
-  [
-    String("sysxmlcomponent"),
-    Int(91),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025778),
-    DateTime(39914, 14025785),
-  ],
-  [
-    String("sysxmlfacet"),
-    Int(92),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025783),
-    DateTime(39914, 14025786),
-  ],
-  [
-    String("sysxmlplacement"),
-    Int(93),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025783),
-    DateTime(39914, 14025861),
-  ],
-  [
-    String("sysobjkeycrypts"),
-    Int(94),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025904),
-    DateTime(39914, 14025907),
-  ],
-  [
-    String("sysasymkeys"),
-    Int(95),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025909),
-    DateTime(46259, 11183836),
-  ],
-  [
-    String("syssqlguides"),
-    Int(96),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025914),
-    DateTime(46259, 11183718),
-  ],
-  [
-    String("sysbinsubobjs"),
-    Int(97),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(39914, 14025745),
-    DateTime(39914, 14025776),
-  ],
-  [
-    String("syssoftobjrefs"),
-    Int(98),
-    Null,
-    Int(4),
-    Int(0),
-    String("S "),
-    String("SYSTEM_TABLE"),
-    DateTime(46259, 11183710),
-    DateTime(46259, 11183713),
-  ],
-  [
-    String("sqlagent_jobs"),
-    Int(101575400),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183793),
-    DateTime(46259, 11183796),
-  ],
-  [
-    String("sqlagent_jobsteps"),
-    Int(117575457),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183795),
-    DateTime(46259, 11183799),
-  ],
-  [
-    String("sqlagent_job_history"),
-    Int(133575514),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183796),
-    DateTime(46259, 11183799),
-  ],
-  [
-    String("sqlagent_jobsteps_logs"),
-    Int(149575571),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183797),
-    DateTime(46259, 11183799),
-  ],
-  [
-    String("plan_persist_query_text"),
-    Int(165575628),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183814),
-    DateTime(46259, 11183847),
-  ],
-  [
-    String("plan_persist_query"),
-    Int(181575685),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183815),
-    DateTime(46259, 11183850),
-  ],
-  [
-    String("plan_persist_plan"),
-    Int(197575742),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183816),
-    DateTime(46259, 11183833),
-  ],
-  [
-    String("plan_persist_runtime_stats"),
-    Int(213575799),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183816),
-    DateTime(46259, 11183871),
-  ],
-  [
-    String("plan_persist_runtime_stats_interval"),
-    Int(229575856),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183820),
-    DateTime(46259, 11183820),
-  ],
-  [
-    String("plan_persist_context_settings"),
-    Int(245575913),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183820),
-    DateTime(46259, 11183820),
-  ],
-  [
-    String("plan_persist_query_hints"),
-    Int(261575970),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183843),
-    DateTime(46259, 11183915),
-  ],
-  [
-    String("plan_persist_query_template_parameterization"),
-    Int(277576027),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183846),
-    DateTime(46259, 11183846),
-  ],
-  [
-    String("plan_persist_wait_stats"),
-    Int(293576084),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183848),
-    DateTime(46259, 11183848),
-  ],
-  [
-    String("persistent_version_store"),
-    Int(309576141),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183852),
-    DateTime(46259, 11183852),
-  ],
-  [
-    String("persistent_version_store_long_term"),
-    Int(325576198),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183852),
-    DateTime(46259, 11183852),
-  ],
-  [
-    String("db_ledger_blocks"),
-    Int(341576255),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183876),
-    DateTime(46259, 11183876),
-  ],
-  [
-    String("db_ledger_transactions"),
-    Int(357576312),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183876),
-    DateTime(46259, 11183888),
-  ],
-  [
-    String("backup_metadata_store"),
-    Int(373576369),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183881),
-    DateTime(46259, 11183935),
-  ],
-  [
-    String("plan_persist_plan_feedback"),
-    Int(389576426),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183885),
-    DateTime(46259, 11183914),
-  ],
-  [
-    String("plan_persist_query_variant"),
-    Int(405576483),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183889),
-    DateTime(46259, 11183889),
-  ],
-  [
-    String("ledger_tables_history_internal"),
-    Int(421576540),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183891),
-    DateTime(46259, 11183905),
-  ],
-  [
-    String("ledger_tables_history_internal_history"),
-    Int(437576597),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183892),
-    DateTime(46259, 11183907),
-  ],
-  [
-    String("ledger_columns_history_internal"),
-    Int(453576654),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183892),
-    DateTime(46259, 11183894),
-  ],
-  [
-    String("ledger_columns_history_internal_history"),
-    Int(469576711),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183892),
-    DateTime(46259, 11183907),
-  ],
-  [
-    String("db_ledger_digest_locations"),
-    Int(485576768),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183894),
-    DateTime(46259, 11183894),
-  ],
-  [
-    String("plan_persist_replicas"),
-    Int(501576825),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183900),
-    DateTime(46259, 11183900),
-  ],
-  [
-    String("plan_persist_plan_forcing_locations"),
-    Int(517576882),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183901),
-    DateTime(46259, 11183916),
-  ],
-  [
-    String("plan_persist_runtime_stats_v2"),
-    Int(533576939),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183901),
-    DateTime(46259, 11183901),
-  ],
-  [
-    String("plan_persist_wait_stats_v2"),
-    Int(549576996),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183903),
-    DateTime(46259, 11183903),
-  ],
-  [
-    String("ipv6_firewall_rules_table"),
-    Int(565577053),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183910),
-    DateTime(46259, 11183914),
-  ],
-  [
-    String("ipv6_database_firewall_rules_table"),
-    Int(581577110),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183911),
-    DateTime(46259, 11183915),
-  ],
-  [
-    String("pause_resume_history"),
-    Int(629577281),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183918),
-    DateTime(46259, 11183918),
-  ],
-  [
-    String("fulltext_thesaurus_metadata_table"),
-    Int(645577338),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183924),
-    DateTime(46259, 11183924),
-  ],
-  [
-    String("fulltext_thesaurus_state_table"),
-    Int(661577395),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183924),
-    DateTime(46259, 11183924),
-  ],
-  [
-    String("fulltext_thesaurus_phrase_table"),
-    Int(677577452),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183925),
-    DateTime(46259, 11183925),
-  ],
-  [
-    String("plan_persist_ce_feedback_for_expressions"),
-    Int(885578193),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46296, 19860518),
-    DateTime(46296, 19860518),
-  ],
-  [
-    String("wpr_bucket_table"),
-    Int(1205579333),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46296, 20899620),
-    DateTime(46296, 20899620),
-  ],
-  [
-    String("QueryNotificationErrorsQueue"),
-    Int(1977058079),
-    Null,
-    Int(1),
-    Int(0),
-    String("SQ"),
-    String("SERVICE_QUEUE"),
-    DateTime(39914, 14026045),
-    DateTime(39914, 14026045),
-  ],
-  [
-    String("queue_messages_1977058079"),
-    Int(1993058136),
-    Null,
-    Int(4),
-    Int(1977058079),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(39914, 14026045),
-    DateTime(46259, 11183735),
-  ],
-  [
-    String("EventNotificationErrorsQueue"),
-    Int(2009058193),
-    Null,
-    Int(1),
-    Int(0),
-    String("SQ"),
-    String("SERVICE_QUEUE"),
-    DateTime(39914, 14026050),
-    DateTime(39914, 14026050),
-  ],
-  [
-    String("queue_messages_2009058193"),
-    Int(2025058250),
-    Null,
-    Int(4),
-    Int(2009058193),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(39914, 14026050),
-    DateTime(46259, 11183735),
-  ],
-  [
-    String("ServiceBrokerQueue"),
-    Int(2041058307),
-    Null,
-    Int(1),
-    Int(0),
-    String("SQ"),
-    String("SERVICE_QUEUE"),
-    DateTime(39914, 14026050),
-    DateTime(39914, 14026050),
-  ],
-  [
-    String("queue_messages_2041058307"),
-    Int(2057058364),
-    Null,
-    Int(4),
-    Int(2041058307),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(39914, 14026050),
-    DateTime(46259, 11183736),
-  ],
-  [
-    String("filestream_tombstone_2073058421"),
-    Int(2073058421),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183715),
-    DateTime(46259, 11183745),
-  ],
-  [
-    String("syscommittab"),
-    Int(2089058478),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183716),
-    DateTime(46259, 11183716),
-  ],
-  [
-    String("filetable_updates_2105058535"),
-    Int(2105058535),
-    Null,
-    Int(4),
-    Int(0),
-    String("IT"),
-    String("INTERNAL_TABLE"),
-    DateTime(46259, 11183750),
-    DateTime(46259, 11183750),
-  ],
-]
+let seed_system_objects_text : String =
+  #|[String("sysrscols"), Int(3), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183696), DateTime(46259, 11183880)]
+  #|[String("sysrowsets"), Int(5), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025328), DateTime(46259, 11183769)]
+  #|[String("sysclones"), Int(6), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183741), DateTime(46259, 11183743)]
+  #|[String("sysallocunits"), Int(7), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025323), DateTime(46259, 11183703)]
+  #|[String("sysfiles1"), Int(8), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(37717, 9965428), DateTime(37717, 9965428)]
+  #|[String("sysseobjvalues"), Int(9), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183775), DateTime(46259, 11183777)]
+  #|[String("syspriorities"), Int(17), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183719), DateTime(46259, 11183723)]
+  #|[String("sysdbfrag"), Int(18), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183765), DateTime(46259, 11183768)]
+  #|[String("sysfgfrag"), Int(19), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183691), DateTime(46259, 11183693)]
+  #|[String("sysdbfiles"), Int(20), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183733), DateTime(46259, 11183735)]
+  #|[String("syspru"), Int(21), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183766), DateTime(46259, 11183768)]
+  #|[String("sysbrickfiles"), Int(22), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183766), DateTime(46259, 11183768)]
+  #|[String("sysphfg"), Int(23), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183691), DateTime(46259, 11183693)]
+  #|[String("sysprufiles"), Int(24), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183692), DateTime(46259, 11183694)]
+  #|[String("sysftinds"), Int(25), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025417), DateTime(46259, 11183688)]
+  #|[String("sysowners"), Int(27), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025412), DateTime(46259, 11183931)]
+  #|[String("sysdbreg"), Int(28), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183757), DateTime(46259, 11183761)]
+  #|[String("sysprivs"), Int(29), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025295), DateTime(39914, 14025295)]
+  #|[String("sysschobjs"), Int(34), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025351), DateTime(46259, 11183753)]
+  #|[String("syscsrowgroups"), Int(35), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183789), DateTime(46259, 11183871)]
+  #|[String("sysextsources"), Int(36), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183822), DateTime(46259, 11183863)]
+  #|[String("sysexttables"), Int(37), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183801), DateTime(46259, 11183856)]
+  #|[String("sysextfileformats"), Int(38), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183824), DateTime(46259, 11183875)]
+  #|[String("sysmultiobjvalues"), Int(40), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183807), DateTime(46259, 11183810)]
+  #|[String("syscolpars"), Int(41), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025393), DateTime(46259, 11183688)]
+  #|[String("sysxlgns"), Int(42), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183762), DateTime(46259, 11183910)]
+  #|[String("sysxsrvs"), Int(43), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183764), DateTime(46259, 11183767)]
+  #|[String("sysnsobjs"), Int(44), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025360), DateTime(39914, 14025360)]
+  #|[String("sysusermsgs"), Int(45), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183761), DateTime(46259, 11183763)]
+  #|[String("syscerts"), Int(46), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025904), DateTime(46259, 11183837)]
+  #|[String("sysrmtlgns"), Int(47), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183760), DateTime(46259, 11183762)]
+  #|[String("syslnklgns"), Int(48), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183760), DateTime(46259, 11183762)]
+  #|[String("sysxprops"), Int(49), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025450), DateTime(39914, 14025450)]
+  #|[String("sysscalartypes"), Int(50), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025285), DateTime(39914, 14025285)]
+  #|[String("systypedsubobjs"), Int(51), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025403), DateTime(39914, 14025403)]
+  #|[String("sysidxstats"), Int(54), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025408), DateTime(39914, 14025408)]
+  #|[String("sysiscols"), Int(55), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025408), DateTime(46259, 11183827)]
+  #|[String("sysendpts"), Int(56), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183759), DateTime(46259, 11183913)]
+  #|[String("syswebmethods"), Int(57), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183761), DateTime(46259, 11183763)]
+  #|[String("sysbinobjs"), Int(58), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025740), DateTime(39914, 14025748)]
+  #|[String("sysaudacts"), Int(59), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183724), DateTime(46259, 11183726)]
+  #|[String("sysobjvalues"), Int(60), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025351), DateTime(39914, 14025351)]
+  #|[String("syscscolsegments"), Int(62), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183755), DateTime(46259, 11183876)]
+  #|[String("syscsdictionaries"), Int(63), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183756), DateTime(46259, 11183861)]
+  #|[String("sysclsobjs"), Int(64), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025360), DateTime(39914, 14025360)]
+  #|[String("sysrowsetrefs"), Int(65), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025412), DateTime(46259, 11183690)]
+  #|[String("sysremsvcbinds"), Int(67), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025858), DateTime(39914, 14025865)]
+  #|[String("sysxmitqueue"), Int(68), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025867), DateTime(46259, 11183739)]
+  #|[String("sysrts"), Int(69), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025862), DateTime(39914, 14025870)]
+  #|[String("sysconvgroup"), Int(71), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025862), DateTime(39914, 14025865)]
+  #|[String("sysdesend"), Int(72), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025871), DateTime(39914, 14025901)]
+  #|[String("sysdercv"), Int(73), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025900), DateTime(46259, 11183753)]
+  #|[String("syssingleobjrefs"), Int(74), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025290), DateTime(39914, 14025290)]
+  #|[String("sysmultiobjrefs"), Int(75), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025295), DateTime(39914, 14025295)]
+  #|[String("sysguidrefs"), Int(78), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025773), DateTime(39914, 14025780)]
+  #|[String("sysfoqueues"), Int(79), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183770), DateTime(46259, 11183772)]
+  #|[String("syschildinsts"), Int(80), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183757), DateTime(46259, 11183759)]
+  #|[String("syscompfragments"), Int(82), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183726), DateTime(46259, 11183728)]
+  #|[String("sysftsemanticsdb"), Int(84), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183767), DateTime(46259, 11183769)]
+  #|[String("sysftstops"), Int(85), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183726), DateTime(46259, 11183728)]
+  #|[String("sysftproperties"), Int(86), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183737), DateTime(46259, 11183741)]
+  #|[String("sysxmitbody"), Int(87), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183739), DateTime(46259, 11183741)]
+  #|[String("sysfos"), Int(89), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183769), DateTime(46259, 11183772)]
+  #|[String("sysqnames"), Int(90), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025778), DateTime(39914, 14025782)]
+  #|[String("sysxmlcomponent"), Int(91), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025778), DateTime(39914, 14025785)]
+  #|[String("sysxmlfacet"), Int(92), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025783), DateTime(39914, 14025786)]
+  #|[String("sysxmlplacement"), Int(93), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025783), DateTime(39914, 14025861)]
+  #|[String("sysobjkeycrypts"), Int(94), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025904), DateTime(39914, 14025907)]
+  #|[String("sysasymkeys"), Int(95), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025909), DateTime(46259, 11183836)]
+  #|[String("syssqlguides"), Int(96), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025914), DateTime(46259, 11183718)]
+  #|[String("sysbinsubobjs"), Int(97), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(39914, 14025745), DateTime(39914, 14025776)]
+  #|[String("syssoftobjrefs"), Int(98), Null, Int(4), Int(0), String("S "), String("SYSTEM_TABLE"), DateTime(46259, 11183710), DateTime(46259, 11183713)]
+  #|[String("sqlagent_jobs"), Int(101575400), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183793), DateTime(46259, 11183796)]
+  #|[String("sqlagent_jobsteps"), Int(117575457), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183795), DateTime(46259, 11183799)]
+  #|[String("sqlagent_job_history"), Int(133575514), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183796), DateTime(46259, 11183799)]
+  #|[String("sqlagent_jobsteps_logs"), Int(149575571), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183797), DateTime(46259, 11183799)]
+  #|[String("plan_persist_query_text"), Int(165575628), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183814), DateTime(46259, 11183847)]
+  #|[String("plan_persist_query"), Int(181575685), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183815), DateTime(46259, 11183850)]
+  #|[String("plan_persist_plan"), Int(197575742), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183816), DateTime(46259, 11183833)]
+  #|[String("plan_persist_runtime_stats"), Int(213575799), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183816), DateTime(46259, 11183871)]
+  #|[String("plan_persist_runtime_stats_interval"), Int(229575856), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183820), DateTime(46259, 11183820)]
+  #|[String("plan_persist_context_settings"), Int(245575913), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183820), DateTime(46259, 11183820)]
+  #|[String("plan_persist_query_hints"), Int(261575970), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183843), DateTime(46259, 11183915)]
+  #|[String("plan_persist_query_template_parameterization"), Int(277576027), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183846), DateTime(46259, 11183846)]
+  #|[String("plan_persist_wait_stats"), Int(293576084), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183848), DateTime(46259, 11183848)]
+  #|[String("persistent_version_store"), Int(309576141), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183852), DateTime(46259, 11183852)]
+  #|[String("persistent_version_store_long_term"), Int(325576198), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183852), DateTime(46259, 11183852)]
+  #|[String("db_ledger_blocks"), Int(341576255), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183876), DateTime(46259, 11183876)]
+  #|[String("db_ledger_transactions"), Int(357576312), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183876), DateTime(46259, 11183888)]
+  #|[String("backup_metadata_store"), Int(373576369), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183881), DateTime(46259, 11183935)]
+  #|[String("plan_persist_plan_feedback"), Int(389576426), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183885), DateTime(46259, 11183914)]
+  #|[String("plan_persist_query_variant"), Int(405576483), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183889), DateTime(46259, 11183889)]
+  #|[String("ledger_tables_history_internal"), Int(421576540), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183891), DateTime(46259, 11183905)]
+  #|[String("ledger_tables_history_internal_history"), Int(437576597), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183892), DateTime(46259, 11183907)]
+  #|[String("ledger_columns_history_internal"), Int(453576654), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183892), DateTime(46259, 11183894)]
+  #|[String("ledger_columns_history_internal_history"), Int(469576711), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183892), DateTime(46259, 11183907)]
+  #|[String("db_ledger_digest_locations"), Int(485576768), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183894), DateTime(46259, 11183894)]
+  #|[String("plan_persist_replicas"), Int(501576825), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183900), DateTime(46259, 11183900)]
+  #|[String("plan_persist_plan_forcing_locations"), Int(517576882), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183901), DateTime(46259, 11183916)]
+  #|[String("plan_persist_runtime_stats_v2"), Int(533576939), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183901), DateTime(46259, 11183901)]
+  #|[String("plan_persist_wait_stats_v2"), Int(549576996), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183903), DateTime(46259, 11183903)]
+  #|[String("ipv6_firewall_rules_table"), Int(565577053), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183910), DateTime(46259, 11183914)]
+  #|[String("ipv6_database_firewall_rules_table"), Int(581577110), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183911), DateTime(46259, 11183915)]
+  #|[String("pause_resume_history"), Int(629577281), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183918), DateTime(46259, 11183918)]
+  #|[String("fulltext_thesaurus_metadata_table"), Int(645577338), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183924), DateTime(46259, 11183924)]
+  #|[String("fulltext_thesaurus_state_table"), Int(661577395), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183924), DateTime(46259, 11183924)]
+  #|[String("fulltext_thesaurus_phrase_table"), Int(677577452), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183925), DateTime(46259, 11183925)]
+  #|[String("plan_persist_ce_feedback_for_expressions"), Int(885578193), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46296, 19860518), DateTime(46296, 19860518)]
+  #|[String("wpr_bucket_table"), Int(1205579333), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46296, 20899620), DateTime(46296, 20899620)]
+  #|[String("QueryNotificationErrorsQueue"), Int(1977058079), Null, Int(1), Int(0), String("SQ"), String("SERVICE_QUEUE"), DateTime(39914, 14026045), DateTime(39914, 14026045)]
+  #|[String("queue_messages_1977058079"), Int(1993058136), Null, Int(4), Int(1977058079), String("IT"), String("INTERNAL_TABLE"), DateTime(39914, 14026045), DateTime(46259, 11183735)]
+  #|[String("EventNotificationErrorsQueue"), Int(2009058193), Null, Int(1), Int(0), String("SQ"), String("SERVICE_QUEUE"), DateTime(39914, 14026050), DateTime(39914, 14026050)]
+  #|[String("queue_messages_2009058193"), Int(2025058250), Null, Int(4), Int(2009058193), String("IT"), String("INTERNAL_TABLE"), DateTime(39914, 14026050), DateTime(46259, 11183735)]
+  #|[String("ServiceBrokerQueue"), Int(2041058307), Null, Int(1), Int(0), String("SQ"), String("SERVICE_QUEUE"), DateTime(39914, 14026050), DateTime(39914, 14026050)]
+  #|[String("queue_messages_2041058307"), Int(2057058364), Null, Int(4), Int(2041058307), String("IT"), String("INTERNAL_TABLE"), DateTime(39914, 14026050), DateTime(46259, 11183736)]
+  #|[String("filestream_tombstone_2073058421"), Int(2073058421), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183715), DateTime(46259, 11183745)]
+  #|[String("syscommittab"), Int(2089058478), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183716), DateTime(46259, 11183716)]
+  #|[String("filetable_updates_2105058535"), Int(2105058535), Null, Int(4), Int(0), String("IT"), String("INTERNAL_TABLE"), DateTime(46259, 11183750), DateTime(46259, 11183750)]
 
 ///|
 /// Columns: name, system_type_id, user_type_id, schema_id, principal_id, max_length, precision, scale, collation_name, is_nullable, is_user_defined, is_assembly_type, default_object_id, rule_object_id, is_table_type
-let seed_types : Array[Array[@types.Value]] = [
-  [
-    String("image"),
-    TinyInt(34),
-    Int(34),
-    Int(4),
-    Null,
-    SmallInt(16),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("text"),
-    TinyInt(35),
-    Int(35),
-    Int(4),
-    Null,
-    SmallInt(16),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("uniqueidentifier"),
-    TinyInt(36),
-    Int(36),
-    Int(4),
-    Null,
-    SmallInt(16),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("date"),
-    TinyInt(40),
-    Int(40),
-    Int(4),
-    Null,
-    SmallInt(3),
-    TinyInt(10),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("time"),
-    TinyInt(41),
-    Int(41),
-    Int(4),
-    Null,
-    SmallInt(5),
-    TinyInt(16),
-    TinyInt(7),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("datetime2"),
-    TinyInt(42),
-    Int(42),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(27),
-    TinyInt(7),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("datetimeoffset"),
-    TinyInt(43),
-    Int(43),
-    Int(4),
-    Null,
-    SmallInt(10),
-    TinyInt(34),
-    TinyInt(7),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("tinyint"),
-    TinyInt(48),
-    Int(48),
-    Int(4),
-    Null,
-    SmallInt(1),
-    TinyInt(3),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("smallint"),
-    TinyInt(52),
-    Int(52),
-    Int(4),
-    Null,
-    SmallInt(2),
-    TinyInt(5),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("int"),
-    TinyInt(56),
-    Int(56),
-    Int(4),
-    Null,
-    SmallInt(4),
-    TinyInt(10),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("smalldatetime"),
-    TinyInt(58),
-    Int(58),
-    Int(4),
-    Null,
-    SmallInt(4),
-    TinyInt(16),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("real"),
-    TinyInt(59),
-    Int(59),
-    Int(4),
-    Null,
-    SmallInt(4),
-    TinyInt(24),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("money"),
-    TinyInt(60),
-    Int(60),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(19),
-    TinyInt(4),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("datetime"),
-    TinyInt(61),
-    Int(61),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(23),
-    TinyInt(3),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("float"),
-    TinyInt(62),
-    Int(62),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(53),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("sql_variant"),
-    TinyInt(98),
-    Int(98),
-    Int(4),
-    Null,
-    SmallInt(8016),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("ntext"),
-    TinyInt(99),
-    Int(99),
-    Int(4),
-    Null,
-    SmallInt(16),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("bit"),
-    TinyInt(104),
-    Int(104),
-    Int(4),
-    Null,
-    SmallInt(1),
-    TinyInt(1),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("decimal"),
-    TinyInt(106),
-    Int(106),
-    Int(4),
-    Null,
-    SmallInt(17),
-    TinyInt(38),
-    TinyInt(38),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("numeric"),
-    TinyInt(108),
-    Int(108),
-    Int(4),
-    Null,
-    SmallInt(17),
-    TinyInt(38),
-    TinyInt(38),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("smallmoney"),
-    TinyInt(122),
-    Int(122),
-    Int(4),
-    Null,
-    SmallInt(4),
-    TinyInt(10),
-    TinyInt(4),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("bigint"),
-    TinyInt(127),
-    Int(127),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(19),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("hierarchyid"),
-    TinyInt(240),
-    Int(128),
-    Int(4),
-    Null,
-    SmallInt(892),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("geometry"),
-    TinyInt(240),
-    Int(129),
-    Int(4),
-    Null,
-    SmallInt(-1),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("geography"),
-    TinyInt(240),
-    Int(130),
-    Int(4),
-    Null,
-    SmallInt(-1),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("varbinary"),
-    TinyInt(165),
-    Int(165),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("varchar"),
-    TinyInt(167),
-    Int(167),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("binary"),
-    TinyInt(173),
-    Int(173),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("char"),
-    TinyInt(175),
-    Int(175),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("timestamp"),
-    TinyInt(189),
-    Int(189),
-    Int(4),
-    Null,
-    SmallInt(8),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("nvarchar"),
-    TinyInt(231),
-    Int(231),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("nchar"),
-    TinyInt(239),
-    Int(239),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("xml"),
-    TinyInt(241),
-    Int(241),
-    Int(4),
-    Null,
-    SmallInt(-1),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("json"),
-    TinyInt(244),
-    Int(244),
-    Int(4),
-    Null,
-    SmallInt(-1),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("vector"),
-    TinyInt(165),
-    Int(255),
-    Int(4),
-    Null,
-    SmallInt(8000),
-    TinyInt(0),
-    TinyInt(0),
-    Null,
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-  [
-    String("sysname"),
-    TinyInt(231),
-    Int(256),
-    Int(4),
-    Null,
-    SmallInt(256),
-    TinyInt(0),
-    TinyInt(0),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Int(0),
-    Int(0),
-    Bit(false),
-  ],
-]
+let seed_types_text : String =
+  #|[String("image"), TinyInt(34), Int(34), Int(4), Null, SmallInt(16), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("text"), TinyInt(35), Int(35), Int(4), Null, SmallInt(16), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("uniqueidentifier"), TinyInt(36), Int(36), Int(4), Null, SmallInt(16), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("date"), TinyInt(40), Int(40), Int(4), Null, SmallInt(3), TinyInt(10), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("time"), TinyInt(41), Int(41), Int(4), Null, SmallInt(5), TinyInt(16), TinyInt(7), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("datetime2"), TinyInt(42), Int(42), Int(4), Null, SmallInt(8), TinyInt(27), TinyInt(7), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("datetimeoffset"), TinyInt(43), Int(43), Int(4), Null, SmallInt(10), TinyInt(34), TinyInt(7), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("tinyint"), TinyInt(48), Int(48), Int(4), Null, SmallInt(1), TinyInt(3), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("smallint"), TinyInt(52), Int(52), Int(4), Null, SmallInt(2), TinyInt(5), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("int"), TinyInt(56), Int(56), Int(4), Null, SmallInt(4), TinyInt(10), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("smalldatetime"), TinyInt(58), Int(58), Int(4), Null, SmallInt(4), TinyInt(16), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("real"), TinyInt(59), Int(59), Int(4), Null, SmallInt(4), TinyInt(24), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("money"), TinyInt(60), Int(60), Int(4), Null, SmallInt(8), TinyInt(19), TinyInt(4), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("datetime"), TinyInt(61), Int(61), Int(4), Null, SmallInt(8), TinyInt(23), TinyInt(3), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("float"), TinyInt(62), Int(62), Int(4), Null, SmallInt(8), TinyInt(53), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("sql_variant"), TinyInt(98), Int(98), Int(4), Null, SmallInt(8016), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("ntext"), TinyInt(99), Int(99), Int(4), Null, SmallInt(16), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("bit"), TinyInt(104), Int(104), Int(4), Null, SmallInt(1), TinyInt(1), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("decimal"), TinyInt(106), Int(106), Int(4), Null, SmallInt(17), TinyInt(38), TinyInt(38), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("numeric"), TinyInt(108), Int(108), Int(4), Null, SmallInt(17), TinyInt(38), TinyInt(38), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("smallmoney"), TinyInt(122), Int(122), Int(4), Null, SmallInt(4), TinyInt(10), TinyInt(4), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("bigint"), TinyInt(127), Int(127), Int(4), Null, SmallInt(8), TinyInt(19), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("hierarchyid"), TinyInt(240), Int(128), Int(4), Null, SmallInt(892), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(true), Int(0), Int(0), Bit(false)]
+  #|[String("geometry"), TinyInt(240), Int(129), Int(4), Null, SmallInt(-1), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(true), Int(0), Int(0), Bit(false)]
+  #|[String("geography"), TinyInt(240), Int(130), Int(4), Null, SmallInt(-1), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(true), Int(0), Int(0), Bit(false)]
+  #|[String("varbinary"), TinyInt(165), Int(165), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("varchar"), TinyInt(167), Int(167), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("binary"), TinyInt(173), Int(173), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("char"), TinyInt(175), Int(175), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("timestamp"), TinyInt(189), Int(189), Int(4), Null, SmallInt(8), TinyInt(0), TinyInt(0), Null, Bit(false), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("nvarchar"), TinyInt(231), Int(231), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("nchar"), TinyInt(239), Int(239), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("xml"), TinyInt(241), Int(241), Int(4), Null, SmallInt(-1), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("json"), TinyInt(244), Int(244), Int(4), Null, SmallInt(-1), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("vector"), TinyInt(165), Int(255), Int(4), Null, SmallInt(8000), TinyInt(0), TinyInt(0), Null, Bit(true), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
+  #|[String("sysname"), TinyInt(231), Int(256), Int(4), Null, SmallInt(256), TinyInt(0), TinyInt(0), String("SQL_Latin1_General_CP1_CI_AS"), Bit(false), Bit(false), Bit(false), Int(0), Int(0), Bit(false)]
 
 ///|
 /// Columns: name, database_id, source_database_id, owner_sid, create_date, compatibility_level, collation_name, user_access, user_access_desc, is_read_only, is_auto_close_on, is_auto_shrink_on, state, state_desc, is_in_standby, is_cleanly_shutdown, is_supplemental_logging_enabled, snapshot_isolation_state, snapshot_isolation_state_desc, is_read_committed_snapshot_on, recovery_model, recovery_model_desc, page_verify_option, page_verify_option_desc, is_auto_create_stats_on, is_auto_create_stats_incremental_on, is_auto_update_stats_on, is_auto_update_stats_async_on, is_ansi_null_default_on, is_ansi_nulls_on, is_ansi_padding_on, is_ansi_warnings_on, is_arithabort_on, is_concat_null_yields_null_on, is_numeric_roundabort_on, is_quoted_identifier_on, is_recursive_triggers_on, is_cursor_close_on_commit_on, is_local_cursor_default, is_fulltext_enabled, is_trustworthy_on, is_db_chaining_on, is_parameterization_forced, is_master_key_encrypted_by_server, is_query_store_on, is_published, is_subscribed, is_merge_published, is_distributor, is_sync_with_backup, service_broker_guid, is_broker_enabled, log_reuse_wait, log_reuse_wait_desc, is_date_correlation_on, is_cdc_enabled, is_encrypted, is_honor_broker_priority_on, replica_id, group_database_id, resource_pool_id, default_language_lcid, default_language_name, default_fulltext_language_lcid, default_fulltext_language_name, is_nested_triggers_on, is_transform_noise_words_on, two_digit_year_cutoff, containment, containment_desc, target_recovery_time_in_seconds, delayed_durability, delayed_durability_desc, is_memory_optimized_elevate_to_snapshot_on, is_federation_member, is_remote_data_archive_enabled, is_mixed_page_allocation_on, is_temporal_history_retention_enabled, catalog_collation_type, catalog_collation_type_desc, physical_database_name, is_result_set_caching_on, is_accelerated_database_recovery_on, is_tempdb_spill_to_remote_store, is_stale_page_detection_on, is_memory_optimized_enabled, is_data_retention_enabled, is_ledger_on, is_change_feed_enabled, is_data_lake_replication_enabled, is_event_stream_enabled, data_compaction, data_compaction_desc, data_lake_log_publishing, data_lake_log_publishing_desc, is_vorder_enabled, is_proactive_statistics_refresh_on, is_optimized_locking_on
-let seed_databases : Array[Array[@types.Value]] = [
-  [
-    String("master"),
-    Int(1),
-    Null,
-    Binary(b"\x01"),
-    DateTime(37717, 9964917),
-    TinyInt(170),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    TinyInt(0),
-    String("MULTI_USER"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("ONLINE"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(1),
-    String("ON"),
-    Bit(false),
-    TinyInt(3),
-    String("SIMPLE"),
-    TinyInt(2),
-    String("CHECKSUM"),
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-    Bit(false),
-    TinyInt(4),
-    String("ACTIVE_TRANSACTION"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    TinyInt(0),
-    String("NONE"),
-    Int(0),
-    Int(0),
-    String("DISABLED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(true),
-    Int(0),
-    String("DATABASE_DEFAULT"),
-    String("master"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    String("tempdb"),
-    Int(2),
-    Null,
-    Binary(b"\x01"),
-    DateTime(46296, 19860907),
-    TinyInt(170),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    TinyInt(0),
-    String("MULTI_USER"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("ONLINE"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("OFF"),
-    Bit(false),
-    TinyInt(3),
-    String("SIMPLE"),
-    TinyInt(2),
-    String("CHECKSUM"),
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Guid(@types.parse_guid("0E7FA998-68E7-4C88-8637-96D75972D644").unwrap()),
-    Bit(true),
-    TinyInt(0),
-    String("NOTHING"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    TinyInt(0),
-    String("NONE"),
-    Int(60),
-    Int(0),
-    String("DISABLED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Int(0),
-    String("DATABASE_DEFAULT"),
-    String("tempdb"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    String("model"),
-    Int(3),
-    Null,
-    Binary(b"\x01"),
-    DateTime(37717, 9964917),
-    TinyInt(170),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    TinyInt(0),
-    String("MULTI_USER"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("ONLINE"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("OFF"),
-    Bit(false),
-    TinyInt(1),
-    String("FULL"),
-    TinyInt(2),
-    String("CHECKSUM"),
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-    Bit(false),
-    TinyInt(1),
-    String("CHECKPOINT"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    TinyInt(0),
-    String("NONE"),
-    Int(60),
-    Int(0),
-    String("DISABLED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(true),
-    Int(0),
-    String("DATABASE_DEFAULT"),
-    String("model"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    String("msdb"),
-    Int(4),
-    Null,
-    Binary(b"\x01"),
-    DateTime(46259, 11251608),
-    TinyInt(170),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    TinyInt(0),
-    String("MULTI_USER"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("ONLINE"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(1),
-    String("ON"),
-    Bit(false),
-    TinyInt(3),
-    String("SIMPLE"),
-    TinyInt(2),
-    String("CHECKSUM"),
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(true),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Guid(@types.parse_guid("63129674-CA72-4921-A06E-9228E2775F9C").unwrap()),
-    Bit(true),
-    TinyInt(0),
-    String("NOTHING"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    TinyInt(0),
-    String("NONE"),
-    Int(60),
-    Int(0),
-    String("DISABLED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(true),
-    Int(0),
-    String("DATABASE_DEFAULT"),
-    String("msdb"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    String("bitsql_seed"),
-    Int(5),
-    Null,
-    Binary(b"\x01"),
-    DateTime(46296, 20899470),
-    TinyInt(170),
-    String("SQL_Latin1_General_CP1_CI_AS"),
-    TinyInt(0),
-    String("MULTI_USER"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("ONLINE"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("OFF"),
-    Bit(false),
-    TinyInt(1),
-    String("FULL"),
-    TinyInt(2),
-    String("CHECKSUM"),
-    Bit(true),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Guid(@types.parse_guid("A4C22D91-C02A-4676-B031-F47E8FBA5AF3").unwrap()),
-    Bit(true),
-    TinyInt(0),
-    String("NOTHING"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    Null,
-    TinyInt(0),
-    String("NONE"),
-    Int(60),
-    Int(0),
-    String("DISABLED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Int(0),
-    String("DATABASE_DEFAULT"),
-    String("bitsql_seed"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(true),
-    Bit(true),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    TinyInt(0),
-    String("UNSUPPORTED"),
-    Bit(false),
-    Bit(false),
-    Bit(false),
-  ],
-]
+let seed_databases_text : String =
+  #|[String("master"), Int(1), Null, Binary(b"\x01"), DateTime(37717, 9964917), TinyInt(170), String("SQL_Latin1_General_CP1_CI_AS"), TinyInt(0), String("MULTI_USER"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("ONLINE"), Bit(false), Bit(false), Bit(false), TinyInt(1), String("ON"), Bit(false), TinyInt(3), String("SIMPLE"), TinyInt(2), String("CHECKSUM"), Bit(true), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()), Bit(false), TinyInt(4), String("ACTIVE_TRANSACTION"), Bit(false), Bit(false), Bit(false), Bit(false), Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, TinyInt(0), String("NONE"), Int(0), Int(0), String("DISABLED"), Bit(false), Bit(false), Bit(false), Bit(true), Bit(true), Int(0), String("DATABASE_DEFAULT"), String("master"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), TinyInt(0), String("UNSUPPORTED"), TinyInt(0), String("UNSUPPORTED"), Bit(false), Bit(false), Bit(false)]
+  #|[String("tempdb"), Int(2), Null, Binary(b"\x01"), DateTime(46296, 19860907), TinyInt(170), String("SQL_Latin1_General_CP1_CI_AS"), TinyInt(0), String("MULTI_USER"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("ONLINE"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("OFF"), Bit(false), TinyInt(3), String("SIMPLE"), TinyInt(2), String("CHECKSUM"), Bit(true), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Guid(@types.parse_guid("0E7FA998-68E7-4C88-8637-96D75972D644").unwrap()), Bit(true), TinyInt(0), String("NOTHING"), Bit(false), Bit(false), Bit(false), Bit(false), Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, TinyInt(0), String("NONE"), Int(60), Int(0), String("DISABLED"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Int(0), String("DATABASE_DEFAULT"), String("tempdb"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), TinyInt(0), String("UNSUPPORTED"), TinyInt(0), String("UNSUPPORTED"), Bit(false), Bit(false), Bit(false)]
+  #|[String("model"), Int(3), Null, Binary(b"\x01"), DateTime(37717, 9964917), TinyInt(170), String("SQL_Latin1_General_CP1_CI_AS"), TinyInt(0), String("MULTI_USER"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("ONLINE"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("OFF"), Bit(false), TinyInt(1), String("FULL"), TinyInt(2), String("CHECKSUM"), Bit(true), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()), Bit(false), TinyInt(1), String("CHECKPOINT"), Bit(false), Bit(false), Bit(false), Bit(false), Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, TinyInt(0), String("NONE"), Int(60), Int(0), String("DISABLED"), Bit(false), Bit(false), Bit(false), Bit(true), Bit(true), Int(0), String("DATABASE_DEFAULT"), String("model"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), TinyInt(0), String("UNSUPPORTED"), TinyInt(0), String("UNSUPPORTED"), Bit(false), Bit(false), Bit(false)]
+  #|[String("msdb"), Int(4), Null, Binary(b"\x01"), DateTime(46259, 11251608), TinyInt(170), String("SQL_Latin1_General_CP1_CI_AS"), TinyInt(0), String("MULTI_USER"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("ONLINE"), Bit(false), Bit(false), Bit(false), TinyInt(1), String("ON"), Bit(false), TinyInt(3), String("SIMPLE"), TinyInt(2), String("CHECKSUM"), Bit(true), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(true), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Guid(@types.parse_guid("63129674-CA72-4921-A06E-9228E2775F9C").unwrap()), Bit(true), TinyInt(0), String("NOTHING"), Bit(false), Bit(false), Bit(false), Bit(false), Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, TinyInt(0), String("NONE"), Int(60), Int(0), String("DISABLED"), Bit(false), Bit(false), Bit(false), Bit(true), Bit(true), Int(0), String("DATABASE_DEFAULT"), String("msdb"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), TinyInt(0), String("UNSUPPORTED"), TinyInt(0), String("UNSUPPORTED"), Bit(false), Bit(false), Bit(false)]
+  #|[String("bitsql_seed"), Int(5), Null, Binary(b"\x01"), DateTime(46296, 20899470), TinyInt(170), String("SQL_Latin1_General_CP1_CI_AS"), TinyInt(0), String("MULTI_USER"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("ONLINE"), Bit(false), Bit(false), Bit(false), TinyInt(0), String("OFF"), Bit(false), TinyInt(1), String("FULL"), TinyInt(2), String("CHECKSUM"), Bit(true), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), Bit(false), Guid(@types.parse_guid("A4C22D91-C02A-4676-B031-F47E8FBA5AF3").unwrap()), Bit(true), TinyInt(0), String("NOTHING"), Bit(false), Bit(false), Bit(false), Bit(false), Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, TinyInt(0), String("NONE"), Int(60), Int(0), String("DISABLED"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Int(0), String("DATABASE_DEFAULT"), String("bitsql_seed"), Bit(false), Bit(false), Bit(false), Bit(false), Bit(true), Bit(true), Bit(false), Bit(false), Bit(false), Bit(false), TinyInt(0), String("UNSUPPORTED"), TinyInt(0), String("UNSUPPORTED"), Bit(false), Bit(false), Bit(false)]
 
 ///|
 let seed_database_columns : Array[String] = [
@@ -4826,1470 +1892,156 @@ let seed_type_columns : Array[String] = [
 
 ///|
 // Captured defaults; mutable settings are overlaid by view_rows.
-let seed_scoped_configurations : Array[Array[@types.Value]] = [
-  [Int(1), String("MAXDOP"), Variant(Int(0), Int), Null, Bit(true)],
-  [
-    Int(2),
-    String("LEGACY_CARDINALITY_ESTIMATION"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(3),
-    String("PARAMETER_SNIFFING"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(4),
-    String("QUERY_OPTIMIZER_HOTFIXES"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [Int(6), String("IDENTITY_CACHE"), Variant(Bit(true), Bit), Null, Bit(true)],
-  [
-    Int(7),
-    String("INTERLEAVED_EXECUTION_TVF"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(8),
-    String("BATCH_MODE_MEMORY_GRANT_FEEDBACK"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(9),
-    String("BATCH_MODE_ADAPTIVE_JOINS"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(10),
-    String("TSQL_SCALAR_UDF_INLINING"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(11),
-    String("ELEVATE_ONLINE"),
-    Variant(String("OFF"), NVarChar(Some(16), coll_default)),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(12),
-    String("ELEVATE_RESUMABLE"),
-    Variant(String("OFF"), NVarChar(Some(16), coll_default)),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(13),
-    String("OPTIMIZE_FOR_AD_HOC_WORKLOADS"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(14),
-    String("XTP_PROCEDURE_EXECUTION_STATISTICS"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(15),
-    String("XTP_QUERY_EXECUTION_STATISTICS"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(16),
-    String("ROW_MODE_MEMORY_GRANT_FEEDBACK"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(17),
-    String("ISOLATE_SECURITY_POLICY_CARDINALITY"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(18),
-    String("BATCH_MODE_ON_ROWSTORE"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(19),
-    String("DEFERRED_COMPILATION_TV"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(20),
-    String("ACCELERATED_PLAN_FORCING"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(21),
-    String("GLOBAL_TEMPORARY_TABLE_AUTO_DROP"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(22),
-    String("LIGHTWEIGHT_QUERY_PROFILING"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(23),
-    String("VERBOSE_TRUNCATION_WARNINGS"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(24),
-    String("LAST_QUERY_PLAN_STATS"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(25),
-    String("PAUSED_RESUMABLE_INDEX_ABORT_DURATION_MINUTES"),
-    Variant(Int(1440), Int),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(27),
-    String("EXEC_QUERY_STATS_FOR_SCALAR_FUNCTIONS"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(28),
-    String("PARAMETER_SENSITIVE_PLAN_OPTIMIZATION"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(29),
-    String("ASYNC_STATS_UPDATE_WAIT_AT_LOW_PRIORITY"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [Int(31), String("CE_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)],
-  [
-    Int(33),
-    String("MEMORY_GRANT_FEEDBACK_PERSISTENCE"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(34),
-    String("MEMORY_GRANT_FEEDBACK_PERCENTILE_GRANT"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(35),
-    String("OPTIMIZED_PLAN_FORCING"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [Int(37), String("DOP_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)],
-  [
-    Int(38),
-    String("LEDGER_DIGEST_STORAGE_ENDPOINT"),
-    Variant(String("OFF"), NVarChar(Some(1002), coll_default)),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(39),
-    String("FORCE_SHOWPLAN_RUNTIME_PARAMETER_COLLECTION"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(40),
-    String("READABLE_SECONDARY_TEMPORARY_STATS_AUTO_CREATE"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(41),
-    String("READABLE_SECONDARY_TEMPORARY_STATS_AUTO_UPDATE"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(42),
-    String("OPTIMIZED_SP_EXECUTESQL"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(44),
-    String("FULLTEXT_INDEX_VERSION"),
-    Variant(SmallInt(2), SmallInt),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(46),
-    String("CE_FEEDBACK_FOR_EXPRESSIONS"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(47),
-    String("OPTIONAL_PARAMETER_OPTIMIZATION"),
-    Variant(Bit(true), Bit),
-    Null,
-    Bit(true),
-  ],
-  [
-    Int(48),
-    String("PREVIEW_FEATURES"),
-    Variant(Bit(false), Bit),
-    Null,
-    Bit(true),
-  ],
-]
+let seed_scoped_configurations_text : String =
+  #|[Int(1), String("MAXDOP"), Variant(Int(0), Int), Null, Bit(true)]
+  #|[Int(2), String("LEGACY_CARDINALITY_ESTIMATION"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(3), String("PARAMETER_SNIFFING"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(4), String("QUERY_OPTIMIZER_HOTFIXES"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(6), String("IDENTITY_CACHE"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(7), String("INTERLEAVED_EXECUTION_TVF"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(8), String("BATCH_MODE_MEMORY_GRANT_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(9), String("BATCH_MODE_ADAPTIVE_JOINS"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(10), String("TSQL_SCALAR_UDF_INLINING"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(11), String("ELEVATE_ONLINE"), Variant(String("OFF"), NVarChar(Some(16), coll_default)), Null, Bit(true)]
+  #|[Int(12), String("ELEVATE_RESUMABLE"), Variant(String("OFF"), NVarChar(Some(16), coll_default)), Null, Bit(true)]
+  #|[Int(13), String("OPTIMIZE_FOR_AD_HOC_WORKLOADS"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(14), String("XTP_PROCEDURE_EXECUTION_STATISTICS"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(15), String("XTP_QUERY_EXECUTION_STATISTICS"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(16), String("ROW_MODE_MEMORY_GRANT_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(17), String("ISOLATE_SECURITY_POLICY_CARDINALITY"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(18), String("BATCH_MODE_ON_ROWSTORE"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(19), String("DEFERRED_COMPILATION_TV"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(20), String("ACCELERATED_PLAN_FORCING"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(21), String("GLOBAL_TEMPORARY_TABLE_AUTO_DROP"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(22), String("LIGHTWEIGHT_QUERY_PROFILING"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(23), String("VERBOSE_TRUNCATION_WARNINGS"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(24), String("LAST_QUERY_PLAN_STATS"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(25), String("PAUSED_RESUMABLE_INDEX_ABORT_DURATION_MINUTES"), Variant(Int(1440), Int), Null, Bit(true)]
+  #|[Int(27), String("EXEC_QUERY_STATS_FOR_SCALAR_FUNCTIONS"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(28), String("PARAMETER_SENSITIVE_PLAN_OPTIMIZATION"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(29), String("ASYNC_STATS_UPDATE_WAIT_AT_LOW_PRIORITY"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(31), String("CE_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(33), String("MEMORY_GRANT_FEEDBACK_PERSISTENCE"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(34), String("MEMORY_GRANT_FEEDBACK_PERCENTILE_GRANT"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(35), String("OPTIMIZED_PLAN_FORCING"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(37), String("DOP_FEEDBACK"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(38), String("LEDGER_DIGEST_STORAGE_ENDPOINT"), Variant(String("OFF"), NVarChar(Some(1002), coll_default)), Null, Bit(true)]
+  #|[Int(39), String("FORCE_SHOWPLAN_RUNTIME_PARAMETER_COLLECTION"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(40), String("READABLE_SECONDARY_TEMPORARY_STATS_AUTO_CREATE"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(41), String("READABLE_SECONDARY_TEMPORARY_STATS_AUTO_UPDATE"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(42), String("OPTIMIZED_SP_EXECUTESQL"), Variant(Bit(false), Bit), Null, Bit(true)]
+  #|[Int(44), String("FULLTEXT_INDEX_VERSION"), Variant(SmallInt(2), SmallInt), Null, Bit(true)]
+  #|[Int(46), String("CE_FEEDBACK_FOR_EXPRESSIONS"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(47), String("OPTIONAL_PARAMETER_OPTIMIZATION"), Variant(Bit(true), Bit), Null, Bit(true)]
+  #|[Int(48), String("PREVIEW_FEATURES"), Variant(Bit(false), Bit), Null, Bit(true)]
 
 ///|
 // Default instance configuration, captured on the pinned oracle.
-let seed_configurations : Array[Array[@types.Value]] = [
-  [
-    Int(101),
-    String("recovery interval (min)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("Maximum recovery interval in minutes"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(102),
-    String("allow updates"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Allow updates to system tables"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(103),
-    String("user connections"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("Number of user connections allowed"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(106),
-    String("locks"),
-    Variant(Int(0), Int),
-    Variant(Int(5000), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Number of locks for all users"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(107),
-    String("open objects"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Number of open database objects"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(109),
-    String("fill factor (%)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(100), Int),
-    Variant(Int(0), Int),
-    String("Default fill factor percentage"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(114),
-    String("disallow results from triggers"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Disallow returning results from triggers"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(115),
-    String("nested triggers"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Allow triggers to be invoked within triggers"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(116),
-    String("server trigger recursion"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Allow recursion for server level triggers"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(117),
-    String("remote access"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Allow remote access"),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    Int(124),
-    String("default language"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(9999), Int),
-    Variant(Int(0), Int),
-    String("default language"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(400),
-    String("cross db ownership chaining"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Allow cross db ownership chaining"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(503),
-    String("max worker threads"),
-    Variant(Int(0), Int),
-    Variant(Int(128), Int),
-    Variant(Int(65535), Int),
-    Variant(Int(0), Int),
-    String("Maximum worker threads"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(505),
-    String("network packet size (B)"),
-    Variant(Int(4096), Int),
-    Variant(Int(512), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(4096), Int),
-    String("Network packet size"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(518),
-    String("show advanced options"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("show advanced options"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(542),
-    String("remote proc trans"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Create DTC transaction for remote procedures"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(544),
-    String("c2 audit mode"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("c2 audit mode"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1126),
-    String("default full-text language"),
-    Variant(Int(1033), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(1033), Int),
-    String("default full-text language"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1127),
-    String("two digit year cutoff"),
-    Variant(Int(2049), Int),
-    Variant(Int(1753), Int),
-    Variant(Int(9999), Int),
-    Variant(Int(2049), Int),
-    String("two digit year cutoff"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1505),
-    String("index create memory (KB)"),
-    Variant(Int(0), Int),
-    Variant(Int(704), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Memory for index create sorts (kBytes)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1517),
-    String("priority boost"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Priority boost"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1519),
-    String("remote login timeout (s)"),
-    Variant(Int(10), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(10), Int),
-    String("remote login timeout"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1520),
-    String("remote query timeout (s)"),
-    Variant(Int(600), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(600), Int),
-    String("remote query timeout"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1531),
-    String("cursor threshold"),
-    Variant(Int(-1), Int),
-    Variant(Int(-1), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(-1), Int),
-    String("cursor threshold"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1532),
-    String("set working set size"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("set working set size"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1534),
-    String("user options"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("user options"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1535),
-    String("affinity mask"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("affinity mask"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1536),
-    String("max text repl size (B)"),
-    Variant(Int(65536), Int),
-    Variant(Int(-1), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(65536), Int),
-    String("Maximum size of a text field in replication."),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1537),
-    String("media retention"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(365), Int),
-    Variant(Int(0), Int),
-    String("Tape retention period in days"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1538),
-    String("cost threshold for parallelism"),
-    Variant(Int(5), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(5), Int),
-    String("cost threshold for parallelism"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1539),
-    String("max degree of parallelism"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("maximum degree of parallelism"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1540),
-    String("min memory per query (KB)"),
-    Variant(Int(1024), Int),
-    Variant(Int(512), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(1024), Int),
-    String("minimum memory per query (kBytes)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1541),
-    String("query wait (s)"),
-    Variant(Int(-1), Int),
-    Variant(Int(-1), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(-1), Int),
-    String("maximum time to wait for query memory (s)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1543),
-    String("min server memory (MB)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(16), Int),
-    String("Minimum size of server memory (MB)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1544),
-    String("max server memory (MB)"),
-    Variant(Int(2147483647), Int),
-    Variant(Int(128), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(2147483647), Int),
-    String("Maximum size of server memory (MB)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1545),
-    String("query governor cost limit"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Maximum estimated cost allowed by query governor"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1546),
-    String("lightweight pooling"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("User mode scheduler uses lightweight pooling"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1547),
-    String("scan for startup procs"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("scan for startup stored procedures"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1549),
-    String("affinity64 mask"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("affinity64 mask"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1550),
-    String("affinity I/O mask"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("affinity I/O mask"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1551),
-    String("affinity64 I/O mask"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("affinity64 I/O mask"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1555),
-    String("transform noise words"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Transform noise words for full-text query"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1556),
-    String("precompute rank"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Use precomputed rank for full-text query"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1557),
-    String("PH timeout (s)"),
-    Variant(Int(60), Int),
-    Variant(Int(1), Int),
-    Variant(Int(3600), Int),
-    Variant(Int(60), Int),
-    String("DB connection timeout for full-text protocol handler (s)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1562),
-    String("clr enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("CLR user code execution enabled in the server"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1563),
-    String("max full-text crawl range"),
-    Variant(Int(4), Int),
-    Variant(Int(0), Int),
-    Variant(Int(256), Int),
-    Variant(Int(4), Int),
-    String("Maximum  crawl ranges allowed in full-text indexing"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1564),
-    String("ft notify bandwidth (min)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("Number of reserved full-text notifications buffers"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1565),
-    String("ft notify bandwidth (max)"),
-    Variant(Int(100), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(100), Int),
-    String("Max number of full-text notifications buffers"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1566),
-    String("ft crawl bandwidth (min)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(0), Int),
-    String("Number of reserved full-text crawl buffers"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1567),
-    String("ft crawl bandwidth (max)"),
-    Variant(Int(100), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(100), Int),
-    String("Max number of full-text crawl buffers"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1568),
-    String("default trace enabled"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Enable or disable the default trace"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1569),
-    String("blocked process threshold (s)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(86400), Int),
-    Variant(Int(0), Int),
-    String("Blocked process reporting threshold"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1570),
-    String("in-doubt xact resolution"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2), Int),
-    Variant(Int(0), Int),
-    String("Recovery policy for DTC transactions with unknown outcome"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1576),
-    String("remote admin connections"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Dedicated Admin Connections are allowed from remote clients"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1577),
-    String("common criteria compliance enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Common Criteria compliance mode enabled"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1578),
-    String("EKM provider enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable EKM provider"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1579),
-    String("backup compression default"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable compression of backups by default"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1580),
-    String("filestream access level"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2), Int),
-    Variant(Int(0), Int),
-    String("Sets the FILESTREAM access level"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1581),
-    String("optimize for ad hoc workloads"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String(
-      "When this option is set, plan cache size is further reduced for single-use adhoc OLTP workload.",
-    ),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1582),
-    String("access check cache bucket count"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(65536), Int),
-    Variant(Int(0), Int),
-    String(
-      "Default hash bucket count for the access check result security cache",
-    ),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1583),
-    String("access check cache quota"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Default quota for the access check result security cache"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1584),
-    String("backup checksum default"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable checksum of backups by default"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1585),
-    String("automatic soft-NUMA disabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Automatic soft-NUMA is enabled by default"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1586),
-    String("external scripts enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Allows execution of external scripts"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1587),
-    String("clr strict security"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("CLR strict security enabled in the server"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1588),
-    String("column encryption enclave type"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2), Int),
-    Variant(Int(0), Int),
-    String("Type of enclave used for computations on encrypted columns"),
-    Bit(false),
-    Bit(false),
-  ],
-  [
-    Int(1589),
-    String("tempdb metadata memory-optimized"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Tempdb metadata memory-optimized is disabled by default."),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1591),
-    String("ADR cleaner retry timeout (min)"),
-    Variant(Int(15), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(15), Int),
-    String("ADR cleaner retry timeout."),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1592),
-    String("ADR Preallocation Factor"),
-    Variant(Int(4), Int),
-    Variant(Int(0), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(4), Int),
-    String("ADR Preallocation Factor."),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1593),
-    String("version high part of SQL Server"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("version high part of SQL Server that model database copied for"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1594),
-    String("version low part of SQL Server"),
-    Variant(Int(0), Int),
-    Variant(Int(-2147483648), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("version low part of SQL Server that model database copied for"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1595),
-    String("Data processed daily limit in TB"),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(2147483647), Int),
-    String("SQL On-demand data processed daily limit in TB"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1596),
-    String("Data processed weekly limit in TB"),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(2147483647), Int),
-    String("SQL On-demand data processed weekly limit in TB"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1597),
-    String("Data processed monthly limit in TB"),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(2147483647), Int),
-    String("SQL On-demand data processed monthly limit in TB"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1598),
-    String("ADR Cleaner Thread Count"),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(1), Int),
-    String("Max number of threads ADR cleaner can assign."),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1599),
-    String("hardware offload enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable hardware offloading on the server"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1600),
-    String("hardware offload config"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(255), Int),
-    Variant(Int(0), Int),
-    String("Configure hardware offload accelerator"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1601),
-    String("hardware offload mode"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(255), Int),
-    Variant(Int(0), Int),
-    String("Configure hardware offload accelerator mode"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1602),
-    String("backup compression algorithm"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(3), Int),
-    Variant(Int(0), Int),
-    String("Configure default backup compression algorithm"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(1603),
-    String("ADR cleaner lock timeout (s)"),
-    Variant(Int(5), Int),
-    Variant(Int(1), Int),
-    Variant(Int(32767), Int),
-    Variant(Int(5), Int),
-    String("ADR cleaner lock timeout"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1606),
-    String("SLOG memory quota (%)"),
-    Variant(Int(75), Int),
-    Variant(Int(1), Int),
-    Variant(Int(100), Int),
-    Variant(Int(75), Int),
-    String("SLOG memory quota percentage"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1609),
-    String("max RPC request params (KB)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    String("Maximum memory for RPC request parameters (kBytes)"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1610),
-    String("max UCS send boxcars"),
-    Variant(Int(256), Int),
-    Variant(Int(256), Int),
-    Variant(Int(2048), Int),
-    Variant(Int(256), Int),
-    String("Maximum number of UCS boxcars for sending messages."),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1611),
-    String("availability group commit time (ms)"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(10), Int),
-    Variant(Int(0), Int),
-    String(
-      "Configure availability group commit time in milliseconds for SQL Server only.",
-    ),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(1612),
-    String("tiered memory enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("tiered memory memory-optimized is disabled by default."),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1613),
-    String("max server tiered memory (MB)"),
-    Variant(Int(2147483647), Int),
-    Variant(Int(0), Int),
-    Variant(Int(2147483647), Int),
-    Variant(Int(2147483647), Int),
-    String("Maximum size of server tiered memory (MB)"),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(1614),
-    String("max lock manager cache memory (%)"),
-    Variant(Int(20), Int),
-    Variant(Int(20), Int),
-    Variant(Int(60), Int),
-    Variant(Int(20), Int),
-    String(
-      "Maximum size of lock manager cache memory as a percentage of the SQLOS committed memory",
-    ),
-    Bit(false),
-    Bit(true),
-  ],
-  [
-    Int(16384),
-    String("Agent XPs"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable Agent XPs"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16386),
-    String("Database Mail XPs"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable Database Mail XPs"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16387),
-    String("SMO and DMO XPs"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Enable or disable SMO and DMO XPs"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16388),
-    String("Ole Automation Procedures"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable Ole Automation Procedures"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16390),
-    String("xp_cmdshell"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable command shell"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16391),
-    String("Ad Hoc Distributed Queries"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable Ad Hoc Distributed Queries"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16392),
-    String("Replication XPs"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable Replication XPs"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16393),
-    String("contained database authentication"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enables contained databases and contained authentication"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16394),
-    String("hadoop connectivity"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(8), Int),
-    Variant(Int(0), Int),
-    String(
-      "Configure SQL Server to connect to external Hadoop or Microsoft Azure storage blob data sources through PolyBase",
-    ),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16395),
-    String("polybase network encryption"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String(
-      "Configure SQL Server to encrypt control and data channels when using PolyBase",
-    ),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16396),
-    String("remote data archive"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Allow the use of the REMOTE_DATA_ARCHIVE data access for databases"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16397),
-    String("allow polybase export"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Allows writing into an external table using PolyBase"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16398),
-    String("allow filesystem enumeration"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Allow enumeration of filesystem"),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16399),
-    String("polybase enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String(
-      "Configure SQL Server to connect to external data sources through PolyBase",
-    ),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16400),
-    String("suppress recovery model errors"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String(
-      "Return warning instead of error for unsupported ALTER DATABASE SET RECOVERY command",
-    ),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16401),
-    String("openrowset auto_create_statistics"),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(1), Int),
-    String("Enable or disable auto create statistics for openrowset sources."),
-    Bit(true),
-    Bit(true),
-  ],
-  [
-    Int(16402),
-    String("external rest endpoint enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable invocations of external REST endpoints"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16403),
-    String("external xtp dll gen util enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String(
-      "Enable or disable using external xtp dll generation via HkDllGen.exe",
-    ),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16404),
-    String("external AI runtimes enabled"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String("Enable or disable using external AI runtimes"),
-    Bit(true),
-    Bit(false),
-  ],
-  [
-    Int(16405),
-    String("allow server scoped db credentials"),
-    Variant(Int(0), Int),
-    Variant(Int(0), Int),
-    Variant(Int(1), Int),
-    Variant(Int(0), Int),
-    String(
-      "Enable or disable use of server managed identity in database scoped credentials",
-    ),
-    Bit(true),
-    Bit(false),
-  ],
-]
+let seed_configurations_text : String =
+  #|[Int(101), String("recovery interval (min)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("Maximum recovery interval in minutes"), Bit(true), Bit(true)]
+  #|[Int(102), String("allow updates"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Allow updates to system tables"), Bit(true), Bit(false)]
+  #|[Int(103), String("user connections"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("Number of user connections allowed"), Bit(false), Bit(true)]
+  #|[Int(106), String("locks"), Variant(Int(0), Int), Variant(Int(5000), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Number of locks for all users"), Bit(false), Bit(true)]
+  #|[Int(107), String("open objects"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Number of open database objects"), Bit(false), Bit(true)]
+  #|[Int(109), String("fill factor (%)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(100), Int), Variant(Int(0), Int), String("Default fill factor percentage"), Bit(false), Bit(true)]
+  #|[Int(114), String("disallow results from triggers"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Disallow returning results from triggers"), Bit(true), Bit(true)]
+  #|[Int(115), String("nested triggers"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Allow triggers to be invoked within triggers"), Bit(true), Bit(false)]
+  #|[Int(116), String("server trigger recursion"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Allow recursion for server level triggers"), Bit(true), Bit(false)]
+  #|[Int(117), String("remote access"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Allow remote access"), Bit(false), Bit(false)]
+  #|[Int(124), String("default language"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(9999), Int), Variant(Int(0), Int), String("default language"), Bit(true), Bit(false)]
+  #|[Int(400), String("cross db ownership chaining"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Allow cross db ownership chaining"), Bit(true), Bit(false)]
+  #|[Int(503), String("max worker threads"), Variant(Int(0), Int), Variant(Int(128), Int), Variant(Int(65535), Int), Variant(Int(0), Int), String("Maximum worker threads"), Bit(true), Bit(true)]
+  #|[Int(505), String("network packet size (B)"), Variant(Int(4096), Int), Variant(Int(512), Int), Variant(Int(32767), Int), Variant(Int(4096), Int), String("Network packet size"), Bit(true), Bit(true)]
+  #|[Int(518), String("show advanced options"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("show advanced options"), Bit(true), Bit(false)]
+  #|[Int(542), String("remote proc trans"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Create DTC transaction for remote procedures"), Bit(true), Bit(false)]
+  #|[Int(544), String("c2 audit mode"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("c2 audit mode"), Bit(false), Bit(true)]
+  #|[Int(1126), String("default full-text language"), Variant(Int(1033), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(1033), Int), String("default full-text language"), Bit(true), Bit(true)]
+  #|[Int(1127), String("two digit year cutoff"), Variant(Int(2049), Int), Variant(Int(1753), Int), Variant(Int(9999), Int), Variant(Int(2049), Int), String("two digit year cutoff"), Bit(true), Bit(true)]
+  #|[Int(1505), String("index create memory (KB)"), Variant(Int(0), Int), Variant(Int(704), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Memory for index create sorts (kBytes)"), Bit(true), Bit(true)]
+  #|[Int(1517), String("priority boost"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Priority boost"), Bit(false), Bit(true)]
+  #|[Int(1519), String("remote login timeout (s)"), Variant(Int(10), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(10), Int), String("remote login timeout"), Bit(true), Bit(false)]
+  #|[Int(1520), String("remote query timeout (s)"), Variant(Int(600), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(600), Int), String("remote query timeout"), Bit(true), Bit(false)]
+  #|[Int(1531), String("cursor threshold"), Variant(Int(-1), Int), Variant(Int(-1), Int), Variant(Int(2147483647), Int), Variant(Int(-1), Int), String("cursor threshold"), Bit(true), Bit(true)]
+  #|[Int(1532), String("set working set size"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("set working set size"), Bit(false), Bit(true)]
+  #|[Int(1534), String("user options"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("user options"), Bit(true), Bit(false)]
+  #|[Int(1535), String("affinity mask"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("affinity mask"), Bit(true), Bit(true)]
+  #|[Int(1536), String("max text repl size (B)"), Variant(Int(65536), Int), Variant(Int(-1), Int), Variant(Int(2147483647), Int), Variant(Int(65536), Int), String("Maximum size of a text field in replication."), Bit(true), Bit(false)]
+  #|[Int(1537), String("media retention"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(365), Int), Variant(Int(0), Int), String("Tape retention period in days"), Bit(true), Bit(true)]
+  #|[Int(1538), String("cost threshold for parallelism"), Variant(Int(5), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(5), Int), String("cost threshold for parallelism"), Bit(true), Bit(true)]
+  #|[Int(1539), String("max degree of parallelism"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("maximum degree of parallelism"), Bit(true), Bit(true)]
+  #|[Int(1540), String("min memory per query (KB)"), Variant(Int(1024), Int), Variant(Int(512), Int), Variant(Int(2147483647), Int), Variant(Int(1024), Int), String("minimum memory per query (kBytes)"), Bit(true), Bit(true)]
+  #|[Int(1541), String("query wait (s)"), Variant(Int(-1), Int), Variant(Int(-1), Int), Variant(Int(2147483647), Int), Variant(Int(-1), Int), String("maximum time to wait for query memory (s)"), Bit(true), Bit(true)]
+  #|[Int(1543), String("min server memory (MB)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(16), Int), String("Minimum size of server memory (MB)"), Bit(true), Bit(true)]
+  #|[Int(1544), String("max server memory (MB)"), Variant(Int(2147483647), Int), Variant(Int(128), Int), Variant(Int(2147483647), Int), Variant(Int(2147483647), Int), String("Maximum size of server memory (MB)"), Bit(true), Bit(true)]
+  #|[Int(1545), String("query governor cost limit"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Maximum estimated cost allowed by query governor"), Bit(true), Bit(true)]
+  #|[Int(1546), String("lightweight pooling"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("User mode scheduler uses lightweight pooling"), Bit(false), Bit(true)]
+  #|[Int(1547), String("scan for startup procs"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("scan for startup stored procedures"), Bit(false), Bit(true)]
+  #|[Int(1549), String("affinity64 mask"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("affinity64 mask"), Bit(true), Bit(true)]
+  #|[Int(1550), String("affinity I/O mask"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("affinity I/O mask"), Bit(false), Bit(true)]
+  #|[Int(1551), String("affinity64 I/O mask"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("affinity64 I/O mask"), Bit(false), Bit(true)]
+  #|[Int(1555), String("transform noise words"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Transform noise words for full-text query"), Bit(true), Bit(true)]
+  #|[Int(1556), String("precompute rank"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Use precomputed rank for full-text query"), Bit(true), Bit(true)]
+  #|[Int(1557), String("PH timeout (s)"), Variant(Int(60), Int), Variant(Int(1), Int), Variant(Int(3600), Int), Variant(Int(60), Int), String("DB connection timeout for full-text protocol handler (s)"), Bit(true), Bit(true)]
+  #|[Int(1562), String("clr enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("CLR user code execution enabled in the server"), Bit(true), Bit(false)]
+  #|[Int(1563), String("max full-text crawl range"), Variant(Int(4), Int), Variant(Int(0), Int), Variant(Int(256), Int), Variant(Int(4), Int), String("Maximum  crawl ranges allowed in full-text indexing"), Bit(true), Bit(true)]
+  #|[Int(1564), String("ft notify bandwidth (min)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("Number of reserved full-text notifications buffers"), Bit(true), Bit(true)]
+  #|[Int(1565), String("ft notify bandwidth (max)"), Variant(Int(100), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(100), Int), String("Max number of full-text notifications buffers"), Bit(true), Bit(true)]
+  #|[Int(1566), String("ft crawl bandwidth (min)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(0), Int), String("Number of reserved full-text crawl buffers"), Bit(true), Bit(true)]
+  #|[Int(1567), String("ft crawl bandwidth (max)"), Variant(Int(100), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(100), Int), String("Max number of full-text crawl buffers"), Bit(true), Bit(true)]
+  #|[Int(1568), String("default trace enabled"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Enable or disable the default trace"), Bit(true), Bit(true)]
+  #|[Int(1569), String("blocked process threshold (s)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(86400), Int), Variant(Int(0), Int), String("Blocked process reporting threshold"), Bit(true), Bit(true)]
+  #|[Int(1570), String("in-doubt xact resolution"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2), Int), Variant(Int(0), Int), String("Recovery policy for DTC transactions with unknown outcome"), Bit(true), Bit(true)]
+  #|[Int(1576), String("remote admin connections"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Dedicated Admin Connections are allowed from remote clients"), Bit(true), Bit(false)]
+  #|[Int(1577), String("common criteria compliance enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Common Criteria compliance mode enabled"), Bit(false), Bit(true)]
+  #|[Int(1578), String("EKM provider enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable EKM provider"), Bit(true), Bit(true)]
+  #|[Int(1579), String("backup compression default"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable compression of backups by default"), Bit(true), Bit(false)]
+  #|[Int(1580), String("filestream access level"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2), Int), Variant(Int(0), Int), String("Sets the FILESTREAM access level"), Bit(true), Bit(false)]
+  #|[Int(1581), String("optimize for ad hoc workloads"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("When this option is set, plan cache size is further reduced for single-use adhoc OLTP workload."), Bit(true), Bit(true)]
+  #|[Int(1582), String("access check cache bucket count"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(65536), Int), Variant(Int(0), Int), String("Default hash bucket count for the access check result security cache"), Bit(true), Bit(true)]
+  #|[Int(1583), String("access check cache quota"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Default quota for the access check result security cache"), Bit(true), Bit(true)]
+  #|[Int(1584), String("backup checksum default"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable checksum of backups by default"), Bit(true), Bit(false)]
+  #|[Int(1585), String("automatic soft-NUMA disabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Automatic soft-NUMA is enabled by default"), Bit(false), Bit(true)]
+  #|[Int(1586), String("external scripts enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Allows execution of external scripts"), Bit(true), Bit(false)]
+  #|[Int(1587), String("clr strict security"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("CLR strict security enabled in the server"), Bit(true), Bit(true)]
+  #|[Int(1588), String("column encryption enclave type"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2), Int), Variant(Int(0), Int), String("Type of enclave used for computations on encrypted columns"), Bit(false), Bit(false)]
+  #|[Int(1589), String("tempdb metadata memory-optimized"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Tempdb metadata memory-optimized is disabled by default."), Bit(false), Bit(true)]
+  #|[Int(1591), String("ADR cleaner retry timeout (min)"), Variant(Int(15), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(15), Int), String("ADR cleaner retry timeout."), Bit(true), Bit(true)]
+  #|[Int(1592), String("ADR Preallocation Factor"), Variant(Int(4), Int), Variant(Int(0), Int), Variant(Int(32767), Int), Variant(Int(4), Int), String("ADR Preallocation Factor."), Bit(true), Bit(true)]
+  #|[Int(1593), String("version high part of SQL Server"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("version high part of SQL Server that model database copied for"), Bit(true), Bit(true)]
+  #|[Int(1594), String("version low part of SQL Server"), Variant(Int(0), Int), Variant(Int(-2147483648), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("version low part of SQL Server that model database copied for"), Bit(true), Bit(true)]
+  #|[Int(1595), String("Data processed daily limit in TB"), Variant(Int(2147483647), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(2147483647), Int), String("SQL On-demand data processed daily limit in TB"), Bit(true), Bit(false)]
+  #|[Int(1596), String("Data processed weekly limit in TB"), Variant(Int(2147483647), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(2147483647), Int), String("SQL On-demand data processed weekly limit in TB"), Bit(true), Bit(false)]
+  #|[Int(1597), String("Data processed monthly limit in TB"), Variant(Int(2147483647), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(2147483647), Int), String("SQL On-demand data processed monthly limit in TB"), Bit(true), Bit(false)]
+  #|[Int(1598), String("ADR Cleaner Thread Count"), Variant(Int(1), Int), Variant(Int(1), Int), Variant(Int(32767), Int), Variant(Int(1), Int), String("Max number of threads ADR cleaner can assign."), Bit(true), Bit(true)]
+  #|[Int(1599), String("hardware offload enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable hardware offloading on the server"), Bit(false), Bit(true)]
+  #|[Int(1600), String("hardware offload config"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(255), Int), Variant(Int(0), Int), String("Configure hardware offload accelerator"), Bit(false), Bit(true)]
+  #|[Int(1601), String("hardware offload mode"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(255), Int), Variant(Int(0), Int), String("Configure hardware offload accelerator mode"), Bit(false), Bit(true)]
+  #|[Int(1602), String("backup compression algorithm"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(3), Int), Variant(Int(0), Int), String("Configure default backup compression algorithm"), Bit(true), Bit(false)]
+  #|[Int(1603), String("ADR cleaner lock timeout (s)"), Variant(Int(5), Int), Variant(Int(1), Int), Variant(Int(32767), Int), Variant(Int(5), Int), String("ADR cleaner lock timeout"), Bit(true), Bit(true)]
+  #|[Int(1606), String("SLOG memory quota (%)"), Variant(Int(75), Int), Variant(Int(1), Int), Variant(Int(100), Int), Variant(Int(75), Int), String("SLOG memory quota percentage"), Bit(true), Bit(true)]
+  #|[Int(1609), String("max RPC request params (KB)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(0), Int), String("Maximum memory for RPC request parameters (kBytes)"), Bit(true), Bit(true)]
+  #|[Int(1610), String("max UCS send boxcars"), Variant(Int(256), Int), Variant(Int(256), Int), Variant(Int(2048), Int), Variant(Int(256), Int), String("Maximum number of UCS boxcars for sending messages."), Bit(false), Bit(true)]
+  #|[Int(1611), String("availability group commit time (ms)"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(10), Int), Variant(Int(0), Int), String("Configure availability group commit time in milliseconds for SQL Server only."), Bit(true), Bit(true)]
+  #|[Int(1612), String("tiered memory enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("tiered memory memory-optimized is disabled by default."), Bit(false), Bit(true)]
+  #|[Int(1613), String("max server tiered memory (MB)"), Variant(Int(2147483647), Int), Variant(Int(0), Int), Variant(Int(2147483647), Int), Variant(Int(2147483647), Int), String("Maximum size of server tiered memory (MB)"), Bit(false), Bit(true)]
+  #|[Int(1614), String("max lock manager cache memory (%)"), Variant(Int(20), Int), Variant(Int(20), Int), Variant(Int(60), Int), Variant(Int(20), Int), String("Maximum size of lock manager cache memory as a percentage of the SQLOS committed memory"), Bit(false), Bit(true)]
+  #|[Int(16384), String("Agent XPs"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable Agent XPs"), Bit(true), Bit(true)]
+  #|[Int(16386), String("Database Mail XPs"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable Database Mail XPs"), Bit(true), Bit(true)]
+  #|[Int(16387), String("SMO and DMO XPs"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Enable or disable SMO and DMO XPs"), Bit(true), Bit(true)]
+  #|[Int(16388), String("Ole Automation Procedures"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable Ole Automation Procedures"), Bit(true), Bit(true)]
+  #|[Int(16390), String("xp_cmdshell"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable command shell"), Bit(true), Bit(true)]
+  #|[Int(16391), String("Ad Hoc Distributed Queries"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable Ad Hoc Distributed Queries"), Bit(true), Bit(true)]
+  #|[Int(16392), String("Replication XPs"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable Replication XPs"), Bit(true), Bit(true)]
+  #|[Int(16393), String("contained database authentication"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enables contained databases and contained authentication"), Bit(true), Bit(false)]
+  #|[Int(16394), String("hadoop connectivity"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(8), Int), Variant(Int(0), Int), String("Configure SQL Server to connect to external Hadoop or Microsoft Azure storage blob data sources through PolyBase"), Bit(true), Bit(false)]
+  #|[Int(16395), String("polybase network encryption"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Configure SQL Server to encrypt control and data channels when using PolyBase"), Bit(true), Bit(false)]
+  #|[Int(16396), String("remote data archive"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Allow the use of the REMOTE_DATA_ARCHIVE data access for databases"), Bit(true), Bit(false)]
+  #|[Int(16397), String("allow polybase export"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Allows writing into an external table using PolyBase"), Bit(true), Bit(false)]
+  #|[Int(16398), String("allow filesystem enumeration"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Allow enumeration of filesystem"), Bit(true), Bit(true)]
+  #|[Int(16399), String("polybase enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Configure SQL Server to connect to external data sources through PolyBase"), Bit(true), Bit(false)]
+  #|[Int(16400), String("suppress recovery model errors"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Return warning instead of error for unsupported ALTER DATABASE SET RECOVERY command"), Bit(true), Bit(true)]
+  #|[Int(16401), String("openrowset auto_create_statistics"), Variant(Int(1), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(1), Int), String("Enable or disable auto create statistics for openrowset sources."), Bit(true), Bit(true)]
+  #|[Int(16402), String("external rest endpoint enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable invocations of external REST endpoints"), Bit(true), Bit(false)]
+  #|[Int(16403), String("external xtp dll gen util enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable using external xtp dll generation via HkDllGen.exe"), Bit(true), Bit(false)]
+  #|[Int(16404), String("external AI runtimes enabled"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable using external AI runtimes"), Bit(true), Bit(false)]
+  #|[Int(16405), String("allow server scoped db credentials"), Variant(Int(0), Int), Variant(Int(0), Int), Variant(Int(1), Int), Variant(Int(0), Int), String("Enable or disable use of server managed identity in database scoped credentials"), Bit(true), Bit(false)]

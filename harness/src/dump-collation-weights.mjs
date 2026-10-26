@@ -40,12 +40,11 @@ const list = (items, per) => {
   for (let i = 0; i < items.length; i += per) lines.push(`  ${items.slice(i, i + per).join(', ')},`)
   return lines.join('\n')
 }
-const ranges = version => ignorable.filter(r => r[0] === version).map(r => `(${r[1]}, ${r[2]})`)
+const ranges = version => ignorable.filter(r => r[0] === version).map(r => `${r[1]},${r[2]}`)
 const ignorableBlock = version => `///|
 /// Ignorable code unit ranges of the version-${version} tables (${ranges(version).length}).
-let ignorable_v${version} : Array[(Int, Int)] = [
-${list(ranges(version), 8)}
-]
+let ignorable_v${version}_text : String =
+${ranges(version).map(r => `  #|${r}`).join('\n')}
 `
 const accentBlock = version => `///|
 /// Secondary (accent) rank of U+0300 + i in the version-${version} tables.

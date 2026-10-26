@@ -62,6 +62,102 @@ priv struct CultureData {
 }
 
 ///|
+let culture_rows : Ref[Array[CultureData]?] = Ref(None)
+
+///|
+fn culture_of_json(item : Json) -> CultureData {
+  guard item is Object(o) else { abort("culture_json") }
+  fn text(o : Map[String, Json], key : String) -> String {
+    guard o.get(key) is Some(String(s)) else { abort("culture_json: \{key}") }
+    s
+  }
+
+  fn int(o : Map[String, Json], key : String) -> Int {
+    guard o.get(key) is Some(Number(n, ..)) else {
+      abort("culture_json: \{key}")
+    }
+    n.to_int()
+  }
+
+  fn list(o : Map[String, Json], key : String) -> Array[Json] {
+    guard o.get(key) is Some(Array(a)) else { abort("culture_json: \{key}") }
+    a
+  }
+
+  fn ints(o : Map[String, Json], key : String) -> Array[Int] {
+    list(o, key).map(v => {
+      if v is Number(n, ..) {
+        n.to_int()
+      } else {
+        abort(key)
+      }
+    })
+  }
+
+  fn texts(o : Map[String, Json], key : String) -> Array[String] {
+    list(o, key).map(v => if v is String(s) { s } else { abort(key) })
+  }
+
+  {
+    name: text(o, "name"),
+    n_dec: text(o, "n_dec"),
+    n_group: text(o, "n_group"),
+    n_sizes: ints(o, "n_sizes"),
+    n_neg: text(o, "n_neg"),
+    n_digits: int(o, "n_digits"),
+    c_symbol: text(o, "c_symbol"),
+    c_dec: text(o, "c_dec"),
+    c_group: text(o, "c_group"),
+    c_sizes: ints(o, "c_sizes"),
+    c_pos: text(o, "c_pos"),
+    c_neg: text(o, "c_neg"),
+    c_digits: int(o, "c_digits"),
+    p_dec: text(o, "p_dec"),
+    p_group: text(o, "p_group"),
+    p_sizes: ints(o, "p_sizes"),
+    p_pos: text(o, "p_pos"),
+    p_neg: text(o, "p_neg"),
+    p_digits: int(o, "p_digits"),
+    neg_sign: text(o, "neg_sign"),
+    percent: text(o, "percent"),
+    permille: text(o, "permille"),
+    calendar: int(o, "calendar"),
+    months: texts(o, "months"),
+    months_abbr: texts(o, "months_abbr"),
+    months_gen: texts(o, "months_gen"),
+    months_abbr_gen: texts(o, "months_abbr_gen"),
+    days: texts(o, "days"),
+    days_abbr: texts(o, "days_abbr"),
+    am: text(o, "am"),
+    pm: text(o, "pm"),
+    date_sep: text(o, "date_sep"),
+    time_sep: text(o, "time_sep"),
+    pat_d: text(o, "pat_d"),
+    pat_long_d: text(o, "pat_long_d"),
+    pat_t: text(o, "pat_t"),
+    pat_long_t: text(o, "pat_long_t"),
+    pat_f: text(o, "pat_f"),
+    pat_long_f: text(o, "pat_long_f"),
+    pat_g: text(o, "pat_g"),
+    pat_long_g: text(o, "pat_long_g"),
+    pat_m: text(o, "pat_m"),
+    pat_y: text(o, "pat_y"),
+  }
+}
+
+///|
+fn culture_table() -> Array[CultureData] {
+  if culture_rows.val is Some(rows) {
+    return rows
+  }
+  let parsed = @stdjson.parse(culture_json) catch { _ => abort("culture_json") }
+  guard parsed is Array(items) else { abort("culture_json") }
+  let rows = items.map(culture_of_json)
+  culture_rows.val = Some(rows)
+  rows
+}
+
+///|
 priv enum CultureLookup {
   Found(CultureData)
   /// 9818: not a culture name
@@ -147,7 +243,7 @@ fn find_culture(name : String) -> CultureLookup {
     return Invalid
   }
   let lower = norm.to_lower()
-  for c in culture_table {
+  for c in culture_table() {
     if c.name.to_lower() == lower {
       return Found(c)
     }
@@ -163,7 +259,7 @@ fn find_culture(name : String) -> CultureLookup {
 
 ///|
 fn invariant_culture() -> CultureData {
-  culture_table[0]
+  culture_table()[0]
 }
 
 ///|

@@ -38,11 +38,11 @@ let coll_ks_ws : @types.Collation = @types.Collation::parse(
 ).unwrap()
 
 ///|
-/// Index into `view_defs` for a catalog view name.
+/// Index into `view_defs()` for a catalog view name.
 fn view_index(schema : String, name : String) -> Int? {
   let s = schema.to_lower()
   let n = name.to_lower()
-  for i, v in view_defs {
+  for i, v in view_defs() {
     if v.schema.to_lower() == s && v.name.to_lower() == n {
       return Some(i)
     }
@@ -96,7 +96,7 @@ fn Session::sys_view_binding(
   }
   match view_index(schema, base) {
     Some(i) => {
-      let v = view_defs[i]
+      let v = view_defs()[i]
       // a database's catalog views report its default collation (captured:
       // settings/alter-database); server-level views keep master's
       let server_level = v.name
@@ -348,7 +348,7 @@ fn pad2(code : String) -> String {
 ///|
 /// Seed system objects (is_ms_shipped) as rows of sys.objects.
 fn system_object_rows() -> Array[VRow] {
-  seed_system_objects.map(r => {
+  seed_system_objects().map(r => {
     let m : Map[String, @types.Value] = Map([])
     for j, c in seed_system_object_columns {
       m[c] = r[j]
@@ -495,7 +495,7 @@ fn tempdb_internal_name(name : String, id : Int) -> String {
 }
 
 ///|
-/// Rows of catalog view `id` (index into `view_defs`, plus
+/// Rows of catalog view `id` (index into `view_defs()`, plus
 /// `TEMPDB_VIEW_OFFSET` for tempdb) from the current database view.
 fn Session::sys_view_rows(
   self : Session,
@@ -507,7 +507,7 @@ fn Session::sys_view_rows(
   let k = id / TEMPDB_VIEW_OFFSET
   let tempdb = k == 1
   let id = id % TEMPDB_VIEW_OFFSET
-  let v = view_defs[id]
+  let v = view_defs()[id]
   let saved = self.view_tempdb
   self.view_tempdb = tempdb
   // another database's view: computed as from that database (DB_NAME(),
@@ -571,7 +571,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         )
       }
     "sys.configurations" =>
-      for seed in seed_configurations {
+      for seed in seed_configurations() {
         let values = self.configuration_values(seed)
         out.push(
           vrow([
@@ -742,7 +742,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
         }
       }
     "sys.types" =>
-      for r in seed_types {
+      for r in seed_types() {
         let m : Map[String, @types.Value] = Map([])
         for j, c in seed_type_columns {
           m[c] = r[j]
@@ -751,7 +751,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
       }
     "sys.time_zone_info" => out.append(time_zone_rows(self.rt.now))
     "sys.syslanguages" =>
-      for l in @types.languages {
+      for l in @types.languages() {
         out.push(
           vrow([
             ("langid", SmallInt(l.langid)),
@@ -786,7 +786,7 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
       let preview = self.server
         .db_options(db_name)
         .flag(db_name, "PREVIEW_FEATURES")
-      for seed in seed_scoped_configurations {
+      for seed in seed_scoped_configurations() {
         let is_preview = seed[0] == Int(48)
         out.push(
           vrow([
@@ -816,10 +816,10 @@ fn Session::view_rows(self : Session, key : String) -> Array[VRow] {
     "sys.databases" => {
       // server-wide: every database, in database_id order; user databases
       // take the settings of a fresh database (the last seed row)
-      let template = seed_databases.length() - 1
+      let template = seed_databases().length() - 1
       for d in self.databases() {
         let (n, id) = d
-        let r = seed_databases[if id <= 4 { id - 1 } else { template }]
+        let r = seed_databases()[if id <= 4 { id - 1 } else { template }]
         let m : Map[String, @types.Value] = Map([])
         for k, c in seed_database_columns {
           m[c] = r[k]

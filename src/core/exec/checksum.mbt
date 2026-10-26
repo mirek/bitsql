@@ -169,14 +169,51 @@ fn rotl3(x : Int) -> Int {
 }
 
 ///|
+let checksum_key_run_rows : Ref[Array[(Int, Int, Int, Int, Int, Int)]?] = Ref(
+  None,
+)
+
+///|
+fn checksum_key_runs() -> Array[(Int, Int, Int, Int, Int, Int)] {
+  if checksum_key_run_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = @tabletext.int_rows(checksum_key_run_text).map(r => {
+    (r[0], r[1], r[2], r[3], r[4], r[5])
+  })
+  checksum_key_run_rows.val = Some(rows)
+  rows
+}
+
+///|
+let checksum_key4_rows : Ref[Array[(Int, Int64)]?] = Ref(None)
+
+///|
+fn checksum_key4() -> Array[(Int, Int64)] {
+  if checksum_key4_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = checksum_key4_text
+    .split("\n")
+    .map(line => {
+      let f = line.split(",").collect()
+      (@tabletext.int(f[0]), @tabletext.int64(f[1]))
+    })
+    .collect()
+  checksum_key4_rows.val = Some(rows)
+  rows
+}
+
+///|
 /// Primary sort key bytes of one UTF-16 unit; None when not captured.
 fn unicode_key(u : Int, out : Array[Int]) -> Bool {
   // binary search the run containing u
+  let runs = checksum_key_runs()
   let mut lo = 0
-  let mut hi = checksum_key_runs.length() - 1
+  let mut hi = runs.length() - 1
   while lo <= hi {
     let mid = (lo + hi) / 2
-    let (start, count, kind, script, w0, step) = checksum_key_runs[mid]
+    let (start, count, kind, script, w0, step) = runs[mid]
     if u < start {
       hi = mid - 1
     } else if u >= start + count {
@@ -189,7 +226,7 @@ fn unicode_key(u : Int, out : Array[Int]) -> Bool {
       return true
     }
   }
-  for k in checksum_key4 {
+  for k in checksum_key4() {
     if k.0 == u {
       for i in 0..<4 {
         out.push((k.1 >> (8 * i)).to_int() & 0xFF)

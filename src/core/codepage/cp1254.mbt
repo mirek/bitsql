@@ -1,10 +1,24 @@
 ///|
+let cp1254_encoding_rows : Ref[Array[(Int, Int)]?] = Ref(None)
+
+///|
+fn cp1254_encoding() -> Array[(Int, Int)] {
+  if cp1254_encoding_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = @tabletext.int_rows(cp1254_encoding_text).map(r => (r[0], r[1]))
+  cp1254_encoding_rows.val = Some(rows)
+  rows
+}
+
+///|
 pub fn cp1254_byte(unit : Int) -> Int {
+  let encoding = cp1254_encoding()
   let mut lo = 0
-  let mut hi = cp1254_encoding.length()
+  let mut hi = encoding.length()
   while lo < hi {
     let mid = (lo + hi) / 2
-    let (u, b) = cp1254_encoding[mid]
+    let (u, b) = encoding[mid]
     if u == unit {
       return b
     }

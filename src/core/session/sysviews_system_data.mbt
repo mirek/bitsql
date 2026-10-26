@@ -2664,234 +2664,233 @@ let system_objects_text : String =
   #|all_objects|-101|4|V|11185985|11185986
 
 ///|
-/// (system_type_id, user_type_id, max_length, precision, scale, collation
-/// or "") combinations of system columns.
-let system_column_types : Array[(Int, Int, Int, Int, Int, String)] = [
-  (231, 231, 256, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 256, 256, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 10, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 3, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 512, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (127, 127, 8, 19, 0, ""),
-  (165, 165, 8, 0, 0, ""),
-  (231, 231, 120, 0, 0, ""),
-  (56, 56, 4, 10, 0, ""),
-  (52, 52, 2, 5, 0, ""),
-  (231, 231, 6144, 0, 0, ""),
-  (231, 231, 512, 0, 0, ""),
-  (61, 61, 8, 23, 3, ""),
-  (62, 62, 8, 53, 0, ""),
-  (231, 231, 120, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 8000, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (42, 42, 8, 27, 7, ""),
-  (98, 98, 8016, 0, 0, ""),
-  (165, 165, 85, 0, 0, ""),
-  (231, 231, 72, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 64, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 10, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 100, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (36, 36, 16, 0, 0, ""),
-  (48, 48, 1, 3, 0, ""),
-  (104, 104, 1, 1, 0, ""),
-  (167, 167, 3, 0, 0, ""),
-  (167, 167, 256, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, -1, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 120, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 6144, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 1024, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 46, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 62, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 28, 0, 0, "Latin1_General_CI_AI"),
-  (173, 173, 2, 0, 0, ""),
-  (231, 231, 774, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 48, 0, 0, "Latin1_General_CI_AI"),
-  (173, 173, 4, 0, 0, ""),
-  (231, 231, 66, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 258, 0, 0, "Latin1_General_CI_AI"),
-  (173, 173, 1, 0, 0, ""),
-  (231, 231, 512, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 52, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 522, 0, 0, "Latin1_General_CI_AI"),
-  (173, 173, 16, 0, 0, ""),
-  (231, 231, 1922, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 1376, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 802, 0, 0, "Latin1_General_CI_AI"),
-  (165, 165, 8000, 0, 0, ""),
-  (59, 59, 4, 24, 0, ""),
-  (231, 231, 80, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 62, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 18, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 30, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 2, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 70, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 60, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 2048, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 520, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 64, 0, 0, ""),
-  (231, 256, 256, 0, 0, ""),
-  (106, 106, 5, 5, 2, ""),
-  (231, 231, 8000, 0, 0, "Latin1_General_CI_AI"),
-  (165, 165, 64, 0, 0, ""),
-  (231, 231, 510, 0, 0, ""),
-  (231, 231, 8000, 0, 0, ""),
-  (231, 231, 4, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 60, 0, 0, "Latin1_General_CI_AI"),
-  (165, 165, 128, 0, 0, ""),
-  (231, 231, 6, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (173, 173, 8, 0, 0, ""),
-  (231, 231, 510, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, -1, 0, 0, ""),
-  (231, 231, 32, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 8000, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (165, 165, 32, 0, 0, ""),
-  (231, 231, 128, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (34, 34, 16, 0, 0, ""),
-  (231, 231, 48, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (175, 175, 1, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 256, 256, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 64, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 60, 0, 0, ""),
-  (231, 231, 256, 0, 0, ""),
-  (231, 231, 6, 0, 0, ""),
-  (231, 231, -1, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 8000, 0, 0, "Latin1_General_BIN"),
-  (108, 108, 13, 25, 0, ""),
-  (231, 231, 256, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 128, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 520, 0, 0, ""),
-  (231, 231, 10, 0, 0, ""),
-  (231, 231, 72, 0, 0, ""),
-  (231, 231, 2000, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (165, 165, 18, 0, 0, ""),
-  (231, 231, 256, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 1024, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 100, 0, 0, ""),
-  (231, 231, 40, 0, 0, ""),
-  (167, 167, 11, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 2, 0, 0, ""),
-  (167, 167, 4, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 772, 0, 0, ""),
-  (165, 165, 20, 0, 0, ""),
-  (167, 167, 7, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 4, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (165, 165, 16, 0, 0, ""),
-  (231, 231, 32, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 258, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 4096, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 522, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (99, 99, 16, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (165, 165, 892, 0, 0, ""),
-  (231, 231, 2050, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 40, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 20, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (175, 175, 2, 0, 0, ""),
-  (231, 231, 20, 0, 0, ""),
-  (231, 231, 512, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 516, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 32, 0, 0, ""),
-  (231, 231, 96, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (43, 43, 10, 34, 7, ""),
-  (231, 231, 80, 0, 0, ""),
-  (175, 175, 2, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (167, 167, 128, 0, 0, "Latin1_General_CI_AI"),
-  (167, 167, 256, 0, 0, ""),
-  (231, 231, 1024, 0, 0, ""),
-  (231, 231, 72, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 128, 0, 0, ""),
-  (241, 241, -1, 0, 0, ""),
-  (231, 231, 400, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 80, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 400, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 90, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 18, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 120, 0, 0, "Latin1_General_CI_AI"),
-  (35, 35, 16, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (108, 108, 17, 31, 11, ""),
-  (231, 231, 96, 0, 0, ""),
-  (231, 231, 2, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 2, 0, 0, "Latin1_General_CI_AI"),
-  (231, 231, 200, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 650, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 126, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 772, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 520, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 674, 0, 0, ""),
-  (231, 231, 1026, 0, 0, ""),
-  (239, 239, 256, 0, 0, ""),
-  (167, 167, 9, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 1288, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 8000, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (41, 41, 5, 16, 7, ""),
-  (167, 167, 7, 0, 0, ""),
-  (239, 239, 256, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 58, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 130, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 514, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 2, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 510, 0, 0, "Latin1_General_CI_AI"),
-  (106, 106, 17, 38, 10, ""),
-  (42, 42, 7, 23, 3, ""),
-  (165, 165, 44, 0, 0, ""),
-  (231, 231, 76, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 8000, 0, 0, "Latin1_General_100_BIN2_UTF8"),
-  (167, 167, 6, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (244, 244, -1, 0, 0, ""),
-  (167, 167, 8000, 0, 0, "Latin1_General_100_BIN2_UTF8"),
-  (167, 167, 16, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 8, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (175, 175, 1, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (165, 165, 2, 0, 0, ""),
-  (165, 165, 1, 0, 0, ""),
-  (231, 231, 240, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 256, 256, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 20, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (165, 165, -1, 0, 0, ""),
-  (167, 167, 7, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 12, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 8000, 0, 0, "Latin1_General_BIN2"),
-  (231, 231, 512, 0, 0, "SQL_Latin1_General_CP437_CS_AS"),
-  (231, 231, 128, 0, 0, "Latin1_General_BIN"),
-  (175, 175, 4, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (173, 173, 6, 0, 0, ""),
-  (231, 231, 884, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 512, 0, 0, "Latin1_General_BIN"),
-  (231, 231, 256, 0, 0, "Latin1_General_BIN"),
-  (175, 175, 1, 0, 0, "Latin1_General_BIN"),
-  (175, 175, 2, 0, 0, "Latin1_General_BIN"),
-  (231, 256, 256, 0, 0, "Latin1_General_BIN"),
-  (231, 231, 1552, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 2070, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (167, 167, 80, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (231, 231, 6000, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 1040, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 768, 0, 0, "Latin1_General_BIN"),
-  (167, 167, 45, 0, 0, "Latin1_General_CI_AS_KS_WS"),
-  (165, 165, 256, 0, 0, ""),
-  (175, 175, 30, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 64, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 512, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 60, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (173, 173, 86, 0, 0, ""),
-  (239, 239, 20, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 52, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (239, 239, 24, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (173, 173, 128, 0, 0, ""),
-  (173, 173, 20, 0, 0, ""),
-  (108, 108, 9, 10, 0, ""),
-  (165, 165, 6000, 0, 0, ""),
-  (239, 239, 6, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 744, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 264, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 434, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (231, 231, 7800, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (165, 165, 2048, 0, 0, ""),
-  (167, 167, 255, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-  (165, 165, 4000, 0, 0, ""),
-  (165, 165, 1088, 0, 0, ""),
-  (167, 167, 255, 0, 0, "Latin1_General_CI_AI"),
-  (173, 173, 5, 0, 0, ""),
-  (175, 175, 2, 0, 0, "SQL_Latin1_General_CP1_CI_AS"),
-]
+/// system_type_id,user_type_id,max_length,precision,scale,collation (or
+/// empty) combinations of system columns (text: decoded on first use).
+let system_column_type_text : String =
+  #|231,231,256,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,256,256,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,10,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,3,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,512,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|127,127,8,19,0,
+  #|165,165,8,0,0,
+  #|231,231,120,0,0,
+  #|56,56,4,10,0,
+  #|52,52,2,5,0,
+  #|231,231,6144,0,0,
+  #|231,231,512,0,0,
+  #|61,61,8,23,3,
+  #|62,62,8,53,0,
+  #|231,231,120,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,8000,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|42,42,8,27,7,
+  #|98,98,8016,0,0,
+  #|165,165,85,0,0,
+  #|231,231,72,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,64,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,10,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,100,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|36,36,16,0,0,
+  #|48,48,1,3,0,
+  #|104,104,1,1,0,
+  #|167,167,3,0,0,
+  #|167,167,256,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,-1,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,120,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,6144,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,1024,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,46,0,0,Latin1_General_CI_AI
+  #|231,231,62,0,0,Latin1_General_CI_AI
+  #|231,231,28,0,0,Latin1_General_CI_AI
+  #|173,173,2,0,0,
+  #|231,231,774,0,0,Latin1_General_CI_AI
+  #|231,231,48,0,0,Latin1_General_CI_AI
+  #|173,173,4,0,0,
+  #|231,231,66,0,0,Latin1_General_CI_AI
+  #|231,231,258,0,0,Latin1_General_CI_AI
+  #|173,173,1,0,0,
+  #|231,231,512,0,0,Latin1_General_CI_AI
+  #|231,231,52,0,0,Latin1_General_CI_AI
+  #|231,231,522,0,0,Latin1_General_CI_AI
+  #|173,173,16,0,0,
+  #|231,231,1922,0,0,Latin1_General_CI_AI
+  #|231,231,1376,0,0,Latin1_General_CI_AI
+  #|231,231,802,0,0,Latin1_General_CI_AI
+  #|165,165,8000,0,0,
+  #|59,59,4,24,0,
+  #|231,231,80,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,62,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,18,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,30,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,2,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,70,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,60,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,2048,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,520,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,64,0,0,
+  #|231,256,256,0,0,
+  #|106,106,5,5,2,
+  #|231,231,8000,0,0,Latin1_General_CI_AI
+  #|165,165,64,0,0,
+  #|231,231,510,0,0,
+  #|231,231,8000,0,0,
+  #|231,231,4,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,60,0,0,Latin1_General_CI_AI
+  #|165,165,128,0,0,
+  #|231,231,6,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|173,173,8,0,0,
+  #|231,231,510,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,-1,0,0,
+  #|231,231,32,0,0,Latin1_General_CI_AI
+  #|231,231,8000,0,0,Latin1_General_CI_AS_KS_WS
+  #|165,165,32,0,0,
+  #|231,231,128,0,0,Latin1_General_CI_AS_KS_WS
+  #|34,34,16,0,0,
+  #|231,231,48,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|175,175,1,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,256,256,0,0,Latin1_General_CI_AI
+  #|231,231,64,0,0,Latin1_General_CI_AI
+  #|231,231,60,0,0,
+  #|231,231,256,0,0,
+  #|231,231,6,0,0,
+  #|231,231,-1,0,0,Latin1_General_CI_AI
+  #|231,231,8000,0,0,Latin1_General_BIN
+  #|108,108,13,25,0,
+  #|231,231,256,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,128,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,520,0,0,
+  #|231,231,10,0,0,
+  #|231,231,72,0,0,
+  #|231,231,2000,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|165,165,18,0,0,
+  #|231,231,256,0,0,Latin1_General_CI_AI
+  #|231,231,1024,0,0,Latin1_General_CI_AI
+  #|231,231,100,0,0,
+  #|231,231,40,0,0,
+  #|167,167,11,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,2,0,0,
+  #|167,167,4,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,772,0,0,
+  #|165,165,20,0,0,
+  #|167,167,7,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,4,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|165,165,16,0,0,
+  #|231,231,32,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,258,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,4096,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,522,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|99,99,16,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|165,165,892,0,0,
+  #|231,231,2050,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,40,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,20,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|175,175,2,0,0,
+  #|231,231,20,0,0,
+  #|231,231,512,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,516,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,32,0,0,
+  #|231,231,96,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|43,43,10,34,7,
+  #|231,231,80,0,0,
+  #|175,175,2,0,0,Latin1_General_CI_AS_KS_WS
+  #|167,167,128,0,0,Latin1_General_CI_AI
+  #|167,167,256,0,0,
+  #|231,231,1024,0,0,
+  #|231,231,72,0,0,Latin1_General_CI_AI
+  #|231,231,128,0,0,
+  #|241,241,-1,0,0,
+  #|231,231,400,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,80,0,0,Latin1_General_CI_AI
+  #|231,231,400,0,0,Latin1_General_CI_AI
+  #|231,231,90,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,18,0,0,Latin1_General_CI_AI
+  #|231,231,120,0,0,Latin1_General_CI_AI
+  #|35,35,16,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|108,108,17,31,11,
+  #|231,231,96,0,0,
+  #|231,231,2,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,2,0,0,Latin1_General_CI_AI
+  #|231,231,200,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,650,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,126,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,772,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,520,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,674,0,0,
+  #|231,231,1026,0,0,
+  #|239,239,256,0,0,
+  #|167,167,9,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,1288,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,8000,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|41,41,5,16,7,
+  #|167,167,7,0,0,
+  #|239,239,256,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,58,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,130,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,514,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,2,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,510,0,0,Latin1_General_CI_AI
+  #|106,106,17,38,10,
+  #|42,42,7,23,3,
+  #|165,165,44,0,0,
+  #|231,231,76,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,8000,0,0,Latin1_General_100_BIN2_UTF8
+  #|167,167,6,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|244,244,-1,0,0,
+  #|167,167,8000,0,0,Latin1_General_100_BIN2_UTF8
+  #|167,167,16,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,8,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|175,175,1,0,0,Latin1_General_CI_AS_KS_WS
+  #|165,165,2,0,0,
+  #|165,165,1,0,0,
+  #|231,231,240,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,256,256,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,20,0,0,Latin1_General_CI_AS_KS_WS
+  #|165,165,-1,0,0,
+  #|167,167,7,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,12,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,8000,0,0,Latin1_General_BIN2
+  #|231,231,512,0,0,SQL_Latin1_General_CP437_CS_AS
+  #|231,231,128,0,0,Latin1_General_BIN
+  #|175,175,4,0,0,Latin1_General_CI_AS_KS_WS
+  #|173,173,6,0,0,
+  #|231,231,884,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,512,0,0,Latin1_General_BIN
+  #|231,231,256,0,0,Latin1_General_BIN
+  #|175,175,1,0,0,Latin1_General_BIN
+  #|175,175,2,0,0,Latin1_General_BIN
+  #|231,256,256,0,0,Latin1_General_BIN
+  #|231,231,1552,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,2070,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|167,167,80,0,0,Latin1_General_CI_AS_KS_WS
+  #|231,231,6000,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,1040,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,768,0,0,Latin1_General_BIN
+  #|167,167,45,0,0,Latin1_General_CI_AS_KS_WS
+  #|165,165,256,0,0,
+  #|175,175,30,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,64,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,512,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,60,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|173,173,86,0,0,
+  #|239,239,20,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,52,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|239,239,24,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|173,173,128,0,0,
+  #|173,173,20,0,0,
+  #|108,108,9,10,0,
+  #|165,165,6000,0,0,
+  #|239,239,6,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,744,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,264,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,434,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|231,231,7800,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|165,165,2048,0,0,
+  #|167,167,255,0,0,SQL_Latin1_General_CP1_CI_AS
+  #|165,165,4000,0,0,
+  #|165,165,1088,0,0,
+  #|167,167,255,0,0,Latin1_General_CI_AI
+  #|173,173,5,0,0,
+  #|175,175,2,0,0,SQL_Latin1_General_CP1_CI_AS
 
 ///|
 /// sys.system_columns: `@object_id` lines, then one line per column in
@@ -15359,516 +15358,38 @@ let system_columns_text : String =
 
 ///|
 /// sys.server_principals. Columns: name, principal_id, sid, type, type_desc, is_disabled, create_date, modify_date, default_database_name, default_language_name, credential_id, owning_principal_id, is_fixed_role, tenant_id
-let seed_server_principals : Array[Array[@types.Value]] = [
-  [
-    String("sa"),
-    Int(1),
-    Binary(b"\x01"),
-    String("S"),
-    String("SQL_LOGIN"),
-    Bit(false),
-    DateTime(37717, 9910638),
-    DateTime(46296, 19861017),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Null,
-  ],
-  [
-    String("public"),
-    Int(2),
-    Binary(b"\x02"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(false),
-    Null,
-  ],
-  [
-    String("sysadmin"),
-    Int(3),
-    Binary(b"\x03"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("securityadmin"),
-    Int(4),
-    Binary(b"\x04"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("serveradmin"),
-    Int(5),
-    Binary(b"\x05"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("setupadmin"),
-    Int(6),
-    Binary(b"\x06"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("processadmin"),
-    Int(7),
-    Binary(b"\x07"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("diskadmin"),
-    Int(8),
-    Binary(b"\x08"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("dbcreator"),
-    Int(9),
-    Binary(b"\x09"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("bulkadmin"),
-    Int(10),
-    Binary(b"\x0a"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(39914, 14023809),
-    DateTime(39914, 14023809),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("##MS_ServerStateReader##"),
-    Int(11),
-    Binary(b"\x0b"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(43710, 17280000),
-    DateTime(43710, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("##MS_ServerStateManager##"),
-    Int(12),
-    Binary(b"\x0c"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(43710, 17280000),
-    DateTime(43710, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("##MS_DefinitionReader##"),
-    Int(13),
-    Binary(b"\x0d"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(43710, 17280000),
-    DateTime(43710, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Null,
-  ],
-  [
-    String("##MS_DatabaseConnector##"),
-    Int(14),
-    Binary(b"\x0e"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44076, 17280000),
-    DateTime(44076, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("0E000000-0000-0700-FFFF-FF5BCCFDD97A").unwrap()),
-  ],
-  [
-    String("##MS_DatabaseManager##"),
-    Int(15),
-    Binary(b"\x0f"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44076, 17280000),
-    DateTime(44076, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_LoginManager##"),
-    Int(16),
-    Binary(b"\x10"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44076, 17280000),
-    DateTime(44076, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_SecurityDefinitionReader##"),
-    Int(17),
-    Binary(b"\x11"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44076, 17280000),
-    DateTime(44076, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_PerformanceDefinitionReader##"),
-    Int(18),
-    Binary(b"\x12"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44441, 17280000),
-    DateTime(44441, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("0E000000-0000-0700-FFFF-FF95A8E2E27A").unwrap()),
-  ],
-  [
-    String("##MS_ServerSecurityStateReader##"),
-    Int(19),
-    Binary(b"\x13"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44441, 17280000),
-    DateTime(44441, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_ServerPerformanceStateReader##"),
-    Int(20),
-    Binary(b"\x14"),
-    String("R"),
-    String("SERVER_ROLE"),
-    Bit(false),
-    DateTime(44441, 17280000),
-    DateTime(44441, 17280000),
-    Null,
-    Null,
-    Null,
-    Int(1),
-    Bit(true),
-    Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_SQLResourceSigningCertificate##"),
-    Int(101),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x02\x1f\x9f\x14\xc3\x9a\x51\xf0\x6e\xfe\x36\x60\x0d\xf6\x2f\xf0\x68\xb8\x8f\x76",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11227366),
-    DateTime(46259, 11227366),
-    String("master"),
-    Null,
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_SQLReplicationSigningCertificate##"),
-    Int(102),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xa4\xd6\x74\x51\x8e\x11\xcf\xe1\xb1\x4a\x6f\x35\xa6\x2c\xf8\xdd\x5d\x97\x1b\x89",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11227366),
-    DateTime(46259, 11227366),
-    String("master"),
-    Null,
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_SQLAuthenticatorCertificate##"),
-    Int(103),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xf0\xea\xa2\x60\xd4\xc8\x11\x04\xed\x1e\x91\x96\xb0\xca\x4d\xae\xb8\x23\x9f\x88",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11227366),
-    DateTime(46259, 11227366),
-    String("master"),
-    Null,
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_PolicySigningCertificate##"),
-    Int(105),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xef\xb2\x0f\xeb\xfe\x1c\x0c\x06\x87\xd1\x5b\x46\x6a\x1b\xa6\xfd\xd5\x94\x68\xea",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11227366),
-    DateTime(46259, 11227366),
-    String("master"),
-    Null,
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_SmoExtendedSigningCertificate##"),
-    Int(106),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x04\xe8\x83\xf1\x85\x87\xa6\x8e\xc1\x59\x81\x10\x4e\xb7\xbb\x50\xee\xd3\xb7\xbc",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11227367),
-    DateTime(46259, 11227367),
-    String("master"),
-    Null,
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_PolicyEventProcessingLogin##"),
-    Int(256),
-    Binary(b"\x18\x5a\x11\xef\xe9\x5f\x8f\x4c\x83\x80\x0b\x4a\xa5\xee\x48\x5a"),
-    String("S"),
-    String("SQL_LOGIN"),
-    Bit(true),
-    DateTime(46259, 11253098),
-    DateTime(46296, 19860409),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_PolicyTsqlExecutionLogin##"),
-    Int(257),
-    Binary(b"\x2f\x84\x88\x15\x3e\x8a\x4a\x4c\xad\x94\x22\xbb\x44\x83\xf9\x64"),
-    String("S"),
-    String("SQL_LOGIN"),
-    Bit(true),
-    DateTime(46259, 11253139),
-    DateTime(46296, 19860409),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("##MS_AgentSigningCertificate##"),
-    Int(258),
-    Binary(
-      b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x29\x52\xad\x4b\x3b\x65\x14\xba\xdd\xa9\x73\xcc\x1c\x76\x2e\xe7\x47\xc9\xaf\x87",
-    ),
-    String("C"),
-    String("CERTIFICATE_MAPPED_LOGIN"),
-    Bit(false),
-    DateTime(46259, 11254703),
-    DateTime(46259, 11254705),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("BUILTIN\\Administrators"),
-    Int(259),
-    Binary(b"\x01\x02\x00\x00\x00\x00\x00\x05\x20\x00\x00\x00\x20\x02\x00\x00"),
-    String("G"),
-    String("WINDOWS_GROUP"),
-    Bit(false),
-    DateTime(46259, 11274444),
-    DateTime(46259, 11274447),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("NT AUTHORITY\\NETWORK SERVICE"),
-    Int(260),
-    Binary(b"\x01\x01\x00\x00\x00\x00\x00\x05\x14\x00\x00\x00"),
-    String("U"),
-    String("WINDOWS_LOGIN"),
-    Bit(false),
-    DateTime(46296, 19861018),
-    DateTime(46296, 19861021),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-  [
-    String("NT AUTHORITY\\SYSTEM"),
-    Int(261),
-    Binary(b"\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00"),
-    String("U"),
-    String("WINDOWS_LOGIN"),
-    Bit(false),
-    DateTime(46296, 19861018),
-    DateTime(46296, 19861020),
-    String("master"),
-    String("us_english"),
-    Null,
-    Null,
-    Bit(false),
-    Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap()),
-  ],
-]
+let seed_server_principals_text : String =
+  #|[String("sa"), Int(1), Binary(b"\x01"), String("S"), String("SQL_LOGIN"), Bit(false), DateTime(37717, 9910638), DateTime(46296, 19861017), String("master"), String("us_english"), Null, Null, Bit(false), Null]
+  #|[String("public"), Int(2), Binary(b"\x02"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(false), Null]
+  #|[String("sysadmin"), Int(3), Binary(b"\x03"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("securityadmin"), Int(4), Binary(b"\x04"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("serveradmin"), Int(5), Binary(b"\x05"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("setupadmin"), Int(6), Binary(b"\x06"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("processadmin"), Int(7), Binary(b"\x07"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("diskadmin"), Int(8), Binary(b"\x08"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("dbcreator"), Int(9), Binary(b"\x09"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("bulkadmin"), Int(10), Binary(b"\x0a"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(39914, 14023809), DateTime(39914, 14023809), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("##MS_ServerStateReader##"), Int(11), Binary(b"\x0b"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(43710, 17280000), DateTime(43710, 17280000), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("##MS_ServerStateManager##"), Int(12), Binary(b"\x0c"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(43710, 17280000), DateTime(43710, 17280000), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("##MS_DefinitionReader##"), Int(13), Binary(b"\x0d"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(43710, 17280000), DateTime(43710, 17280000), Null, Null, Null, Int(1), Bit(true), Null]
+  #|[String("##MS_DatabaseConnector##"), Int(14), Binary(b"\x0e"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44076, 17280000), DateTime(44076, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("0E000000-0000-0700-FFFF-FF5BCCFDD97A").unwrap())]
+  #|[String("##MS_DatabaseManager##"), Int(15), Binary(b"\x0f"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44076, 17280000), DateTime(44076, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap())]
+  #|[String("##MS_LoginManager##"), Int(16), Binary(b"\x10"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44076, 17280000), DateTime(44076, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap())]
+  #|[String("##MS_SecurityDefinitionReader##"), Int(17), Binary(b"\x11"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44076, 17280000), DateTime(44076, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap())]
+  #|[String("##MS_PerformanceDefinitionReader##"), Int(18), Binary(b"\x12"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44441, 17280000), DateTime(44441, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("0E000000-0000-0700-FFFF-FF95A8E2E27A").unwrap())]
+  #|[String("##MS_ServerSecurityStateReader##"), Int(19), Binary(b"\x13"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44441, 17280000), DateTime(44441, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap())]
+  #|[String("##MS_ServerPerformanceStateReader##"), Int(20), Binary(b"\x14"), String("R"), String("SERVER_ROLE"), Bit(false), DateTime(44441, 17280000), DateTime(44441, 17280000), Null, Null, Null, Int(1), Bit(true), Guid(@types.parse_guid("00000000-5500-FFB2-7F00-000000000000").unwrap())]
+  #|[String("##MS_SQLResourceSigningCertificate##"), Int(101), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x02\x1f\x9f\x14\xc3\x9a\x51\xf0\x6e\xfe\x36\x60\x0d\xf6\x2f\xf0\x68\xb8\x8f\x76"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11227366), DateTime(46259, 11227366), String("master"), Null, Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_SQLReplicationSigningCertificate##"), Int(102), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xa4\xd6\x74\x51\x8e\x11\xcf\xe1\xb1\x4a\x6f\x35\xa6\x2c\xf8\xdd\x5d\x97\x1b\x89"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11227366), DateTime(46259, 11227366), String("master"), Null, Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_SQLAuthenticatorCertificate##"), Int(103), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xf0\xea\xa2\x60\xd4\xc8\x11\x04\xed\x1e\x91\x96\xb0\xca\x4d\xae\xb8\x23\x9f\x88"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11227366), DateTime(46259, 11227366), String("master"), Null, Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_PolicySigningCertificate##"), Int(105), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\xef\xb2\x0f\xeb\xfe\x1c\x0c\x06\x87\xd1\x5b\x46\x6a\x1b\xa6\xfd\xd5\x94\x68\xea"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11227366), DateTime(46259, 11227366), String("master"), Null, Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_SmoExtendedSigningCertificate##"), Int(106), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x04\xe8\x83\xf1\x85\x87\xa6\x8e\xc1\x59\x81\x10\x4e\xb7\xbb\x50\xee\xd3\xb7\xbc"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11227367), DateTime(46259, 11227367), String("master"), Null, Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_PolicyEventProcessingLogin##"), Int(256), Binary(b"\x18\x5a\x11\xef\xe9\x5f\x8f\x4c\x83\x80\x0b\x4a\xa5\xee\x48\x5a"), String("S"), String("SQL_LOGIN"), Bit(true), DateTime(46259, 11253098), DateTime(46296, 19860409), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_PolicyTsqlExecutionLogin##"), Int(257), Binary(b"\x2f\x84\x88\x15\x3e\x8a\x4a\x4c\xad\x94\x22\xbb\x44\x83\xf9\x64"), String("S"), String("SQL_LOGIN"), Bit(true), DateTime(46259, 11253139), DateTime(46296, 19860409), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("##MS_AgentSigningCertificate##"), Int(258), Binary(b"\x01\x06\x00\x00\x00\x00\x00\x09\x01\x00\x00\x00\x29\x52\xad\x4b\x3b\x65\x14\xba\xdd\xa9\x73\xcc\x1c\x76\x2e\xe7\x47\xc9\xaf\x87"), String("C"), String("CERTIFICATE_MAPPED_LOGIN"), Bit(false), DateTime(46259, 11254703), DateTime(46259, 11254705), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("BUILTIN\\Administrators"), Int(259), Binary(b"\x01\x02\x00\x00\x00\x00\x00\x05\x20\x00\x00\x00\x20\x02\x00\x00"), String("G"), String("WINDOWS_GROUP"), Bit(false), DateTime(46259, 11274444), DateTime(46259, 11274447), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("NT AUTHORITY\\NETWORK SERVICE"), Int(260), Binary(b"\x01\x01\x00\x00\x00\x00\x00\x05\x14\x00\x00\x00"), String("U"), String("WINDOWS_LOGIN"), Bit(false), DateTime(46296, 19861018), DateTime(46296, 19861021), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
+  #|[String("NT AUTHORITY\\SYSTEM"), Int(261), Binary(b"\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00"), String("U"), String("WINDOWS_LOGIN"), Bit(false), DateTime(46296, 19861018), DateTime(46296, 19861020), String("master"), String("us_english"), Null, Null, Bit(false), Guid(@types.parse_guid("00000000-0000-0000-0000-000000000000").unwrap())]
 
 ///|
 let seed_server_principal_columns : Array[String] = [

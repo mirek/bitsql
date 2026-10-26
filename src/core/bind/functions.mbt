@@ -358,7 +358,7 @@ fn bind_call(env : Env, call : @ast.FuncCall) -> @ir.Expr raise @types.SqlError 
           match bind_call_catalog(env, name, call) {
             Some(e) => e
             None if bind_call_security(env, name, call) is Some(e) => e
-            None if sql_server_builtins.contains(name) =>
+            None if sql_server_builtins().contains(name) =>
               // a real SQL Server function bitsql does not implement: an
               // explicit unsupported error, never 195 (which would claim the
               // function does not exist)

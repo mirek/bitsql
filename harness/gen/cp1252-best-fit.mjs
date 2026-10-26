@@ -52,12 +52,10 @@ const lines = [
   "// included) becomes '?' (0x3F).",
   '',
   '///|',
-  '/// Pairs (UTF-16 code unit, CP1252 byte), sorted by code unit.',
-  'let cp1252_best_fit : FixedArray[(Int, Int)] = [',
+  '/// UTF-16 code unit,CP1252 byte, sorted by code unit (text: decoded on first',
+  '/// use, see @tabletext).',
+  'let cp1252_best_fit_text : String =',
+  ...pairs.map(([u, b]) => `  #|${u},${b}`),
 ]
-for (let i = 0; i < pairs.length; i += 6) {
-  lines.push('  ' + pairs.slice(i, i + 6).map(([u, b]) => `(${hex(u, 4)}, ${hex(b, 2)})`).join(', ') + ',')
-}
-lines.push(']')
 writeFileSync(join(repoDir, 'src/core/types/cp1252_best_fit.mbt'), lines.join('\n') + '\n')
 console.log(`wrote ${pairs.length} best-fit pairs`)

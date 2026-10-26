@@ -24,7 +24,14 @@ export async function launch(
   const compiled = await compileEngine()
   const worker = new Worker(join(__dirname, 'worker.js'), {
     workerData: { options, compiled },
-    resourceLimits: { stackSizeMb: 64, maxOldGenerationSizeMb: Math.max(4096, Math.floor(totalmem() / 2 ** 20)) },
+    resourceLimits: {
+      stackSizeMb: 64,
+      maxOldGenerationSizeMb: Math.max(4096, Math.floor(totalmem() / 2 ** 20)),
+      // V8 sizes the young generation from the old-generation limit: left
+      // unset, a busy server's new space grew to 128 MB. Below 64 the
+      // sort/window benchmark slows by half (more scavenges).
+      maxYoungGenerationSizeMb: 64,
+    },
   })
   let stopping: Promise<void> | undefined
   const exited = new Promise<void>(resolve => worker.once('exit', () => resolve()))

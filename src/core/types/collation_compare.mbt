@@ -540,6 +540,21 @@ pub fn collation_ignores(u : Int, c : Collation) -> Bool {
 }
 
 ///|
+let ignorable_tables : Ref[(Array[(Int, Int)], Array[(Int, Int)])?] = Ref(None)
+
+///|
+/// (version 0, version 100) ignorable ranges.
+fn ignorable_rows() -> (Array[(Int, Int)], Array[(Int, Int)]) {
+  if ignorable_tables.val is Some(tables) {
+    return tables
+  }
+  let decode = text => @tabletext.int_rows(text).map(r => (r[0], r[1]))
+  let tables = (decode(ignorable_v0_text), decode(ignorable_v100_text))
+  ignorable_tables.val = Some(tables)
+  tables
+}
+
+///|
 /// Code units the sort tables ignore at every level, dumped from SQL Server
 /// (collation_ignorable.mbt): NUL; in version 0 also surrogates, U+FFFD,
 /// bidi marks, the BOM and every code point the old tables do not know
@@ -550,7 +565,8 @@ fn is_ignorable(u : Int, version : Int) -> Bool {
   if u < 0xAD {
     return u == 0
   }
-  let table = if version == 0 { ignorable_v0 } else { ignorable_v100 }
+  let (v0, v100) = ignorable_rows()
+  let table = if version == 0 { v0 } else { v100 }
   let mut lo = 0
   let mut hi = table.length() - 1
   while lo <= hi {

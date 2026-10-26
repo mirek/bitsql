@@ -62,7 +62,7 @@ priv struct DateStyle {
 ///|
 let default_date_style : DateStyle = {
   order: Mdy,
-  lang: languages[0],
+  lang: languages()[0],
   year_digits: 0,
   explicit: false,
   numeric: true,

@@ -40,7 +40,7 @@ fn Session::read_pages(
   }
   // Virtual catalog rows have no stored table. Measure their typed payload
   // and round to 8-KiB pages, with a record header and slot per row.
-  guard view_defs.get(if id >= 0 { id % TEMPDB_VIEW_OFFSET } else { -1 })
+  guard view_defs().get(if id >= 0 { id % TEMPDB_VIEW_OFFSET } else { -1 })
     is Some(view) else {
     return 0L
   }

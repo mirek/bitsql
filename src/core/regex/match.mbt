@@ -171,7 +171,7 @@ pub fn next_boundary(text : Bytes, pos : Int) -> Int {
 /// Expand simple-fold equivalence before complementing a nested class.
 fn fold_ranges(ranges : Array[(Int, Int)]) -> Array[(Int, Int)] {
   let out = ranges.copy()
-  for (a, b, _) in unicode_fold_ranges {
+  for (a, b, _) in unicode_fold_ranges() {
     for value in a..<=b {
       let mut matches = in_ranges(value, ranges)
       let mut other = unicode_fold(value)

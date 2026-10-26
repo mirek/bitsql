@@ -297,7 +297,7 @@ fn Session::system_tvf(
 ) -> (Array[@bind.ColumnRef], Array[Array[@types.Value]])? raise @types.SqlError {
   match name {
     "dm_exec_sql_text" | "dm_exec_plan_attributes" => {
-      let v = view_defs[view_index("sys", name).unwrap()]
+      let v = view_defs()[view_index("sys", name).unwrap()]
       let cols = v.columns.map(c => @bind.ColumnRef::{
         untyped_null: false,
         qualifier: name,

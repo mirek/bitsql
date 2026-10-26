@@ -47,17 +47,31 @@ pub fn cp1252_encode(unit : Int) -> Int? {
 }
 
 ///|
+let cp1252_best_fit_rows : Ref[Array[(Int, Int)]?] = Ref(None)
+
+///|
+fn cp1252_best_fit() -> Array[(Int, Int)] {
+  if cp1252_best_fit_rows.val is Some(rows) {
+    return rows
+  }
+  let rows = @tabletext.int_rows(cp1252_best_fit_text).map(r => (r[0], r[1]))
+  cp1252_best_fit_rows.val = Some(rows)
+  rows
+}
+
+///|
 /// The CP1252 byte SQL Server stores for one UTF-16 code unit: exact
 /// mapping, best fit, else '?'.
 pub fn cp1252_byte_of(unit : Int) -> Int {
   match cp1252_encode(unit) {
     Some(b) => b
     None => {
+      let best_fit = cp1252_best_fit()
       let mut lo = 0
-      let mut hi = cp1252_best_fit.length()
+      let mut hi = best_fit.length()
       while lo < hi {
         let mid = (lo + hi) / 2
-        let (u, b) = cp1252_best_fit[mid]
+        let (u, b) = best_fit[mid]
         if u == unit {
           return b
         } else if u < unit {
