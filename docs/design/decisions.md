@@ -1493,3 +1493,29 @@ and `PGO=0` gives the plain build. Native development builds (`moon build
 cold instruction and data fetches between requests (performance.md
 "Profile-guided release builds"), which PGO's code layout reduces
 (point read 30.5 → 23 µs server CPU).
+
+## 2026-10-26: npm packages launch the native binary
+
+`npm install bitsql` lets Node tests start a server in `beforeAll` /
+`globalSetup` without Docker. The package is a launcher around the same
+release binary as the image, not a JS build of the engine: the browser
+build (`src/browser`) has no TDS listener, TLS or host scheduler, and a
+second host would be a second thing to keep faithful. Layout follows
+esbuild: `bitsql` (JS launcher, hand-written `index.d.ts`, CJS with an ESM
+wrapper, no dependencies) lists `bitsql-<os>-<cpu>` packages as exact-version
+optional dependencies gated by `os`/`cpu`/`libc`, so npm installs only the
+matching binary. Versions equal the server version (`scripts/npm-publish.sh`
+refuses a binary whose `--version` differs). Each native host publishes its
+own platform package; the launcher lists the packages already on the
+registry for that version, so an architecture published later reaches users
+with the next version.
+
+Servers must not outlive the test run. Jest gives test modules a sandboxed
+`process` whose `exit` listeners never fire (found with a test file that
+never called `stop()`: the server stayed up after Jest exited), and Jest
+SIGKILLs stuck workers, which no JS hook observes. So the host gained
+`--exit-with-stdin`: the launcher holds the server's stdin pipe, and the
+kernel closes it however the parent dies; the server is gone ~12 ms after
+Jest exits. It is opt-in because a container's stdin is usually
+`/dev/null` (immediate end of file). The child and its pipes are unref'd, so
+a forgotten `stop()` never keeps the runner alive.

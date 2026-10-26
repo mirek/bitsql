@@ -52,3 +52,4 @@ int64_t bitsql_boot_ms(void) {
   struct timespec t;clock_gettime(CLOCK_BOOTTIME,&t);
   return (int64_t)t.tv_sec*1000+t.tv_nsec/1000000;
 }
+void bitsql_exit(int32_t code) { _exit(code); }

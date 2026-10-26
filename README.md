@@ -118,7 +118,37 @@ Server options (append them after the image name): `--version`, `--listen HOST:P
 Emulator error 50108), `--record FILE` (event log for `replay`), `--spin-us N`
 (after a request, poll N µs for the next one before sleeping, as SQL Server's
 schedulers do: lower latency for back-to-back requests at the cost of CPU
-while they run; default 100, `0` sleeps at once).
+while they run; default 100, `0` sleeps at once), `--exit-with-stdin` (exit when
+stdin reaches end of file, so a supervising parent's death stops the server).
+
+## Node tests without Docker (npm)
+
+The `bitsql` npm package starts the native server from test setup, with
+TypeScript typings included. No container, no EULA:
+
+```bash
+npm install --save-dev bitsql
+```
+
+```ts
+import { start, type BitsqlServer } from "bitsql"
+import { Connection } from "tedious"
+
+let server: BitsqlServer
+beforeAll(async () => { server = await start({ databases: ["app"] }) })
+afterAll(() => server.stop())
+
+test("query", () => {
+  const connection = new Connection(server.tedious("app")) // or server.mssql("app"), server.connectionString("app")
+  // …
+})
+```
+
+Each `start()` runs its own server on a free port, so parallel Jest workers never
+share data. A server never outlives the Node process that started it, even
+one killed with SIGKILL. The package ships the Linux x64 (glibc 2.34+)
+binary; other platforms can set `BITSQL_BIN` or use the container. Options
+and a Jest `globalSetup` example: [npm/bitsql/README.md](npm/bitsql/README.md).
 
 ## Row ordering compatibility
 
@@ -273,7 +303,8 @@ docker run -p 1433:1433 bitsql --database app
 ```
 
 Build, test and publish the native host architecture with
-`scripts/docker-publish.sh --push`.
+`scripts/docker-publish.sh --push`, then the npm packages from the same
+binary with `scripts/npm-publish.sh --push` (after `npm login`).
 
 - Design: [docs/design/](docs/design/README.md)
 - Contributing and agent guide: [CLAUDE.md](CLAUDE.md)

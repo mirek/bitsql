@@ -72,6 +72,7 @@ the top priority: a false green is worse than an explicit "not supported" error.
 ```bash
 scripts/check.sh                   # gate before push (moon check/test/fmt/info + harness)
 moon test -p mirek/bitsql/core/tds # one package
+scripts/npm-publish.sh             # npm bitsql + bitsql-linux-<cpu> from the release binary
 moon run scripts/update-moonbit-docs.mbtx  # refresh vendored MoonBit docs (needs the
                                            # pinned toolchain: dev container on Intel macOS)
 ```

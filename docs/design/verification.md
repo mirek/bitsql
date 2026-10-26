@@ -47,9 +47,17 @@ skills) are for orientation; captures are the authority.
 
 `moon prove` (experimental, moon 0.1.20260920) lowers contracts in a
 proof-enabled package to Why3 and discharges them with z3/cvc5 (installed in
-the dev container image; Why3 ships with the toolchain). `scripts/check.sh`
-proves every proof-enabled package with the **machine-integer prelude**
-(`$MOON_HOME/lib/prelude_proof_machine_int`), so every `+ - * / %` must be
+the dev container image; Why3 ships with the toolchain).
+
+2026-10-26: solver versions matter. With the dev container's z3 4.8.12 and
+cvc5 1.0.8 all 87 goals prove; with z3 4.13.4 + cvc5 1.2.0 `fits` times
+out. On a host without them, put those two release binaries on `PATH`.
+`moon prove` caches the solvers it detected in `_build/verif/why3.conf`;
+delete `_build/verif` after changing solvers (otherwise every goal is
+"unknown").
+
+`scripts/check.sh` proves every proof-enabled package with the
+**machine-integer prelude** (`$MOON_HOME/lib/prelude_proof_machine_int`), so every `+ - * / %` must be
 proved not to overflow. The default prelude uses unbounded integers and
 proves the overflowing `pos + n > len` check below "correct".
 

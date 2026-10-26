@@ -17,6 +17,8 @@
 ///   --no-tls    refuse encryption like a server without a certificate
 ///   --spin-us N  after a request, keep polling for the next one for N µs
 ///               instead of sleeping at once (default 100; 0: never)
+///   --exit-with-stdin  exit when stdin reaches end of file (a supervising
+///               parent holds the pipe, so its death stops the server)
 /// Prints `listening on HOST:PORT` to stderr once bound (harness contract).
 async fn main {
   let args = @env.args()
@@ -276,6 +278,15 @@ async fn main {
         process(input)
       }
     })
+    // However the parent ends (SIGKILL included), the kernel closes its end.
+    if args.contains("--exit-with-stdin") {
+      group.spawn_bg(() => {
+        while @stdio.stdin.read_some() is Some(_) {
+          continue
+        }
+        exit_now(0)
+      })
+    }
     let mut next_id = 0
     while true {
       let (tcp, _) = server.accept()
