@@ -1596,6 +1596,14 @@ are `will_not_fix`/`fix_deferred` and never go away.
   classic builder reused whichever architecture of a tag was cached.
 - The binary is still compiled in bookworm (glibc 2.36). It runs on Wolfi's
   newer glibc because glibc is backward compatible.
-- `docker-publish.sh` now fails on any fixable HIGH/CRITICAL trivy finding
-  (prints the total count otherwise) and on a failed encrypted tedious login
-  against the running image.
+- `docker-publish.sh` now fails on any fixable HIGH/CRITICAL finding and on a
+  failed encrypted tedious login against the running image. The scan is
+  `scripts/image-scan.sh`: trivy and grype, both free and run as containers.
+  Docker Scout was left out because it needs a Docker login and a CLI plugin.
+  Two scanners because their databases differ: on the old distroless 0.1.30,
+  grype rated a libssl3 CVE CRITICAL that trivy did not report at all.
+- Nothing is bumped by hand: the apko base resolves the newest Wolfi packages
+  on every build. When `scripts/image-scan.sh` (default `mirek/bitsql:latest`,
+  every arch, read from the registry) finds a fixable issue, the remedy is
+  rebuilding and republishing. The script exits 1 then, so a future CI job or
+  cron can run it unchanged.

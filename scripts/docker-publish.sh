@@ -147,7 +147,6 @@ fi
 # runs nothing foreign. Each arch gets its own local tag, which the classic
 # builder cannot confuse with another architecture's cached image.
 apko_image=cgr.dev/chainguard/apko:latest
-trivy_image=aquasec/trivy:latest
 for arch in "${arches[@]}"; do
   case $arch in amd64) apko_arch=x86_64 ;; arm64) apko_arch=aarch64 ;; esac
   rm -rf "$out/base" && mkdir -p "$out/base"
@@ -168,21 +167,9 @@ for arch in "${arches[@]}"; do
 done
 echo "== images: ${arches[*]} ($version); runtime-tested architecture: $host_arch"
 
-# Vulnerability gate: no fixable HIGH/CRITICAL finding may ship. The full
-# count (any severity, fixed or not) is printed for the release notes.
-mkdir -p "$HOME/.cache/trivy"
+# Vulnerability gate (trivy + grype): no fixable HIGH/CRITICAL finding ships.
 for arch in "${arches[@]}"; do
-  image=${LOCAL_TAG:-$repo:$version-$arch}
-  trivy() {
-    docker run --rm --name "bitsql-trivy-$$" -v /var/run/docker.sock:/var/run/docker.sock \
-      -v "$HOME/.cache/trivy:/root/.cache/trivy" "$trivy_image" image -q --scanners vuln "$@" "$image"
-  }
-  trivy --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 >/dev/null ||
-    { trivy --ignore-unfixed --severity HIGH,CRITICAL; echo "== $arch: fixable HIGH/CRITICAL vulnerabilities" >&2; exit 1; }
-  echo "== $arch scan: $(trivy --format json | node -e '
-let n = 0
-for (const t of JSON.parse(require("fs").readFileSync(0, "utf8")).Results ?? []) n += (t.Vulnerabilities ?? []).length
-console.log(n + " known vulnerabilities")')"
+  LOCAL=1 scripts/image-scan.sh "${LOCAL_TAG:-$repo:$version-$arch}" | sed "s/^== local/== $arch scan/"
 done
 
 # The image itself (base libraries included) must accept an encrypted login.
