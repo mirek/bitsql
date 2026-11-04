@@ -103,7 +103,7 @@ docs/moonbit/            vendored MoonBit docs (generated, see VERSIONS.md)
 docs/reuse/              what to reuse from mssqlite
 .claude/skills/          project skills (kept current as we learn)
 scripts/                 check.sh (pre-push gate), *.mbtx automation (generators, docs refresh)
-Dockerfile               distroless image around the release binary
+Dockerfile               hardened Wolfi (apko) image around the release binary
 ```
 
 Package dependencies flow one way: `engine → session → {bind, exec, store,

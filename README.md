@@ -59,8 +59,8 @@ Change the image name. Connection settings stay the same:
   does on SQL Server.
 - **Memory only:** all data is lost when the container stops, so volumes
   under `/var/opt/mssql` have no effect and can be removed.
-- **Health checks:** the image is distroless, so it has no shell and no
-  `sqlcmd`. Replace `sqlcmd` health checks with a TCP or login probe. Since
+- **Health checks:** the image is minimal and hardened, so it has no shell
+  and no `sqlcmd`. Replace `sqlcmd` health checks with a TCP or login probe. Since
   the server is ready about 0.1 s after start, most suites can drop the wait
   entirely.
 

@@ -17,7 +17,8 @@ their own licenses. The CC0 dedication does not cover them.
 
 The native host loads OpenSSL (`libssl`) dynamically at runtime from the
 system. It isn't linked into the binary. In the Docker image it comes from the
-distroless Debian base image, under that image's own licenses.
+Wolfi base image (OpenSSL, glibc and CA certificates packages built by apko
+from `scripts/base/apko.yaml`), under those packages' own licenses.
 
 ## Vendored documentation (not shipped)
 

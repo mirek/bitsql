@@ -142,20 +142,22 @@ if [[ ${SKIP_SMOKE:-0} != 1 ]]; then
   smoke "$host_arch" "$PWD/$out/$host_arch/bitsql"
 fi
 
-# The base is pinned per arch by digest: given a tag, the classic builder
-# can reuse whichever architecture is cached locally even with --platform.
-base=gcr.io/distroless/cc-debian12
-base_index=$(docker manifest inspect "$base:nonroot")
+# Hardened runtime base (scripts/base/apko.yaml): built per architecture with
+# apko from Wolfi packages. apko only downloads and unpacks packages, so it
+# runs nothing foreign. Each arch gets its own local tag, which the classic
+# builder cannot confuse with another architecture's cached image.
+apko_image=cgr.dev/chainguard/apko:latest
+trivy_image=aquasec/trivy:latest
 for arch in "${arches[@]}"; do
-  digest=$(node -e '
-const [arch] = process.argv.slice(1)
-const index = JSON.parse(require("fs").readFileSync(0, "utf8"))
-const m = index.manifests.find(m => m.platform.architecture === arch)
-if (!m) throw new Error(`no ${arch} manifest`)
-console.log(m.digest)
-' "$arch" <<<"$base_index")
-  docker pull -q --platform "linux/$arch" "$base@$digest" >/dev/null
-  docker build -q --platform "linux/$arch" --build-arg "BASE=$base@$digest" \
+  case $arch in amd64) apko_arch=x86_64 ;; arm64) apko_arch=aarch64 ;; esac
+  rm -rf "$out/base" && mkdir -p "$out/base"
+  docker run --rm --name "bitsql-apko-$$" --user "$(id -u):$(id -g)" -e HOME=/work/_build/xarch/base \
+    -v "$PWD:/work" -w /work "$apko_image" build --arch "$apko_arch" \
+    --sbom-path "$out/base" scripts/base/apko.yaml "bitsql-base:$version" "$out/base/base.tar" >/dev/null 2>&1 ||
+    { echo "apko: building the $arch base failed" >&2; exit 1; }
+  docker load -q -i "$out/base/base.tar" >/dev/null
+  rm -rf "$out/base"
+  docker build -q --platform "linux/$arch" --build-arg "BASE=bitsql-base:$version-$arch" \
     --build-arg "BITSQL_BIN=$out/$arch/bitsql" \
     --label "org.opencontainers.image.version=$version" \
     --label "org.opencontainers.image.revision=$(git rev-parse HEAD)" \
@@ -165,6 +167,48 @@ console.log(m.digest)
     { echo "image $repo:$version-$arch has the wrong architecture" >&2; exit 1; }
 done
 echo "== images: ${arches[*]} ($version); runtime-tested architecture: $host_arch"
+
+# Vulnerability gate: no fixable HIGH/CRITICAL finding may ship. The full
+# count (any severity, fixed or not) is printed for the release notes.
+mkdir -p "$HOME/.cache/trivy"
+for arch in "${arches[@]}"; do
+  image=${LOCAL_TAG:-$repo:$version-$arch}
+  trivy() {
+    docker run --rm --name "bitsql-trivy-$$" -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$HOME/.cache/trivy:/root/.cache/trivy" "$trivy_image" image -q --scanners vuln "$@" "$image"
+  }
+  trivy --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 >/dev/null ||
+    { trivy --ignore-unfixed --severity HIGH,CRITICAL; echo "== $arch: fixable HIGH/CRITICAL vulnerabilities" >&2; exit 1; }
+  echo "== $arch scan: $(trivy --format json | node -e '
+let n = 0
+for (const t of JSON.parse(require("fs").readFileSync(0, "utf8")).Results ?? []) n += (t.Vulnerabilities ?? []).length
+console.log(n + " known vulnerabilities")')"
+done
+
+# The image itself (base libraries included) must accept an encrypted login.
+image=${LOCAL_TAG:-$repo:$version-$host_arch}
+cid=$(docker run -d --rm --name "bitsql-publish-smoke-$$" -p 127.0.0.1::1433 "$image")
+trap 'docker stop "$cid" >/dev/null 2>&1 || true' EXIT
+port=$(docker port "$cid" 1433/tcp | head -n 1 | sed 's/.*://')
+(cd harness && node -e '
+const { Connection, Request } = require("tedious")
+const port = Number(process.argv[1])
+const c = new Connection({ server: "127.0.0.1",
+  authentication: { type: "default", options: { userName: "sa", password: "x" } },
+  options: { port, encrypt: true, trustServerCertificate: true, connectTimeout: 5000 } })
+c.on("connect", err => {
+  if (err) { console.error(err.message); process.exit(1) }
+  let enc = null
+  const r = new Request("select encrypt_option from sys.dm_exec_connections where session_id = @@spid", err => {
+    c.close()
+    if (err || enc !== "TRUE") { console.error(err?.message ?? "not encrypted: " + enc); process.exit(1) }
+  })
+  r.on("row", cols => { enc = cols[0].value })
+  c.execSql(r)
+})
+c.connect()' "$port") || { docker logs "$cid" 2>&1 | tail -20; echo "== $host_arch image TLS smoke FAILED" >&2; exit 1; }
+docker stop "$cid" >/dev/null && trap - EXIT
+echo "== $host_arch image: encrypted login OK"
 
 if ((push)); then
   published=()

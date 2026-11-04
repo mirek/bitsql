@@ -1,12 +1,16 @@
-# Minimal bitsql image: the native host binary on a distroless glibc base.
-# Build the binary first (no MoonBit toolchain inside the image):
+# Minimal bitsql image: the native host binary on a hardened Wolfi base
+# (glibc + CA certificates + OpenSSL, no shell), built with apko from
+# scripts/base/apko.yaml. Build the binary first (no MoonBit toolchain
+# inside the image):
 #   moon build --target native --release
-#   docker build -t bitsql .
-# Native-host release (run separately on each architecture): scripts/docker-publish.sh
+#   docker run --rm -e HOME=/work/_build -v "$PWD:/work" -w /work --user "$(id -u):$(id -g)" \
+#     cgr.dev/chainguard/apko build --arch x86_64 scripts/base/apko.yaml bitsql-base _build/base.tar
+#   docker load -i _build/base.tar && rm _build/base.tar   # tags bitsql-base:latest-amd64
+#   docker build --build-arg BASE=bitsql-base:latest-amd64 -t bitsql .
+# Native-host release (run separately on each architecture), which does all
+# of the above and scans the result: scripts/docker-publish.sh
 # Run:  docker run -p 1433:1433 bitsql --database app
-# BASE: scripts/docker-publish.sh pins each arch's digest (the classic
-# builder would otherwise reuse the locally cached amd64 image for arm64).
-ARG BASE=gcr.io/distroless/cc-debian12:nonroot
+ARG BASE=bitsql-base:latest-amd64
 FROM ${BASE}
 ARG BITSQL_BIN=_build/native/release/build/host/host.exe
 COPY ${BITSQL_BIN} /bitsql

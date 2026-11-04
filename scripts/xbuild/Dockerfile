@@ -1,4 +1,4 @@
-# Bookworm matches glibc 2.36 in distroless/cc-debian12.
+# Bookworm (glibc 2.36): binaries run on any newer glibc, including the Wolfi base.
 # Cross compiler is opt-in; no QEMU or foreign executable runs here.
 FROM debian:bookworm-slim
 ARG CROSS_ARM64=0

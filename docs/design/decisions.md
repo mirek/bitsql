@@ -1566,3 +1566,36 @@ process, and after a few instantiations V8 tiered it up with TurboFan:
   Below 64 MB the sort/window benchmark slowed from ~92 to ~140 ms.
 - Native benefits too: binary 18.8 → 12.3 MB, idle RSS 10.3 → 7.4 MB,
   same start-up and benchmark times (24 shapes 250–255 vs 250–272 ms).
+
+### 2026-11-04: hardened image base (Wolfi via apko) instead of distroless
+
+The published image was built on `gcr.io/distroless/cc-debian12:nonroot`.
+Trivy found 65 known vulnerabilities in it (1 HIGH in libssl3, 42 MEDIUM,
+mostly glibc and gcc runtime libraries bitsql doesn't use, plus stale
+ca-certificates/tzdata). Distroless follows Debian stable, so most of those
+are `will_not_fix`/`fix_deferred` and never go away.
+
+- The base is now built with apko from Wolfi packages (Chainguard's
+  continuously patched distro), `scripts/base/apko.yaml`: glibc, ld-linux,
+  CA certificates, libssl3, nonroot user 65532 as before. No shell, no
+  package manager. 0 known vulnerabilities, image 41 → 36 MB.
+- Not `cgr.dev/chainguard/glibc-dynamic` (also 0 CVEs, 11 MB): it has no
+  OpenSSL, and the host dlopens `libssl.so.3` for TLS, so encrypted logins
+  just drop the socket (checked). Copying the .so files in by hand would
+  also hide OpenSSL from scanners, because its package metadata would be
+  missing.
+- Not Docker Hardened Images (`dhi.io`): every build needs a Docker login
+  to dhi.io, and their glibc+OpenSSL runtime base would need the same check.
+  apko needs no account and keeps per-package SBOMs in the image.
+- Wolfi's `libssl3` also installs the OpenSSL 4.0 libraries and brotli.
+  Asking for `openssl-3.6-libssl` or `so:libssl.so.3` resolves the same set,
+  so it stays.
+- Packages resolve fresh on every release (not locked), so each release
+  ships the current fixes. Per-arch local tags (`bitsql-base:VERSION-ARCH`)
+  replace the old per-arch digest pinning, which existed only because the
+  classic builder reused whichever architecture of a tag was cached.
+- The binary is still compiled in bookworm (glibc 2.36). It runs on Wolfi's
+  newer glibc because glibc is backward compatible.
+- `docker-publish.sh` now fails on any fixable HIGH/CRITICAL trivy finding
+  (prints the total count otherwise) and on a failed encrypted tedious login
+  against the running image.
