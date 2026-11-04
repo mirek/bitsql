@@ -581,3 +581,9 @@ project: the breadth of transaction and error semantics in phases 5–6.
   not run, no SMT solver on this host), smoke suite passes in the image,
   README and website re-measured against the published image; point reads
   now beat SQL Server (performance.md, "Release 0.1.29").
+- [x] Publish native amd64 0.1.31 (2026-11-04): first release on the hardened
+  Wolfi base, 0 known CVEs in trivy and grype (0.1.30 on distroless: 65/61);
+  image on disk 39.3 → 33.5 MiB, download 13.7 → 13.0 MiB. Full suite in the
+  release script (23,728 client checks, three skips), scan and encrypted
+  login against the image green; README and website re-measured. arm64 not
+  published (needs a native arm64 host).
