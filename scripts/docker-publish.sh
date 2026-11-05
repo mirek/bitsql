@@ -5,6 +5,9 @@
 #   scripts/docker-publish.sh --push --multiarch  cross-build ARM64, test native only
 #   LOCAL_TAG=bitsql:dev scripts/docker-publish.sh   a local image only (no --push)
 #   PGO=0 ...                          skip the profile-guided rebuild
+# On macOS the binary (moon build, gcc, PGO, client suite) is made in a native
+# Linux container (scripts/release-host: arm64 on Apple Silicon, no emulation);
+# the image, scan, TLS smoke and push then run on the Mac.
 # Other architectures are built/tested on their own native hosts. Publication
 # preserves architectures already published under the SAME version; coordinate
 # manifest updates across hosts. Never mix binaries from different versions.
@@ -41,11 +44,32 @@ if ((multiarch)); then
 fi
 moonc_version=$(moonc -v | awk '{print $1}' | sed 's/^v//')
 out=_build/xarch
-src=_build/native/release/build
 mkdir -p "$out"
+# builder=1: this is the Linux release host container started below on macOS;
+# it makes and tests the binary only, compiling directly instead of via xbuild.
+builder=${BITSQL_RELEASE_BUILDER:-0}
+# A separate target dir keeps Linux build state apart from macOS's _build/native.
+target=_build
+((builder)) && target=_build/linux
+src=$target/native/release/build
 
 echo "== bitsql $version (moonc $moonc_version)"
-moon build --target native --release
+if [[ $(uname -s) == Darwin ]]; then
+  ((multiarch)) && { echo "--multiarch is not supported on macOS" >&2; exit 2; }
+  # gcc -O2 on the 64 MB generated host.c peaks at ~2.0 GiB (measured 2026-11-05)
+  mem=$(docker info --format '{{.MemTotal}}')
+  ((mem >= 4 * 1024 ** 3)) || { echo "Docker VM has $((mem / 1024 ** 2)) MiB; give it 4 GiB or more" \
+    "(colima stop && colima start --memory 8)" >&2; exit 1; }
+  docker build -q --build-arg "MOONC_VERSION=$moonc_version" \
+    -t "bitsql-release-host:${moonc_version//+/-}" scripts/release-host >/dev/null
+  [[ -d harness/node_modules ]] || (cd harness && npm ci --silent --no-audit --no-fund)
+  # --hostname: tedious sends os.hostname() as the workstation, and corpus
+  # sysprocs/sp-who was captured on the host named linux
+  docker run --rm --name "bitsql-release-host-$$" --hostname linux --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp -e BITSQL_RELEASE_BUILDER=1 -e PGO -e SKIP_SMOKE \
+    -v "$PWD:/src" -w /src "bitsql-release-host:${moonc_version//+/-}" scripts/docker-publish.sh
+else
+moon build --target native --release --target-dir "$target"
 
 # Explicit --multiarch permits cross-compilation, never emulated execution.
 arm_home=$out/moon-linux-aarch64-$moonc_version
@@ -61,13 +85,20 @@ if ((multiarch)); then
   diff -r "$HOME/.moon/include" "$arm_home/include" >/dev/null ||
     { echo "ARM64 MoonBit headers differ from local toolchain" >&2; exit 1; }
 fi
-docker build -q --build-arg "CROSS_ARM64=$multiarch" -t bitsql-xbuild scripts/xbuild >/dev/null
+((builder)) || docker build -q --build-arg "CROSS_ARM64=$multiarch" -t bitsql-xbuild scripts/xbuild >/dev/null
 
 # The cc/ar commands that produce host.exe (other executables dropped).
-plan=$(moon build --target native --release --dry-run 2>/dev/null |
+plan=$(moon build --target native --release --target-dir "$target" --dry-run 2>/dev/null |
   grep -E '^/usr/bin/(cc|ar) ' | grep -vE -- '-o \S+\.exe ' || true)
-plan+=$'\n'$(moon build --target native --release --dry-run 2>/dev/null |
+plan+=$'\n'$(moon build --target native --release --target-dir "$target" --dry-run 2>/dev/null |
   grep -E '^/usr/bin/cc -o \S+/host/host\.exe ')
+# moon 0.10.14's dry-run prints a dependency's C stubs without its source dir
+# (`.mooncakes/moonbitlang/async./types/stub.c` for `source = "src"`); the
+# real build resolves it, so the replayed plan restores it.
+for mod in .mooncakes/*/*/moon.mod; do
+  dir=${mod%/moon.mod} srcdir=$(sed -n 's/^source = "\(.*\)"/\1/p' "$mod")
+  [[ -n $srcdir ]] && plan=${plan//"./$dir./"/"./$dir/$srcdir/"}
+done
 
 build_arch() {
   local arch=$1 cc=gcc ar=ar moon_runtime=$HOME/.moon
@@ -89,6 +120,9 @@ build_arch() {
   echo "== $arch: $(file -b "$out/$arch/bitsql" | cut -d, -f1-2), $(du -h "$out/$arch/bitsql" | cut -f1)"
 }
 xbuild() {
+  # the plan's paths are /src (this checkout) and /moon (the MoonBit runtime),
+  # which the release host container already has
+  if ((builder)); then sh -e "$2"; return; fi
   docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -v "$1:/moon:ro" -w /src \
     bitsql-xbuild sh -e "$2"
 }
@@ -141,6 +175,8 @@ smoke() {
 if [[ ${SKIP_SMOKE:-0} != 1 ]]; then
   smoke "$host_arch" "$PWD/$out/$host_arch/bitsql"
 fi
+((builder)) && exit 0
+fi  # Linux binary phase
 
 # Hardened runtime base (scripts/base/apko.yaml): built per architecture with
 # apko from Wolfi packages. apko only downloads and unpacks packages, so it

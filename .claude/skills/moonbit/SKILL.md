@@ -442,3 +442,15 @@ thin launcher. Conventions:
   2 GB TurboFan compile. Keep big tables as `#|` string constants decoded
   on first use (`@tabletext`, decisions.md 2026-10-26). `derive(FromJson)`
   hard-codes the `@json` alias, which clashes with `core/json` here.
+- 2026-11-05: moon 0.10.14's `--dry-run` drops a dependency's `source`
+  directory from its C stub paths: `./.mooncakes/moonbitlang/async./types/stub.c`
+  for `async/src/types/stub.c` (`source = "src"` in its moon.mod). The real
+  build is unaffected; `scripts/docker-publish.sh`, which replays the plan,
+  restores the path from each `.mooncakes/*/*/moon.mod`.
+- 2026-11-05: a script's unversioned `import { "moonbitlang/async" }` resolves
+  the newest release in the local registry index, not moon.mod's pin: after a
+  fresh `moon update`, async 0.22.7 (whose moon.pkg uses
+  `max_concurrent_tests`) broke `moon check` on every script under toolchain
+  0.10.14. Scripts pin it as `"moonbitlang/async@0.22.4"` and
+  `"moonbitlang/async@0.22.4/fs"` (version before the package path;
+  `async/fs@0.22.4` is rejected). Bump these with moon.mod.

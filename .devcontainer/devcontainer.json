@@ -1,7 +1,8 @@
 // VS Code "Reopen in Container". Docker (Colima or Docker Desktop) on the
 // host; the oracle needs >= 4 GB VM memory, and `npm test` is CPU-bound
 // (corpus cases run in parallel), so give the VM cores:
-// `colima start --cpu 8 --memory 8`.
+// `colima start --cpu 6 --memory 12` (debug test compiles peak at ~4 GB each;
+// run check.sh with MOON_TEST_JOBS=2 even so).
 {
   "name": "bitsql",
   "build": { "dockerfile": "Dockerfile" },

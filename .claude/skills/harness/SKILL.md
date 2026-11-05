@@ -550,6 +550,22 @@ release; another host can add its architecture after its native checks pass.
   comparison and diagnostics benchmarks sequentially; interleave diagnostic
   modes on one CPU to reduce migration noise (`harness/bench/diagnostics.mjs`).
 
+- 2026-11-05: `scripts/docker-publish.sh` on macOS (Apple silicon, Colima)
+  builds and tests the binary in a native arm64 Linux container
+  (`scripts/release-host/Dockerfile`, target dir `_build/linux`); image,
+  scan, TLS smoke and push stay on the Mac. The Docker VM needs 4 GiB or more:
+  gcc -O2 on host.c peaks at ~2.0 GiB, so Colima's 2 GiB default kills cc1
+  (`colima stop && colima start --cpu 6 --memory 8`). Like the dev
+  container it runs with `--hostname linux` (captures such as
+  `sysprocs/sp-who` hold the client host name). `scripts/check.sh` is
+  Linux-only as well: on a Mac run it in the dev container
+  (`npx @devcontainers/cli up --workspace-folder .`, then
+  `npx @devcontainers/cli exec --workspace-folder . env MOON_TEST_JOBS=2
+  scripts/check.sh`). That needs a 12 GiB VM: debug test binaries such as
+  `store.blackbox_test.c` (72 MB) peak at ~4 GB each in cc, and
+  `MOON_TEST_JOBS` does not stop concurrent compiles from OOM-killing cc1/as
+  at 8 GiB even with 1 job.
+
 - 2026-10-09: do not rebuild a binary while the full process-isolated corpus is
   spawning it: the link step temporarily removes executable permission and
   produces spurious EACCES failures. Freeze source/builds during a full gate, or
