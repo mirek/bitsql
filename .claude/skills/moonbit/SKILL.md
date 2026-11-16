@@ -454,3 +454,20 @@ thin launcher. Conventions:
   0.10.14. Scripts pin it as `"moonbitlang/async@0.22.4"` and
   `"moonbitlang/async@0.22.4/fs"` (version before the package path;
   `async/fs@0.22.4` is rejected). Bump these with moon.mod.
+- 2026-11-16: moonbitlang/async `@tls.Tls` (OpenSSL) has two traps when a
+  write is in flight on another task. `Tls::write` suspends in
+  `Transport::flush_write` once its 4 KiB buffer fills, then retries
+  `SSL_write`. (1) `Tls::close` frees the `SSL*` and the write never checks
+  `closed`: the retry is a use after free (bitsql 0.1.31 SIGSEGV, exit 139,
+  when a lock holder and its blocked waiters disconnected together over TLS
+  behind docker-proxy). (2) EOF from the reader (`_direct_read` → 0) marks
+  the transport `Closed`; `BIO::write` then returns -1 but keeps stale
+  `SHOULD_RETRY|WRITE` flags, so `SSL_get_error` says WANT_WRITE forever,
+  `flush_write` has nothing to flush, and `write_once` spins at 100% CPU.
+  `src/host/tls.mbt` `TlsWire` counts in-flight writes: EOF is held back and
+  the session is freed only when none remain. Regression test: harness
+  `test/disconnect-tls.test.mjs`, whose half-closing proxy reproduces the
+  docker-proxy timing (no crash with `--network host` or a direct connect).
+  To get a native backtrace from a container with no shell or gdb, a
+  temporary `sigaction(SIGSEGV)` + `backtrace_symbols_fd` constructor in
+  `src/host/monitor.c` plus `addr2line -e host.exe <offset>` worked.

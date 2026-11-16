@@ -54,7 +54,9 @@ npm run bench:compare              # mirek/bitsql:<moon.mod version> container v
   `listening on 127.0.0.1:<port>` from stderr.
 - Emulator and oracle logins both use `encrypt:true,
   trustServerCertificate:true` (bitsql has TLS since 2026-10-04;
-  `test/tls.test.mjs` covers encrypt true/false and login-only TLS).
+  `test/tls.test.mjs` covers encrypt true/false and login-only TLS;
+  `test/disconnect-tls.test.mjs` disconnects a lock holder and its waiters
+  together through a docker-proxy-like half-closing proxy).
 
 ## Isolation
 

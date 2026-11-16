@@ -195,7 +195,16 @@ priv struct TlsWire {
   mut input : Bytes
   mut input_pos : Int
   flight : @buffer.Buffer
+  /// The session once its handshake completed, until released.
   mut tls : @tls.Tls?
+  /// EOF reached OpenSSL or `run_tls` finished: no new write starts; the
+  /// session is released once `run_tls` is done and no write is in flight.
+  mut ended : Bool
+  mut finished : Bool
+  /// Replies currently inside `Tls::write` (it suspends while flushing).
+  mut writers : Int
+  /// Signalled when `writers` drops to 0.
+  idle : @async.CondVar
 }
 
 ///|
@@ -211,6 +220,52 @@ fn TlsWire::new(tcp : @socket.Tcp) -> TlsWire {
     input_pos: 0,
     flight: @buffer.Buffer(),
     tls: None,
+    ended: false,
+    finished: false,
+    writers: 0,
+    idle: @async.CondVar::Cond(),
+  }
+}
+
+///|
+/// Sends a reply through the TLS session. A reply can be in flight when the
+/// client disconnects (a waiter whose lock was released by another session
+/// disconnecting at the same time). `Tls::write` resumes into `SSL_write`
+/// after a flush suspends, so two things must not happen under it:
+/// - `Tls::close` frees the OpenSSL object (use after free, SIGSEGV): the
+///   last writer releases the session instead;
+/// - EOF reaching OpenSSL turns its transport `Closed`, after which the
+///   retried `SSL_write` reports WANT_WRITE forever (the BIO keeps stale
+///   retry flags) and spins: `_direct_read` holds EOF back until no write is
+///   in flight.
+/// Replies after the end are dropped; the peer is gone and the connection's
+/// `Closed` is already queued.
+async fn TlsWire::send(self : TlsWire, bytes : Bytes) -> Unit {
+  guard self.tls is Some(tls) && !self.ended && !self.wrapped else { return }
+  self.writers += 1
+  defer {
+    self.writers -= 1
+    if self.writers == 0 {
+      self.idle.broadcast()
+    }
+    self.release_if_idle()
+  }
+  tls.write(bytes)
+}
+
+///|
+/// Called when `run_tls` returns (EOF, `EndTls`, or an error).
+fn TlsWire::end(self : TlsWire) -> Unit {
+  self.ended = true
+  self.finished = true
+  self.release_if_idle()
+}
+
+///|
+fn TlsWire::release_if_idle(self : TlsWire) -> Unit {
+  if self.finished && self.writers == 0 && self.tls is Some(tls) {
+    self.tls = None
+    tls.close()
   }
 }
 
@@ -236,7 +291,16 @@ impl @io.Reader for TlsWire with fn _direct_read(self, buf, offset~, max_len~) {
     self.send_flight()
   }
   while self.input_pos >= self.input.length() {
-    let chunk = self.chunks.get() catch { _ => return 0 }
+    let chunk = self.chunks.get() catch {
+      _ => {
+        // EOF: let in-flight replies finish first (see `TlsWire::send`)
+        while self.writers > 0 {
+          self.idle.wait()
+        }
+        self.ended = true
+        return 0
+      }
+    }
     if self.wrapped {
       let payload = @buffer.Buffer()
       for msg in self.unwrap.push(chunk) {
@@ -285,10 +349,10 @@ async fn run_tls(
     certificate_file=files.cert,
     certificate_type=PEM,
   )
-  defer tls.close()
+  wire.tls = Some(tls)
+  defer wire.end()
   wire.send_flight()
   wire.wrapped = false
-  wire.tls = Some(tls)
   while tls.read_some() is Some(bytes) {
     deliver(bytes)
   }

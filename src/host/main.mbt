@@ -160,7 +160,7 @@ async fn main {
                 Some(conn) =>
                   try {
                     match conn.mode {
-                      Tls({ tls: Some(tls), .. }) => tls.write(bytes)
+                      Tls(wire) => wire.send(bytes)
                       _ => conn.tcp.write(bytes)
                     }
                   } catch {
