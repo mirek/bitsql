@@ -52,3 +52,19 @@ int64_t bitsql_boot_ms(void) {
   struct timespec t;clock_gettime(CLOCK_BOOTTIME,&t);
   return (int64_t)t.tv_sec*1000+t.tv_nsec/1000000;
 }
+
+/* Non-blocking send for the host's reply path (src/host/sink.mbt): bytes
+   the kernel took, 0 when it would block, -1 on a connection error. */
+#include <errno.h>
+#include <sys/socket.h>
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0 /* macOS: moonbitlang/async ignores SIGPIPE */
+#endif
+int32_t bitsql_try_send(int32_t fd, const uint8_t *buf, int32_t offset, int32_t len) {
+  ssize_t n;
+  do {
+    n = send(fd, buf + offset, (size_t)len, MSG_DONTWAIT | MSG_NOSIGNAL);
+  } while (n < 0 && errno == EINTR);
+  if (n >= 0) return (int32_t)n;
+  return (errno == EAGAIN || errno == EWOULDBLOCK) ? 0 : -1;
+}

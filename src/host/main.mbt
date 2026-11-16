@@ -155,29 +155,25 @@ async fn main {
         for o in outputs {
           match o {
             Sample(_) => ()
+            // never suspends (see `Sink`): a client that stops reading
+            // must not hold the engine, and every other session, up
             Send(id, bytes) =>
-              match conns.get(id) {
-                Some(conn) =>
-                  try {
-                    match conn.mode {
-                      Tls(wire) => wire.send(bytes)
-                      _ => conn.tcp.write(bytes)
+              if conns.get(id) is Some(conn) {
+                match conn.mode {
+                  Tls(wire) =>
+                    wire.send(bytes) catch {
+                      _ => {
+                        conns.remove(id)
+                        conn.sink.close()
+                      }
                     }
-                  } catch {
-                    _ => {
-                      conn.tcp.close()
-                      conns.remove(id)
-                    }
-                  }
-                None => ()
+                  _ => conn.sink.send(bytes)
+                }
               }
             Close(id) =>
-              match conns.get(id) {
-                Some(conn) => {
-                  conn.tcp.close()
-                  conns.remove(id)
-                }
-                None => ()
+              if conns.get(id) is Some(conn) {
+                conns.remove(id)
+                conn.sink.close()
               }
             StartTls(id) =>
               match conns.get(id) {
@@ -281,14 +277,22 @@ async fn main {
       let (tcp, _) = server.accept()
       next_id += 1
       let id = next_id
-      let conn = { tcp, mode: Plain, }
+      let conn : Conn = { mode: Plain, sink: Sink::new(tcp), }
       conns[id] = conn
+      group.spawn_bg(allow_failure=true, () => {
+        defer (if conns.get(id) is Some(c) && physical_equal(c, conn) {
+          conns.remove(id)
+        })
+        conn.sink.run()
+      })
       submit(Connected(id))
       group.spawn_bg(allow_failure=true, () => {
         defer {
           queued += 1
           queue.try_put(Closed(id)) |> ignore
         }
+        // EOF: replies still backlogged go out, then the socket closes
+        defer conn.sink.close()
         defer (if conn.mode is Tls(wire) { wire.chunks.close() })
         while tcp.read_some() is Some(bytes) {
           match conn.mode {
@@ -297,7 +301,7 @@ async fn main {
             Pending =>
               match tls_files {
                 Some(files) => {
-                  let wire = TlsWire::new(tcp)
+                  let wire = TlsWire::new(conn.sink)
                   conn.mode = Tls(wire)
                   wire.chunks.put(bytes)
                   group.spawn_bg(allow_failure=true, () => {

@@ -471,3 +471,19 @@ thin launcher. Conventions:
   To get a native backtrace from a container with no shell or gdb, a
   temporary `sigaction(SIGSEGV)` + `backtrace_symbols_fd` constructor in
   `src/host/monitor.c` plus `addr2line -e host.exe <offset>` worked.
+- 2026-11-16: `@socket.Tcp::write` has no non-blocking variant: it suspends
+  until the kernel takes every byte, so awaiting it while holding a shared
+  lock lets one client that stops reading block everyone. The host's
+  `src/host/sink.mbt` sends with `send(MSG_DONTWAIT)` (C stub in
+  `monitor.c`, `tcp.fd()` is an `Int` on Unix) and backlogs the rest for a
+  per-connection writer task; TLS writes through the same sink, so
+  `Tls::write` never suspends. A queue hop for every reply instead cost
+  ~5 µs per round trip (41 → 47 µs point query); the inline send costs
+  nothing. Harness `test/stalled-reader.test.mjs`. Nothing closes a `Tcp`
+  for you at EOF: before this every connection that ended in plaintext
+  leaked its fd.
+- 2026-11-16: `BytesView::to_owned()` returns the underlying `Bytes` itself,
+  uncopied, when the view spans all of it. Keeping a view of a reused buffer
+  (the `@tls` write buffer handed to `Writer::write_once`) needs an explicit
+  copy (`FixedArray::make` + `blit_from_bytesview`); `to_owned` corrupted
+  TLS records once a full 4 KiB buffer was backlogged.

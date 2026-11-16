@@ -56,7 +56,9 @@ npm run bench:compare              # mirek/bitsql:<moon.mod version> container v
   trustServerCertificate:true` (bitsql has TLS since 2026-10-04;
   `test/tls.test.mjs` covers encrypt true/false and login-only TLS;
   `test/disconnect-tls.test.mjs` disconnects a lock holder and its waiters
-  together through a docker-proxy-like half-closing proxy).
+  together through a docker-proxy-like half-closing proxy;
+  `test/stalled-reader.test.mjs` stops reading one connection mid-reply and
+  checks other sessions are still served, plain and TLS).
 
 ## Isolation
 

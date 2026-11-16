@@ -173,9 +173,11 @@ priv enum Mode {
 }
 
 ///|
+/// One accepted connection.
 priv struct Conn {
-  tcp : @socket.Tcp
   mut mode : Mode
+  /// Every byte to the client, plain and TLS, in order (see `Sink`).
+  sink : Sink
 }
 
 ///|
@@ -187,7 +189,7 @@ priv struct TlsWire {
   /// TLS records, and outgoing records are batched per flight into one
   /// PRELOGIN message (sent when OpenSSL next waits for input, or when the
   /// handshake completes).
-  tcp : @socket.Tcp
+  sink : Sink
   chunks : @aqueue.Queue[Bytes]
   reader_buf : @io.ReaderBuffer
   unwrap : @tds.Reassembler
@@ -209,9 +211,9 @@ priv struct TlsWire {
 
 ///|
 #warnings("-alert_internal")
-fn TlsWire::new(tcp : @socket.Tcp) -> TlsWire {
+fn TlsWire::new(sink : Sink) -> TlsWire {
   {
-    tcp,
+    sink,
     chunks: @aqueue.Queue(kind=Unbounded),
     reader_buf: @io.ReaderBuffer::new(),
     unwrap: @tds.Reassembler::new(),
@@ -270,12 +272,12 @@ fn TlsWire::release_if_idle(self : TlsWire) -> Unit {
 }
 
 ///|
-async fn TlsWire::send_flight(self : TlsWire) -> Unit {
+fn TlsWire::send_flight(self : TlsWire) -> Unit {
   guard self.flight.length() > 0 else { return }
   let records = self.flight.to_bytes()
   self.flight.reset()
   // captured: SQL Server's handshake replies are PRELOGIN, EOM, packet id 0
-  self.tcp.write(@tds.frame(Prelogin, records, first_packet_id=0))
+  self.sink.send(@tds.frame(Prelogin, records, first_packet_id=0))
 }
 
 ///|
@@ -326,7 +328,7 @@ impl @io.Writer for TlsWire with fn write_once(self, buf, offset~, len~) {
   if self.wrapped {
     self.flight.write_bytesview(buf[offset:offset + len])
   } else {
-    self.tcp.write(buf[offset:offset + len])
+    self.sink.send(buf[offset:offset + len])
   }
   len
 }
