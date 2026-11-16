@@ -587,3 +587,8 @@ project: the breadth of transaction and error semantics in phases 5–6.
   release script (23,728 client checks, three skips), scan and encrypted
   login against the image green; README and website re-measured. arm64 not
   published (needs a native arm64 host).
+- [x] Publish 0.1.32 (2026-11-16): fixes the 0.1.31 SIGSEGV when a lock
+  holder and its blocked waiters disconnect together over TLS (see the TLS
+  item). amd64 published from this host: full suite in the release script
+  (23,729 client checks, three skips), trivy 0 / grype 0, encrypted login
+  against the image OK. Bug-fix release, benchmarks not re-measured.
