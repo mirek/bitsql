@@ -3,8 +3,16 @@
 #   scripts/docker-publish.sh          build and test this host's architecture
 #   scripts/docker-publish.sh --push   publish it and update version aliases
 #   scripts/docker-publish.sh --push --multiarch  cross-build ARM64, test native only
+#   scripts/docker-publish.sh --push --no-manifest  push only $version-<arch>
+#   scripts/docker-publish.sh --manifest  point $version, X.Y and latest at every
+#                                      published $version-<arch> (no build)
 #   LOCAL_TAG=bitsql:dev scripts/docker-publish.sh   a local image only (no --push)
 #   PGO=0 ...                          skip the profile-guided rebuild
+#   RELEASE_HOST=1 ...                 make the binary in the release host container
+#                                      on Linux too (CI: pinned glibc, hostname linux)
+#   MOONC_VERSION=0.10.14+7d59c7ec9 ... toolchain pin when moonc is not installed
+# GitHub Actions (.github/workflows/publish.yml, on a v<version> tag) runs one
+# native job per architecture with --push --no-manifest, then --manifest.
 # On macOS the binary (moon build, gcc, PGO, client suite) is made in a native
 # Linux container (scripts/release-host: arm64 on Apple Silicon, no emulation);
 # the image, scan, TLS smoke and push then run on the Mac.
@@ -17,10 +25,14 @@ cd "$(dirname "$0")/.."
 
 push=0
 multiarch=0
+manifest=1
+manifest_only=0
 for arg in "$@"; do
   case $arg in
     --push) push=1 ;;
     --multiarch) multiarch=1 ;;
+    --no-manifest) manifest=0 ;;
+    --manifest) manifest_only=1 ;;
     *) echo "Unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -31,6 +43,31 @@ fi
 repo=mirek/bitsql
 version=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
 minor=${version%.*}
+
+# Point $version, X.Y and latest at every architecture published for $version.
+write_manifests() {
+  local refs=() a
+  for a in amd64 arm64; do
+    if docker manifest inspect "$repo:$version-$a" >/dev/null 2>&1; then
+      refs+=("$repo:$version-$a")
+    fi
+  done
+  ((${#refs[@]})) || { echo "no $repo:$version-<arch> image is published" >&2; exit 1; }
+  for tag in "$version" "$minor" latest; do
+    docker manifest rm "$repo:$tag" >/dev/null 2>&1 || true
+    docker manifest create "$repo:$tag" "${refs[@]}" >/dev/null
+    docker manifest push --purge "$repo:$tag"
+  done
+  docker manifest inspect "$repo:$version" | grep -E '"architecture"'
+}
+if ((manifest_only)); then
+  ((push || multiarch)) && { echo "--manifest takes no other flag" >&2; exit 2; }
+  write_manifests
+  exit 0
+fi
+if ((!manifest && !push)); then
+  echo "--no-manifest goes with --push" >&2; exit 2
+fi
 case $(uname -m) in
   x86_64) arch=amd64 ;;
   aarch64|arm64) arch=arm64 ;;
@@ -42,7 +79,7 @@ if ((multiarch)); then
   [[ $host_arch == amd64 ]] || { echo "--multiarch cross-build requires an amd64 host" >&2; exit 2; }
   arches=(amd64 arm64)
 fi
-moonc_version=$(moonc -v | awk '{print $1}' | sed 's/^v//')
+moonc_version=${MOONC_VERSION:-$(moonc -v | awk '{print $1}' | sed 's/^v//')}
 out=_build/xarch
 mkdir -p "$out"
 # builder=1: this is the Linux release host container started below on macOS;
@@ -54,8 +91,8 @@ target=_build
 src=$target/native/release/build
 
 echo "== bitsql $version (moonc $moonc_version)"
-if [[ $(uname -s) == Darwin ]]; then
-  ((multiarch)) && { echo "--multiarch is not supported on macOS" >&2; exit 2; }
+if [[ $(uname -s) == Darwin ]] || { ((!builder)) && [[ ${RELEASE_HOST:-0} == 1 ]]; }; then
+  ((multiarch)) && { echo "--multiarch needs the direct Linux build (no release host)" >&2; exit 2; }
   # gcc -O2 on the 64 MB generated host.c peaks at ~2.0 GiB (measured 2026-11-05)
   mem=$(docker info --format '{{.MemTotal}}')
   ((mem >= 4 * 1024 ** 3)) || { echo "Docker VM has $((mem / 1024 ** 2)) MiB; give it 4 GiB or more" \
@@ -239,6 +276,10 @@ if ((push)); then
     docker push -q "$repo:$version-$arch"
     published+=("$repo:$version-$arch")
   done
+  if ((!manifest)); then
+    echo "== pushed ${published[*]} (manifests: scripts/docker-publish.sh --manifest)"
+    exit 0
+  fi
   # Preserve only other architectures already validated for this version.
   # A registry/network error must not silently erase their manifest entries.
   if existing=$(docker manifest inspect "$repo:$version" 2>&1); then

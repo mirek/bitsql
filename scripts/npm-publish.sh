@@ -46,6 +46,10 @@ echo '{"private":true}' >"$out/smoke/package.json"
   npx --no-install bitsql --version)
 
 if ((push)); then
+  # From GitHub Actions (.github/workflows/publish.yml) npm authenticates via
+  # the trusted publisher (OIDC) and adds provenance; locally it needs
+  # `npm login` and, with 2FA, NPM_CONFIG_OTP=<code>.
   npm publish --access public "$out/bitsql-$version.tgz"
-  npm view "bitsql@$version" version dist.unpackedSize
+  # the registry can take minutes to list a new version: informational only
+  npm view "bitsql@$version" version dist.unpackedSize || true
 fi

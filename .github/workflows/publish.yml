@@ -1,0 +1,120 @@
+name: Publish release
+
+# Push a tag v<version> (the version in moon.mod) to publish:
+#   npm: bitsql@<version> via the npm trusted publisher (OIDC, provenance);
+#        this file name is what the trusted publisher on npmjs.com names.
+#   Docker Hub: mirek/bitsql:<version>-amd64 and -arm64, each built and
+#        tested on a native runner, then <version>, X.Y and latest.
+# Both run the same gates as a local release (scripts/npm-publish.sh,
+# scripts/docker-publish.sh): the full client suite against the published
+# artifact, the CVE scan and an encrypted login against the image.
+# Secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (Docker Hub access token with
+# read/write on mirek/bitsql). npm needs none.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # keep in step with pages.yml and docs/moonbit/VERSIONS.md
+  MOONC_VERSION: '0.10.14+7d59c7ec9'
+  NODE_VERSION: '24.13.0'
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: v
+        name: Tag matches moon.mod
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
+          [[ "$GITHUB_REF_NAME" == "v$version" ]] ||
+            { echo "::error::tag $GITHUB_REF_NAME does not match moon.mod version $version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  npm:
+    needs: version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC) and provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+      - name: Install pinned MoonBit toolchain
+        run: |
+          set -euo pipefail
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s "$MOONC_VERSION"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          "$HOME/.moon/bin/moon" update
+          "$HOME/.moon/bin/moonc" -v
+      # tedious sends os.hostname() as the workstation; corpus
+      # sysprocs/sp-who was captured on a host named linux
+      - run: sudo hostname linux
+      - run: npm ci --no-audit --no-fund
+        working-directory: harness
+      - run: scripts/npm-publish.sh --push
+
+  docker:
+    needs: version
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci --no-audit --no-fund
+        working-directory: harness
+      - name: Docker Hub login
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      # The binary is made and tested in the release host container
+      # (scripts/release-host: pinned toolchain, bookworm glibc, hostname
+      # linux); image, scan, encrypted-login smoke and push run on the runner.
+      - run: scripts/docker-publish.sh --push --no-manifest
+        env:
+          RELEASE_HOST: '1'
+      - if: always()
+        run: docker logout
+
+  manifest:
+    needs: [version, docker]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Docker Hub login
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run: scripts/docker-publish.sh --manifest
+      - if: always()
+        run: docker logout

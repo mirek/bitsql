@@ -44,7 +44,9 @@ the top priority: a false green is worse than an explicit "not supported" error.
 - Automation is MoonBit script mode (`scripts/*.mbtx`, `moon run`), not
   Python; shell only launches. Conventions: skill **moonbit**, "Scripts".
 - Push straight to `main` (no PR flow yet), often, but only when
-  `scripts/check.sh` is green locally. No CI yet, on purpose.
+  `scripts/check.sh` is green locally. No CI on pushes, on purpose; the only
+  workflows are the website and the release (a `v<version>` tag publishes npm
+  and Docker, `.github/workflows/publish.yml`).
 - **Native host architecture only:** on amd64 hosts build, run, test and
   benchmark amd64; on ARM64 hosts do the same for ARM64. Do not cross-compile,
   run QEMU/binfmt, or spend time validating foreign architectures unless the
@@ -74,6 +76,7 @@ scripts/check.sh                   # gate before push (moon check/test/fmt/info 
 moon test -p mirek/bitsql/core/tds # one package
 scripts/image-scan.sh              # trivy + grype CVE scan of mirek/bitsql:latest (exit 1: rebuild)
 scripts/npm-publish.sh             # npm bitsql (wasm engine + TS host): build, harness, pack
+git tag v$VERSION && git push origin v$VERSION   # release: npm + Docker amd64/arm64 via GitHub Actions
 moon run scripts/update-moonbit-docs.mbtx  # refresh vendored MoonBit docs (needs the
                                            # pinned toolchain: dev container on Intel macOS)
 ```

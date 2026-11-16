@@ -1607,3 +1607,28 @@ are `will_not_fix`/`fix_deferred` and never go away.
   every arch, read from the registry) finds a fixable issue, the remedy is
   rebuilding and republishing. The script exits 1 then, so a future CI job or
   cron can run it unchanged.
+
+## 2026-11-16: releases publish from GitHub Actions on a version tag
+
+Pushing `v<version>` (must equal `moon.mod`) runs `.github/workflows/publish.yml`.
+It replaces publishing by hand from each architecture's host, so the "no CI"
+rule now means no CI on pushes: releases are the exception.
+
+- npm: `scripts/npm-publish.sh --push` with the npm trusted publisher (OIDC,
+  no token, provenance attached). The trusted publisher on npmjs.com names
+  the workflow file `publish.yml` with no environment, so renaming the file
+  breaks npm publishing. By hand the account needs `npm login` plus a 2FA
+  code (`NPM_CONFIG_OTP`).
+- Docker: one job per architecture on a native runner (`ubuntu-24.04`,
+  `ubuntu-24.04-arm`), which keeps the native-host rule. Each runs
+  `scripts/docker-publish.sh --push --no-manifest` with `RELEASE_HOST=1`:
+  the binary is made and tested in `scripts/release-host`, the same pinned
+  container macOS releases use (bookworm glibc, hostname `linux` for corpus
+  `sysprocs/sp-who`). A final job runs `--manifest`, which points `<version>`,
+  `X.Y` and `latest` at every published `<version>-<arch>`. Splitting it this
+  way avoids two concurrent jobs racing to merge the same manifest.
+- Gates are unchanged: the full client suite against the release binary and
+  against the wasm build, the trivy + grype scan, and an encrypted login
+  against the image. A failed gate publishes nothing for that architecture.
+  `fail-fast` cancels the other one and the manifest job never runs.
+- Secrets: `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
